@@ -28,8 +28,7 @@ public class Scope implements Comparable<Scope>{
 	//Called restrictOwningBranchesAndSystems in PHP admin interface
 	private boolean restrictOwningLibraryAndLocationFacets;
 	private boolean isConsortialCatalog;
-	//TODO: KODI this will change to HashSet<InclusionRule> ownershipRules = new HashSet<>()
-	private final HashSet<OwnershipRule> ownershipRules = new HashSet<>();
+	private final HashSet<InclusionRule> ownershipRules = new HashSet<>();
 	//Inclusion rules indicate records owned by someone else that should be shown within the scope
 	private final HashSet<InclusionRule> inclusionRules = new HashSet<>();
 	private String ilsCode;
@@ -85,9 +84,8 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String fullKey, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-		//TODO: Kodi - We will need to also pass in shelf location and collection code
-		if (isItemOwnedByScope(itemIdentifier, fullKey, recordType, locationCode, subLocationCode)){
+	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String fullKey, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+		if (isItemOwnedByScope(itemIdentifier, fullKey, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
 			if (econtentUrl == null){
 				return includedOwnedResult;
 			}else {
@@ -96,7 +94,7 @@ public class Scope implements Comparable<Scope>{
 		}
 
 		for (InclusionRule curRule : inclusionRules) {
-			if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, isHoldable, isOnOrder, isEContent, marcRecord)) {
+			if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)) {
 				if (econtentUrl == null) {
 					return includedNonOwnedResult;
 				} else {
@@ -124,13 +122,11 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public boolean isItemOwnedByScope(String itemIdentifier, String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode){
+	public boolean isItemOwnedByScope(String itemIdentifier, String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, @NotNull String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
 		Boolean isOwned = ownershipResults.get(fullKey);
 		if (isOwned == null) {
-			//TODO: Kodi - These will be Inclusion Rules now rather than Ownership Rules, but the same main HashSet
-			for(OwnershipRule curRule: ownershipRules){
-				//TODO: Kodi - This will switch to isItemIncluded
-				if (curRule.isItemOwned(fullKey, recordType, locationCode, subLocationCode)){
+			for(InclusionRule curRule: ownershipRules){
+				if (curRule.isItemIncluded(fullKey, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
 					ownershipResults.put(fullKey, Boolean.TRUE);
 					return true;
 				}
@@ -181,7 +177,7 @@ public class Scope implements Comparable<Scope>{
 		return isLocationScope;
 	}
 
-	void addOwnershipRule(OwnershipRule ownershipRule) {
+	void addOwnershipRule(InclusionRule ownershipRule) {
 		ownershipRules.add(ownershipRule);
 	}
 

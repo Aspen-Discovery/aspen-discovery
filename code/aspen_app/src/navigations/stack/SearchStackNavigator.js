@@ -23,12 +23,13 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
      const Stack = createStackNavigator();
      return (
           <Stack.Navigator
+               id="SearchNavigator"
                initialRouteName="SearchScreen"
-               screenOptions={{
-                    headerShown: true,
-                    headerBackTitleVisible: false,
-               }}
-               id="SearchNavigator">
+               screenOptions={({ navigation, route }) => ({
+                   headerShown: true,
+                   headerBackTitleVisible: false,
+
+               })}>
                <Stack.Group>
                     <Stack.Screen
                          name="SearchScreen"
@@ -58,7 +59,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -75,7 +76,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
 
@@ -106,7 +107,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
                <Stack.Group>
@@ -126,7 +127,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevScreen: 'SearchResults' }}
+                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
                </Stack.Group>
                <Stack.Screen

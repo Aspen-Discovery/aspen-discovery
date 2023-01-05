@@ -114,8 +114,16 @@ export const getBadge = (status, frozen, available, source) => {
                </Text>
           );
      } else {
-          return null;
-     }
+          if(status) {
+              return (
+                  <Text>
+                      <Badge colorScheme="orange" rounded="4px" mt={-0.5}>
+                          {status}
+                      </Badge>
+                  </Text>
+              );
+          }
+     } return null;
 };
 
 export const getStatus = (status, source) => {
@@ -236,7 +244,7 @@ export const getPickupLocation = (location, source) => {
 };
 
 export const getPosition = (position, available) => {
-     if (position && !available) {
+     if (position && !available && position !== 0 && position !== '0') {
           return (
                <Text
                     fontSize={{

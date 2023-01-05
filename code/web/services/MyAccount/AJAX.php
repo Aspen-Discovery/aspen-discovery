@@ -72,15 +72,7 @@ class MyAccount_AJAX extends JSON_Action {
 		} else {
 			$username = $_REQUEST['username'];
 			$password = $_REQUEST['password'];
-
 			$accountToLink = UserAccount::validateAccount($username, $password);
-			$user = UserAccount::getLoggedInUser();
-			$userPtype = $user->getPType();
-			$linkeePtype = $accountToLink->getPType();
-
-			require_once ROOT_DIR . '/sys/Account/PType.php';
-			$linkingSettingUser = PType::getAccountLinkingSetting($userPtype);
-			$linkingSettingLinkee = PType::getAccountLinkingSetting($linkeePtype);
 
 			if (!UserAccount::isLoggedIn()) {
 				$result = [
@@ -95,7 +87,16 @@ class MyAccount_AJAX extends JSON_Action {
 					]),
 				];
 			} elseif ($accountToLink) {
+				$user = UserAccount::getLoggedInUser();
+				$userPtype = $user->getPType();
+
 				if ($accountToLink->id != $user->id) {
+					$linkeePtype = $accountToLink->getPType();
+
+					require_once ROOT_DIR . '/sys/Account/PType.php';
+					$linkingSettingUser = PType::getAccountLinkingSetting($userPtype);
+					$linkingSettingLinkee = PType::getAccountLinkingSetting($linkeePtype);
+
 					if (($accountToLink->disableAccountLinking == 0) && ($linkingSettingUser != '1' && $linkingSettingUser != '3') && ($linkingSettingLinkee != '2' && $linkingSettingLinkee != '3')) {
 						$addResult = $user->addLinkedUser($accountToLink);
 						if ($addResult === true) {
@@ -3524,6 +3525,8 @@ class MyAccount_AJAX extends JSON_Action {
 		$payment->paymentType = $paymentType;
 		$payment->transactionDate = $transactionDate;
 		$payment->transactionType = "donation";
+		global $interface;
+		$payment->requestingUrl = $interface->getVariable('url');
 		global $library;
 		$payment->paidFromInstance = $library->subdomain;
 
@@ -3802,6 +3805,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
 			$payment->transactionType = "fine";
+			$payment->requestingUrl = $_SERVER['REQUEST_URI'];
 
 			global $library;
 			$payment->paidFromInstance = $library->subdomain;

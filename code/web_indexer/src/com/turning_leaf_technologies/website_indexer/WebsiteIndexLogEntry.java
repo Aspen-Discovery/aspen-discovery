@@ -20,6 +20,7 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 	private int numDeleted = 0;
 	private int numUpdated = 0;
 	private int numErrors = 0;
+	private int numInvalidPages = 0;
 	private Logger logger;
 
 	WebsiteIndexLogEntry(String websiteName, Connection dbConn, Logger logger){
@@ -28,7 +29,7 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 		this.websiteName = websiteName;
 		try {
 			insertLogEntry = dbConn.prepareStatement("INSERT into website_index_log (startTime, websiteName) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateLogEntry = dbConn.prepareStatement("UPDATE website_index_log SET lastUpdate = ?, endTime = ?, notes = ?, numPages = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numErrors = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateLogEntry = dbConn.prepareStatement("UPDATE website_index_log SET lastUpdate = ?, endTime = ?, notes = ?, numPages = ?, numAdded = ?, numUpdated = ?, numDeleted = ?, numErrors = ?, numInvalidPages = ? WHERE id = ?", PreparedStatement.RETURN_GENERATED_KEYS);
 		} catch (SQLException e) {
 			logger.error("Error creating prepared statements to update log", e);
 		}
@@ -89,6 +90,7 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 				updateLogEntry.setInt(++curCol, numUpdated);
 				updateLogEntry.setInt(++curCol, numDeleted);
 				updateLogEntry.setInt(++curCol, numErrors);
+				updateLogEntry.setInt(++curCol, numInvalidPages);
 				updateLogEntry.setLong(++curCol, logEntryId);
 				updateLogEntry.executeUpdate();
 			}
@@ -134,6 +136,12 @@ class WebsiteIndexLogEntry implements BaseLogEntry {
 		numErrors++;
 		this.saveResults();
 		logger.error(note);
+	}
+
+	public void incInvalidPages(String note) {
+		this.addNote("Invalid Page: " + note);
+		numInvalidPages++;
+		this.saveResults();
 	}
 
 	public void incErrors(String note, Exception e){

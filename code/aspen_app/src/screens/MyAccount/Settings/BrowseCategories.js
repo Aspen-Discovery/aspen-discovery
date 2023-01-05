@@ -123,7 +123,6 @@ const DisplayCategory = (data) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { updateBrowseCategoryList, updateBrowseCategories, maxNum } = React.useContext(BrowseCategoryContext);
 
-     console.log(toggled);
      const updateToggle = async (category) => {
           const key = category['key'] ?? category['sourceId'];
 

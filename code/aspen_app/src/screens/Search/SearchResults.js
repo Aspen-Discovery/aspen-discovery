@@ -18,7 +18,7 @@ import { GLOBALS } from '../../util/globals';
 import axios from 'axios';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getCleanTitle } from '../../helpers/item';
-import { navigateStack } from '../../helpers/RootNavigator';
+import {navigate, navigateStack} from '../../helpers/RootNavigator';
 
 export const SearchResults = () => {
      const [page, setPage] = React.useState(1);
@@ -124,7 +124,7 @@ const DisplayResult = (data) => {
      const { library } = React.useContext(LibrarySystemContext);
 
      const handlePressItem = () => {
-          navigateStack('SearchTab', 'ResultItem', {
+          navigate('ResultItem', {
                id: item.key,
                title: getCleanTitle(item.title),
                url: library.baseUrl,

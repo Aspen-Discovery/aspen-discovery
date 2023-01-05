@@ -1259,14 +1259,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		if ($this->catalogDriver == null) {
 			try {
 				$indexingProfile = $this->getIndexingProfile();
-				$accountProfileForSource = new AccountProfile();
-				$accountProfileForSource->recordSource = $indexingProfile->name;
-				require_once ROOT_DIR . '/CatalogFactory.php';
-				if ($accountProfileForSource->find(true)) {
+				$accountProfileForSource = UserAccount::getAccountProfile($indexingProfile->name);
+				if ($accountProfileForSource != null) {
 					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
-				} else {
+				}else{
 					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance();
 				}
+//				$accountProfileForSource = new AccountProfile();
+//				$accountProfileForSource->recordSource = $indexingProfile->name;
+//				require_once ROOT_DIR . '/CatalogFactory.php';
+//				if ($accountProfileForSource->find(true)) {
+//					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
+//				} else {
+//					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance();
+//				}
 			} catch (PDOException $e) {
 				// What should we do with this error?
 				if (IPAddress::showDebuggingInformation()) {
@@ -1866,6 +1872,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			} else {
 				$this->numHolds = 0;
 			}
+			$holdSummary->__destruct();
+			$holdSummary = null;
 		}
 
 		$timer->logTime("Loaded number of holds");
@@ -2488,6 +2496,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getViewable856Links(): array {
 		if ($this->validUrls == null) {
 			$validUrls = [];
+			$unloadMarc = $this->marcRecord == null;
 			$marcRecord = $this->getMarcRecord();
 			$marc856Fields = $marcRecord->getFields('856');
 			/** @var File_MARC_Data_Field $marc856Field */
@@ -2519,6 +2528,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 			}
+			//Since this is called from search results, unload the MARC to preserve memory
+			if ($unloadMarc) {
+				$this->marcRecord = null;
+			}
+
 			$this->validUrls = $validUrls;
 		}
 		return $this->validUrls;

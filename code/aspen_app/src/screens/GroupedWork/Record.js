@@ -359,7 +359,7 @@ const CheckOutEContent = (props) => {
      const {location} = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);
      if (props.linkedAccountsCount > 0) {
-          return <SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} updateProfile={props.updateProfile}/>;
+          return <SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} updateProfile={props.updateProfile}  isEContent={false}/>;
      } else {
           return (
               <Button

@@ -1784,12 +1784,18 @@ class User extends DataObject {
 		}
 		$linkedUsers = $this->getLinkedUsers();
 		if (count($linkedUsers) > 0) {
-			$accountProfileForSource = new AccountProfile();
-			$accountProfileForSource->recordSource = $recordSource;
-			$accountProfileSource = '';
-			if ($accountProfileForSource->find(true)) {
+			$accountProfileForSource = UserAccount::getAccountProfile($recordSource);
+			if ($accountProfileForSource != null) {
 				$accountProfileSource = $accountProfileForSource->name;
+			}else{
+				$accountProfileSource = '';
 			}
+//			$accountProfileForSource = new AccountProfile();
+//			$accountProfileForSource->recordSource = $recordSource;
+//			$accountProfileSource = '';
+//			if ($accountProfileForSource->find(true)) {
+//				$accountProfileSource = $accountProfileForSource->name;
+//			}
 			foreach ($linkedUsers as $linkedUser) {
 				if ($accountProfileSource == $linkedUser->source) {
 					$linkedUserLocation = new Location();

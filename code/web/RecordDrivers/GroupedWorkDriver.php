@@ -3095,6 +3095,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				$volumeData[] = clone($volumeDataDB);
 			}
 		}
+		$volumeDataDB->__destruct();
 		$volumeDataDB = null;
 		unset($volumeDataDB);
 		return $volumeData;

@@ -13,4 +13,5 @@ class WebsiteIndexLogEntry extends BaseLogEntry {
 	public $numAdded;
 	public $numDeleted;
 	public $numUpdated;
+	public $numInvalidPages;
 }

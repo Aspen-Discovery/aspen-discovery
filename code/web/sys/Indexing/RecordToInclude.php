@@ -5,7 +5,8 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class RecordToInclude extends DataObject {
 	public $id;
 	public $indexingProfileId;
-	//TODO: Kodi public $markRecordsAsOwned;
+	public /** @noinspection PhpUnused */
+		$markRecordsAsOwned;
 	public $location;
 	public /** @noinspection PhpUnused */
 		$locationsToExclude;
@@ -14,24 +15,23 @@ class RecordToInclude extends DataObject {
 		$subLocationsToExclude;
 	public /** @noinspection PhpUnused */
 		$iType;
-	//TODO: Kodi public /** @noinspection PhpUnused */
-	//	$iTypesToExclude;
+	public /** @noinspection PhpUnused */
+		$iTypesToExclude;
 	public /** @noinspection PhpUnused */
 		$audience;
-	//TODO: Kodi public /** @noinspection PhpUnused */
-	//	$audiencesToExclude;
+	public /** @noinspection PhpUnused */
+		$audiencesToExclude;
 	public $format;
-	//TODO: Kodi
-	//public /** @noinspection PhpUnused */
-	//	$formatsToExclude;
-	//public /** @noinspection PhpUnused */
-	//	$shelfLocations;
-	//public /** @noinspection PhpUnused */
-	//	$shelfLocationsToExclude;
-	//public /** @noinspection PhpUnused */
-	//	$collectionCodes;
-	//public /** @noinspection PhpUnused */
-	//	$collectionCodesToExclude;
+	public /** @noinspection PhpUnused */
+		$formatsToExclude;
+	public /** @noinspection PhpUnused */
+		$shelfLocation;
+	public /** @noinspection PhpUnused */
+		$shelfLocationsToExclude;
+	public /** @noinspection PhpUnused */
+		$collectionCode;
+	public /** @noinspection PhpUnused */
+		$collectionCodesToExclude;
 	public /** @noinspection PhpUnused */
 		$includeHoldableOnly;
 	public /** @noinspection PhpUnused */
@@ -62,7 +62,6 @@ class RecordToInclude extends DataObject {
 		while ($indexingProfile->fetch()) {
 			$indexingProfiles[$indexingProfile->id] = $indexingProfile->name;
 		}
-		//KODI to do - add new fields here
 		return [
 			'id' => [
 				'property' => 'id',
@@ -83,6 +82,13 @@ class RecordToInclude extends DataObject {
 				'values' => $indexingProfiles,
 				'label' => 'Indexing Profile Id',
 				'description' => 'The Indexing Profile this map is associated with',
+			],
+			'markRecordsAsOwned' => [
+				'property' => 'markRecordsAsOwned',
+				'type' => 'checkbox',
+				'label' => 'Owned?',
+				'description' => 'Marks items as owned',
+				'forcesReindex' => true,
 			],
 			'location' => [
 				'property' => 'location',
@@ -129,6 +135,15 @@ class RecordToInclude extends DataObject {
 				'required' => false,
 				'forcesReindex' => true,
 			],
+			'iTypesToExclude' => [
+				'property' => 'iTypesToExclude',
+				'type' => 'regularExpression',
+				'label' => 'iTypes to Exclude (Regex)',
+				'description' => 'A regular expression for item types to exclude',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
 			'audience' => [
 				'property' => 'audience',
 				'type' => 'regularExpression',
@@ -138,11 +153,65 @@ class RecordToInclude extends DataObject {
 				'required' => false,
 				'forcesReindex' => true,
 			],
+			'audiencesToExclude' => [
+				'property' => 'audiencesToExclude',
+				'type' => 'regularExpression',
+				'label' => 'Audiences to Exclude (Regex)',
+				'description' => 'A regular expression for audiences to exclude',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
 			'format' => [
 				'property' => 'format',
 				'type' => 'regularExpression',
 				'label' => 'Format (Regex)',
 				'description' => 'A regular expression for formats to include',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
+			'formatsToExclude' => [
+				'property' => 'formatsToExclude',
+				'type' => 'regularExpression',
+				'label' => 'Formats to Exclude (Regex)',
+				'description' => 'A regular expression for formats to exclude',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
+			'shelfLocation' => [
+				'property' => 'shelfLocation',
+				'type' => 'regularExpression',
+				'label' => 'Shelf Location (Regex)',
+				'description' => 'A regular expression for shelf locations to include',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
+			'shelfLocationsToExclude' => [
+				'property' => 'shelfLocationsToExclude',
+				'type' => 'regularExpression',
+				'label' => 'Shelf Locations to Exclude (Regex)',
+				'description' => 'A regular expression for shelf locations to exclude',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
+			'collectionCode' => [
+				'property' => 'collectionCode',
+				'type' => 'regularExpression',
+				'label' => 'Collection Code (Regex)',
+				'description' => 'A regular expression for collection codes to include',
+				'maxLength' => '100',
+				'required' => false,
+				'forcesReindex' => true,
+			],
+			'collectionCodesToExclude' => [
+				'property' => 'shelfLocationsToExclude',
+				'type' => 'regularExpression',
+				'label' => 'Collection Codes to Exclude (Regex)',
+				'description' => 'A regular expression for collection codes to exclude',
 				'maxLength' => '100',
 				'required' => false,
 				'forcesReindex' => true,

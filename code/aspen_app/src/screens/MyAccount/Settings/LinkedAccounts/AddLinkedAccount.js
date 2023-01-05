@@ -5,8 +5,7 @@ import React, { useState, useRef } from 'react';
 import { translate } from '../../../../translations/translations';
 import { addLinkedAccount } from '../../../../util/accountActions';
 import { LibrarySystemContext, UserContext } from '../../../../context/initialContext';
-import { getLinkedAccounts, getViewers } from '../../../../util/loadPatron';
-import { refreshProfile } from '../../../../util/api/user';
+import {reloadProfile, getLinkedAccounts, getViewerAccounts} from '../../../../util/api/user';
 
 // custom components and helper files
 
@@ -34,12 +33,12 @@ const AddLinkedAccount = () => {
                     updateLinkedAccounts(result);
                }
           });
-          await getViewers(library.baseUrl).then((result) => {
+          await getViewerAccounts(library.baseUrl).then((result) => {
                if (viewers !== result) {
                     updateLinkedViewerAccounts(result);
                }
           });
-          refreshProfile(library.baseUrl).then((result) => {
+          reloadProfile(library.baseUrl).then((result) => {
                updateUser(result);
           });
      };
@@ -67,11 +66,12 @@ const AddLinkedAccount = () => {
                                              passwordRef.current.focus();
                                         }}
                                         blurOnSubmit={false}
+                                        value={newUser}
                                    />
                               </FormControl>
                               <FormControl mt={3}>
                                    <FormControl.Label>{translate('linked_accounts.password')}</FormControl.Label>
-                                   <Input onChangeText={(text) => setPassword(text)} autoCorrect={false} autoCapitalize="none" id="password" returnKeyType="next" textContentType="password" required size="lg" type={showPassword ? 'text' : 'password'} ref={passwordRef} InputRightElement={<Icon as={<MaterialCommunityIcons name={showPassword ? 'eye' : 'eye-off'} />} size="sm" w="1/6" h="full" mr={1} onPress={() => setShowPassword(!showPassword)} />} />
+                                   <Input onChangeText={(text) => setPassword(text)} value={password} autoCorrect={false} autoCapitalize="none" id="password" returnKeyType="next" textContentType="password" required size="lg" type={showPassword ? 'text' : 'password'} ref={passwordRef} InputRightElement={<Icon as={<MaterialCommunityIcons name={showPassword ? 'eye' : 'eye-off'} />} size="sm" w="1/6" h="full" mr={1} onPress={() => setShowPassword(!showPassword)} />} />
                               </FormControl>
                          </Modal.Body>
                          <Modal.Footer>
@@ -84,8 +84,8 @@ const AddLinkedAccount = () => {
                                         isLoadingText={translate('general.adding')}
                                         onPress={async () => {
                                              setLoading(true);
-                                             await addLinkedAccount(newUser, password, library.baseUrl).then((r) => {
-                                                  refreshLinkedAccounts();
+                                             await addLinkedAccount(newUser, password, library.baseUrl).then(async (r) => {
+                                                  await refreshLinkedAccounts();
                                                   toggle();
                                              });
                                         }}>

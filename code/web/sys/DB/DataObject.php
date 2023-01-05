@@ -168,6 +168,14 @@ abstract class DataObject {
 	public function fetchAll($fieldName = null, $fieldValue = null, $lowerCaseKey = false): array {
 		$this->__fetchingFromDB = true;
 		$results = [];
+		if ($fieldName != null && $fieldValue != null) {
+			$this->selectAdd();
+			$this->selectAdd($fieldName);
+			$this->selectAdd($fieldValue);
+		} elseif ($fieldName != null) {
+			$this->selectAdd();
+			$this->selectAdd($fieldName);
+		}
 		if ($this->find() > 0) {
 			$result = $this->fetch();
 			while ($result != null) {

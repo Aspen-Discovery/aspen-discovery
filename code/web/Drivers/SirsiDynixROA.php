@@ -1184,7 +1184,10 @@ class SirsiDynixROA extends HorizonAPI {
 							'isPublicFacing' => true,
 						]);
 					$hold_result['error_code'] = $createHoldResponse->messageList[0]->code;
-
+					$hold_result['api']['message'] .= ' ' . translate([
+							'text' => (string)$createHoldResponse->messageList[0]->message,
+							'isPublicFacing' => true,
+						]) . ' (' . $createHoldResponse->messageList[0]->code . ') ';
 					global $logger;
 					$errorMessage = 'Sirsi ROA Place Hold Error: ';
 					foreach ($createHoldResponse->messageList as $error) {
@@ -1226,8 +1229,28 @@ class SirsiDynixROA extends HorizonAPI {
 	}
 
 	public function placeVolumeHold(User $patron, $recordId, $volumeId, $pickupBranch) {
-		if ($volumeId == '') {
+		if ($volumeId == '' && !$this->alwaysPlaceVolumeHoldWhenVolumesArePresent()) {
 			return $this->placeSirsiHold($patron, $recordId, '', $volumeId, $pickupBranch);
+		} elseif ($volumeId == '' && $this->alwaysPlaceVolumeHoldWhenVolumesArePresent()) {
+			//To place a volume hold on a blank volume we need to find an item without a volume, preferably owned by this system.
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecord = new MarcRecordDriver($this->getIndexingProfile()->name . ':' . $recordId);
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+			$itemIdToUse = null;
+			//Check all items to get the item id we want
+			foreach ($relatedRecord->getItems() as $item) {
+				//we only care about items with no volume
+				if (empty($item->volume)) {
+					if ($item->libraryOwned || $item->locallyOwned) {
+						$itemIdToUse = $item->itemId;
+						break;
+					}elseif ($itemIdToUse == null){
+						$itemIdToUse = $item->itemId;
+					}
+				}
+			}
+
+			return $this->placeSirsiHold($patron, $recordId, $itemIdToUse, $volumeId, $pickupBranch);
 		} else {
 			//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
 			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
