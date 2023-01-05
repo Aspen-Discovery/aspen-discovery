@@ -27,5 +27,14 @@ function getUpdates22_12_01(): array {
 			],
 		],
 		//ptype_vdx_client_category
+
+		'add_requestingUrl_payment' => [
+			'title' => 'Add URL for where the payment was requested from',
+			'description' => 'Store the URL for where a user payment request was originated from',
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN requestingUrl VARCHAR(255)',
+			],
+		],
+		//add_requestingUrl_payment
 	];
 }

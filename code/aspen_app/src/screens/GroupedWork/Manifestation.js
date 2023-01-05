@@ -119,6 +119,7 @@ const Manifestation = (props) => {
                          navigation={navigation}
                          recordData={item}
                          copyDetails={copyDetails}
+                         libraryUrl={library.baseUrl}
                     />
                </SafeAreaView>
           );

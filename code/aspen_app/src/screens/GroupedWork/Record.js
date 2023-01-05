@@ -214,8 +214,9 @@ export class Record extends Component {
      render() {
           const user = this.context.user;
           const location = this.context.location;
-          const library = this.context.library;
+          const library = this.props.library;
 
+          console.log(this.props.library);
           const {recordData, available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, groupedWorkISBN, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes, groupedWorkAuthor, copyDetails} = this.props;
           let actionCount = 1;
 
@@ -243,6 +244,7 @@ export class Record extends Component {
           } else {
                statusColor = 'danger';
           }
+
 
           const libraryUrl = library.baseUrl;
 
@@ -586,7 +588,7 @@ const OnHoldForYou = (props) => {
 };
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, libraryUrl, volumeId = null, holdType = null) {
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null) {
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];
@@ -606,10 +608,10 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
      //console.log(patronProfile);
 
      if (actionType.includes('checkout')) {
-          return await checkoutItem(libraryUrl, itemId, source, patronId);
+          return await checkoutItem(url, itemId, source, patronId);
      } else if (actionType.includes('hold')) {
           if (volumeId) {
-               return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch, volumeId, holdType, id);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id);
           } else if (_.isObject(patronProfile)) {
                if (!patronProfile.overdriveEmail && patronProfile.promptForOverdriveEmail === 1 && source === 'overdrive') {
                     const getPromptForOverdriveEmail = [];
@@ -622,10 +624,10 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
                     return getPromptForOverdriveEmail;
                }
           } else {
-               return await placeHold(libraryUrl, itemId, source, patronId, pickupBranch);
+               return await placeHold(url, itemId, source, patronId, pickupBranch);
           }
      } else if (actionType.includes('sample')) {
-          return await overDriveSample(libraryUrl, formatId, itemId, sampleNumber);
+          return await overDriveSample(url, formatId, itemId, sampleNumber);
      }
 }
 
