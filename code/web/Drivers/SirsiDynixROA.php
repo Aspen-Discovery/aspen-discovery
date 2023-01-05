@@ -1039,7 +1039,7 @@ class SirsiDynixROA extends HorizonAPI {
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
-	function placeSirsiHold($patron, $recordId, $itemId, $volume = null, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null) {
+	function placeSirsiHold($patron, $recordId, $itemId, $volume = null, $pickupBranch = null, $type = 'request', $cancelIfNotFilledByDate = null, $forceVolumeHold = false) {
 		//Get the session token for the user
 		$staffSessionToken = $this->getStaffSessionToken();
 		$sessionToken = $this->getSessionToken($patron);
@@ -1114,7 +1114,11 @@ class SirsiDynixROA extends HorizonAPI {
 				$holdData['holdType'] = 'TITLE';
 			} elseif (!empty($itemId)) {
 				$holdData['itemBarcode'] = $itemId;
-				$holdData['holdType'] = 'COPY';
+				if ($forceVolumeHold) {
+					$holdData['holdType'] = 'TITLE';
+				}else{
+					$holdData['holdType'] = 'COPY';
+				}
 			} else {
 				$shortRecordId = str_replace('a', '', $shortId);
 				$shortRecordId = str_replace('u', '', $shortRecordId);
@@ -1247,7 +1251,7 @@ class SirsiDynixROA extends HorizonAPI {
 				}
 			}
 
-			return $this->placeSirsiHold($patron, $recordId, $itemIdToUse, $volumeId, $pickupBranch);
+			return $this->placeSirsiHold($patron, $recordId, $itemIdToUse, $volumeId, $pickupBranch, 'request', null, true);
 		} else {
 			//To place a volume hold in Symphony, we just need to place a hold on one of the items for the volume.
 			require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
