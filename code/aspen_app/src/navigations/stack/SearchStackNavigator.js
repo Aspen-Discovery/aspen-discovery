@@ -23,12 +23,13 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
      const Stack = createStackNavigator();
      return (
           <Stack.Navigator
+               id="SearchNavigator"
                initialRouteName="SearchScreen"
-               screenOptions={{
-                    headerShown: true,
-                    headerBackTitleVisible: false,
-               }}
-               id="SearchNavigator">
+               screenOptions={({ navigation, route }) => ({
+                   headerShown: true,
+                   headerBackTitleVisible: false,
+
+               })}>
                <Stack.Group>
                     <Stack.Screen
                          name="SearchScreen"

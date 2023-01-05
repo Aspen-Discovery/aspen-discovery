@@ -3524,6 +3524,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$payment->paymentType = $paymentType;
 		$payment->transactionDate = $transactionDate;
 		$payment->transactionType = "donation";
+		$payment->requestingUrl = $_SERVER['REQUEST_URI'];
 		global $library;
 		$payment->paidFromInstance = $library->subdomain;
 
@@ -3802,6 +3803,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment->paymentType = $paymentType;
 			$payment->transactionDate = $transactionDate;
 			$payment->transactionType = "fine";
+			$payment->requestingUrl = $_SERVER['REQUEST_URI'];
 
 			global $library;
 			$payment->paidFromInstance = $library->subdomain;

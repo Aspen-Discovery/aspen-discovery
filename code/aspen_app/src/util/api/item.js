@@ -154,5 +154,21 @@ export async function getVolumes(id, url) {
           },
      });
 
-     return data.volumes;
+     console.log(data);
+
+     return data.volumes ?? [];
+}
+
+export async function getBasicItemInfo(id, url) {
+     const {data} = await axios.get('/ItemAPI?method=getBasicItemInfo', {
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutSlow,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               id: id,
+          },
+     });
+
+     return data.result;
 }
