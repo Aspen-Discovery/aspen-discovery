@@ -315,7 +315,7 @@ class InclusionRule {
 						audienceMatched = true;
 						break;
 					}
-					if (audiencesToExcludePattern.matcher(audience).matches()) {
+					if (audiencesToExcludePattern != null && audiencesToExcludePattern.matcher(audience).matches()) {
 						audienceMatched = false;
 						break;
 					}
