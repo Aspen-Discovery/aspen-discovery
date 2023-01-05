@@ -40,7 +40,7 @@ class InclusionRule {
 
 	private boolean matchAllCollectionCodes = false;
 	private final Pattern collectionCodePattern;
-	private final Pattern collectionCodesToExcludePattern = null;
+	private Pattern collectionCodesToExcludePattern = null;
 
 	private final boolean includeHoldableOnly;
 	private final boolean includeItemsOnOrder;
@@ -134,12 +134,12 @@ class InclusionRule {
 		if (collectionCode == null || collectionCode.length() == 0 || collectionCode.equals(".*")) {
 			collectionCode = ".*";
 		}
-		if (collectionCode.equals(".*") && collectionCode.length() == 0){
+		if (collectionCode.equals(".*") && collectionCodesToExclude.length() == 0){
 			matchAllCollectionCodes = true;
 		}
 		this.collectionCodePattern = Pattern.compile(collectionCode, Pattern.CASE_INSENSITIVE);
-		if (locationsToExclude.length() > 0){
-			this.locationsToExcludePattern = Pattern.compile(locationsToExclude, Pattern.CASE_INSENSITIVE);
+		if (collectionCodesToExclude.length() > 0){
+			this.collectionCodesToExcludePattern = Pattern.compile(collectionCodesToExclude, Pattern.CASE_INSENSITIVE);
 		}
 		if (marcTagToMatch == null){
 			this.marcTagToMatch = "";
@@ -294,12 +294,12 @@ class InclusionRule {
 
 			}
 			//Check Collection Code to include & exclude
-			if (isIncluded && collectionCode.length() > 0){
+			if (isIncluded && collectionCode != null && collectionCode.length() > 0){
 				if (!matchAllCollectionCodes) {
 					if (!collectionCodePattern.matcher(collectionCode).matches()) {
 						isIncluded = false;
 					}
-					if (isIncluded && collectionCode != null && collectionCodesToExcludePattern != null) {
+					if (isIncluded && collectionCodesToExcludePattern != null) {
 						if(collectionCodesToExcludePattern.matcher(collectionCode).matches()) {
 							isIncluded = false;
 						}
