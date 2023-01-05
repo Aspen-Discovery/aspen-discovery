@@ -1284,6 +1284,7 @@ class ItemAPI extends Action {
 			'success' => true,
 			'id' => $_REQUEST['id'],
 			'recordId' => $_REQUEST['record'],
+			'format' => $_REQUEST['format'],
 			'record' => $summary,
 		];
 	}
