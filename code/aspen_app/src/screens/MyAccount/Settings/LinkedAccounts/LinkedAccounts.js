@@ -1,4 +1,4 @@
-import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import { Box, Divider, HStack, Button, Text, Heading, FlatList } from 'native-base';
 import React from 'react';
@@ -12,30 +12,27 @@ import { LibrarySystemContext, UserContext } from '../../../../context/initialCo
 import { refreshProfile, getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount, reloadProfile } from '../../../../util/api/user';
 
 export const MyLinkedAccounts = () => {
-     const [isLoading, setLoading] = React.useState(true);
+     const navigation = useNavigation();
+     const [loading, setLoading] = React.useState(true);
      const { accounts, viewers, updateLinkedAccounts, updateLinkedViewerAccounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    await getLinkedAccounts(library.baseUrl).then((result) => {
-                         if (accounts !== result) {
-                              updateLinkedAccounts(result);
-                         }
-                    });
-                    await getViewerAccounts(library.baseUrl).then((result) => {
-                         if (viewers !== result) {
-                              updateLinkedViewerAccounts(result);
-                         }
-                    });
-                    setLoading(false);
-               };
-               update().then(() => {
-                    return () => update();
+     React.useEffect(() => {
+          const update = navigation.addListener('focus', async () => {
+               await getLinkedAccounts(library.baseUrl).then((result) => {
+                    if (accounts !== result) {
+                         updateLinkedAccounts(result);
+                    }
                });
-          }, [])
-     );
+               await getViewerAccounts(library.baseUrl).then((result) => {
+                    if (viewers !== result) {
+                         updateLinkedViewerAccounts(result);
+                    }
+               });
+               setLoading(false);
+          })
+          return update;
+     }, [navigation])
 
      const Empty = () => {
           return (
@@ -45,7 +42,7 @@ export const MyLinkedAccounts = () => {
           );
      };
 
-     if (isLoading) {
+     if (loading) {
           return loadingSpinner();
      }
 
@@ -97,14 +94,14 @@ const Account = (data) => {
           console.log(type);
           if (type === 'viewer') {
                setIsRemoving(true);
-               removeViewerAccount(account.id, library.baseUrl).then((res) => {
-                    refreshLinkedAccounts();
+               removeViewerAccount(account.id, library.baseUrl).then(async (res) => {
+                    await refreshLinkedAccounts();
                     setIsRemoving(false);
                });
           } else {
                setIsRemoving(true);
-               removeLinkedAccount(account.id, library.baseUrl).then((res) => {
-                    refreshLinkedAccounts();
+               removeLinkedAccount(account.id, library.baseUrl).then(async (res) => {
+                    await refreshLinkedAccounts();
                     setIsRemoving(false);
                });
           }
