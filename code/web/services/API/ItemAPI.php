@@ -43,7 +43,8 @@ class ItemAPI extends Action {
 					'getManifestation',
 					'getVariations',
 					'getRecords',
-					'getVolumes'
+					'getVolumes',
+					'getRelatedRecord'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -1241,6 +1242,50 @@ class ItemAPI extends Action {
 			'success' => true,
 			'id' => $_REQUEST['id'],
 			'volumes' => $volumeData,
+		];
+	}
+
+	function getRelatedRecord() {
+		if (!isset($_REQUEST['id']) || !isset($_REQUEST['record']) || !isset($_REQUEST['format'])) {
+			return [
+				'success' => false,
+				'message' => 'Grouped work id, record id or format not provided'
+			];
+		}
+
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$recordDriver = new GroupedWorkDriver($id);
+		$recordId = $_REQUEST['record'];
+		$selectedFormat = urldecode($_REQUEST['format']);
+
+		$relatedManifestation = null;
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $selectedFormat) {
+				break;
+			}
+		}
+
+		$summary = [];
+		$record = $recordDriver->getRelatedRecord($recordId);
+		if ($record != null) {
+			$summary = $record->getItemSummary();
+		} else {
+			$summary = null;
+			foreach ($relatedManifestation->getVariations() as $variation) {
+				if ($recordId == $id . '_' . $variation->label) {
+					$summary = $variation->getItemSummary();
+					break;
+				}
+			}
+		}
+
+		return [
+			'success' => true,
+			'id' => $_REQUEST['id'],
+			'recordId' => $_REQUEST['record'],
+			'format' => $_REQUEST['format'],
+			'record' => $summary,
 		];
 	}
 }
