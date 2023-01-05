@@ -67,7 +67,9 @@ class MyAccount_MyPreferences extends MyAccount {
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$result = $patron->updateUserPreferences();
-				$user->updateMessage = implode('<br/>', $result['messages']);
+				if (isset($result['message'])) {
+					$user->updateMessage = $result['message'];
+				}
 				$user->updateMessageIsError = !$result['success'];
 
 				if ($canUpdateContactInfo && $allowHomeLibraryUpdates) {
