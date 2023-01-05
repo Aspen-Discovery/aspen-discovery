@@ -469,7 +469,7 @@ public class IndexingUtils {
 							libraryRecordInclusionRulesRS.getString("includeExcludeMatches") + "~" +
 							libraryRecordInclusionRulesRS.getString("urlToMatch") + "~" +
 							libraryRecordInclusionRulesRS.getString("urlReplacement");
-					boolean isOwned = locationRecordInclusionRulesRS.getBoolean("markRecordsAsOwned");
+					boolean isOwned = libraryRecordInclusionRulesRS.getBoolean("markRecordsAsOwned");
 					if (allInclusionRules.containsKey(inclusionRuleKey)){
 						if (isOwned){
 							locationScopeInfo.addOwnershipRule(allInclusionRules.get(inclusionRuleKey));
