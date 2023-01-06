@@ -1250,6 +1250,7 @@ class ItemAPI extends Action {
 			$blankVolume->volumeId = '';
 			$blankVolume->recordId = $marcRecord->getIdWithSource();
 			$blankVolume->relatedItems = '';
+			$blankVolume->displayOrder = '0';
 			$blankVolume->setHasLocalItems(false);
 			foreach ($relatedRecord->getItems() as $item) {
 				if (empty($item->volumeId)) {
@@ -1290,7 +1291,7 @@ class ItemAPI extends Action {
 		foreach($volumeData as $volume) {
 			$label = $volume->displayLabel;
 			if($alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()) {
-				$label .= translate(['text' => 'Owned by %1%', 'isPublicFacing' => true, 1=>$library->displayName]);
+				$label .= ' (' . translate(['text' => 'Owned by %1%', 'isPublicFacing' => true, 1=>$library->displayName]) . ')';
 			}
 			$volumes[$volume->id]['id'] = $volume->id;
 			$volumes[$volume->id]['label'] = $label;
