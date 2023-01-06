@@ -979,6 +979,10 @@ class ItemAPI extends Action {
 			}
 		}
 
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($groupedWorkId);
+		$alwaysPlaceVolumeHoldWhenVolumesArePresent = $marcRecord->getCatalogDriver()->alwaysPlaceVolumeHoldWhenVolumesArePresent();
+
 		$relatedRecord = $relatedManifestation->getFirstRecord();
 		//Get a list of volumes for the record
 		require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
@@ -1006,6 +1010,14 @@ class ItemAPI extends Action {
 				}
 				$numItemsWithVolumes++;
 			}
+		}
+
+		$hasItemsWithoutVolumes = $numItemsWithoutVolumes > 0;
+		$majorityOfItemsHaveVolumes = $numItemsWithVolumes > $numItemsWithoutVolumes;
+
+		if ($numItemsWithoutVolumes > 0 && $alwaysPlaceVolumeHoldWhenVolumesArePresent) {
+			$hasItemsWithoutVolumes = false;
+			$majorityOfItemsHaveVolumes = true;
 		}
 
 		$relatedVariation = null;
@@ -1040,10 +1052,12 @@ class ItemAPI extends Action {
 			'id' => $groupedWorkId,
 			'format' => $format,
 			'variations' => $variations,
+			'alwaysPlaceVolumeHoldWhenVolumesArePresent' => $alwaysPlaceVolumeHoldWhenVolumesArePresent,
+			'localSystemName' => $library->displayName,
 			'numItemsWithVolumes' => $numItemsWithVolumes,
 			'numItemsWithoutVolumes' => $numItemsWithoutVolumes,
-			'hasItemsWithoutVolumes' => $numItemsWithoutVolumes > 0,
-			'majorityOfItemsHaveVolumes' => $numItemsWithVolumes > $numItemsWithoutVolumes
+			'hasItemsWithoutVolumes' => $hasItemsWithoutVolumes,
+			'majorityOfItemsHaveVolumes' => $majorityOfItemsHaveVolumes,
 		];
 	}
 
