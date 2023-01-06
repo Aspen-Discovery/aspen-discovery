@@ -114,11 +114,14 @@ const getTitle = (title) => {
 
 const getAuthor = (author) => {
      const { library } = React.useContext(LibrarySystemContext);
-     return (
-          <Button pt={2} size="sm" variant="link" colorScheme="tertiary" _text={{ fontWeight: '600' }} leftIcon={<Icon as={MaterialIcons} name="search" size="xs" mr="-1" />} onPress={() => startSearch(author, 'SearchResults', library.baseUrl)}>
-               {author}
-          </Button>
-     );
+     if (author) {
+          return (
+              <Button pt={2} size="sm" variant="link" colorScheme="tertiary" _text={{ fontWeight: '600' }} leftIcon={<Icon as={MaterialIcons} name="search" size="xs" mr="-1" />} onPress={() => startSearch(author, 'SearchResults', library.baseUrl)}>
+                   {author}
+              </Button>
+          );
+     }
+     return null;
 };
 
 const Format = (data) => {

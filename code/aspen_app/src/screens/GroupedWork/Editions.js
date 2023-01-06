@@ -29,23 +29,19 @@ export const Editions = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
 
-     const { data: records } = useQuery(['items', id, source, library.baseUrl], () => getRecords(id, format, source, library.baseUrl));
-     const items = records;
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['items', recordId, library.baseUrl],
-          queryFn: () => getItemAvailability(recordId, library.baseUrl),
-          enabled: !!items,
+          queryKey: ['records', id, source, format, library.baseUrl],
+          queryFn: () => getRecords(id, format, source, library.baseUrl),
      });
 
      if (isLoading) {
           return loadingSpinner();
      }
 
-     return <Box safeArea={5}>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={Object.keys(items.records)} renderItem={({ item }) => <Edition records={items.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />}</Box>;
+     return <Box safeArea={5}>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />}</Box>;
 };
 
 const Edition = (payload) => {
-     const { library } = React.useContext(LibrarySystemContext);
      const prevRoute = payload.prevRoute;
      const records = payload.records;
      const id = payload.id;
@@ -56,17 +52,8 @@ const Edition = (payload) => {
      const fullRecordId = records.id;
      const volumeInfo = payload.volumeInfo;
 
-     const { status, data, error, isFetching } = useQuery(['records', id, source, library.baseUrl], () => getRecords(id, format, source, library.baseUrl));
-
-     console.log('*******************************');
-     console.log(recordId);
-     console.log(id);
-     console.log(source);
-     console.log(actions);
-     console.log('*******************************');
-
      const handleOnPress = () => {
-          navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute });
+          navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });
      };
 
      const statusIndicator = getBasicStatusIndicator(records.status);

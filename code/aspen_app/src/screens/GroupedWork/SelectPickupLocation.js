@@ -1,18 +1,16 @@
 import _ from 'lodash';
-import { Button, FormControl, Modal, Select, CheckIcon, Radio, Heading, AlertDialog, Center } from 'native-base';
+import { Button, FormControl, Modal, Select, CheckIcon, Heading, AlertDialog, Center } from 'native-base';
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { translate } from '../../translations/translations';
 import { completeAction } from './Record';
 import {HoldsContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {refreshProfile, reloadProfile} from '../../util/api/user';
-import { getVolumes } from '../../util/api/item';
+import {refreshProfile} from '../../util/api/user';
 import {reloadHolds} from '../../util/loadPatron';
 import {navigate, navigateStack} from '../../helpers/RootNavigator';
+import {SelectVolume} from './SelectVolume';
 
 const SelectPickupLocation = (props) => {
      const { id, action, title, volumeInfo, prevRoute } = props;
-     console.log(props);
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
      const [volume, setVolume] = React.useState(null);
@@ -25,37 +23,44 @@ const SelectPickupLocation = (props) => {
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
 
+     let shouldDisplayVolumes = false;
      let typeOfHold = 'default';
-     let shouldAskHoldType = false;
-     if (!volumeInfo.majorityOfItemsHaveVolumes && volumeInfo.numItemsWithVolumes >= 1) {
-          shouldAskHoldType = true;
+     let promptForHoldType = false;
 
-          if (volumeInfo.majorityOfItemsHaveVolumes) {
+     if(volumeInfo.numItemsWithVolumes > 0) {
+          typeOfHold = 'item';
+          shouldDisplayVolumes = true;
+          promptForHoldType = true;
+
+          if(volumeInfo.majorityOfItemsHaveVolumes) {
                typeOfHold = 'volume';
-          } else {
-               typeOfHold = 'item';
+          }
+
+          if (_.isEmpty(volumeInfo.hasItemsWithoutVolumes) || !volumeInfo.hasItemsWithoutVolumes === false) {
+               typeOfHold = 'volume';
+               promptForHoldType = false;
           }
      }
 
      const [holdType, setHoldType] = React.useState(typeOfHold);
 
-     let pickupLocation = _.findIndex(locations, function (o) {
-          return o.locationId === user.pickupLocationId;
-     });
-     pickupLocation = _.nth(locations, pickupLocation);
-     pickupLocation = _.get(pickupLocation, 'code', '');
+     const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
+     let pickupLocation = '';
+     if(!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+          pickupLocation = userPickupLocation[0];
+          if(_.isObject(pickupLocation)) {
+               pickupLocation = pickupLocation.code;
+          }
+     }
+
      const [location, setLocation] = React.useState(pickupLocation);
+
      const [activeAccount, setActiveAccount] = React.useState(user.id);
 
      let availableAccounts = [];
      if (_.size(accounts > 0)) {
           availableAccounts = Object.values(accounts);
      }
-
-     const { status, data, error, isFetching } = useQuery({
-          queryKey: ['volumes', id, library.baseUrl],
-          queryFn: () => getVolumes(id, library.baseUrl),
-     });
 
      const handleNavigation = (action) => {
           if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
@@ -86,50 +91,15 @@ const SelectPickupLocation = (props) => {
                     size="md">
                     {title}
                </Button>
-               <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false}>
+               <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
                               <Heading size="md">{translate('grouped_work.checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
-                              {shouldAskHoldType ? (
-                                   <Radio.Group
-                                        name="holdTypeGroup"
-                                        defaultValue={holdType}
-                                        value={holdType}
-                                        onChange={(nextValue) => {
-                                             setHoldType(nextValue);
-                                        }}
-                                        accessibilityLabel="">
-                                        <Radio value="item" my={1} size="sm">
-                                             {translate('grouped_work.first_available')}
-                                        </Radio>
-                                        <Radio value="volume" my={1} size="sm">
-                                             {translate('grouped_work.specific_volume')}
-                                        </Radio>
-                                   </Radio.Group>
-                              ) : null}
-                              {holdType === 'volume' ? (
-                                   <FormControl>
-                                        <FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
-                                        <Select
-                                             name="volumeForHold"
-                                             selectedValue={volume}
-                                             minWidth="200"
-                                             accessibilityLabel="Select a volume"
-                                             _selectedItem={{
-                                                  bg: 'tertiary.300',
-                                                  endIcon: <CheckIcon size="5" />,
-                                             }}
-                                             mt={1}
-                                             mb={3}
-                                             onValueChange={(itemValue) => setVolume(itemValue)}>
-                                             {data.volumes.map((volume, index) => {
-                                                  return <Select.Item label={volume.displayLabel} value={volume.volumeId} key={index} />;
-                                             })}
-                                        </Select>
-                                   </FormControl>
+                              {shouldDisplayVolumes ? (
+                                  <SelectVolume id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
                               ) : null}
                               {_.size(accounts) > 0 ? (
                                    <FormControl>

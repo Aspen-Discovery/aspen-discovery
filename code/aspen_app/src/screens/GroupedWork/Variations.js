@@ -48,8 +48,6 @@ export const Variations = (props) => {
 };
 
 const Variation = (payload) => {
-     const { library } = React.useContext(LibrarySystemContext);
-     const route = useRoute();
      const id = payload.id;
      const prevRoute = payload.prevRoute;
      const variation = payload.records;
@@ -63,13 +61,8 @@ const Variation = (payload) => {
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
 
-     console.log('*******************************');
-     console.log(variation);
-     console.log(_.size(variation.actions));
-     console.log('*******************************');
-
      const handleOnPress = () => {
-          navigate('CopyDetails', { id: id, format: format, prevRoute: prevRoute });
+          navigate('CopyDetails', { id: id, format: format, prevRoute: prevRoute, type: 'groupedWork', recordId: null });
      };
 
      const handleOpenEditions = () => {
@@ -174,6 +167,7 @@ const PlaceHold = (props) => {
           }
      };
      if (volumeInfo.majorityOfItemsHaveVolumes || volumeInfo.numItemsWithVolumes >= 1) {
+          console.log("*** We should start the volume hold process ***");
           return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
      } else if (_.size(accounts) > 0) {
           return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} />;
