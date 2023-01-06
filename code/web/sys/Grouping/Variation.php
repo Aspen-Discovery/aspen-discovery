@@ -148,15 +148,17 @@ class Grouping_Variation {
 				foreach ($this->_records as $relatedRecord) {
 					$actions = $relatedRecord->getActions();
 					foreach ($actions as $action) {
-						if ($action['type'] == 'download_pdf') {
-							$numDownloadablePDFs += 1;
-							if ($numDownloadablePDFs == 1) {
-								$downloadPdfAction = $action;
-							}
-						} elseif ($action['type'] == 'download_supplemental_file') {
-							$numDownloadableSupplementalFiles += 1;
-							if ($numDownloadableSupplementalFiles == 1) {
-								$downloadSupplementalFileAction = $action;
+						if(isset($action['type'])) {
+							if ($action['type'] == 'download_pdf') {
+								$numDownloadablePDFs += 1;
+								if ($numDownloadablePDFs == 1) {
+									$downloadPdfAction = $action;
+								}
+							} elseif ($action['type'] == 'download_supplemental_file') {
+								$numDownloadableSupplementalFiles += 1;
+								if ($numDownloadableSupplementalFiles == 1) {
+									$downloadSupplementalFileAction = $action;
+								}
 							}
 						}
 					}
