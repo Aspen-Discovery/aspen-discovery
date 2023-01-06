@@ -22,7 +22,7 @@ class SideLoads_SideLoads extends ObjectEditor {
 					$index = 0;
 					while (false !== ($entry = readdir($handle))) {
 						if ($entry != "." && $entry != "..") {
-							$fullName = $marcPath . DIR_SEP . $entry;
+							$fullName = $marcPath . DIRECTORY_SEPARATOR . $entry;
 							$files[$entry] = [
 								'date' => filectime($fullName),
 								'size' => filesize($fullName),

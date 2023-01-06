@@ -20,7 +20,7 @@ class ILS_IndexingProfiles extends ObjectEditor {
 				if ($handle = opendir($marcPath)) {
 					while (false !== ($entry = readdir($handle))) {
 						if ($entry != "." && $entry != "..") {
-							$files[$entry] = filectime($marcPath . DIR_SEP . $entry);
+							$files[$entry] = filectime($marcPath . DIRECTORY_SEPARATOR . $entry);
 						}
 					}
 					closedir($handle);
