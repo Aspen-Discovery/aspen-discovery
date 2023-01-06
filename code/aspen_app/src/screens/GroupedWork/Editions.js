@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { getItemAvailability, getRecords } from '../../util/api/item';
+import { getRecords } from '../../util/api/item';
 import { loadError } from '../../components/loadError';
 import { translate } from '../../translations/translations';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
@@ -18,7 +18,7 @@ import SelectPickupLocation from './SelectPickupLocation';
 import { completeAction } from './Record';
 import { reloadProfile } from '../../util/api/user';
 import { openSideLoad } from '../../util/recordActions';
-import { getBasicStatusIndicator } from './StatusIndicator';
+import {getStatusIndicator} from './StatusIndicator';
 
 export const Editions = () => {
      const navigation = useNavigation();
@@ -51,12 +51,13 @@ const Edition = (payload) => {
      const recordId = records.recordId;
      const fullRecordId = records.id;
      const volumeInfo = payload.volumeInfo;
+     const closedCaptioned = records.closedCaptioned;
 
      const handleOnPress = () => {
           navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });
      };
 
-     const statusIndicator = getBasicStatusIndicator(records.status);
+     const statusIndicator = getStatusIndicator(records.statusIndicator);
 
      return (
           <Box
@@ -73,7 +74,7 @@ const Edition = (payload) => {
                <HStack justifyContent="space-between" alignItems="center" space={2} flex={1}>
                     <VStack space={1} maxW="40%" flex={1} justifyContent="center">
                          <Text fontSize="xs">
-                              <Text bold>{records.publicationDate}</Text> {records.publisher}. {records.edition} {records.physical}
+                              <Text bold>{records.publicationDate}</Text> {records.publisher}. {records.edition} {records.physical} {closedCaptioned === "1" ? (<Icon as={MaterialIcons} name="closed-caption" size="sm" mb={-1}/>) : null}
                          </Text>
                          <HStack space={2} justifyContent="space-between" alignItems="center">
                               <Badge colorScheme={statusIndicator.indicator} rounded="4px" _text={{ fontSize: 10 }}>
