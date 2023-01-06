@@ -1111,6 +1111,7 @@ class ItemAPI extends Action {
 					'showItsHere' => (int) $library->showItsHere,
 					'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 				];
+				$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
 				//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 
 				if($source == 'hoopla') {
