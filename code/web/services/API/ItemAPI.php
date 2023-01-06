@@ -1077,6 +1077,8 @@ class ItemAPI extends Action {
 		$relatedVariation = null;
 		$relatedRecord = null;
 		$records = [];
+		global $interface;
+		global $library;
 		foreach ($recordDriver->getRelatedRecords() as $relatedRecord) {
 			if ($relatedRecord->format == $format && $relatedRecord->source == $source) {
 				$recordInfo = explode(':', $relatedRecord->id);
@@ -1092,8 +1094,23 @@ class ItemAPI extends Action {
 				$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
 				$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
 				$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
-				$records[$relatedRecord->id]['status'] = $relatedRecord->getStatusInformation()->getGroupedStatus();
-				$records[$relatedRecord->id]['actions'] = $relatedRecord->getActions();
+				$records[$relatedRecord->id]['statusIndicator'] = [
+					'isAvailable' => $relatedRecord->getStatusInformation()->isAvailable(),
+					'isEContent' => $relatedRecord->getStatusInformation()->isEContent(),
+					'isAvailableOnline' => $relatedRecord->getStatusInformation()->isAvailableOnline(),
+					'groupedStatus' => $relatedRecord->getStatusInformation()->getGroupedStatus(),
+					'isAvailableHere' => $relatedRecord->getStatusInformation()->isAvailableHere(),
+					'isAvailableLocally' => $relatedRecord->getStatusInformation()->isAvailableLocally(),
+					'isAllLibraryUseOnly' => $relatedRecord->getStatusInformation()->isAllLibraryUseOnly(),
+					'hasLocalItem' => $relatedRecord->getStatusInformation()->hasLocalItem(),
+					'numCopiesMessage' => $relatedRecord->getStatusInformation()->getNumberOfCopiesMessage(),
+					'numHolds' => $relatedRecord->getStatusInformation()->getNumHolds(),
+					'numOnOrder' => $relatedRecord->getStatusInformation()->getOnOrderCopies(),
+					'isShowStatus' => $relatedRecord->getStatusInformation()->isShowStatus(),
+					'showGroupedHoldCopiesCount' => (int) $library->showGroupedHoldCopiesCount,
+					'showItsHere' => (int) $library->showItsHere,
+					'isGlobalScope' => $interface->getVariable('isGlobalScope'),
+				];
 				//$records[$relatedRecord->id]['information'] = $relatedRecord->getItemSummary();
 
 				if($source == 'hoopla') {
