@@ -13,7 +13,7 @@ class SideLoads_DownloadMarc extends Admin_Admin {
 			$interface->assign('sideload', $sideLoadConfiguration);
 			$marcPath = $sideLoadConfiguration->marcPath;
 			$file = $_REQUEST['file'];
-			$fullName = $marcPath . DIR_SEP . $file;
+			$fullName = $marcPath . DIRECTORY_SEPARATOR . $file;
 			if (file_exists($fullName)) {
 				header('Content-Description: File Transfer');
 				header('Content-Type: application/octet-stream');

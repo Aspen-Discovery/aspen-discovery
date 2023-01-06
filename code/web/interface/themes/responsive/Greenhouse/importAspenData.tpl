@@ -47,7 +47,7 @@
 							<div class="checkbox">
 								{foreach from=$validEnrichmentToImport item=propertyName key=propertyValue}
 									<label for="enrichmentElement_{$propertyValue|escapeCSS}">
-										<input class="enrichmentElement" id="enrichmentElement_{$propertyValue|escapeCSS}" name='enrichmentElement[]' type="checkbox" value='{$propertyValue}' checked="checked'"> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+										<input class="enrichmentElement" id="enrichmentElement_{$propertyValue|escapeCSS}" name='enrichmentElement[]' type="checkbox" value='{$propertyValue}' checked="checked'"> {translate text=$propertyName isAdminFacing=true}<br>
 									</label>
 								{/foreach}
 							</div>
