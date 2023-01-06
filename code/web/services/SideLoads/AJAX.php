@@ -11,7 +11,7 @@ class SideLoads_AJAX extends JSON_Action {
 			if ($sideLoadConfiguration->find(true) && !empty($sideLoadConfiguration->marcPath)) {
 				$marcPath = $sideLoadConfiguration->marcPath;
 				$file = $_REQUEST['file'];
-				$fullName = $marcPath . DIR_SEP . $file;
+				$fullName = $marcPath . DIRECTORY_SEPARATOR . $file;
 				if (file_exists($fullName)) {
 					if (unlink($fullName)) {
 						$sideLoadConfiguration->runFullUpdate = true;
