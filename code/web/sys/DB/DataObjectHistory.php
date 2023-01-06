@@ -19,7 +19,7 @@ class DataObjectHistory extends DataObject {
 		return ['id', 'objectId', 'actionType', 'changedBy', 'changeDate'];
 	}
 
-	public function getObjectStructure($context = ''): array {
+	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
 				'property' => 'id',
