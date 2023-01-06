@@ -5,20 +5,26 @@ import { Center, Text, HStack, FlatList, Box } from 'native-base';
 import { useRoute } from '@react-navigation/native';
 import { useQuery } from '@tanstack/react-query';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { getManifestation } from '../../util/api/item';
+import {getManifestation, getRelatedRecord} from '../../util/api/item';
 import { loadError } from '../../components/loadError';
 import { translate } from '../../translations/translations';
 
 export const WhereIsIt = () => {
      const route = useRoute();
-     const { id, format, prevRoute } = route.params;
+     const { id, format, prevRoute, type, recordId } = route.params;
      console.log(route.params);
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
 
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['manifestations', id, format, library.baseUrl],
-          queryFn: () => getManifestation(id, format, library.baseUrl),
+          queryKey: ['manifestations', id, format, recordId, type, library.baseUrl],
+          queryFn: async () => {
+              if(!recordId) {
+                  return await getManifestation(id, format, library.baseUrl);
+              } else {
+                  return await getRelatedRecord(id, recordId, format, library.baseUrl);
+              }
+          },
      });
 
      return (

@@ -7,6 +7,7 @@ function getUpdates23_01_00(): array
 		/*'name' => [
 			'title' => '',
 			'description' => '',
+			'continueOnError' => false,
 			'sql' => [
 				''
 			]

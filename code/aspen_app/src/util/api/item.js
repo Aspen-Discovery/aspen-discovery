@@ -58,6 +58,7 @@ export async function getVariations(itemId, format, url) {
                numItemsWithoutVolumes: data.numItemsWithoutVolumes,
                hasItemsWithoutVolumes: data.hasItemsWithoutVolumes,
                majorityOfItemsHaveVolumes: data.majorityOfItemsHaveVolumes,
+               alwaysPlaceVolumeHoldWhenVolumesArePresent: data.alwaysPlaceVolumeHoldWhenVolumesArePresent
           },
      };
 }
@@ -154,8 +155,6 @@ export async function getVolumes(id, url) {
           },
      });
 
-     console.log(data);
-
      return data.volumes ?? [];
 }
 
@@ -171,4 +170,25 @@ export async function getBasicItemInfo(id, url) {
      });
 
      return data.result;
+}
+
+export async function getRelatedRecord(id, recordId, format, url) {
+     const {data} = await axios.get('/ItemAPI?method=getRelatedRecord', {
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutSlow,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               id: id,
+               record: recordId,
+               format: format,
+          },
+     });
+
+     return {
+          id: data.id ?? id,
+          recordId: data.record ?? recordId,
+          format: data.format ?? format,
+          manifestation: data.record ?? [],
+     }
 }

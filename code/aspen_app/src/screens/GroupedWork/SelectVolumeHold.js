@@ -27,32 +27,37 @@ const SelectVolumeHold = (props) => {
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
 
+     let promptForHoldType = true;
      let typeOfHold = 'item';
-     let shouldAskHoldType = false;
-     if (!volumeInfo.majorityOfItemsHaveVolumes && volumeInfo.numItemsWithVolumes >= 1) {
-          shouldAskHoldType = true;
-          if (volumeInfo.majorityOfItemsHaveVolumes) {
-               typeOfHold = 'volume';
-          }
+     if(volumeInfo.majorityOfItemsHaveVolumes) {
+          typeOfHold = 'volume';
      }
-
-
-     const [holdType, setHoldType] = React.useState(typeOfHold);
-
-     let pickupLocation = _.findIndex(locations, function (o) {
-          return o.locationId === user.pickupLocationId;
-     });
-     pickupLocation = _.nth(locations, pickupLocation);
-     pickupLocation = _.get(pickupLocation, 'code', '');
-     const [location, setLocation] = React.useState(pickupLocation);
-
-     const [activeAccount, setActiveAccount] = React.useState(user.id);
-     const availableAccounts = Object.values(accounts);
+     if (_.isEmpty(volumeInfo.hasItemsWithoutVolumes) || !volumeInfo.hasItemsWithoutVolumes === false) {
+          typeOfHold = 'volume';
+          promptForHoldType = false;
+     }
 
      const { status, data, error, isFetching } = useQuery({
           queryKey: ['volumes', id, library.baseUrl],
           queryFn: () => getVolumes(id, library.baseUrl),
+          enabled: !!showModal,
      });
+
+     const [holdType, setHoldType] = React.useState(typeOfHold);
+
+     const [activeAccount, setActiveAccount] = React.useState(user.id);
+     const availableAccounts = Object.values(accounts);
+
+     const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
+     let pickupLocation = '';
+     if(!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+          pickupLocation = userPickupLocation[0];
+          if(_.isObject(pickupLocation)) {
+               pickupLocation = pickupLocation.code;
+          }
+     }
+
+     const [location, setLocation] = React.useState(pickupLocation);
 
      const handleNavigation = (action) => {
           if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
@@ -78,102 +83,98 @@ const SelectVolumeHold = (props) => {
                }}>
                     {title}
                </Button>
-               <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="full">
-                    <Modal.Content>
+               <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
+                    <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header><Heading size="md">{title}</Heading></Modal.Header>
                          <Modal.Body>
-                              {loading || status === 'loading' || isFetching ? (
-                                  loadingSpinner()
-                              ) : status === 'error' ? (
-                                  loadError(error, '')
-                              ) : (
-                                  <>
-                                       {shouldAskHoldType ? (
-                                           <Radio.Group
-                                               name="holdTypeGroup"
-                                               defaultValue={holdType}
-                                               value={holdType}
-                                               onChange={(nextValue) => {
-                                                    setHoldType(nextValue);
-                                               }}
-                                               accessibilityLabel="">
-                                                <Radio value="item" my={1} size="sm">
-                                                     {translate('grouped_work.first_available')}
-                                                </Radio>
-                                                <Radio value="volume" my={1} size="sm">
-                                                     {translate('grouped_work.specific_volume')}
-                                                </Radio>
-                                           </Radio.Group>
-                                       ) : null}
-                                       {_.size(locations) > 1 ? (
-                                           <FormControl>
-                                                <FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
-                                                <Select
-                                                    name="pickupLocations"
-                                                    selectedValue={location}
-                                                    minWidth="200"
-                                                    accessibilityLabel="Select a Pickup Location"
-                                                    _selectedItem={{
-                                                         bg: 'tertiary.300',
-                                                         endIcon: <CheckIcon size="5" />,
-                                                    }}
-                                                    mt={1}
-                                                    mb={2}
-                                                    onValueChange={(itemValue) => setLocation(itemValue)}>
-                                                     {locations.map((location, index) => {
-                                                          return <Select.Item label={location.name} value={location.code} key={index} />;
-                                                     })}
-                                                </Select>
-                                           </FormControl>
-                                       ) : null}
-                                       {_.size(accounts) > 0 ? (
-                                           <FormControl>
-                                                <FormControl.Label>{translate('linked_accounts.place_hold_for_account')}</FormControl.Label>
-                                                <Select
-                                                    name="linkedAccount"
-                                                    selectedValue={activeAccount}
-                                                    minWidth="200"
-                                                    accessibilityLabel="Select an account to place hold for"
-                                                    _selectedItem={{
-                                                         bg: 'tertiary.300',
-                                                         endIcon: <CheckIcon size="5" />,
-                                                    }}
-                                                    mt={1}
-                                                    mb={3}
-                                                    onValueChange={(itemValue) => setActiveAccount(itemValue)}>
-                                                     <Select.Item label={user.displayName} value={user.id} />
-                                                     {availableAccounts.map((item, index) => {
-                                                          return <Select.Item label={item.displayName} value={item.id} key={index} />;
-                                                     })}
-                                                </Select>
-                                           </FormControl>
-                                       ) : null}
-                                       {holdType === 'volume' ? (
-                                           <FormControl>
-                                                <FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
-                                                <Select
-                                                    name="volumeForHold"
-                                                    selectedValue={volume}
-                                                    minWidth="200"
-                                                    accessibilityLabel="Select a Volume"
-                                                    _selectedItem={{
-                                                         bg: 'tertiary.300',
-                                                         endIcon: <CheckIcon size="5" />,
-                                                    }}
-                                                    mt={1}
-                                                    mb={2}
-                                                    onValueChange={(itemValue) => setVolume(itemValue)}>
-                                                     {data.map((item, index) => {
-                                                          return <Select.Item label={item.displayLabel} value={item.volumeId} key={index} />;
-                                                     })}
-                                                </Select>
-                                           </FormControl>
-                                       ) : null}
+                              {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : (
+                              <>
+                              {promptForHoldType ? (
+                                  <FormControl>
+                                   <Radio.Group
+                                       name="holdTypeGroup"
+                                       defaultValue={holdType}
+                                       value={holdType}
+                                       onChange={(nextValue) => {
+                                            setHoldType(nextValue);
+                                       }}
+                                       accessibilityLabel="">
+                                        <Radio value="item" my={1} size="sm">
+                                             {translate('grouped_work.first_available')}
+                                        </Radio>
+                                        <Radio value="volume" my={1} size="sm">
+                                             {translate('grouped_work.specific_volume')}
+                                        </Radio>
+                                   </Radio.Group>
+                              </FormControl>
+                              ) : null}
+                              {holdType === 'volume' ? (
+                                  <FormControl>
+                                       <FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
+                                       <Select
+                                           name="volumeForHold"
+                                           selectedValue={volume}
+                                           minWidth="200"
+                                           accessibilityLabel="Select a Volume"
+                                           _selectedItem={{
+                                                bg: 'tertiary.300',
+                                                endIcon: <CheckIcon size="5" />,
+                                           }}
+                                           mt={1}
+                                           mb={2}
+                                           onValueChange={(itemValue) => setVolume(itemValue)}>
+                                            {_.map(data, function (item, index, array) {
+                                                 return <Select.Item label={item.label} value={item.volumeId} key={index} />;
+                                            })}
+                                       </Select>
+                                  </FormControl>
+                              ) : null}
+                              {_.size(locations) > 1 ? (
+                                  <FormControl>
+                                       <FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
+                                       <Select
+                                           name="pickupLocations"
+                                           selectedValue={location}
+                                           minWidth="200"
+                                           accessibilityLabel="Select a Pickup Location"
+                                           _selectedItem={{
+                                                bg: 'tertiary.300',
+                                                endIcon: <CheckIcon size="5" />,
+                                           }}
+                                           mt={1}
+                                           mb={2}
+                                           onValueChange={(itemValue) => setLocation(itemValue)}>
+                                            {locations.map((location, index) => {
+                                                 return <Select.Item label={location.name} value={location.code} key={index} />;
+                                            })}
+                                       </Select>
+                                  </FormControl>
+                              ) : null}
+                              {_.size(accounts) > 0 ? (
+                                  <FormControl>
+                                       <FormControl.Label>{translate('linked_accounts.place_hold_for_account')}</FormControl.Label>
+                                       <Select
+                                           name="linkedAccount"
+                                           selectedValue={activeAccount}
+                                           minWidth="200"
+                                           accessibilityLabel="Select an account to place hold for"
+                                           _selectedItem={{
+                                                bg: 'tertiary.300',
+                                                endIcon: <CheckIcon size="5" />,
+                                           }}
+                                           mt={1}
+                                           mb={3}
+                                           onValueChange={(itemValue) => setActiveAccount(itemValue)}>
+                                            <Select.Item label={user.displayName} value={user.id} />
+                                            {availableAccounts.map((item, index) => {
+                                                 return <Select.Item label={item.displayName} value={item.id} key={index} />;
+                                            })}
+                                       </Select>
+                                  </FormControl>
+                              ) : null}
                                   </>
-                              )}
-
-
+                                   )}
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2} size="md">
