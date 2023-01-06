@@ -65,14 +65,14 @@
 
 					<div class="row">
 						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
-						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true} - Hoopla</div>
+						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - Hoopla</div>
 					</div>
 
 					{if !empty($showRatings) && $record->getGroupedWorkId() && $record->getRatingData()}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text="Rating" isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
-								{include file="GroupedWork/title-rating.tpl" id=$record->getGroupedWorkId() ratingData=$record->getRatingData() showNotInterested=false}
+								{include file="GroupedWork/title-rating.tpl" id=$record->getGroupedWorkId() summId=$record->getGroupedWorkId() ratingData=$record->getRatingData() showNotInterested=false}
 							</div>
 						</div>
 					{/if}
