@@ -1193,6 +1193,7 @@ class ItemAPI extends Action {
 
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$marcRecord = new MarcRecordDriver($_REQUEST['id']);
+		$alwaysPlaceVolumeHoldWhenVolumesArePresent = $marcRecord->getCatalogDriver()->alwaysPlaceVolumeHoldWhenVolumesArePresent();
 		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 
 		//Get a list of volumes for the record
@@ -1208,25 +1209,41 @@ class ItemAPI extends Action {
 			}
 		}
 
-		$blankVolume = new IlsVolumeInfo();
-		$blankVolume->displayLabel = translate([
-			'text' => 'Untitled Volume',
-			'isPublicFacing' => true,
-		]);
-		$blankVolume->volumeId = '';
-		$blankVolume->recordId = $marcRecord->getIdWithSource();
-		$blankVolume->relatedItems = '';
-		$blankVolume->setHasLocalItems(false);
+		$numItemsWithVolumes = 0;
+		$numItemsWithoutVolumes = 0;
 		foreach ($relatedRecord->getItems() as $item) {
-			if (empty($item->volumeId)) {
+			if (empty($item->volume)) {
+				$numItemsWithoutVolumes++;
+			} else {
 				if ($item->libraryOwned || $item->locallyOwned) {
-					$blankVolume->setHasLocalItems(true);
+					if (array_key_exists($item->volumeId, $volumeData)) {
+						$volumeData[$item->volumeId]->setHasLocalItems(true);
+					}
 				}
-				$blankVolume->relatedItems .= $item->itemId . '|';
+				$numItemsWithVolumes++;
 			}
 		}
-		$volumeData[] = $blankVolume;
 
+		if ($numItemsWithoutVolumes > 0 && $alwaysPlaceVolumeHoldWhenVolumesArePresent) {
+			$blankVolume = new IlsVolumeInfo();
+			$blankVolume->displayLabel = translate([
+				'text' => 'Untitled Volume',
+				'isPublicFacing' => true,
+			]);
+			$blankVolume->volumeId = '';
+			$blankVolume->recordId = $marcRecord->getIdWithSource();
+			$blankVolume->relatedItems = '';
+			$blankVolume->setHasLocalItems(false);
+			foreach ($relatedRecord->getItems() as $item) {
+				if (empty($item->volumeId)) {
+					if ($item->libraryOwned || $item->locallyOwned) {
+						$blankVolume->setHasLocalItems(true);
+					}
+					$blankVolume->relatedItems .= $item->itemId . '|';
+				}
+			}
+			$volumeData[] = $blankVolume;
+		}
 		$volumeDataDB = null;
 		unset($volumeDataDB);
 
@@ -1252,10 +1269,22 @@ class ItemAPI extends Action {
 			uasort($volumeData, $volumeSorter);
 		}
 
+		$volumes = [];
+		foreach($volumeData as $volume) {
+			$label = $volume->displayLabel;
+			if($alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()) {
+				$label .= translate(['text' => 'Owned by %1%', 'isPublicFacing' => true, 1=>$library->displayName]);
+			}
+			$volumes[$volume->id]['id'] = $volume->id;
+			$volumes[$volume->id]['label'] = $label;
+			$volumes[$volume->id]['displayOrder'] = $volume->displayOrder;
+			$volumes[$volume->id]['volumeId'] = $volume->volumeId;
+		}
+
 		return [
 			'success' => true,
 			'id' => $_REQUEST['id'],
-			'volumes' => $volumeData,
+			'volumes' => $volumes,
 		];
 	}
 
