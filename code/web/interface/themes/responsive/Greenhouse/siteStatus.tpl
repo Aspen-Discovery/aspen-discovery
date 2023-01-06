@@ -7,15 +7,29 @@
 
 	<form class="form" id="translationSettings">
 		<div class="row">
-			<div class="col-xs-12">
+			<div class="col-xs-12 col-md-3">
 				<label for="showErrorsOnly">{translate text='Show Errors Only' isAdminFacing=true}</label>
 				<div class="input-group-sm input-group">
 					<input type='checkbox' name='showErrorsOnly' id='showErrorsOnly' data-on-text="{translate text='Errors Only' inAttribute=true isAdminFacing=true}" data-off-text="{translate text='All Records' inAttribute=true isAdminFacing=true}" data-switch="" {if !empty($showErrorsOnly)}checked{/if}/>
 				</div>
 			</div>
-		</div>
-		<div class="row">
-			<div class="col-sm-2 col-md-4">
+			<div class="col-xs-12 col-md-4">
+				<label for="serversToShow">{translate text='Servers To Show' isAdminFacing=true}</label>
+				<div class="input-group-sm input-group">
+					<select name='serversToShow' id='serversToShowSelect' class="form-control">
+					{foreach from=$serversToShowOptions item=propertyName key=propertyValue}
+						<option value='{$propertyValue}'{if !empty($serversToShow) && ($serversToShow == $propertyValue)} selected='selected'{/if}>{translate text=$propertyName inAttribute=true isAdminFacing=true}</option>
+					{/foreach}
+					</select>
+				</div>
+			</div>
+			<div class="col-xs-12 col-md-4">
+				<label for="versionToShow">{translate text='Version to show (blank to see all)' isAdminFacing=true}</label>
+				<div class="input-group-sm input-group">
+					<input type='text' name='versionToShow' id='versionToShow' value="{$versionToShow}"/>
+				</div>
+			</div>
+			<div class="col-xs-12 col-md-1">
 				<div class="form-group">
 					<button class="btn btn-primary btn-sm" type="submit">{translate text="Apply" isAdminFacing=true}</button>
 				</div>
@@ -83,6 +97,12 @@
 				{/foreach}
 			</tbody>
 		</table>
+	</div>
+
+	<div class="row">
+		<div class="col-xs-12">
+			{translate text="Showing %1% of %2% Aspen Sites" 1=$numFilteredResults 2=$numTotalResults isAdminFacing=true}
+		</div>
 	</div>
 {/strip}
 
