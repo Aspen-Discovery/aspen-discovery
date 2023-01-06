@@ -93,13 +93,13 @@ const SelectVolumeHold = (props) => {
                               {promptForHoldType ? (
                                   <FormControl>
                                    <Radio.Group
-                                       name="holdTypeGroup"
-                                       defaultValue={holdType}
-                                       value={holdType}
-                                       onChange={(nextValue) => {
-                                            setHoldType(nextValue);
-                                       }}
-                                       accessibilityLabel="">
+										name="holdTypeGroup"
+										defaultValue={holdType}
+										value={holdType}
+										onChange={(nextValue) => {
+											setHoldType(nextValue);
+										}}
+										accessibilityLabel="">
                                         <Radio value="item" my={1} size="sm">
                                              {translate('grouped_work.first_available')}
                                         </Radio>

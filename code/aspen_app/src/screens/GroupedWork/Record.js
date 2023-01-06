@@ -214,8 +214,9 @@ export class Record extends Component {
      render() {
           const user = this.context.user;
           const location = this.context.location;
-          const library = this.context.library;
+          const library = this.props.library;
 
+          console.log(this.props.library);
           const {recordData, available, availableOnline, actions, edition, format, publisher, publicationDate, status, copiesMessage, source, id, title, locationCount, locations, showAlert, itemDetails, groupedWorkId, groupedWorkISBN, linkedAccounts, openHolds, openCheckouts, discoveryVersion, updateProfile, majorityOfItemsHaveVolumes, volumes, hasItemsWithoutVolumes, groupedWorkAuthor, copyDetails} = this.props;
           let actionCount = 1;
 
@@ -243,6 +244,7 @@ export class Record extends Component {
           } else {
                statusColor = 'danger';
           }
+
 
           const libraryUrl = library.baseUrl;
 

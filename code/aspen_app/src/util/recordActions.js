@@ -105,6 +105,7 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
           },
      });
      const response = await api.post('/UserAPI?method=placeHold', postBody);
+     console.log(response.config);
      if (response.ok) {
           const responseData = response.data;
           const results = responseData.result;
