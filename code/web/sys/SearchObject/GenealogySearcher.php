@@ -380,7 +380,7 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher {
 	}
 
 	/**
-	 * Turn our results into an Excel document
+	 * Turn our results into a csv document
 	 * @param null|array $result
 	 */
 	public function buildExcel($result = null) {
@@ -392,76 +392,76 @@ class SearchObject_GenealogySearcher extends SearchObject_SolrSearcher {
 				$result = $this->processSearch(false, false);
 			}
 
-			// Prepare the spreadsheet
-			ini_set('include_path', ini_get('include_path' . ';/PHPExcel/Classes'));
-			include 'PHPExcel.php';
-			include 'PHPExcel/Writer/Excel2007.php';
-			$objPHPExcel = new PHPExcel();
-			$objPHPExcel->getProperties()->setTitle("Search Results");
-
-			$objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle('Results');
-
-			//Add headers to the table
-			$sheet = $objPHPExcel->getActiveSheet();
-			$curRow = 1;
-			$curCol = 0;
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'First Name');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Last Name');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Birth Date');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Death Date');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Veteran Of');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Cemetery');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Addition');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Block');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Lot');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Grave');
-			$maxColumn = $curCol - 1;
-
-			for ($i = 0; $i < count($result['response']['docs']); $i++) {
-				$curDoc = $result['response']['docs'][$i];
-				$curRow++;
-				$curCol = 0;
-				//Get supplemental information from the database
-				require_once ROOT_DIR . '/sys/Genealogy/Person.php';
-				$person = new Person();
-				$id = str_replace('person', '', $curDoc['id']);
-				$person->personId = $id;
-				if ($person->find(true)) {
-					//Output the row to excel
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['firstName']) ? $curDoc['firstName'] : '');
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['lastName']) ? $curDoc['lastName'] : '');
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear));
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear));
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['veteranOf']) ? implode(', ', $curDoc['veteranOf']) : '');
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['cemeteryName']) ? $curDoc['cemeteryName'] : '');
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->addition);
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->block);
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->lot);
-					/** @noinspection PhpUnusedLocalVariableInspection */
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $person->grave);
-				}
-			}
-
-			for ($i = 0; $i < $maxColumn; $i++) {
-				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-			}
-
 			//Output to the browser
 			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 			header("Cache-Control: no-store, no-cache, must-revalidate");
 			header("Cache-Control: post-check=0, pre-check=0", false);
 			header("Pragma: no-cache");
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename="Results.xlsx"');
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="GenealogyResults.csv"');
+			$fp = fopen('php://output', 'w');
 
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-			$objPHPExcel->disconnectWorksheets();
-			unset($objPHPExcel);
+			$fields = array('First Name', 'Last Name', 'Birth Date', 'Death Date', 'Veteran Of', 'Cemetery', 'Addition', 'Block', 'Lot', 'Grave');
+			fputcsv($fp, $fields);
+
+
+			for ($i = 0; $i < count($result['response']['docs']); $i++) {
+				$curDoc = $result['response']['docs'][$i];
+
+				//Get supplemental information from the database
+				require_once ROOT_DIR . '/sys/Genealogy/Person.php';
+				$person = new Person();
+				$id = str_replace('person', '', $curDoc['id']);
+				$person->personId = $id;
+
+				if ($person->find(true)) {
+
+					$firstName = '';
+					if (isset($curDoc['firstName'])){
+						$firstName = $curDoc['firstName'];
+					}
+
+					$lastName = '';
+					if (isset($curDoc['lastName'])){
+						$lastName = $curDoc['lastName'];
+					}
+
+					$birthDate = '';
+					$birthDate = $person->formatPartialDate($person->birthDateDay, $person->birthDateMonth, $person->birthDateYear);
+
+					$deathDate = '';
+					$deathDate = $person->formatPartialDate($person->deathDateDay, $person->deathDateMonth, $person->deathDateYear);
+
+					$veteranOf = '';
+					if (isset($curDoc['veteranOf'])){
+						$veteranOf = $curDoc['veteranOf'];
+					}
+
+					$cemetery = '';
+					if (isset($curDoc['cemeteryName'])){
+						$cemetery = $curDoc['cemeteryName'];
+					}
+
+					$addition = '';
+					$addition = $person->addition;
+
+					$block = '';
+					$block = $person->block;
+
+					$lot = '';
+					$lot = $person->lot;
+
+					$grave = '';
+					$grave = $person->grave;
+
+					$row = array ($firstName, $lastName, $birthDate, $deathDate, $veteranOf, $cemetery, $addition, $block, $lot, $grave);
+					fputcsv($fp, $row);
+				}
+			}
+
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
 		}
 	}
 

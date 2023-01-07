@@ -290,70 +290,33 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 	 * @throws Exception
 	 */
 	function exportToExcel($selectedRequestIds, $allRequests) {
-		global $configArray;
 		try {
 			//May need more time to export all records
 			set_time_limit(600);
-			//PHPEXCEL
-			// Create new PHPExcel object
-			$objPHPExcel = new PHPExcel();
 
-			// Set properties
-			$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("Materials Requests");
+			//Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="UserList.csv"');
+			$fp = fopen('php://output', 'w');
 
-			// Add some data
-			$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle('Titles');
-			$activeSheet->setCellValueByColumnAndRow(0, 1, 'Materials Requests');
+			$fields = array('ID', 'Title', 'Season', 'Magazine', 'Author', 'Format', 'Sub Format', 'Type', 'Age Level', 'ISBN', 'UPC',
+				'ISSN', 'OCLC Number', 'Publisher', 'Publication Year', 'Abridged', 'How did you hear about this?', 'Comments', 'Name',
+				'Barcode', 'Email', 'Hold', 'Hold Pickup Location', 'ILL', 'Status', 'Staff Comments', 'Email Sent', 'Date Created', 'Assigned To');
+			fputcsv($fp, $fields);
 
-			//Define table headers
-			$curRow = 3;
-			$curCol = 0;
-
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ID');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Season');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Magazine');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Sub Format');
-
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Type');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Age Level');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISBN');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'UPC');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ISSN');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'OCLC Number');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publication Year');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Abridged');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'How did you hear about this?');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Comments');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Name');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Barcode');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email');
-
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Hold Pickup Location');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'ILL');
-
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Status');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Staff Comments');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Email Sent');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Date Created');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Assigned To');
-
-			$numCols = $curCol;
 			//Loop Through The Report Data
 			/** @var MaterialsRequest $request */
 			foreach ($allRequests as $request) {
 				if (array_key_exists($request->id, $selectedRequestIds)) {
-					$curRow++;
-					$curCol = 0;
 
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->id);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->title);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->season);
+					$id = $request->id;
+					$title = $request->title;
+					$season = $request->season;
+
 					$magazineInfo = '';
 					if ($request->magazineTitle) {
 						$magazineInfo .= $request->magazineTitle . ' ';
@@ -370,24 +333,25 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					if ($request->magazinePageNumbers) {
 						$magazineInfo .= 'p. ' . $request->magazinePageNumbers . ' ';
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, trim($magazineInfo));
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->author);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->format);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->subFormat);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->bookType);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->ageLevel);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->isbn);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->upc);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->issn);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->oclcNumber);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->publisher);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->publicationYear);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->abridged == 0 ? 'Unabridged' : ($request->abridged == 1 ? 'Abridged' : 'Not Applicable'));
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->about);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->comments);
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName());
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->getBarcode());
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->getCreatedByUser()->email);
+					$magazine = trim($magazineInfo);
+
+					$author = $request->author;
+					$format = $request->format;
+					$subFormat = $request->subFormat;
+					$type = $request->bookType;
+					$ageLevel = $request->ageLevel;
+					$isbn = $request->isbn;
+					$upc = $request->upc;
+					$issn = $request->issn;
+					$oclcNum = $request->oclcNumber;
+					$publisher = $request->publisher;
+					$pubYear = $request->publicationYear;
+					$abridged = $request->abridged == 0 ? 'Unabridged' : ($request->abridged == 1 ? 'Abridged' : 'Not Applicable');
+					$about = $request->about;
+					$comments = $request->comments;
+					$name = $request->getCreatedByLastName() . ', ' . $request->getCreatedByFirstName();
+					$barcode = $request->getCreatedByUser()->getBarcode();
+					$email = $request->getCreatedByUser()->email;
 
 					// Place hold?
 					if ($request->placeHoldWhenAvailable == 1) {
@@ -395,7 +359,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					} else {
 						$value = 'No';
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+					$hold = $value;
 
 					// Hold pickup location, including bookmobile stop if appropriate
 					if ($request->holdPickupLocation) {
@@ -406,7 +370,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					} else {
 						$value = '';
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+					$holdPULoc = $value;
 
 					// Place ILL request?
 					if ($request->illItem == 1) {
@@ -414,28 +378,28 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					} else {
 						$value = 'No';
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+					$ill = $value;
 
 					// Status
 					$materialsRequestStatus = new MaterialsRequestStatus();
 					$materialsRequestStatus->libraryId = $request->libraryId;
 					$materialsRequestStatus->id = $request->status;
 					if ($materialsRequestStatus->find(true)) {
-						$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate([
+						$status = translate([
 							'text' => $materialsRequestStatus->description,
 							'isPublicFacing' => true,
 							'isMetadata' => true,
-						]));
+						]);
 					} else {
-						$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, translate([
+						$status = translate([
 							'text' => 'Request Status ID ' . $request->status . ' [description not found]',
 							'isPublicFacing' => true,
 							'isMetadata' => true,
-						]));
+						]);
 					}
 
 					// Staff Comments
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $request->staffComments);
+					$staffComm = $request->staffComments;
 
 					// Email sent?
 					if ($request->emailSent == 1) {
@@ -443,47 +407,29 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					} else {
 						$value = 'No';
 					}
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, $value);
+					$emailSent = $value;
 
 					// Date Created
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, date('m/d/Y', $request->dateCreated));
+					$dateCreated = date('m/d/Y', $request->dateCreated);
 
 					// Assigned to
 					if ($request->getAssigneeUser() !== false) {
-						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $request->getAssigneeUser()->displayName);
+						$assigned = $request->getAssigneeUser()->displayName;
 					} else {
-						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, translate([
+						$assigned = translate([
 							'text' => 'Unassigned',
 							'isAdminFacing' => true,
-						]));
+						]);
 					}
+					$row = array ($id, $title, $season, $magazine, $author, $format, $subFormat, $type, $ageLevel, $isbn, $upc, $issn, $oclcNum, $publisher,
+						$pubYear, $abridged, $about, $comments, $name, $barcode, $email, $hold, $holdPULoc, $ill, $status, $staffComm, $emailSent, $dateCreated, $assigned);
+					fputcsv($fp, $row);
 				}
 			}
-
-			for ($i = 0; $i < $numCols; $i++) {
-				$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-			}
-
-			// Rename sheet
-			$activeSheet->setTitle('Materials Requests');
-
-			// Redirect output to a client's web browser (Excel5)
-			//Output to the browser
-			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-			header("Cache-Control: no-store, no-cache, must-revalidate");
-			header("Cache-Control: post-check=0, pre-check=0", false);
-			header("Pragma: no-cache");
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename=MaterialsRequests.xlsx');
-
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-			$objWriter->save('php://output');
-			$objPHPExcel->disconnectWorksheets();
-			unset($objPHPExcel);
 			exit();
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
 		}
 	}
 
