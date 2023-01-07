@@ -46,7 +46,6 @@ const SelectVolumeHold = (props) => {
      const [holdType, setHoldType] = React.useState(typeOfHold);
 
      const [activeAccount, setActiveAccount] = React.useState(user.id);
-     const availableAccounts = Object.values(accounts);
 
      const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
      let pickupLocation = '';
@@ -167,7 +166,7 @@ const SelectVolumeHold = (props) => {
                                            mb={3}
                                            onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                             <Select.Item label={user.displayName} value={user.id} />
-                                            {availableAccounts.map((item, index) => {
+                                            {accounts.map((item, index) => {
                                                  return <Select.Item label={item.displayName} value={item.id} key={index} />;
                                             })}
                                        </Select>

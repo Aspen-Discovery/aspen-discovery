@@ -28,11 +28,6 @@ export const Variations = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
 
-     console.log('*******************************');
-     console.log('cachedGroupedWork: ' + id);
-     console.log('format: ' + format);
-     console.log('*******************************');
-
      const { data: record } = useQuery({
           queryKey: ['recordId', id, format, library.baseUrl],
           queryFn: () => getFirstRecord(id, format, library.baseUrl),
@@ -167,7 +162,6 @@ const PlaceHold = (props) => {
           }
      };
      if (volumeInfo.majorityOfItemsHaveVolumes || volumeInfo.numItemsWithVolumes >= 1) {
-          console.log("*** We should start the volume hold process ***");
           return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
      } else if (_.size(accounts) > 0) {
           return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} />;
