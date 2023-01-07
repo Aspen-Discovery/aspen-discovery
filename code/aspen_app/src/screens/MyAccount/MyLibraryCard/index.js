@@ -41,13 +41,11 @@ export const MyLibraryCard = () => {
                               updateLibraryCards([primaryCard]);
                          }
                          if (accounts !== result) {
-                              const temp = Object.values(result);
-                              console.log(temp);
-                              updateLinkedAccounts(Object.values(result));
-                              if (_.size(temp) >= 1) {
+                              updateLinkedAccounts(result);
+                              if (_.size(result) >= 1) {
                                    let count = 1;
                                    let cardStack = [primaryCard];
-                                   temp.forEach((account) => {
+                                   result.forEach((account) => {
                                         if (_.includes(cards, account.cat_username) === false) {
                                              console.log(account);
                                              count = count + 1;

@@ -33,6 +33,7 @@ import { Platform } from 'react-native';
 import { navigationRef } from '../helpers/RootNavigator';
 
 const prefix = Linking.createURL('/');
+console.log(prefix);
 
 enableScreens();
 
@@ -55,8 +56,6 @@ releaseCode = releaseCode.toString();
 
 let distribution = Platform.OS === 'android' ? androidDist : iOSDist;
 distribution = distribution.toString();
-
-//info.yavapai.catalog@22.12.00+62
 
 Sentry.init({
      dsn: Constants.manifest2?.extra?.expoClient?.extra?.sentryDSN ?? Constants.manifest.extra.sentryDSN,
@@ -345,41 +344,45 @@ export function App() {
                                                             config: {
                                                                  screens: {
                                                                       Login: 'user/login',
-                                                                      Drawer: {
+                                                                      Launch: {
                                                                            screens: {
-                                                                                Tabs: {
+                                                                                Drawer: {
                                                                                      screens: {
-                                                                                          AccountScreenTab: {
+                                                                                          Tabs: {
                                                                                                screens: {
-                                                                                                    MySavedSearches: 'user/saved_searches',
-                                                                                                    LoadSavedSearch: 'user/saved_search',
-                                                                                                    MyLists: 'user/lists',
-                                                                                                    MyList: 'user/list',
-                                                                                                    MyLinkedAccounts: 'user/linked_accounts',
-                                                                                                    MyHolds: 'user/holds',
-                                                                                                    MyCheckouts: 'user/checkouts',
-                                                                                                    MyPreferences: 'user/preferences',
-                                                                                                    MyProfile: 'user',
-                                                                                                    MyReadingHistory: 'user/reading_history',
-                                                                                               },
-                                                                                          },
-                                                                                          LibraryCardTab: {
-                                                                                               screens: {
-                                                                                                    LibraryCard: 'user/library_card',
-                                                                                               },
-                                                                                          },
-                                                                                          SearchTab: {
-                                                                                               screens: {
-                                                                                                    SearchResults: 'search',
-                                                                                                    SearchByCategory: 'search/browse_category',
-                                                                                                    SearchByAuthor: 'search/author',
-                                                                                                    SearchByList: 'search/list',
-                                                                                               },
-                                                                                          },
-                                                                                          HomeTab: {
-                                                                                               screens: {
-                                                                                                    HomeScreen: 'home',
-                                                                                                    GroupedWorkScreen: 'search/grouped_work',
+                                                                                                    AccountScreenTab: {
+                                                                                                         screens: {
+                                                                                                              MySavedSearches: 'user/saved_searches',
+                                                                                                              LoadSavedSearch: 'user/saved_search',
+                                                                                                              MyLists: 'user/lists',
+                                                                                                              MyList: 'user/list',
+                                                                                                              MyLinkedAccounts: 'user/linked_accounts',
+                                                                                                              MyHolds: 'user/holds',
+                                                                                                              MyCheckouts: 'user/checkouts',
+                                                                                                              MyPreferences: 'user/preferences',
+                                                                                                              MyProfile: 'user',
+                                                                                                              MyReadingHistory: 'user/reading_history',
+                                                                                                         },
+                                                                                                    },
+                                                                                                    LibraryCardTab: {
+                                                                                                         screens: {
+                                                                                                              LibraryCard: 'user/library_card',
+                                                                                                         },
+                                                                                                    },
+                                                                                                    SearchTab: {
+                                                                                                         screens: {
+                                                                                                              SearchResults: 'search',
+                                                                                                              SearchByCategory: 'search/browse_category',
+                                                                                                              SearchByAuthor: 'search/author',
+                                                                                                              SearchByList: 'search/list',
+                                                                                                         },
+                                                                                                    },
+                                                                                                    HomeTab: {
+                                                                                                         screens: {
+                                                                                                              HomeScreen: 'home',
+                                                                                                              GroupedWorkScreen: 'search/grouped_work',
+                                                                                                         },
+                                                                                                    },
                                                                                                },
                                                                                           },
                                                                                      },
@@ -390,10 +393,12 @@ export function App() {
                                                             },
                                                             async getInitialURL() {
                                                                  let url = await Linking.getInitialURL();
+                                                                 console.log(url);
 
                                                                  if (url != null) {
                                                                       url = decodeURIComponent(url).replace(/\+/g, ' ');
                                                                       url = url.replace('aspen-lida://', prefix);
+                                                                      console.log(url);
                                                                       return url;
                                                                  }
 
@@ -404,6 +409,7 @@ export function App() {
                                                             },
                                                             subscribe(listener) {
                                                                  const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+                                                                      console.log(url);
                                                                       listener(url);
                                                                  });
                                                                  const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
