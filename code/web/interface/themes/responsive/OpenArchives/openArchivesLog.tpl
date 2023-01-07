@@ -17,7 +17,7 @@
 						<td>{$logEntry->endTime|date_format:"%D %T"}</td>
 						<td>{$logEntry->getElapsedTime()}</td>
 						<td>{$logEntry->collectionName}</td>
-						<td>{$logEntry->numProducts}</td>
+						<td>{$logEntry->numRecords}</td>
 						<td>{$logEntry->numErrors}</td>
 						<td>{$logEntry->numAdded}</td>
 						<td>{$logEntry->numDeleted}</td>
