@@ -10,7 +10,7 @@
 			<div id="readingListActionsTop" class="col-xs-6">
 				<div class="btn-group btn-group-sm">
 					{if $historyActive == true}
-						<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To Excel" isPublicFacing=true}</button>
+						<button class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.ReadingHistory.exportListAction()">{translate text="Export To CSV" isPublicFacing=true}</button>
 					{else}
 						<button class="btn btn-sm btn-primary" onclick="return AspenDiscovery.Account.ReadingHistory.optInAction()">{translate text="Start Recording My Reading History" isPublicFacing=true}</button>
 					{/if}

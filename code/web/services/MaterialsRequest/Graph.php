@@ -123,35 +123,25 @@ class MaterialsRequest_Graph extends Admin_Admin {
 	}
 
 	function exportToExcel() {
-		global $configArray;
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
-
 		$location = $_REQUEST['location'];
 		$status = $_REQUEST['status'];
 
 		$periods = $this->getAllPeriods();
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])->setLastModifiedBy($configArray['Site']['title'])->setTitle("Materials Request Dashboard Report")->setSubject("Materials Request")->setCategory("Materials Request Dashboard Report");
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment;filename="MaterialsRequestDashboardReport.csv"');
+		header('Cache-Control: max-age=0');
+		$fp = fopen('php://output', 'w');
 
-		// Add some data
-		$objPHPExcel->setActiveSheetIndex(0);
-		$activeSheet = $objPHPExcel->getActiveSheet();
-		$activeSheet->setCellValue('A1', 'Materials Request Dashboard Report');
-		$activeSheet->setCellValue('A3', 'Date');
+		$header = ['Date'];
 
 		if ($location !== '' && $location !== null) {
 			$thisStatus = new MaterialsRequestStatus();
 			$thisStatus->id = $status;
 			$thisStatus->libraryId = $location;
-			$currentAlpha = 0;
-			$alphas = range('B', 'Z');
-			$curCol = 1;
 			if ($thisStatus->find(true)) {
-				$curRow = 4;
-				$labelCell = $alphas[$currentAlpha] . '3';
-				$activeSheet->setCellValue($labelCell, $thisStatus->description);
+				$header[] = $thisStatus->description;
+				fputcsv($fp, $header);
 
 				foreach ($periods as $period) {
 					$materialsRequestUsage = new MaterialsRequestUsage();
@@ -167,13 +157,16 @@ class MaterialsRequest_Graph extends Admin_Admin {
 					$materialsRequestUsage->orderBy('year, month');
 
 					if ($materialsRequestUsage->find(true)) {
-						$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
-						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
-						$curRow++;
+						$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+						$row[] = $date;
+						foreach ($materialsRequestUsage->numUsed as $num){
+							$row[] = $num;
+						}
 					} else {
-						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, "0");
-						$curRow++;
-					};
+						$num = "0";
+						$row[] = $num;
+					}
+					fputcsv($fp, $row);;
 				}
 			}
 
@@ -189,20 +182,18 @@ class MaterialsRequest_Graph extends Admin_Admin {
 			$locations->find();
 			while ($locations->fetch()) {
 				$thisStatus = new MaterialsRequestStatus();
-				$thisStatus->id = $status;
-				$currentAlpha = 0;
-				$alphas = range('B', 'Z');
-				$curCol = 1;
-				if ($thisStatus->find(true)) {
-					$curRow = 4;
-					$labelCell = $alphas[$currentAlpha] . '3';
-					$activeSheet->setCellValue($labelCell, $thisStatus->description);
+				$thisStatus->libraryId = $locations->locationId;
+				$thisStatus->find();
 
+				while ($thisStatus->fetch()) {
+					$header[] = $thisStatus->description;
+					fputcsv($fp, $header);
 					foreach ($periods as $period) {
 						$materialsRequestUsage = new MaterialsRequestUsage();
 						$materialsRequestUsage->groupBy('year, month');
 						$materialsRequestUsage->selectAdd();
 						$materialsRequestUsage->statusId = $status;
+						$materialsRequestUsage->locationId = $location;
 						$materialsRequestUsage->year = $period['year'];
 						$materialsRequestUsage->month = $period['month'];
 						$materialsRequestUsage->selectAdd('year');
@@ -211,28 +202,20 @@ class MaterialsRequest_Graph extends Admin_Admin {
 						$materialsRequestUsage->orderBy('year, month');
 
 						if ($materialsRequestUsage->find(true)) {
-							$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
-							$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
-							$curRow++;
+							$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+							$row[] = $date;
+							foreach ($materialsRequestUsage->numUsed as $num){
+								$row[] = $num;
+							}
 						} else {
-							$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, "0");
-							$curRow++;
-						};
+							$num = "0";
+							$row[] = $num;
+						}
+						fputcsv($fp, $row);;
 					}
 				}
 			}
 		}
-
-		// Rename sheet
-		$activeSheet->setTitle('Dashboard Report');
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="MaterialsRequestDashboardReport.xls"');
-		header('Cache-Control: max-age=0');
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
 		exit;
 	}
 

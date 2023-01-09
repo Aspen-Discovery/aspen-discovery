@@ -5,7 +5,6 @@ require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestUsage.php');
-require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_SummaryReport extends Admin_Admin {
 
@@ -161,48 +160,27 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 	}
 
 	function exportToExcel($periodData, $statuses) {
-		global $configArray;
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment;filename="MaterialsRequestSummaryReport.csv"');
+		header('Cache-Control: max-age=0');
+		$fp = fopen('php://output', 'w');
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])->setLastModifiedBy($configArray['Site']['title'])->setTitle("Materials Request Summary Report")->setSubject("Materials Request")->setCategory("Materials Request Summary Report");
-
-		// Add some data
-		$objPHPExcel->setActiveSheetIndex(0);
-		$activeSheet = $objPHPExcel->getActiveSheet();
-		$activeSheet->setCellValue('A1', 'Materials Request Summary Report');
-		$activeSheet->setCellValue('A3', 'Date');
-		$column = 1;
+		$header = ['Date'];
 		foreach ($statuses as $statusLabel) {
-			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
+			$header[] = $statusLabel;
 		}
+		fputcsv($fp, $header);
 
-		$row = 4;
-		$column = 0;
 		//Loop Through The Report Data
 		foreach ($periodData as $date => $periodInfo) {
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, date('M-d-Y', $date));
+			$date = date('M-d-Y', $date);
+			$row[] = $date;
 			foreach ($statuses as $status => $statusLabel) {
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, isset($periodInfo[$status]) ? $periodInfo[$status] : 0);
+				$stat = $userInfo['requestsByStatus'][$status] ?? 0;
+				$row[] = $stat;
 			}
-			$row++;
-			$column = 0;
+			fputcsv($fp, $row);
 		}
-		for ($i = 0; $i < count($statuses) + 1; $i++) {
-			$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-		}
-
-		// Rename sheet
-		$activeSheet->setTitle('Summary Report');
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="MaterialsRequestSummaryReport.xls"');
-		header('Cache-Control: max-age=0');
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
 		exit;
 	}
 

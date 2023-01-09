@@ -47,7 +47,7 @@
 <div class="col-sm-12" style="padding-top: 2em;">
 		<form action="/MaterialsRequest/Dashboard" method="get">
 			<input type="hidden" name="location" value="{$selectedLocation}"/>
-			<input type="submit" id="exportToExcel" name="exportToExcel" value="{translate text="Export to Excel" isAdminFacing=true}"  class="btn btn-default">
+			<input type="submit" id="exportToExcel" name="exportToExcel" value="{translate text="Export to CSV" isAdminFacing=true}"  class="btn btn-default">
 		</form>
 
 		{* Export to Excel option *}

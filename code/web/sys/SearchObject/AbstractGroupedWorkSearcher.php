@@ -593,7 +593,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 * Turn our results into a csv document
 	 * @param null|array $result
 	 */
-	public function buildExcel($result = null) { //TODO: KODI - can't change to buildCSV(), affects groupedworksearcher2.php?
+	public function buildExcel($result = null) {
 		global $configArray;
 		try {
 			// First, get the search results if none were provided
@@ -615,7 +615,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
 			fputcsv($fp, $fields);
 
-			global $solrScope;
 			$docs = $result['response']['docs'];
 
 			for ($i = 0; $i < count($docs); $i++) {

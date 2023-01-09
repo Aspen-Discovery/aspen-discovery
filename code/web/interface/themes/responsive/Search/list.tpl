@@ -137,7 +137,7 @@
 						<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 					{/if}
 				{/if}
-				<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
+				<a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a>
 			{/if}
 			{if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 				<a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
