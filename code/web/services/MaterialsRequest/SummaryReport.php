@@ -165,7 +165,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		header('Cache-Control: max-age=0');
 		$fp = fopen('php://output', 'w');
 
-		$header = ['Date'];
+		$header[] = 'Date';
 		foreach ($statuses as $statusLabel) {
 			$header[] = $statusLabel;
 		}

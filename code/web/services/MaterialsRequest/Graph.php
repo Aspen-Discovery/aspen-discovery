@@ -133,7 +133,7 @@ class MaterialsRequest_Graph extends Admin_Admin {
 		header('Cache-Control: max-age=0');
 		$fp = fopen('php://output', 'w');
 
-		$header = ['Date'];
+		$header[] = 'Date';
 
 		if ($location !== '' && $location !== null) {
 			$thisStatus = new MaterialsRequestStatus();
