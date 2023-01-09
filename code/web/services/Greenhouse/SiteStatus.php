@@ -7,13 +7,56 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 
 	function launch() {
 		global $interface;
+		$showErrorsOnly = false;
 		if (isset($_REQUEST['showErrorsOnly'])) {
-			$interface->assign('showErrorsOnly', true);
+			$showErrorsOnly = true;
 		}
+		$interface->assign('showErrorsOnly', $showErrorsOnly);
+
+		$serversToShow = 1;
+		if (isset($_REQUEST['serversToShow'])) {
+			$serversToShow = $_REQUEST['serversToShow'];
+		}
+		$interface->assign('serversToShow', $serversToShow);
+
+		$serversToShowOptions = [
+			1 => 'All Servers',
+			2 => 'Production & Soft Launch Servers Only',
+			3 => 'Test Servers Only',
+			4 => 'Implementation Servers Only',
+			5 => 'Test and Implementation Servers',
+		];
+		$interface->assign('serversToShowOptions', $serversToShowOptions);
+
+		$versionToShow = '';
+		if (isset($_REQUEST['versionToShow'])) {
+			$versionToShow = $_REQUEST['versionToShow'];
+		}
+		$interface->assign('versionToShow', $versionToShow);
 		$sites = new AspenSite();
-		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
+		$interface->assign('numTotalResults', $sites->count());
+
+		if ($serversToShow == 1) {
+			$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
+		}elseif ($serversToShow == 2) {
+			$sites->whereAdd('implementationStatus = 2 OR implementationStatus = 3');
+			$sites->whereAdd('siteType = 0 OR siteType = 2');
+		}elseif ($serversToShow == 3) {
+			$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
+			$sites->whereAdd('siteType = 1 OR siteType = 3');
+		}elseif ($serversToShow == 4) {
+			$sites->whereAdd('implementationStatus = 1');
+		}elseif ($serversToShow == 5) {
+			//First bit gets implementation servers and second bit gets test servers
+			$sites->whereAdd('implementationStatus = 1 OR ((implementationStatus = 2 OR implementationStatus = 3) AND (siteType = 1 OR siteType = 3))');
+		}
+		if (!empty($versionToShow)) {
+			$sites->whereAdd("version LIKE '$versionToShow%'");
+		}
+
 		$sites->orderBy('name ASC');
 		$sites->find();
+		$interface->assign('numFilteredResults', $sites->getNumResults());
 		$siteStatuses = [];
 		$allChecks = [];
 		$checksWithErrors = [];
@@ -30,6 +73,9 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 			}
 		}
 		asort($allChecks);
+		if ($showErrorsOnly) {
+			$interface->assign('numFilteredResults', count($sitesWithErrors));
+		}
 
 		$interface->assign('allChecks', $allChecks);
 		$interface->assign('siteStatuses', $siteStatuses);

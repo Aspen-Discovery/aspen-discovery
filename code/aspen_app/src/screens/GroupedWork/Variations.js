@@ -28,11 +28,6 @@ export const Variations = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
 
-     console.log('*******************************');
-     console.log('cachedGroupedWork: ' + id);
-     console.log('format: ' + format);
-     console.log('*******************************');
-
      const { data: record } = useQuery({
           queryKey: ['recordId', id, format, library.baseUrl],
           queryFn: () => getFirstRecord(id, format, library.baseUrl),
@@ -48,8 +43,6 @@ export const Variations = (props) => {
 };
 
 const Variation = (payload) => {
-     const { library } = React.useContext(LibrarySystemContext);
-     const route = useRoute();
      const id = payload.id;
      const prevRoute = payload.prevRoute;
      const variation = payload.records;
@@ -63,13 +56,8 @@ const Variation = (payload) => {
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
 
-     console.log('*******************************');
-     console.log(variation);
-     console.log(_.size(variation.actions));
-     console.log('*******************************');
-
      const handleOnPress = () => {
-          navigate('CopyDetails', { id: id, format: format, prevRoute: prevRoute });
+          navigate('CopyDetails', { id: id, format: format, prevRoute: prevRoute, type: 'groupedWork', recordId: null });
      };
 
      const handleOpenEditions = () => {

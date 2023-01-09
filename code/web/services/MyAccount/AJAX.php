@@ -2333,37 +2333,31 @@ class MyAccount_AJAX extends JSON_Action {
 		$showRenewalsRemaining = $user->showRenewalsRemaining();
 		$showWaitList = $user->showWaitListInCheckouts();
 
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
-
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("Library Checkouts for " . $user->displayName)->setCategory("Checked Out Items");
 
 		try {
-			$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-			$curRow = 1;
-			$curCol = 0;
-			$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, 'Checked Out Items');
-			$curRow = 3;
-			$curCol = 0;
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
+			// Redirect output to a client's web browser
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="CheckedOutItems.csv"');
+			header('Cache-Control: max-age=0');
+			$fp = fopen('php://output', 'w');
+
+			$fields = ['Title', 'Author', 'Format'];
 			if ($showOut) {
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Out');
+				$fields[] = 'Out';
 			}
-			$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Due');
-			if ($showRenewed) {
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Renewed');
+			$fields[] = 'Due';
+			if ($showRenewed){
+				$fields[] = 'Renewed';
 			}
-			if ($showWaitList) {
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Wait List');
+			if ($showWaitList){
+				$fields[] = 'Wait List';
 			}
-			if ($hasLinkedUsers) {
-				$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, 'User');
+			if ($hasLinkedUsers){
+				$fields[] = 'User';
 			}
 
-			$a = 4;
+			fputcsv($fp, $fields);
+
 			//Loop Through The Report Data
 			/** @var Checkout $row */
 			foreach ($allCheckedOut as $row) {
@@ -2371,6 +2365,7 @@ class MyAccount_AJAX extends JSON_Action {
 				if (!empty($row->title2)) {
 					$titleCell .= preg_replace("~([/:])$~", "", $row->title2);
 				}
+				$title = $titleCell;
 
 				if (isset ($row->author)) {
 					if (is_array($row->author)) {
@@ -2382,6 +2377,8 @@ class MyAccount_AJAX extends JSON_Action {
 				} else {
 					$authorCell = '';
 				}
+				$author = $authorCell;
+
 				if (isset($row->format)) {
 					if (is_array($row->format)) {
 						$formatString = implode(', ', $row->format);
@@ -2391,64 +2388,63 @@ class MyAccount_AJAX extends JSON_Action {
 				} else {
 					$formatString = '';
 				}
-				$activeSheet = $objPHPExcel->setActiveSheetIndex(0);
-				$curCol = 0;
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $titleCell);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $authorCell);
-				$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $formatString);
+				$format = $formatString;
+
+				$checkoutDate = '';
 				if ($showOut) {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row->checkoutDate));
-				}
-				if (isset($row->dueDate)) {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, date('M d, Y', $row->dueDate));
-				} else {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, '');
+					$checkoutDate = date('M d, Y', $row->checkoutDate);
 				}
 
+				if (isset($row->dueDate)) {
+					$dueDate = date('M d, Y', $row->dueDate);
+				} else {
+					$dueDate = '';
+				}
+
+				$Renewed = '';
 				if ($showRenewed) {
 					if (isset($row->dueDate)) {
-						$activeSheet->setCellValueByColumnAndRow($curCol++, $a, isset($row->renewCount) ? $row->renewCount : '');
-					} else {
-						$activeSheet->setCellValueByColumnAndRow($curCol++, $a, '');
+						$Renewed = $row->renewCount;
 					}
 				}
+
+				$waitList = '';
 				if ($showWaitList) {
-					$activeSheet->setCellValueByColumnAndRow($curCol++, $a, $row->holdQueueLength);
+					$waitList = $row->holdQueueLength;
 				}
+
+				$userName = '';
 				if ($hasLinkedUsers) {
-					$activeSheet->setCellValueByColumnAndRow($curCol, $a, $row->getUserName());
+					$userName = $row->getUserName();
 				}
 
-				$a++;
+
+				$row = array ($title, $author, $format);
+				if ($showOut) {
+					$row[] = $checkoutDate;
+				}
+				$row[] = $dueDate;
+				if ($showRenewed){
+					$fields[] =$Renewed;
+				}
+				if ($showWaitList){
+					$fields[] =$waitList;
+				}
+				if ($hasLinkedUsers){
+					$fields[] =$user;
+				}
+				fputcsv($fp, $row);
 			}
-			$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
-			// Rename sheet
-			$objPHPExcel->getActiveSheet()->setTitle('Checked Out');
 
-			// Redirect output to a client's web browser (Excel5)
-			header('Content-Type: application/vnd.ms-excel');
-			header('Content-Disposition: attachment;filename="CheckedOutItems.xls"');
-			header('Cache-Control: max-age=0');
-
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-			$objWriter->save('php://output');
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Error exporting to Excel " . $e, Logger::LOG_ERROR);
+			$logger->log("Error exporting to csv " . $e, Logger::LOG_ERROR);
 		}
 		exit;
 	}
 
 	/** @noinspection PhpUnused */
 	public function exportHolds() {
-		global $configArray;
 		$source = $_REQUEST['source'];
 		$user = UserAccount::getActiveUserObj();
 
@@ -2467,15 +2463,14 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$showDateWhenSuspending = $user->showDateWhenSuspending();
 
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment;filename="Holds.csv"');
+		header('Cache-Control: max-age=0');
+		$fp = fopen('php://output', 'w');
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("Library Holds for " . $user->displayName)->setCategory("Holds");
 
 		$hasLinkedUsers = count($user->getLinkedUsers()) > 0;
 		try {
-			$curRow = 1;
 			for ($i = 0; $i < 2; $i++) {
 				if ($i == 0) {
 					$exportType = "available";
@@ -2485,258 +2480,243 @@ class MyAccount_AJAX extends JSON_Action {
 				if (count($allHolds[$exportType]) == 0) {
 					continue;
 				}
-				$statusPosition = null;
-				$expiresPosition = null;
-				$userPosition = null;
 				if ($exportType == "available") {
-					// Add some data
-					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, 'Holds - ' . ucfirst($exportType));
-					$curRow += 2;
-
-					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, translate([
-						'text' => 'Title',
-						'isPublicFacing' => true,
-					]))->setCellValue('B' . $curRow, translate([
-						'text' => 'Author',
-						'isPublicFacing' => true,
-					]))->setCellValue('C' . $curRow, translate([
-						'text' => 'Format',
-						'isPublicFacing' => true,
-					]))->setCellValue('D' . $curRow, translate([
-						'text' => 'Placed',
-						'isPublicFacing' => true,
-					]))->setCellValue('E' . $curRow, translate([
-						'text' => 'Pickup',
-						'isPublicFacing' => true,
-					]))->setCellValue('F' . $curRow, translate([
-						'text' => 'Available',
-						'isPublicFacing' => true,
-					]))->setCellValue('G' . $curRow, translate([
-						'text' => 'Pickup By',
-						'isPublicFacing' => true,
-					]));
-					if ($hasLinkedUsers) {
-						$userPosition = 'H';
-						$objPHPExcel->getActiveSheet()->setCellValue('H' . $curRow, translate([
-							'text' => 'User',
-							'isPublicFacing' => true,
-						]));
-					}
-				} else {
-					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $curRow, translate([
+					// Section header
+					$holdType = translate([
 						'text' => 'Holds - ' . ucfirst($exportType),
 						'isPublicFacing' => true,
-					]));
-					$curRow += 2;
-					$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, translate([
+					]);
+					$header = array($holdType);
+					fputcsv($fp, $header);
+
+					// Column names
+					$titleCol = translate([
 						'text' => 'Title',
 						'isPublicFacing' => true,
-					]))->setCellValue('B' . $curRow, translate([
+					]);
+					$authorCol = translate([
 						'text' => 'Author',
 						'isPublicFacing' => true,
-					]))->setCellValue('C' . $curRow, translate([
+					]);
+					$formatCol = translate([
 						'text' => 'Format',
 						'isPublicFacing' => true,
-					]))->setCellValue('D' . $curRow, translate([
+					]);
+					$placedCol = translate([
 						'text' => 'Placed',
 						'isPublicFacing' => true,
-					]))->setCellValue('E' . $curRow, translate([
+					]);
+					$pickupCol = translate([
 						'text' => 'Pickup',
 						'isPublicFacing' => true,
-					]));
-
-					if ($showPosition) {
-						$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, translate([
-							'text' => 'Position',
-							'isPublicFacing' => true,
-						]));
-						$statusPosition = 'G';
-						if ($showExpireTime) {
-							$expiresPosition = 'H';
-							if ($hasLinkedUsers) {
-								$userPosition = 'I';
-							}
-						} else {
-							if ($hasLinkedUsers) {
-								$userPosition = 'H';
-							}
-						}
-
-					} else {
-						$statusPosition = 'F';
-						if ($showExpireTime) {
-							$expiresPosition = 'G';
-							if ($hasLinkedUsers) {
-								$userPosition = 'H';
-							}
-						} else {
-							if ($hasLinkedUsers) {
-								$userPosition = 'G';
-							}
-						}
-					}
-					$objPHPExcel->getActiveSheet()->setCellValue($statusPosition . $curRow, translate([
-						'text' => 'Status',
+					]);
+					$statusCol = translate([
+						'text' => 'Available',
 						'isPublicFacing' => true,
-					]));
-					if ($expiresPosition != null) {
-						$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, translate([
-							'text' => 'Expires',
-							'isPublicFacing' => true,
-						]));
+					]);
+					$pickupByCol = translate([
+						'text' => 'Pickup By',
+						'isPublicFacing' => true,
+					]);
+					$userCol = translate([
+						'text' => 'User',
+						'isPublicFacing' => true,
+					]);
+
+					$availFields = [$titleCol, $authorCol, $formatCol, $placedCol, $pickupCol, $statusCol, $pickupByCol];
+					if ($hasLinkedUsers){
+						$availFields[] = $userCol;
 					}
-					if ($userPosition != null) {
-						$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, translate([
-							'text' => 'User',
-							'isPublicFacing' => true,
-						]));
+					fputcsv($fp, $availFields);
+
+					foreach ($allHolds['available'] as $row) {
+						$title = preg_replace("~([/:])$~", "", $row->title);
+						if (isset ($row->title2)) {
+							$title .= preg_replace("~([/:])$~", "", $row->title2);
+						}
+
+						if (isset ($row->author)) {
+							if (is_array($row->author)) {
+								$author = implode(',', $row->author);
+							} else {
+								$author = $row->author;
+							}
+							$author = str_replace('&nbsp;', ' ', $author);
+						} else {
+							$author = '';
+						}
+
+						if (isset($row->format)) {
+							if (is_array($row->format)) {
+								$format = implode(', ', $row->format);
+							} else {
+								$format = $row->format;
+							}
+						} else {
+							$format = '';
+						}
+
+						if (empty($row->createDate)) {
+							$placed = '';
+						} else {
+							if (is_array($row->createDate)) {
+								$placed = new DateTime();
+								$placed->setDate($row->createDate['year'], $row->createDate['month'], $row->createDate['day']);
+								$placed = $placed->format('M d, Y');
+							} else {
+								$placed = $this->isValidTimeStamp($row->createDate) ? $row->createDate : strtotime($row->createDate);
+								$placed = date('M d, Y', $placed);
+							}
+						}
+						$pickup = $row->pickupLocationName ?? '';
+
+						if (empty($row->expirationDate)) {
+							$expireDate = '';
+						} else {
+							if (is_array($row->expirationDate)) {
+								$expireDate = new DateTime();
+								$expireDate->setDate($row->expirationDate['year'], $row->expirationDate['month'], $row->expirationDate['day']);
+								$expireDate = $expireDate->format('M d, Y');
+							} else {
+								$expireDate = $this->isValidTimeStamp($row->expirationDate) ? $row->expirationDate : strtotime($row->expirationDate);
+								$expireDate = date('M d, Y', $expireDate);
+							}
+						}
+
+						if (empty($row->availableDate)) {
+							$status = 'Now';
+						} else {
+							$status = $this->isValidTimeStamp($row->availableDate) ? $row->availableDate : strtotime($row->availableDate);
+							$status = date('M d, Y', $status);
+						}
+
+						$user = $row->getUserName();
+
+						$availValues = [$title, $author, $format, $placed, $pickup, $status, $expireDate, $user];
+						if ($hasLinkedUsers){
+							$availValues[] = $user;
+						}
+						fputcsv($fp, $availValues);
 					}
 				}
+				else {
+					// Section header
+					$holdType = translate([
+						'text' => 'Holds - ' . ucfirst($exportType),
+						'isPublicFacing' => true,
+					]);
+					$header = array($holdType);
+					fputcsv($fp, $header);
+					// Col names
+					$titleCol = translate([
+						'text' => 'Title',
+						'isPublicFacing' => true,
+					]);
+					$authorCol = translate([
+						'text' => 'Author',
+						'isPublicFacing' => true,
+					]);
+					$formatCol = translate([
+						'text' => 'Format',
+						'isPublicFacing' => true,
+					]);
+					$placedCol = translate([
+						'text' => 'Placed',
+						'isPublicFacing' => true,
+					]);
+					$pickupCol = translate([
+						'text' => 'Pickup',
+						'isPublicFacing' => true,
+					]);
+					$positionCol = translate([
+						'text' => 'Position',
+						'isPublicFacing' => true,
+					]);
+					$statusCol = translate([
+						'text' => 'Status',
+						'isPublicFacing' => true,
+					]);
+					$userCol = translate([
+						'text' => 'User',
+						'isPublicFacing' => true,
+					]);
 
-				$curRow++;
-				//Loop Through The Report Data
-				/** @var Hold $row */
-				foreach ($allHolds[$exportType] as $row) {
-					$titleCell = preg_replace("~([/:])$~", "", $row->title);
-					if (isset ($row->title2)) {
-						$titleCell .= preg_replace("~([/:])$~", "", $row->title2);
+					$unavailFields = [$titleCol, $authorCol, $formatCol, $placedCol, $pickupCol];
+					if ($showPosition){
+						$unavailFields[] = $positionCol;
 					}
+					$unavailFields[] = $statusCol;
+					if ($hasLinkedUsers){
+						$unavailFields[] = $userCol;
+					}
+					fputcsv($fp, $unavailFields);
 
-					if (isset ($row->author)) {
-						if (is_array($row->author)) {
-							$authorCell = implode(', ', $row->author);
-						} else {
-							$authorCell = $row->author;
+					foreach ($allHolds['unavailable'] as $row) {
+						$title = preg_replace("~([/:])$~", "", $row->title);
+						if (isset ($row->title2)) {
+							$title .= preg_replace("~([/:])$~", "", $row->title2);
 						}
-						$authorCell = str_replace('&nbsp;', ' ', $authorCell);
-					} else {
-						$authorCell = '';
-					}
-					if (isset($row->format)) {
-						if (is_array($row->format)) {
-							$formatString = implode(', ', $row->format);
-						} else {
-							$formatString = $row->format;
-						}
-					} else {
-						$formatString = '';
-					}
 
-					if (empty($row->createDate)) {
-						$placedDate = '';
-					} else {
-						if (is_array($row->createDate)) {
-							$placedDate = new DateTime();
-							$placedDate->setDate($row->createDate['year'], $row->createDate['month'], $row->createDate['day']);
-							$placedDate = $placedDate->format('M d, Y');
+						if (isset ($row->author)) {
+							if (is_array($row->author)) {
+								$author = implode(', ', $row->author);
+							} else {
+								$author = $row->author;
+							}
+							$author = str_replace('&nbsp;', ' ', $author);
 						} else {
-							$placedDate = $this->isValidTimeStamp($row->createDate) ? $row->createDate : strtotime($row->createDate);
-							$placedDate = date('M d, Y', $placedDate);
+							$author = '';
 						}
-					}
+						if (isset($row->format)) {
+							if (is_array($row->format)) {
+								$format = implode(', ', $row->format);
+							} else {
+								$format = $row->format;
+							}
+						} else {
+							$format = '';
+						}
+						if (empty($row->createDate)) {
+							$placed= '';
+						} else {
+							if (is_array($row->createDate)) {
+								$placed = new DateTime();
+								$placed->setDate($row->createDate['year'], $row->createDate['month'], $row->createDate['day']);
+								$placed = $placed->format('M d, Y');
+							} else {
+								$placed = $this->isValidTimeStamp($row->createDate) ? $row->createDate : strtotime($row->createDate);
+								$placed = date('M d, Y', $placed);
+							}
+						}
 
-					if (isset($row->pickupLocationName)) {
-						$locationString = $row->pickupLocationName;
-					} else {
-						$locationString = '';
-					}
+						$pickup = $row->pickupLocationName ?? '';
 
-					if (empty($row->expirationDate)) {
-						$expireDate = '';
-					} else {
-						if (is_array($row->expirationDate)) {
-							$expireDate = new DateTime();
-							$expireDate->setDate($row->expirationDate['year'], $row->expirationDate['month'], $row->expirationDate['day']);
-							$expireDate = $expireDate->format('M d, Y');
-						} else {
-							$expireDate = $this->isValidTimeStamp($row->expirationDate) ? $row->expirationDate : strtotime($row->expirationDate);
-							$expireDate = date('M d, Y', $expireDate);
-						}
-					}
-
-					if ($exportType == "available") {
-						if (empty($row->availableDate)) {
-							$availableDate = 'Now';
-						} else {
-							$availableDate = $this->isValidTimeStamp($row->availableDate) ? $row->availableDate : strtotime($row->availableDate);
-							$availableDate = date('M d, Y', $availableDate);
-						}
-						$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, $titleCell)->setCellValue('B' . $curRow, $authorCell)->setCellValue('C' . $curRow, $formatString)->setCellValue('D' . $curRow, $placedDate)->setCellValue('E' . $curRow, $locationString)->setCellValue('F' . $curRow, $availableDate)->setCellValue('G' . $curRow, $expireDate);
-						if ($userPosition != null) {
-							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, $row->getUserName());
-						}
-					} else {
-						if (isset($row->status)) {
-							$statusCell = $row->status;
-						} else {
-							$statusCell = '';
-						}
+						$status = $row->status ?? '';
 
 						if (isset($row->frozen) && $row->frozen && $showDateWhenSuspending && !empty($row->reactivateDate)) {
 							$reactivateTime = $this->isValidTimeStamp($row->reactivateDate) ? $row->reactivateDate : strtotime($row->reactivateDate);
-							$statusCell .= " until " . date('M d, Y', $reactivateTime);
-						}
-						$objPHPExcel->getActiveSheet()->setCellValue('A' . $curRow, $titleCell)->setCellValue('B' . $curRow, $authorCell)->setCellValue('C' . $curRow, $formatString)->setCellValue('D' . $curRow, $placedDate);
-						if (isset($row->pickupLocationName)) {
-							$objPHPExcel->getActiveSheet()->setCellValue('E' . $curRow, $row->pickupLocationName);
-						} else {
-							$objPHPExcel->getActiveSheet()->setCellValue('E' . $curRow, '');
+							$status .= " until " . date('M d, Y', $reactivateTime);
 						}
 
-						if ($statusPosition !== null) {
-							$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, $statusCell);
-						}
-						if ($showPosition) {
-							if (isset($row->position)) {
-								$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, $row->position);
-							} else {
-								$objPHPExcel->getActiveSheet()->setCellValue('F' . $curRow, '');
-							}
+						$position = $row->position ?? '';
 
-							$objPHPExcel->getActiveSheet()->setCellValue('G' . $curRow, $statusCell);
+						$user = $row->getUserName();
 
-						} else {
-
-							if ($showExpireTime) {
-								$objPHPExcel->getActiveSheet()->setCellValue('G' . $curRow, $expireDate);
-							}
+						$unavailValues = [$title, $author, $format, $placed, $pickup];
+						if ($showPosition){
+							$unavailValues[] = $position;
 						}
-						if ($expiresPosition) {
-							$objPHPExcel->getActiveSheet()->setCellValue($expiresPosition . $curRow, $expireDate);
+						$unavailValues[] = $status;
+						if ($hasLinkedUsers){
+							$unavailValues[] = $user;
 						}
-						if ($userPosition != null) {
-							$objPHPExcel->getActiveSheet()->setCellValue($userPosition . $curRow, $row->getUserName());
-						}
+						fputcsv($fp, $unavailValues);
 					}
-					$curRow++;
 				}
-				$curRow += 2;
 			}
-			$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('F')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('G')->setAutoSize(true);
-			$objPHPExcel->getActiveSheet()->getColumnDimension('H')->setAutoSize(true);
-
-			// Rename sheet
-			$objPHPExcel->getActiveSheet()->setTitle(translate([
-				'text' => 'Holds',
-				'isPublicFacing' => true,
-			]));
-
-			// Redirect output to a client's web browser (Excel5)
-			header('Content-Type: application/vnd.ms-excel');
-			header('Content-Disposition: attachment;filename="Holds.xls"');
-			header('Cache-Control: max-age=0');
-
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-			$objWriter->save('php://output');
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Error exporting to Excel " . $e, Logger::LOG_ERROR);
+			$logger->log("Error exporting to csv " . $e, Logger::LOG_ERROR);
 		}
 		exit;
 	}
@@ -2751,19 +2731,21 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 			$readingHistory = $user->getReadingHistory(1, -1, $selectedSortOption, '', true);
 
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="ReadingHistory.csv"');
+			header('Cache-Control: max-age=0');
+			$fp = fopen('php://output', 'w');
+
 			try {
-				// Create new PHPExcel object
-				$objPHPExcel = new PHPExcel();
-
 				// Set properties
-				$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("Reading History for " . $user->displayName)->setCategory("Reading History");
+				$fields = array('Title', 'Author', 'Format', 'Last used');
+				fputcsv($fp, $fields);
 
-				$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A1', 'Reading History')->setCellValue('A3', 'Title')->setCellValue('B3', 'Author')->setCellValue('C3', 'Format')->setCellValue('E3', 'Last Used');
-
-				$a = 4;
 				//Loop Through The Report Data
 				foreach ($readingHistory['titles'] as $row) {
 
+					$title = $row['title'];
+					$author = $row['author'];
 					$format = is_array($row['format']) ? implode(',', $row['format']) : $row['format'];
 					if ($row['checkedOut']) {
 						$lastCheckout = translate([
@@ -2777,30 +2759,12 @@ class MyAccount_AJAX extends JSON_Action {
 							$lastCheckout = $row['checkout'];
 						}
 					}
-
-					$objPHPExcel->setActiveSheetIndex(0)->setCellValue('A' . $a, $row['title'])->setCellValue('B' . $a, $row['author'])->setCellValue('C' . $a, $format)->setCellValue('E' . $a, $lastCheckout);
-
-					$a++;
+					$results = array ($title, $author, $format, $lastCheckout);
+					fputcsv($fp, $results);
 				}
-				$objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
-				$objPHPExcel->getActiveSheet()->getColumnDimension('B')->setAutoSize(true);
-				$objPHPExcel->getActiveSheet()->getColumnDimension('C')->setAutoSize(true);
-				$objPHPExcel->getActiveSheet()->getColumnDimension('D')->setAutoSize(true);
-				$objPHPExcel->getActiveSheet()->getColumnDimension('E')->setAutoSize(true);
-
-				// Rename sheet
-				$objPHPExcel->getActiveSheet()->setTitle('Reading History');
-
-				// Redirect output to a client's web browser (Excel5)
-				header('Content-Type: application/vnd.ms-excel');
-				header('Content-Disposition: attachment;filename="ReadingHistory.xls"');
-				header('Cache-Control: max-age=0');
-
-				$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-				$objWriter->save('php://output');
 			} catch (Exception $e) {
 				global $logger;
-				$logger->log("Error exporting to Excel " . $e, Logger::LOG_ERROR);
+				$logger->log("Error exporting to csv " . $e, Logger::LOG_ERROR);
 			}
 		}
 		exit;
@@ -6692,7 +6656,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$result = [
 			'success' => false,
 			'message' => translate([
-				'text' => 'Export User List to Excel: something went wrong.',
+				'text' => 'Export User List to CSV: something went wrong.',
 				'isPublicFacing' => true,
 			]),
 		];
@@ -6705,12 +6669,12 @@ class MyAccount_AJAX extends JSON_Action {
 			if ($list->find(true)) {
 				// Load the User object for the owner of the list (if necessary):
 				if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
-					$list->buildExcel();
+					$list->buildCSV();
 				} else {
 					$result = [
 						'result' => false,
 						'message' => translate([
-							'text' => 'Export User List to Excel: You do not have access to this list.',
+							'text' => 'Export User List to CSV: You do not have access to this list.',
 							'isPublicFacing' => true,
 						]),
 					];
@@ -6719,7 +6683,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$result = [
 					'result' => false,
 					'message' => translate([
-						'text' => 'Export User List to Excel: Unable to read list.',
+						'text' => 'Export User List to CSV: Unable to read list.',
 						'isPublicFacing' => true,
 					]),
 				];
@@ -6728,7 +6692,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$result = [
 				'result' => false,
 				'message' => translate([
-					'text' => 'Export User List to Excel: Invalid list id.',
+					'text' => 'Export User List to CSV: Invalid list id.',
 					'isPublicFacing' => true,
 				]),
 			];

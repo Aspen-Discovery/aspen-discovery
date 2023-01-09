@@ -7,6 +7,7 @@ function getUpdates23_01_00(): array
 		/*'name' => [
 			'title' => '',
 			'description' => '',
+			'continueOnError' => false,
 			'sql' => [
 				''
 			]
@@ -109,6 +110,15 @@ function getUpdates23_01_00(): array
 			],
 		],
 		//add_account_alerts_notification_settings
+		'change_greenhouse_url' => [
+			'title' => 'Change Greenhouse Url',
+			'description' => "Change greenhouse url if set to aspen-test.bywatersolutions.com",
+			'continueOnError' => false,
+			'sql' => [
+				"UPDATE system_variables set greenhouseUrl = 'https://greenhouse.aspendiscovery.org/' where greenhouseUrl like '%aspen-test.bywatersolutions.com%'"
+			]
+		],
+		//change_greenhouse_url
 
 		//kodi
 		'user_browse_add_home' => [

@@ -372,6 +372,10 @@ class HooplaDriver extends AbstractEContentDriver {
 							'isPublicFacing' => true,
 						]);
 						$apiResult['message'] = strip_tags($checkoutResponse->message);
+						$apiResult['action'] = translate([
+							'text' => 'Go to Checkouts',
+							'isPublicFacing' => true,
+						]);
 
 						//Prepare message for translation
 						$checkoutResponseMessage = $checkoutResponse->message;
