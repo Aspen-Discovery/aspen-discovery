@@ -172,13 +172,13 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 
 					if ($materialsRequestUsage->find(true)) {
 						$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-						$row = [$date];
+						$row[] = $date;
 						foreach ($materialsRequestUsage->numUsed as $num){
-							$row = [$num];
+							$row[] = $num;
 						}
 					} else {
 						$num = "0";
-						$row = [$num];
+						$row[] = $num;
 					}
 					fputcsv($fp, $row);;
 				}
@@ -216,7 +216,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 
 						if ($materialsRequestUsage->find(true)) {
 							$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-							$row = [$date];
+							$row[] = $date;
 							foreach ($materialsRequestUsage->numUsed as $num){
 								$row = [$num];
 							}

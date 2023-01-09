@@ -174,7 +174,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 		//Loop Through The Report Data
 		foreach ($periodData as $date => $periodInfo) {
 			$date = date('M-d-Y', $date);
-			$row = [$date];
+			$row[] = $date;
 			foreach ($statuses as $status => $statusLabel) {
 				$stat = $userInfo['requestsByStatus'][$status] ?? 0;
 				$row[] = $stat;
