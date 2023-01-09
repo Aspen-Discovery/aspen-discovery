@@ -147,7 +147,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 		header('Cache-Control: max-age=0');
 		$fp = fopen('php://output', 'w');
 
-		$header = ['Date'];
+		$header[] = 'Date';
 
 		if ($location !== '' && $location !== null) {
 			$thisStatus = new MaterialsRequestStatus();
