@@ -30,10 +30,10 @@
 		<form action="/MaterialsRequest/Graph" method="get">
             <input type="hidden" name="location" value="{$curLocation}"/>
             <input type="hidden" name="status" value="{$curStatus}"/>
-            <input type="submit" id="exportToExcel" name="exportToExcel" value="{translate text="Export to Excel" isAdminFacing=true}"  class="btn btn-default">
+            <input type="submit" id="exportToExcel" name="exportToExcel" value="{translate text="Export to CSV" isAdminFacing=true}"  class="btn btn-default">
         </form>
 
-        {* Export to Excel option *}
+        {* Export to CSV option *}
 	</div>
 {/strip}
 {literal}
