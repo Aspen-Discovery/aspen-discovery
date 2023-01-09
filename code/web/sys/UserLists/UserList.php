@@ -1015,8 +1015,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
-
+					$output = (array)'';
 				} elseif ($curDoc instanceof PersonRecord) {
 					// Hyperlink to Person Record
 					$link = $curDoc->getLinkUrl() ?? '';
@@ -1027,7 +1026,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
+					$output = (array)'';
 				} elseif ($curDoc instanceof OpenArchivesRecordDriver) {
 					// Hyperlink to Open Archive target
 					$link = $curDoc->getLinkUrl();
@@ -1038,7 +1037,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof EbscohostRecordDriver) {
 					// Hyperlink to EBSCOHost record
@@ -1051,7 +1050,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof EbscoRecordDriver) {
 					// Hyperlink to EBSCO record
@@ -1064,7 +1063,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
 					// Hyperlink
@@ -1076,7 +1075,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof WebResourceRecordDriver) {
 					// Hyperlink
@@ -1088,7 +1087,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = '';
+					$output = (array)'';
 				}
 
 				$output = implode(', ', $output);

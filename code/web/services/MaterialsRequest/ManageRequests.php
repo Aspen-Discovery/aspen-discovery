@@ -300,7 +300,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			header("Cache-Control: post-check=0, pre-check=0", false);
 			header("Pragma: no-cache");
 			header('Content-Type: text/csv; charset=utf-8');
-			header('Content-Disposition: attachment;filename="UserList.csv"');
+			header('Content-Disposition: attachment;filename="MaterialRequests.csv"');
 			$fp = fopen('php://output', 'w');
 
 			$fields = array('ID', 'Title', 'Season', 'Magazine', 'Author', 'Format', 'Sub Format', 'Type', 'Age Level', 'ISBN', 'UPC',

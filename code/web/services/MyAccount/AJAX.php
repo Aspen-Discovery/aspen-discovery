@@ -2341,18 +2341,19 @@ class MyAccount_AJAX extends JSON_Action {
 			header('Cache-Control: max-age=0');
 			$fp = fopen('php://output', 'w');
 
-			$fields = array('Title', 'Author', 'Format', 'Out', 'Due', 'Renewed', 'Wait List', 'User');
-			if (!$showOut) {
-				unset($fields['Out']);
+			$fields = ['Title', 'Author', 'Format'];
+			if ($showOut) {
+				$fields[] = 'Out';
 			}
-			if (!$showRenewed){
-				unset($fields['Renewed']);
+			$fields[] = 'Due';
+			if ($showRenewed){
+				$fields[] = 'Renewed';
 			}
-			if (!$showWaitList){
-				unset($fields['Wait List']);
+			if ($showWaitList){
+				$fields[] = 'Wait List';
 			}
-			if (!$hasLinkedUsers){
-				unset($fields['User']);
+			if ($hasLinkedUsers){
+				$fields[] = 'User';
 			}
 
 			fputcsv($fp, $fields);
@@ -2418,18 +2419,19 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 
 
-				$row = array ($title, $author, $format, $checkoutDate, $dueDate, $Renewed, $waitList, $userName);
-				if (!$showOut) {
-					unset($row[$checkoutDate]);
+				$row = array ($title, $author, $format);
+				if ($showOut) {
+					$row[] = $checkoutDate;
 				}
-				if (!$showRenewed){
-					unset($fields[$Renewed]);
+				$row[] = $dueDate;
+				if ($showRenewed){
+					$fields[] =$Renewed;
 				}
-				if (!$showWaitList){
-					unset($fields[$waitList]);
+				if ($showWaitList){
+					$fields[] =$waitList;
 				}
-				if (!$hasLinkedUsers){
-					unset($fields[$user]);
+				if ($hasLinkedUsers){
+					$fields[] =$user;
 				}
 				fputcsv($fp, $row);
 			}
@@ -2521,9 +2523,9 @@ class MyAccount_AJAX extends JSON_Action {
 						'isPublicFacing' => true,
 					]);
 
-					$availFields = array($titleCol, $authorCol, $formatCol, $placedCol, $pickupCol, $statusCol, $pickupByCol, $userCol);
-					if (!$hasLinkedUsers){
-						unset($availFields[$userCol]);
+					$availFields = [$titleCol, $authorCol, $formatCol, $placedCol, $pickupCol, $statusCol, $pickupByCol];
+					if ($hasLinkedUsers){
+						$availFields[] = $userCol;
 					}
 					fputcsv($fp, $availFields);
 
@@ -2590,9 +2592,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 						$user = $row->getUserName();
 
-						$availValues = array($title, $author, $format, $placed, $pickup, $status, $expireDate, $user);
-						if (!$hasLinkedUsers){
-							unset($availValues[$user]);
+						$availValues = [$title, $author, $format, $placed, $pickup, $status, $expireDate, $user];
+						if ($hasLinkedUsers){
+							$availValues[] = $user;
 						}
 						fputcsv($fp, $availValues);
 					}
@@ -2639,12 +2641,13 @@ class MyAccount_AJAX extends JSON_Action {
 						'isPublicFacing' => true,
 					]);
 
-					$unavailFields = array($titleCol, $authorCol, $formatCol, $placedCol, $pickupCol, $positionCol, $statusCol, $userCol);
-					if (!$showPosition){
-						unset($unavailFields[$positionCol]);
+					$unavailFields = [$titleCol, $authorCol, $formatCol, $placedCol, $pickupCol];
+					if ($showPosition){
+						$unavailFields[] = $positionCol;
 					}
-					if (!$hasLinkedUsers){
-						unset($unavailFields[$userCol]);
+					$unavailFields[] = $statusCol;
+					if ($hasLinkedUsers){
+						$unavailFields[] = $userCol;
 					}
 					fputcsv($fp, $unavailFields);
 
@@ -2699,12 +2702,13 @@ class MyAccount_AJAX extends JSON_Action {
 
 						$user = $row->getUserName();
 
-						$unavailValues = array($title, $author, $format, $placed, $pickup, $position, $status, $user);
-						if (!$showPosition){
-							unset($unavailValues[$position]);
+						$unavailValues = [$title, $author, $format, $placed, $pickup];
+						if ($showPosition){
+							$unavailValues[] = $position;
 						}
-						if (!$hasLinkedUsers){
-							unset($unavailValues[$user]);
+						$unavailValues[] = $status;
+						if ($hasLinkedUsers){
+							$unavailValues[] = $user;
 						}
 						fputcsv($fp, $unavailValues);
 					}
