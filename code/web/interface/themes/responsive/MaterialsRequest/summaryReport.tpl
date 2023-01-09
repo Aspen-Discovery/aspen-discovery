@@ -62,7 +62,7 @@
 								{/if}
 							</td>
 							{foreach from=$statuses key=status item=statusLabel}
-								<th>{if $periodInfo.$status}{$periodInfo.$status}{else}0{/if}</th>
+								<th>{if !empty($periodInfo.$status)}{$periodInfo.$status}{else}0{/if}</th>
 							{/foreach}
 						</tr>
 					{/foreach}
