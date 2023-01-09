@@ -916,51 +916,40 @@ class UserList extends DataObject {
 	}
 
 	/**
-	 * Turn our results into an Excel document
+	 * Turn our results into a csv document
 	 * @param null|array $result
 	 */
-	public function buildExcel() {
+	public function buildCSV() {
 		try {
-			global $configArray;
 			$titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for email list, not just a page's worth
 
-			// Create new PHPExcel object
-			$objPHPExcel = new PHPExcel();
-			// Set properties
-			$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("User List");
+			//Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="UserList.csv"');
+			$fp = fopen('php://output', 'w');
 
-			$objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle('Titles');
-
-			//Add headers to the table
-			$sheet = $objPHPExcel->getActiveSheet();
-			$curRow = 1;
-			$curCol = 0;
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
-
-			$maxColumn = $curCol - 1;
+			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
+			fputcsv($fp, $fields);
 
 			for ($i = 0; $i < count($titleDetails); $i++) {
 				$curDoc = $titleDetails[$i];
-				$curRow++;
-				$curCol = 0;
 				if ($curDoc instanceof GroupedWorkDriver) {
 					// Hyperlink to title
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $curDoc->getLinkUrl(true));
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($curDoc->getLinkUrl(true));
+					$link = $curDoc->getLinkUrl(true) ?? '';
 
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+
+					// Author
+					$author = $curDoc->getPrimaryAuthor() ?? '';
 
 					// Publisher list
 					$publishers = $curDoc->getPublishers();
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $publishers));
+					$publishers = implode(', ', $publishers);
 
 					// Publication dates: min - max
 					if (!is_array($curDoc->getPublicationDates())) {
@@ -974,7 +963,6 @@ class UserList extends DataObject {
 					} elseif (count($publishDates) > 1) {
 						$publishDate = min($publishDates) . ' - ' . max($publishDates);
 					}
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
 
 					// Formats
 					if (!is_array($curDoc->getFormats())) {
@@ -983,7 +971,7 @@ class UserList extends DataObject {
 						$formats = $curDoc->getFormats();
 					}
 					$uniqueFormats = array_unique($formats);
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
+					$uniqueFormats = implode(', ', $formats);
 
 					// Format / Location / Call number, max 3 records
 					//Get the Grouped Work Driver so we can get information about the formats and locations within the record
@@ -1015,95 +1003,101 @@ class UserList extends DataObject {
 							}
 						}
 					}
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
-
 				} elseif ($curDoc instanceof ListsRecordDriver) {
 					// Hyperlink to title
 					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// User List Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					// User List creator
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Author
 					$fields = $curDoc->getFields();
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
-
+					$author = $fields['author_display'] ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 				} elseif ($curDoc instanceof PersonRecord) {
 					// Hyperlink to Person Record
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
+					$link = $curDoc->getLinkUrl() ?? '';
 					// Person Name
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getName() ?? '');
-
+					$title = $curDoc->getName() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 				} elseif ($curDoc instanceof OpenArchivesRecordDriver) {
 					// Hyperlink to Open Archive target
 					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof EbscohostRecordDriver) {
 					// Hyperlink to EBSCOHost record
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					// Record Primary Author
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Primary Author
+					$author = $curDoc->getPrimaryAuthor() ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof EbscoRecordDriver) {
 					// Hyperlink to EBSCO record
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					// Record Primary Author
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Primary Author
+					$author = $curDoc->getPrimaryAuthor() ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
 					// Hyperlink
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 
 				} elseif ($curDoc instanceof WebResourceRecordDriver) {
 					// Hyperlink
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = (array)'';
 				}
+
+				$output = implode(', ', $output);
+				$row = array ($link, $title, $author, $publishers, $publishDate, $uniqueFormats, $output);
+				fputcsv($fp, $row);
 			}
-
-			for ($i = 0; $i < $maxColumn; $i++) {
-				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-			}
-
-			//Output to the browser
-			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-			header("Cache-Control: no-store, no-cache, must-revalidate");
-			header("Cache-Control: post-check=0, pre-check=0", false);
-			header("Pragma: no-cache");
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename="UserList.xlsx"');
-
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-			$objPHPExcel->disconnectWorksheets();
-			unset($objPHPExcel);
 			exit();
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
 		}
 	}
-
 }
