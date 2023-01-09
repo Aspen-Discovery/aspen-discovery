@@ -49,7 +49,7 @@
 						<td>{$userInfo.firstName}</td>
 						<td>{$userInfo.barcode}</td>
 						{foreach from=$statuses key=status item=statusLabel}
-							<th>{if $userInfo.requestsByStatus.$status}{$userInfo.requestsByStatus.$status}{else}0{/if}</th>
+							<th>{if !empty($userInfo.requestsByStatus.$status)}{$userInfo.requestsByStatus.$status}{else}0{/if}</th>
 						{/foreach}
 					</tr>
 				{/foreach}
