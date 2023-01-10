@@ -173,10 +173,11 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		//Loop Through The Report Data
 		foreach ($periodData as $date => $periodInfo) {
+			$row = []; //empty row so you don't get repeat data
 			$date = date('M-d-Y', $date);
 			$row[] = $date;
 			foreach ($statuses as $status => $statusLabel) {
-				$stat = $userInfo['requestsByStatus'][$status] ?? 0;
+				$stat = $periodInfo[$status] ?? 0;
 				$row[] = $stat;
 			}
 			fputcsv($fp, $row);

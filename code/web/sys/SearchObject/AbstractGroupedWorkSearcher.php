@@ -638,10 +638,13 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 
 				// Publish Dates: Min-Max
-				if (!is_array($curDoc['publishDate'])) {
-					$publishDates = (array)$curDoc['publishDate'];
-				} else {
-					$publishDates = $curDoc['publishDate'];
+				$publishDates = [''];
+				if (isset($curDoc['publishDate'])) {
+					if (!is_array($curDoc['publishDate'])) {
+						$publishDates = [$curDoc['publishDate']];
+					} else {
+						$publishDates = $curDoc['publishDate'];
+					}
 				}
 				$publishDate = '';
 				if (count($publishDates) == 1) {
@@ -687,6 +690,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 										if (count($output) == 0) {
 											$output[] = "No copies currently owned by this library";
 										}
+									}
+									if($record->_eContentSource == "OverDrive"){
+										$output[] = $format . "::" . "OverDrive";
+										$output = array_unique($output);
+										$output = array_slice($output, 0, 3);
 									}
 								}
 							}
