@@ -180,7 +180,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		global $interface;
 		global $configArray;
 		//Indexing Profile is null for side loads
-		if ($this->getIndexingProfile() != null) {
+		if ($this->getIndexingProfile() != null && $this->indexingProfile instanceof IndexingProfile) {
 			$accountProfile = $this->indexingProfile->getAccountProfile();
 			if ($accountProfile != null) {
 				if ($accountProfile->ils == 'millennium' || $accountProfile->ils == 'sierra') {
