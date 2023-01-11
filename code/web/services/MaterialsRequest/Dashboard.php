@@ -138,8 +138,6 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 
 	function exportToExcel() {
 		$location = $_REQUEST['location'];
-		$status = $_REQUEST['status'];
-
 		$periods = $this->getAllPeriods();
 
 		header('Content-Type: text/csv; charset=utf-8');
@@ -151,37 +149,42 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 
 		if ($location !== '' && $location !== null) {
 			$thisStatus = new MaterialsRequestStatus();
-			$thisStatus->id = $status;
 			$thisStatus->libraryId = $location;
-			if ($thisStatus->find(true)) {
-				$header[] = $thisStatus->description;
-				fputcsv($fp, $header);
+			$thisStatus->find();
 
-				foreach ($periods as $period) {
+			while ($thisStatus->fetch()) { //loop through each status and get description for header
+				$header[] = $thisStatus->description;
+			}
+			fputcsv($fp, $header);
+
+			foreach ($periods as $period) { //each row is a different time period
+				$materialsRequestUsage = new MaterialsRequestUsage();
+				$materialsRequestUsage->year = $period['year'];
+				$materialsRequestUsage->month = $period['month'];
+				$materialsRequestUsage->statusId = $thisStatus->id;
+				$materialsRequestUsage->locationId = $location;
+				$materialsRequestUsage->find();
+
+				$row = []; //empty new rows
+				$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+				$row[] = $date; //add date first
+
+				$thisStatus = new MaterialsRequestStatus();
+				$thisStatus->libraryId = $location;
+				$thisStatus->find();
+
+				while ($thisStatus->fetch()){ //loop through statuses again
 					$materialsRequestUsage = new MaterialsRequestUsage();
-					$materialsRequestUsage->groupBy('year, month');
-					$materialsRequestUsage->selectAdd();
-					$materialsRequestUsage->statusId = $status;
-					$materialsRequestUsage->locationId = $location;
 					$materialsRequestUsage->year = $period['year'];
 					$materialsRequestUsage->month = $period['month'];
-					$materialsRequestUsage->selectAdd('year');
-					$materialsRequestUsage->selectAdd('month');
-					$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
-					$materialsRequestUsage->orderBy('year, month');
-
-					if ($materialsRequestUsage->find(true)) {
-						$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-						$row[] = $date;
-						foreach ($materialsRequestUsage->numUsed as $num){
-							$row[] = $num;
-						}
-					} else {
-						$num = "0";
-						$row[] = $num;
+					$materialsRequestUsage->statusId = $thisStatus->id;
+					if ($materialsRequestUsage->find(true)){ //if we find a match on year, month, and id/statusId
+						$row[] = $materialsRequestUsage->numUsed ?? 0;
+					}else{ //otherwise, usage is 0
+						$row[] = 0;
 					}
-					fputcsv($fp, $row);;
 				}
+				fputcsv($fp, $row);
 			}
 		} else {
 			$userHomeLibrary = Library::getPatronHomeLibrary();
@@ -200,32 +203,36 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 
 				while ($thisStatus->fetch()) {
 					$header[] = $thisStatus->description;
-					fputcsv($fp, $header);
-					foreach ($periods as $period) {
+				}
+				fputcsv($fp, $header);
+
+				foreach ($periods as $period) {
+					$materialsRequestUsage = new MaterialsRequestUsage();
+					$materialsRequestUsage->year = $period['year'];
+					$materialsRequestUsage->month = $period['month'];
+					$materialsRequestUsage->statusId = $thisStatus->id;
+					$materialsRequestUsage->find();
+
+					$row = [];
+					$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+					$row[] = $date;
+
+					$thisStatus = new MaterialsRequestStatus();
+					$thisStatus->libraryId = $locations->locationId;
+					$thisStatus->find();
+
+					while ($thisStatus->fetch()){
 						$materialsRequestUsage = new MaterialsRequestUsage();
-						$materialsRequestUsage->groupBy('year, month');
-						$materialsRequestUsage->selectAdd();
-						$materialsRequestUsage->statusId = $status;
-						$materialsRequestUsage->locationId = $location;
 						$materialsRequestUsage->year = $period['year'];
 						$materialsRequestUsage->month = $period['month'];
-						$materialsRequestUsage->selectAdd('year');
-						$materialsRequestUsage->selectAdd('month');
-						$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
-						$materialsRequestUsage->orderBy('year, month');
-
-						if ($materialsRequestUsage->find(true)) {
-							$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-							$row[] = $date;
-							foreach ($materialsRequestUsage->numUsed as $num){
-								$row[] = $num;
-							}
-						} else {
-							$num = "0";
-							$row[] = $num;
+						$materialsRequestUsage->statusId = $thisStatus->id;
+						if ($materialsRequestUsage->find(true)){
+							$row[] = $materialsRequestUsage->numUsed ?? 0;
+						}else{
+							$row[] = 0;
 						}
-						fputcsv($fp, $row);;
 					}
+					fputcsv($fp, $row);
 				}
 			}
 		}
