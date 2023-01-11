@@ -4,7 +4,7 @@ import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
-import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
 import { translate } from '../../translations/translations';
 import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { Editions } from '../../screens/GroupedWork/Editions';
@@ -89,6 +89,15 @@ const BrowseStackNavigator = () => {
                          }}
                     />
                </Stack.Group>
+              <Stack.Group>
+                  <Stack.Screen
+                      name="GroupedWorkScreen221200"
+                      component={GroupedWork221200}
+                      options={({ route }) => ({
+                          title: route.params.title ?? translate('grouped_work.title'),
+                      })}
+                  />
+              </Stack.Group>
           </Stack.Navigator>
      );
 };

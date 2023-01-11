@@ -296,6 +296,7 @@ export class Record extends Component {
                                                     id={id}
                                                     actionLabel={thisAction.title}
                                                     actionType={thisAction.type}
+                                                    action={thisAction}
                                                     patronId={user.id}
                                                     formatId={thisAction.formatId}
                                                     sampleNumber={thisAction.sampleNumber}
@@ -316,7 +317,7 @@ export class Record extends Component {
                                                 />
                                             );
                                        } else if (thisAction.title === 'Access Online') {
-                                            return <SideLoad key={index} actionUrl={thisAction.url} actionLabel={thisAction.title} libraryUrl={libraryUrl}/>;
+                                            return <SideLoad key={index} action={thisAction} actionUrl={thisAction.url} actionLabel={thisAction.title} libraryUrl={libraryUrl}/>;
                                        } else if (thisAction.url === '/MyAccount/CheckedOut') {
                                             return <CheckedOutToYou key={index} title={thisAction.title} openCheckouts={openCheckouts}/>;
                                        } else if (thisAction.url === '/MyAccount/Holds') {
@@ -360,8 +361,16 @@ const CheckOutEContent = (props) => {
      const {library} = React.useContext(LibrarySystemContext);
      const {location} = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);
+
+    const volumeInfo = {
+        numItemsWithVolumes: 0,
+        numItemsWithoutVolumes: 1,
+        hasItemsWithoutVolumes: true,
+        majorityOfItemsHaveVolumes: false,
+    }
+
      if (props.linkedAccountsCount > 0) {
-          return <SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} updateProfile={props.updateProfile}  isEContent={false}/>;
+          return <SelectLinkedAccount action={props.actionType} id={props.id} user={props.user} linkedAccounts={props.linkedAccounts} title={props.title} libraryUrl={props.libraryUrl} showAlert={props.showAlert} updateProfile={props.updateProfile} isEContent={true} volumeInfo={volumeInfo}/>;
      } else {
           return (
               <Button
@@ -401,13 +410,22 @@ const ILS = (props) => {
      const {location} = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);
 
+    const volumeInfo = {
+        numItemsWithVolumes: 0,
+        numItemsWithoutVolumes: 1,
+        hasItemsWithoutVolumes: true,
+        majorityOfItemsHaveVolumes: false,
+    }
+
      if (props.locationCount && props.locationCount > 1) {
           return (
               <SelectPickupLocation
                   locations={props.locations}
                   label={props.actionLabel}
-                  action={props.actionType}
+                  title={props.actionLabel}
+                  action={props.action.type}
                   record={props.id}
+                  id={props.id}
                   patron={props.patronId}
                   showAlert={props.showAlert}
                   preferredLocation={props.pickupLocation}
@@ -417,6 +435,7 @@ const ILS = (props) => {
                   user={props.user}
                   majorityOfItemsHaveVolumes={props.majorityOfItemsHaveVolumes}
                   volumes={props.volumes}
+                  volumeInfo={props.volumes}
                   updateProfile={props.updateProfile}
                   hasItemsWithoutVolumes={props.hasItemsWithoutVolumes}
                   volumeCount={props.volumeCount}
@@ -427,8 +446,10 @@ const ILS = (props) => {
                return (
                    <SelectVolumeHold
                        label={props.actionLabel}
-                       action={props.actionType}
+                       action={props.action.type}
+                       title={props.actionLabel}
                        record={props.id}
+                       id={props.id}
                        patron={props.patronId}
                        showAlert={props.showAlert}
                        libraryUrl={props.libraryUrl}
@@ -436,6 +457,7 @@ const ILS = (props) => {
                        linkedAccountsCount={props.linkedAccountsCount}
                        user={props.user}
                        volumes={props.volumes}
+                       volumeInfo={props.volumes}
                        updateProfile={props.updateProfile}
                        hasItemsWithoutVolumes={props.hasItemsWithoutVolumes}
                        majorityOfItemsHaveVolumes={props.majorityOfItemsHaveVolumes}
@@ -461,9 +483,10 @@ const ILS = (props) => {
                        onPress={async () => {
                             setLoading(true);
                             completeAction(props.id, props.actionType, props.patronId, null, null, props.locations[0].code, props.libraryUrl).then((response) => {
-                                 reloadProfile(library.baseUrl).then((result) => {
+                                 reloadProfile(props.libraryUrl).then((result) => {
                                       updateUser(result);
                                  });
+                                console.log(response);
                                  props.showAlert(response);
                                  setLoading(false);
                             });
@@ -589,6 +612,7 @@ const OnHoldForYou = (props) => {
 
 // complete the action on the item, i.e. checkout, hold, or view sample
 export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null) {
+    console.log(actionType);
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];

@@ -12,6 +12,7 @@ import AddToList from './AddToList';
 import _ from 'lodash';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
+import {formatDiscoveryVersion} from '../../util/loadLibrary';
 
 export default class SearchByList extends Component {
      static contextType = userContext;
@@ -160,6 +161,7 @@ export default class SearchByList extends Component {
           const { navigation, route } = this.props;
           const libraryContext = route.params?.libraryContext ?? [];
           const libraryUrl = libraryContext.baseUrl;
+          const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
 
           if (item) {
                if (recordtype === 'list') {
@@ -169,12 +171,21 @@ export default class SearchByList extends Component {
                          libraryUrl,
                     });
                } else {
-                    navigateStack('SearchTab', 'ListResultItem', {
-                         id: item,
-                         title: getCleanTitle(title),
-                         url: libraryUrl,
-                         libraryContext: library,
-                    });
+                    if(version >= '23.01.00') {
+                         navigateStack('SearchTab', 'ListResultItem', {
+                              id: item,
+                              title: getCleanTitle(title),
+                              url: libraryUrl,
+                              libraryContext: library,
+                         });
+                    } else {
+                         navigateStack('SearchTab', 'ListResultItem221200', {
+                              id: item,
+                              title: getCleanTitle(title),
+                              url: libraryUrl,
+                              libraryContext: library,
+                         });
+                    }
                }
           } else {
                console.log('no list id found');

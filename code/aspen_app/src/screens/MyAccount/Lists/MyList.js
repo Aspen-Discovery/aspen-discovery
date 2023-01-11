@@ -24,12 +24,13 @@ import {loadingSpinner} from '../../../components/loadingSpinner';
 import {translate} from '../../../translations/translations';
 import EditList from './EditList';
 import {useNavigation, useFocusEffect, useRoute} from '@react-navigation/native';
-import {LibrarySystemContext} from '../../../context/initialContext';
+import {LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {getListTitles, removeTitlesFromList} from '../../../util/api/list';
-import {navigateStack} from '../../../helpers/RootNavigator';
+import {navigate, navigateStack} from '../../../helpers/RootNavigator';
 import {getCleanTitle} from '../../../helpers/item';
 import {fetchReadingHistory} from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
+import {formatDiscoveryVersion} from '../../../util/loadLibrary';
 
 export const MyList = () => {
     const providedList = useRoute().params.details;
@@ -37,8 +38,10 @@ export const MyList = () => {
     const [page, setPage] = React.useState(1);
     const [sort, setSort] = React.useState('dateAdded');
     const [pageSize, setPageSize] = React.useState(25);
+    const { user } = React.useContext(UserContext);
     const {library} = React.useContext(LibrarySystemContext);
     const [list] = React.useState(providedList);
+    const version = formatDiscoveryVersion(library.discoveryVersion);
 
     const {
         status,
@@ -52,11 +55,21 @@ export const MyList = () => {
     });
 
     const handleOpenItem = (id, title) => {
-        navigateStack('AccountScreenTab', 'ListItem', {
-            id: id,
-            url: library.baseUrl,
-            title: getCleanTitle(title),
-        });
+        if(version >= '23.01.00') {
+            navigateStack('AccountScreenTab', 'ListItem', {
+                id: id,
+                url: library.baseUrl,
+                title: getCleanTitle(title),
+            });
+        } else {
+            navigateStack('AccountScreenTab', 'ListItem221200', {
+                id: id,
+                title: getCleanTitle(title),
+                url: library.baseUrl,
+                userContext: user,
+                libraryContext: library
+            });
+        }
     };
 
     if (status !== 'loading') {
