@@ -53,7 +53,7 @@
 							{literal} }); {/literal}
 					</script>
 				{/if}
-				{if !empty($showCheckInGrid) && $issueSummary.checkInGridId}
+				{if !empty($showCheckInGrid) && !empty($issueSummary.checkInGridId)}
 					&nbsp;
 					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Check-in Grid" isPublicFacing=true}</span>
 					<script	type="text/javascript">
