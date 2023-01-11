@@ -25,11 +25,33 @@ export const MyHolds = () => {
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
 
+    const toggleReadySort = async (value) => {
+        setReadySort(value);
+        setLoading(true);
+        await getPatronHolds(readySort, pendingSort, library.baseUrl).then((result) => {
+            if (holds !== result) {
+                updateHolds(result);
+            }
+            setLoading(false);
+        });
+    };
+
+    const togglePendingSort = async (value) => {
+        setPendingSort(value);
+        setLoading(true);
+        await getPatronHolds(readySort, pendingSort, library.baseUrl).then((result) => {
+            if (holds !== result) {
+                updateHolds(result);
+            }
+            setLoading(false);
+        });
+    };
+
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
                     await getPatronHolds(readySort, pendingSort, library.baseUrl).then((result) => {
-                         if (holds !== result) {
+                        if (holds !== result) {
                               updateHolds(result);
                          }
                          setLoading(false);
@@ -105,7 +127,7 @@ export const MyHolds = () => {
           if(section === 'pending') {
               if (showSelectOptions) {
                   return (
-                      <Box safeArea={2} bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap">
+                      <Box safeArea={2}>
                           <ScrollView horizontal>
                               <HStack space={2}>
                                   <FormControl w={150}>
@@ -117,7 +139,7 @@ export const MyHolds = () => {
                                               bg: 'tertiary.300',
                                               endIcon: <CheckIcon size="5"/>,
                                           }}
-                                          onValueChange={(itemValue) => setPendingSort(itemValue)}>
+                                          onValueChange={(itemValue) => togglePendingSort(itemValue)}>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
@@ -139,7 +161,7 @@ export const MyHolds = () => {
               }
 
               return (
-                  <Box safeArea={2} bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap">
+                  <Box safeArea={2}>
                       <ScrollView horizontal>
                           <HStack space={2}>
                               <FormControl w={150}>
@@ -151,7 +173,7 @@ export const MyHolds = () => {
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
-                                      onValueChange={(itemValue) => setPendingSort(itemValue)}>
+                                      onValueChange={(itemValue) => togglePendingSort(itemValue)}>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
@@ -171,7 +193,7 @@ export const MyHolds = () => {
 
           if(section === 'ready') {
               return (
-                  <Box safeArea={2} bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap">
+                  <Box safeArea={2}>
                       <ScrollView horizontal>
                           <HStack space={2}>
                               <FormControl w={150}>
@@ -183,7 +205,7 @@ export const MyHolds = () => {
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
-                                      onValueChange={(itemValue) => setReadySort(itemValue)}>
+                                      onValueChange={(itemValue) => toggleReadySort(itemValue)}>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
@@ -229,7 +251,7 @@ export const MyHolds = () => {
      const displaySectionHeader = (title) => {
          if(title === 'Pending') {
              return (
-                 <Box bgColor="coolGray.100" maxWidth="100%" safeArea={2}>
+                 <Box bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
                      <Heading pb={1} pt={3}>{translate('holds.pending_holds')}</Heading>
                      <DisplayMessage type="info" message={translate('holds.pending_holds_message')}/>
                      {actionButtons('pending')}
@@ -237,7 +259,7 @@ export const MyHolds = () => {
              )
          } else {
              return (
-                 <Box bgColor="coolGray.100" maxWidth="100%" safeArea={2}>
+                 <Box  bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
                      <Heading pb={1}>{translate('holds.holds_ready_for_pickup')}</Heading>
                      <DisplayMessage type="info" message={translate('holds.holds_ready_for_pickup_message')}/>
                      {actionButtons('ready')}
