@@ -147,7 +147,19 @@ class AspenLiDABuild extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['id', 'error', 'isSupported', 'isEASUpdate'];
+		return [
+			'id',
+			'error',
+			'isSupported',
+			'isEASUpdate'
+		];
+	}
+
+	public function getUniquenessFields(): array {
+		return [
+			'buildId',
+			'updateId',
+		];
 	}
 
 	public function getBuildInformation(): array {
