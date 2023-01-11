@@ -1928,6 +1928,13 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							'fromNovelist' => true,
 						];
 					}
+					else{
+						$this->seriesData = [
+							'seriesTitle' => $existingDisplayInfo->seriesName,
+							'volume' => $existingDisplayInfo->seriesDisplayOrder,
+							'fromNovelist' => false,
+						];
+					}
 				}
 				else{
 					$this->seriesData = [
