@@ -1,8 +1,8 @@
 {strip}
 	<div id="page-content" class="col-xs-12">
 
-		<h2>{translate text='Reset My PIN' isPublicFacing=true}</h2>
-		<div class="alert alert-info">{translate text="Please enter your complete card number.  A email will be sent to the email address on file for your account containing a link to reset your %1%." 1=$passwordLabel translateParameters=true isPublicFacing=true}</div>
+		<h2>{translate text='Reset My PIN / Password' isPublicFacing=true}</h2>
+		<div class="alert alert-info">{translate text="Please enter your complete card number or username.  An email will be sent to the email address on file for your account containing a link to reset your %1%." 1=$passwordLabel translateParameters=true isPublicFacing=true}</div>
 
 		<form id="emailResetPin" method="POST" action="/MyAccount/EmailResetPin" class="form-horizontal">
 			<div class="form-group">
