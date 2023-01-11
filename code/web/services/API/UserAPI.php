@@ -793,7 +793,11 @@ class UserAPI extends Action {
 				}
 				return [
 					'success' => true,
-					'holds' => $holdsToReturn,
+					'sortMethods' => [
+						'unavailableSort' => $unavailableSort,
+						'availableSort' => $availableSort
+					],
+					'holds' => $holdsToReturn
 				];
 			} else {
 				return [
