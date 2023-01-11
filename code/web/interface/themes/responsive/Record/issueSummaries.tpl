@@ -66,10 +66,12 @@
 
 			{if !empty($issueSummary.holdings)}
 				<div id='issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}' class='issue-summary-holdings striped' style='display:none;'>
+					<table>
 					{include file="Record/copiesTableHeader.tpl"}
 					{foreach from=$issueSummary.holdings item=holding}
 						{include file="Record/copiesTableRow.tpl"}
 					{/foreach}
+					</table>
 				</div>
 			{/if}
 		</div>
