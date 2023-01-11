@@ -5,14 +5,16 @@
 		<th>{translate text="Grouped Work ID" isPublicFacing=true}</th>
 		<td>{$recordDriver->getPermanentId()}</td>
 	</tr>
-	{foreach from=$groupedWorkDetails key='field' item='value'}
-	<tr>
-		<th>{translate text=$field isPublicFacing=true}</th>
-		<td>
-			{$value}
-		</td>
-	</tr>
-	{/foreach}
+	{if !empty($groupedWorkDetails)}
+		{foreach from=$groupedWorkDetails key='field' item='value'}
+		<tr>
+			<th>{translate text=$field isPublicFacing=true}</th>
+			<td>
+				{$value}
+			</td>
+		</tr>
+		{/foreach}
+	{/if}
 </table>
 
 {if !empty($specifiedDisplayInfo)}
