@@ -4,7 +4,7 @@
 class MaterialsRequestUsage extends DataObject {
 	public $__table = 'materials_request_usage';
 	public $id;
-	public $locationId;
+	public $libraryId;
 	public $year;
 	public $month;
 	public $statusId;
@@ -24,7 +24,7 @@ class MaterialsRequestUsage extends DataObject {
 			$materialsRequestUsage = new MaterialsRequestUsage();
 			$materialsRequestUsage->year = date('Y');
 			$materialsRequestUsage->month = date('n');
-			$materialsRequestUsage->locationId = $homeLocation;
+			$materialsRequestUsage->libraryId = $homeLocation;
 			$materialsRequestUsage->statusId = $status;
 			if ($materialsRequestUsage->find(true)) {
 				$materialsRequestUsage->numUsed++;
