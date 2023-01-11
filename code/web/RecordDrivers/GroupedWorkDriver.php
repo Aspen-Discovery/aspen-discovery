@@ -1920,11 +1920,22 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$existingDisplayInfo->permanent_id = $this->getPermanentId();
 			//prefer use of grouped work series display info if any
 			if ($existingDisplayInfo->find(true) && (!empty($existingDisplayInfo->seriesDisplayOrder) || !empty($existingDisplayInfo->seriesName)) ) {
-				$this->seriesData = [
-					'seriesTitle' => $existingDisplayInfo->seriesName,
-					'volume' => $existingDisplayInfo->seriesDisplayOrder,
-					'fromNovelist' => false,
-				];
+				if ($novelistData != null && !empty($novelistData->seriesTitle)){
+					if (strtolower($novelistData->seriesTitle) == strtolower($existingDisplayInfo->seriesName)){
+						$this->seriesData = [
+							'seriesTitle' => $existingDisplayInfo->seriesName,
+							'volume' => $existingDisplayInfo->seriesDisplayOrder,
+							'fromNovelist' => true,
+						];
+					}
+				}
+				else{
+					$this->seriesData = [
+						'seriesTitle' => $existingDisplayInfo->seriesName,
+						'volume' => $existingDisplayInfo->seriesDisplayOrder,
+						'fromNovelist' => false,
+					];
+				}
 			} else if ($novelistData != null && !empty($novelistData->seriesTitle)) {
 				$this->seriesData = [
 					'seriesTitle' => $novelistData->seriesTitle,
