@@ -111,6 +111,69 @@ export async function logoutUser(url) {
 }
 
 /** *******************************************************************
+ * Checkouts and Holds
+ ******************************************************************* **/
+/**
+ * Return a list of current holds for a user
+ * @param {string} readySort
+ * @param {string} pendingSort
+ * @param {string} url
+ **/
+export async function getPatronHolds(readySort, pendingSort, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+          params: {
+               source: 'all',
+               linkedUsers: true,
+               refreshHolds: true,
+               unavailableSort: pendingSort,
+               availableSort: readySort
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=getPatronHolds', postBody);
+     if (response.ok) {
+          const allHolds = response.data.result.holds;
+          let holds;
+          let holdsReady = [];
+          let holdsNotReady = [];
+
+          if (typeof allHolds !== 'undefined') {
+               if (typeof allHolds.unavailable !== 'undefined') {
+                    holdsNotReady = Object.values(allHolds.unavailable);
+               }
+
+               if (typeof allHolds.available !== 'undefined') {
+                    holdsReady = Object.values(allHolds.available);
+               }
+          }
+
+          holds = holdsReady.concat(holdsNotReady);
+          PATRON.holds = holds;
+          return [
+               {
+                    title: 'Ready',
+                    data: holdsReady,
+               },
+               {
+                    title: 'Pending',
+                    data: holdsNotReady,
+               }
+          ]
+     } else {
+          console.log(response);
+          return {
+               holds: [],
+               holdsReady: [],
+               holdsNotReady: [],
+          };
+     }
+}
+
+/** *******************************************************************
  * Browse Category Management
  ******************************************************************* **/
 /**
@@ -482,27 +545,6 @@ export async function deleteSelectedReadingHistory(item, url) {
      if (response.ok) {
           if (response.data.result?.success) {
                return true;
-          }
-     }
-     return false;
-}
-
-/**
- * Get list of available sort options for reading history
- * @param {string} url
- **/
-export async function getReadingHistorySortOptions(url) {
-     const postBody = await postData();
-     const discovery = create({
-          baseURL: url,
-          timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
-          auth: createAuthTokens(),
-     });
-     const response = await discovery.post(`${endpoint.url}getReadingHistorySortOptions`, postBody);
-     if (response.ok) {
-          if (response.data?.result) {
-               return response.data.result;
           }
      }
      return false;
