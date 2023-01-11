@@ -50,7 +50,8 @@ function getUpdates23_02_00(): array {
 					isSupported TINYINT(1) DEFAULT 1,
 					isEASUpdate TINYINT(1) DEFAULT 0,
 					platform VARCHAR(25) NOT NULL,
-					artifact VARCHAR(255)
+					artifact VARCHAR(255),
+					UNIQUE INDEX (buildId, updateId)
 				) ENGINE INNODB",
 			]
 		],
