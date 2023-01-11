@@ -134,7 +134,7 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 			}
 		}
 
-		$interface->assign('periodData', $periodData, $periods);
+		$interface->assign('periodData', $periodData);
 
 		//Get a list of all of the statuses that will be shown
 		$statuses = [];
