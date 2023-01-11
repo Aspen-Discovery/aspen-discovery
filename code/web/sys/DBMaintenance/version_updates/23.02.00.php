@@ -37,7 +37,7 @@ function getUpdates23_02_00(): array {
 					version VARCHAR(72) NOT NULL,
 					buildVersion VARCHAR(72) NOT NULL,  
 					channel VARCHAR(72) NOT NULL DEFAULT 'default',
-					updateId VARCHAR(72),
+					updateId VARCHAR(72) NOT NULL DEFAULT 0,
 					patch VARCHAR(5) DEFAULT 0, 
 					updateCreated VARCHAR(255),
 					gitCommitHash VARCHAR(72), 
