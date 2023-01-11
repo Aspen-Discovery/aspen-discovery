@@ -12,6 +12,7 @@ class GreenhouseAPI extends Action {
 				'getLibrary',
 				'authenticateTokens',
 				'getNotificationAccessToken',
+				'updateAspenLiDABuild'
 			]) && !IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
 		}
@@ -684,6 +685,51 @@ class GreenhouseAPI extends Action {
 		} else {
 			$result['message'] = 'Term, languageCode, and/or translation  not provided';
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function updateAspenLiDABuild() {
+		global $logger;
+		$logger->log('Patch update found, updating Aspen LiDA Build Tracker...', Logger::LOG_ERROR);
+		$logger->log(print_r($_REQUEST, true), Logger::LOG_ERROR);
+		$result = [
+			'success' => false,
+		];
+		if (!empty($_REQUEST['app']) && !empty($_REQUEST['version']) && !empty($_REQUEST['build']) && !empty($_REQUEST['channel']) && !empty($_REQUEST['platform']) && !empty($_REQUEST['id']) && !empty($_REQUEST['patch']) && !empty($_REQUEST['timestamp'])) {
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
+			$build = new AspenLiDABuild();
+			$build->name = $_REQUEST['app'];
+			$build->version = $_REQUEST['version'];
+			$build->buildVersion = $_REQUEST['build'];
+			$build->channel = $_REQUEST['channel'];
+			$build->platform = $_REQUEST['platform'];
+			if($build->find(true)) {
+				if($build->isEASUpdate == 0) {
+					$patch = $build;
+					unset($patch->id);
+					$patch->isEASUpdate = 1;
+					$patch->updateId = $_REQUEST['id'];
+					$patch->updateCreated = $_REQUEST['timestamp'];
+					$patch->patch = $_REQUEST['patch'];
+					if($patch->insert()) {
+						$result['success'] = true;
+						$result['message'] = 'Aspen LiDA Build Tracker has been updated for this patch.';
+					} else {
+						$result['message'] = 'Unable to update Aspen LiDA Build Tracker.';
+					}
+				} else {
+					$result['success'] = true;
+					$result['message'] = 'Aspen LiDA Build Tracker already updated for this patch.';
+				}
+			} else {
+				$result['message'] = 'Unable to find existing build using provided data.';
+			}
+		} else {
+			$result['message'] = 'Not enough data provided in request to update Greenhouse';
+		}
+
+		$logger->log(print_r($result, true), Logger::LOG_ERROR);
 		return $result;
 	}
 
