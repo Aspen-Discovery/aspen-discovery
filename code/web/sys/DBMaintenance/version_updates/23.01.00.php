@@ -181,7 +181,7 @@ function getUpdates23_01_00(): array
 			'title' => 'Rename locationId column for Materials Request Usage',
 			'description' => 'Rename locationId column for Materials Request Usage',
 			'sql' => [
-				"ALTER TABLE materials_request_usage RENAME COLUMN locationId TO libraryId",
+				"ALTER TABLE materials_request_usage CHANGE COLUMN locationId libraryId INT(4)",
 			]
 		],
 		//rename_materialreq_usage_locID_column
