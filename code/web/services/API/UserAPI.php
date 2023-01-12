@@ -772,7 +772,7 @@ class UserAPI extends Action {
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
-				$unavailableSort = $_REQUEST['unavailableSort'] ?? 'title';
+				$unavailableSort = $_REQUEST['unavailableSort'] ?? 'sortTitle';
 				$availableSort = $_REQUEST['availableSort'] ?? 'expire';
 				$source = $_REQUEST['source'] ?? 'all';
 				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
