@@ -5,20 +5,7 @@
 apt-get update
 apt-get -y install gpg openjdk-11-jre-headless openjdk-11-jdk-headless apache2 certbot python3-certbot-apache mariadb-server apt-transport-https lsb-release ca-certificates curl zip
 
-# Install "plain" php package here to determine OS default. Override below if desired.
-if ! dpkg -l | grep ii | grep -qE ' php[0-9]+\.[0-9]+ ' ; then
-  apt-get install -y php
-fi
-
-php_vers="$(dpkg -l | grep ii | grep -E ' php[0-9]+\.[0-9]+ ' | grep -Eo '[0-9]+\.[0-9]+' | head -1)"
-
-if test -z "$php_vers" ; then
-  echo "Unable to determine default php version!"
-  exit 1
-fi
-
 # Install Ondrej Sury's php repo for additional php modules
-# Specifically, the abandonware php-mcrypt...
 keyrings="/etc/apt/keyrings"
 test -d "$keyrings" || (mkdir -p "$keyrings" ; chmod 0755 "$keyrings")
 if ! test -f "$keyrings/sury.gpg" || ! test -f /etc/apt/sources.list.d/sury.list ; then
@@ -27,8 +14,11 @@ if ! test -f "$keyrings/sury.gpg" || ! test -f /etc/apt/sources.list.d/sury.list
   apt-get update
 fi
 
-# Have to use versions for these or the highest version available from sury.org is used rather than the system verison.
-apt-get install -y "php${php_vers}-mcrypt" "php${php_vers}-gd" "php${php_vers}-curl" "php${php_vers}-mysql" "php${php_vers}-zip" "php${php_vers}-xml" "php${php_vers}-intl" "php${php_vers}-mbstring" "php${php_vers}-soap" "php${php_vers}-pgsql" "php${php_vers}-ssh2"
+apt-get install -y php php-gd php-curl php-mysql php-zip php-xml php-intl php-mbstring php-soap php-pgsql php-ssh2
+
+# Need the version of PHP installed to find php.ini
+php_vers="$(dpkg -l | grep ii | grep -E ' php[0-9]+\.[0-9]+ ' | grep -Eo '[0-9]+\.[0-9]+' | head -1)"
+
 
 # - Change max_memory to 256M
 # - Increase max file size to 75M
