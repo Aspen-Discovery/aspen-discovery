@@ -16,6 +16,7 @@ export const MyHold = (props) => {
      const hold = props.data;
      const resetGroup = props.resetGroup;
      const pickupLocations = props.pickupLocations;
+     const section = props.section;
      const navigation = useNavigation();
      const { isOpen, onOpen, onClose } = useDisclose();
      const { user } = React.useContext(UserContext);
@@ -80,7 +81,7 @@ export const MyHold = (props) => {
                               }}
                               alt={hold.title}
                          />
-                         {(hold.allowFreezeHolds || canCancel) && allowLinkedAccountAction ? (
+                         {(hold.allowFreezeHolds || canCancel) && allowLinkedAccountAction && section === 'Pending' ? (
                               <Center>
                                    <Checkbox value={method + '|' + hold.recordId + '|' + hold.cancelId + '|' + hold.source + '|' + hold.userId} my={3} size="md" accessibilityLabel="Check item" />
                               </Center>
@@ -88,12 +89,16 @@ export const MyHold = (props) => {
                     </VStack>
                );
           } else {
-               return (
-                    <Center>
-                         <Checkbox value={method + '|' + hold.recordId + '|' + hold.cancelId + '|' + hold.source + '|' + hold.userId} my={3} size="md" accessibilityLabel="Check item" />
-                    </Center>
-               );
+               if(section === 'Pending') {
+                    return (
+                        <Center>
+                             <Checkbox value={method + '|' + hold.recordId + '|' + hold.cancelId + '|' + hold.source + '|' + hold.userId} my={3} size="md" accessibilityLabel="Check item"/>
+                        </Center>
+                    );
+               }
           }
+
+          return null;
      };
 
      const createOpenGroupedWorkAction = () => {
@@ -366,8 +371,10 @@ export const ManageAllHolds = (props) => {
      let titlesToThaw = [];
      let titlesToCancel = [];
 
-     if (_.isArray(holds.holds)) {
-          _.map(holds.holds, function (item, index, collection) {
+     const holdsNotReady = holds[1].data;
+
+     if (_.isArray(holdsNotReady)) {
+          _.map(holdsNotReady, function (item, index, collection) {
                if (item.source !== 'vdx') {
                     if (item.canFreeze) {
                          if (item.frozen) {
@@ -404,6 +411,8 @@ export const ManageAllHolds = (props) => {
      let numToThaw = titlesToThaw.length;
 
      let numToManage = numToCancel + numToFreeze + numToThaw;
+
+     console.log('numToManage > ' + numToManage);
 
      if (numToManage >= 1) {
           return (

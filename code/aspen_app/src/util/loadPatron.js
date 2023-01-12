@@ -239,28 +239,34 @@ export async function reloadHolds(url) {
      response = await api.post('/UserAPI?method=getPatronHolds', postBody);
      if (response.ok) {
           //console.log(response.data);
-          const items = response.data.result.holds;
+          const allHolds = response.data.result.holds;
           let holds;
           let holdsReady = [];
           let holdsNotReady = [];
 
-          if (typeof items !== 'undefined') {
-               if (typeof items.unavailable !== 'undefined') {
-                    holdsNotReady = Object.values(items.unavailable);
+          if (typeof allHolds !== 'undefined') {
+               if (typeof allHolds.unavailable !== 'undefined') {
+                    holdsNotReady = Object.values(allHolds.unavailable);
                }
 
-               if (typeof items.available !== 'undefined') {
-                    holdsReady = Object.values(items.available);
+               if (typeof allHolds.available !== 'undefined') {
+                    holdsReady = Object.values(allHolds.available);
                }
           }
 
           holds = holdsReady.concat(holdsNotReady);
           PATRON.holds = holds;
-          return {
-               holds,
-               holdsReady,
-               holdsNotReady,
-          };
+
+          return [
+               {
+                    title: 'Ready',
+                    data: holdsReady,
+               },
+               {
+                    title: 'Pending',
+                    data: holdsNotReady,
+               }
+          ]
      } else {
           console.log(response);
           return {

@@ -772,9 +772,11 @@ class UserAPI extends Action {
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
+				$unavailableSort = $_REQUEST['unavailableSort'] ?? 'sortTitle';
+				$availableSort = $_REQUEST['availableSort'] ?? 'expire';
 				$source = $_REQUEST['source'] ?? 'all';
 				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
-				$allHolds = $user->getHolds($linkedUsers, 'sortTitle', 'expire', $source);
+				$allHolds = $user->getHolds($linkedUsers, $unavailableSort, $availableSort, $source);
 				$holdsToReturn = [
 					'available' => [],
 					'unavailable' => [],
@@ -791,7 +793,11 @@ class UserAPI extends Action {
 				}
 				return [
 					'success' => true,
-					'holds' => $holdsToReturn,
+					'sortMethods' => [
+						'unavailableSort' => $unavailableSort,
+						'availableSort' => $availableSort
+					],
+					'holds' => $holdsToReturn
 				];
 			} else {
 				return [

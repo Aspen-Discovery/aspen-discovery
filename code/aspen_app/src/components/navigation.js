@@ -31,6 +31,7 @@ import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
 import { navigationRef } from '../helpers/RootNavigator';
+import {updateAspenLiDABuild} from '../util/greenhouse';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -153,6 +154,14 @@ export function App() {
      React.useEffect(() => {
           const bootstrapAsync = async () => {
                await getPermissions();
+
+               console.log('Checking updates...');
+               if(Updates.manifest) {
+                    await updateAspenLiDABuild(Updates.updateId, Updates.channel, Updates.createdAt);
+                    console.log('Update information sent to Greenhouse.')
+               } else {
+                    console.log('No update to send to Greenhouse.')
+               }
 
                console.log('Checking existing session...');
                let userToken;

@@ -10,34 +10,6 @@ const endpoint = ENDPOINT.user;
  * General
  ******************************************************************* **/
 /**
- * Returns grouped work data for a given id
- * @param {string} itemId
- * @param {string} source
- * @param {string} url
- **/
-export async function checkoutItem(itemId, source, url) {
-	const postBody = await postData();
-	const discovery = create({
-		baseURL: url,
-		timeout: GLOBALS.timeoutAverage,
-		headers: getHeaders(endpoint.isPost),
-		auth: createAuthTokens(),
-		params: {
-			itemId: itemId,
-			itemSource: source,
-			userId: patronId,
-		},
-	});
-	const response = await discovery.post(`${endpoint.url}checkoutItem`, postBody);
-	if (response.ok) {
-		return response.data.result;
-	} else {
-		console.log(response);
-		return false;
-	}
-}
-
-/**
  * Place a standard hold on an item for a given user
  * @param {string} itemId
  * @param {string} source
