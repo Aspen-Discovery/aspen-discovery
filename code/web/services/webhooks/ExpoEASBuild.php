@@ -51,6 +51,7 @@ class webhooks_ExpoEASBuild extends Action {
 			if($build->insert()) {
 				$success = true;
 				$message = 'Build data successfully saved.';
+				$this->sendSlackAlert($build);
 			} else {
 				$error = 'Unable to insert build data.';
 			}
@@ -106,47 +107,35 @@ class webhooks_ExpoEASBuild extends Action {
 		return false;
 	}
 
-	function createBuild($payload): array {
-		$success = false;
-		$error = '';
-		$message = '';
+	function sendSlackAlert($build): bool {
+		if($build) {
+			require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+			$greenhouseSettings = new GreenhouseSettings();
+			$greenhouseAlertSlackHook = null;
+			$shouldSendBuildAlert = false;
+			if ($greenhouseSettings->find(true)) {
+				$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+				$shouldSendBuildAlert = $greenhouseSettings->sendBuildTrackerAlert;
+			}
 
-		if(empty($payload['id'])) {
-			$error = 'No data was provided to save build data.';
-		} else {
-			require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
-			$build = new AspenLiDABuild();
-
-			// setup standard data
-			$build->buildId = $payload['id'];
-			$build->status = $payload['status'];
-			$build->appId = $payload['appId'];
-			$build->platform = $payload['platform'];
-
-			// various timestamps
-			$build->createdAt = $payload['createdAt'];
-			$build->completedAt = $payload['completedAt'];
-			$build->updatedAt = $payload['updatedAt'];
-
-			$build->name = $payload['metadata']['appName'];
-			$build->version = $payload['metadata']['appVersion'];
-			$build->buildVersion = $payload['metadata']['appBuildVersion'];
-
-			// git commit that the build used to process
-			$build->gitCommitHash = $payload['metadata']['gitCommitHash'];
-
-			if($build->insert()) {
-				$success = true;
-				$message = 'Build data successfully saved.';
-			} else {
-				$error = 'Unable to insert build data.';
+			if ($greenhouseAlertSlackHook && $shouldSendBuildAlert) {
+				global $configArray;
+				$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
+				$notification = "- <$buildTracker|Build completed> for $build->platform for version $build->version b[$build->buildVersion] p[$build->patch] c[$build->channel]";
+				$alertText = "*$build->name* $notification\n";
+				$curlWrapper = new CurlWrapper();
+				$headers = [
+					'Accept: application/json',
+					'Content-Type: application/json',
+				];
+				$curlWrapper->addCustomHeaders($headers, false);
+				$body = new stdClass();
+				$body->text = $alertText;
+				$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+				return true;
 			}
 		}
-
-		return [
-			'success' => $success,
-			'message' => $success ? $message : $error,
-		];
+		return false;
 	}
 
 	function getBreadcrumbs(): array {

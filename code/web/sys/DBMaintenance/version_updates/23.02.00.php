@@ -56,6 +56,15 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_aspen_lida_build_tracker
+		'add_build_tracker_slack_alert' => [
+			'title' => 'Add Aspen LiDA Build Tracker Slack alert',
+			'description' => 'Add option to enable Aspen LiDA Build Tracker Slack alerts in Greenhouse settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE greenhouse_settings ADD COLUMN sendBuildTrackerAlert TINYINT(1) DEFAULT 0',
+			]
+		],
+		//add_build_tracker_slack_alert
 
 		//kodi
 

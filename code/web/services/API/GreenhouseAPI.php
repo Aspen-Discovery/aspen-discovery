@@ -715,6 +715,32 @@ class GreenhouseAPI extends Action {
 					if($patch->insert()) {
 						$result['success'] = true;
 						$result['message'] = 'Aspen LiDA Build Tracker has been updated for this patch.';
+
+						require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+						$greenhouseSettings = new GreenhouseSettings();
+						$greenhouseAlertSlackHook = null;
+						$shouldSendBuildAlert = false;
+						if ($greenhouseSettings->find(true)) {
+							$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+							$shouldSendBuildAlert = $greenhouseSettings->sendBuildTrackerAlert;
+						}
+
+						if ($greenhouseAlertSlackHook && $shouldSendBuildAlert) {
+							global $configArray;
+							$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
+							$notification = "- <$buildTracker|Patch completed> for $patch->platform for version $patch->version b[$patch->buildVersion] p[$patch->patch] c[$patch->channel]";
+							$alertText = "*$patch->name* $notification\n";
+							$curlWrapper = new CurlWrapper();
+							$headers = [
+								'Accept: application/json',
+								'Content-Type: application/json',
+							];
+							$curlWrapper->addCustomHeaders($headers, false);
+							$body = new stdClass();
+							$body->text = $alertText;
+							$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+						}
+
 					} else {
 						$result['message'] = 'Unable to update Aspen LiDA Build Tracker.';
 					}
