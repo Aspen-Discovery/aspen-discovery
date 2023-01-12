@@ -935,11 +935,7 @@ class UserList extends DataObject {
 			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
 			fputcsv($fp, $fields);
 
-			for ($i = 0; $i < count($titleDetails); $i++) {
-				if (!array_key_exists($i, $titleDetails)) {
-					continue;
-				}
-				$curDoc = $titleDetails[$i];
+			foreach ($titleDetails as $curDoc) {
 				if ($curDoc instanceof GroupedWorkDriver) {
 					if ($curDoc->isValid()) {
 						// Hyperlink to title
