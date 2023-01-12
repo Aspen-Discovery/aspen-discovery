@@ -1,6 +1,7 @@
 <?php
 
 class WebBuilder_ViewThumbnail extends Action {
+	private $uploadedFile;
 	function launch() {
 		global $interface;
 
@@ -8,9 +9,9 @@ class WebBuilder_ViewThumbnail extends Action {
 		$interface->assign('id', $id);
 
 		require_once ROOT_DIR . '/sys/File/FileUpload.php';
-		$uploadedFile = new FileUpload();
-		$uploadedFile->id = $id;
-		if (!$uploadedFile->find(true)) {
+		$this->uploadedFile = new FileUpload();
+		$this->uploadedFile->id = $id;
+		if (!$this->uploadedFile->find(true)) {
 			global $interface;
 			$interface->assign('module', 'Error');
 			$interface->assign('action', 'Handle404');
@@ -20,16 +21,8 @@ class WebBuilder_ViewThumbnail extends Action {
 			die();
 		}
 
-		global $serverName;
-		$dataPath = '/data/aspen-discovery/' . $serverName . '/uploads/web_builder_image/';
-		$extension = pathinfo($this->uploadedImage->fullSizePath, PATHINFO_EXTENSION);
-		$fullPath = $uploadedFile->thumbFullPath;
-
-		if ($extension != 'svg') {
-			$fullPath = $uploadedFile->thumbFullPath;
-		} else {
-			$fullPath = $uploadedFile->fullSizePath;
-		}
+		$fullPath = $this->uploadedFile->thumbFullPath;
+		$extension = pathinfo($fullPath, PATHINFO_EXTENSION);
 
 		if ($file = @fopen($fullPath, 'r')) {
 			set_time_limit(300);

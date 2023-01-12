@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/Action.php';
 require_once(ROOT_DIR . '/services/Admin/Admin.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequest.php');
 require_once(ROOT_DIR . '/sys/MaterialsRequestStatus.php');
-require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_UserReport extends Admin_Admin {
 
@@ -106,57 +105,36 @@ class MaterialsRequest_UserReport extends Admin_Admin {
 	}
 
 	function exportToExcel($userData, $statuses) {
-		global $configArray;
-		//PHPEXCEL
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment;filename="MaterialsRequestUserReport.csv"');
+		header('Cache-Control: max-age=0');
+		$fp = fopen('php://output', 'w');
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])->setLastModifiedBy($configArray['Site']['title'])->setTitle("Office 2007 XLSX Document")->setSubject("Office 2007 XLSX Document")->setDescription("Office 2007 XLSX, generated using PHP.")->setKeywords("office 2007 openxml php")->setCategory("Materials Request User Report");
-
-		// Add some data
-		$objPHPExcel->setActiveSheetIndex(0);
-		$activeSheet = $objPHPExcel->getActiveSheet();
-		$activeSheet->setCellValue('A1', 'Materials Request User Report');
-		$activeSheet->setCellValue('A3', 'Last Name');
-		$activeSheet->setCellValue('B3', 'First Name');
-		$activeSheet->setCellValue('C3', 'Barcode');
-		$column = 3;
+		$header = ['Last Name', 'First Name', 'Barcode'];
 		foreach ($statuses as $statusLabel) {
-			$activeSheet->setCellValueByColumnAndRow($column++, 3, $statusLabel);
+			$header[] = $statusLabel;
 		}
-		$activeSheet->setCellValueByColumnAndRow($column, 3, 'Total');
+		$header[] = 'Total';
+		fputcsv($fp, $header);
 
-		$row = 4;
-		$column = 0;
 		//Loop Through The Report Data
 		foreach ($userData as $userInfo) {
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['lastName']);
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['firstName']);
-			$activeSheet->setCellValueByColumnAndRow($column++, $row, $userInfo['barcode']);
+			$lastName = $userInfo['lastName'];
+			$firstName = $userInfo['firstName'];
+			$barcode = $userInfo['barcode'];
+			$row = [$lastName, $firstName, $barcode];
+
 			foreach ($statuses as $status => $statusLabel) {
-				$activeSheet->setCellValueByColumnAndRow($column++, $row, isset($userInfo['requestsByStatus'][$status]) ? $userInfo['requestsByStatus'][$status] : 0);
+				$stat = $userInfo['requestsByStatus'][$status] ?? 0;
+				$row[] = $stat;
 			}
-			$activeSheet->setCellValueByColumnAndRow($column, $row, $userInfo['totalRequests']);
-			$row++;
-			$column = 0;
+
+			$total = $userInfo['totalRequests'];
+			$row[] = $total;
+
+			fputcsv($fp, $row);
 		}
-		for ($i = 0; $i < count($statuses) + 3; $i++) {
-			$activeSheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-		}
-
-		// Rename sheet
-		$activeSheet->setTitle('User Report');
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="MaterialsRequestUserReport.xls"');
-		header('Cache-Control: max-age=0');
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
 		exit;
-
 	}
 
 	function getBreadcrumbs(): array {

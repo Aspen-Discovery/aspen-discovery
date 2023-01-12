@@ -62,7 +62,7 @@
 								{/if}
 							</td>
 							{foreach from=$statuses key=status item=statusLabel}
-								<th>{if $periodInfo.$status}{$periodInfo.$status}{else}0{/if}</th>
+								<th>{if !empty($periodInfo.$status)}{$periodInfo.$status}{else}0{/if}</th>
 							{/foreach}
 						</tr>
 					{/foreach}
@@ -74,10 +74,10 @@
 			<input type="hidden" name="period" value="{$period}"/>
 			<input type="hidden" name="startDate" value="{$startDate}"/>
 			<input type="hidden" name="endDate" value="{$endDate}"/>
-			<input type="submit" id="exportToExcel" name="exportToExcel" value="{translate text="Export to Excel" isAdminFacing=true}"  class="btn btn-default">
+			<input type="submit" id="exportToExcel" name="exportToExcel" value="{translate text="Export to CSV" isAdminFacing=true}"  class="btn btn-default">
 		</form>
 
-		{* Export to Excel option *}
+		{* Export to CSV option *}
 	</div>
 
 <script type="text/javascript">

@@ -524,26 +524,16 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		//Group volumes, seasons, etc. independently
+		List<Subfield> partSubfields;
+		if (isUniformTitle) {
+			partSubfields = titleField.getSubfields("mos");
+		}else{
+			partSubfields = titleField.getSubfields("fmnops");
+		}
 		StringBuilder partInfo = new StringBuilder();
-		if (isUniformTitle && titleField.getSubfield('m') != null){
+		for (Subfield partSubfield : partSubfields) {
 			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(titleField.getSubfield('m').getData());
-		}
-		if (titleField.getSubfield('n') != null) {
-			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(titleField.getSubfield('n').getData());
-		}
-		if (isUniformTitle && titleField.getSubfield('o') != null){
-			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(titleField.getSubfield('o').getData());
-		}
-		if (titleField.getSubfield('p') != null) {
-			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(titleField.getSubfield('p').getData());
-		}
-		if (isUniformTitle && titleField.getSubfield('s') != null){
-			if (partInfo.length() > 0) partInfo.append(" ");
-			partInfo.append(titleField.getSubfield('s').getData());
+			partInfo.append(partSubfield.getData());
 		}
 
 		workForTitle.setTitle(fullTitle, numNonFilingCharacters, groupingSubtitle.toString(), partInfo.toString());

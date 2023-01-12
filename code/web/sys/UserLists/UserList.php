@@ -936,72 +936,87 @@ class UserList extends DataObject {
 			fputcsv($fp, $fields);
 
 			for ($i = 0; $i < count($titleDetails); $i++) {
+				if (!array_key_exists($i, $titleDetails)) {
+					continue;
+				}
 				$curDoc = $titleDetails[$i];
 				if ($curDoc instanceof GroupedWorkDriver) {
-					// Hyperlink to title
-					$link = $curDoc->getLinkUrl(true) ?? '';
+					if ($curDoc->isValid()) {
+						// Hyperlink to title
+						$link = $curDoc->getLinkUrl(true) ?? '';
 
-					// Title
-					$title = $curDoc->getTitle() ?? '';
+						// Title
+						$title = $curDoc->getTitle() ?? '';
 
-					// Author
-					$author = $curDoc->getPrimaryAuthor() ?? '';
+						// Author
+						$author = $curDoc->getPrimaryAuthor() ?? '';
 
-					// Publisher list
-					$publishers = $curDoc->getPublishers();
-					$publishers = implode(', ', $publishers);
+						// Publisher list
+						$publishers = $curDoc->getPublishers();
+						if (is_array($publishers)){
+							$publishers = implode(', ', $publishers);
+						}
 
-					// Publication dates: min - max
-					if (!is_array($curDoc->getPublicationDates())) {
-						$publishDates = (array)$curDoc->getPublicationDates();
-					} else {
-						$publishDates = $curDoc->getPublicationDates();
-					}
-					$publishDate = '';
-					if (count($publishDates) == 1) {
-						$publishDate = $publishDates[0];
-					} elseif (count($publishDates) > 1) {
-						$publishDate = min($publishDates) . ' - ' . max($publishDates);
-					}
+						// Publication dates: min - max
+						if (!is_array($curDoc->getPublicationDates())) {
+							$publishDates = [$curDoc->getPublicationDates()];
+						} else {
+							$publishDates = $curDoc->getPublicationDates();
+						}
+						$publishDate = '';
+						if (count($publishDates) == 1) {
+							$publishDate = $publishDates[0];
+						} elseif (count($publishDates) > 1) {
+							$publishDate = min($publishDates) . ' - ' . max($publishDates);
+						}
 
-					// Formats
-					if (!is_array($curDoc->getFormats())) {
-						$formats = (array)$curDoc->getFormats();
-					} else {
-						$formats = $curDoc->getFormats();
-					}
-					$uniqueFormats = array_unique($formats);
-					$uniqueFormats = implode(', ', $formats);
+						// Formats
+						if (!is_array($curDoc->getFormats())) {
+							$formats = [$curDoc->getFormats()];
+						} else {
+							$formats = $curDoc->getFormats();
+						}
+						$uniqueFormats = array_unique($formats);
+						$uniqueFormats = implode(', ', $formats);
 
-					// Format / Location / Call number, max 3 records
-					//Get the Grouped Work Driver so we can get information about the formats and locations within the record
-					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-					$output = [];
-					foreach ($curDoc->getRelatedManifestations() as $relatedManifestation) {
-						//Manifestation gives us Format & Format Category
-						if (!$relatedManifestation->isHideByDefault()) {
-							$format = $relatedManifestation->format;
-							//Variation gives us the sort
-							foreach ($relatedManifestation->getVariations() as $variation) {
-								if (!$variation->isHideByDefault()) {
-									//Record will give us the call number, and location
-									//Only do up to 3 records per format?
-									foreach ($variation->getRecords() as $record) {
-										if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
-											$copySummary = $record->getItemSummary();
-											foreach ($copySummary as $item) {
-												$output[] = $format . "::" . $item['description'];
-											}
-											$output = array_unique($output);
-											$output = array_slice($output, 0, 3);
-											if (count($output) == 0) {
-												$output[] = "No copies currently owned by this library";
+						// Format / Location / Call number, max 3 records
+						//Get the Grouped Work Driver so we can get information about the formats and locations within the record
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$output = [];
+						foreach ($curDoc->getRelatedManifestations() as $relatedManifestation) {
+							//Manifestation gives us Format & Format Category
+							if (!$relatedManifestation->isHideByDefault()) {
+								$format = $relatedManifestation->format;
+								//Variation gives us the sort
+								foreach ($relatedManifestation->getVariations() as $variation) {
+									if (!$variation->isHideByDefault()) {
+										//Record will give us the call number, and location
+										//Only do up to 3 records per format?
+										foreach ($variation->getRecords() as $record) {
+											if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+												$copySummary = $record->getItemSummary();
+												foreach ($copySummary as $item) {
+													$output[] = $format . "::" . $item['description'];
+												}
+												$output = array_unique($output);
+												$output = array_slice($output, 0, 3);
+												if (count($output) == 0) {
+													$output[] = "No copies currently owned by this library";
+												}
 											}
 										}
 									}
 								}
 							}
 						}
+					}else{
+						$link = "No Link Available";
+						$title = $curDoc['title_display'];
+						$author = '';
+						$publishers = '';
+						$publishDate = '';
+						$uniqueFormats = '';
+						$output = ["No copies currently owned by this library"];
 					}
 				} elseif ($curDoc instanceof ListsRecordDriver) {
 					// Hyperlink to title
@@ -1015,7 +1030,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
+					$output = [''];
 				} elseif ($curDoc instanceof PersonRecord) {
 					// Hyperlink to Person Record
 					$link = $curDoc->getLinkUrl() ?? '';
@@ -1026,7 +1041,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
+					$output = [''];
 				} elseif ($curDoc instanceof OpenArchivesRecordDriver) {
 					// Hyperlink to Open Archive target
 					$link = $curDoc->getLinkUrl();
@@ -1037,8 +1052,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
-
+					$output = [''];
 				} elseif ($curDoc instanceof EbscohostRecordDriver) {
 					// Hyperlink to EBSCOHost record
 					$link = $curDoc->getLinkUrl() ?? '';
@@ -1050,7 +1064,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
+					$output = [''];
 
 				} elseif ($curDoc instanceof EbscoRecordDriver) {
 					// Hyperlink to EBSCO record
@@ -1063,7 +1077,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
+					$output = [''];
 
 				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
 					// Hyperlink
@@ -1075,7 +1089,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
+					$output = [''];
 
 				} elseif ($curDoc instanceof WebResourceRecordDriver) {
 					// Hyperlink
@@ -1087,7 +1101,7 @@ class UserList extends DataObject {
 					$publishers = '';
 					$publishDate = '';
 					$uniqueFormats = '';
-					$output = (array)'';
+					$output = [''];
 				}
 
 				$output = implode(', ', $output);

@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Dashboard.php';
 require_once ROOT_DIR . '/sys/MaterialsRequestUsage.php';
-require_once(ROOT_DIR . "/PHPExcel.php");
 
 class MaterialsRequest_Dashboard extends Admin_Dashboard {
 	function launch() {
@@ -14,50 +13,24 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			global $library;
 			$userHomeLibrary = $library;
 		}
-		$locations = new Location();
-		$locations->libraryId = $userHomeLibrary->libraryId;
-		$locations->find();
-		$locationsForLibrary = [];
-		$locationsForLibrary['']['displayLabel'] = translate([
-			'text' => 'All',
-			'isAdminFacing' => true,
-			'inAttribute' => true,
-		]);
-		while ($locations->fetch()) {
-			$locationsForLibrary[$locations->locationId]['id'] = $locations->locationId;
-			$locationsForLibrary[$locations->locationId]['displayLabel'] = $locations->displayName;
-		}
-
-		if (!empty($_REQUEST['location'])) {
-			$locationId = $_REQUEST['location'];
-		} else {
-			$locationId = '';
-		}
-		$interface->assign('selectedLocation', $locationId);
-		$interface->assign('locationsToRestrictTo', $locationsForLibrary);
+		$libraryId = $userHomeLibrary->libraryId;
+		$interface->assign('selectedLocation', $libraryId);
 
 		$this->loadDates();
 
 		$allStatuses = [];
 		$statuses = new MaterialsRequestStatus();
-		$statuses->libraryId = $userHomeLibrary->libraryId;
+		$statuses->libraryId = $libraryId;
 		$statuses->find();
 		while ($statuses->fetch()) {
 			$allStatuses[$statuses->id]['id'] = $statuses->id;
 			$allStatuses[$statuses->id]['label'] = $statuses->description;
-			if ($locationId !== '') {
-				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($locationId, $this->thisMonth, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($locationId, $this->lastMonth, $this->lastMonthYear, $statuses);
-				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($locationId, null, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastYear'] = $this->getStats($locationId, null, $this->lastYear, $statuses);
-				$allStatuses[$statuses->id]['usageAllTime'] = $this->getStats($locationId, null, null, $statuses);
-			} else {
-				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($locationsForLibrary, $this->thisMonth, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($locationsForLibrary, $this->lastMonth, $this->lastMonthYear, $statuses);
-				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($locationsForLibrary, null, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastYear'] = $this->getStats($locationsForLibrary, null, $this->lastYear, $statuses);
-				$allStatuses[$statuses->id]['usageAllTime'] = $this->getStats($locationsForLibrary, null, null, $statuses);
-			}
+				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($libraryId, $this->thisMonth, $this->thisYear, $statuses);
+				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($libraryId, $this->lastMonth, $this->lastMonthYear, $statuses);
+				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($libraryId, null, $this->thisYear, $statuses);
+				$allStatuses[$statuses->id]['usageLastYear'] = $this->getStats($libraryId, null, $this->lastYear, $statuses);
+				$allStatuses[$statuses->id]['usageAllTime'] = $this->getStats($libraryId, null, null, $statuses);
+
 		}
 
 		$interface->assign('allStats', $allStatuses);
@@ -76,7 +49,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			foreach ($location as $loc) {
 				if ($loc['displayLabel'] != "All") {
 					$stats = new MaterialsRequestUsage();
-					$stats->locationId = $loc['id'];
+					$stats->libraryId = $loc['id'];
 					if ($month != null) {
 						$stats->month = $month;
 					}
@@ -99,7 +72,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 		} else {
 			$stats = new MaterialsRequestUsage();
 			if (!empty($location)) {
-				$stats->locationId = $location;
+				$stats->libraryId = $location;
 			}
 			if ($month != null) {
 				$stats->month = $month;
@@ -138,121 +111,63 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 	}
 
 	function exportToExcel() {
-		global $configArray;
-		// Create new PHPExcel object
-		$objPHPExcel = new PHPExcel();
-
-		$location = $_REQUEST['location'];
-
 		$periods = $this->getAllPeriods();
 
-		// Set properties
-		$objPHPExcel->getProperties()->setCreator($configArray['Site']['title'])->setLastModifiedBy($configArray['Site']['title'])->setTitle("Materials Request Dashboard Report")->setSubject("Materials Request")->setCategory("Materials Request Dashboard Report");
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment;filename="MaterialsRequestDashboardReport.csv"');
+		header('Cache-Control: max-age=0');
+		$fp = fopen('php://output', 'w');
 
-		// Add some data
-		$objPHPExcel->setActiveSheetIndex(0);
-		$activeSheet = $objPHPExcel->getActiveSheet();
-		$activeSheet->setCellValue('A1', 'Materials Request Dashboard Report');
-		$activeSheet->setCellValue('A3', 'Date');
+		$header[] = 'Date';
 
-		if ($location !== '' && $location !== null) {
+		$userHomeLibrary = Library::getPatronHomeLibrary();
+		if (is_null($userHomeLibrary)) {
+			//User does not have a home library, this is likely an admin account.  Use the active library
+			global $library;
+			$userHomeLibrary = $library;
+		}
+		$locations = new Location();
+		$locations->libraryId = $userHomeLibrary->libraryId;
+		$locations->find();
+		while ($locations->fetch()) {
 			$thisStatus = new MaterialsRequestStatus();
-			$thisStatus->libraryId = $location;
+			$thisStatus->libraryId = $locations->libraryId;
 			$thisStatus->find();
-			$alphas = range('B', 'Z');
-			$currentAlpha = 0;
-			$curCol = 1;
+
 			while ($thisStatus->fetch()) {
-				$curRow = 4;
-				$labelCell = $alphas[$currentAlpha] . '3';
-				$activeSheet->setCellValue($labelCell, $thisStatus->description);
-				foreach ($periods as $period) {
+				$header[] = $thisStatus->description;
+			}
+			fputcsv($fp, $header);
+
+			foreach ($periods as $period) {
+				$materialsRequestUsage = new MaterialsRequestUsage();
+				$materialsRequestUsage->year = $period['year'];
+				$materialsRequestUsage->month = $period['month'];
+				$materialsRequestUsage->statusId = $thisStatus->id;
+				$materialsRequestUsage->find();
+
+				$row = [];
+				$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+				$row[] = $date;
+
+				$thisStatus = new MaterialsRequestStatus();
+				$thisStatus->libraryId = $locations->libraryId;
+				$thisStatus->find();
+
+				while ($thisStatus->fetch()){
 					$materialsRequestUsage = new MaterialsRequestUsage();
-					$materialsRequestUsage->groupBy('year, month');
-					$materialsRequestUsage->selectAdd();
-					$materialsRequestUsage->locationId = $location;
 					$materialsRequestUsage->year = $period['year'];
 					$materialsRequestUsage->month = $period['month'];
 					$materialsRequestUsage->statusId = $thisStatus->id;
-					$materialsRequestUsage->selectAdd('year');
-					$materialsRequestUsage->selectAdd('month');
-					$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
-					$materialsRequestUsage->orderBy('year, month');
-
-					if ($materialsRequestUsage->find(true)) {
-						$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
-						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
-						$curRow++;
-					} else {
-						$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, "0");
-						$curRow++;
+					if ($materialsRequestUsage->find(true)){
+						$row[] = $materialsRequestUsage->numUsed ?? 0;
+					}else{
+						$row[] = 0;
 					}
-
 				}
-				$currentAlpha++;
-				$curCol++;
-			}
-
-		} else {
-			$userHomeLibrary = Library::getPatronHomeLibrary();
-			if (is_null($userHomeLibrary)) {
-				//User does not have a home library, this is likely an admin account.  Use the active library
-				global $library;
-				$userHomeLibrary = $library;
-			}
-			$locations = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
-			$locations->find();
-			while ($locations->fetch()) {
-				$thisStatus = new MaterialsRequestStatus();
-				$thisStatus->libraryId = $locations->locationId;
-				$thisStatus->find();
-
-				$currentAlpha = 0;
-				$alphas = range('B', 'Z');
-				$curCol = 1;
-				while ($thisStatus->fetch()) {
-					$curRow = 4;
-					$labelCell = $alphas[$currentAlpha] . '3';
-					$activeSheet->setCellValue($labelCell, $thisStatus->description);
-					foreach ($periods as $period) {
-						$materialsRequestUsage = new MaterialsRequestUsage();
-						$materialsRequestUsage->groupBy('year, month');
-						$materialsRequestUsage->selectAdd();
-						$materialsRequestUsage->year = $period['year'];
-						$materialsRequestUsage->month = $period['month'];
-						$materialsRequestUsage->statusId = $thisStatus->id;
-						$materialsRequestUsage->selectAdd('year');
-						$materialsRequestUsage->selectAdd('month');
-						$materialsRequestUsage->selectAdd('SUM(numUsed) as numUsed');
-						$materialsRequestUsage->orderBy('year, month');
-
-						if ($materialsRequestUsage->find(true)) {
-							$activeSheet->setCellValueByColumnAndRow(0, $curRow, "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}");
-							$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, $materialsRequestUsage->numUsed ?? "0");
-							$curRow++;
-						} else {
-							$activeSheet->setCellValueByColumnAndRow($curCol, $curRow, "0");
-							$curRow++;
-						}
-
-					}
-					$currentAlpha++;
-					$curCol++;
-				}
+				fputcsv($fp, $row);
 			}
 		}
-
-		// Rename sheet
-		$activeSheet->setTitle('Dashboard Report');
-
-		// Redirect output to a client's web browser (Excel5)
-		header('Content-Type: application/vnd.ms-excel');
-		header('Content-Disposition: attachment;filename="MaterialsRequestDashboardReport.xls"');
-		header('Cache-Control: max-age=0');
-
-		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
-		$objWriter->save('php://output');
 		exit;
 	}
 

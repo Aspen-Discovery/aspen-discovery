@@ -70,9 +70,9 @@
 						<a href="#" onclick="return AspenDiscovery.Account.showSaveSearchForm('{$searchId}')">{translate text='Save Search' isPublicFacing=true}</a>
 					{/if}
 				{/if}
-				{if !empty($excelLink)}
-					<a href="{$excelLink|escape}">{translate text='Export To Excel' isPublicFacing=true}</a>
-				{/if}
+				{*{if !empty($excelLink)}
+					<a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a>
+				{/if}*}
 			{/if}
 		</div>
 	{/if}

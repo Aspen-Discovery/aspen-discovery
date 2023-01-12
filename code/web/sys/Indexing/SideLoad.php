@@ -457,7 +457,7 @@ class SideLoad extends DataObject {
 	}
 
 	public function update($context = '') {
-		if (in_array('deletedRecordsIds', $this->_changedFields)) {
+		if (!empty($this->_changedFields) && in_array('deletedRecordsIds', $this->_changedFields)) {
 			$this->runFullUpdate = true;
 		}
 		$ret = parent::update();

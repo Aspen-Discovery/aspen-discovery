@@ -134,6 +134,7 @@ class Novelist3 {
 			if (!empty($decodedData->TitleInfo) && !empty($decodedData->TitleInfo->primary_isbn)) {
 				if ($infoSetting == "off") {
 					$isbn = $decodedData->TitleInfo->primary_isbn;
+					$series_title = "None";
 					if (!empty($decodedData->FeatureContent->SeriesInfo->series_titles)) {
 						foreach ($decodedData->FeatureContent->SeriesInfo->series_titles as $seriesTitle) {
 							if ($seriesTitle->primary_isbn == $isbn) {
@@ -144,8 +145,11 @@ class Novelist3 {
 							}
 						}
 					}
-					$decodedData->FeatureContent->SeriesInfo->series_titles = null;
+					if (array_key_exists('SeriesInfo', $decodedData->FeatureContent)){
+						$decodedData->FeatureContent->SeriesInfo->series_titles = null;
+					}
 					$decodedData->TitleInfo->manifestations = null;
+
 					$isbnNovelistData = array(
 						"Title Info" => $decodedData->TitleInfo,
 						"Series Info" => $series_title,
