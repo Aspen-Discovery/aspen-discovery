@@ -119,6 +119,15 @@ function getUpdates23_01_00(): array
 			]
 		],
 		//change_greenhouse_url
+		'add_invoiceCloudSettingId_to_library' => [
+			'title' => 'Add invoiceCloudSettingId to library',
+			'description' => 'Add invoiceCloudSettingId column to library table',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN invoiceCloudSettingId INT(11) DEFAULT -1",
+			],
+		],
+		//add_invoiceCloudSettingId_to_library
 
 		//kodi
 		'user_browse_add_home' => [
