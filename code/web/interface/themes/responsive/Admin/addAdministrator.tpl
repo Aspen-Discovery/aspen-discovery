@@ -28,19 +28,11 @@
 				<label for='{$propName}' class="control-label">{translate text="Roles" isAdminFacing=true}</label>
 				<div class="controls">
 					{* Display the list of roles to add *}
-					{if isset($property.listStyle) && $property.listStyle == 'checkbox'}
-						{foreach from=$property.values item=propertyName key=propertyValue}
-							<label class="checkbox">
-								<input name='{$propName}[{$propertyValue}]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && in_array($propertyValue, array_keys($propValue))}checked="checked"{/if} >{$propertyName}
-							</label>
-						{/foreach}
-					{else}
-						<select name='{$propName}' id="{$propName}" multiple="multiple">
-						{foreach from=$property.values item=propertyName key=propertyValue}
-							<option value='{$propertyValue}' {if $propValue == $propertyValue}selected="selected"{/if}>{$propertyName}</option>
-						{/foreach}
-						</select>
-					{/if}
+					{foreach from=$property.values item=propertyName key=propertyValue}
+						<label class="checkbox">
+							<input name='{$propName}[{$propertyValue}]' type="checkbox" value='{$propertyValue}' {if !empty($propValue) && in_array($propertyValue, array_keys($propValue))}checked="checked"{/if} >{$propertyName}
+						</label>
+					{/foreach}
 				</div>
 			</div>
 			<div class="form-group">
