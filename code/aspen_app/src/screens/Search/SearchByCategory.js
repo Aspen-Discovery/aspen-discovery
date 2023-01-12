@@ -13,6 +13,7 @@ import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
+import {formatDiscoveryVersion} from '../../util/loadLibrary';
 
 export default class SearchByCategory extends Component {
      constructor() {
@@ -125,7 +126,7 @@ export default class SearchByCategory extends Component {
      renderItem = (item, url, user, lastListUsed) => {
           const imageUrl = url + '/bookcover.php?id=' + item.id + '&size=medium&type=grouped_work';
           return (
-               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title)}>
+               <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title_display)}>
                     <HStack space={3}>
                          <VStack>
                               <Image
@@ -186,11 +187,22 @@ export default class SearchByCategory extends Component {
 
      // handles the on press action
      onPressItem = (item, url, title) => {
-          navigateStack('SearchTab', 'CategoryResultItem', {
-               id: item,
-               url: url,
-               title: getCleanTitle(title),
-          });
+          const { route } = this.props;
+          const libraryContext = route.params.libraryContext;
+          const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
+          if(version >= '23.01.00') {
+               navigateStack('SearchTab', 'CategoryResultItem', {
+                    id: item,
+                    url: url,
+                    title: getCleanTitle(title),
+               });
+          } else {
+               navigateStack('SearchTab', 'CategoryResultItem221200', {
+                    id: item,
+                    title: getCleanTitle(title),
+                    url: url,
+               });
+          }
      };
 
      // this one shouldn't probably ever load with the catches in the render, but just in case
