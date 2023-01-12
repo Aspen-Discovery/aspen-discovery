@@ -14,7 +14,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			$userHomeLibrary = $library;
 		}
 		$libraryId = $userHomeLibrary->libraryId;
-		$interface->assign('selectedLocation', $libraryId);
+		$interface->assign('library', $libraryId);
 
 		$this->loadDates();
 
@@ -126,47 +126,44 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			global $library;
 			$userHomeLibrary = $library;
 		}
-		$locations = new Location();
-		$locations->libraryId = $userHomeLibrary->libraryId;
-		$locations->find();
-		while ($locations->fetch()) {
+		$libraryId = $userHomeLibrary->libraryId;
+
+		$thisStatus = new MaterialsRequestStatus();
+		$thisStatus->libraryId = $libraryId;
+		$thisStatus->find();
+
+		while ($thisStatus->fetch()) {
+			$header[] = $thisStatus->description;
+		}
+		fputcsv($fp, $header);
+
+		foreach ($periods as $period) {
+			$materialsRequestUsage = new MaterialsRequestUsage();
+			$materialsRequestUsage->year = $period['year'];
+			$materialsRequestUsage->month = $period['month'];
+			$materialsRequestUsage->statusId = $thisStatus->id;
+			$materialsRequestUsage->find();
+
+			$row = [];
+			$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+			$row[] = $date;
+
 			$thisStatus = new MaterialsRequestStatus();
-			$thisStatus->libraryId = $locations->libraryId;
+			$thisStatus->libraryId = $libraryId;
 			$thisStatus->find();
 
-			while ($thisStatus->fetch()) {
-				$header[] = $thisStatus->description;
-			}
-			fputcsv($fp, $header);
-
-			foreach ($periods as $period) {
+			while ($thisStatus->fetch()){
 				$materialsRequestUsage = new MaterialsRequestUsage();
 				$materialsRequestUsage->year = $period['year'];
 				$materialsRequestUsage->month = $period['month'];
 				$materialsRequestUsage->statusId = $thisStatus->id;
-				$materialsRequestUsage->find();
-
-				$row = [];
-				$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-				$row[] = $date;
-
-				$thisStatus = new MaterialsRequestStatus();
-				$thisStatus->libraryId = $locations->libraryId;
-				$thisStatus->find();
-
-				while ($thisStatus->fetch()){
-					$materialsRequestUsage = new MaterialsRequestUsage();
-					$materialsRequestUsage->year = $period['year'];
-					$materialsRequestUsage->month = $period['month'];
-					$materialsRequestUsage->statusId = $thisStatus->id;
-					if ($materialsRequestUsage->find(true)){
-						$row[] = $materialsRequestUsage->numUsed ?? 0;
-					}else{
-						$row[] = 0;
-					}
+				if ($materialsRequestUsage->find(true)){
+					$row[] = $materialsRequestUsage->numUsed ?? 0;
+				}else{
+					$row[] = 0;
 				}
-				fputcsv($fp, $row);
 			}
+			fputcsv($fp, $row);
 		}
 		exit;
 	}

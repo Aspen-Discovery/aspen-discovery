@@ -145,16 +145,19 @@ class Novelist3 {
 							}
 						}
 					}
-					if (array_key_exists('SeriesInfo', $decodedData->FeatureContent)){
-						$decodedData->FeatureContent->SeriesInfo->series_titles = null;
+					if (!array_key_exists('SeriesInfo', $decodedData->FeatureContent)){
+						$isbnNovelistData = $decodedData;
 					}
-					$decodedData->TitleInfo->manifestations = null;
+					else{
+						$decodedData->FeatureContent->SeriesInfo->series_titles = null;
+						$decodedData->TitleInfo->manifestations = null;
 
-					$isbnNovelistData = array(
-						"Title Info" => $decodedData->TitleInfo,
-						"Series Info" => $series_title,
-						"Feature Content" =>$decodedData->FeatureContent,
-					);
+						$isbnNovelistData = array(
+							"Title Info" => $decodedData->TitleInfo,
+							"Series Info" => $series_title,
+							"Feature Content" =>$decodedData->FeatureContent,
+						);
+					}
 				}else {
 					$isbnNovelistData = $decodedData;
 				}
