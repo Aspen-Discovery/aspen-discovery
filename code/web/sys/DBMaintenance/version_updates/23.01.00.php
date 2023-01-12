@@ -177,6 +177,14 @@ function getUpdates23_01_00(): array
 			]
 		],
 		//migrate_records_owned
+		'rename_materialreq_usage_locID_column' => [
+			'title' => 'Rename locationId column for Materials Request Usage',
+			'description' => 'Rename locationId column for Materials Request Usage',
+			'sql' => [
+				"ALTER TABLE materials_request_usage RENAME COLUMN locationId TO libraryId",
+			]
+		],
+		//rename_materialreq_usage_locID_column
 		//other
 	];
 }
