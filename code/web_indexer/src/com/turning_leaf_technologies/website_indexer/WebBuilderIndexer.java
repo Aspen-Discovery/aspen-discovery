@@ -297,6 +297,9 @@ class WebBuilderIndexer {
 
 				//Generate the contents based on the rows and cells within the page, to do this we will use an Aspen API to
 				//ensure that the content is rendered in the same way.
+				if (libraryBaseUrls.get(firstLibraryId) == null) {
+					logEntry.incErrors("Could not get base url for library id " + firstLibraryId + " for protal page " + id);
+				}
 				String aspenRawUrl = libraryBaseUrls.get(firstLibraryId) + "/WebBuilder/PortalPage?id=" + id + "&raw=true";
 
 				try {
