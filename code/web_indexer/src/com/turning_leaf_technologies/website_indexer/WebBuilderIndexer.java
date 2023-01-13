@@ -73,7 +73,7 @@ class WebBuilderIndexer {
 				scopeName = scopeName.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
 				librarySubdomains.put(getLibrarySubdomainsRS.getLong("libraryId"), scopeName);
 				String baseUrl = getLibrarySubdomainsRS.getString("baseUrl");
-				if (baseUrl == null || baseUrl.trim().length() == 0){
+				if (baseUrl == null || baseUrl.trim().length() == 0 || baseUrl.equals("null")){
 					baseUrl = configIni.get("Site", "url");
 				}
 				libraryBaseUrls.put(getLibrarySubdomainsRS.getLong("libraryId"), baseUrl);
