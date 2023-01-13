@@ -248,7 +248,7 @@
 					</div>
 				{/if}
 			{/if}
-		{if empty($showMyAccount)}</div>{/if}
+		{if empty($showMyAccount) && empty($userIsStaff)}</div>{/if}
 		</div>
 	{/if}
 	<script type="text/javascript">
