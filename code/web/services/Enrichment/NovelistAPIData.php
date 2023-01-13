@@ -29,10 +29,10 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 				$contents .= "<h3>Data includes info for all records in series</h3>";
 			}
 			$metadata = $driver->getRawNovelistDataISBN($ISBN, $allInfo);
-			if ($metadata) {
+			if (!empty($metadata)) {
 				$contents .= $this->easy_printr("metadata_{$ISBN}", $metadata);
 			} else {
-				$contents .= ("No metadata available<br/>");
+				$contents .= "No metadata available<br/>";
 			}
 		}
 
