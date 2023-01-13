@@ -142,9 +142,17 @@ class WebBuilderIndexer {
 				long firstLibraryId = -1;
 				while (getLibrariesForResourceRS.next()){
 					if (firstLibraryId == -1){
-						firstLibraryId = getLibrariesForResourceRS.getLong("libraryId");
+						long tmpFirstLibraryId = getLibrariesForResourceRS.getLong("libraryId");
+						if (libraryBaseUrls.containsKey(tmpFirstLibraryId)) {
+							firstLibraryId = tmpFirstLibraryId;
+						}
 					}
 					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForResourceRS.getLong("libraryId")));
+				}
+
+				if (firstLibraryId == -1) {
+					//This is not actually connected to any libraries, just skip it.
+					continue;
 				}
 
 				String teaser = getResourcesRS.getString("teaser");
@@ -285,7 +293,12 @@ class WebBuilderIndexer {
 				long firstLibraryId = -1;
 				while (getLibrariesForPortalPageRS.next()){
 					if (firstLibraryId == -1){
-						firstLibraryId = getLibrariesForPortalPageRS.getLong("libraryId");
+						//We have some cases where a library was deleted, but the connections to the pages were not cleaned up.
+						//Make sure that the library id is valid.
+						long tmpFirstLibraryId = getLibrariesForPortalPageRS.getLong("libraryId");
+						if (libraryBaseUrls.containsKey(tmpFirstLibraryId)) {
+							firstLibraryId = tmpFirstLibraryId;
+						}
 					}
 					solrDocument.addField("scope_has_related_records", librarySubdomains.get(getLibrariesForPortalPageRS.getLong("libraryId")));
 				}
@@ -298,7 +311,8 @@ class WebBuilderIndexer {
 				//Generate the contents based on the rows and cells within the page, to do this we will use an Aspen API to
 				//ensure that the content is rendered in the same way.
 				if (libraryBaseUrls.get(firstLibraryId) == null) {
-					logEntry.incErrors("Could not get base url for library id " + firstLibraryId + " for protal page " + id);
+					logEntry.incErrors("Could not get base url for library id " + firstLibraryId + " for portal page " + id);
+					continue;
 				}
 				String aspenRawUrl = libraryBaseUrls.get(firstLibraryId) + "/WebBuilder/PortalPage?id=" + id + "&raw=true";
 
