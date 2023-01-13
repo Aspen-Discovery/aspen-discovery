@@ -145,7 +145,7 @@ class Novelist3 {
 							}
 						}
 					}
-					if (!array_key_exists('SeriesInfo', $decodedData->FeatureContent)){
+					if (empty($decodedData->FeatureContent->SeriesInfo)){
 						$isbnNovelistData = $decodedData;
 					}
 					else{
