@@ -30,6 +30,7 @@ abstract class Action
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
 		global $isAJAX;
 		if (!$isAJAX && UserAccount::isLoggedIn()){
+			$this->loadAccountSidebarVariables();
 			try {
 				$messages = UserAccount::getActiveUserObj()->getMessages();
 				$interface->assign('messages', $messages);

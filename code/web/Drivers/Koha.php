@@ -3904,7 +3904,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		if (isset($kohaPreferences['OPACSuggestionMandatoryFields'])) {
-			$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+			$mandatoryFields = array_flip(explode('|', $kohaPreferences['OPACSuggestionMandatoryFields']));
 		} else {
 			$mandatoryFields = [];
 		}
