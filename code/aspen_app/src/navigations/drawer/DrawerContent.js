@@ -2,13 +2,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import Constants from 'expo-constants';
-import * as ExpoLinking from 'expo-linking';
+import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import _ from 'lodash';
 import { Badge, Box, Button, Container, Divider, HStack, Icon, Image, Menu, Pressable, Text, VStack } from 'native-base';
-import React, { Component, useState } from 'react';
-import { Linking } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import React, { useState } from 'react';
+import { useFocusEffect, useLinkTo } from '@react-navigation/native';
 
 // custom components and helper files
 import { showILSMessage } from '../../components/Notifications';
@@ -17,9 +16,8 @@ import { UseColorMode } from '../../themes/theme';
 import { getLanguageDisplayName } from '../../translations/TranslationService';
 import { translate } from '../../translations/translations';
 import { saveLanguage } from '../../util/accountActions';
-import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
-import { refreshProfile, reloadProfile } from '../../util/api/user';
+import { reloadProfile } from '../../util/api/user';
 import { getILSMessages, PATRON } from '../../util/loadPatron';
 import { LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -28,13 +26,14 @@ Notifications.setNotificationHandler({
      handleNotification: async () => ({
           shouldShowAlert: true,
           shouldPlaySound: true,
-          shouldSetBadge: true,
+          shouldSetBadge: false,
      }),
 });
 
-const prefix = ExpoLinking.createURL('/');
+const prefix = Linking.createURL('/');
 
 export const DrawerContent = () => {
+     const linkTo = useLinkTo();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [notifications, setNotifications] = React.useState([]);
@@ -80,26 +79,28 @@ export const DrawerContent = () => {
      const handleNewNotificationResponse = async (response) => {
           await addStoredNotification(response);
           let url = decodeURIComponent(response.notification.request.content.data.url).replace(/\+/g, ' ');
-          url = url.concat('&results=[]');
           url = url.replace('aspen-lida://', prefix);
 
           const supported = await Linking.canOpenURL(url);
           if (supported) {
                try {
-                    console.log('Opening url...');
-                    await Linking.openURL(url);
+                    url = url.replace(prefix, '/');
+                    console.log('Opening url in DrawerContent...');
+                    console.log(url);
+                    linkTo(url);
                } catch (e) {
-                    console.log('Could not open url');
+                    console.log('Could not open url in DrawerContent');
                     console.log(e);
                }
           } else {
-               console.log('Could not open url');
+               console.log('Could not open url in DrawerContent');
+               console.log(url);
           }
      };
 
      const displayFinesAlert = () => {
           if (user.fines) {
-               if (!_.includes(user.fines, '0.00')) {
+               if (!_.includes(user.fines, '0.00') && (user.fines > 0.01)) {
                     const message = 'Your accounts have ' + user.fines + ' in fines.';
                     return showILSMessage('warning', message);
                }
