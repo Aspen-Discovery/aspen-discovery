@@ -59,7 +59,7 @@ export function getStatusIndicator(status) {
                } else {
                     indicator = 'danger';
                     if (status['groupedStatus']) {
-                         label = 'Checked Out';
+                         label = status['groupedStatus'];
                     } else {
                          label = 'Withdrawn / Unavailable';
                     }
