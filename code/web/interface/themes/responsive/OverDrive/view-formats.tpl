@@ -19,7 +19,7 @@
 			</div>
 		</div>
 
-		{if !empty($overDriveFormat)}
+		{if $overDriveFormat->fileSize != 0 && strcasecmp($overDriveFormat->fileSize, 'unknown') != 0}
 			<div class="eContentHoldingNotes">
 				{translate text="Size %1%" 1=$overDriveFormat->fileSize|file_size isPublicFacing=true}
 			</div>
