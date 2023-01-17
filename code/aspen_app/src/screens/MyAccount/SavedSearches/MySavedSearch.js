@@ -14,6 +14,7 @@ import { LibrarySystemContext } from '../../../context/initialContext';
 import SearchBySavedSearch from '../../Search/SearchBySavedSearch';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getCleanTitle } from '../../../helpers/item';
+import {formatDiscoveryVersion} from '../../../util/loadLibrary';
 
 class MySavedSearch extends React.PureComponent {
      constructor(props, context) {
@@ -151,11 +152,21 @@ class MySavedSearch extends React.PureComponent {
      };
 
      openItem = (id, libraryUrl, title) => {
-          navigateStack('AccountScreenTab', 'SavedSearchItem', {
-               id: id,
-               url: libraryUrl,
-               title: getCleanTitle(title),
-          });
+          const libraryContext = this.context.library;
+          const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
+          if(version >= '23.01.00') {
+               navigateStack('AccountScreenTab', 'SavedSearchItem', {
+                    id: id,
+                    url: libraryUrl,
+                    title: getCleanTitle(title),
+               });
+          } else {
+               navigateStack('AccountScreenTab', 'SavedSearchItem221200', {
+                    id: id,
+                    title: getCleanTitle(title),
+                    url: libraryUrl,
+               });
+          }
      };
 
      static contextType = userContext;

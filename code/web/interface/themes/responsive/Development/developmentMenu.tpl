@@ -5,7 +5,7 @@
 		</div>
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
-				<div class="panel">
+				<div class="panel active">
 					<a href="#developmentGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Development Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -23,7 +23,7 @@
 					</div>
 				</div>
 
-				<div class="panel">
+				<div class="panel active">
 					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -42,7 +42,7 @@
 					</div>
 				</div>
 
-				<div class="panel">
+				<div class="panel active">
 					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -65,7 +65,7 @@
 					</div>
 				</div>
 
-				<div class="panel">
+				<div class="panel active">
 					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">

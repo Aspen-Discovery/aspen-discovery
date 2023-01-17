@@ -371,7 +371,7 @@ const ReadingHistory = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
-     if (version >= '22.12.00') {
+     if (version >= '23.01.00') {
           return (
                <Pressable
                     px="2"

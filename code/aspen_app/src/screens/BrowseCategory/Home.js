@@ -24,7 +24,7 @@ let maxCategories = 5;
 export const DiscoverHomeScreen = () => {
      const [loading, setLoading] = React.useState(true);
      const navigation = useNavigation();
-     const { user } = React.useContext(UserContext);
+     const { user, locations, accounts, updatePickupLocations, updateLinkedAccounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -61,7 +61,16 @@ export const DiscoverHomeScreen = () => {
 
                     getILSMessages(library.baseUrl);
                     getLists(library.baseUrl);
-                    getPickupLocations(library.baseUrl);
+                    getPickupLocations(library.baseUrl).then((result) => {
+                         if (locations !== result) {
+                              updatePickupLocations(result);
+                         }
+                    });
+                    getLinkedAccounts(library.baseUrl).then((result) => {
+                         if (accounts !== result) {
+                              updateLinkedAccounts(result);
+                         }
+                    });
                     console.log('updated patron things');
                };
                update().then(() => {
@@ -163,11 +172,21 @@ export const DiscoverHomeScreen = () => {
                          libraryContext: library,
                     });
                } else {
-                    navigateStack('HomeTab', 'GroupedWorkScreen', {
-                         id: key,
-                         title: title,
-                         prevRoute: 'DiscoveryScreen',
-                    });
+                    if(version >= '23.01.00') {
+                         navigateStack('HomeTab', 'GroupedWorkScreen', {
+                              id: key,
+                              title: title,
+                              prevRoute: 'DiscoveryScreen',
+                         });
+                    } else {
+                         navigateStack('HomeTab', 'GroupedWorkScreen221200', {
+                              id: key,
+                              title: title,
+                              url: library.baseUrl,
+                              userContext: user,
+                              libraryContext: library
+                         })
+                    }
                }
           } else {
                navigateStack('HomeTab', 'GroupedWorkScreen', {

@@ -4,7 +4,7 @@ import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
 import { enableScreens } from 'react-native-screens';
 
-import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
 import Facet from '../../screens/Search/Facet';
 import { FiltersScreen } from '../../screens/Search/Filters';
 import { translate } from '../../translations/translations';
@@ -61,6 +61,13 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
+                   <Stack.Screen
+                       name="ResultItem221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -78,6 +85,13 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
+                   <Stack.Screen
+                       name="CategoryResultItem221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
 
                <Stack.Group>
@@ -109,6 +123,13 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
+                   <Stack.Screen
+                       name="ListResultItem221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -129,6 +150,13 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
+                   <Stack.Screen
+                       name="SavedSearchResultItem221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Screen
                     name="CopyDetails"

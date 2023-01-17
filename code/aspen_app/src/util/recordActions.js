@@ -17,7 +17,7 @@ import { LIBRARY } from './loadLibrary';
  *     <li>itemId - the GroupedWork id for the record</li>
  * </ul>
  **/
-export async function getGroupedWork(url, itemId) {
+export async function getGroupedWork221200(url, itemId) {
      let baseUrl = url ?? LIBRARY.url;
      const api = create({
           baseURL: baseUrl + '/API',
