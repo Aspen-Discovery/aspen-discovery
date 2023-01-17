@@ -97,6 +97,7 @@ const app_config = {
           resizeMode: 'contain',
           backgroundColor: app['background'],
      },
+     jsEngine: 'hermes',
      assetBundlePatterns: ['**/*'],
      ios: {
           buildNumber: owner['buildCode'],
@@ -108,18 +109,19 @@ const app_config = {
                LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
                CFBundleAllowMixedLocalizations: true,
           },
+          jsEngine: 'jsc'
      },
      android: {
           allowBackup: false,
           package: app['reverseDns'],
           versionCode: versionAsInt,
-          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION'],
+          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION', 'RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM'],
           adaptiveIcon: {
                foregroundImage: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
                backgroundColor: app['background'],
           },
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
-          googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+          googleServicesFile: './google-services.json',
      },
      notification: {
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appNotification&slug=' + app['slug'],

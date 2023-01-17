@@ -70,7 +70,7 @@ export default class MySavedSearches extends Component {
                               <Box>
                                    <Text bold fontSize="md">
                                         {item.title}{' '}
-                                        {hasNewResults == 1 ? (
+                                        {hasNewResults === 1 ? (
                                              <Badge mb="-0.5" colorScheme="warning">
                                                   Updated
                                              </Badge>

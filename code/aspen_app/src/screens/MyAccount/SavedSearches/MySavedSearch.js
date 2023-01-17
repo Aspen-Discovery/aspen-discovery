@@ -15,6 +15,8 @@ import SearchBySavedSearch from '../../Search/SearchBySavedSearch';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getCleanTitle } from '../../../helpers/item';
 import {formatDiscoveryVersion} from '../../../util/loadLibrary';
+import {SEARCH} from '../../../util/search';
+import {UnsavedChangesExit} from '../../Search/UnsavedChanges';
 
 class MySavedSearch extends React.PureComponent {
      constructor(props, context) {
@@ -64,6 +66,17 @@ class MySavedSearch extends React.PureComponent {
      componentWillUnmount() {
           this._isMounted = false;
      }
+
+     componentDidUpdate(prevProps, prevState) {
+          const { navigation, route } = this.props;
+          const prevRoute = route.params?.prevRoute ?? 'MySavedSearches';
+          if (prevRoute === 'NONE') {
+               navigation.setOptions({
+                    headerLeft: () => <Box />
+               });
+          }
+     }
+
 
      // renders the items on the screen
      renderItem = (item) => {

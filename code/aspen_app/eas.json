@@ -8,7 +8,8 @@
 	  "distribution": "store",
 	  "channel": "production",
 	  "env": {
-		"APP_ENV": "{{APP_ENV}}"
+		"APP_ENV": "{{APP_ENV}}",
+		"GOOGLE_SERVICES_JSON": "/"
 	  }
 	},
 	"beta": {

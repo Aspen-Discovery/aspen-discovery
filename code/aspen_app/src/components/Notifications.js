@@ -12,8 +12,9 @@ import { GLOBALS } from '../util/globals';
 import { popAlert, popToast } from './loadError';
 
 export async function registerForPushNotificationsAsync(url) {
+     console.log("url: " + url);
      let token = false;
-     if (Constants.isDevice) {
+     if (Device.isDevice) {
           const { status: existingStatus } = await Notifications.getPermissionsAsync();
           let finalStatus = existingStatus;
           if (existingStatus !== 'granted') {
@@ -24,10 +25,13 @@ export async function registerForPushNotificationsAsync(url) {
                console.log('Failed to get push token for push notification!');
                return;
           }
+          if (Platform.OS === 'android') {
+               await createChannelsAndCategories();
+          }
           token = (await Notifications.getExpoPushTokenAsync()).data;
+          console.log("token: " + token);
           if (token) {
                await savePushToken(url, token);
-               await createChannelsAndCategories();
           }
      } else {
           alert('Push notifications require a physical device');
@@ -47,6 +51,7 @@ export async function savePushToken(url, pushToken) {
           auth: createAuthTokens(),
      });
      const response = await api.post('/UserAPI?method=saveNotificationPushToken', postBody);
+     console.log("saveNotificationPushToken: " + response);
      if (response.ok) {
           if (response.data.result.success) {
                popAlert(response.data.result.title, response.data.result.message, 'success');

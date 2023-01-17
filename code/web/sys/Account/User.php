@@ -1784,7 +1784,7 @@ class User extends DataObject {
 		}
 		$linkedUsers = $this->getLinkedUsers();
 		if (count($linkedUsers) > 0) {
-			$accountProfileForSource = UserAccount::getAccountProfile($recordSource);
+			$accountProfileForSource = UserAccount::getAccountProfileByRecordSource($recordSource);
 			if ($accountProfileForSource != null) {
 				$accountProfileSource = $accountProfileForSource->name;
 			}else{
@@ -1811,9 +1811,9 @@ class User extends DataObject {
 							// Check For Duplicated Pickup Locations
 							if ($mainPickupLocation->libraryId == $pickupLocation->libraryId && $mainPickupLocation->locationId == $pickupLocation->locationId) {
 								// Merge Linked Users that all have this pick-up location
-								$pickupUsers = array_unique(array_merge($mainPickupLocation->pickupUsers, $pickupLocation->pickupUsers));
-								$mainPickupLocation->pickupUsers = $pickupUsers;
-								$pickupLocation->pickupUsers = $pickupUsers;
+								$pickupUsers = array_unique(array_merge($mainPickupLocation->getPickupUsers(), $pickupLocation->getPickupUsers()));
+								$mainPickupLocation->setPickupUsers($pickupUsers);
+								$pickupLocation->setPickupUsers($pickupUsers);
 
 								// keep location with better sort key, remove the other
 								if ($mainSortingKey == $sortingKey || $mainSortingKey[0] < $sortingKey[0]) {
