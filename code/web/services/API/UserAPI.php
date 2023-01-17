@@ -26,6 +26,7 @@ class UserAPI extends Action {
 					'logout',
 					'login',
 					'loginToLiDA',
+					'resetExpiredPin',
 					'checkoutItem',
 					'placeHold',
 					'renewItem',
@@ -219,6 +220,17 @@ class UserAPI extends Action {
 		return true;
 	}
 
+	/**
+	 * Validates an account based on the username and PIN provided, while returning errors such as expired PINs.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user.
+	 * </ul>
+	 *
+	 * @noinspection PhpUnused
+	 **/
 	function loginToLiDA(): array {
 		[
 			$username,
@@ -283,6 +295,81 @@ class UserAPI extends Action {
 			'success' => false,
 			'message' => 'Unknown error logging in',
 		];
+	}
+
+	/**
+	 * Allows a user to reset an expired PIN.
+	 *
+	 * Parameters (POST):
+	 * <ul>
+	 * <li>token - The reset token provided at authentication to validate the request.</li>
+	 * <li>pin1 - The PIN for the user.
+	 * <li>pin2 - The PIN for the user (used to validate that they are the same).
+	 * </ul>
+	 *
+	 * @noinspection PhpUnused
+	 **/
+	function resetExpiredPin() {
+		$tokenValid = false;
+		$result = [
+			'success' => false,
+			'message' => ''
+		];
+		if(isset($_POST['token'])) {
+			require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+			$pinResetToken = new PinResetToken();
+			$pinResetToken->token = $_POST['token'];
+			if ($pinResetToken->find(true)) {
+				//Token should only be valid for 1 hour.
+				if ((time() - $pinResetToken->dateIssued) < 60 * 60) {
+					$tokenValid = true;
+				} else {
+					$result['message'] = translate([
+						'text' => 'Token has expired.',
+						'isPublicFacing' => true,
+					]);
+				}
+			} else {
+				$result['message'] = translate([
+					'text' => 'Token not found.',
+					'isPublicFacing' => true,
+				]);
+			}
+
+			$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+			if ((isset($_POST['pin1']) && isset($_POST['pin2'])) && $tokenValid) {
+				$userToResetPinFor = new User();
+				$userToResetPinFor->id = $pinResetToken->userId;
+				if ($userToResetPinFor->find(true)) {
+					$pin1 = $_POST['pin1'];
+					$pin2 = $_POST['pin2'];
+					if ($pin1 != $pin2) {
+						$result['message'] = translate([
+							'text' => 'The provided PINs do not match.',
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$resetResults = $catalog->driver->updatePin($userToResetPinFor, $userToResetPinFor->getPasswordOrPin(), $pin1);
+						if (!$resetResults['success']) {
+							$result['message'] = $resetResults['message'];
+						} else {
+							$result['success'] = true;
+							$result['message'] = translate([
+								'text' => 'PIN reset successfully.',
+								'isPublicFacing' => true,
+							]);
+						}
+					}
+				}
+			}
+		} else {
+			$result['message'] = translate([
+				'text' => 'No PIN reset token provided.',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return $result;
 	}
 
 	/**
