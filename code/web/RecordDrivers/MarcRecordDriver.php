@@ -1262,7 +1262,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		if ($this->catalogDriver == null) {
 			try {
 				$indexingProfile = $this->getIndexingProfile();
-				$accountProfileForSource = UserAccount::getAccountProfile($indexingProfile->name);
+				$accountProfileForSource = UserAccount::getAccountProfileByRecordSource($indexingProfile->name);
 				if ($accountProfileForSource != null) {
 					$this->catalogDriver = CatalogFactory::getCatalogConnectionInstance($accountProfileForSource->driver, $accountProfileForSource);
 				}else{
