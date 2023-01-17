@@ -20,7 +20,7 @@
 					<textarea name="login" id="login" class="form-control"></textarea>
 				</div>
 			</div>
-			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on it's own line." isAdminFacing=true}</div>
+			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on its own line." isAdminFacing=true}</div>
 
 			<div class="form-group">
 				{assign var=property value=$structure.roles}
