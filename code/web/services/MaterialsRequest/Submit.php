@@ -193,7 +193,12 @@ class MaterialsRequest_Submit extends Action {
 			}
 		}
 
-		$this->display('submission-result.tpl', 'Submission Result');
+		$sidebar = '';
+		if (UserAccount::isLoggedIn()) {
+			$sidebar = 'Search/home-sidebar.tpl';
+		}
+
+		$this->display('submission-result.tpl', 'Submission Result', $sidebar);
 	}
 
 	function getBreadcrumbs(): array {

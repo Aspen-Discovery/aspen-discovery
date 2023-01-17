@@ -1,12 +1,10 @@
 {
   "license": "GPL-2.0-or-later",
   "scripts": {
+    "eas-build-pre-install": "node preinstall.js",
     "start": "expo start --dev-client",
     "android": "expo run:android",
-    "ios": "expo run:ios",
-    "web": "expo start --web",
-    "eject": "expo eject",
-    "build": "next build"
+    "ios": "expo run:ios"
   },
   "autolinking": {
     "exclude": [
@@ -86,6 +84,7 @@
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
     "babel-plugin-module-resolver": "^4.1.0",
+    "babel-plugin-transform-inline-environment-variables": "^0.4.4",
     "eslint": "^8.28.0",
     "eslint-config-universe": "^11.1.1",
     "eslint-plugin-react-hooks": "^4.6.0",
@@ -96,7 +95,7 @@
   },
   "private": true,
   "name": "aspen-lida",
-  "version": "22.12.00",
+  "version": "23.01.00",
   "repository": "https://github.com/mdnoble73/aspen-discovery",
   "author": "ByWater Solutions",
   "eslintConfig": {

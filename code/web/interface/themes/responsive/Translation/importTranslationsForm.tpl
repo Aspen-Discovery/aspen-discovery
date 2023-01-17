@@ -11,7 +11,7 @@
 	<form class="form" method="post" enctype="multipart/form-data">
 		<div class="form-group">
 			<div class="checkbox">
-				<label for="overwriteExisting" >{translate text="Overrite Existing Translations?" isAdminFacing=true}
+				<label for="overwriteExisting" >{translate text="Overwrite Existing Translations?" isAdminFacing=true}
 					<input type="checkbox" name="overwriteExisting" id="overwriteExisting" />
 				</label>
 			</div>

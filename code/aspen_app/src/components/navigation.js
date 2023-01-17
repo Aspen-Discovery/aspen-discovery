@@ -353,11 +353,11 @@ export function App() {
                                                             config: {
                                                                  screens: {
                                                                       Login: 'user/login',
-                                                                      Launch: {
+                                                                      LaunchStack: {
                                                                            screens: {
-                                                                                Drawer: {
+                                                                                DrawerStack: {
                                                                                      screens: {
-                                                                                          Tabs: {
+                                                                                          TabsNavigator: {
                                                                                                screens: {
                                                                                                     AccountScreenTab: {
                                                                                                          screens: {
@@ -402,12 +402,10 @@ export function App() {
                                                             },
                                                             async getInitialURL() {
                                                                  let url = await Linking.getInitialURL();
-                                                                 console.log(url);
 
                                                                  if (url != null) {
                                                                       url = decodeURIComponent(url).replace(/\+/g, ' ');
                                                                       url = url.replace('aspen-lida://', prefix);
-                                                                      console.log(url);
                                                                       return url;
                                                                  }
 
@@ -417,11 +415,10 @@ export function App() {
                                                                  return url;
                                                             },
                                                             subscribe(listener) {
-                                                                 const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
-                                                                      console.log(url);
+                                                                 const linkingSubscription = Linking.addEventListener('url', ({url}) => {
                                                                       listener(url);
                                                                  });
-                                                                 const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+                                                                 const subscription = Notifications.addNotificationResponseReceivedListener(response => {
                                                                       const url = response.notification.request.content.data.url;
                                                                       listener(url);
                                                                  });
@@ -436,7 +433,7 @@ export function App() {
                                                             screenOptions={{
                                                                  headerShown: false,
                                                             }}
-                                                            name="Root">
+                                                            name="RootNavigator">
                                                             {state.userToken === null ? (
                                                                  // No token found, user isn't signed in
                                                                  <Stack.Screen
@@ -450,7 +447,7 @@ export function App() {
                                                             ) : (
                                                                  // User is signed in
                                                                  <Stack.Screen
-                                                                      name="Launch"
+                                                                      name="LaunchStack"
                                                                       component={LaunchStackNavigator}
                                                                       options={{
                                                                            animationEnabled: false,

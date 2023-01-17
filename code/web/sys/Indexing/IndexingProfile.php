@@ -1467,13 +1467,14 @@ class IndexingProfile extends DataObject {
 
 	private $_accountProfile = false;
 	public function getAccountProfile() : ?AccountProfile {
-		if ($this->_accountProfile == false) {
+		if ($this->_accountProfile === false) {
+			$this->_accountProfile = null;
 			foreach (UserAccount::getAccountProfiles() as $name => $accountProfile) {
 				if ($accountProfile['accountProfile']->recordSource == $this->name) {
 					$this->_accountProfile = $accountProfile['accountProfile'];
+					break;
 				}
 			}
-			$this->_accountProfile = null;
 		}
 		return $this->_accountProfile;
 	}

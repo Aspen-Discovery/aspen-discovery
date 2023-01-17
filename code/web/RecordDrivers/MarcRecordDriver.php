@@ -179,35 +179,38 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getStaffView() {
 		global $interface;
 		global $configArray;
-		$accountProfile = $this->indexingProfile->getAccountProfile();
-		if ($accountProfile != null) {
-			if ($accountProfile->ils == 'millennium' || $accountProfile->ils == 'sierra') {
-				$classicId = substr($this->id, 1, strlen($this->id) - 2);
-				$interface->assign('classicId', $classicId);
-				$millenniumScope = $interface->getVariable('millenniumScope');
-				if (isset($configArray['Catalog']['linking_url'])) {
-					$linkingUrl = $configArray['Catalog']['linking_url'];
-					if (substr($linkingUrl, -1, 1) == '/') {
-						$linkingUrl = substr($linkingUrl, 0, -1);
+		//Indexing Profile is null for side loads
+		if ($this->getIndexingProfile() != null && $this->indexingProfile instanceof IndexingProfile) {
+			$accountProfile = $this->indexingProfile->getAccountProfile();
+			if ($accountProfile != null) {
+				if ($accountProfile->ils == 'millennium' || $accountProfile->ils == 'sierra') {
+					$classicId = substr($this->id, 1, strlen($this->id) - 2);
+					$interface->assign('classicId', $classicId);
+					$millenniumScope = $interface->getVariable('millenniumScope');
+					if (isset($configArray['Catalog']['linking_url'])) {
+						$linkingUrl = $configArray['Catalog']['linking_url'];
+						if (substr($linkingUrl, -1, 1) == '/') {
+							$linkingUrl = substr($linkingUrl, 0, -1);
+						}
+						$interface->assign('classicUrl', $linkingUrl . "/record=$classicId&amp;searchscope={$millenniumScope}");
 					}
-					$interface->assign('classicUrl', $linkingUrl . "/record=$classicId&amp;searchscope={$millenniumScope}");
-				}
 
-			} elseif ($accountProfile->ils == 'koha') {
-				$interface->assign('classicId', $this->id);
-				$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
-				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
-			} elseif ($accountProfile->ils == 'carlx') {
-				$shortId = str_replace('CARL', '', $this->id);
-				$shortId = ltrim($shortId, '0');
-				$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
-			} elseif ($accountProfile->ils == 'evergreen') {
-				$baseUrl = $configArray['Catalog']['url'];
-				if (substr($baseUrl, -1, 1) == '/') {
-					$baseUrl = substr($baseUrl, 0, -1);
+				} elseif ($accountProfile->ils == 'koha') {
+					$interface->assign('classicId', $this->id);
+					$interface->assign('classicUrl', $configArray['Catalog']['url'] . '/cgi-bin/koha/opac-detail.pl?biblionumber=' . $this->id);
+					$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/cgi-bin/koha/catalogue/detail.pl?biblionumber=' . $this->id);
+				} elseif ($accountProfile->ils == 'carlx') {
+					$shortId = str_replace('CARL', '', $this->id);
+					$shortId = ltrim($shortId, '0');
+					$interface->assign('staffClientUrl', $configArray['Catalog']['staffClientUrl'] . '/Items/' . $shortId);
+				} elseif ($accountProfile->ils == 'evergreen') {
+					$baseUrl = $configArray['Catalog']['url'];
+					if (substr($baseUrl, -1, 1) == '/') {
+						$baseUrl = substr($baseUrl, 0, -1);
+					}
+					$interface->assign('classicId', $this->id);
+					$interface->assign('classicUrl', $baseUrl . '/eg/opac/record/' . $this->id);
 				}
-				$interface->assign('classicId', $this->id);
-				$interface->assign('classicUrl', $baseUrl . '/eg/opac/record/' . $this->id);
 			}
 		}
 

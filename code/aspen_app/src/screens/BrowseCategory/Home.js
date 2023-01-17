@@ -6,25 +6,22 @@ import React from 'react';
 import _ from 'lodash';
 
 // custom components and helper files
-import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { userContext } from '../../context/user';
 import { translate } from '../../translations/translations';
-import { dismissBrowseCategory } from '../../util/accountActions';
-import { formatDiscoveryVersion, getBrowseCategories, getPickupLocations, LIBRARY, reloadBrowseCategories, UpdateBrowseCategoryContext, updatePatronBrowseCategories } from '../../util/loadLibrary';
-import { getBrowseCategoryListForUser, getCheckedOutItems, getHolds, getILSMessages, getPatronBrowseCategories, getProfile, getViewers, reloadHolds, updateBrowseCategoryStatus, getLinkedAccounts } from '../../util/loadPatron';
-import BrowseCategory from './BrowseCategory';
+import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
+import { getBrowseCategoryListForUser, getCheckedOutItems, getILSMessages, reloadHolds, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
+import {getLinkedAccounts} from '../../util/api/user';
 
 let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const [loading, setLoading] = React.useState(true);
      const navigation = useNavigation();
-     const { user } = React.useContext(UserContext);
+     const { user, locations, accounts, lists, updatePickupLocations, updateLinkedAccounts, updateLists } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -60,8 +57,24 @@ export const DiscoverHomeScreen = () => {
                     });
 
                     getILSMessages(library.baseUrl);
-                    getLists(library.baseUrl);
-                    getPickupLocations(library.baseUrl);
+
+                    getLists(library.baseUrl).then((result) => {
+                         if(lists !== result) {
+                              updateLists(result);
+                         }
+                    });
+
+                    getPickupLocations(library.baseUrl).then((result) => {
+                         if (locations !== result) {
+                              updatePickupLocations(result);
+                         }
+                    });
+
+                    getLinkedAccounts(library.baseUrl).then((result) => {
+                         if (accounts !== result) {
+                              updateLinkedAccounts(result);
+                         }
+                    });
                     console.log('updated patron things');
                };
                update().then(() => {
@@ -163,11 +176,21 @@ export const DiscoverHomeScreen = () => {
                          libraryContext: library,
                     });
                } else {
-                    navigateStack('HomeTab', 'GroupedWorkScreen', {
-                         id: key,
-                         title: title,
-                         prevRoute: 'DiscoveryScreen',
-                    });
+                    if(version >= '23.01.00') {
+                         navigateStack('HomeTab', 'GroupedWorkScreen', {
+                              id: key,
+                              title: title,
+                              prevRoute: 'DiscoveryScreen',
+                         });
+                    } else {
+                         navigateStack('HomeTab', 'GroupedWorkScreen221200', {
+                              id: key,
+                              title: title,
+                              url: library.baseUrl,
+                              userContext: user,
+                              libraryContext: library
+                         })
+                    }
                }
           } else {
                navigateStack('HomeTab', 'GroupedWorkScreen', {

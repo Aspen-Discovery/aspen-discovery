@@ -420,7 +420,7 @@ var AspenDiscovery = (function(){
 		},
 
 		showLocationHoursAndMap: function(){
-			var selectedId = $("#selectLibrary").find(":selected").val();
+			var selectedId = $("#selectLibraryHours").find(":selected").val();
 			$(".locationInfo").hide();
 			$("#locationAddress" + selectedId).show();
 			return false;

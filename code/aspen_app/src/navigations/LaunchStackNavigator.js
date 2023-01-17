@@ -35,7 +35,7 @@ const LaunchStackNavigator = () => {
                                                                                 }}
                                                                            />
                                                                            <Stack.Screen
-                                                                                name="Drawer"
+                                                                                name="DrawerStack"
                                                                                 component={AccountDrawer}
                                                                                 options={{
                                                                                      libraryContext: {
@@ -53,14 +53,6 @@ const LaunchStackNavigator = () => {
                                                                                      },
                                                                                      checkoutsContext: checkouts,
                                                                                      holdsContext: holds,
-                                                                                }}
-                                                                           />
-                                                                           <Stack.Screen
-                                                                                name="Login"
-                                                                                component={Login}
-                                                                                options={{
-                                                                                     headerShown: false,
-                                                                                     animationTypeForReplace: 'pop',
                                                                                 }}
                                                                            />
                                                                       </Stack.Navigator>

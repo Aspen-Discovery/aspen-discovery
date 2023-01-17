@@ -12,12 +12,12 @@
 		<div class="input-group">
 			<label class="input-group-btn">
 				<span class="btn btn-primary">
-					{translate text="Select PDF"}&hellip; <input type="file" style="display: none;" name="pdfFile" id="pdfFile">
+					{translate text="Select PDF" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="pdfFile" id="pdfFile">
 				</span>
 			</label>
 			<input type="text" class="form-control" id="selected-pdf-label" readonly>
 		</div>
-		<small id="pdfFileHelp" class="form-text text-muted">{translate text="PDF must be %1%MB or less." 1=$max_file_size isAdminFacing=true}</small>
+		<small id="pdfFileHelp" class="form-text text-muted">{translate text="PDF must be %1%MB or less." 1=$max_file_size isAdminFacing=true isAdminFacing=true}</small>
 	</div>
 </form>
 	<script type="application/javascript">

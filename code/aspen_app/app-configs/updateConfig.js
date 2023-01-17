@@ -97,6 +97,7 @@ const app_config = {
           resizeMode: 'contain',
           backgroundColor: app['background'],
      },
+     jsEngine: 'hermes',
      assetBundlePatterns: ['**/*'],
      ios: {
           buildNumber: owner['buildCode'],
@@ -108,6 +109,7 @@ const app_config = {
                LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
                CFBundleAllowMixedLocalizations: true,
           },
+          jsEngine: 'jsc'
      },
      android: {
           allowBackup: false,
@@ -119,7 +121,7 @@ const app_config = {
                backgroundColor: app['background'],
           },
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
-          googleServicesFile: process.env.GOOGLE_SERVICES_JSON,
+          googleServicesFile: './google-services.json',
      },
      notification: {
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appNotification&slug=' + app['slug'],

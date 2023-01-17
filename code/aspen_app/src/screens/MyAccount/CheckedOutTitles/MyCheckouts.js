@@ -163,14 +163,24 @@ const Checkout = (props) => {
      };
 
      const openGroupedWork = (item, title) => {
-          navigateStack('AccountScreenTab', 'MyCheckout', {
-               id: item,
-               title: getCleanTitle(title),
-               url: library.baseUrl,
-               userContext: user,
-               libraryContext: library,
-               prevRoute: 'MyCheckouts',
-          });
+          if(version >= '23.01.00') {
+               navigateStack('AccountScreenTab', 'MyCheckout', {
+                    id: item,
+                    title: getCleanTitle(title),
+                    url: library.baseUrl,
+                    userContext: user,
+                    libraryContext: library,
+                    prevRoute: 'MyCheckouts',
+               });
+          } else {
+               navigateStack('AccountScreenTab', 'MyCheckout221200', {
+                    id: item,
+                    title: getCleanTitle(title),
+                    url: library.baseUrl,
+                    userContext: user,
+                    libraryContext: library,
+               });
+          }
      };
 
      const [access, setAccess] = useState(false);

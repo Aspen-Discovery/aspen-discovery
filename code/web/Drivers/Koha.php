@@ -74,7 +74,6 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 			], true);
-			$this->apiCurlWrapper->setupDebugging();
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
 			ExternalRequestLogEntry::logRequest('koha.updateHomeLibrary', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
 			if ($this->apiCurlWrapper->getResponseCode() != 200) {
@@ -3905,7 +3904,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		if (isset($kohaPreferences['OPACSuggestionMandatoryFields'])) {
-			$mandatoryFields = array_flip(explode(',', $kohaPreferences['OPACSuggestionMandatoryFields']));
+			$mandatoryFields = array_flip(explode('|', $kohaPreferences['OPACSuggestionMandatoryFields']));
 		} else {
 			$mandatoryFields = [];
 		}

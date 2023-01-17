@@ -216,7 +216,7 @@
 						</div>
 						<div class="row">
 							<div class="col-xs-12">
-								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To Excel" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
+								<input class="btn btn-sm btn-default" type="submit" name="exportSelected" value="{translate text="Export Selected To CSV" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.exportSelectedRequests();">
 								{if in_array('Import Materials Requests', $userPermissions)}
 									{* We don't really want to do this much / ever so it gets a special permission *}
 									<input class="btn btn-sm btn-default" type="submit" name="importRequests" value="{translate text="Import Requests" inAttribute=true isAdminFacing=true}" onclick="return AspenDiscovery.MaterialsRequest.showImportRequestForm();">

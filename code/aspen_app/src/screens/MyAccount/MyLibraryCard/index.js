@@ -2,7 +2,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Center, Flex, Image, Text, Box, Button } from 'native-base';
-import React from 'react';
+import React, {Component} from 'react';
 import Barcode from 'react-native-barcode-expo';
 import Carousel from 'react-native-reanimated-carousel';
 import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -15,6 +15,8 @@ import { loadingSpinner } from '../../../components/loadingSpinner';
 import { translate } from '../../../translations/translations';
 import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getLinkedAccounts } from '../../../util/api/user';
+import {loadError} from '../../../components/loadError';
+import {userContext} from '../../../context/user';
 
 export const MyLibraryCard = () => {
      const navigation = useNavigation();
@@ -332,7 +334,7 @@ const CardCarousel = (data) => {
      );
 };
 
-/*export default class LibraryCard extends Component {
+export class MyLibraryCard221200 extends Component {
  static contextType = userContext;
 
  constructor(props) {
@@ -470,4 +472,4 @@ const CardCarousel = (data) => {
  );
  }
  }
- LibraryCard.contextType = UserContext;*/
+ MyLibraryCard221200.contextType = UserContext;

@@ -119,6 +119,15 @@ function getUpdates23_01_00(): array
 			]
 		],
 		//change_greenhouse_url
+		'add_invoiceCloudSettingId_to_library' => [
+			'title' => 'Add invoiceCloudSettingId to library',
+			'description' => 'Add invoiceCloudSettingId column to library table',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN invoiceCloudSettingId INT(11) DEFAULT -1",
+			],
+		],
+		//add_invoiceCloudSettingId_to_library
 
 		//kodi
 		'user_browse_add_home' => [
@@ -177,6 +186,14 @@ function getUpdates23_01_00(): array
 			]
 		],
 		//migrate_records_owned
+		'rename_materialreq_usage_locID_column' => [
+			'title' => 'Rename locationId column for Materials Request Usage',
+			'description' => 'Rename locationId column for Materials Request Usage',
+			'sql' => [
+				"ALTER TABLE materials_request_usage CHANGE COLUMN locationId libraryId INT(4)",
+			]
+		],
+		//rename_materialreq_usage_locID_column
 		//other
 	];
 }

@@ -42,7 +42,6 @@ class FileUpload extends DataObject {
 				'type' => 'text',
 				'label' => 'Thumbnail Full Path',
 				'description' => 'The path of the generated thumbnail on the server',
-				'serverValidation' => 'makeThumbnail',
 				'readOnly' => true,
 			],
 		];
@@ -52,9 +51,22 @@ class FileUpload extends DataObject {
 		return basename($this->fullPath);
 	}
 
+	function insert($context = '') {
+		$this->makeThumbnail();
+		return parent::insert();
+	}
+
+	/**
+	 * @return int|bool
+	 */
+	function update($context = '') {
+		$this->makeThumbnail();
+		return parent::update();
+	}
+
 	/** @noinspection PhpUnused */
 	function makeThumbnail() {
-		if ($this->type == 'web_builder_pdf') {
+		if ($this->type == 'web_builder_pdf' && !empty($this->fullPath)) {
 			$destFullPath = $this->fullPath;
 			$thumbFullPath = '';
 			if (extension_loaded('imagick')) {
@@ -66,21 +78,18 @@ class FileUpload extends DataObject {
 						$thumb->setImageAlphaChannel(11);
 						$thumb->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
 						$thumb->readImage($destFullPath . '[0]');
-						$thumb->writeImage($destFullPath . '.jpg');
+						$wroteOk = $thumb->writeImage($destFullPath . '.jpg');
 						$thumb->destroy();
-						$thumbFullPath = $destFullPath . '.jpg';
+						if ($wroteOk) {
+							$thumbFullPath = $destFullPath . '.jpg';
+							$this->thumbFullPath = $thumbFullPath;
+						}
 					}
-
-					$this->thumbFullPath = $thumbFullPath;
-					$this->update();
 				} catch (Exception $e) {
 					global $logger;
 					$logger->log("Imagick not installed", $e);
 				}
 			}
-			return $thumbFullPath;
-		} else {
-			die();
 		}
 	}
 
