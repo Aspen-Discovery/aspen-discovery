@@ -115,7 +115,7 @@ const app_config = {
           allowBackup: false,
           package: app['reverseDns'],
           versionCode: versionAsInt,
-          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION'],
+          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION', 'RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM'],
           adaptiveIcon: {
                foregroundImage: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
                backgroundColor: app['background'],
