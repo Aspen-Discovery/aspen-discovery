@@ -19,7 +19,7 @@ export const MyHolds = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
      const [readySort, setReadySort] = React.useState('expire');
-     const [pendingSort, setPendingSort] = React.useState('position');
+     const [pendingSort, setPendingSort] = React.useState('sortTitle');
      const [isLoading, setLoading] = React.useState(true);
      const [values, setGroupValues] = React.useState([]);
      const [date, setNewDate] = React.useState();
@@ -140,7 +140,7 @@ export const MyHolds = () => {
                                               endIcon: <CheckIcon size="5"/>,
                                           }}
                                           onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                          <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
+                                          <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
                                           <Select.Item label="Sort By Status" value="status" key={3}/>
@@ -174,7 +174,7 @@ export const MyHolds = () => {
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
                                       onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
                                       <Select.Item label="Sort By Status" value="status" key={3}/>
