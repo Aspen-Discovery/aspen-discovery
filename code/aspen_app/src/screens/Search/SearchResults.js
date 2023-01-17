@@ -26,7 +26,7 @@ export const SearchResults = () => {
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
 
-     let term = useRoute().params.term ?? 'birds';
+     let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
 
      const params = useRoute().params.pendingParams ?? [];

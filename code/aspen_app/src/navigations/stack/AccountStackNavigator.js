@@ -4,7 +4,7 @@ import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
 import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
 import Profile from '../../screens/MyAccount/Profile';
-import LoadSavedSearch from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
+import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSearch';
 import MySavedSearches from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
@@ -125,7 +125,25 @@ const AccountStackNavigator = () => {
                               title: translate('saved_searches.title'),
                          }}
                     />
-                    <Stack.Screen name="MySavedSearch" component={SavedSearchScreen} options={({ route }) => ({ title: route.params.title })} />
+                    <Stack.Screen
+                        name="MySavedSearch"
+                        component={SavedSearchScreen}
+                        options={({ navigation, route }) => ({
+                            title: route.params.title,
+                            headerLeft: () => {
+                                if(route.params.prevRoute === 'NONE') {
+                                    return null;
+                                } else {
+                                    return (
+                                        <Pressable onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                            <ChevronLeftIcon color="primary.baseContrast" />
+                                        </Pressable>
+                                    );
+                                }
+                            }
+                        }
+                        )}
+                    />
                     <Stack.Screen
                          name="SavedSearchItem"
                          component={GroupedWorkScreen}
@@ -140,6 +158,7 @@ const AccountStackNavigator = () => {
                        options={({ route }) => ({
                            title: route.params.title ?? translate('grouped_work.title'),
                        })}
+                       initialParams={{ prevRoute: 'MySavedSearch' }}
                    />
                </Stack.Group>
                <Stack.Group>
