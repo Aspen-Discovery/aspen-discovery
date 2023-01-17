@@ -6,7 +6,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container } from 'native-base';
 
-import { LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
+import {LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getAppliedFilters, getAvailableFacets, getSortList, SEARCH } from '../../util/search';
 import { translate } from '../../translations/translations';
 import AddToList from './AddToList';
@@ -26,7 +26,7 @@ export const SearchResults = () => {
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
 
-     let term = useRoute().params.term ?? 'birds';
+     let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
 
      const params = useRoute().params.pendingParams ?? [];
@@ -121,15 +121,27 @@ export const SearchResults = () => {
 
 const DisplayResult = (data) => {
      const item = data.data;
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const version = formatDiscoveryVersion(library.discoveryVersion);
 
      const handlePressItem = () => {
-          navigate('ResultItem', {
-               id: item.key,
-               title: getCleanTitle(item.title),
-               url: library.baseUrl,
-               libraryContext: library,
-          });
+          if(version >= '23.01.00') {
+               navigate('ResultItem', {
+                    id: item.key,
+                    title: getCleanTitle(item.title),
+                    url: library.baseUrl,
+                    libraryContext: library,
+               });
+          } else {
+               navigate('ResultItem221200', {
+                    id: item.key,
+                    title: getCleanTitle(item.title),
+                    url: library.baseUrl,
+                    userContext: user,
+                    libraryContext: library
+               });
+          }
      };
 
      return (

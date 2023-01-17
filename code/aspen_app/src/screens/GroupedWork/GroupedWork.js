@@ -1,7 +1,8 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
-import { HStack, Box, Button, Center, Icon, Image, ScrollView, Text, FlatList, Container } from 'native-base';
-import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { HStack, Box, Button, Center, Icon, Image, ScrollView, Text, FlatList, AlertDialog } from 'native-base';
+import React, {Component, useEffect} from 'react';
 import { Rating } from 'react-native-elements';
 
 // custom components and helper files
@@ -9,7 +10,7 @@ import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { translate } from '../../translations/translations';
 import AddToList from '../Search/AddToList';
-import { startSearch } from '../../helpers/RootNavigator';
+import {navigateStack, startSearch} from '../../helpers/RootNavigator';
 import { GroupedWorkContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { useRoute } from '@react-navigation/native';
 import loading from '../Auth/Loading';
@@ -18,6 +19,12 @@ import { useQuery } from '@tanstack/react-query';
 import Variations from './Variations';
 import { getLinkedAccounts } from '../../util/api/user';
 import { getPickupLocations } from '../../util/loadLibrary';
+import {userContext} from '../../context/user';
+import {getGroupedWork221200, getItemDetails} from '../../util/recordActions';
+import {SafeAreaView} from 'react-native';
+import {GetOverDriveSettings} from './OverDriveSettings';
+import {getProfile, PATRON} from '../../util/loadPatron';
+import Manifestation from './Manifestation';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -185,8 +192,8 @@ const getFormats = (formats) => {
      }
 };
 
-/*
- export default class GroupedWork extends Component {
+
+ export class GroupedWork221200 extends Component {
  static contextType = userContext;
 
  constructor(props, context) {
@@ -281,7 +288,7 @@ const getFormats = (formats) => {
  const givenItem = route.params?.id ?? 'null';
  const libraryUrl = route.params?.url ?? 'unknown';
 
- await getGroupedWork(libraryUrl, givenItem).then((response) => {
+ await getGroupedWork221200(libraryUrl, givenItem).then((response) => {
  if (response === 'TIMEOUT_ERROR') {
  this.setState({
  hasError: true,
@@ -442,9 +449,9 @@ const getFormats = (formats) => {
  // Trigger a context refresh
  updateProfile = async () => {
  console.log('Getting new profile data from item details...');
- /!* await getProfile().then((response) => {
+/*await getProfile().then((response) => {
  this.context.user = response;
- }); *!/
+ }); */
  };
 
  cancelRef = () => {
@@ -703,4 +710,4 @@ const getFormats = (formats) => {
  </SafeAreaView>
  );
  }
- }*/
+ }

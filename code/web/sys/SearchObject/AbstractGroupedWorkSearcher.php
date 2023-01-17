@@ -590,7 +590,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	}
 
 	/**
-	 * Turn our results into an Excel document
+	 * Turn our results into a csv document
 	 * @param null|array $result
 	 */
 	public function buildExcel($result = null) {
@@ -603,53 +603,48 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				$result = $this->processSearch(false, false);
 			}
 
-			// Create new PHPExcel object
-			$objPHPExcel = new PHPExcel();
+			//Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="SearchResults.csv"');
+			$fp = fopen('php://output', 'w');
 
-			// Set properties
-			$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("Search Results");
+			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
+			fputcsv($fp, $fields);
 
-			$objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle("Search Results");
-
-			//Add headers to the table
-			$sheet = $objPHPExcel->getActiveSheet();
-			$curRow = 1;
-			$curCol = 0;
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
-
-			$maxColumn = $curCol - 1;
-
-			global $solrScope;
 			$docs = $result['response']['docs'];
 
 			for ($i = 0; $i < count($docs); $i++) {
-				//Output the row to excel
+				//Output the row to csv
 				$curDoc = $docs[$i];
-				$curRow++;
-				$curCol = 0;
-				//Output the row to excel
+				//Output the row to csv
 				$link = '';
 				if ($curDoc['id']) {
 					$link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
 				}
-				$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-				$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['title_display'] ?? '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc['author_display'] ?? '');
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, isset($curDoc['publisherStr']) ? implode('; ', $curDoc['publisherStr']) : '');
+
+				$title = '';
+				$title = $curDoc['title_display'];
+
+				$author = '';
+				$author = $curDoc['author_display'];
+
+				$publisher = '';
+				if (isset($curDoc['publisherStr'])) {
+					$publisher = implode('; ', $curDoc['publisherStr']);
+				}
 
 				// Publish Dates: Min-Max
-				if (!is_array($curDoc['publishDate'])) {
-					$publishDates = (array)$curDoc['publishDate'];
-				} else {
-					$publishDates = $curDoc['publishDate'];
+				$publishDates = [''];
+				if (isset($curDoc['publishDate'])) {
+					if (!is_array($curDoc['publishDate'])) {
+						$publishDates = [$curDoc['publishDate']];
+					} else {
+						$publishDates = $curDoc['publishDate'];
+					}
 				}
 				$publishDate = '';
 				if (count($publishDates) == 1) {
@@ -657,7 +652,6 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				} elseif (count($publishDates) > 1) {
 					$publishDate = min($publishDates) . ' - ' . max($publishDates);
 				}
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
 
 				// Formats
 				if (!is_array($curDoc['format'])) {
@@ -669,7 +663,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					$formats[$key] = substr($format, strpos($format, '#') + 1);
 				}
 				$uniqueFormats = array_unique($formats);
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
+				$uniqueFormats = implode(';', $uniqueFormats);
 
 				// Format / Location / Call number, max 3 records
 				//Get the Grouped Work Driver so we can get information about the formats and locations within the record
@@ -697,32 +691,24 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 											$output[] = "No copies currently owned by this library";
 										}
 									}
+									if($record->_eContentSource == "OverDrive"){
+										$output[] = $format . "::" . "OverDrive";
+										$output = array_unique($output);
+										$output = array_slice($output, 0, 3);
+									}
 								}
 							}
 						}
 					}
 				}
-				$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
+				$output = implode(',', $output);
+				$row = array ($link, $title, $author, $publisher, $publishDate, $uniqueFormats, $output);
+				fputcsv($fp, $row);
 			}
-			for ($i = 0; $i < $maxColumn; $i++) {
-				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-			}
-			//Output to the browser
-			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
-			header("Cache-Control: no-store, no-cache, must-revalidate");
-			header("Cache-Control: post-check=0, pre-check=0", false);
-			header("Pragma: no-cache");
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename="SearchResults.xlsx"');
-
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-			$objPHPExcel->disconnectWorksheets();
-			unset($objPHPExcel);
 			exit();
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
 		}
 	}
 

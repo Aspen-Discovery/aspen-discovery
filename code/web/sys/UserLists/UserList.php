@@ -916,194 +916,198 @@ class UserList extends DataObject {
 	}
 
 	/**
-	 * Turn our results into an Excel document
+	 * Turn our results into a csv document
 	 * @param null|array $result
 	 */
-	public function buildExcel() {
+	public function buildCSV() {
 		try {
-			global $configArray;
 			$titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for email list, not just a page's worth
-
-			// Create new PHPExcel object
-			$objPHPExcel = new PHPExcel();
-			// Set properties
-			$objPHPExcel->getProperties()->setCreator("Aspen Discovery")->setLastModifiedBy("Aspen Discovery")->setTitle("User List");
-
-			$objPHPExcel->setActiveSheetIndex(0);
-			$objPHPExcel->getActiveSheet()->setTitle('Titles');
-
-			//Add headers to the table
-			$sheet = $objPHPExcel->getActiveSheet();
-			$curRow = 1;
-			$curCol = 0;
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Link');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Title');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Author');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Publisher');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Published');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Format');
-			$sheet->setCellValueByColumnAndRow($curCol++, $curRow, 'Location & Call Number');
-
-			$maxColumn = $curCol - 1;
-
-			for ($i = 0; $i < count($titleDetails); $i++) {
-				$curDoc = $titleDetails[$i];
-				$curRow++;
-				$curCol = 0;
-				if ($curDoc instanceof GroupedWorkDriver) {
-					// Hyperlink to title
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $curDoc->getLinkUrl(true));
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($curDoc->getLinkUrl(true));
-
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
-
-					// Publisher list
-					$publishers = $curDoc->getPublishers();
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $publishers));
-
-					// Publication dates: min - max
-					if (!is_array($curDoc->getPublicationDates())) {
-						$publishDates = (array)$curDoc->getPublicationDates();
-					} else {
-						$publishDates = $curDoc->getPublicationDates();
-					}
-					$publishDate = '';
-					if (count($publishDates) == 1) {
-						$publishDate = $publishDates[0];
-					} elseif (count($publishDates) > 1) {
-						$publishDate = min($publishDates) . ' - ' . max($publishDates);
-					}
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $publishDate);
-
-					// Formats
-					if (!is_array($curDoc->getFormats())) {
-						$formats = (array)$curDoc->getFormats();
-					} else {
-						$formats = $curDoc->getFormats();
-					}
-					$uniqueFormats = array_unique($formats);
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $uniqueFormats));
-
-					// Format / Location / Call number, max 3 records
-					//Get the Grouped Work Driver so we can get information about the formats and locations within the record
-					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-					$output = [];
-					foreach ($curDoc->getRelatedManifestations() as $relatedManifestation) {
-						//Manifestation gives us Format & Format Category
-						if (!$relatedManifestation->isHideByDefault()) {
-							$format = $relatedManifestation->format;
-							//Variation gives us the sort
-							foreach ($relatedManifestation->getVariations() as $variation) {
-								if (!$variation->isHideByDefault()) {
-									//Record will give us the call number, and location
-									//Only do up to 3 records per format?
-									foreach ($variation->getRecords() as $record) {
-										if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
-											$copySummary = $record->getItemSummary();
-											foreach ($copySummary as $item) {
-												$output[] = $format . "::" . $item['description'];
-											}
-											$output = array_unique($output);
-											$output = array_slice($output, 0, 3);
-											if (count($output) == 0) {
-												$output[] = "No copies currently owned by this library";
-											}
-										}
-									}
-								}
-							}
-						}
-					}
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, implode('; ', $output));
-
-				} elseif ($curDoc instanceof ListsRecordDriver) {
-					// Hyperlink to title
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// User List Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					// User List creator
-					$fields = $curDoc->getFields();
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $fields['author_display'] ?? '');
-
-				} elseif ($curDoc instanceof PersonRecord) {
-					// Hyperlink to Person Record
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Person Name
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getName() ?? '');
-
-				} elseif ($curDoc instanceof OpenArchivesRecordDriver) {
-					// Hyperlink to Open Archive target
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-
-				} elseif ($curDoc instanceof EbscohostRecordDriver) {
-					// Hyperlink to EBSCOHost record
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					// Record Primary Author
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
-
-				} elseif ($curDoc instanceof EbscoRecordDriver) {
-					// Hyperlink to EBSCO record
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-					// Record Primary Author
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getPrimaryAuthor() ?? '');
-
-				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
-					// Hyperlink
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-
-				} elseif ($curDoc instanceof WebResourceRecordDriver) {
-					// Hyperlink
-					$link = $curDoc->getLinkUrl();
-					$sheet->setCellValueByColumnAndRow($curCol, $curRow, $link);
-					$sheet->getCellByColumnAndRow($curCol++, $curRow)->getHyperlink()->setUrl($link);
-					// Record Title
-					$sheet->setCellValueByColumnAndRow($curCol++, $curRow, $curDoc->getTitle() ?? '');
-
-				}
-			}
-
-			for ($i = 0; $i < $maxColumn; $i++) {
-				$sheet->getColumnDimensionByColumn($i)->setAutoSize(true);
-			}
 
 			//Output to the browser
 			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
 			header("Cache-Control: no-store, no-cache, must-revalidate");
 			header("Cache-Control: post-check=0, pre-check=0", false);
 			header("Pragma: no-cache");
-			header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-			header('Content-Disposition: attachment;filename="UserList.xlsx"');
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="UserList.csv"');
+			$fp = fopen('php://output', 'w');
 
-			$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
-			$objWriter->save('php://output'); //THIS DOES NOT WORK WHY?
-			$objPHPExcel->disconnectWorksheets();
-			unset($objPHPExcel);
+			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
+			fputcsv($fp, $fields);
+
+			foreach ($titleDetails as $curDoc) {
+				if ($curDoc instanceof GroupedWorkDriver) {
+					if ($curDoc->isValid()) {
+						// Hyperlink to title
+						$link = $curDoc->getLinkUrl(true) ?? '';
+
+						// Title
+						$title = $curDoc->getTitle() ?? '';
+
+						// Author
+						$author = $curDoc->getPrimaryAuthor() ?? '';
+
+						// Publisher list
+						$publishers = $curDoc->getPublishers();
+						if (is_array($publishers)){
+							$publishers = implode(', ', $publishers);
+						}
+
+						// Publication dates: min - max
+						if (!is_array($curDoc->getPublicationDates())) {
+							$publishDates = [$curDoc->getPublicationDates()];
+						} else {
+							$publishDates = $curDoc->getPublicationDates();
+						}
+						$publishDate = '';
+						if (count($publishDates) == 1) {
+							$publishDate = $publishDates[0];
+						} elseif (count($publishDates) > 1) {
+							$publishDate = min($publishDates) . ' - ' . max($publishDates);
+						}
+
+						// Formats
+						if (!is_array($curDoc->getFormats())) {
+							$formats = [$curDoc->getFormats()];
+						} else {
+							$formats = $curDoc->getFormats();
+						}
+						$uniqueFormats = array_unique($formats);
+						$uniqueFormats = implode(', ', $formats);
+
+						// Format / Location / Call number, max 3 records
+						//Get the Grouped Work Driver so we can get information about the formats and locations within the record
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$output = [];
+						foreach ($curDoc->getRelatedManifestations() as $relatedManifestation) {
+							//Manifestation gives us Format & Format Category
+							if (!$relatedManifestation->isHideByDefault()) {
+								$format = $relatedManifestation->format;
+								//Variation gives us the sort
+								foreach ($relatedManifestation->getVariations() as $variation) {
+									if (!$variation->isHideByDefault()) {
+										//Record will give us the call number, and location
+										//Only do up to 3 records per format?
+										foreach ($variation->getRecords() as $record) {
+											if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+												$copySummary = $record->getItemSummary();
+												foreach ($copySummary as $item) {
+													$output[] = $format . "::" . $item['description'];
+												}
+												$output = array_unique($output);
+												$output = array_slice($output, 0, 3);
+												if (count($output) == 0) {
+													$output[] = "No copies currently owned by this library";
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}else{
+						$link = "No Link Available";
+						$title = $curDoc['title_display'];
+						$author = '';
+						$publishers = '';
+						$publishDate = '';
+						$uniqueFormats = '';
+						$output = ["No copies currently owned by this library"];
+					}
+				} elseif ($curDoc instanceof ListsRecordDriver) {
+					// Hyperlink to title
+					$link = $curDoc->getLinkUrl();
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Author
+					$fields = $curDoc->getFields();
+					$author = $fields['author_display'] ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+				} elseif ($curDoc instanceof PersonRecord) {
+					// Hyperlink to Person Record
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Person Name
+					$title = $curDoc->getName() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+				} elseif ($curDoc instanceof OpenArchivesRecordDriver) {
+					// Hyperlink to Open Archive target
+					$link = $curDoc->getLinkUrl();
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+				} elseif ($curDoc instanceof EbscohostRecordDriver) {
+					// Hyperlink to EBSCOHost record
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Primary Author
+					$author = $curDoc->getPrimaryAuthor() ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+
+				} elseif ($curDoc instanceof EbscoRecordDriver) {
+					// Hyperlink to EBSCO record
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Primary Author
+					$author = $curDoc->getPrimaryAuthor() ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+
+				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
+					// Hyperlink
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+
+				} elseif ($curDoc instanceof WebResourceRecordDriver) {
+					// Hyperlink
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					//Set other values to empty string
+					$author = '';
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+				}
+
+				$output = implode(', ', $output);
+				$row = array ($link, $title, $author, $publishers, $publishDate, $uniqueFormats, $output);
+				fputcsv($fp, $row);
+			}
 			exit();
 		} catch (Exception $e) {
 			global $logger;
-			$logger->log("Unable to create Excel File " . $e, Logger::LOG_ERROR);
+			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
 		}
 	}
-
 }

@@ -53,7 +53,7 @@
 							{literal} }); {/literal}
 					</script>
 				{/if}
-				{if !empty($showCheckInGrid) && $issueSummary.checkInGridId}
+				{if !empty($showCheckInGrid) && !empty($issueSummary.checkInGridId)}
 					&nbsp;
 					<span id='showCheckInGrid-{$smarty.foreach.summaryLoop.iteration}' class='btn btn-xs btn-info'>{translate text="Show Check-in Grid" isPublicFacing=true}</span>
 					<script	type="text/javascript">
@@ -66,10 +66,12 @@
 
 			{if !empty($issueSummary.holdings)}
 				<div id='issue-summary-holdings-{$smarty.foreach.summaryLoop.iteration}' class='issue-summary-holdings striped' style='display:none;'>
+					<table>
 					{include file="Record/copiesTableHeader.tpl"}
 					{foreach from=$issueSummary.holdings item=holding}
 						{include file="Record/copiesTableRow.tpl"}
 					{/foreach}
+					</table>
 				</div>
 			{/if}
 		</div>

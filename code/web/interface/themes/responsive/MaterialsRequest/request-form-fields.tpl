@@ -247,7 +247,7 @@
 			{elseif
 			$formField->fieldType == 'phone' ||
 			$formField->fieldType == 'email'}
-				{if $showUserInformation || $new}
+				{if !empty($showUserInformation) || $new}
 					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 					<div class="row form-group">
 						<label for="{$materialRequestTableColumnName}" class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
@@ -261,7 +261,7 @@
 			$formField->fieldType == 'illItem' ||
 			$formField->fieldType == 'placeHoldWhenAvailable'}
 				{* Yes / No  User Information Fields *}
-				{if $showUserInformation || $new}
+				{if !empty($showUserInformation) || $new}
 					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 					<div class="row form-group ebookHideField eaudioHideField specialFormatHideField"{if $formField->fieldType == 'illItem'} id="illInfo"{/if}>
 						<label class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
@@ -280,7 +280,7 @@
 				{/if}
 
 			{elseif $formField->fieldType == 'holdPickupLocation'}
-				{if $showUserInformation || $new} {* Not shown till placeHoldWhenAvailable is set to yes. *}
+				{if !empty($showUserInformation) || $new} {* Not shown till placeHoldWhenAvailable is set to yes. *}
 					<div id="pickupLocationField" class="row form-group ebookHideField eaudioHideField" style="display: none">
 						<label for="pickupLocation" class="control-label col-sm-3">{translate text=$formField->fieldLabel isPublicFacing=true isAdminEnteredData=true} </label>
 						<div class=" request_detail_field_value col-sm-9">
@@ -293,7 +293,7 @@
 					</div>
 				{/if}
 			{elseif $formField->fieldType == 'bookmobileStop'}
-				{if $showUserInformation || $new}
+				{if !empty($showUserInformation) || $new}
 					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 					{* Book Mobile Stop Field should be hidden by default, gets shown when holdPickUpLocation is set to bookmobile (done by AspenDiscovery.MaterialsRequest.updateHoldOptions() *}
 					<div id="bookmobileStopField" class="row form-group ebookHideField eaudioHideField" style="display: none">

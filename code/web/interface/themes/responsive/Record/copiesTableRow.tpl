@@ -44,7 +44,7 @@
 		</td>
 		{if !empty($hasDueDate) && $showItemDueDates}
 			<td>
-				{$holding.dueDate|date_format:"%B %e, %Y"}
+				{if !empty($holding.dueDate)}{$holding.dueDate|date_format:"%B %e, %Y"}{/if}
 			</td>
 		{/if}
 		{if !empty($showLastCheckIn)}
