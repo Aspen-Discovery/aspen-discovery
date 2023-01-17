@@ -1443,7 +1443,7 @@ class Record_AJAX extends Action {
 		$linkedUsers = $user->getLinkedUsers();
 		if (count($linkedUsers) > 0) {
 			foreach ($locations as $location) {
-				if (is_object($location) && count($location->pickupUsers) > 1) {
+				if (is_object($location) && count($location->getPickupUsers()) > 1) {
 					$multipleAccountPickupLocations = true;
 					break;
 				}
