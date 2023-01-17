@@ -2,10 +2,7 @@ package com.turning_leaf_technologies.website_indexer;
 
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.entity.ContentType;
-import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -43,9 +40,6 @@ class WebsiteIndexer {
 	private final HashMap<String, Boolean> allLinks = new HashMap<>();
 	private Pattern pageTitleExpression = null;
 	private Pattern descriptionExpression = null;
-	private final Pattern titlePattern = Pattern.compile("<title>(.*?)</title>", Pattern.DOTALL);
-	private final Pattern bodyPattern = Pattern.compile("<body.*?>(.*?)</body>", Pattern.DOTALL);
-	private final Pattern linkPattern = Pattern.compile("<a\\s.*?href=['\"](.*?)['\"].*?>(.*?)</a>", Pattern.DOTALL);
 	private final ArrayList<Pattern> pathsToExcludePatterns = new ArrayList<>();
 	private static final CRC32 checksumCalculator = new CRC32();
 	private PreparedStatement addPageToStmt;
@@ -166,7 +160,7 @@ class WebsiteIndexer {
 						continue; //skip to next url if this one is in paths to exclude
 					}
 
-					if (pageToProcess.matches(".*\\.xml.*") && includePath) { //if sitemap is xml index, walk through each xml file
+					if (pageToProcess.matches(".*\\.xml.*")) { //if sitemap is xml index, walk through each xml file
 						Document doc2 = Jsoup.connect(pageToProcess).get();
 						Elements url2 = doc2.select("loc");
 						for (Element urlToProcess2 : url2) {
@@ -264,14 +258,9 @@ class WebsiteIndexer {
 					}else if (contentType.indexOf(";") > 0) {
 						mimeType = contentType.substring(0, contentType.indexOf(";"));
 					}
-					if (!mimeType.equals("text/html")) {
-						logger.info("Non HTML page, skipping");
+					if (mimeType.equals("application/pdf")) {
 						//TODO: Index PDFs
-						//Don't log this for now since it just distracts from actual errors
-//						if (!mimeType.equals("application/pdf")) {
-//							logEntry.addNote("Non HTML page " + pageToProcess + " " + mimeType);
-//						}
-					} else {
+					} else if (mimeType.equals("text/html")) {
 						// do something useful with the response body
 						// and ensure it is fully consumed
 						document.select("script,.hidden,style").remove();
@@ -434,6 +423,8 @@ class WebsiteIndexer {
 							//TODO: Add popularity
 							solrUpdateServer.add(solrDocument);
 						}
+					} else {
+						logger.info("Non HTML page (" + mimeType + "), skipping");
 					}
 				} else{
 					logger.info("Got error processing the page");
