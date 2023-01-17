@@ -2,7 +2,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
-import { GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
 import Profile from '../../screens/MyAccount/Profile';
 import LoadSavedSearch from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSearch';
@@ -60,6 +60,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyHolds' }}
                     />
+                   <Stack.Screen
+                       name="MyHold221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -77,6 +84,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyCheckouts' }}
                     />
+                   <Stack.Screen
+                       name="MyCheckout221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -95,6 +109,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyList' }}
                     />
+                   <Stack.Screen
+                       name="ListItem221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -113,6 +134,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MySavedSearch' }}
                     />
+                   <Stack.Screen
+                       name="SavedSearchItem221200"
+                       component={GroupedWork221200}
+                       options={({ route }) => ({
+                           title: route.params.title ?? translate('grouped_work.title'),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen

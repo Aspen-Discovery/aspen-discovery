@@ -13,50 +13,24 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			global $library;
 			$userHomeLibrary = $library;
 		}
-		$locations = new Location();
-		$locations->libraryId = $userHomeLibrary->libraryId;
-		$locations->find();
-		$locationsForLibrary = [];
-		$locationsForLibrary['']['displayLabel'] = translate([
-			'text' => 'All',
-			'isAdminFacing' => true,
-			'inAttribute' => true,
-		]);
-		while ($locations->fetch()) {
-			$locationsForLibrary[$locations->locationId]['id'] = $locations->locationId;
-			$locationsForLibrary[$locations->locationId]['displayLabel'] = $locations->displayName;
-		}
-
-		if (!empty($_REQUEST['location'])) {
-			$locationId = $_REQUEST['location'];
-		} else {
-			$locationId = '';
-		}
-		$interface->assign('selectedLocation', $locationId);
-		$interface->assign('locationsToRestrictTo', $locationsForLibrary);
+		$libraryId = $userHomeLibrary->libraryId;
+		$interface->assign('library', $libraryId);
 
 		$this->loadDates();
 
 		$allStatuses = [];
 		$statuses = new MaterialsRequestStatus();
-		$statuses->libraryId = $userHomeLibrary->libraryId;
+		$statuses->libraryId = $libraryId;
 		$statuses->find();
 		while ($statuses->fetch()) {
 			$allStatuses[$statuses->id]['id'] = $statuses->id;
 			$allStatuses[$statuses->id]['label'] = $statuses->description;
-			if ($locationId !== '') {
-				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($locationId, $this->thisMonth, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($locationId, $this->lastMonth, $this->lastMonthYear, $statuses);
-				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($locationId, null, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastYear'] = $this->getStats($locationId, null, $this->lastYear, $statuses);
-				$allStatuses[$statuses->id]['usageAllTime'] = $this->getStats($locationId, null, null, $statuses);
-			} else {
-				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($locationsForLibrary, $this->thisMonth, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($locationsForLibrary, $this->lastMonth, $this->lastMonthYear, $statuses);
-				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($locationsForLibrary, null, $this->thisYear, $statuses);
-				$allStatuses[$statuses->id]['usageLastYear'] = $this->getStats($locationsForLibrary, null, $this->lastYear, $statuses);
-				$allStatuses[$statuses->id]['usageAllTime'] = $this->getStats($locationsForLibrary, null, null, $statuses);
-			}
+				$allStatuses[$statuses->id]['usageThisMonth'] = $this->getStats($libraryId, $this->thisMonth, $this->thisYear, $statuses);
+				$allStatuses[$statuses->id]['usageLastMonth'] = $this->getStats($libraryId, $this->lastMonth, $this->lastMonthYear, $statuses);
+				$allStatuses[$statuses->id]['usageThisYear'] = $this->getStats($libraryId, null, $this->thisYear, $statuses);
+				$allStatuses[$statuses->id]['usageLastYear'] = $this->getStats($libraryId, null, $this->lastYear, $statuses);
+				$allStatuses[$statuses->id]['usageAllTime'] = $this->getStats($libraryId, null, null, $statuses);
+
 		}
 
 		$interface->assign('allStats', $allStatuses);
@@ -75,7 +49,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 			foreach ($location as $loc) {
 				if ($loc['displayLabel'] != "All") {
 					$stats = new MaterialsRequestUsage();
-					$stats->locationId = $loc['id'];
+					$stats->libraryId = $loc['id'];
 					if ($month != null) {
 						$stats->month = $month;
 					}
@@ -98,7 +72,7 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 		} else {
 			$stats = new MaterialsRequestUsage();
 			if (!empty($location)) {
-				$stats->locationId = $location;
+				$stats->libraryId = $location;
 			}
 			if ($month != null) {
 				$stats->month = $month;
@@ -137,7 +111,6 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 	}
 
 	function exportToExcel() {
-		$location = $_REQUEST['location'];
 		$periods = $this->getAllPeriods();
 
 		header('Content-Type: text/csv; charset=utf-8');
@@ -147,94 +120,50 @@ class MaterialsRequest_Dashboard extends Admin_Dashboard {
 
 		$header[] = 'Date';
 
-		if ($location !== '' && $location !== null) {
+		$userHomeLibrary = Library::getPatronHomeLibrary();
+		if (is_null($userHomeLibrary)) {
+			//User does not have a home library, this is likely an admin account.  Use the active library
+			global $library;
+			$userHomeLibrary = $library;
+		}
+		$libraryId = $userHomeLibrary->libraryId;
+
+		$thisStatus = new MaterialsRequestStatus();
+		$thisStatus->libraryId = $libraryId;
+		$thisStatus->find();
+
+		while ($thisStatus->fetch()) {
+			$header[] = $thisStatus->description;
+		}
+		fputcsv($fp, $header);
+
+		foreach ($periods as $period) {
+			$materialsRequestUsage = new MaterialsRequestUsage();
+			$materialsRequestUsage->year = $period['year'];
+			$materialsRequestUsage->month = $period['month'];
+			$materialsRequestUsage->statusId = $thisStatus->id;
+			$materialsRequestUsage->find();
+
+			$row = [];
+			$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
+			$row[] = $date;
+
 			$thisStatus = new MaterialsRequestStatus();
-			$thisStatus->libraryId = $location;
+			$thisStatus->libraryId = $libraryId;
 			$thisStatus->find();
 
-			while ($thisStatus->fetch()) { //loop through each status and get description for header
-				$header[] = $thisStatus->description;
-			}
-			fputcsv($fp, $header);
-
-			foreach ($periods as $period) { //each row is a different time period
+			while ($thisStatus->fetch()){
 				$materialsRequestUsage = new MaterialsRequestUsage();
 				$materialsRequestUsage->year = $period['year'];
 				$materialsRequestUsage->month = $period['month'];
 				$materialsRequestUsage->statusId = $thisStatus->id;
-				$materialsRequestUsage->locationId = $location;
-				$materialsRequestUsage->find();
-
-				$row = []; //empty new rows
-				$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-				$row[] = $date; //add date first
-
-				$thisStatus = new MaterialsRequestStatus();
-				$thisStatus->libraryId = $location;
-				$thisStatus->find();
-
-				while ($thisStatus->fetch()){ //loop through statuses again
-					$materialsRequestUsage = new MaterialsRequestUsage();
-					$materialsRequestUsage->year = $period['year'];
-					$materialsRequestUsage->month = $period['month'];
-					$materialsRequestUsage->statusId = $thisStatus->id;
-					if ($materialsRequestUsage->find(true)){ //if we find a match on year, month, and id/statusId
-						$row[] = $materialsRequestUsage->numUsed ?? 0;
-					}else{ //otherwise, usage is 0
-						$row[] = 0;
-					}
-				}
-				fputcsv($fp, $row);
-			}
-		} else {
-			$userHomeLibrary = Library::getPatronHomeLibrary();
-			if (is_null($userHomeLibrary)) {
-				//User does not have a home library, this is likely an admin account.  Use the active library
-				global $library;
-				$userHomeLibrary = $library;
-			}
-			$locations = new Location();
-			$locations->libraryId = $userHomeLibrary->libraryId;
-			$locations->find();
-			while ($locations->fetch()) {
-				$thisStatus = new MaterialsRequestStatus();
-				$thisStatus->libraryId = $locations->locationId;
-				$thisStatus->find();
-
-				while ($thisStatus->fetch()) {
-					$header[] = $thisStatus->description;
-				}
-				fputcsv($fp, $header);
-
-				foreach ($periods as $period) {
-					$materialsRequestUsage = new MaterialsRequestUsage();
-					$materialsRequestUsage->year = $period['year'];
-					$materialsRequestUsage->month = $period['month'];
-					$materialsRequestUsage->statusId = $thisStatus->id;
-					$materialsRequestUsage->find();
-
-					$row = [];
-					$date = "{$materialsRequestUsage->month}-{$materialsRequestUsage->year}";
-					$row[] = $date;
-
-					$thisStatus = new MaterialsRequestStatus();
-					$thisStatus->libraryId = $locations->locationId;
-					$thisStatus->find();
-
-					while ($thisStatus->fetch()){
-						$materialsRequestUsage = new MaterialsRequestUsage();
-						$materialsRequestUsage->year = $period['year'];
-						$materialsRequestUsage->month = $period['month'];
-						$materialsRequestUsage->statusId = $thisStatus->id;
-						if ($materialsRequestUsage->find(true)){
-							$row[] = $materialsRequestUsage->numUsed ?? 0;
-						}else{
-							$row[] = 0;
-						}
-					}
-					fputcsv($fp, $row);
+				if ($materialsRequestUsage->find(true)){
+					$row[] = $materialsRequestUsage->numUsed ?? 0;
+				}else{
+					$row[] = 0;
 				}
 			}
+			fputcsv($fp, $row);
 		}
 		exit;
 	}

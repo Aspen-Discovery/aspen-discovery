@@ -58,7 +58,10 @@ const SelectLinkedAccount = (props) => {
      const [location, setLocation] = React.useState(pickupLocation);
 
      const [activeAccount, setActiveAccount] = React.useState(user.id);
-     const availableAccounts = Object.values(accounts);
+     let availableAccounts = [];
+     if (_.size(accounts > 0)) {
+          availableAccounts = Object.values(accounts);
+     }
 
      const handleNavigation = (action) => {
           if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {

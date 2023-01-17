@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 class Enrichment_NovelistAPIData extends Admin_Admin {
 	function launch() {
 		global $interface;
+		global $logger;
 
 		//require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 		require_once ROOT_DIR . '/sys/Enrichment/Novelist3.php';
@@ -28,11 +29,15 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 			if ($allInfo == "on"){
 				$contents .= "<h3>Data includes info for all records in series</h3>";
 			}
+			$logger->log("Fetching Novelist Data", Logger::LOG_ERROR);
 			$metadata = $driver->getRawNovelistDataISBN($ISBN, $allInfo);
-			if ($metadata) {
+			$logger->log("Fetched Novelist Data", Logger::LOG_ERROR);
+			if (!empty($metadata)) {
+				$logger->log("Formatting Novelist Data", Logger::LOG_ERROR);
 				$contents .= $this->easy_printr("metadata_{$ISBN}", $metadata);
+				$logger->log("Finished Formatting Novelist Data", Logger::LOG_ERROR);
 			} else {
-				$contents .= ("No metadata available<br/>");
+				$contents .= "No metadata available<br/>";
 			}
 		}
 
@@ -42,7 +47,10 @@ class Enrichment_NovelistAPIData extends Admin_Admin {
 
 	function easy_printr($section, &$var) {
 		$contents = "<pre id='{$section}'>";
-		$contents .= print_r($var, true);
+		$formattedContents = print_r($var, true);
+		if ($formattedContents !== false) {
+			$contents .= $formattedContents;
+		}
 		$contents .= '</pre>';
 		return $contents;
 	}
