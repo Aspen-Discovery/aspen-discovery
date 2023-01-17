@@ -4131,6 +4131,10 @@ class Library extends DataObject {
 				'showInLocationsAndHoursList' => (bool)$location->showInLocationsAndHoursList,
 			];
 		}
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		$apiInfo['pinValidationRules'] = $pinValidationRules;
 		return $apiInfo;
 	}
 
