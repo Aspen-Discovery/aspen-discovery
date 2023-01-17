@@ -1,6 +1,8 @@
 import React from 'react';
 import { create } from 'apisauce';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import * as Linking from 'expo-linking';
+import * as Notifications from 'expo-notifications';
+import { useNavigation, useFocusEffect, useLinkTo } from '@react-navigation/native';
 import { Center, Heading, Spinner, VStack } from 'native-base';
 import _ from 'lodash';
 import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
@@ -11,14 +13,50 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBrowseCategoryListForUser } from '../../util/loadPatron';
 import { ForceLogout } from './ForceLogout';
 
+const prefix = Linking.createURL('/');
+
+Notifications.setNotificationHandler({
+     handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: false,
+     }),
+});
+
 export const LoadingScreen = () => {
+     const linkingUrl = Linking.useURL();
+     const linkTo = useLinkTo();
      const navigation = useNavigation();
+     const [incomingUrl, setIncomingUrl] = React.useState('');
+     const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
      const [loading, setLoading] = React.useState(true);
      const [hasError, setHasError] = React.useState(false);
-     const { user, updateUser, resetUser } = React.useContext(UserContext);
-     const { library, updateLibrary, resetLibrary } = React.useContext(LibrarySystemContext);
-     const { location, updateLocation, updateScope, resetLocation } = React.useContext(LibraryBranchContext);
-     const { category, list, updateBrowseCategories, updateBrowseCategoryList, resetBrowseCategories, maxNum, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+     const { user, updateUser } = React.useContext(UserContext);
+     const { library, updateLibrary } = React.useContext(LibrarySystemContext);
+     const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
+     const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+
+
+     React.useEffect(() => {
+          const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+               console.log("responseListener.current > " + response);
+               const url = response?.notification?.request?.content?.data?.url ?? prefix;
+               console.log("responseListener.current > " + url);
+               if(url !== incomingUrl) {
+                    console.log("Incoming url changed");
+                    console.log("OLD > " + incomingUrl);
+                    console.log("NEW > " + url);
+                    setIncomingUrl(response?.notification?.request?.content?.data?.url ?? prefix);
+                    setIncomingUrlChanged(true);
+               } else {
+                    setIncomingUrlChanged(false);
+               }
+          });
+
+          return () => {
+               responseListener.remove();
+          };
+     }, []);
 
      useFocusEffect(
           React.useCallback(() => {
@@ -65,7 +103,55 @@ export const LoadingScreen = () => {
      }
 
      if (!loading) {
-          navigation.navigate('Drawer', {
+          if(hasIncomingUrlChanged) {
+               let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
+               url = url.replace('aspen-lida://', prefix);
+               console.log("incomingUrl > " + url);
+               setIncomingUrlChanged(false);
+               try {
+                    console.log("Trying to open screen based on incomingUrl...")
+                    Linking.openURL(url)
+               } catch (e) {
+                    console.log(e);
+               }
+          } else if (linkingUrl) {
+               if((linkingUrl !== prefix) && (linkingUrl !== incomingUrl)) {
+                    setIncomingUrl(linkingUrl);
+                    console.log("Updated incoming url");
+                    const { hostname, path, queryParams, scheme } = Linking.parse(linkingUrl);
+                    console.log('linkingUrl > ' + linkingUrl);
+                    console.log(
+                        `Linked to app with hostname: ${hostname}, path: ${path}, scheme: ${scheme} and data: ${JSON.stringify(
+                            queryParams
+                        )}`
+                    );
+                    try {
+                         if(scheme !== 'exp') {
+                              console.log("Trying to open screen based on linkingUrl...");
+                              const url = linkingUrl.replace('aspen-lida://', prefix);
+                              console.log('url > ' + url);
+                              linkTo('/' + url);
+                         } else {
+                              if(path) {
+                                   console.log("Trying to open screen based on linkingUrl to Expo app...");
+                                   let url = '/' + path;
+                                   if(!_.isEmpty(queryParams)) {
+                                        const params = new URLSearchParams(queryParams);
+                                        const str = params.toString();
+                                        url = url + "?" + str + "&url=" + library.baseUrl;
+                                   }
+                                   console.log('url > ' + url);
+                                   console.log('linkingUrl > ' + linkingUrl);
+                                   linkTo('/' + url);
+                              }
+                         }
+                    } catch (e) {
+                         console.log(e);
+                    }
+               }
+          }
+
+          navigation.navigate('DrawerStack', {
                user: user,
                library: library,
                location: location,

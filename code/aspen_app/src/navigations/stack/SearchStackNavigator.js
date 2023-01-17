@@ -12,7 +12,7 @@ import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../c
 import Search from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
 import SearchByCategory from '../../screens/Search/SearchByCategory';
-import SearchByList from '../../screens/Search/SearchByList';
+import {SearchResultsForList} from '../../screens/Search/SearchByList';
 import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
@@ -97,22 +97,16 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                <Stack.Group>
                     <Stack.Screen
                          name="SearchByList"
-                         component={SearchByList}
+                         component={SearchResultsForList}
                          options={({ route }) => ({
                               title: translate('search.search_results_title') + route.params.title,
-                              libraryContext: React.useContext(LibrarySystemContext),
-                              locationContext: React.useContext(LibraryBranchContext),
-                              userContext: React.useContext(UserContext),
                          })}
                     />
                     <Stack.Screen
                          name="ListResults"
-                         component={SearchByList}
+                         component={SearchResultsForList}
                          options={({ route }) => ({
                               title: translate('search.search_results_title') + route.params.title,
-                              libraryContext: React.useContext(LibrarySystemContext),
-                              locationContext: React.useContext(LibraryBranchContext),
-                              userContext: React.useContext(UserContext),
                          })}
                     />
                     <Stack.Screen

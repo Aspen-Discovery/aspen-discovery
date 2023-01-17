@@ -10,7 +10,7 @@ const AccountDrawer = () => {
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
      return (
           <Drawer.Navigator
-               initialRouteName="Tabs"
+               initialRouteName="TabsNavigator"
                screenOptions={{
                     drawerType: 'front',
                     drawerHideStatusBarOnOpen: true,
@@ -24,7 +24,7 @@ const AccountDrawer = () => {
                }}
                drawerContent={(props) => <DrawerContent {...props} />}>
                <Drawer.Screen
-                    name="Tabs"
+                    name="TabsNavigator"
                     component={TabNavigator}
                     screenOptions={{
                          headerShown: false,
