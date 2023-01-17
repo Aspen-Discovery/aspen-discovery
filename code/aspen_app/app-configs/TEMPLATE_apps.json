@@ -15,7 +15,7 @@
 	"sentryDsn": "",
 	"ascAppId": "",
 	"appleTeamId": "",
-	"iosStoreURL": "",
-	"androidStoreURL": ""
+	"iosStoreUrl": "",
+	"androidStoreUrl": ""
   }
 }

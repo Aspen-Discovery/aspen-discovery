@@ -138,6 +138,8 @@ const app_config = {
           eas: {
                projectId: app['easId'],
           },
+          iosStoreUrl: app['iosStoreUrl'],
+          androidStoreUrl: app['androidStoreUrl']
      },
      hooks: {
           postPublish: [
