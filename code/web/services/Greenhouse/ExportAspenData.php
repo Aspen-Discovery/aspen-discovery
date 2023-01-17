@@ -497,9 +497,9 @@ class Greenhouse_ExportAspenData extends Admin_Admin {
 		//uploaded covers
 		if ($configArray['System']['operatingSystem'] == 'windows') {
 			$output = [];
-			exec("cd c:/data/aspen-discovery/$serverName/images/original/; tar -czf c:/data/aspen-discovery/$serverName/export/uploaded_covers.tar.gz cd c:/data/aspen-discovery/$serverName/images/original/*", $output);
+			exec("cd c:/data/aspen-discovery/$serverName/covers/; tar -czf c:/data/aspen-discovery/$serverName/export/uploaded_covers.tar.gz original", $output);
 		} else {
-			exec("cd /data/aspen-discovery/$serverName/images/original; tar -czf /data/aspen-discovery/$serverName/export/uploaded_covers.tar.gz *", $output);
+			exec("cd /data/aspen-discovery/$serverName/covers/; tar -czf /data/aspen-discovery/$serverName/export/uploaded_covers.tar.gz original", $output);
 		}
 
 		//uploads
