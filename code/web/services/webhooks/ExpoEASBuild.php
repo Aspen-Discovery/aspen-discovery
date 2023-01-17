@@ -57,6 +57,9 @@ class webhooks_ExpoEASBuild extends Action {
 			}
 
 			$logger->log('Finished processing webhook request.', Logger::LOG_ERROR);
+		} else {
+			$logger->log('Unable to validate request!', Logger::LOG_ERROR);
+			$logger->log(print_r(getallheaders(), true), Logger::LOG_ERROR);
 		}
 
 		$result = [
@@ -86,11 +89,12 @@ class webhooks_ExpoEASBuild extends Action {
 			$payload = file_get_contents('php://input');
 			$hash = hash_hmac('sha1', $payload, $expoEASBuildWebhook);
 			$hash = 'sha1=' . $hash;
+			$logger->log("Stored key: " . $hash, Logger::LOG_ERROR);
 		}
 
 		if($expoEASBuildWebhook && $hash) {
 			foreach (getallheaders() as $name => $value) {
-				if($name == 'Expo-Signature') {
+				if($name == 'Expo-Signature' || $name == 'expo-signature') {
 					$logger->log($value, Logger::LOG_ERROR);
 					if(hash_equals($hash, $value)) {
 						$logger->log('Keys match. Request validated.', Logger::LOG_ERROR);
