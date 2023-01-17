@@ -221,6 +221,7 @@ class RecordToInclude extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Include Holdable Only',
 				'description' => 'Whether or not non-holdable records are included',
+				'default' => false,
 				'forcesReindex' => true,
 			],
 			'includeItemsOnOrder' => [
