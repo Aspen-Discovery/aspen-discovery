@@ -20,7 +20,7 @@
 					<textarea name="login" id="login" class="form-control"></textarea>
 				</div>
 			</div>
-			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on it's own line." isAdminFacing=true}</div>
+			<div class="alert alert-info">{translate text="Enter the barcode(s) for the user who should be given administration privileges.  To create multiple administrators at once, enter each barcode on its own line." isAdminFacing=true}</div>
 
 			<div class="form-group">
 				{assign var=property value=$structure.roles}
@@ -28,19 +28,11 @@
 				<label for='{$propName}' class="control-label">{translate text="Roles" isAdminFacing=true}</label>
 				<div class="controls">
 					{* Display the list of roles to add *}
-					{if isset($property.listStyle) && $property.listStyle == 'checkbox'}
-						{foreach from=$property.values item=propertyName key=propertyValue}
-							<label class="checkbox">
-								<input name='{$propName}[{$propertyValue}]' type="checkbox" value='{$propertyValue}' {if is_array($propValue) && in_array($propertyValue, array_keys($propValue))}checked="checked"{/if} >{$propertyName}
-							</label>
-						{/foreach}
-					{else}
-						<select name='{$propName}' id="{$propName}" multiple="multiple">
-						{foreach from=$property.values item=propertyName key=propertyValue}
-							<option value='{$propertyValue}' {if $propValue == $propertyValue}selected="selected"{/if}>{$propertyName}</option>
-						{/foreach}
-						</select>
-					{/if}
+					{foreach from=$property.values item=propertyName key=propertyValue}
+						<label class="checkbox">
+							<input name='{$propName}[{$propertyValue}]' type="checkbox" value='{$propertyValue}' {if !empty($propValue) && in_array($propertyValue, array_keys($propValue))}checked="checked"{/if} >{$propertyName}
+						</label>
+					{/foreach}
 				</div>
 			</div>
 			<div class="form-group">

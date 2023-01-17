@@ -1,12 +1,29 @@
-import { Component } from 'react';
-
-import { loadingSpinner } from '../../../components/loadingSpinner';
-import { userContext } from '../../../context/user';
-import navigation from '../../../components/navigation';
-import { navigateStack } from '../../../helpers/RootNavigator';
+import React from 'react';
+import { useRoute, useNavigation, StackActions } from '@react-navigation/native';
 import { getCleanTitle } from '../../../helpers/item';
+import {LibrarySystemContext} from '../../../context/initialContext';
 
-export default class LoadSavedSearch extends Component {
+export const LoadSavedSearch = () => {
+     const navigation = useNavigation();
+     const id = useRoute().params.search ?? 0;
+     const title = useRoute().params.name ?? 'Saved Search Results';
+     const { library } = React.useContext(LibrarySystemContext);
+     const url = library.baseUrl;
+
+     const pushAction = StackActions.push('MySavedSearch',
+         {
+              id: id,
+              title: getCleanTitle(title),
+              libraryUrl: url,
+              prevRoute: 'NONE'
+         });
+
+     navigation.dispatch(pushAction);
+
+}
+
+/*
+export class LoadSavedSearchB extends Component {
      constructor(props, context) {
           super(props, context);
           this.state = {
@@ -21,8 +38,6 @@ export default class LoadSavedSearch extends Component {
           const libraryUrl = this.context.library.baseUrl;
           const id = route.params?.search ?? 0;
           const title = route.params?.name ?? '';
-
-          console.log(route.params);
 
           this.setState({
                isLoading: false,
@@ -59,4 +74,4 @@ export default class LoadSavedSearch extends Component {
 
           return null;
      }
-}
+}*/

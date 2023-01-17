@@ -25,6 +25,7 @@ export const MyHold = (props) => {
      const [cancelling, startCancelling] = React.useState(false);
      const [thawing, startThawing] = React.useState(false);
      let label, method, icon, canCancel;
+     const version = formatDiscoveryVersion(library.discoveryVersion);
 
      if (hold.canFreeze === true) {
           if (hold.frozen === true) {
@@ -58,14 +59,24 @@ export const MyHold = (props) => {
      }
 
      const openGroupedWork = (item, title) => {
-          navigateStack('AccountScreenTab', 'MyHold', {
-               id: item,
-               title: getCleanTitle(title),
-               url: library.baseUrl,
-               userContext: user,
-               libraryContext: library,
-               prevRoute: 'MyHolds',
-          });
+          if(version >= '23.01.00') {
+               navigateStack('AccountScreenTab', 'MyHold', {
+                    id: item,
+                    title: getCleanTitle(title),
+                    url: library.baseUrl,
+                    userContext: user,
+                    libraryContext: library,
+                    prevRoute: 'MyHolds',
+               });
+          } else {
+               navigateStack('AccountScreenTab', 'MyHold221200', {
+                    id: item,
+                    title: getCleanTitle(title),
+                    url: library.baseUrl,
+                    userContext: user,
+                    libraryContext: library,
+               });
+          }
      };
 
      const initializeLeftColumn = () => {

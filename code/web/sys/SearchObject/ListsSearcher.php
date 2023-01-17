@@ -142,11 +142,59 @@ class SearchObject_ListsSearcher extends SearchObject_SolrSearcher {
 	}
 
 	/**
-	 * Turn our results into an Excel document
+	 * Turn our results into a csv document
 	 * @param array $result
 	 */
 	public function buildExcel($result = null) {
-		// TODO: Implement buildExcel() method.
+		try {
+			global $configArray;
+
+			if (is_null($result)) {
+				$this->limit = 1000;
+				$result = $this->processSearch(false, false);
+			}
+
+			//Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: text/csv; charset=utf-8');
+			header('Content-Disposition: attachment;filename="SearchResults.csv"');
+			$fp = fopen('php://output', 'w');
+
+			$fields = array('Link', 'List Title', 'Created By', 'Number of Titles', 'Description');
+			fputcsv($fp, $fields);
+
+			$docs = $result['response']['docs'];
+
+			for ($i = 0; $i < count($docs); $i++) {
+				//Output the row to csv
+				$curDoc = $docs[$i];
+				//Output the row to csv
+				$link = '';
+				if ($curDoc['id']) {
+					$link = $configArray['Site']['url'] . '/MyAccount/MyList/' . $curDoc['id'];
+				}
+
+				$title = $curDoc['title_display'];
+
+				$author = $curDoc['author_display'];
+
+				$numTitles = $curDoc['num_titles'];
+
+				$description = $curDoc['description'];
+
+				$row = array ($link, $title, $author, $numTitles, $description);
+				fputcsv($fp, $row);
+			}
+
+			exit();
+		}
+		catch (Exception $e) {
+			global $logger;
+			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
+		}
 	}
 
 	public function getUniqueField() {

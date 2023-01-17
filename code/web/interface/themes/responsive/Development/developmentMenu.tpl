@@ -5,7 +5,7 @@
 		</div>
 		<div id="home-account-links" class="sidebar-links row">
 			<div class="panel-group accordion" id="account-link-accordion">
-				<div class="panel">
+				<div class="panel active">
 					<a href="#developmentGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Development Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -23,7 +23,7 @@
 					</div>
 				</div>
 
-				<div class="panel">
+				<div class="panel active">
 					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
@@ -42,15 +42,15 @@
 					</div>
 				</div>
 
-				<div class="panel">
-					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
+				<div class="panel active">
+					<a href="#ticketStatsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Ticket Stats Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
                                 {translate text="Ticket Stats" isAdminFacing=true}
 							</div>
 						</div>
 					</a>
-					<div id="supportGroup" class="panel-collapse collapse in">
+					<div id="ticketStatsGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsCreatedByDay">{translate text="Tickets Created By Day" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Development/TicketsCreatedByMonth">{translate text="Tickets Created By Month" isAdminFacing=true}</a></div>
@@ -65,15 +65,15 @@
 					</div>
 				</div>
 
-				<div class="panel">
-					<a href="#supportGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Support Menu" inAttribute=true isAdminFacing=true}">
+				<div class="panel active">
+					<a href="#partnersUsersGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Partners & Users Menu" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
                                 {translate text="Partners & Users" isAdminFacing=true}
 							</div>
 						</div>
 					</a>
-					<div id="supportGroup" class="panel-collapse collapse in">
+					<div id="partnersUsersGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
 							<div class="adminMenuLink "><a href="/Development/Partners">{translate text="Partners" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Development/Users">{translate text="Users" isAdminFacing=true}</a></div>

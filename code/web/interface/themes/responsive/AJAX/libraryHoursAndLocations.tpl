@@ -2,8 +2,8 @@
 	{if count($libraryLocations) > 1}
 		<form role="form">
 			<div class="form-group">
-				<label for="selectLibrary">{translate text="Select a Location" isPublicFacing=true}</label>
-				<select name="selectLibrary" id="selectLibrary"
+				<label for="selectLibraryHours">{translate text="Select a Location" isPublicFacing=true}</label>
+				<select name="selectLibraryHours" id="selectLibraryHours"
 						onchange="return AspenDiscovery.showLocationHoursAndMap();" class="form-control">
 					{foreach from=$libraryLocations item=curLocation}
 						<option value="{$curLocation.id}">{$curLocation.name}</option>

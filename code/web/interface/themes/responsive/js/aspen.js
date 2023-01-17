@@ -4932,7 +4932,7 @@ var AspenDiscovery = (function(){
 		},
 
 		showLocationHoursAndMap: function(){
-			var selectedId = $("#selectLibrary").find(":selected").val();
+			var selectedId = $("#selectLibraryHours").find(":selected").val();
 			$(".locationInfo").hide();
 			$("#locationAddress" + selectedId).show();
 			return false;
@@ -6942,11 +6942,11 @@ AspenDiscovery.Account = (function () {
 			}
 			return false;
 		},
-		deleteSelectedLists: function (id) {
+		deleteSelectedLists: function () {
 			var selectedLists = AspenDiscovery.getSelectedLists();
 			if (selectedLists) {
 				if (confirm("Are you sure you want to delete the selected lists?")) {
-					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&id=' + id + '&' + selectedLists, function () {
+					$.getJSON(Globals.path + '/MyAccount/AJAX?method=deleteList&' + selectedLists, function () {
 						location.reload();
 					});
 				}

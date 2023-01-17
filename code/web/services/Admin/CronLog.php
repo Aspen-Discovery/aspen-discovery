@@ -3,7 +3,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/sys/Pager.php';
-require_once(ROOT_DIR . "/PHPExcel.php");
 
 class Admin_CronLog extends Admin_Admin {
 	function launch() {

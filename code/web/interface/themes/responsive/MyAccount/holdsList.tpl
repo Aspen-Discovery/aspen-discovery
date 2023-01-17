@@ -86,7 +86,7 @@
 		<div class="btn-group">
 			<input type="hidden" name="withSelectedAction" value="">
 			<div id="holdsUpdateSelected{$sectionKey}Bottom" class="holdsUpdateSelected{$sectionKey}">
-				<button type="submit" class="btn btn-sm btn-default" id="exportToExcel" name="exportToExcel" onclick="return AspenDiscovery.Account.exportHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort_{$source} option:selected').val());">{translate text="Export to Excel" isPublicFacing=true}</button>
+				<button type="submit" class="btn btn-sm btn-default" id="exportToExcel" name="exportToExcel" onclick="return AspenDiscovery.Account.exportHolds('{$source}', $('#availableHoldSort_{$source} option:selected').val(), $('#unavailableHoldSort_{$source} option:selected').val());">{translate text="Export to CSV" isPublicFacing=true}</button>
 			</div>
 		</div>
 	</form>
