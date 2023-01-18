@@ -2148,7 +2148,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		$catalogDriver = $this->getCatalogDriver();
 		if ($catalogDriver->hasIssueSummaries()) {
 			$issueSummaries = $catalogDriver->getIssueSummaries($this->id);
-			if (count($issueSummaries)) {
+			if (!empty($issueSummaries)) {
 				//Insert copies into the information about the periodicals
 				$copies = $this->getCopies();
 				//Remove any copies with no location to get rid of temporary items added only for scoping
