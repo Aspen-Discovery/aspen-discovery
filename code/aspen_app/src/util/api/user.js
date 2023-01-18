@@ -71,6 +71,50 @@ export async function reloadProfile(url) {
 }
 
 /**
+ * Validates the given credentials to initiate logging into Aspen LiDA. For Discovery 23.02.00 and later.
+ * @param {string} username
+ * @param {password} password
+ * @param {string} url
+ **/
+export async function loginToLiDA(username, password, url) {
+     const postBody = new FormData();
+     postBody.append('username', username);
+     postBody.append('password', password);
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const results = await discovery.post('/UserAPI?method=loginToLiDA', postBody);
+     if (results.ok) {
+          return results.data.result;
+     }
+}
+
+/**
+ * Validates the given credentials to initiate logging into Aspen LiDA. For Discovery 23.01.00 and older.
+ * @param {string} username
+ * @param {string} password
+ * @param {string} url
+ **/
+export async function validateUser(username, password, url) {
+     const postBody = new FormData();
+     postBody.append('username', username);
+     postBody.append('password', password);
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const results = await discovery.post('/UserAPI?method=validateAccount', postBody);
+     if (results.ok) {
+          return results.data.result;
+     }
+}
+
+/**
  * Checks if the user has an active Aspen Discovery session
  * @param {string} url
  **/
