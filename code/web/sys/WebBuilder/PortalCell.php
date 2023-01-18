@@ -421,7 +421,7 @@ class PortalCell extends DataObject {
 					$contents .= $interface->fetch('WebBuilder/resource.tpl');
 				} else {
 					//TODO: show a message that the resource has been deleted?
-
+					$contents .= translate(['text' => 'This resource no longer exists', 'isPublicFacing' => true]);
 				}
 			}
 
