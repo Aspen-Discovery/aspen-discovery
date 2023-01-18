@@ -2253,8 +2253,8 @@ class SearchAPI extends Action {
 			$pager = new Pager($options);
 			$results['totalResults'] = $pager->getTotalItems();
 			$results['count'] = $summary['resultTotal'];
-			$results['page_current'] = $pager->getCurrentPage();
-			$results['page_total'] = $pager->getTotalPages();
+			$results['page_current'] = (int)$pager->getCurrentPage();
+			$results['page_total'] = (int)$pager->getTotalPages();
 			$timer->logTime('finish hits processing');
 			$records = $searchObject->getResultRecordSet();
 			$items = [];
