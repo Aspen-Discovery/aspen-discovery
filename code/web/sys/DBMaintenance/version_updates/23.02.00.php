@@ -13,6 +13,15 @@ function getUpdates23_02_00(): array {
 		], //sample*/
 
 		//mark
+		'increase_sublocation_to_include' => [
+			'title' => 'Increase sublocation to include',
+			'description' => 'Increase the length of sublocation in records to include',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library_records_to_include CHANGE COLUMN subLocation subLocation VARCHAR(150) NOT NULL DEFAULT '';",
+				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocation subLocation VARCHAR(150) NOT NULL DEFAULT '';",
+			]
+		], //increase_sublocation_to_include
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [
