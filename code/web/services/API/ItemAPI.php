@@ -935,7 +935,12 @@ class ItemAPI extends Action {
 				return $relatedManifestation->getItemSummary();
 			}
 		}
-		return [];
+		return [
+			'totalCopies' => 0,
+			'availableCopies' => 0,
+			'shelfLocation' => '',
+			'callNumber' => ''
+		];
 	}
 
 	function getManifestation() {
