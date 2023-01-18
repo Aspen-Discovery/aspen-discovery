@@ -412,12 +412,17 @@ class PortalCell extends DataObject {
 			if ($webResource->find(true)) {
 				require_once ROOT_DIR . '/RecordDrivers/WebResourceRecordDriver.php';
 				$resourceDriver = new WebResourceRecordDriver('WebResource:' . $webResource->id);
-				$interface->assign('description', $webResource->getFormattedDescription());
-				$interface->assign('title', $webResource->name);
-				$interface->assign('url', $webResource->url);
-				$interface->assign('logo', $resourceDriver->getBookcoverUrl('large'));
+				if ($resourceDriver->isValid()) {
+					$interface->assign('description', $webResource->getFormattedDescription());
+					$interface->assign('title', $webResource->name);
+					$interface->assign('url', $webResource->url);
+					$interface->assign('logo', $resourceDriver->getBookcoverUrl('large'));
 
-				$contents .= $interface->fetch('WebBuilder/resource.tpl');
+					$contents .= $interface->fetch('WebBuilder/resource.tpl');
+				} else {
+					//TODO: show a message that the resource has been deleted?
+
+				}
 			}
 
 		} elseif ($this->sourceType == 'hours_locations') {
