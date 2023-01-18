@@ -258,7 +258,7 @@ class HooplaScope extends DataObject {
 			'genresToExclude' => [
 				'property' => 'genresToExclude',
 				'type' => 'textarea',
-				'label' => 'Genres To Exlude (each filter on it\'s own line, regular expressions ok)',
+				'label' => 'Genres To Exclude (each filter on its own line, regular expressions ok)',
 				'description' => 'Genres To Exclude',
 				'hideInLists' => true,
 			],
