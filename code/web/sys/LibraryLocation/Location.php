@@ -1179,8 +1179,26 @@ class Location extends DataObject {
 		return $structure;
 	}
 
-	public $pickupUsers;
+	private $_pickupUsers;
 	// Used to track multiple linked users having the same pick-up locations
+
+	public function getPickupUsers() : array {
+		if ($this->_pickupUsers == null) {
+			$this->_pickupUsers = [];
+		}
+		return $this->_pickupUsers;
+	}
+
+	public function setPickupUsers($pickupUsers) {
+		$this->_pickupUsers = $pickupUsers;
+	}
+
+	public function addPickupUser(string $userId) {
+		if ($this->_pickupUsers == null) {
+			$this->_pickupUsers = [];
+		}
+		$this->_pickupUsers[] = $userId;
+	}
 
 	/**
 	 * @param User $patronProfile
@@ -1238,8 +1256,8 @@ class Location extends DataObject {
 		$locationList = [];
 		foreach ($tmpLocations as $tmpLocation) {
 			// Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
-			if ($patronProfile) {
-				$tmpLocation->pickupUsers[] = $patronProfile->id;
+			if (!empty($patronProfile)) {
+				$tmpLocation->addPickupUser($patronProfile->id);
 			}
 			if (($tmpLocation->validHoldPickupBranch == 1) || ($tmpLocation->validHoldPickupBranch == 0 && !empty($patronProfile) && $patronProfile->homeLocationId == $tmpLocation->locationId) || ($tmpLocation->validHoldPickupBranch == 3 && !empty($patronProfile) && $patronProfile->getHomeLibrary()->libraryId == $tmpLocation->libraryId)) {
 				// Each location is prepended with a number to keep precedence for given locations when sorted below
@@ -1281,7 +1299,7 @@ class Location extends DataObject {
 				if ($homeLocation->validHoldPickupBranch != 2) {
 					//We didn't find any locations.  This for schools where we want holds available, but don't want the branch to be a
 					//pickup location anywhere else.
-					$homeLocation->pickupUsers[] = $patronProfile->id; // Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
+					$homeLocation->addPickupUser($patronProfile->id); // Add the user id to each pickup location to track multiple linked accounts having the same pick-up location.
 					$existingLocation = false;
 					foreach ($locationList as $location) {
 						if ($location->libraryId == $homeLocation->libraryId && $location->locationId == $homeLocation->locationId) {
