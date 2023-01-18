@@ -774,6 +774,16 @@ class UserAccount {
 		}
 	}
 
+	public static function getAccountProfileByRecordSource($name) : ?AccountProfile {
+		$accountProfiles = UserAccount::getAccountProfiles();
+		foreach ($accountProfiles as $accountProfile) {
+			if ($accountProfile['accountProfile']->recordSource == $name) {
+				return $accountProfile['accountProfile'];
+			}
+		}
+		return null;
+	}
+
 	static function has2FAEnabledForPType() {
 		UserAccount::loadUserObjectFromDatabase();
 		if (UserAccount::$primaryUserObjectFromDB != false) {

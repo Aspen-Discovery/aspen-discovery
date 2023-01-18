@@ -176,10 +176,10 @@ function getUpdates23_01_00(): array
 			'description' => 'Migrates values in Records Owned table to Records to Include table',
 			'continueOnError' => true,
 			'sql' => [
-				"INSERT INTO library_records_to_include(libraryId, indexingProfileId, markRecordsAsOwned, location, locationsToExclude, sublocation, sublocationsToExclude, weight) 
-					SELECT libraryId, indexingProfileId, 1, location, locationsToExclude, sublocation, sublocationsToExclude, 0 from library_records_owned",
-				"INSERT INTO location_records_to_include(locationId, indexingProfileId, markRecordsAsOwned, location, locationsToExclude, sublocation, sublocationsToExclude, weight) 
-					SELECT locationId, indexingProfileId, 1, location, locationsToExclude, sublocation, sublocationsToExclude, 0 from location_records_owned",
+				"INSERT INTO library_records_to_include(libraryId, indexingProfileId, markRecordsAsOwned, location, locationsToExclude, sublocation, sublocationsToExclude, weight, includeHoldableOnly) 
+					SELECT libraryId, indexingProfileId, 1, location, locationsToExclude, sublocation, sublocationsToExclude, 0, 0 from library_records_owned",
+				"INSERT INTO location_records_to_include(locationId, indexingProfileId, markRecordsAsOwned, location, locationsToExclude, sublocation, sublocationsToExclude, weight, includeHoldableOnly) 
+					SELECT locationId, indexingProfileId, 1, location, locationsToExclude, sublocation, sublocationsToExclude, 0, 0 from location_records_owned",
 				"DROP TABLE library_records_owned",
 				"DROP TABLE location_records_owned",
 
@@ -194,6 +194,15 @@ function getUpdates23_01_00(): array
 			]
 		],
 		//rename_materialreq_usage_locID_column
+		'set_include_holdable_to_zero' => [
+			'title' => 'Change "Include Holdable Only" value',
+			'description' => 'Set "Include Holdable Only" to false in Records to Include for owned records',
+			'sql' => [
+				"UPDATE library_records_to_include SET includeHoldableOnly = 0 WHERE markRecordsAsOwned = 1",
+				"UPDATE location_records_to_include SET includeHoldableOnly = 0 WHERE markRecordsAsOwned = 1",
+			]
+		],
+		//set_include_holdable_to_zero
 		//other
 	];
 }

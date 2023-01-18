@@ -2,17 +2,17 @@ import _ from 'lodash';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import {useFocusEffect} from '@react-navigation/native';
-import * as Notifications from 'expo-notifications';
-
-import {Box, FlatList, HStack, Switch, Text} from 'native-base';
+import {MaterialIcons} from "@expo/vector-icons";
+import * as Linking from 'expo-linking';
+import {Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog} from 'native-base';
 import React from 'react';
 import {SafeAreaView} from 'react-native';
 import {LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {
-     deletePushToken,
+     deletePushToken, DisplayMessage,
      getNotificationPreference,
      registerForPushNotificationsAsync,
-     setNotificationPreference
+     setNotificationPreference,
 } from '../../../components/Notifications';
 import {loadingSpinner} from '../../../components/loadingSpinner';
 import {translate} from '../../../translations/translations';
@@ -20,7 +20,8 @@ import {refreshProfile, reloadProfile} from '../../../util/api/user';
 
 export const Settings_NotificationOptions = () => {
      const [isLoading, setLoading] = React.useState(true);
-     const [allowNotifications, setAllowNotifications] = React.useState(!Constants.isDevice);
+     const [error, showError] = React.useState(false);
+     const [allowNotifications, setAllowNotifications] = React.useState(!Device.isDevice);
      const [notifySavedSearch, setNotifySavedSearch] = React.useState(false);
      const [notifyCustom, setNotifyCustom] = React.useState(false);
      const [notifyAccount, setNotifyAccount] = React.useState(false);
@@ -35,6 +36,9 @@ export const Settings_NotificationOptions = () => {
      const {library} = React.useContext(LibrarySystemContext);
      const [toggled, setToggle] = React.useState(aspenToken);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
+     const [isOpen, setIsOpen] = React.useState(false);
+     const onClose = () => setIsOpen(false);
+     const cancelRef = React.useRef(null);
 
      useFocusEffect(
          React.useCallback(() => {
@@ -56,17 +60,21 @@ export const Settings_NotificationOptions = () => {
      );
 
      const updateAspenToken = async () => {
+          setLoading(true);
           if (!toggled) {
                await registerForPushNotificationsAsync(library.baseUrl).then(async (result) => {
                     if (!result) {
                          setToggle(false);
                          console.log('unable to update preference');
+                         setLoading(false);
+                         setIsOpen(true);
                          return false;
                     } else {
                          await reloadProfile(library.baseUrl).then(async (result) => {
                               updateUser(result);
                               await getPreferences();
                          });
+                         setLoading(false);
                          return true;
                     }
                });
@@ -76,38 +84,42 @@ export const Settings_NotificationOptions = () => {
                     updateUser(result);
                     await getPreferences();
                });
+               setToggle(false);
+               setLoading(false);
                return true;
           }
           return false;
      };
 
      const getPreferences = async () => {
-          const currentPreferences = Object.values(notificationSettings);
-          for await (const pref of currentPreferences) {
-               console.log(pref.option);
-               const i = _.findIndex(currentPreferences, ['option', pref.option]);
-               const deviceSettings = _.filter(notificationSettings, {option: pref.option});
-               const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
-               if (result && i !== -1) {
-                    let prevSettings = notificationSettings[i];
-                    console.log(prevSettings.allow);
-                    if (result.success) {
-                         if (pref.option === 'notifySavedSearch') {
-                              setNotifySavedSearch(result.allow);
-                              _.set(prevSettings, prevSettings.allow, result.allow);
-                              //setPreferences(newSettings);
-                         }
-                         if (pref.option === 'notifyCustom') {
-                              _.set(prevSettings, prevSettings.allow, result.allow);
-                              //setPreferences(newSettings);
-                              setNotifyCustom(result.allow);
-                         }
-                         if (pref.option === 'notifyAccount') {
-                              _.set(prevSettings, prevSettings.allow, result.allow);
-                              //setPreferences(newSettings);
-                              setNotifyAccount(result.allow);
-                         }
+          if(_.isObject(notificationSettings)) {
+               const currentPreferences = Object.values(notificationSettings);
+               for await (const pref of currentPreferences) {
+                    console.log(pref.option);
+                    const i = _.findIndex(currentPreferences, ['option', pref.option]);
+                    const deviceSettings = _.filter(notificationSettings, {option: pref.option});
+                    const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
+                    if (result && i !== -1) {
+                         let prevSettings = notificationSettings[i];
                          console.log(prevSettings.allow);
+                         if (result.success) {
+                              if (pref.option === 'notifySavedSearch') {
+                                   setNotifySavedSearch(result.allow);
+                                   _.set(prevSettings, prevSettings.allow, result.allow);
+                                   //setPreferences(newSettings);
+                              }
+                              if (pref.option === 'notifyCustom') {
+                                   _.set(prevSettings, prevSettings.allow, result.allow);
+                                   //setPreferences(newSettings);
+                                   setNotifyCustom(result.allow);
+                              }
+                              if (pref.option === 'notifyAccount') {
+                                   _.set(prevSettings, prevSettings.allow, result.allow);
+                                   //setPreferences(newSettings);
+                                   setNotifyAccount(result.allow);
+                              }
+                              console.log(prevSettings.allow);
+                         }
                     }
                }
           }
@@ -131,7 +143,7 @@ export const Settings_NotificationOptions = () => {
                             isDisabled={allowNotifications}
                         />
                    </HStack>
-                   {toggled ? <FlatList data={Object.keys(notificationSettings)}
+                   {toggled && !error ? <FlatList data={Object.keys(notificationSettings)}
                                         renderItem={({item}) => <DisplayPreference data={notificationSettings[item]}
                                                                                    notifySavedSearch={notifySavedSearch}
                                                                                    setNotifySavedSearch={setNotifySavedSearch}
@@ -140,6 +152,28 @@ export const Settings_NotificationOptions = () => {
                                                                                    notifyAccount={notifyAccount}
                                                                                    setNotifyAccount={setNotifyAccount}/>}
                                         keyExtractor={(item, index) => index.toString()}/> : null}
+                   <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                        <AlertDialog.Content>
+                             <AlertDialog.CloseButton />
+                             <AlertDialog.Header>Notifications Disabled</AlertDialog.Header>
+                             <AlertDialog.Body>
+                                  Please visit Settings and turn on app notifications.
+                             </AlertDialog.Body>
+                             <AlertDialog.Footer>
+                                  <Button.Group space={2}>
+                                       <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
+                                            Cancel
+                                       </Button>
+                                       <Button colorScheme="danger" onPress={() => {
+                                            onClose();
+                                            Linking.openSettings();
+                                       }}>
+                                            Change Settings
+                                       </Button>
+                                  </Button.Group>
+                             </AlertDialog.Footer>
+                        </AlertDialog.Content>
+                   </AlertDialog>
               </Box>
          </SafeAreaView>
      );

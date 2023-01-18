@@ -48,7 +48,8 @@
     "saving": "Saving...",
     "edit": "Edit",
     "adding": "Adding...",
-    "removing": "Removing..."
+    "removing": "Removing...",
+    "sort_by": "Sort By {{sort}}"
   },
   "login": {
     "select_your_library": "Select Your Library",
@@ -191,7 +192,11 @@
     "manage_all": "Manage All",
     "manage_selected": "Managed Selected ({{num}})",
     "clear_selections": "Clear Selections",
-    "reload_holds": "Reload Holds"
+    "reload_holds": "Reload Holds",
+    "pending_holds": "Pending Holds",
+    "pending_holds_message": "These titles are currently checked out to other patrons. We will notify you when a title is available.",
+    "holds_ready_for_pickup": "Holds Ready for Pickup",
+    "holds_ready_for_pickup_message": "These titles have arrived at the library or are available online for you to use."
   },
   "lists": {
     "title": "Lists",
