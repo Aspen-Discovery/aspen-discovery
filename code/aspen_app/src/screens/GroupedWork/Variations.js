@@ -147,21 +147,25 @@ const PlaceHold = (props) => {
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
      const handleNavigation = (action) => {
-          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyHolds', {});
                }
           } else {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigate('MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigate('MyHolds', {});
                }
           }
      };
-     if (volumeInfo.majorityOfItemsHaveVolumes || volumeInfo.numItemsWithVolumes >= 1) {
+     if (volumeInfo.numItemsWithVolumes >= 1) {
           return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
      } else if (_.size(accounts) > 0) {
           return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} />;
@@ -223,7 +227,7 @@ const PlaceHold = (props) => {
 const CheckedOutToYou = (props) => {
      console.log(props);
      const handleNavigation = () => {
-          if (props.prevRoute === 'Discovery' || props.prevRoute === 'SearchResults') {
+          if (props.prevRoute === 'DiscoveryScreen' || props.prevRoute === 'SearchResults') {
                navigateStack('AccountScreenTab', 'MyCheckouts', {});
           } else {
                navigate('MyCheckouts', {});
@@ -251,7 +255,7 @@ const CheckedOutToYou = (props) => {
 
 const OnHoldForYou = (props) => {
      const handleNavigation = () => {
-          if (props.prevRoute === 'Discovery' || props.prevRoute === 'SearchResults') {
+          if (props.prevRoute === 'DiscoveryScreen' || props.prevRoute === 'SearchResults') {
                navigateStack('AccountScreenTab', 'MyHolds', {});
           } else {
                navigate('MyHolds', {});
@@ -374,7 +378,7 @@ const CheckOut = (props) => {
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
      const handleNavigation = (action) => {
-          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
                if (action.includes('Checkouts')) {
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
                } else {

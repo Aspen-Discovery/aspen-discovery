@@ -51,7 +51,7 @@ const BrowseStackNavigator = () => {
                          options={({ route }) => ({
                               title: route.params.title ?? translate('grouped_work.title'),
                          })}
-                         initialParams={{ prevRoute: 'Discovery' }}
+                         initialParams={{ prevRoute: 'DiscoveryScreen' }}
                     />
                     <Stack.Screen
                          name="CopyDetails"
