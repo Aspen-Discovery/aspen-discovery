@@ -593,7 +593,14 @@ abstract class SearchObject_BaseSearcher {
 					$searchTerm = $tempSearchInfo[1];
 				} else {
 					$validFields = $this->loadValidFields();
+					if (is_null($validFields)) {
+						$validFields = [];
+					}
 					$dynamicFields = $this->loadDynamicFields();
+					if (is_null($dynamicFields)) {
+						$dynamicFields = [];
+					}
+
 					if (!in_array($tempSearchInfo[0], $validFields) && !in_array($tempSearchInfo[0], $dynamicFields) || array_key_exists($tempSearchInfo[0], $this->advancedTypes)) {
 						$searchTerm = str_replace(':', ' ', $searchTerm);
 					} else {

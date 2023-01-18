@@ -3,7 +3,7 @@
 		<div class="facetValue">
 			<label for="{$title}_{$thisFacet.value|escapeCSS}">
 				<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
-				{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+				{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 			</label>
 		</div>
 	{/foreach}
@@ -20,7 +20,7 @@
 							<label>
 							<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}'>
 								&nbsp;
-								{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+								{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 							</label>
 						</div>
 						{/strip}
@@ -41,7 +41,7 @@
 		<div class="facetValue">
 			<label for="{$title}_{$thisFacet.value|escapeCSS}">
 				<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';" onkeypress="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
-				{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if $thisFacet.count != ''}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+				{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
 			</label>
 		</div>
 	{/foreach}
