@@ -128,7 +128,7 @@ const app_config = {
      },
      extra: {
           apiUrl: app['discoveryUrl'],
-          greenhouse: owner['greenhouseUrl'],
+          greenhouseUrl: owner['greenhouseUrl'],
           loginLogo: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appLogin&slug=' + app['slug'],
           libraryCardLogo: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=logoApp&slug=' + app['slug'],
           backgroundColor: app['background'],
