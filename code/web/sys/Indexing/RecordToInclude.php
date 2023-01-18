@@ -208,7 +208,7 @@ class RecordToInclude extends DataObject {
 				'forcesReindex' => true,
 			],
 			'collectionCodesToExclude' => [
-				'property' => 'shelfLocationsToExclude',
+				'property' => 'collectionCodesToExclude',
 				'type' => 'regularExpression',
 				'label' => 'Collection Codes to Exclude (Regex)',
 				'description' => 'A regular expression for collection codes to exclude',

@@ -1436,9 +1436,11 @@ class Sierra extends Millennium {
 				$user->_city = $line2;
 			}
 		}
-		$primaryPhone = reset($patronInfo->phones);
-		if (!empty($primaryPhone)) {
-			$user->phone = $primaryPhone->number;
+		if (!empty($patronInfo->phones)) {
+			$primaryPhone = reset($patronInfo->phones);
+			if (!empty($primaryPhone)) {
+				$user->phone = $primaryPhone->number;
+			}
 		}
 		if (!empty($patronInfo->emails)) {
 			$user->email = reset($patronInfo->emails);

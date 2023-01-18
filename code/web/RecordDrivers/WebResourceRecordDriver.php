@@ -11,11 +11,18 @@ class WebResourceRecordDriver extends IndexRecordDriver {
 			parent::__construct($recordData);
 			$this->valid = true;
 		} else {
+			disableErrorHandler();
 			require_once ROOT_DIR . '/sys/SearchObject/WebsitesSearcher.php';
 			$searchObject = new SearchObject_WebsitesSearcher();
 			$recordData = $searchObject->getRecord($recordData);
-			parent::__construct($recordData);
-			$this->valid = true;
+			enableErrorHandler();
+			if (empty($recordData)) {
+				parent::__construct($recordData);
+				$this->valid = false;
+			} else {
+				parent::__construct($recordData);
+				$this->valid = true;
+			}
 		}
 		$this->recordtype = $this->fields['recordtype'];
 	}

@@ -15,7 +15,6 @@ import React from 'react';
 import { enableScreens } from 'react-native-screens';
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
-import checkVersion from 'react-native-store-version';
 
 import Login from '../screens/Auth/Login';
 import { translate } from '../translations/translations';

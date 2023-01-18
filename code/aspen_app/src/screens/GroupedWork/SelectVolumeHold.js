@@ -59,16 +59,20 @@ const SelectVolumeHold = (props) => {
      const [location, setLocation] = React.useState(pickupLocation);
 
      const handleNavigation = (action) => {
-          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyHolds', {});
                }
           } else {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigate('MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigate('MyHolds', {});
                }
           }

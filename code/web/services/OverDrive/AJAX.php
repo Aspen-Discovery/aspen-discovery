@@ -29,10 +29,10 @@ class OverDrive_AJAX extends JSON_Action {
 	function placeHold() {
 		global $logger;
 		$logger->log("Starting OverDrive/placeHold session: " . session_id(), Logger::LOG_DEBUG);
-		$user = UserAccount::getLoggedInUser();
 
 		$overDriveId = $_REQUEST['overDriveId'];
-		if ($user) {
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getLoggedInUser();
 			$logger->log("User is logged in {$user->id}", Logger::LOG_ERROR);
 			$patronId = $_REQUEST['patronId'];
 			$patron = $user->getUserReferredTo($patronId);
@@ -272,42 +272,56 @@ class OverDrive_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function getCheckOutPrompts() {
-		$user = UserAccount::getLoggedInUser();
-		global $interface;
-		$id = $_REQUEST['id'];
-		$interface->assign('overDriveId', $id);
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getLoggedInUser();
+			global $interface;
+			$id = $_REQUEST['id'];
+			$interface->assign('overDriveId', $id);
 
-		$overDriveUsers = $user->getRelatedEcontentUsers('overdrive');
-		$interface->assign('overDriveUsers', $overDriveUsers);
+			$overDriveUsers = $user->getRelatedEcontentUsers('overdrive');
+			$interface->assign('overDriveUsers', $overDriveUsers);
 
-		if (count($overDriveUsers) > 1) {
-			$promptTitle = 'OverDrive Checkout Options';
+			if (count($overDriveUsers) > 1) {
+				$promptTitle = 'OverDrive Checkout Options';
+				return [
+					'promptNeeded' => true,
+					'promptTitle' => $promptTitle,
+					'prompts' => $interface->fetch('OverDrive/ajax-checkout-prompt.tpl'),
+					'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.OverDrive.processOverDriveCheckoutPrompts();">',
+				];
+			} elseif (count($overDriveUsers) == 1) {
+				return [
+					'patronId' => reset($overDriveUsers)->id,
+					'promptNeeded' => false,
+				];
+			} else {
+				// No Overdrive Account Found, give the user an error message
+				global $logger;
+				$logger->log('No valid Overdrive account was found to check out an Overdrive title.', Logger::LOG_ERROR);
+				return [
+					'promptNeeded' => true,
+					'promptTitle' => 'Error',
+					'prompts' => translate([
+						'text' => 'Your account is not valid for OverDrive, please contact your local library.',
+						'isPublicFacing' => true,
+					]),
+					'buttons' => '',
+				];
+			}
+		}else {
 			return [
 				'promptNeeded' => true,
-				'promptTitle' => $promptTitle,
-				'prompts' => $interface->fetch('OverDrive/ajax-checkout-prompt.tpl'),
-				'buttons' => '<input class="btn btn-primary" type="submit" name="submit" value="Checkout Title" onclick="return AspenDiscovery.OverDrive.processOverDriveCheckoutPrompts();">',
-			];
-		} elseif (count($overDriveUsers) == 1) {
-			return [
-				'patronId' => reset($overDriveUsers)->id,
-				'promptNeeded' => false,
-			];
-		} else {
-			// No Overdrive Account Found, give the user an error message
-			global $logger;
-			$logger->log('No valid Overdrive account was found to check out an Overdrive title.', Logger::LOG_ERROR);
-			return [
-				'promptNeeded' => true,
-				'promptTitle' => 'Error',
+				'promptTitle' => translate([
+					'text' => 'Error.',
+					'isPublicFacing' => true,
+				]),
 				'prompts' => translate([
-					'text' => 'Your account is not valid for OverDrive, please contact your local library.',
+					'text' => 'Your session has expired. Please login again to checkout this title.',
 					'isPublicFacing' => true,
 				]),
 				'buttons' => '',
 			];
 		}
-
 	}
 
 	function cancelHold(): array {

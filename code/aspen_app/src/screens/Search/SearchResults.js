@@ -29,6 +29,8 @@ export const SearchResults = () => {
      let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
 
+     console.log(term);
+
      const params = useRoute().params.pendingParams ?? [];
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params], () => fetchSearchResults(term, page, scope, url), {
@@ -63,40 +65,44 @@ export const SearchResults = () => {
      };
 
      const Paging = () => {
-          return (
-               <Box
-                    safeArea={2}
-                    bgColor="coolGray.100"
-                    borderTopWidth="1"
-                    _dark={{
-                         borderColor: 'gray.600',
-                         bg: 'coolGray.700',
-                    }}
-                    borderColor="coolGray.200"
-                    flexWrap="nowrap"
-                    alignItems="center">
-                    <ScrollView horizontal>
-                         <Button.Group size="sm">
-                              <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                                   {translate('general.previous')}
-                              </Button>
-                              <Button
-                                   onPress={() => {
-                                        if (!isPreviousData && data?.hasMore) {
-                                             console.log('Adding to page');
-                                             setPage(page + 1);
-                                        }
-                                   }}
-                                   isDisabled={isPreviousData || !data?.hasMore}>
-                                   {translate('general.next')}
-                              </Button>
-                         </Button.Group>
-                    </ScrollView>
-                    <Text mt={2} fontSize="sm">
-                         Page {page} of {data?.totalPages}
-                    </Text>
-               </Box>
-          );
+          if(data.totalPages > 1) {
+               return (
+                   <Box
+                       safeArea={2}
+                       bgColor="coolGray.100"
+                       borderTopWidth="1"
+                       _dark={{
+                            borderColor: 'gray.600',
+                            bg: 'coolGray.700',
+                       }}
+                       borderColor="coolGray.200"
+                       flexWrap="nowrap"
+                       alignItems="center">
+                        <ScrollView horizontal>
+                             <Button.Group size="sm">
+                                  <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
+                                       {translate('general.previous')}
+                                  </Button>
+                                  <Button
+                                      onPress={() => {
+                                           if (!isPreviousData && data.hasMore) {
+                                                console.log('Adding to page');
+                                                setPage(page + 1);
+                                           }
+                                      }}
+                                      isDisabled={isPreviousData || !data.hasMore}>
+                                       {translate('general.next')}
+                                  </Button>
+                             </Button.Group>
+                        </ScrollView>
+                        <Text mt={2} fontSize="sm">
+                             Page {page} of {data?.totalPages}
+                        </Text>
+                   </Box>
+               );
+          }
+          
+          return null;
      };
 
      const NoResults = () => {
@@ -353,6 +359,8 @@ async function fetchSearchResults(term, page, scope, url) {
      let morePages = true;
      if (data.result?.page_current === data.result?.page_total) {
           morePages = false;
+     } else if (data.result?.page_total === 1) {
+          morePages= false;
      }
 
      SEARCH.id = data.result.id;
