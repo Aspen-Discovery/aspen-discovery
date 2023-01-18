@@ -229,7 +229,7 @@ BODY;
 	protected function startQueryTimer() {
 		// Get time before the query
 		$time = explode(" ", microtime());
-		$this->queryStartTime = $time[1] + $time[0];
+		$this->queryStartTime = $time[1] . $time[0];
 	}
 
 	/**
@@ -240,7 +240,7 @@ BODY;
 	 */
 	protected function stopQueryTimer() {
 		$time = explode(" ", microtime());
-		$this->queryEndTime = $time[1] + $time[0];
+		$this->queryEndTime = $time[1] . $time[0];
 		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
 	}
 

@@ -21,7 +21,7 @@
 				{foreach from=$sideFacetSet item=cluster key=title name=facetSet}
 					{if count($cluster.list) > 0}
 						<div class="facetList">
-							<div class="facetTitle panel-title {if !empty($cluster.collapseByDefault) && !$cluster.hasApplied}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" onkeypress="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" tabindex="0" role="group">
+							<div class="facetTitle panel-title {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}collapsed{else}expanded{/if}" onclick="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" onkeypress="$(this).toggleClass('expanded');$(this).toggleClass('collapsed');$('#facetDetails_{$title}').toggle()" tabindex="0" role="group">
 								{translate text=$cluster.label isPublicFacing=true}
 
 								{if !empty($cluster.canLock)}
@@ -32,7 +32,7 @@
 								{/if}
 
 							</div>
-							<div id="facetDetails_{$title}" class="facetDetails" {if !empty($cluster.collapseByDefault) && !$cluster.hasApplied}style="display:none"{/if}>
+							<div id="facetDetails_{$title}" class="facetDetails" {if !empty($cluster.collapseByDefault) && empty($cluster.hasApplied)}style="display:none"{/if}>
 
 								{if $title == 'publishDate' || $title == 'birthYear' || $title == 'deathYear' || $title == 'publishDateSort'}
 									{include file="Search/Recommend/yearFacetFilter.tpl" cluster=$cluster title=$title}
