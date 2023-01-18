@@ -20,5 +20,12 @@ function getUpdates23_01_01(): array {
 			],
 		],
 		//update_api_usage_uniqueness
+		'externalRequestsRequestMethodLength' => [
+			'title' => 'External Requests Request Method Length',
+			'description' => 'Increase the length of the request method column',
+			'sql' => [
+				'ALTER TABLE external_request_log CHANGE COLUMN requestMethod requestMethod VARCHAR(10)',
+			],
+		],
 	];
 }

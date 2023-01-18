@@ -784,11 +784,19 @@ abstract class SearchObject_BaseSearcher {
 					} else {
 						//TODO: This needs to create multiple groups for the search.
 						preg_match_all('~((\w+?):("?.+?"?)(AND|OR|\)|$))~', $_REQUEST['lookfor'], $matches, PREG_SET_ORDER);
-						foreach ($matches as $match) {
+						if (!empty($matches)) {
+							foreach ($matches as $match) {
+								$group[] = [
+									'field' => $match[2],
+									'lookfor' => str_replace(':', ' ', $match[3]),
+									'bool' => ($match[4] == ')') ? 'AND' : $match[4],
+								];
+							}
+						}else{
 							$group[] = [
-								'field' => $match[2],
-								'lookfor' => str_replace(':', ' ', $match[3]),
-								'bool' => ($match[4] == ')') ? 'AND' : $match[4],
+								'field' => $this->getDefaultIndex(),
+								'lookfor' => str_replace(':', ' ', $_REQUEST['lookfor']),
+								'bool' => 'AND',
 							];
 						}
 						$this->searchTerms[] = [
