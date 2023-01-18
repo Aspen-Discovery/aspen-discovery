@@ -5,6 +5,7 @@ import * as Notifications from 'expo-notifications';
 import { useNavigation, useFocusEffect, useLinkTo } from '@react-navigation/native';
 import { Center, Heading, Spinner, VStack } from 'native-base';
 import _ from 'lodash';
+import { checkVersion } from "react-native-check-version";
 import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { formatBrowseCategories, LIBRARY } from '../../util/loadLibrary';
 import { GLOBALS } from '../../util/globals';
@@ -12,6 +13,7 @@ import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBrowseCategoryListForUser } from '../../util/loadPatron';
 import { ForceLogout } from './ForceLogout';
+import {UpdateAvailable} from './UpdateAvailable';
 
 const prefix = Linking.createURL('/');
 
@@ -31,6 +33,9 @@ export const LoadingScreen = () => {
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
      const [loading, setLoading] = React.useState(true);
      const [hasError, setHasError] = React.useState(false);
+     const [hasUpdate, setHasUpdate] = React.useState(false);
+     const [appStoreUrl, setAppStoreUrl] = React.useState('');
+     const [latestVersion, setLatestVersion] = React.useState('');
      const { user, updateUser } = React.useContext(UserContext);
      const { library, updateLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
@@ -39,9 +44,7 @@ export const LoadingScreen = () => {
 
      React.useEffect(() => {
           const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-               console.log("responseListener.current > " + response);
                const url = response?.notification?.request?.content?.data?.url ?? prefix;
-               console.log("responseListener.current > " + url);
                if(url !== incomingUrl) {
                     console.log("Incoming url changed");
                     console.log("OLD > " + incomingUrl);
@@ -70,14 +73,12 @@ export const LoadingScreen = () => {
                          });
                          await reloadUserProfile().then((result) => {
                               if (_.isUndefined(result) || _.isEmpty(result)) {
-                                   console.log(result);
                                    setHasError(true);
                               }
                               updateUser(result);
                          });
                          await reloadLibrarySystem().then((result) => {
                               updateLibrary(result);
-                              //this would be the earliest we could trigger an update alert based on Discovery version
                          });
                          await reloadLibraryBranch().then((result) => {
                               updateLocation(result);
@@ -88,6 +89,14 @@ export const LoadingScreen = () => {
 
                          await AsyncStorage.getItem('@solrScope').then((result) => {
                               updateScope(result);
+                         });
+
+                         await checkStoreVersion().then((result) => {
+                              setLatestVersion(result.latest);
+                              setHasUpdate(result.needsUpdate);
+                              if(result.needsUpdate) {
+                                   setAppStoreUrl(result.url);
+                              }
                          });
                          setLoading(false);
                     };
@@ -100,6 +109,10 @@ export const LoadingScreen = () => {
 
      if (hasError) {
           return <ForceLogout />;
+     }
+
+     if(hasUpdate) {
+          return <UpdateAvailable url={appStoreUrl} latest={latestVersion} setHasUpdate={setHasUpdate} />;
      }
 
      if (!loading) {
@@ -305,6 +318,30 @@ async function reloadPatronBrowseCategories(maxNum) {
           }
      }
      return [];
+}
+
+async function checkStoreVersion() {
+     try {
+          const version = await checkVersion({
+               bundleId: GLOBALS.bundleId,
+               currentVersion: GLOBALS.appVersion
+          });
+          if(version.needsUpdate) {
+               return {
+                    needsUpdate: true,
+                    url: version.url,
+                    latest: version.version,
+               }
+          }
+     } catch (e) {
+          console.log(e);
+     }
+
+     return {
+          needsUpdate: false,
+          url: null,
+          latest: GLOBALS.appVersion
+     }
 }
 
 export default LoadingScreen;

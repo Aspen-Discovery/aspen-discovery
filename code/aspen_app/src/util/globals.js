@@ -5,6 +5,8 @@ import { Platform } from 'react-native';
 
 const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest.ios.buildNumber;
 const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest.android.versionCode;
+const iOSBundle = Constants.manifest2?.extra?.expoClient?.ios?.bundleIdentifier ?? Constants.manifest.ios.bundleIdentifier;
+const androidBundle = Constants.manifest2?.extra?.expoClient?.android?.package ?? Constants.manifest.android.package;
 const releaseChannel = Updates.channel ?? Updates.releaseChannel;
 
 export const GLOBALS = {
@@ -21,6 +23,7 @@ export const GLOBALS = {
      url: Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl,
      releaseChannel: __DEV__ ? 'DEV' : releaseChannel,
      language: 'en',
+     country: 'us',
      lastSeen: null,
      prevLaunched: false,
      pendingSearchFilters: [],
@@ -29,6 +32,8 @@ export const GLOBALS = {
      solrScope: 'unknown',
      libraryId: Constants.manifest2?.extra?.expoClient?.extra?.libraryId ?? Constants.manifest.extra.libraryId,
      themeId: Constants?.manifest2?.extra?.expoClient?.extra?.themeId ?? Constants.manifest.extra.themeId,
+     bundleId: Platform.OS === 'android' ? androidBundle : iOSBundle,
+     greenhouse: Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl,
 };
 
 export const LOGIN_DATA = {
