@@ -96,7 +96,11 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 	public function getTitle() {
 		//if episode or subtitle data, match what is displayed in search results
 		if (!empty($this->hooplaRawMetadata->episode)) {
-			return $this->hooplaRawMetadata->titleTitle . ': ' . $this->hooplaExtract->title;
+			if (!empty($this->hooplaRawMetadata->titleTitle)) {
+				return $this->hooplaRawMetadata->titleTitle . ': ' . $this->hooplaExtract->title;
+			} else {
+				return $this->hooplaExtract->title;
+			}
 		} elseif (!empty($this->hooplaRawMetadata->subtitle)) {
 			return $this->hooplaExtract->title . ': ' . $this->hooplaRawMetadata->subtitle;
 		} else {
