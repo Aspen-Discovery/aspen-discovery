@@ -8945,7 +8945,7 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Admin.toggleSamlFields('hide');
 			AspenDiscovery.Admin.toggleOAuthGatewayFields();
 			AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-
+			$("#clientSecret").attr('autocomplete', "off");
 			var ssoService = $("#serviceSelect").val();
 			if (ssoService === "oauth") {
 				AspenDiscovery.Admin.toggleoAuthFields('show');
@@ -8997,6 +8997,7 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowoAuthButtonBackgroundColor').hide();
 				$('#propertyRowoAuthButtonTextColor').hide();
 				$('#propertyRowdataMapping').hide();
+				document.getElementById("clientSecret").value = "";
 			}
 		},
 		toggleSamlFields: function (displayMode) {
