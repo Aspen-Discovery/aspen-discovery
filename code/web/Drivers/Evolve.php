@@ -36,7 +36,7 @@ class Evolve extends AbstractIlsDriver {
 		$checkedOutTitles = [];
 
 		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-		if ($sessionInfo['userValid']) {
+		if (is_array($sessionInfo) && $sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnLoan=YES';
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
 			ExternalRequestLogEntry::logRequest('evolve.getCheckouts', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -74,8 +74,9 @@ class Evolve extends AbstractIlsDriver {
 					$checkedOutTitles[$sortKey] = $curCheckout;
 				}
 			}
+		} else {
+			//We could not login, return no checkouts
 		}
-
 
 		return $checkedOutTitles;
 	}
@@ -455,7 +456,7 @@ class Evolve extends AbstractIlsDriver {
 		];
 
 		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
-		if ($sessionInfo['userValid']) {
+		if (is_array($sessionInfo) && $sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnReserve=YES';
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
 			ExternalRequestLogEntry::logRequest('evolve.getHolds', 'GET', $this->getWebServiceURL() . $evolveUrl, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -513,6 +514,8 @@ class Evolve extends AbstractIlsDriver {
 					}
 				}
 			}
+		} else {
+			//We could not login, return no holds
 		}
 		return $holds;
 	}
