@@ -516,6 +516,7 @@ class WebBuilder_AJAX extends JSON_Action {
 						$portalRow->insert();
 						global $interface;
 						$interface->assign('portalRow', $portalRow);
+						$interface->assign('inPageEditor', true);
 
 						$result['success'] = true;
 						$result['message'] = 'Added a new row';
@@ -570,6 +571,7 @@ class WebBuilder_AJAX extends JSON_Action {
 
 						$result['success'] = true;
 						$result['message'] = 'Added a new cell';
+						$interface->assign('inPageEditor', true);
 						$result['newCell'] = $interface->fetch('DataObjectUtil/portalCell.tpl');
 						$result['newRow'] = $interface->fetch('DataObjectUtil/portalRow.tpl');
 					} else {
