@@ -59,16 +59,15 @@ const DisplayManifestation = (payload) => {
      const format = payload.format;
      const manifestationQuery = queryClient.getQueryData(['manifestation', id, format, library.baseUrl]);
      const relatedManifestation = manifestationQuery.manifestation;
-     console.log(relatedManifestation);
 
      const details = {
           id: 0,
           totalCopies: 1,
           availableCopies: 1,
-          shelfLocation: 'sme place',
-          callNumber: 'some number',
+          shelfLocation: '',
+          callNumber: '',
      };
-     console.log(actions);
+
      return (
          <Center
              mt={5}
