@@ -51,7 +51,7 @@
 					{/if}
 				{else}
 					{if $linkSetting == 3}
-						<p>{translate text="Account Linking is Not Available." isPublicFacing=true}</p>
+						<p>{translate text="Account linking is not available for your library card. Please contact your library if you have any questions." isPublicFacing=true}</p>
 					{else}
 						<p>{translate text="You currently have account linking disabled." isPublicFacing=true}</p>
 						<button class="btn btn-sm btn-primary" onclick="AspenDiscovery.Account.disableAccountLinkingPopup()">{translate text="Enable Account Linking" isPublicFacing=true}</button>
