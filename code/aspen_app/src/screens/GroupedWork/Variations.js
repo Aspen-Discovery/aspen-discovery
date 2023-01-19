@@ -15,7 +15,7 @@ import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { getStatusIndicator } from './StatusIndicator';
 import { completeAction } from './Record';
 import { openSideLoad } from '../../util/recordActions';
-import { reloadProfile } from '../../util/api/user';
+import {refreshProfile, reloadProfile} from '../../util/api/user';
 import SelectVolumeHold from './SelectVolumeHold';
 import SelectLinkedAccount from './SelectLinkedAccount';
 import SelectPickupLocation from './SelectPickupLocation';
@@ -193,7 +193,7 @@ const PlaceHold = (props) => {
                               await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (ilsResponse) => {
                                    setResponse(ilsResponse);
                                    if (ilsResponse.success) {
-                                        await reloadProfile(library.baseUrl).then((result) => {
+                                        await refreshProfile(library.baseUrl).then((result) => {
                                              updateUser(result);
                                         });
                                    }
@@ -225,7 +225,6 @@ const PlaceHold = (props) => {
 };
 
 const CheckedOutToYou = (props) => {
-     console.log(props);
      const handleNavigation = () => {
           if (props.prevRoute === 'DiscoveryScreen' || props.prevRoute === 'SearchResults') {
                navigateStack('AccountScreenTab', 'MyCheckouts', {});
@@ -369,6 +368,7 @@ const OpenSideLoad = (props) => {
 
 const CheckOut = (props) => {
      const { id, title, type, record, prevRoute } = props;
+     console.log(props);
      const { user, updateUser, accounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
@@ -424,7 +424,7 @@ const CheckOut = (props) => {
                             await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (eContentResponse) => {
                                  setResponse(eContentResponse);
                                  if (eContentResponse.success) {
-                                      await reloadProfile(library.baseUrl).then((result) => {
+                                      await refreshProfile(library.baseUrl).then((result) => {
                                            updateUser(result);
                                       });
                                  }

@@ -16,7 +16,7 @@ import SelectVolumeHold from './SelectVolumeHold';
 import SelectLinkedAccount from './SelectLinkedAccount';
 import SelectPickupLocation from './SelectPickupLocation';
 import { completeAction } from './Record';
-import { reloadProfile } from '../../util/api/user';
+import {refreshProfile, reloadProfile} from '../../util/api/user';
 import { openSideLoad } from '../../util/recordActions';
 import {getStatusIndicator} from './StatusIndicator';
 
@@ -174,7 +174,7 @@ const PlaceHold = (props) => {
                               await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (ilsResponse) => {
                                    setResponse(ilsResponse);
                                    if (ilsResponse.success) {
-                                        await reloadProfile(library.baseUrl).then((result) => {
+                                        await refreshProfile(library.baseUrl).then((result) => {
                                              updateUser(result);
                                         });
                                    }
@@ -410,7 +410,7 @@ const CheckOut = (props) => {
                             await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (eContentResponse) => {
                                  setResponse(eContentResponse);
                                  if (eContentResponse.success) {
-                                      await reloadProfile(library.baseUrl).then((result) => {
+                                      await refreshProfile(library.baseUrl).then((result) => {
                                            updateUser(result);
                                       });
                                  }
