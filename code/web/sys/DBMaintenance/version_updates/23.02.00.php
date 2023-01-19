@@ -74,6 +74,27 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_build_tracker_slack_alert
+		'add_staff_ptype_to_sso_settings' => [
+			'title' => 'Add Staff Patron Type to SSO Settings',
+			'description' => 'Adds field to assign staff users a different patron type than self-registered users',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN staffPType VARCHAR(30) default NULL',
+			]
+		],
+		//add_staff_ptype_to_sso_setting
+		'add_saml_options_to_sso_settings' => [
+			'title' => 'Add Additional SAML options to SSO Settings',
+			'description' => 'Adds fields to customize SAML login button',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN samlMetadataOption VARCHAR(30)',
+				'ALTER TABLE sso_setting ADD COLUMN samlBtnIcon VARCHAR(255)',
+				'ALTER TABLE sso_setting ADD COLUMN samlBtnBgColor CHAR(7) DEFAULT "#de1f0b"',
+				'ALTER TABLE sso_setting ADD COLUMN samlBtnTextColor CHAR(7) DEFAULT "#ffffff"'
+			]
+		],
+		//add_saml_options_to_sso_settings
 
 		//kodi
 

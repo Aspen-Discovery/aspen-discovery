@@ -8,6 +8,7 @@ class SSOSetting extends DataObject {
 	public $name;
 	public $service;
 	public $staffOnly;
+	public $staffPType;
 
 	//oAuth
 	public $clientId;
@@ -49,6 +50,10 @@ class SSOSetting extends DataObject {
 	public $ssoLibraryIdFallback;
 	public $ssoCategoryIdAttr;
 	public $ssoCategoryIdFallback;
+	public $samlMetadataOption;
+	public $samlBtnIcon;
+	public $samlBtnBgColor;
+	public $samlBtnTextColor;
 
 	public $loginHelpText;
 	public $loginOptions;
@@ -59,6 +64,7 @@ class SSOSetting extends DataObject {
 	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 		$fieldMapping = SSOMapping::getObjectStructure($context);
+		$ptypeList = PType::getPatronTypeList(true);
 
 		$services = [
 			'0' => '',
@@ -133,6 +139,15 @@ class SSOSetting extends DataObject {
 				'description' => 'Whether or not only staff should be able to use single sign-on',
 				'note' => 'This hides the single sign-on option from the patron-facing login screens',
 			],
+			'staffPType' => [
+				'property' => 'staffPType',
+				'type' => 'enum',
+				'label' => 'Default patron type for staff users',
+				'values' => $ptypeList,
+				'description' => 'Assign staff users a different patron type than the self-registered patron type',
+				'note' => 'Only needed if different than a self-registered patron',
+				'hideInLists' => true,
+			],
 			'oAuthGateway' => [
 				'property' => 'oAuthGateway',
 				'type' => 'enum',
@@ -152,8 +167,9 @@ class SSOSetting extends DataObject {
 			],
 			'clientSecret' => [
 				'property' => 'clientSecret',
-				'type' => 'storedPassword',
+				'type' => 'text',
 				'label' => 'Client Secret',
+				'required' => false,
 				'description' => 'Client secret used for accessing the gateway provider',
 				'hideInLists' => true,
 			],
@@ -244,6 +260,28 @@ class SSOSetting extends DataObject {
 				'label' => 'SAML Service Label',
 				'description' => 'The name to be displayed when referring to the authentication service',
 				'size' => '512',
+				'hideInLists' => true,
+			],
+			'samlBtnIcon' => [
+				'property' => 'samlBtnIcon',
+				'type' => 'image',
+				'label' => 'Login Button Icon',
+				'description' => 'An icon representing the SAML service',
+				'hideInLists' => true,
+				'thumbWidth' => 32,
+			],
+			'samlBtnBgColor' => [
+				'property' => 'samlBtnBgColor',
+				'type' => 'text',
+				'label' => 'Login Button Background Color',
+				'description' => 'Background color for SAML service login button',
+				'hideInLists' => true,
+			],
+			'samlBtnTextColor' => [
+				'property' => 'samlBtnTextColor',
+				'type' => 'text',
+				'label' => 'Login Button Text Color',
+				'description' => 'Text color for SAML service login button',
 				'hideInLists' => true,
 			],
 			'samlMetadataOption' => [
@@ -424,7 +462,6 @@ class SSOSetting extends DataObject {
 					],
 				]
 			],
-
 			'ssoLibraryIdSection' => [
 				'property' => 'ssoLibraryIdSection',
 				'type' => 'section',
@@ -451,7 +488,6 @@ class SSOSetting extends DataObject {
 					],
 				],
 			],
-
 			'dataMapping' => [
 				'property' => 'dataMapping',
 				'type' => 'oneToMany',
@@ -469,7 +505,6 @@ class SSOSetting extends DataObject {
 				'canAddNew' => true,
 				'canDelete' => true,
 			],
-
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',

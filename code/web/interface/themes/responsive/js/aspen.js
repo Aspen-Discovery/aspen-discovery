@@ -9003,6 +9003,9 @@ AspenDiscovery.Admin = (function () {
 			if (displayMode === "show") {
 				$('#propertyRowssoName').show();
 				$('#propertyRowsamlMetadataOption').show();
+				$('#propertyRowsamlBtnIcon').show();
+				$('#propertyRowsamlBtnBgColor').show();
+				$('#propertyRowsamlBtnTextColor').show();
 				$('#propertyRowssoXmlUrl').show();
 				$('#propertyRowssoEntityId').show();
 				$('#propertyRowssoProfileSection').show();
@@ -9010,6 +9013,9 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				$('#propertyRowssoName').hide();
 				$('#propertyRowsamlMetadataOption').hide();
+				$('#propertyRowsamlBtnIcon').hide();
+				$('#propertyRowsamlBtnBgColor').hide();
+				$('#propertyRowsamlBtnTextColor').hide();
 				$('#propertyRowssoXmlUrl').hide();
 				$('#propertyRowssoMetadataFilename').hide();
 				$('#propertyRowssoEntityId').hide();
