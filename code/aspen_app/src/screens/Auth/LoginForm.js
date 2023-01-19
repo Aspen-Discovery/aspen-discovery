@@ -57,7 +57,7 @@ export const GetLoginForm = (props) => {
                      if(validatedUser.success) {
                          await setContext();
                          await setAsyncStorage();
-                         signIn(patronsLibrary);
+                         signIn();
                          setLoading(false);
                      } else {
                          if(validatedUser.resetToken) {
@@ -80,7 +80,7 @@ export const GetLoginForm = (props) => {
                      if(validatedUser.success['id']) {
                          await setContext();
                          await setAsyncStorage();
-                         signIn(patronsLibrary);
+                         signIn();
                          setLoading(false);
                      } else {
                          console.log('Unable to validate user with provided information.');
@@ -109,7 +109,6 @@ export const GetLoginForm = (props) => {
      }
 
      const setAsyncStorage = async () => {
-         //await AsyncStorage.setItem('@userToken', userToken);
          await SecureStore.setItemAsync('userKey', valueUser);
          await SecureStore.setItemAsync('secretKey', valueSecret);
          await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);

@@ -105,8 +105,6 @@ export function App() {
                               ...prevState,
                               isSignout: false,
                               userToken: action.token,
-                              data: action.data,
-                              library: action.library,
                               isLoading: false,
                          };
                     case 'SIGN_OUT':
@@ -114,8 +112,6 @@ export function App() {
                               ...prevState,
                               isSignout: true,
                               userToken: null,
-                              data: [],
-                              library: [],
                               isLoading: false,
                          };
                }
@@ -123,9 +119,7 @@ export function App() {
           {
                isLoading: true,
                isSignout: false,
-               userToken: null,
-               data: [],
-               library: [],
+               userToken: null
           }
      );
 
@@ -222,19 +216,13 @@ export function App() {
 
      const authContext = React.useMemo(
           () => ({
-               signIn: async (data) => {
-                    let userToken;
-                    const patronsLibrary = data.patronsLibrary;
-
+               signIn: async () => {
+                    const userToken = Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId;
                     await AsyncStorage.setItem('@userToken', userToken);
-
                     dispatch({
                          type: 'SIGN_IN',
-                         token: userToken,
-                         user: data,
-                         library: patronsLibrary,
+                         token: userToken
                     });
-
                },
                signOut: async () => {
                     await RemoveData().then((res) => {
