@@ -76,6 +76,7 @@
     "no_matches": "No matches found for this title in {{language}} for {{format}} format",
     "view_item_details": "View Item Details",
     "checkout_options": "Checkout Options",
+    "hold_options": "Hold Options",
     "checkout_title": "Checkout Title",
     "select_volume": "Select a volume",
     "first_available": "First Available Item",
