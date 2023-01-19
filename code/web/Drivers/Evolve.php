@@ -491,12 +491,12 @@ class Evolve extends AbstractIlsDriver {
 					$curHold->format = $holdInfo->Form;
 
 					$pickupLocation = new Location();
-					$pickupLocation->code = $holdInfo->Location;
+					$pickupLocation->code = $holdInfo->ReserveLocation;
 					if ($pickupLocation->find(true)) {
 						$curHold->pickupLocationId = $pickupLocation->locationId;
 						$curHold->pickupLocationName = $pickupLocation->displayName;
 					} else {
-						$curHold->pickupLocationName = $holdInfo->Location;
+						$curHold->pickupLocationName = $holdInfo->ReserveLocation;
 					}
 
 					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
