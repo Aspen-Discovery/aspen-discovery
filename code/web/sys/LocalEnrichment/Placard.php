@@ -90,7 +90,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 				'property' => 'image',
 				'type' => 'image',
 				'label' => 'Image (800px x 150px max)',
-				'description' => 'The logo for use in the header',
+				'description' => 'Image to use for the placard',
 				'required' => false,
 				'maxWidth' => 800,
 				'maxHeight' => 150,

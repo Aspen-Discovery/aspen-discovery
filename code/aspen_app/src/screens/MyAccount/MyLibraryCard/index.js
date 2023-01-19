@@ -134,28 +134,31 @@ export const MyLibraryCard = () => {
 
 const CreateLibraryCard = (data) => {
      const card = data.card;
-
-     console.log(card);
-
      const { library } = React.useContext(LibrarySystemContext);
 
-     let barcodeStyle = null;
-     if (!_.isUndefined(library.barcodeStyle)) {
-          barcodeStyle = _.toString(library.barcodeStyle);
+     let barcodeStyle;
+     if (!_.isUndefined(card.barcodeStyle) && !_.isNull(card.barcodeStyle)) {
+         barcodeStyle = _.toString(card.barcodeStyle);
+     } else {
+         barcodeStyle = _.toString(library.barcodeStyle);
      }
+
+     console.log(barcodeStyle);
 
      let barcodeValue = 'UNKNOWN';
      if (!_.isUndefined(card.cat_username)) {
           barcodeValue = card.cat_username;
      }
 
+     console.log(barcodeValue);
+
      let expirationDate;
-     if (!_.isUndefined(card.expires)) {
+     if (!_.isUndefined(card.expires) && !_.isNull(card.expires)) {
           expirationDate = new Date(card.expires);
      }
 
      let cardHasExpired = 0;
-     if (!_.isUndefined(card.expired)) {
+     if (!_.isUndefined(card.expired) && !_.isNull(card.expired)) {
           cardHasExpired = card.expired;
      }
 
@@ -173,7 +176,11 @@ const CreateLibraryCard = (data) => {
           icon = library.logoApp;
      }
 
-     if (barcodeValue === 'UNKNOWN' || _.isNull(barcodeValue) || card.barcodeStyle === 'none' || _.isNull(card.barcodeStyle)) {
+     const handleBarcodeError = () => {
+         barcodeStyle = 'INVALID';
+     }
+
+     if (barcodeValue === 'UNKNOWN' || _.isNull(barcodeValue) || _.isNull(barcodeStyle) || barcodeStyle === 'INVALID') {
           return (
                <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
                     <Center>
@@ -217,7 +224,7 @@ const CreateLibraryCard = (data) => {
                     </Text>
                </Center>
                <Center pt={8}>
-                    <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" />
+                    <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />
                     {expirationDate && !neverExpires ? (
                          <Text color="darkText" fontSize={10} pt={2}>
                               Expires on {card.expires}

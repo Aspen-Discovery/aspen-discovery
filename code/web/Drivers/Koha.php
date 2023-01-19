@@ -527,7 +527,7 @@ class Koha extends AbstractIlsDriver {
 				if ($patronExpirationResults != false) {
 					if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
 						$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
-						$today = date("Y-m-d");
+						$today = strtotime(date("Y-m-d"));
 
 						if ($expirationDate < $today) {
 							$curCheckout->autoRenewError = translate([

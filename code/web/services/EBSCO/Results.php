@@ -34,7 +34,7 @@ class EBSCO_Results extends ResultsAction {
 					if ($systemVariables->find(true) && !empty($systemVariables->searchErrorEmail)) {
 						require_once ROOT_DIR . '/sys/Email/Mailer.php';
 						$mailer = new Mailer();
-						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result['error']['msg'];
+						$emailErrorDetails = $_SERVER['REQUEST_URI'] . "\n" . $result->getMessage();
 						$mailer->send($systemVariables->searchErrorEmail, "$serverName Error processing EBSCO EDS search", $emailErrorDetails);
 					}
 				} catch (Exception $e) {

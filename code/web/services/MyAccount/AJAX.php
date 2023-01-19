@@ -2785,9 +2785,15 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 
 		global $offlineMode;
-		if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
-			global $configArray;
-
+		if (!UserAccount::isLoggedIn()) {
+			$result = [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Your session has ended, please login to view checkouts.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}else if (!$offlineMode || $interface->getVariable('enableEContentWhileOffline')) {
 			$source = $_REQUEST['source'];
 			$interface->assign('source', $source);
 			$this->setShowCovers();

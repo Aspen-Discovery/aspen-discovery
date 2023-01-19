@@ -157,7 +157,12 @@ class ExternalReviews {
 		$xmlDoc = new DomDocument();
 		$xmlDoc->preserveWhiteSpace = FALSE;
 		// Test XML Response
-		if (!$xmlDoc->loadXml($http)) {
+		if (empty($http)) {
+			// @codeCoverageIgnoreStart
+			$logger->log("Could not fetch data from $url", Logger::LOG_ERROR);
+			return null;
+			// @codeCoverageIgnoreEnd
+		}else if (!$xmlDoc->loadXml($http)) {
 			// @codeCoverageIgnoreStart
 			$logger->log("Did not receive XML from $url", Logger::LOG_ERROR);
 			return null;
