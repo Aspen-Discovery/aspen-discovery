@@ -356,7 +356,11 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		}
 		if (empty($id) && $errorOccurred) {
-			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+			if ($this->canAddNew()) {
+				header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=addNew");
+			} else {
+				header("Location: /{$this->getModule()}/{$this->getToolName()}");
+			}
 		} elseif (isset($_REQUEST['submitStay']) || $errorOccurred) {
 			header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
 		} elseif (isset($_REQUEST['submitAddAnother'])) {
