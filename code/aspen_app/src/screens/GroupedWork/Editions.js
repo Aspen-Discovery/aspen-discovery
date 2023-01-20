@@ -16,7 +16,7 @@ import SelectVolumeHold from './SelectVolumeHold';
 import SelectLinkedAccount from './SelectLinkedAccount';
 import SelectPickupLocation from './SelectPickupLocation';
 import { completeAction } from './Record';
-import { reloadProfile } from '../../util/api/user';
+import {refreshProfile, reloadProfile} from '../../util/api/user';
 import { openSideLoad } from '../../util/recordActions';
 import {getStatusIndicator} from './StatusIndicator';
 
@@ -128,21 +128,25 @@ const PlaceHold = (props) => {
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
      const handleNavigation = (action) => {
-          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyHolds', {});
                }
           } else {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigate('MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigate('MyHolds', {});
                }
           }
      };
-     if (volumeInfo.majorityOfItemsHaveVolumes || volumeInfo.numItemsWithVolumes >= 1) {
+     if (volumeInfo.numItemsWithVolumes >= 1) {
           return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
      } else if (_.size(accounts) > 0) {
           return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} />;
@@ -170,7 +174,7 @@ const PlaceHold = (props) => {
                               await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (ilsResponse) => {
                                    setResponse(ilsResponse);
                                    if (ilsResponse.success) {
-                                        await reloadProfile(library.baseUrl).then((result) => {
+                                        await refreshProfile(library.baseUrl).then((result) => {
                                              updateUser(result);
                                         });
                                    }
@@ -203,7 +207,7 @@ const PlaceHold = (props) => {
 
 const CheckedOutToYou = (props) => {
      const handleNavigation = () => {
-          if (props.prevRoute === 'Discovery' || props.prevRoute === 'SearchResults') {
+          if (props.prevRoute === 'DiscoveryScreen' || props.prevRoute === 'SearchResults') {
                navigateStack('AccountScreenTab', 'MyCheckouts', {});
           } else {
                navigate('MyCheckouts', {});
@@ -231,7 +235,7 @@ const CheckedOutToYou = (props) => {
 
 const OnHoldForYou = (props) => {
      const handleNavigation = () => {
-          if (props.prevRoute === 'Discovery' || props.prevRoute === 'SearchResults') {
+          if (props.prevRoute === 'DiscoveryScreen' || props.prevRoute === 'SearchResults') {
                navigateStack('AccountScreenTab', 'MyHolds', {});
           } else {
                navigate('MyHolds', {});
@@ -361,7 +365,7 @@ const CheckOut = (props) => {
      const cancelRef = React.useRef(null);
      const [response, setResponse] = React.useState('');
      const handleNavigation = (action) => {
-          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
                if (action.includes('Checkouts')) {
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
                } else {
@@ -406,7 +410,7 @@ const CheckOut = (props) => {
                             await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (eContentResponse) => {
                                  setResponse(eContentResponse);
                                  if (eContentResponse.success) {
-                                      await reloadProfile(library.baseUrl).then((result) => {
+                                      await refreshProfile(library.baseUrl).then((result) => {
                                            updateUser(result);
                                       });
                                  }

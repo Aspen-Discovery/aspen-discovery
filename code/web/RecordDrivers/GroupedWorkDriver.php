@@ -3040,7 +3040,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$similar = $searchObject->getMoreLikeThis($this->getPermanentId(), true, false, 3);
 		// Send the similar items to the template; if there is only one, we need
 		// to force it to be an array or things will not display correctly.
-		if (isset($similar) && count($similar['response']['docs']) > 0) {
+		if (isset($similar) && !empty($similar['response']['docs'])) {
 			$whileYouWaitTitles = [];
 			foreach ($similar['response']['docs'] as $similarTitle) {
 				$similarTitleDriver = new GroupedWorkDriver($similarTitle);

@@ -87,7 +87,7 @@ export async function checkoutItem(url, itemId, source, patronId) {
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
  **/
-export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = null, holdType = null, recordId = null) {
+export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -99,21 +99,14 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
                itemSource: source,
                userId: patronId,
                pickupBranch,
-               volumeId,
+               volumeId: volumeId ?? '',
                holdType,
                recordId,
           },
      });
      const response = await api.post('/UserAPI?method=placeHold', postBody);
-     console.log(response.config);
      if (response.ok) {
-          const responseData = response.data;
-          const results = responseData.result;
-
-          // reload patron data in the background
-          await getHolds(url);
-
-          return results;
+          return response.data.result;
      } else {
           popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
           console.log(response);

@@ -15,6 +15,8 @@ const SelectLinkedAccount = (props) => {
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);
 
+     const isPlacingHold = action.includes('hold');
+
      const [isOpen, setIsOpen] = React.useState(false);
      const onClose = () => setIsOpen(false);
      const cancelRef = React.useRef(null);
@@ -64,16 +66,20 @@ const SelectLinkedAccount = (props) => {
      }
 
      const handleNavigation = (action) => {
-          if (prevRoute === 'Discovery' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyHolds', {});
                }
           } else {
                if (action.includes('Checkouts')) {
+                    setIsOpen(false);
                     navigate('MyCheckouts', {});
                } else {
+                    setIsOpen(false);
                     navigate('MyHolds', {});
                }
           }
@@ -96,7 +102,7 @@ const SelectLinkedAccount = (props) => {
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
-                              <Heading size="md">{translate('grouped_work.checkout_options')}</Heading>
+                              <Heading size="md">{isPlacingHold ? translate('grouped_work.hold_options') : translate('grouped_work.checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
                               {shouldDisplayVolumes ? (
@@ -124,12 +130,12 @@ const SelectLinkedAccount = (props) => {
                                   </FormControl>
                               ) : null}
                               <FormControl pb={5}>
-                                   <FormControl.Label>{translate('linked_accounts.checkout_to_account')}</FormControl.Label>
+                                   <FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
                                    <Select
                                        name="linkedAccount"
                                        selectedValue={activeAccount}
                                        minWidth="200"
-                                       accessibilityLabel="Select an account to place hold for"
+                                       accessibilityLabel={isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}
                                        _selectedItem={{
                                             bg: 'tertiary.300',
                                             endIcon: <CheckIcon size="5" />,
@@ -156,15 +162,12 @@ const SelectLinkedAccount = (props) => {
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText="Placing hold..."
+                                        isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
                                         onPress={async () => {
                                              setLoading(true);
                                              await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (response) => {
                                                   setResponse(response);
                                                   if(response.success) {
-                                                       await reloadHolds(library.baseUrl).then((result) => {
-                                                            updateHolds(result);
-                                                       })
                                                        await refreshProfile(library.baseUrl).then((result) => {
                                                             updateUser(result);
                                                        });
