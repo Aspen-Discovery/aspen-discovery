@@ -459,32 +459,40 @@ export function App() {
 }
 
 async function getPermissions() {
-     const { status } = await Location.requestForegroundPermissionsAsync();
-
-     if (status !== 'granted') {
+     /* temporarily disabling geolocation on Android due to a fatal bug */
+     if(Platform.OS === 'android') {
           await SecureStore.setItemAsync('latitude', '0');
           await SecureStore.setItemAsync('longitude', '0');
           PATRON.coords.lat = 0;
           PATRON.coords.long = 0;
-          return;
-     }
-
-     const location = await Location.getLastKnownPositionAsync({});
-
-     if (location != null) {
-          const latitude = JSON.stringify(location.coords.latitude);
-          const longitude = JSON.stringify(location.coords.longitude);
-          await SecureStore.setItemAsync('latitude', latitude);
-          await SecureStore.setItemAsync('longitude', longitude);
-          PATRON.coords.lat = latitude;
-          PATRON.coords.long = longitude;
+          return false;
      } else {
-          await SecureStore.setItemAsync('latitude', '0');
-          await SecureStore.setItemAsync('longitude', '0');
-          PATRON.coords.lat = 0;
-          PATRON.coords.long = 0;
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+               await SecureStore.setItemAsync('latitude', '0');
+               await SecureStore.setItemAsync('longitude', '0');
+               PATRON.coords.lat = 0;
+               PATRON.coords.long = 0;
+               return false;
+          }
+
+          const location = await Location.getLastKnownPositionAsync({});
+
+          if (location != null) {
+               const latitude = JSON.stringify(location.coords.latitude);
+               const longitude = JSON.stringify(location.coords.longitude);
+               await SecureStore.setItemAsync('latitude', latitude);
+               await SecureStore.setItemAsync('longitude', longitude);
+               PATRON.coords.lat = latitude;
+               PATRON.coords.long = longitude;
+          } else {
+               await SecureStore.setItemAsync('latitude', '0');
+               await SecureStore.setItemAsync('longitude', '0');
+               PATRON.coords.lat = 0;
+               PATRON.coords.long = 0;
+          }
+          return true;
      }
-     return location;
 }
 
 async function checkStoreVersion() {

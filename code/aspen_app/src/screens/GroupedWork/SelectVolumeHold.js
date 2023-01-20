@@ -22,6 +22,8 @@ const SelectVolumeHold = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { updateHolds } = React.useContext(HoldsContext);
 
+     const isPlacingHold = action.includes('hold');
+
      const [isOpen, setIsOpen] = React.useState(false);
      const onClose = () => setIsOpen(false);
      const cancelRef = React.useRef(null);
@@ -89,7 +91,7 @@ const SelectVolumeHold = (props) => {
                <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
-                         <Modal.Header><Heading size="md">{title}</Heading></Modal.Header>
+                         <Modal.Header><Heading size="md">{isPlacingHold ? translate('grouped_work.hold_options') : translate('grouped_work.checkout_options')}</Heading></Modal.Header>
                          <Modal.Body>
                               {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : (
                               <>
@@ -156,12 +158,12 @@ const SelectVolumeHold = (props) => {
                               ) : null}
                               {_.size(accounts) > 0 ? (
                                   <FormControl>
-                                       <FormControl.Label>{translate('linked_accounts.place_hold_for_account')}</FormControl.Label>
+                                       <FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
                                        <Select
                                            name="linkedAccount"
                                            selectedValue={activeAccount}
                                            minWidth="200"
-                                           accessibilityLabel="Select an account to place hold for"
+                                           accessibilityLabel={isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}
                                            _selectedItem={{
                                                 bg: 'tertiary.300',
                                                 endIcon: <CheckIcon size="5" />,
@@ -192,15 +194,12 @@ const SelectVolumeHold = (props) => {
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText="Placing hold..."
+                                        isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
                                         onPress={async () => {
                                              setLoading(true);
                                              await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType).then(async (response) => {
                                                   setResponse(response);
                                                   if(response.success) {
-                                                       await reloadHolds(library.baseUrl).then((result) => {
-                                                            updateHolds(result);
-                                                       })
                                                        await refreshProfile(library.baseUrl).then((result) => {
                                                             updateUser(result);
                                                        });
