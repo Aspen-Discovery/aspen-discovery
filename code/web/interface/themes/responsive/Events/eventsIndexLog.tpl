@@ -27,7 +27,7 @@
 					{foreach from=$logEntries item=logEntry}
 						<tr>
 							<td>{$logEntry->id}</td>
-							<td>{$logEntry->websiteName}</td>
+							<td>{$logEntry->name}</td>
 							<td>{$logEntry->startTime|date_format:"%D %T"}</td>
 							<td>{$logEntry->lastUpdate|date_format:"%D %T"}</td>
 							<td>{$logEntry->endTime|date_format:"%D %T"}</td>
