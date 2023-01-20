@@ -15,7 +15,7 @@ class Authentication_OAuth extends Action {
 		$result = $auth->verifyIdToken($_REQUEST);
 		if ($result['success']) {
 			$logger->log(print_r($result, true), Logger::LOG_ERROR);
-			if (isset($result['returnTo'])) {
+			if (!empty($result['returnTo'])) {
 				header('Location: ' . $result['returnTo']);
 			} else {
 				header('Location: /MyAccount/Home');
