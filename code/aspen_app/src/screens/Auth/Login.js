@@ -47,8 +47,6 @@ export default class Login extends Component {
                console.log(e);
           }
 
-          console.log(LOGIN_DATA.nearbyLocations);
-
           if (!userToken && _.isEmpty(LOGIN_DATA.nearbyLocations)) {
                this._isMounted && (await makeGreenhouseRequestNearby());
                LOGIN_DATA.hasPendingChanges = false;
@@ -106,7 +104,7 @@ export default class Login extends Component {
                     isFetching: true,
                });
                const api = create({
-                    baseURL: Constants.manifest2?.extra?.expoClient?.extra?.greenhouse ?? Constants.manifest.extra.greenhouse + '/API',
+                    baseURL: Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl + '/API',
                     timeout: GLOBALS.timeoutSlow,
                     headers: getHeaders(),
                });

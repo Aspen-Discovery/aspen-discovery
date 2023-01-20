@@ -131,11 +131,14 @@ class PType extends DataObject {
 		return $structure;
 	}
 
-	static function getPatronTypeList(): array {
+	static function getPatronTypeList($addEmpty = false): array {
 		$patronType = new pType();
 		$patronType->orderBy('pType');
 		$patronType->find();
 		$patronTypeList = [];
+		if($addEmpty) {
+			$patronTypeList[-1] = "";
+		}
 		while ($patronType->fetch()) {
 			$patronTypeLabel = $patronType->pType;
 			if (!empty($patronType->description)) {

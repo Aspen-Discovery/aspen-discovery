@@ -1415,17 +1415,28 @@ class MyAccount_AJAX extends JSON_Action {
 				$sso = new SSOSetting();
 				$sso->id = $library->ssoSettingId;
 				if ($sso->find(true)) {
-					$loginOptions = $sso->loginOptions;
-					$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-					$interface->assign('ssoService', $sso->service);
-					if ($sso->service == "oauth") {
-						$interface->assign('oAuthGateway', $sso->oAuthGateway);
-						if ($sso->oAuthGateway == "custom") {
-							$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
-							$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
-							$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
+					if(!$sso->staffOnly) {
+						$loginOptions = $sso->loginOptions;
+						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
+						$interface->assign('ssoService', $sso->service);
+						if ($sso->service == "oauth") {
+							$interface->assign('oAuthGateway', $sso->oAuthGateway);
+							if ($sso->oAuthGateway == "custom") {
+								$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
+								$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
+								$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
+								if ($sso->oAuthGatewayIcon) {
+									$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+								}
+							}
+						}
+						if($sso->service == 'saml') {
+							$interface->assign('samlEntityId', $sso->ssoEntityId);
+							$interface->assign('samlBtnLabel', $sso->ssoName);
+							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
+							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
 							if ($sso->oAuthGatewayIcon) {
-								$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
 							}
 						}
 					}

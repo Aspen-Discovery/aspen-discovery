@@ -3,6 +3,7 @@ import { DefaultTheme, NavigationContainer, useNavigationContainerRef } from '@r
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { create } from 'apisauce';
 import Constants from 'expo-constants';
+import _ from 'lodash';
 // Access any @sentry/react-native exports via:
 // Sentry.Native.*
 import * as Linking from 'expo-linking';
@@ -31,6 +32,7 @@ import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
 import { navigationRef } from '../helpers/RootNavigator';
 import {updateAspenLiDABuild} from '../util/greenhouse';
+import {ResetExpiredPin} from '../screens/Auth/ResetExpiredPin';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -103,8 +105,6 @@ export function App() {
                               ...prevState,
                               isSignout: false,
                               userToken: action.token,
-                              data: action.data,
-                              library: action.library,
                               isLoading: false,
                          };
                     case 'SIGN_OUT':
@@ -112,8 +112,6 @@ export function App() {
                               ...prevState,
                               isSignout: true,
                               userToken: null,
-                              data: [],
-                              library: [],
                               isLoading: false,
                          };
                }
@@ -121,9 +119,7 @@ export function App() {
           {
                isLoading: true,
                isSignout: false,
-               userToken: null,
-               data: [],
-               library: [],
+               userToken: null
           }
      );
 
@@ -220,104 +216,13 @@ export function App() {
 
      const authContext = React.useMemo(
           () => ({
-               signIn: async (data) => {
-                    let userToken;
-                    const patronsLibrary = data.patronsLibrary;
-
-                    try {
-                         const postBody = new FormData();
-                         postBody.append('username', data.valueUser);
-                         postBody.append('password', data.valueSecret);
-                         const api = create({
-                              baseURL: data.libraryUrl + '/API',
-                              timeout: 5000,
-                              headers: getHeaders(true),
-                              auth: createAuthTokens(),
-                         });
-                         const response = await api.post('/UserAPI?method=validateAccount', postBody);
-                         //console.log(response);
-                         if (response.ok) {
-                              let result = false;
-                              if (response.data.result) {
-                                   result = response.data.result;
-                              }
-                              if (result) {
-                                   result = result.success;
-                                   if (result['id'] != null) {
-                                        let patronName = result.firstname;
-                                        // if patronName is in all uppercase, force it to sentence-case
-                                        if (patronName === patronName.toUpperCase()) {
-                                             patronName = patronName.toLowerCase();
-                                             patronName = patronName.split(' ');
-                                             for (let i = 0; i < patronName.length; i++) {
-                                                  patronName[i] = patronName[i].charAt(0).toUpperCase() + patronName[i].slice(1);
-                                             }
-                                             patronName = patronName.join(' ');
-                                        }
-                                        userToken = JSON.stringify(result.firstname + ' ' + result.lastname);
-                                        console.log('Valid user: ' + userToken);
-
-                                        // update global variables for later
-                                        GLOBALS.solrScope = patronsLibrary['solrScope'];
-                                        GLOBALS.lastSeen = Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version;
-                                        LIBRARY.url = data.libraryUrl;
-                                        LIBRARY.name = patronsLibrary['name'];
-                                        if (patronsLibrary['version']) {
-                                             LIBRARY.version = formatDiscoveryVersion(patronsLibrary['version']);
-                                        }
-                                        LIBRARY.favicon = patronsLibrary['favicon'];
-                                        PATRON.userToken = userToken;
-                                        PATRON.scope = patronsLibrary['solrScope'];
-                                        PATRON.library = patronsLibrary['libraryId'];
-                                        PATRON.location = patronsLibrary['locationId'];
-
-                                        try {
-                                             await AsyncStorage.setItem('@userToken', userToken);
-                                             await SecureStore.setItemAsync('userKey', data.valueUser);
-                                             await SecureStore.setItemAsync('secretKey', data.valueSecret);
-                                             // save variables in the Secure Store to access later on
-                                             await SecureStore.setItemAsync('patronName', patronName);
-                                             await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
-                                             await AsyncStorage.setItem('@libraryId', patronsLibrary['libraryId']);
-                                             await SecureStore.setItemAsync('libraryName', patronsLibrary['name']);
-                                             await SecureStore.setItemAsync('locationId', patronsLibrary['locationId']);
-                                             await AsyncStorage.setItem('@locationId', patronsLibrary['locationId']);
-                                             await SecureStore.setItemAsync('solrScope', patronsLibrary['solrScope']);
-
-                                             await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
-                                             await AsyncStorage.setItem('@pathUrl', data.libraryUrl);
-                                             await SecureStore.setItemAsync('pathUrl', data.libraryUrl);
-                                             await AsyncStorage.setItem('@lastStoredVersion', Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version);
-                                             await AsyncStorage.setItem('@patronLibrary', JSON.stringify(patronsLibrary));
-
-                                             dispatch({
-                                                  type: 'SIGN_IN',
-                                                  token: userToken,
-                                                  user: data,
-                                                  library: patronsLibrary,
-                                             });
-                                        } catch (e) {
-                                             console.log('Unable to log in user.');
-                                             console.log(e);
-                                        }
-                                   } else {
-                                        console.log('Invalid user. Unable to store data.');
-                                        popAlert(translate('login.unable_to_login'), translate('login.invalid_user'), 'error');
-                                        console.log(response);
-                                   }
-                              } else {
-                                   console.log('Unable to validate user account. ');
-                                   popAlert(translate('error.no_server_connection'), "We're unable to validate your account at this time.", 'warning');
-                                   console.log(response);
-                              }
-                         } else {
-                              popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
-                              console.log(response);
-                         }
-                    } catch (error) {
-                         popAlert(translate('login.unable_to_login'), translate('login.not_enough_data'), 'error');
-                         console.log(error);
-                    }
+               signIn: async () => {
+                    const userToken = Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId;
+                    await AsyncStorage.setItem('@userToken', userToken);
+                    dispatch({
+                         type: 'SIGN_IN',
+                         token: userToken
+                    });
                },
                signOut: async () => {
                     await RemoveData().then((res) => {
@@ -494,31 +399,6 @@ async function getPermissions() {
           PATRON.coords.long = 0;
      }
      return location;
-}
-
-async function checkStoreVersion() {
-     let message = '';
-     try {
-          const check = await checkVersion({
-               version: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version, // app local version
-               iosStoreURL: 'ios app store url',
-               androidStoreURL: 'android app store url',
-               country: 'us',
-          });
-
-          if (check.result) {
-               return check;
-          }
-     } catch (e) {
-          console.log(e);
-          message = e;
-     }
-     return {
-          local: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version,
-          remote: 'unknown',
-          result: 'unknown',
-          detail: 'Error checking versions. ' + message,
-     };
 }
 
 export default Sentry.Native.wrap(App);

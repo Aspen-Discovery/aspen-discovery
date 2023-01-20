@@ -4,5 +4,6 @@
   "buildCode": "",
   "sentryProjectOwner": "",
   "sentryAuthToken": "",
-  "devAppleId": ""
+  "devAppleId": "",
+  "greenhouseUrl": ""
 }
