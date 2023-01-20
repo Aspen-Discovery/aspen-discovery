@@ -35,26 +35,37 @@ export function getStatusIndicator(status) {
                          label = 'On Shelf';
                     }
                } else if (status['isAllLibraryUseOnly']) {
-                    if (status['isAvailable'] === false && status['hasLocalItem']) {
-                         label = 'Checked Out / Available Elsewhere';
-                         indicator = 'warning';
-                    } else if (status['isAvailable']) {
+                    if(status['isGlobalScope']) {
+                         label = 'On Shelf (library use only)'
+                    } else {
+                         if (status['isAvailable'] === false && status['hasLocalItem']) {
+                              label = 'Checked Out / Available Elsewhere';
+                              indicator = 'warning';
+                         } else if (status['isAvailable']) {
+                              if (status['hasLocalItem']) {
+                                   label = 'Library use only';
+                              } else {
+                                   label = 'Available from another library';
+                                   indicator = 'warning';
+                              }
+                         } else {
+                              label = 'Checked Out (library use only)';
+                              indicator = 'danger';
+                         }
+                    }
+               } else if (status['isAvailable'] && status['isAvailableLocally'] === false && status['hasLocalItem']) {
+                    label = 'Checked Out / Available Elsewhere';
+                    indicator = 'warning';
+               } else if (status['isAvailable']) {
+                    if(status['isGlobalScope']) {
+                         label = 'On Shelf';
+                    } else {
                          if (status['hasLocalItem']) {
-                              label = 'Library use only';
+                              label = 'On Shelf';
                          } else {
                               label = 'Available from another library';
                               indicator = 'warning';
                          }
-                    } else {
-                         label = 'Checked Out (library use only)';
-                         indicator = 'danger';
-                    }
-               } else if (status['isAvailable']) {
-                    if (status['hasLocalItem']) {
-                         label = 'On Shelf';
-                    } else {
-                         label = 'Available from another library';
-                         indicator = 'warning';
                     }
                } else {
                     indicator = 'danger';

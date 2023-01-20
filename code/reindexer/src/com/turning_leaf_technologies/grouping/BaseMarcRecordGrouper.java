@@ -526,9 +526,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		//Group volumes, seasons, etc. independently
 		List<Subfield> partSubfields;
 		if (isUniformTitle) {
-			partSubfields = titleField.getSubfields("mos");
+			partSubfields = titleField.getSubfields("mnops");
 		}else{
-			partSubfields = titleField.getSubfields("fmnops");
+			partSubfields = titleField.getSubfields("fnp");
 		}
 		StringBuilder partInfo = new StringBuilder();
 		for (Subfield partSubfield : partSubfields) {

@@ -2,7 +2,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 import { Box, Divider, HStack, Button, Text, Heading, FlatList } from 'native-base';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import {SafeAreaView, ScrollView} from 'react-native';
 
 import { DisplayMessage } from '../../../../components/Notifications';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
@@ -47,23 +47,23 @@ export const MyLinkedAccounts = () => {
      }
 
      return (
-          <SafeAreaView style={{ flex: 1 }}>
-               <Box flex={1} safeArea={5}>
-                    <DisplayMessage type="info" message={translate('linked_accounts.info_message')} />
-                    <Heading fontSize="lg" pb={2}>
-                         {translate('linked_accounts.additional_accounts')}
-                    </Heading>
-                    <Text>{translate('linked_accounts.following_accounts_can_manage')}</Text>
-                    <FlatList data={accounts} renderItem={({ item }) => <Account account={item} type="linked" />} ListEmptyComponent={Empty} keyExtractor={(item, index) => index.toString()} />
-                    <AddLinkedAccount />
-                    <Divider my={4} />
-                    <Heading fontSize="lg" pb={2}>
-                         {translate('linked_accounts.other_accounts')}
-                    </Heading>
-                    <Text>{translate('linked_accounts.following_accounts_can_view')}</Text>
-                    <FlatList data={viewers} renderItem={({ item }) => <Account account={item} type="viewer" />} ListEmptyComponent={Empty} keyExtractor={(item, index) => index.toString()} />
-               </Box>
-          </SafeAreaView>
+         <ScrollView>
+          <Box flex={1} safeArea={5}>
+               <DisplayMessage type="info" message={translate('linked_accounts.info_message')} />
+               <Heading fontSize="lg" pb={2}>
+                    {translate('linked_accounts.additional_accounts')}
+               </Heading>
+               <Text>{translate('linked_accounts.following_accounts_can_manage')}</Text>
+               <FlatList data={accounts} renderItem={({ item }) => <Account account={item} type="linked" />} ListEmptyComponent={Empty} keyExtractor={(item, index) => index.toString()} />
+               <AddLinkedAccount />
+               <Divider my={4} />
+               <Heading fontSize="lg" pb={2}>
+                    {translate('linked_accounts.other_accounts')}
+               </Heading>
+               <Text>{translate('linked_accounts.following_accounts_can_view')}</Text>
+               <FlatList data={viewers} renderItem={({ item }) => <Account account={item} type="viewer" />} ListEmptyComponent={Empty} keyExtractor={(item, index) => index.toString()} />
+          </Box>
+         </ScrollView>
      );
 };
 
@@ -110,7 +110,7 @@ const Account = (data) => {
      if (account) {
           return (
                <HStack space={3} justifyContent="space-between" pt={2} pb={2} alignItems="center">
-                    <Text bold>
+                    <Text bold isTruncated w="75%">
                          {account.displayName} - {account.homeLocation}
                     </Text>
                     <Button isLoading={isRemoving} isLoadingText="Removing..." colorScheme="warning" size="sm" onPress={() => removeAccount()}>

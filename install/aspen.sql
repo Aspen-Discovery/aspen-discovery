@@ -6860,13 +6860,13 @@ UNLOCK TABLES;
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` (id, username, password, firstname, lastname,cat_username, cat_password, created, homeLocationId, myLocation1Id, myLocation2Id, displayName, source) VALUES (0,'nyt_user','nyt_password','New York Times','The New York Times','nyt_user','nyt_password','2019-11-19 01:57:54',1,1,1,'The New York Times','admin'),(1,'aspen_admin','password','Aspen','Administrator','aspen_admin','password','2019-11-19 01:57:54',1,1,1,'A. Administrator','admin');
+INSERT INTO `user` (id, username, password, firstname, lastname,cat_username, cat_password, created, homeLocationId, myLocation1Id, myLocation2Id, displayName, source) VALUES (1,'nyt_user','nyt_password','New York Times','The New York Times','nyt_user','nyt_password','2019-11-19 01:57:54',1,1,1,'The New York Times','admin'),(2,'aspen_admin','password','Aspen','Administrator','aspen_admin','password','2019-11-19 01:57:54',1,1,1,'A. Administrator','admin');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
 LOCK TABLES `user_roles` WRITE;
 /*!40000 ALTER TABLE `user_roles` DISABLE KEYS */;
-INSERT INTO `user_roles` VALUES (1,1),(1,2),(2,13);
+INSERT INTO `user_roles` VALUES (2,1),(2,2);
 /*!40000 ALTER TABLE `user_roles` ENABLE KEYS */;
 UNLOCK TABLES;
 
