@@ -9,22 +9,29 @@ class Authentication_OAuth extends Action {
 	 */
 	public function launch() {
 		global $logger;
-		global $interface;
 		$logger->log("Completing OAuth Authentication", Logger::LOG_ERROR);
-		$auth = new OAuthAuthentication();
-		$result = $auth->verifyIdToken($_REQUEST);
-		if ($result['success']) {
-			$logger->log(print_r($result, true), Logger::LOG_ERROR);
-			if (!empty($result['returnTo'])) {
-				header('Location: ' . $result['returnTo']);
+		try {
+			$auth = new OAuthAuthentication();
+			$result = $auth->verifyIdToken($_REQUEST);
+			if ($result['success']) {
+				$logger->log(print_r($result, true), Logger::LOG_ERROR);
+				if (!empty($result['returnTo'])) {
+					header('Location: ' . $result['returnTo']);
+				} else {
+					header('Location: /MyAccount/Home');
+				}
 			} else {
-				header('Location: /MyAccount/Home');
+				$errorMessage = $result['message'];
+				require_once ROOT_DIR . '/services/MyAccount/Login.php';
+				$launchAction = new MyAccount_Login();
+				$launchAction->launch($errorMessage);
+				exit();
 			}
-		} else {
+		}catch (UnknownAuthenticationMethodException $e) {
 			$errorMessage = $result['message'];
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$launchAction = new MyAccount_Login();
-			$launchAction->launch($errorMessage);
+			$launchAction->launch("Could not initialize authentication");
 			exit();
 		}
 	}
