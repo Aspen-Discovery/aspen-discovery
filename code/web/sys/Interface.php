@@ -754,6 +754,16 @@ class UInterface extends Smarty {
 			}
 		}
 
+		// if using SSO, determine if it's available to only staff users or not
+		$ssoStaffOnly = false;
+		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+		$ssoSettings = new SSOSetting();
+		$ssoSettings->id = $library->ssoSettingId;
+		if($ssoSettings->find(true)) {
+			$ssoStaffOnly = $ssoSettings->staffOnly;
+		}
+		$this->assign('ssoStaffOnly', $ssoStaffOnly);
+
 		$loadRecaptcha = false;
 		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 		$recaptcha = new RecaptchaSetting();

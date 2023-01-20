@@ -1,8 +1,8 @@
 <?php
 
-require_once ROOT_DIR . "/Action.php";
+require_once ROOT_DIR . '/Action.php';
 
-class MyAccount_Login extends Action {
+class MyAccount_StaffLogin extends Action {
 	function launch($msg = null) {
 		global $interface;
 		global $module;
@@ -71,13 +71,13 @@ class MyAccount_Login extends Action {
 				$sso = new \SSOSetting();
 				$sso->id = $library->ssoSettingId;
 				if ($sso->find(true)) {
-					if(!$sso->staffOnly) {
+					if ($sso->staffOnly) {
 						$loginOptions = $sso->loginOptions;
 						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
 						$interface->assign('ssoService', $sso->service);
-						if ($sso->service == "oauth") {
+						if ($sso->service == 'oauth') {
 							$interface->assign('oAuthGateway', $sso->oAuthGateway);
-							if ($sso->oAuthGateway == "custom") {
+							if ($sso->oAuthGateway == 'custom') {
 								$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
 								$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
 								$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
@@ -137,7 +137,7 @@ class MyAccount_Login extends Action {
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('', 'Login');
+		$breadcrumbs[] = new Breadcrumb('', 'Staff Login');
 		return $breadcrumbs;
 	}
 }
