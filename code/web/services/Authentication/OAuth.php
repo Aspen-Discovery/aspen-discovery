@@ -21,9 +21,11 @@ class Authentication_OAuth extends Action {
 				header('Location: /MyAccount/Home');
 			}
 		} else {
-			$interface->assign('error', $result['error']);
-			$interface->assign('message', $result['message']);
-			$this->display('../MyAccount/login.tpl', 'Login', '');
+			$errorMessage = $result['message'];
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch($errorMessage);
+			exit();
 		}
 	}
 
