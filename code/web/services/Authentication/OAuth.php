@@ -1,7 +1,4 @@
 <?php
-
-require_once 'bootstrap.php';
-require_once 'bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Authentication/OAuthAuthentication.php';
 
 class Authentication_OAuth extends Action {
