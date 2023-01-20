@@ -85,8 +85,10 @@ class InclusionRule {
 		}
 
 		//iType Inclusion/Exclusion Check
-		if (iType == null || iType.length() == 0 || iType.equals(".*")){
+		if (iType == null || iType.length() == 0){
 			iType = ".*";
+		}
+		if (iType.equals(".*") && iTypesToExclude.length() == 0){
 			matchAlliTypes = true;
 		}
 		this.iTypePattern = Pattern.compile(iType, Pattern.CASE_INSENSITIVE);
@@ -223,19 +225,19 @@ class InclusionRule {
 		if (!hasCachedValue){
 			isIncluded = true;
 			if (!matchAllLocations) {
-				if (isLocationExactMatch){
-					if (!locationCodeToMatch.equalsIgnoreCase(locationCode)){
+				if (isLocationExactMatch) {
+					if (!locationCodeToMatch.equalsIgnoreCase(locationCode)) {
 						isIncluded = false;
 					}
-				}else{
-					if (!locationCodePattern.matcher(locationCode).matches()){
+				} else {
+					if (!locationCodePattern.matcher(locationCode).matches()) {
 						isIncluded = false;
 					}
 				}
-				if (isIncluded && locationCode != null && locationCode.length() > 0 && locationsToExcludePattern != null) {
-					if (locationsToExcludePattern.matcher(locationCode).matches()) {
-						isIncluded = false;
-					}
+			}
+			if (isIncluded && locationCode != null && locationCode.length() > 0 && locationsToExcludePattern != null) {
+				if (locationsToExcludePattern.matcher(locationCode).matches()) {
+					isIncluded = false;
 				}
 			}
 
@@ -315,9 +317,14 @@ class InclusionRule {
 						audienceMatched = true;
 						break;
 					}
-					if (audiencesToExcludePattern != null && audiencesToExcludePattern.matcher(audience).matches()) {
-						audienceMatched = false;
-						break;
+				}
+				if (audienceMatched == true){
+					for (String audience : audiences) {
+						//As soon as something is either matched or excluded we can stop checking.
+						if (audiencesToExcludePattern != null && audiencesToExcludePattern.matcher(audience).matches()) {
+							audienceMatched = false;
+							break;
+						}
 					}
 				}
 				isIncluded = audienceMatched;
