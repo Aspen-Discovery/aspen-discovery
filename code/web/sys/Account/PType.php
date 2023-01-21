@@ -131,7 +131,12 @@ class PType extends DataObject {
 		return $structure;
 	}
 
-	static function getPatronTypeList($addEmpty = false, $valueIsPType = false): array {
+	/**
+	 * @param boolean $addEmpty whether or not an empty value should be returned first
+	 * @param boolean $valueIsPType whether or not the value returned is the pType or database id (default)
+	 * @return array
+	 */
+	static function getPatronTypeList(bool $addEmpty = false, bool $valueIsPType = false): array {
 		$patronType = new pType();
 		$patronType->orderBy('pType');
 		$patronType->find();
