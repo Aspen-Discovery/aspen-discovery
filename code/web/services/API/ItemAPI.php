@@ -327,67 +327,79 @@ class ItemAPI extends Action {
 		$itemData = [];
 
 		//Load basic information
-		$this->id = $_GET['id'];
-		$itemData['id'] = $this->id;
-
-		// Setup Search Engine Connection
-		$url = $configArray['Index']['url'];
-		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables->searchVersion == 1) {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
-			$this->db = new GroupedWorksSolrConnector($url);
+		if (empty($_GET['id'])) {
+			$itemData = [
+				'title' => 'Unknown Record',
+				'author' => '',
+				'publisher' => '',
+				'format' => 'Unknown',
+				'formatCategory' => 'Unknown',
+				'description' => '',
+				'cover' => ''
+			];
 		} else {
-			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
-			$this->db = new GroupedWorksSolrConnector2($url);
-		}
+			$this->id = $_GET['id'];
+			$itemData['id'] = $this->id;
 
-		// Retrieve Full Marc Record
-		if (!($record = $this->db->getRecord($this->id))) {
-			AspenError::raiseError(new AspenError('Record Does Not Exist'));
-		}
-		$this->record = $record;
-		/** @var GroupedWorkDriver recordDriver */
-		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
-		$timer->logTime('Initialized the Record Driver');
+			// Setup Search Engine Connection
+			$url = $configArray['Index']['url'];
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables->searchVersion == 1) {
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+				$this->db = new GroupedWorksSolrConnector($url);
+			} else {
+				require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector2.php';
+				$this->db = new GroupedWorksSolrConnector2($url);
+			}
 
-		// Get ISBN for cover and review use
-		$itemData['isbn'] = $this->recordDriver->getCleanISBN();
-		if (empty($itemData['isbn'])) {
-			unset($itemData['isbn']);
-		}
-		$itemData['upc'] = $this->recordDriver->getCleanUPC();
-		if (empty($itemData['upc'])) {
-			unset($itemData['upc']);
-		}
-		$itemData['issn'] = $this->recordDriver->getISSNs();
-		if (empty($itemData['issn'])) {
-			unset($itemData['issn']);
-		}
+			// Retrieve Full Marc Record
+			if (!($record = $this->db->getRecord($this->id))) {
+				AspenError::raiseError(new AspenError('Record Does Not Exist'));
+			}
+			$this->record = $record;
+			/** @var GroupedWorkDriver recordDriver */
+			$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
+			$timer->logTime('Initialized the Record Driver');
 
-		//Generate basic information from the marc file to make display easier.
-		$itemData['title'] = $record['title_display'];
-		$itemData['author'] = isset($record['author_display']) ? $record['author_display'] : (isset($record['author2']) ? $record['author2'][0] : '');
-		$itemData['publisher'] = $record['publisher'];
-		if(isset($record['isbn'])) {
-			$itemData['allIsbn'] = $record['isbn'];
-		}
-		if(isset($record['upc'])) {
-			$itemData['allUpc'] = $record['upc'];
-		}
-		if(isset($record['issn'])) {
-			$itemData['allIssn'] = $record['issn'];
-			$itemData['issn'] = $record['issn'];
-		}
-		$itemData['format'] = isset($record['format']) ? $record['format'][0] : '';
-		$itemData['formatCategory'] = $record['format_category'][0];
-		$itemData['language'] = $record['language'];
-		$itemData['cover'] = $this->recordDriver->getBookcoverUrl('medium', true);
+			// Get ISBN for cover and review use
+			$itemData['isbn'] = $this->recordDriver->getCleanISBN();
+			if (empty($itemData['isbn'])) {
+				unset($itemData['isbn']);
+			}
+			$itemData['upc'] = $this->recordDriver->getCleanUPC();
+			if (empty($itemData['upc'])) {
+				unset($itemData['upc']);
+			}
+			$itemData['issn'] = $this->recordDriver->getISSNs();
+			if (empty($itemData['issn'])) {
+				unset($itemData['issn']);
+			}
 
-		$itemData['description'] = $this->recordDriver->getDescriptionFast();
+			//Generate basic information from the marc file to make display easier.
+			$itemData['title'] = $record['title_display'];
+			$itemData['author'] = isset($record['author_display']) ? $record['author_display'] : (isset($record['author2']) ? $record['author2'][0] : '');
+			$itemData['publisher'] = $record['publisher'];
+			if(isset($record['isbn'])) {
+				$itemData['allIsbn'] = $record['isbn'];
+			}
+			if(isset($record['upc'])) {
+				$itemData['allUpc'] = $record['upc'];
+			}
+			if(isset($record['issn'])) {
+				$itemData['allIssn'] = $record['issn'];
+				$itemData['issn'] = $record['issn'];
+			}
+			$itemData['format'] = isset($record['format']) ? $record['format'][0] : '';
+			$itemData['formatCategory'] = $record['format_category'][0];
+			$itemData['language'] = $record['language'];
+			$itemData['cover'] = $this->recordDriver->getBookcoverUrl('medium', true);
 
-		//setup 5 star ratings
-		$itemData['ratingData'] = $this->recordDriver->getRatingData();
-		$timer->logTime('Got 5 star data');
+			$itemData['description'] = $this->recordDriver->getDescriptionFast();
+
+			//setup 5 star ratings
+			$itemData['ratingData'] = $this->recordDriver->getRatingData();
+			$timer->logTime('Got 5 star data');
+		}
 
 		return $itemData;
 	}

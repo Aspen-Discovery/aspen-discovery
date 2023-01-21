@@ -87,8 +87,8 @@ export async function reloadProfile() {
                if (!_.isUndefined(response.data.result.profile)) {
                     const profile = response.data.result.profile;
                     console.log('User profile forcefully updated');
-                    await reloadCheckedOutItems();
-                    await reloadHolds();
+                    //await reloadCheckedOutItems();
+                    //await reloadHolds();
                     return profile;
                }
           }

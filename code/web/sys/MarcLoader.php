@@ -12,12 +12,15 @@ class MarcLoader {
 	 * @return File_MARC_Record
 	 */
 	public static function loadMarcRecordFromRecord($record) {
-		if ($record['recordtype'] == 'marc') {
-			return MarcLoader::loadMarcRecordByILSId($record['id'], $record['recordtype']);
-		} else {
+		if (is_null($record)){
 			return null;
+		} else {
+			if ($record['recordtype'] == 'marc') {
+				return MarcLoader::loadMarcRecordByILSId($record['id'], $record['recordtype']);
+			} else {
+				return null;
+			}
 		}
-
 	}
 
 	/**

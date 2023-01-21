@@ -3231,11 +3231,12 @@ class UserAPI extends Action {
 		}
 	}
 
+	/** @noinspection PhpUnused */
 	function updatePatronReadingHistory(): array {
 		global $offlineMode;
 		if ($offlineMode) {
 			return [
-				'success' => false,
+				'success' => true,
 				'message' => 'Circulation system is offline',
 			];
 		} else {
