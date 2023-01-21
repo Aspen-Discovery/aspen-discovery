@@ -131,7 +131,7 @@ class PType extends DataObject {
 		return $structure;
 	}
 
-	static function getPatronTypeList($addEmpty = false): array {
+	static function getPatronTypeList($addEmpty = false, $valueIsPType = false): array {
 		$patronType = new pType();
 		$patronType->orderBy('pType');
 		$patronType->find();
@@ -139,12 +139,16 @@ class PType extends DataObject {
 		if($addEmpty) {
 			$patronTypeList[-1] = "";
 		}
+		$selectValue = 'id';
+		if($valueIsPType) {
+			$selectValue = 'pType';
+		}
 		while ($patronType->fetch()) {
 			$patronTypeLabel = $patronType->pType;
 			if (!empty($patronType->description)) {
 				$patronTypeLabel .= ' - ' . $patronType->description;
 			}
-			$patronTypeList[$patronType->id] = $patronTypeLabel;
+			$patronTypeList[$patronType->$selectValue] = $patronTypeLabel;
 		}
 		return $patronTypeList;
 	}
