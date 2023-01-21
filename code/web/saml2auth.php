@@ -1,15 +1,36 @@
 <?php
 require_once 'bootstrap.php';
 require_once ROOT_DIR . '/sys/Authentication/SAML2Authentication.php';
+require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+require_once ROOT_DIR . '/sys/Account/PType.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 require_once ROOT_DIR . '/sys/BotChecker.php';
 
 global $library;
+global $logger;
+
+$staffPType = null;
 
 $auth = new SAML2Authentication();
 
+$ssoSettings = new SSOSetting();
+$ssoSettings->id = $library->ssoSettingId;
+$ssoSettings->service = 'saml';
+if($ssoSettings->find(true)) {
+	$entityId = $ssoSettings->ssoEntityId;
+	if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
+		$staffPType = $ssoSettings->samlStaffPType;
+	}
+	if($ssoSettings->staffOnly === 0 &&
+		(!empty($ssoSettings->samlStaffPTypeAttr) && !empty($ssoSettings->samlStaffPTypeAttrValue)) &&
+		($ssoSettings->samlStaffPType != '-1' || $ssoSettings->samlStaffPType != -1)) {
+		$staffPType = $ssoSettings->samlStaffPType;
+	}
+} else {
+	$entityId = $library->ssoEntityId;
+}
+
 // If we need to forward the user to an IdP
-$entityId = $library->ssoEntityId;
 if (array_key_exists('samlLogin', $_REQUEST) && array_key_exists('idp', $_REQUEST) && strlen($_REQUEST['samlLogin']) > 0 && strlen($_REQUEST['idp']) > 0 && $entityId && strlen($entityId) > 0) {
 	$auth->authenticate($_REQUEST['idp']);
 	header('Location: /');
@@ -24,7 +45,6 @@ $usersAttributes = $auth->as->getAttributes();
 // Someone has most likely hit this script directly, rather than having
 // come back from an IdP
 if (count($usersAttributes) == 0) {
-	global $logger;
 	$logger->log("No SSO attributes found", Logger::LOG_ERROR);
 	header('Location: /');
 }
@@ -35,12 +55,13 @@ $out = $auth->getAttributeValues();
 
 // The user's UID
 $uid = $out['ssoUniqueAttribute'];
+$isStaffUser = $out['isStaffUser'] ?? false;
 
 // Establish a connection to the LMS
 $catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
 // Get a mapping from LMS self reg property names to SSO property names
-$lmsToSso = $catalogConnection->getLmsToSso();
+$lmsToSso = $catalogConnection->getLmsToSso($isStaffUser);
 
 // Populate our $_REQUEST object that will be used by self reg
 foreach ($lmsToSso as $key => $mappings) {
@@ -80,6 +101,13 @@ if (!$user instanceof User) {
 
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
+	// if an existing user should be staff, but is not, update their patron type
+	if($isStaffUser && $user->patronType !== $staffPType) {
+		$user->patronType = $staffPType;
+		$user->update();
+		$user = $user->updatePatronInfo(true);
+	}
+
 	$login = UserAccount::login(true);
 
 	global $configArray;
