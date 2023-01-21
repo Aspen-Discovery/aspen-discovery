@@ -2159,9 +2159,10 @@ class Location extends DataObject {
 
 	/**
 	 * @param boolean $restrictByHomeLibrary whether or not only locations for the patron's home library should be returned
+	 * @param boolean $valueIsCode whether or not the value returned is the location code or location id (default)
 	 * @return array
 	 */
-	static function getLocationList(bool $restrictByHomeLibrary): array {
+	static function getLocationList(bool $restrictByHomeLibrary, bool $valueIsCode = false): array {
 		$location = new Location();
 		$location->orderBy('displayName');
 		if ($restrictByHomeLibrary) {
@@ -2170,10 +2171,14 @@ class Location extends DataObject {
 				$location->libraryId = $homeLibrary->libraryId;
 			}
 		}
+		$selectValue = 'locationId';
+		if($valueIsCode) {
+			$selectValue = 'code';
+		}
 		$location->find();
 		$locationList = [];
 		while ($location->fetch()) {
-			$locationList[$location->locationId] = $location->displayName;
+			$locationList[$location->$selectValue] = $location->displayName;
 		}
 		return $locationList;
 	}
