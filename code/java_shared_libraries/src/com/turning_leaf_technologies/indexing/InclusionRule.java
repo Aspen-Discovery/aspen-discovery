@@ -133,7 +133,7 @@ class InclusionRule {
 		}
 
 		//Collection Code Inclusion/Exclusion Check
-		if (collectionCode == null || collectionCode.length() == 0 || collectionCode.equals(".*")) {
+		if (collectionCode == null || collectionCode.length() == 0) {
 			collectionCode = ".*";
 		}
 		if (collectionCode.equals(".*") && collectionCodesToExclude.length() == 0){
@@ -282,7 +282,7 @@ class InclusionRule {
 				}
 			}
 			//Check Shelf Location to include & exclude
-			if (isIncluded && shelfLocation.length() > 0){
+			if (isIncluded && shelfLocation != null && shelfLocation.length() > 0){
 				if (!matchAllShelfLocations) {
 					if (!shelfLocationPattern.matcher(shelfLocation).matches()) {
 						isIncluded = false;
