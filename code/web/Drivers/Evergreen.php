@@ -1110,6 +1110,96 @@ class Evergreen extends AbstractIlsDriver {
 		return true;
 	}
 
+
+	public function completeFinePayment(User $patron, UserPayment $payment)
+	{
+		global $logger;
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error completing fine payment'
+		];
+
+		$authToken = $this->getAPIAuthToken($patron);
+		if ($authToken == null) {
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+			$logger->log('Unable to authenticate with Evergreen while completing fine payment', Logger::LOG_ERROR);
+			return $result;
+		}
+
+		// logged in, now fetch the patron's current last_xact_id
+		// note that we cannot count on the user session object having
+		// the most recent value
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . json_encode($patron->username);
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		ExternalRequestLogEntry::logRequest('evergreen.fetchUser', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if ($apiResponse->payload[0]->ilsevent == 0) {
+				$evgUser = $apiResponse->payload[0]->__p;
+				$evgUserObj = $this->mapEvergreenFields($evgUser, $this->fetchIdl('au'));
+				$lastXactId = $evgUserObj['last_xact_id'];
+			} else {
+				$result['message'] = "Error {$apiResponse->payload[0]->textcode} updating your payment, please visit the library with your receipt.";
+				$logger->log('Unable to fetch patron from Evergreen while completing fine payment', Logger::LOG_ERROR);
+				return $result;
+			}
+		} else {
+			// failed for an unknown reason
+			return $result;
+		}
+
+		// parse payment into form that Evergreen expects
+		$billingsPaid = explode(',', $payment->finesPaid);
+		$evgPayments = [];
+		foreach ($billingsPaid as $index => $billingPaid) {
+			$evgPayment = explode('|', $billingPaid);
+			$evgPayments[] = $evgPayment;
+		}
+
+		$evgPaymentParams = [
+			'payment_type' => 'credit_card_payment',
+			'userid' => $patron->username,
+			'note' => 'via Aspen Discovery [' . $payment->paymentType . ']',
+			'cc_args' => [
+				'approval_code' => $payment->transactionId
+			],
+			'payments' => $evgPayments
+		];
+
+		$request = 'service=open-ils.circ&method=open-ils.circ.money.payment';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . json_encode($evgPaymentParams);
+		$request .= '&param=' . json_encode($lastXactId);
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+		ExternalRequestLogEntry::logRequest('evergreen.payBillings', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if ($apiResponse->payload[0]->ilsevent == 0) {
+				// we're good to go
+				$result = [
+					'success' => true,
+					'message' => 'Your fines have been paid successfully, thank you.'
+				];
+			} else {
+				$result['message'] = "Error {$apiResponse->payload[0]->textcode} updating your payment, please visit the library with your receipt.";
+			}
+		} else {
+			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
+			$logger->log('Unable to authenticate with Evergreen while completing fine payment', Logger::LOG_ERROR);
+		}
+
+		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
+		return $result;
+	}
+
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		$username = trim($username);
 		$password = trim($password);
