@@ -165,6 +165,16 @@ const PlaceHold = (props) => {
                }
           }
      };
+
+     const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
+     let pickupLocation = '';
+     if(!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+          pickupLocation = userPickupLocation[0];
+          if(_.isObject(pickupLocation)) {
+               pickupLocation = pickupLocation.code;
+          }
+     }
+
      if (volumeInfo.numItemsWithVolumes >= 1) {
           return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
      } else if (_.size(accounts) > 0) {
@@ -190,7 +200,7 @@ const PlaceHold = (props) => {
                          }}
                          onPress={async () => {
                               setLoading(true);
-                              await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (ilsResponse) => {
+                              await completeAction(record, type, user.id, null, null, pickupLocation, library.baseUrl, null, 'default').then(async (ilsResponse) => {
                                    setResponse(ilsResponse);
                                    if (ilsResponse.success) {
                                         await refreshProfile(library.baseUrl).then((result) => {
