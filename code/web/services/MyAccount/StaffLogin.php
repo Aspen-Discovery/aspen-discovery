@@ -86,6 +86,15 @@ class MyAccount_StaffLogin extends Action {
 								}
 							}
 						}
+						if ($sso->service == 'saml') {
+							$interface->assign('samlEntityId', $sso->ssoEntityId);
+							$interface->assign('samlBtnLabel', $sso->ssoName);
+							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
+							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
+							if ($sso->oAuthGatewayIcon) {
+								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+							}
+						}
 					}
 				}
 			} catch (Exception $e) {

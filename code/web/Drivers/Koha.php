@@ -3773,7 +3773,11 @@ class Koha extends AbstractIlsDriver {
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'userid', 'userid', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'cardnumber', 'cardnumber', $library->useAllCapsWhenUpdatingProfile);
-			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
+			if (!isset($_REQUEST['category_id'])) {
+				$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
+			} else {
+				$postVariables['category_id'] = $_REQUEST['category_id'];
+			}
 
 			// Patron extended attributes
 			if ($this->getKohaVersion() > 21.05) {
@@ -6457,7 +6461,12 @@ class Koha extends AbstractIlsDriver {
 		Map from the property names required for self registration to
 		the IdP property names returned from SAML2Authentication
 	*/
-	public function lmsToSso() {
+	public function lmsToSso(bool $isStaffUser = false) {
+		$categoryId = 'ssoCategoryIdAttr';
+		$categoryIdFallback = 'ssoCategoryIdFallback';
+		if($isStaffUser) {
+			$categoryId = 'staffPType';
+		}
 		return [
 			'userid' => ['primary' => 'ssoUniqueAttribute'],
 			'cardnumber' => ['primary' => 'ssoUniqueAttribute'],
@@ -6484,8 +6493,8 @@ class Koha extends AbstractIlsDriver {
 				'fallback' => 'ssoLibraryIdFallback',
 			],
 			'category_id' => [
-				'primary' => 'ssoCategoryIdAttr',
-				'fallback' => 'ssoCategoryIdFallback',
+				'primary' => $categoryId,
+				'fallback' => $categoryIdFallback,
 			],
 		];
 	}
