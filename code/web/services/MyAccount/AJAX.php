@@ -1575,7 +1575,6 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getReactivationDateForm() {
 		global $interface;
-		global $configArray;
 
 		$user = UserAccount::getLoggedInUser();
 		$patronId = $_REQUEST['patronId'];
