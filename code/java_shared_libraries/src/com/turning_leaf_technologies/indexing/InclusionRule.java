@@ -282,18 +282,15 @@ class InclusionRule {
 				}
 			}
 			//Check Shelf Location to include & exclude
-			if (isIncluded && shelfLocation != null && shelfLocation.length() > 0){
-				if (!matchAllShelfLocations) {
-					if (!shelfLocationPattern.matcher(shelfLocation).matches()) {
+			if (isIncluded && !matchAllShelfLocations){ //still want to process empty shelf locations, don't check for length > 0
+				if (!shelfLocationPattern.matcher(shelfLocation).matches()) {
+					isIncluded = false;
+				}
+				if (isIncluded && !shelfLocation.equals("") && shelfLocationsToExcludePattern != null) {
+					if(shelfLocationsToExcludePattern.matcher(shelfLocation).matches()) {
 						isIncluded = false;
 					}
-					if (isIncluded && shelfLocation != null && shelfLocationsToExcludePattern != null) {
-						if(shelfLocationsToExcludePattern.matcher(shelfLocation).matches()) {
-							isIncluded = false;
-						}
-					}
 				}
-
 			}
 			//Check Collection Code to include & exclude
 			if (isIncluded && collectionCode != null && collectionCode.length() > 0){
