@@ -18,6 +18,6 @@ if [ $SAMLSSO = "y" ]; then
 	/bin/bash /usr/local/aspen-discovery/install/samlsso_config.sh $ssoemail $ssotimezone $ssoadminpwd
 	echo "Enter SAML certificate details\n"
 	openssl req -newkey rsa:3072 -new -x509 -days 3652 -nodes -out /etc/simplesamlphp/cert/saml.crt -keyout /etc/simplesamlphp/cert/saml.pem
-	chgrp www-data /etc/simplesamlsso/cert/saml.pem
-	chmod 640 /etc/simplesamlsso/cert/saml.pem
+	chgrp aspen_apache /etc/simplesamlphp/cert/saml.pem
+	chmod 640 /etc/simplesamlphp/cert/saml.pem
 fi 
