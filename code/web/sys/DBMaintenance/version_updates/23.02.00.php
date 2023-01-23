@@ -110,6 +110,15 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_staff_ptypes_to_sso_settings
+		'add_staffonly_to_sso_settings' => [
+			'title' => 'Add Staff Only option to SSO Settings',
+			'description' => 'Add checkbox to only allow SSO for staff users',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN staffOnly TINYINT(1) default 0',
+			]
+		],
+		//add_staffonly_to_sso_settings
 
 		//kodi
 

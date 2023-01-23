@@ -21,7 +21,7 @@ if($ssoSettings->find(true)) {
 	if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
-	if($ssoSettings->staffOnly === 0 &&
+	if(($ssoSettings->staffOnly === 0 || $ssoSettings->staffOnly === '0') &&
 		(!empty($ssoSettings->samlStaffPTypeAttr) && !empty($ssoSettings->samlStaffPTypeAttrValue)) &&
 		($ssoSettings->samlStaffPType != '-1' || $ssoSettings->samlStaffPType != -1)) {
 		$staffPType = $ssoSettings->samlStaffPType;
@@ -102,7 +102,7 @@ if (!$user instanceof User) {
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
 	// if an existing user should be staff, but is not, update their patron type
-	if($isStaffUser && $user->patronType !== $staffPType) {
+	if($staffPType && ($isStaffUser && $user->patronType !== $staffPType)) {
 		$user->patronType = $staffPType;
 		$user->update();
 		$user = $user->updatePatronInfo(true);
