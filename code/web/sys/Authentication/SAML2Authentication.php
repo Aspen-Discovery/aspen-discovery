@@ -1,6 +1,7 @@
 <?php
 
 require_once '/usr/share/simplesamlphp/lib/_autoload.php';
+require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 
 class SAML2Authentication {
 
@@ -27,30 +28,65 @@ class SAML2Authentication {
 		}
 	}
 
-	// Return an associative array of values supplied by the IdP
-	// keyed on our attribute schema
+	// Return an associative array of values supplied by the IdP keyed on our attribute schema
 	public function getAttributeValues() {
 		global $library;
 		$out = [];
+		$out['isStaffUser'] = false;
+		$out['staffPType'] = null;
 		$usersAttributes = $this->as->getAttributes();
 		foreach ($this->configProperties as $prop => $content) {
 			// The attribute name in the config supplied by the admin
-			$attrName = $library->$prop;
-			// The value of this attribute from the IdP
-			$attrValArray = strlen($attrName) > 0 ? $usersAttributes[$attrName] : [];
-			// If we have a value for this attribute from the IdP,
-			// use it
-			if (isset($attrValArray) && count($attrValArray) == 1) {
-				if (strlen($attrValArray[0]) > 0) {
-					$out[$prop] = $attrValArray[0];
+			$ssoSettings = new SSOSetting();
+			$ssoSettings->id = $library->ssoSettingId;
+			$ssoSettings->service = 'saml';
+			if($ssoSettings->find(true)) {
+				//check for the staff user values
+				if(!empty($ssoSettings->samlStaffPTypeAttr) && !empty($ssoSettings->samlStaffPTypeAttrValue) && ($ssoSettings->samlStaffPType != '-1' || $ssoSettings->samlStaffPType != -1)) {
+					$staffAttrName = $ssoSettings->samlStaffPTypeAttr;
+					$staffAttrValue = $ssoSettings->samlStaffPTypeAttrValue;
+					$attrValArray = strlen($staffAttrName) > 0 ? $usersAttributes[$staffAttrName] : [];
+					if (isset($attrValArray) && count($attrValArray) == 1) {
+						if (strlen($attrValArray[0]) > 0) {
+							if($attrValArray[0] == $staffAttrValue) {
+								$out['isStaffUser'] = true;
+								$out['staffPType'] = $ssoSettings->samlStaffPType;
+							}
+						}
+					}
 				}
-				// If a fallback has been supplied, use that
-			} elseif (array_key_exists('fallback', $content)) {
-				$fallback = $content['fallback'];
-				$propertyName = $fallback['propertyName'];
-				// It might be an anonymous function, or a reference
-				// to a fallback value
-				$out[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($usersAttributes, $library) : $library->$propertyName;
+
+				$attrName = $ssoSettings->$prop;
+				// The value of this attribute from the IdP
+				$attrValArray = strlen($attrName) > 0 ? $usersAttributes[$attrName] : [];
+				// If we have a value for this attribute from the IdP, use it
+				if (isset($attrValArray) && count($attrValArray) == 1) {
+					if (strlen($attrValArray[0]) > 0) {
+						$out[$prop] = $attrValArray[0];
+					}
+					// If a fallback has been supplied, use that
+				} elseif (array_key_exists('fallback', $content)) {
+					$fallback = $content['fallback'];
+					$propertyName = $fallback['propertyName'];
+					// It might be an anonymous function, or a reference to a fallback value
+					$out[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($usersAttributes, $ssoSettings) : $ssoSettings->$propertyName;
+				}
+			} else {
+				$attrName = $library->$prop;
+				// The value of this attribute from the IdP
+				$attrValArray = strlen($attrName) > 0 ? $usersAttributes[$attrName] : [];
+				// If we have a value for this attribute from the IdP, use it
+				if (isset($attrValArray) && count($attrValArray) == 1) {
+					if (strlen($attrValArray[0]) > 0) {
+						$out[$prop] = $attrValArray[0];
+					}
+					// If a fallback has been supplied, use that
+				} elseif (array_key_exists('fallback', $content)) {
+					$fallback = $content['fallback'];
+					$propertyName = $fallback['propertyName'];
+					// It might be an anonymous function, or a reference to a fallback value
+					$out[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($usersAttributes, $library) : $library->$propertyName;
+				}
 			}
 		}
 		return $out;

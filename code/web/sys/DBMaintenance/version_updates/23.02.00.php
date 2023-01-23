@@ -95,6 +95,21 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_saml_options_to_sso_settings
+		'add_staff_ptypes_to_sso_settings' => [
+			'title' => 'Add patron types to SSO Settings',
+			'description' => 'Adds patron types to SSO Settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting DROP COLUMN staffPType',
+				'ALTER TABLE sso_setting ADD COLUMN samlStaffPTypeAttr VARCHAR(255) default NULL',
+				'ALTER TABLE sso_setting ADD COLUMN samlStaffPTypeAttrValue VARCHAR(255) default NULL',
+				'ALTER TABLE sso_setting ADD COLUMN samlStaffPType VARCHAR(30) default NULL',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthStaffPTypeAttr VARCHAR(255) default NULL',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthStaffPTypeAttrValue VARCHAR(255) default NULL',
+				'ALTER TABLE sso_setting ADD COLUMN oAuthStaffPType VARCHAR(30) default NULL',
+			]
+		],
+		//add_staff_ptypes_to_sso_settings
 
 		//kodi
 

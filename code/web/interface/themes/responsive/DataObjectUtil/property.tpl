@@ -22,7 +22,7 @@
 			{if !empty($property.renderAsHeading)}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<p style="margin-bottom: .5em">
-						<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -31,7 +31,7 @@
 						<span class="label label-danger" style="margin-right: .5em;{if empty($property.description)}margin-left: .5em;{/if} vertical-align: top">{translate text="Required" isAdminFacing=true}</span>
 					</div>
 				{else}
-					<p class="h2" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+					<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
 					{if !empty($property.description)}
 						<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 							<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -56,7 +56,7 @@
 				{if !empty($property.renderAsHeading)}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<div style="margin-bottom: .5em">
-							<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
 							{if !empty($property.description)}
 								<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 									<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -65,7 +65,7 @@
 							<span class="label label-danger" style="margin-right: .5em;{if empty($property.description)}margin-left: .5em;{/if} vertical-align: top">{translate text="Required" isAdminFacing=true}</span>
 						</div>
 					{else}
-						<p class="h2" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -92,8 +92,8 @@
 		{elseif $property.type != 'section' && $property.type != 'checkbox' && $property.type != 'hidden'}
 			{if !empty($property.renderAsHeading)}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
-					<div style="margin-bottom: .5em">
-						<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+					<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -102,15 +102,17 @@
 						<span class="label label-danger" style="margin-right: .5em; vertical-align: top{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 					</div>
 				{else}
-					<p class="h2" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
-					{if !empty($property.description)}
-						<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
-							<i class="fas fa-question-circle" style="vertical-align: top"></i>
-						</a>
-					{/if}
-					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
-						<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
-					{/if}
+					<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
+						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						{if !empty($property.description)}
+							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
+								<i class="fas fa-question-circle" style="vertical-align: top"></i>
+							</a>
+						{/if}
+						{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
+							<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
+						{/if}
+					</div>
 				{/if}
 			{else}
 				<label for='{$propName}'>{translate text=$property.label isAdminFacing=true}</label>
@@ -129,7 +131,8 @@
 				<div class="row">
 					<div class="col-xs-12">
 						{if !empty($property.label)}
-							<p class="h2" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
+							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline">{translate text=$property.label isAdminFacing=true}</p>
 							{if !empty($property.description)}
 								<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 									<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -138,6 +141,8 @@
 							{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 								<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 							{/if}
+						</div>
+							{if !empty($property.note)}<span id="{$propName}HelpBlock" class="help-block"><small><i class="fas fa-info-circle"></i> {$property.note}</small></span>{/if}
 						{/if}
 
 						{foreach from=$property.properties item=property}
