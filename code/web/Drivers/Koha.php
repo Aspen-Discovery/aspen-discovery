@@ -3542,7 +3542,7 @@ class Koha extends AbstractIlsDriver {
 				'address' => 'UNKNOWN',
 				'city' => 'UNKNOWN',
 				'library_id' => $mainBranch,
-				'category_id' => $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory'),
+				'category_id' => $ssoUser['category_id'] ?? $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory'),
 			];
 
 			$postParams = json_encode($postParams);
