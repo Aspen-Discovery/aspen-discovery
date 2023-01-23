@@ -241,7 +241,7 @@ export default class Login extends Component {
                     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} width="100%">
                          {this.state.libraryName ? <GetLoginForm libraryName={this.state.libraryName} locationId={this.state.locationId} libraryId={this.state.libraryId} libraryUrl={this.state.libraryUrl} solrScope={this.state.solrScope} favicon={this.state.favicon} logo={this.state.logo} sessionId={this.state.sessionId} navigation={this.props.navigation} patronsLibrary={this.state.patronsLibrary} /> : null}
 
-                         {isCommunity ? (
+                         {isCommunity && Platform.OS !== 'android' ? (
                               <Button onPress={() => makeGreenhouseRequestNearby()} mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
                                    {translate('login.reset_geolocation')}
                               </Button>
