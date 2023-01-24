@@ -6569,7 +6569,7 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function reactivateDateNotRequired(): bool {
-		return false;
+		return true;
 	}
 
 	public function showTimesRenewed(): bool {
