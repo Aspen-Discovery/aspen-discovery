@@ -147,6 +147,7 @@ foreach ($allOpenTickets as $openTicket) {
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 $aspenSite = new AspenSite();
 $aspenSite->siteType = "0";
+$aspenSite->whereAdd('implementationStatus <> 0 AND implementationStatus <> 4');
 $aspenSite->find();
 while ($aspenSite->fetch()) {
 	if (!empty($aspenSite->baseUrl)) {
