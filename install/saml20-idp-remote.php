@@ -2,8 +2,7 @@
 
 // Dynamically build a metadata hash based on the contents of the
 // sso_metadata directory
-global $serverName;
-$metadataDir = '/data/aspen-discovery/' . $serverName . '/sso_metadata/*';
+$metadataDir = '/data/aspen-discovery/SSO_SERVER_NAME/sso_metadata/*';
 $metadata = array();
 
 foreach(glob($metadataDir) as $file) {
