@@ -15,7 +15,8 @@ if [ $SAMLSSO = "y" ]; then
 	read -p "Enter the SSO technical contact email: " ssoemail
 	read -p "Enter a timezone (supported timezones can be found at http://php.net/manual/en/timezones.php): " ssotimezone
 	read -p "Enter an SSO admin password: " ssoadminpwd
-	/bin/bash /usr/local/aspen-discovery/install/samlsso_config.sh $ssoemail $ssotimezone $ssoadminpwd
+	read -p "Enter server name: " ssoservername
+	/bin/bash /usr/local/aspen-discovery/install/samlsso_config.sh $ssoemail $ssotimezone $ssoadminpwd $ssoservername
 	echo "Enter SAML certificate details\n"
 	openssl req -newkey rsa:3072 -new -x509 -days 3652 -nodes -out /etc/simplesamlphp/cert/saml.crt -keyout /etc/simplesamlphp/cert/saml.pem
 	chgrp aspen_apache /etc/simplesamlphp/cert/saml.pem

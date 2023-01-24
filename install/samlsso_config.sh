@@ -16,11 +16,17 @@ if [ -z "$3" ]
     echo "Please provide a Single Sign On admin password as the third argument."
     exit 1
 fi
+if [ -z "$5" ]
+  then
+    echo "Please provide a server name as the fifth argument."
+    exit 1
+fi
 cp $sourcepath/samlsso_config.php $targetpath/config.php
 
 escape_email=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$2")
 escape_timezone=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$3")
 escape_adminpassword=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$4")
+escape_servername=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$5")
 
 random_string() {
     local l=15
@@ -35,5 +41,8 @@ sed -i "s/SSO_EMAIL/$escape_email/g" $targetpath/config.php
 sed -i "s/SSO_TIMEZONE/$escape_timezone/g" $targetpath/config.php
 sed -i "s/SSO_SECRETSALT/$ssosecret/g" $targetpath/config.php
 sed -i "s/SSO_ADMINPASSWORD/$escape_adminpassword/g" $targetpath/config.php
+
+##SSO_SERVER_NAME
+sed -i "s/SSO_SERVER_NAME/$escape_servername/g" $targetpath/metadata/saml20-idp-remote.php
 
 cp $sourcepath/samlsso_authsources.php $targetpath/authsources.php
