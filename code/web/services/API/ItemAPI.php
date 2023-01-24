@@ -335,7 +335,8 @@ class ItemAPI extends Action {
 				'format' => 'Unknown',
 				'formatCategory' => 'Unknown',
 				'description' => '',
-				'cover' => ''
+				'cover' => '',
+				'oclcNumber' => '',
 			];
 		} else {
 			$this->id = $_GET['id'];
@@ -399,6 +400,22 @@ class ItemAPI extends Action {
 			//setup 5 star ratings
 			$itemData['ratingData'] = $this->recordDriver->getRatingData();
 			$timer->logTime('Got 5 star data');
+
+			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+			$marcRecordDriver = new MarcRecordDriver($this->recordDriver->getIdWithSource());
+			if ($marcRecordDriver != null) {
+				/** @var File_MARC_Control_Field $oclcNumber */
+				$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
+				if ($oclcNumber != null) {
+					$oclcNumberString = StringUtils::truncate($oclcNumber->getData(), 50);
+				} else {
+					$oclcNumberString = '';
+				}
+			} else {
+				$oclcNumberString = '';
+			}
+
+			$itemData['oclcNumber'] = $oclcNumberString;
 		}
 
 		return $itemData;

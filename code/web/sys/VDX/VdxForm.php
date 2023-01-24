@@ -415,7 +415,23 @@ class VdxForm extends DataObject {
 				'isPublicFacing' => true,
 			]),
 			'required' => false,
-			'maxLength' => 255,
+			'maxLength' => 20,
+		];
+
+		$fields['oclcNumber'] = [
+			'type' => 'input',
+			'property' => 'oclcNumber',
+			'display' => 'hide',
+			'label' => translate([
+				'text' => 'OCLC Number',
+				'isPublicFacing' => true,
+			]),
+			'description' => translate([
+				'text' => 'The OCLC Number',
+				'isPublicFacing' => true,
+			]),
+			'required' => false,
+			'maxLength' => 50,
 		];
 
 		$fields['feeInformationText'] = [
@@ -460,7 +476,7 @@ class VdxForm extends DataObject {
 		$fields['note'] = [
 			'type' => 'textarea',
 			'property' => 'note',
-			'display' => $this->showMaximumFee ? 'show' : 'hide',
+			'display' => 'show',
 			'label' => translate([
 				'text' => 'Note',
 				'isPublicFacing' => true,

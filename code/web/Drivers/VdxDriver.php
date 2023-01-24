@@ -308,6 +308,7 @@ class VdxDriver {
 
 		$body = "USERID=$patron->cat_username\r\n";
 		$clientCategory = $patron->patronType;
+		require_once ROOT_DIR . '/sys/Account/PType.php';
 		$pType = new PType();
 		$pType->pType = $patron->patronType;
 		if ($pType->find(true)) {
