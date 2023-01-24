@@ -1343,7 +1343,7 @@ public class KohaExportMain {
 							addSubfield(itemField, 'n', bibItemsRS.getString("renewals"));
 							addSubfield(itemField, 'o', bibItemsRS.getString("itemcallnumber"));
 							addSubfield(itemField, 'p', bibItemsRS.getString("barcode"));
-							addSubfield(itemField, 'q', bibItemsRS.getString("onloan"));
+							addSubfield(itemField, 'q', bibItemsRS.getString("onloan")); //TODO: If the item is checked out this is the due date.  If it is checked in, it's null. We can replace the date_due above
 							addSubfield(itemField, 'r', bibItemsRS.getString("datelastseen"));
 							addSubfield(itemField, 's', bibItemsRS.getString("datelastborrowed"));
 							addSubfield(itemField, 't', bibItemsRS.getString("copynumber"));

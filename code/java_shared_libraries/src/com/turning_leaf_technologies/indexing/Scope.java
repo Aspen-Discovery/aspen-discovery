@@ -84,8 +84,8 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String fullKey, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
-		if (isItemOwnedByScope(itemIdentifier, fullKey, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
+	public InclusionResult isItemPartOfScope(@NotNull String itemIdentifier, String recordType, @NotNull String locationCode, @NotNull String subLocationCode, String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord, String econtentUrl){
+		if (isItemOwnedByScope(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
 			if (econtentUrl == null){
 				return includedOwnedResult;
 			}else {
@@ -122,20 +122,13 @@ public class Scope implements Comparable<Scope>{
 	 * @param subLocationCode   The sub location code to check.  Set to blank if no sub location code
 	 * @return                  Whether or not the item is included within the scope
 	 */
-	public boolean isItemOwnedByScope(String itemIdentifier, String fullKey, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, @NotNull String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
-		Boolean isOwned = ownershipResults.get(fullKey);
-		if (isOwned == null) {
-			for(InclusionRule curRule: ownershipRules){
-				if (curRule.isItemIncluded(fullKey, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
-					ownershipResults.put(fullKey, Boolean.TRUE);
-					return true;
-				}
+	public boolean isItemOwnedByScope(String itemIdentifier, @NotNull String recordType, @NotNull String locationCode, @NotNull String subLocationCode, @NotNull String iType, TreeSet<String> audiences, String audiencesAsString, String format, String shelfLocation, String collectionCode, boolean isHoldable, boolean isOnOrder, boolean isEContent, Record marcRecord){
+		for(InclusionRule curRule: ownershipRules){
+			if (curRule.isItemIncluded(itemIdentifier, recordType, locationCode, subLocationCode, iType, audiences, audiencesAsString, format, shelfLocation, collectionCode, isHoldable, isOnOrder, isEContent, marcRecord)){
+				return true;
 			}
-			ownershipResults.put(fullKey, Boolean.FALSE);
-			return false;
-		}else {
-			return isOwned;
 		}
+		return false;
 	}
 
 	public String getFacetLabel() {
