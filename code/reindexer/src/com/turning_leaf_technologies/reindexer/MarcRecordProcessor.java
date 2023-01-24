@@ -1770,7 +1770,7 @@ abstract class MarcRecordProcessor {
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
-		} else if (value.contains("wii u")) {
+		} else if (value.contains("wii u") || value.contains("wiiu")) {
 			return "WiiU";
 		} else if (value.contains("nintendo wii") || value.contains("wii")) {
 			return "Wii";
