@@ -293,8 +293,8 @@ class InclusionRule {
 						}
 					}
 				}
-				if (shelfLocation == null || shelfLocation.length() == 0) {
-					if (!shelfLocationPattern.matcher(".*").matches()) {
+				else {
+					if (!shelfLocationPattern.pattern().equals(".*")) {
 						isIncluded = false;
 					}
 				}
@@ -312,8 +312,8 @@ class InclusionRule {
 						}
 					}
 				}
-				if (collectionCode == null || collectionCode.length() == 0) {
-					if (!collectionCodePattern.matcher(".*").matches()) {
+				else {
+					if (!collectionCodePattern.pattern().equals(".*")) {
 						isIncluded = false;
 					}
 				}
