@@ -234,7 +234,7 @@ const Request = (payload) => {
                             bg: 'tertiary.300',
                             endIcon: <CheckIcon size="5"/>,
                         }}
-                        selectedValue={this.getValue('pickupLocation')}
+                        selectedValue={pickupLocation}
                         onValueChange={(itemValue) => {
                             setPickupLocation(itemValue)
                         }}>

@@ -406,7 +406,7 @@ export async function getVdxForm(libraryUrl, id) {
           const vdxFormFields = response.data.result;
           LIBRARY.vdx = response.data.result;
           await AsyncStorage.setItem('@vdxFormFields', JSON.stringify(vdxFormFields));
-          return response.data;
+          return response.data.result;
      } else {
           popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
           console.log(response);

@@ -169,7 +169,7 @@ export async function getBasicItemInfo(id, url) {
           },
      });
 
-     return data.result;
+     return data;
 }
 
 export async function getRelatedRecord(id, recordId, format, url) {
