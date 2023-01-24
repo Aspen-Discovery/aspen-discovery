@@ -3,6 +3,7 @@ import React from 'react';
 import {SafeAreaView, SectionList} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
+import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -98,14 +99,24 @@ export const MyHolds = () => {
           setNewDate(date);
      };
 
-     const noHolds = () => {
-          return (
-               <Center mt={5} mb={5}>
-                    <Text bold fontSize="lg">
-                         {translate('holds.no_holds')}
-                    </Text>
-               </Center>
-          );
+     const noHolds = (title) => {
+         if(title === 'Pending') {
+             return (
+                 <Center mt={5} mb={5}>
+                     <Text bold fontSize="lg">
+                         {translate('holds.pending_holds_none')}
+                     </Text>
+                 </Center>
+             )
+         } else {
+             return (
+                 <Center mt={5} mb={5}>
+                     <Text bold fontSize="lg">
+                         {translate('holds.holds_ready_for_pickup_none')}
+                     </Text>
+                 </Center>
+             );
+         }
      };
 
      const refreshHolds = async () => {
@@ -269,11 +280,21 @@ export const MyHolds = () => {
      }
 
      const displaySectionFooter = (title) => {
+         const sectionData = _.find(holds, { 'title': title });
          if(title === 'Pending') {
-             return (
-                 <Box pb={30}/>
-             )
+             if(_.isEmpty(sectionData.data)) {
+                 return noHolds(title);
+             } else {
+                 return (
+                     <Box pb={30}/>
+                 )
+             }
+         } else if (title === 'Ready') {
+             if(_.isEmpty(sectionData.data)) {
+                 return noHolds(title);
+             }
          }
+
          return null;
      }
 
@@ -297,7 +318,7 @@ export const MyHolds = () => {
                        onChange={(newValues) => {
                            saveGroupValue(newValues);
                        }}>
-                       <SectionList sections={holds} renderItem={({ item, section:{title} }) => <MyHold data={item} resetGroup={resetGroup} pickupLocations={pickupLocations} section={title} key="ready"/>} stickySectionHeadersEnabled={true} renderSectionHeader={({ section: { title } }) => (displaySectionHeader(title))} renderSectionFooter={({ section: { title } }) => (displaySectionFooter(title))} keyExtractor={(item, index) => index.toString()}  contentContainerStyle={{ paddingBottom: 30 }} />
+                       <SectionList sections={holds} renderItem={({ item, section:{title} }) => <MyHold data={item} resetGroup={resetGroup} pickupLocations={pickupLocations} section={title} key="ready"/>} stickySectionHeadersEnabled={true} renderSectionHeader={({ section: { title } }) => (displaySectionHeader(title))} renderSectionFooter={({ section: { title } }) => (displaySectionFooter(title))}  contentContainerStyle={{ paddingBottom: 30 }} />
                    </Checkbox.Group>
                </Box>
           </SafeAreaView>
