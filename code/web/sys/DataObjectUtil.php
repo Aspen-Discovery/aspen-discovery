@@ -393,9 +393,9 @@ class DataObjectUtil {
 					$destFileName = $_FILES[$propertyName]["name"];
 					$destFolder = $property['path'];
 					if (!file_exists($destFolder)) {
-						if (!mkdir($destFolder, 0755, true)) {
-							$logger->log("Could not create $destFolder", Logger::LOG_NOTICE);
-						}
+						mkdir($destFolder, 0775, true);
+						chgrp($destFolder, 'aspen_apache');
+						chmod($destFolder, 0775);
 					}
 					if (substr($destFolder, -1) == '/') {
 						$destFolder = substr($destFolder, 0, -1);

@@ -4010,7 +4010,7 @@ class Library extends DataObject {
 		global $logger;
 		global $configArray;
 		global $serverName;
-		$ssoXmlDataPath = '/data/aspen-discovery/sso_metadata/';
+		$ssoXmlDataPath = '/data/aspen-discovery/' . $serverName . '/sso_metadata/';
 		$url = trim($this->ssoXmlUrl);
 		if (strlen($url) > 0) {
 			// We've got a new or updated URL
