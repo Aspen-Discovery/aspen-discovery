@@ -30,7 +30,7 @@ class webhooks_ExpoEASBuild extends Action {
 			$build->storeIdentifier = $payload['metadata']['appIdentifier'];
 
 			if($payload['status'] == 'finished') {
-				if($build->channel == 'production' || $build->channel == 'beta' || $build->channel == 'store') {
+				if($payload['metadata']['channel'] == 'production' || $payload['metadata']['channel'] == 'beta' || $payload['metadata']['channel'] == 'store') {
 					if ($build->platform == 'android') {
 						$build->storeUrl = 'https://play.google.com/store/apps/details?id=' . $build->storeIdentifier;
 					} elseif ($build->platform == 'ios') {
