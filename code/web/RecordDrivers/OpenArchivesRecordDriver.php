@@ -111,7 +111,11 @@ class OpenArchivesRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getDescription() {
-		return $this->fields['description'];
+		if (!empty($this->fields['description'])) {
+			return $this->fields['description'];
+		} else {
+			return '';
+		}
 	}
 
 	/**

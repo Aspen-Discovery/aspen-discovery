@@ -612,7 +612,6 @@ const OnHoldForYou = (props) => {
 
 // complete the action on the item, i.e. checkout, hold, or view sample
 export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null) {
-    console.log(actionType);
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];

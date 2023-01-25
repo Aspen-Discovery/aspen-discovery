@@ -10,7 +10,7 @@ import {navigate, navigateStack} from '../../helpers/RootNavigator';
 import {SelectVolume} from './SelectVolume';
 
 const SelectPickupLocation = (props) => {
-     const { id, action, title, volumeInfo, prevRoute } = props;
+     const { id, action, title, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
      const [volume, setVolume] = React.useState(null);
@@ -19,11 +19,6 @@ const SelectPickupLocation = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
 
      const isPlacingHold = action.includes('hold');
-
-     const [isOpen, setIsOpen] = React.useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
-     const [response, setResponse] = React.useState('');
 
      let shouldDisplayVolumes = false;
      let typeOfHold = 'default';
@@ -60,29 +55,9 @@ const SelectPickupLocation = (props) => {
      const [activeAccount, setActiveAccount] = React.useState(user.id);
 
      let availableAccounts = [];
-     if (_.size(accounts > 0)) {
+     if (_.size(accounts) > 0) {
           availableAccounts = Object.values(accounts);
      }
-
-     const handleNavigation = (action) => {
-          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyHolds', {});
-               }
-          } else {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigate('MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigate('MyHolds', {});
-               }
-          }
-     };
 
      return (
           <>
@@ -107,7 +82,7 @@ const SelectPickupLocation = (props) => {
                               {shouldDisplayVolumes ? (
                                   <SelectVolume id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
                               ) : null}
-                              {_.size(accounts) > 0 ? (
+                              {_.size(accounts) > 1 ? (
                                    <FormControl>
                                         <FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
                                         <Select
@@ -159,37 +134,23 @@ const SelectPickupLocation = (props) => {
                                         isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
                                         onPress={async () => {
                                              setLoading(true);
-                                             await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (response) => {
-                                                  setResponse(response);
-                                                  if(response.success) {
-                                                       await refreshProfile(library.baseUrl).then((result) => {
-                                                            updateUser(result);
-                                                       });
+                                             await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (result) => {
+                                                  setResponse(result);
+                                                  setShowModal(false);
+                                                  if(result) {
+                                                       setResponseIsOpen(true);
+                                                       if(result.success) {
+                                                            await refreshProfile(library.baseUrl).then((profile) => {
+                                                                 updateUser(profile);
+                                                            });
+                                                       }
                                                   }
-                                                  setLoading(false);
                                              });
-                                             setShowModal(false);
-                                             setIsOpen(true);
+                                             setLoading(false);
                                         }}>
                                         {title}
                                    </Button>
                               </Button.Group>
-                              <Center>
-                                   <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                                        <AlertDialog.Content>
-                                             <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                             <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                             <AlertDialog.Footer>
-                                                  <Button.Group space={3}>
-                                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                                       <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
-                                                            {translate('general.button_ok')}
-                                                       </Button>
-                                                  </Button.Group>
-                                             </AlertDialog.Footer>
-                                        </AlertDialog.Content>
-                                   </AlertDialog>
-                              </Center>
                          </Modal.Footer>
                     </Modal.Content>
                </Modal>

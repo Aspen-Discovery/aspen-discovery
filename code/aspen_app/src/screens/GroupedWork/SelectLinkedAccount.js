@@ -11,16 +11,11 @@ import {navigate, navigateStack} from '../../helpers/RootNavigator';
 import {SelectVolume} from './SelectVolume';
 
 const SelectLinkedAccount = (props) => {
-     const { id, action, title, volumeInfo, prevRoute, isEContent } = props;
-     const [loading, setLoading] = React.useState(false);
-     const [showModal, setShowModal] = React.useState(false);
+     const { id, action, title, volumeInfo, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
+     const [loading, setResponseLoading] = React.useState(false);
+     const [showPrompt, setShowPrompt] = React.useState(false);
 
      const isPlacingHold = action.includes('hold');
-
-     const [isOpen, setIsOpen] = React.useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
-     const [response, setResponse] = React.useState('');
 
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -61,29 +56,9 @@ const SelectLinkedAccount = (props) => {
 
      const [activeAccount, setActiveAccount] = React.useState(user.id);
      let availableAccounts = [];
-     if (_.size(accounts > 0)) {
+     if (_.size(accounts) > 0) {
           availableAccounts = Object.values(accounts);
      }
-
-     const handleNavigation = (action) => {
-          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyHolds', {});
-               }
-          } else {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigate('MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigate('MyHolds', {});
-               }
-          }
-     };
 
      return (
           <Center>
@@ -95,10 +70,10 @@ const SelectLinkedAccount = (props) => {
                          padding: 0,
                          textAlign: 'center',
                     }}
-                    onPress={() => setShowModal(true)}>
+                    onPress={() => setShowPrompt(true)}>
                     {title}
                </Button>
-               <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="lg">
+               <Modal isOpen={showPrompt} onClose={() => setShowPrompt(false)} size="lg">
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
@@ -155,8 +130,8 @@ const SelectLinkedAccount = (props) => {
                                    <Button
                                         variant="outline"
                                         onPress={() => {
-                                             setShowModal(false);
-                                             setLoading(false);
+                                             setShowPrompt(false);
+                                             setResponseLoading(false);
                                         }}>
                                         {translate('general.cancel')}
                                    </Button>
@@ -164,38 +139,24 @@ const SelectLinkedAccount = (props) => {
                                         isLoading={loading}
                                         isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
                                         onPress={async () => {
-                                             setLoading(true);
-                                             await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (response) => {
-                                                  setResponse(response);
-                                                  if(response.success) {
-                                                       await refreshProfile(library.baseUrl).then((result) => {
-                                                            updateUser(result);
-                                                       });
+                                             setResponseLoading(true);
+                                             await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (result) => {
+                                                  setResponse(result);
+                                                  setShowPrompt(false);
+                                                  if(result) {
+                                                       setResponseIsOpen(true);
+                                                       if(result.success) {
+                                                            await refreshProfile(library.baseUrl).then((profile) => {
+                                                                 updateUser(profile);
+                                                            });
+                                                       }
                                                   }
-                                                  setLoading(false);
                                              });
-                                             setShowModal(false);
-                                             setIsOpen(true);
+                                             setResponseLoading(false);
                                         }}>
                                         {title}
                                    </Button>
                               </Button.Group>
-                              <Center>
-                                   <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                                        <AlertDialog.Content>
-                                             <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                             <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                             <AlertDialog.Footer>
-                                                  <Button.Group space={3}>
-                                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                                       <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
-                                                            {translate('general.button_ok')}
-                                                       </Button>
-                                                  </Button.Group>
-                                             </AlertDialog.Footer>
-                                        </AlertDialog.Content>
-                                   </AlertDialog>
-                              </Center>
                          </Modal.Footer>
                     </Modal.Content>
                </Modal>

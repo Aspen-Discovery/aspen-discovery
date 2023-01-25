@@ -22,7 +22,7 @@
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					<a href="{$summUrl}" class="result-title notranslate">
 						{$summTitle|removeTrailingPunctuation|escape}
-						{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
+						{if !empty($summSubTitle)}{if $summSubTitle|removeTrailingPunctuation}: {$summSubTitle|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}{/if}
 					</a>
 				</div>
 			</div>
