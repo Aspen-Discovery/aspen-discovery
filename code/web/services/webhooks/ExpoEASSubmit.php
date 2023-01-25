@@ -109,7 +109,8 @@ class webhooks_ExpoEASSubmit extends Action {
 					$storeName = "Apple App Store";
 				}
 				$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
-				$notification = "- <$buildTracker|Build submitted to $storeName> for $build->platform for version $build->version b[$build->buildVersion] p[$build->patch] c[$build->channel]";
+				$patchNum = $build->patch ?? "0";
+				$notification = "- <$buildTracker|Build submitted to $storeName> for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
 				$alertText = "*$build->name* $notification\n";
 				$curlWrapper = new CurlWrapper();
 				$headers = [

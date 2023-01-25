@@ -140,7 +140,8 @@ class webhooks_ExpoEASBuild extends Action {
 			if ($greenhouseAlertSlackHook && $shouldSendBuildAlert) {
 				global $configArray;
 				$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
-				$notification = "- <$buildTracker|Build completed> for $build->platform for version $build->version b[$build->buildVersion] p[$build->patch] c[$build->channel]";
+				$patchNum = $build->patch ?? '0';
+				$notification = "- <$buildTracker|Build completed> for $build->platform for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
 				$alertText = "*$build->name* $notification\n";
 				$curlWrapper = new CurlWrapper();
 				$headers = [
