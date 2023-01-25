@@ -54,13 +54,13 @@
 	  }
 	},
 	"beta": {
-	  "extends": "release",
+	  "extends": "production",
 	  "android": {
 		"track": "beta"
 	  }
 	},
 	"internal": {
-	  "extends": "release",
+	  "extends": "production",
 	  "android": {
 		"track": "internal",
 		"releaseStatus": "completed"

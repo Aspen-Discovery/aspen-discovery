@@ -12,29 +12,30 @@ class webhooks_ExpoEASSubmit extends Action {
 		if($payload = $this->isValidRequest()) {
 			$payload = json_decode($payload, true);
 			$logger->log(print_r($payload, true), Logger::LOG_ERROR);
-			require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
-			$build = new AspenLiDABuild();
-			$build->buildId = $payload['turtleBuildId'];
-			$build->appId = $payload['appId'];
-			$build->platform = $payload['platform'];
-			if($build->find(true)) {
-				if ($payload['status'] == 'errored') {
-					$build->error = 1;
-					$build->errorMessage = $payload['error']['errorCode'] . ': ' . $payload['error']['message'];
+			if($payload['status'] != 'canceled') {
+				require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
+				$build = new AspenLiDABuild();
+				$build->buildId = $payload['turtleBuildId'];
+				$build->appId = $payload['appId'];
+				$build->platform = $payload['platform'];
+				if ($build->find(true)) {
+					if ($payload['status'] == 'errored') {
+						$build->error = 1;
+						$build->errorMessage = $payload['submissionInfo']['error']['errorCode'] . ': ' . $payload['submissionInfo']['error']['message'];
+					} else {
+						$build->isSubmitted = 1;
+					}
+					if ($build->update() && $build->isSubmitted) {
+						$success = true;
+						$message = 'Build data successfully updated.';
+						$this->sendSlackAlert($build);
+					} else {
+						$error = 'Unable to update build data.';
+					}
 				} else {
-					$build->isSubmitted = 1;
+					$logger->log('Unable to find existing build.', Logger::LOG_ERROR);
 				}
-				if($build->update()) {
-					$success = true;
-					$message = 'Build data successfully updated.';
-					$this->sendSlackAlert($build);
-				} else {
-					$error = 'Unable to update build data.';
-				}
-			} else {
-				$logger->log('Unable to find existing build.', Logger::LOG_ERROR);
 			}
-
 			$logger->log('Finished processing webhook request.', Logger::LOG_ERROR);
 		} else {
 			$logger->log('Unable to validate request!', Logger::LOG_ERROR);
@@ -109,18 +110,27 @@ class webhooks_ExpoEASSubmit extends Action {
 					$storeName = "Apple App Store";
 				}
 				$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
-				$notification = "- <$buildTracker|Build submitted to $storeName> for $build->platform for version $build->version b[$build->buildVersion] p[$build->patch] c[$build->channel]";
+				$patchNum = $build->patch ?? "0";
+				if($build->status == 'finished') {
+					$notification = "- <$buildTracker|Build submitted to $storeName> for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
+				} else if($build->status == 'errored') {
+					$notification = "- <$buildTracker|Error submitting to $storeName> for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
+				} else {
+					$notification = null;
+				}
 				$alertText = "*$build->name* $notification\n";
-				$curlWrapper = new CurlWrapper();
-				$headers = [
-					'Accept: application/json',
-					'Content-Type: application/json',
-				];
-				$curlWrapper->addCustomHeaders($headers, false);
-				$body = new stdClass();
-				$body->text = $alertText;
-				$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
-				return true;
+				if($notification) {
+					$curlWrapper = new CurlWrapper();
+					$headers = [
+						'Accept: application/json',
+						'Content-Type: application/json',
+					];
+					$curlWrapper->addCustomHeaders($headers, false);
+					$body = new stdClass();
+					$body->text = $alertText;
+					$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+					return true;
+				}
 			}
 		}
 		return false;
