@@ -14,6 +14,7 @@ class GreenhouseSettings extends DataObject {
 	public $requestTrackerBaseUrl;
 	public $requestTrackerAuthToken;
 	public $expoEASBuildWebhookKey;
+	public $expoEASSubmitWebhookKey;
 	public $sendBuildTrackerAlert;
 
 	public static function getObjectStructure($context = ''): array {
@@ -102,6 +103,14 @@ class GreenhouseSettings extends DataObject {
 				'type' => 'storedPassword',
 				'label' => 'Expo EAS Build Webhook Key',
 				'description' => 'Webhook key provided by Expo for connecting the EAS Build webhook to track Aspen LiDA builds',
+				'canBatchUpdate' => false,
+				'hideInLists' => true,
+			],
+			'expoEASSubmitWebhookKey' => [
+				'property' => 'expoEASSubmitWebhookKey',
+				'type' => 'storedPassword',
+				'label' => 'Expo EAS Submit Webhook Key',
+				'description' => 'Webhook key provided by Expo for connecting the EAS Submit webhook to track Aspen LiDA builds',
 				'canBatchUpdate' => false,
 				'hideInLists' => true,
 			],

@@ -1,74 +1,38 @@
 <?php
 
 
-class webhooks_ExpoEASBuild extends Action {
+class webhooks_ExpoEASSubmit extends Action {
 	public function launch() {
 		global $logger;
 		$success = false;
 		$message = '';
 		$error = '';
-		$logger->log('Completing Expo EAS Build Webhook request...', Logger::LOG_ERROR);
+		$logger->log('Completing Expo EAS Submit Webhook request...', Logger::LOG_ERROR);
 
 		if($payload = $this->isValidRequest()) {
 			$payload = json_decode($payload, true);
 			$logger->log(print_r($payload, true), Logger::LOG_ERROR);
 			require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
 			$build = new AspenLiDABuild();
-			$build->buildId = $payload['id'];
-			$build->status = $payload['status'];
+			$build->buildId = $payload['turtleBuildId'];
 			$build->appId = $payload['appId'];
 			$build->platform = $payload['platform'];
-
-			$build->createdAt = $payload['createdAt'];
-			$build->completedAt = $payload['completedAt'];
-			$build->updatedAt = $payload['updatedAt'];
-
-			$build->name = $payload['metadata']['appName'];
-			$build->version = $payload['metadata']['appVersion'];
-			$build->buildVersion = $payload['metadata']['appBuildVersion'];
-			$build->gitCommitHash = $payload['metadata']['gitCommitHash'];
-			$build->storeIdentifier = $payload['metadata']['appIdentifier'];
-
-			if($payload['status'] == 'finished') {
-				if($build->channel == 'production' || $build->channel == 'beta' || $build->channel == 'store') {
-					if ($build->platform == 'android') {
-						$build->storeUrl = 'https://play.google.com/store/apps/details?id=' . $build->storeIdentifier;
-					} elseif ($build->platform == 'ios') {
-						$build->storeUrl = 'https://apps.apple.com/us/app/id' . $build->storeIdentifier;
-					}
+			if($build->find(true)) {
+				if ($payload['status'] == 'errored') {
+					$build->error = 1;
+					$build->errorMessage = $payload['error']['errorCode'] . ': ' . $payload['error']['message'];
+				} else {
+					$build->isSubmitted = 1;
 				}
-
-				if($build->channel == 'alpha') {
-					$build->storeUrl = 'https://play.google.com/store/apps/details?id=' . $build->storeIdentifier;
+				if($build->update()) {
+					$success = true;
+					$message = 'Build data successfully updated.';
+					$this->sendSlackAlert($build);
+				} else {
+					$error = 'Unable to update build data.';
 				}
-
-				if(isset($payload['artifacts'])) {
-					$build->artifact = $payload['artifacts']['buildUrl'];
-				}
-			}
-
-			if(isset($payload['metadata']['channel'])) {
-				$build->channel = $payload['metadata']['channel'];
 			} else {
-				$build->channel = $payload['metadata']['buildProfile'];
-			}
-
-			if(isset($payload['metadata']['message'])) {
-				$build->buildMessage = $payload['metadata']['message'];
-				$build->isEASUpdate = 1;
-			}
-
-			if($payload['status'] == 'errored') {
-				$build->error = 1;
-				$build->errorMessage = $payload['error']['errorCode'] . ": " . $payload['error']['message'];
-			}
-
-			if($build->insert()) {
-				$success = true;
-				$message = 'Build data successfully saved.';
-				$this->sendSlackAlert($build);
-			} else {
-				$error = 'Unable to insert build data.';
+				$logger->log('Unable to find existing build.', Logger::LOG_ERROR);
 			}
 
 			$logger->log('Finished processing webhook request.', Logger::LOG_ERROR);
@@ -93,25 +57,25 @@ class webhooks_ExpoEASBuild extends Action {
 
 	function isValidRequest(): bool|array|string {
 		global $logger;
-		$logger->log('Validating Expo EAS Build Webhook request...', Logger::LOG_ERROR);
+		$logger->log('Validating Expo EAS Submit Webhook request...', Logger::LOG_ERROR);
 		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 		$greenhouseSettings = new GreenhouseSettings();
-		$expoEASBuildWebhook = null;
+		$expoEASSubmitWebhook = null;
 		$hash = null;
 		$payload = [];
-		if($greenhouseSettings->find(true)) {
-			$expoEASBuildWebhook = $greenhouseSettings->expoEASBuildWebhookKey;
+		if ($greenhouseSettings->find(true)) {
+			$expoEASSubmitWebhook = $greenhouseSettings->expoEASSubmitWebhookKey;
 			$payload = file_get_contents('php://input');
-			$hash = hash_hmac('sha1', $payload, $expoEASBuildWebhook);
+			$hash = hash_hmac('sha1', $payload, $expoEASSubmitWebhook);
 			$hash = 'sha1=' . $hash;
-			$logger->log("Stored key: " . $hash, Logger::LOG_ERROR);
+			$logger->log('Stored key: ' . $hash, Logger::LOG_ERROR);
 		}
 
-		if($expoEASBuildWebhook && $hash) {
+		if ($expoEASSubmitWebhook && $hash) {
 			foreach (getallheaders() as $name => $value) {
-				if($name == 'Expo-Signature' || $name == 'expo-signature') {
+				if ($name == 'Expo-Signature' || $name == 'expo-signature') {
 					$logger->log($value, Logger::LOG_ERROR);
-					if(hash_equals($hash, $value)) {
+					if (hash_equals($hash, $value)) {
 						$logger->log('Keys match. Request validated.', Logger::LOG_ERROR);
 						return $payload;
 					} else {
@@ -127,7 +91,7 @@ class webhooks_ExpoEASBuild extends Action {
 	}
 
 	function sendSlackAlert($build): bool {
-		if($build) {
+		if ($build) {
 			require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 			$greenhouseSettings = new GreenhouseSettings();
 			$greenhouseAlertSlackHook = null;
@@ -139,8 +103,13 @@ class webhooks_ExpoEASBuild extends Action {
 
 			if ($greenhouseAlertSlackHook && $shouldSendBuildAlert) {
 				global $configArray;
+				if($build->platform == 'android') {
+					$storeName = "Google Play Store";
+				} else {
+					$storeName = "Apple App Store";
+				}
 				$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
-				$notification = "- <$buildTracker|Build completed> for $build->platform for version $build->version b[$build->buildVersion] p[$build->patch] c[$build->channel]";
+				$notification = "- <$buildTracker|Build submitted to $storeName> for $build->platform for version $build->version b[$build->buildVersion] p[$build->patch] c[$build->channel]";
 				$alertText = "*$build->name* $notification\n";
 				$curlWrapper = new CurlWrapper();
 				$headers = [
