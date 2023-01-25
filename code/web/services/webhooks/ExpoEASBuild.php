@@ -142,18 +142,26 @@ class webhooks_ExpoEASBuild extends Action {
 				global $configArray;
 				$buildTracker = $configArray['Site']['url'] . '/Greenhouse/AspenLiDABuildTracker/';
 				$patchNum = $build->patch ?? '0';
-				$notification = "- <$buildTracker|Build completed> for $build->platform for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
+				if($build->status == 'finished') {
+					$notification = "- <$buildTracker|Build completed> for $build->platform for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
+				} else if($build->status == 'errored') {
+					$notification = "- <$buildTracker|Error completing build> for $build->platform for version $build->version b[$build->buildVersion] p[$patchNum] c[$build->channel]";
+				} else {
+					$notification = null;
+				}
 				$alertText = "*$build->name* $notification\n";
-				$curlWrapper = new CurlWrapper();
-				$headers = [
-					'Accept: application/json',
-					'Content-Type: application/json',
-				];
-				$curlWrapper->addCustomHeaders($headers, false);
-				$body = new stdClass();
-				$body->text = $alertText;
-				$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
-				return true;
+				if($notification) {
+					$curlWrapper = new CurlWrapper();
+					$headers = [
+						'Accept: application/json',
+						'Content-Type: application/json',
+					];
+					$curlWrapper->addCustomHeaders($headers, false);
+					$body = new stdClass();
+					$body->text = $alertText;
+					$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+					return true;
+				}
 			}
 		}
 		return false;
