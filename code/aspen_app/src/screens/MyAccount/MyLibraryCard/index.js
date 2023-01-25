@@ -134,6 +134,8 @@ export const MyLibraryCard = () => {
 
 const CreateLibraryCard = (data) => {
      const card = data.card;
+     console.log(card);
+
      const { library } = React.useContext(LibrarySystemContext);
 
      let barcodeStyle;
@@ -143,33 +145,38 @@ const CreateLibraryCard = (data) => {
          barcodeStyle = _.toString(library.barcodeStyle);
      }
 
-     console.log(barcodeStyle);
-
      let barcodeValue = 'UNKNOWN';
      if (!_.isUndefined(card.cat_username)) {
           barcodeValue = card.cat_username;
      }
 
-     console.log(barcodeValue);
-
-     let expirationDate;
+     let expirationDate = null;
      if (!_.isUndefined(card.expires) && !_.isNull(card.expires)) {
-          expirationDate = new Date(card.expires);
+          if(_.isString(card.expires)) {
+              expirationDate = moment(card.expires, 'MMM D, YYYY');
+          }
      }
+     console.log(barcodeValue + " expirationDate: " + expirationDate);
 
      let cardHasExpired = 0;
-     if (!_.isUndefined(card.expired) && !_.isNull(card.expired)) {
+     if (!_.isUndefined(card.expired) && !_.isNull(card.expired) && card.expired !== 0 && card.expired !== '0') {
           cardHasExpired = card.expired;
      }
+     console.log(barcodeValue + " cardHasExpired: " + cardHasExpired);
 
      let neverExpires = false;
-     if (cardHasExpired === 0 && _.isDate(expirationDate)) {
-          const now = moment().format('MMM D, YYYY');
-          const hasExpired = moment(expirationDate).isBefore(now);
+     if (cardHasExpired === 0 && !_.isNull(expirationDate)) {
+          const now = moment();
+          console.log(now);
+          const expiration = moment(expirationDate);
+          console.log(expiration);
+          const hasExpired = moment(expiration).isBefore(now);
+          console.log(hasExpired);
           if (hasExpired) {
                neverExpires = true;
           }
      }
+     console.log(barcodeValue + " neverExpires: " + neverExpires)
 
      let icon = library.favicon;
      if (library.logoApp) {

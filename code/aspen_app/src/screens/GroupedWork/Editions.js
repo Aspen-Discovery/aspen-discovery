@@ -34,14 +34,58 @@ export const Editions = () => {
           queryFn: () => getRecords(id, format, source, library.baseUrl),
      });
 
+     const [responseIsOpen, setResponseIsOpen] = React.useState(false);
+     const onResponseClose = () => setResponseIsOpen(false);
+     const cancelResponseRef = React.useRef(null);
+     const [response, setResponse] = React.useState('');
+
+     const handleNavigation = (action) => {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
+               if (action.includes('Checkouts')) {
+                    setResponseIsOpen(false);
+                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
+               } else {
+                    setResponseIsOpen(false);
+                    navigateStack('AccountScreenTab', 'MyHolds', {});
+               }
+          } else {
+               if (action.includes('Checkouts')) {
+                    setResponseIsOpen(false);
+                    navigate('MyCheckouts', {});
+               } else {
+                    setResponseIsOpen(false);
+                    navigate('MyHolds', {});
+               }
+          }
+     };
+
      if (isLoading) {
           return loadingSpinner();
      }
 
-     return <Box safeArea={5}>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />}</Box>;
+     return (
+         <Box safeArea={5}>
+              {isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <><FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} /><Center>
+                   <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
+                   <AlertDialog.Content>
+                   <AlertDialog.Header>{response?.title}</AlertDialog.Header>
+                   <AlertDialog.Body>{response?.message}</AlertDialog.Body>
+                   <AlertDialog.Footer>
+                   <Button.Group space={3}>
+              {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
+                   <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
+              {translate('general.button_ok')}
+                   </Button>
+                   </Button.Group>
+                   </AlertDialog.Footer>
+                   </AlertDialog.Content>
+                   </AlertDialog>
+                   </Center></>
+              }</Box>);
 };
 
 const Edition = (payload) => {
+     const {response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef} = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
      const id = payload.id;
@@ -88,7 +132,7 @@ const Edition = (payload) => {
                          </HStack>
                     </VStack>
                     <Button.Group direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
-                         <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />
+                         <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />} />
                     </Button.Group>
                </HStack>
           </Box>
@@ -97,7 +141,7 @@ const Edition = (payload) => {
 
 const ActionButton = (data) => {
      const action = data.actions;
-     const { volumeInfo, groupedWorkId, fullRecordId, recordSource, prevRoute } = data;
+     const { volumeInfo, groupedWorkId, fullRecordId, recordSource, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = data;
      if (_.isObject(action)) {
           if (action.type === 'overdrive_sample') {
                return <OverDriveSample title={action.title} prevRoute={prevRoute} id={fullRecordId} type={action.type} sampleNumber={action.sampleNumber} formatId={action.formatId} />;
@@ -106,52 +150,39 @@ const ActionButton = (data) => {
           } else if (action.url === '/MyAccount/Holds') {
                return <OnHoldForYou title={action.title} prevRoute={prevRoute} />;
           } else if (action.type === 'ils_hold') {
-               return <PlaceHold title={action.title} id={groupedWorkId} type={action.type} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
+               return <PlaceHold title={action.title} id={groupedWorkId} type={action.type} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />;
           } else if (action.type === 'vdx_request') {
-               return <VDXRequest title={action.title} id={groupedWorkId} prevRoute={prevRoute} />;
+               return <VDXRequest title={action.title} id={groupedWorkId} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />;
           } else if (!_.isUndefined(action.redirectUrl)) {
                return <OpenSideLoad title={action.title} url={action.redirectUrl} prevRoute={prevRoute} />;
           } else {
-               return <CheckOut title={action.title} type={action.type} id={groupedWorkId} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
+               return <CheckOut title={action.title} type={action.type} id={groupedWorkId} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute}  setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>;
           }
      }
      return null;
 };
 const PlaceHold = (props) => {
-     const { id, type, volumeInfo, title, record, prevRoute } = props;
+     const { id, type, volumeInfo, title, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);
-     const [isOpen, setIsOpen] = React.useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
-     const [response, setResponse] = React.useState('');
-     const handleNavigation = (action) => {
-          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyHolds', {});
-               }
-          } else {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigate('MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigate('MyHolds', {});
-               }
+
+     const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
+     let pickupLocation = '';
+     if(!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+          pickupLocation = userPickupLocation[0];
+          if(_.isObject(pickupLocation)) {
+               pickupLocation = pickupLocation.code;
           }
-     };
+     }
+
      if (volumeInfo.numItemsWithVolumes >= 1) {
-          return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
+          return <SelectVolumeHold id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute}  setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>;
      } else if (_.size(accounts) > 0) {
-          return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} />;
+          return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false}  setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>;
      } else if (_.size(locations) > 1) {
-          return <SelectPickupLocation id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} />;
+          return <SelectPickupLocation id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute}  setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>;
      } else {
           return (
                <>
@@ -171,35 +202,19 @@ const PlaceHold = (props) => {
                          }}
                          onPress={async () => {
                               setLoading(true);
-                              await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (ilsResponse) => {
+                              await completeAction(record, type, user.id, null, null, pickupLocation, library.baseUrl, null, 'default').then(async (ilsResponse) => {
                                    setResponse(ilsResponse);
-                                   if (ilsResponse.success) {
-                                        await refreshProfile(library.baseUrl).then((result) => {
-                                             updateUser(result);
+                                   if (ilsResponse?.success) {
+                                        await refreshProfile(library.baseUrl).then((profile) => {
+                                             updateUser(profile);
                                         });
                                    }
                                    setLoading(false);
-                                   setIsOpen(true);
+                                   setResponseIsOpen(true);
                               });
                          }}>
                          {title}
                     </Button>
-                    <Center>
-                         <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                              <AlertDialog.Content>
-                                   <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                   <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                   <AlertDialog.Footer>
-                                        <Button.Group space={3}>
-                                             {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                             <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
-                                                  {translate('general.button_ok')}
-                                             </Button>
-                                        </Button.Group>
-                                   </AlertDialog.Footer>
-                              </AlertDialog.Content>
-                         </AlertDialog>
-                    </Center>
                </>
           );
      }
@@ -355,30 +370,11 @@ const OpenSideLoad = (props) => {
 };
 
 const CheckOut = (props) => {
-     const { id, title, type, record, prevRoute } = props;
+     const { id, title, type, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
      const { user, updateUser, accounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const [loading, setLoading] = React.useState(false);
-     const [isOpen, setIsOpen] = React.useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
-     const [response, setResponse] = React.useState('');
-     const handleNavigation = (action) => {
-          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
-               if (action.includes('Checkouts')) {
-                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
-               } else {
-                    navigateStack('AccountScreenTab', 'MyHolds', {});
-               }
-          } else {
-               if (action.includes('Checkouts')) {
-                    navigate('MyCheckouts', {});
-               } else {
-                    navigate('MyHolds', {});
-               }
-          }
-     };
 
      const volumeInfo = {
           numItemsWithVolumes: 0,
@@ -387,7 +383,7 @@ const CheckOut = (props) => {
           majorityOfItemsHaveVolumes: false,
      }
      if(_.size(accounts) > 0) {
-          return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={true} />
+          return <SelectLinkedAccount id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={true}   setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>
      } else {
           return (
               <>
@@ -415,27 +411,11 @@ const CheckOut = (props) => {
                                       });
                                  }
                                  setLoading(false);
-                                 setIsOpen(true);
+                                 setResponseIsOpen(true);
                             });
                        }}>
                         {title}
                    </Button>
-                   <Center>
-                        <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                             <AlertDialog.Content>
-                                  <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                  <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                  <AlertDialog.Footer>
-                                       <Button.Group space={3}>
-                                            {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                            <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
-                                                 {translate('general.button_ok')}
-                                            </Button>
-                                       </Button.Group>
-                                  </AlertDialog.Footer>
-                             </AlertDialog.Content>
-                        </AlertDialog>
-                   </Center>
               </>
           );
      }
