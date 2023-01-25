@@ -50,9 +50,17 @@ fs.readFile('eas.json', 'utf8', function (err, data) {
           const ascAppId = app['ascAppId'];
           const appleTeamId = app['appleTeamId'];
           const devAppleId = owner['devAppleId'];
+          const appleKeyPath = app['ascApiKeyPath'];
+          const appleKeyIssuer = app['ascApiKeyIssuerId'];
+          const appleKeyId = app['ascApiKeyId'];
+          const googleKeyPath = app['googleServiceKeyPath'];
           json = json.replace(ascAppId, '{{DEV_APP_ID}}');
           json = json.replace(appleTeamId, '{{DEV_TEAM_ID}}');
           json = json.replace(devAppleId, '{{DEV_APPLE_ID}}');
+          json = json.replace(appleKeyPath, '{{DEV_APPLE_API_KEY_PATH}}');
+          json = json.replace(appleKeyIssuer, '{{DEV_APPLE_API_KEY_ISSUER_ID}}');
+          json = json.replace(appleKeyId, '{{DEV_APPLE_API_KEY_ID}}');
+          json = json.replace(googleKeyPath, '{{DEV_GOOGLE_SERVICE_KEY_PATH}}');
           const obj = JSON.parse(json);
           fs.writeFile('eas.json', obj, 'utf8', function (err) {
                if (err) {
