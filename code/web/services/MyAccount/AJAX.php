@@ -2287,7 +2287,7 @@ class MyAccount_AJAX extends JSON_Action {
 		global $timer;
 		global $interface;
 		global $configArray;
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		$result = [];
 		if (UserAccount::isLoggedIn()) {
 			//Load a list of lists

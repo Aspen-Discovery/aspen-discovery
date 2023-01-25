@@ -331,24 +331,24 @@ class UserAccount {
 		}
 		global $action;
 		global $module;
-		global $logger;
+		//global $logger;
 
 		$userData = false;
 		if (isset($_SESSION['activeUserId'])) {
 			$activeUserId = $_SESSION['activeUserId'];
-			global $memCache;
-			global $serverName;
+			//global $memCache;
+			//global $serverName;
 
-			/** @var User $userData */
-			$userData = $memCache->get("user_{$serverName}_{$activeUserId}");
-			if ($userData === false || isset($_REQUEST['reload'])) {
+			///** @var User $userData */
+			//$userData = $memCache->get("user_{$serverName}_{$activeUserId}");
+			//if ($userData === false || isset($_REQUEST['reload'])) {
 
 				//Load the user from the database
 				$userData = new User();
 
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
-					$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
+					//$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
 					if (UserAccount::isUserMasquerading() || !empty($_SESSION['loggedInViaSSO'])) {
 						return $userData;
 					} else {
@@ -372,16 +372,16 @@ class UserAccount {
 				} else {
 					AspenError::raiseError("Error validating saved session for user $activeUserId, the user was not found in the database.");
 				}
-			} else {
+			//} else {
 				//$logger->log("Found cached user {$userData->id}", Logger::LOG_DEBUG);
-			}
+			//}
 			UserAccount::$isLoggedIn = true;
 
 			$masqueradeMode = UserAccount::isUserMasquerading();
 			if ($masqueradeMode) {
 				global $guidingUser;
-				$guidingUser = $memCache->get("user_{$serverName}_{$_SESSION['guidingUserId']}"); //TODO: check if this ever works
-				if ($guidingUser === false || isset($_REQUEST['reload'])) {
+				//$guidingUser = $memCache->get("user_{$serverName}_{$_SESSION['guidingUserId']}"); //TODO: check if this ever works
+				//if ($guidingUser === false || isset($_REQUEST['reload'])) {
 					$guidingUser = new User();
 					$guidingUser->get($_SESSION['guidingUserId']);
 					if (!$guidingUser) {
@@ -389,7 +389,7 @@ class UserAccount {
 						$logger->log('Invalid Guiding User ID in session variable: ' . $_SESSION['guidingUserId'], Logger::LOG_ERROR);
 						unset($_SESSION['guidingUserId']); // session_start(); session_commit(); probably needed for this to take effect, but might have other side effects
 					}
-				}
+				//}
 			}
 
 			//Check to see if the patron is already logged in within CAS as long as we aren't on a page that is likely to be a login page
@@ -468,8 +468,6 @@ class UserAccount {
 		global $usageByIPAddress;
 		$usageByIPAddress->numLoginAttempts++;
 
-		$validUsers = [];
-
 		if (isset($_REQUEST['casLogin'])) {
 			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
 			//Check CAS first
@@ -526,13 +524,12 @@ class UserAccount {
 					return new AspenError($disallowedMessage);
 				}
 
-				global $memCache;
-				global $serverName;
-				global $configArray;
-				$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, $configArray['Caching']['user']);
+				//global $memCache;
+				//global $serverName;
+				//global $configArray;
+				//$memCache->set("user_{$serverName}_{$tempUser->id}", $tempUser, $configArray['Caching']['user']);
 				//$logger->log("Cached user {$tempUser->id}", Logger::LOG_DEBUG);
 
-				$validUsers[] = $tempUser;
 				if ($primaryUser == null) {
 					$primaryUser = $tempUser;
 					self::updateSession($primaryUser);
@@ -631,10 +628,10 @@ class UserAccount {
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					global $memCache;
-					global $serverName;
-					global $configArray;
-					$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
+					//global $memCache;
+					//global $serverName;
+					//global $configArray;
+					//$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
 					//$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
 					if ($validatedViaSSO) {
 						$_SESSION['loggedInViaCAS'] = true;
