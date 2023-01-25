@@ -18,6 +18,7 @@
 	},
 	"alpha": {
 	  "extends": "production",
+	  "distribution": "internal",
 	  "channel": "alpha",
 	  "ios": {
 		"simulator": true
@@ -40,7 +41,8 @@
 	"production": {
 	  "android": {
 		"track": "production",
-		"releaseStatus": "draft"
+		"releaseStatus": "draft",
+		"serviceAccountKeyPath": "{{DEV_GOOGLE_SERVICE_KEY_PATH}}"
 	  },
 	  "ios": {
 		"ascApiKeyPath": "{{DEV_APPLE_API_KEY_PATH}}",
@@ -55,6 +57,13 @@
 	  "extends": "release",
 	  "android": {
 		"track": "beta"
+	  }
+	},
+	"internal": {
+	  "extends": "release",
+	  "android": {
+		"track": "internal",
+		"releaseStatus": "completed"
 	  }
 	}
   }
