@@ -1427,6 +1427,10 @@ abstract class MarcRecordProcessor {
 			printFormats.clear();
 			printFormats.add("BookClubKitLarge");
 		}
+		if (printFormats.contains("BookClubKit") && printFormats.contains("Kit")){
+			printFormats.clear();
+			printFormats.add("BookClubKit");
+		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
