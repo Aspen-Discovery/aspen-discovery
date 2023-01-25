@@ -37,12 +37,15 @@
 	}
   },
   "submit": {
-	"release": {
+	"production": {
 	  "android": {
 		"track": "production",
 		"releaseStatus": "draft"
 	  },
 	  "ios": {
+		"ascApiKeyPath": "{{DEV_APPLE_API_KEY_PATH}}",
+		"ascApiKeyIssuerId": "{{DEV_APPLE_API_KEY_ISSUER_ID}}",
+		"ascApiKeyId": "{{DEV_APPLE_API_KEY_ID}}",
 		"appleId": "{{DEV_APPLE_ID}}",
 		"ascAppId": "{{DEV_APP_ID}}",
 		"appleTeamId": "{{DEV_TEAM_ID}}"

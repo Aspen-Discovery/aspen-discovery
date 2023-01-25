@@ -5,5 +5,8 @@
   "sentryProjectOwner": "",
   "sentryAuthToken": "",
   "devAppleId": "",
+  "ascApiKeyPath": "",
+  "ascApiKeyIssuerId": "",
+  "ascApiKeyId": "",
   "greenhouseUrl": ""
 }

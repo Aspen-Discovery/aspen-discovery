@@ -59,6 +59,9 @@ fs.readFile('eas.json', 'utf8', function (err, data) {
           json = json.replace('{{DEV_APP_ID}}', app['ascAppId']);
           json = json.replace('{{DEV_TEAM_ID}}', app['appleTeamId']);
           json = json.replace('{{DEV_APPLE_ID}}', owner['devAppleId']);
+          json = json.replace('{{DEV_APPLE_API_KEY_PATH}}', owner['ascApiKeyPath']);
+          json = json.replace('{{DEV_APPLE_API_KEY_ISSUER_ID}}', owner['ascApiKeyIssuerId']);
+          json = json.replace('{{DEV_APPLE_API_KEY_ID}}', owner['ascApiKeyId']);
           const obj = JSON.parse(json);
           fs.writeFile('eas.json', obj, 'utf8', function (err) {
                if (err) {
