@@ -603,6 +603,7 @@ class UserAPI extends Action {
 			$userData->expireClose = $accountSummary->isExpirationClose();
 			$userData->expired = $accountSummary->isExpired();
 
+			$userData->readingHistoryEnabled = (int)$user->isReadingHistoryEnabled();
 			$accountSummary->setReadingHistory($user->getReadingHistorySize());
 			$userData->numReadingHistory = $accountSummary->getReadingHistory();
 

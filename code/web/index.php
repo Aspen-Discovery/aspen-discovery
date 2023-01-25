@@ -347,88 +347,86 @@ if ($isLoggedIn) {
 	}
 	$interface->assign('user', $user);
 	$interface->assign('loggedIn', $user == false ? 'false' : 'true');
-	if ($user) {
-		$interface->assign('activeUserId', $user->id);
-	}
+
+	$interface->assign('activeUserId', $user->id);
+	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
 
 	//Check to see if there is a followup module and if so, use that module and action for the next page load
-	if ($user) {
-		if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
+	if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
 
-			// For Masquerade Follow up, start directly instead of a redirect
-			if ($_REQUEST['followupAction'] == 'Masquerade' && $_REQUEST['followupModule'] == 'MyAccount') {
-				global $logger;
-				$logger->log("Processing Masquerade after logging in", Logger::LOG_ERROR);
-				require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
-				$masquerade = new MyAccount_Masquerade();
-				$masquerade->launch();
-				die;
-			} elseif ($_REQUEST['followupAction'] == 'MyList' && $_REQUEST['followupModule'] == 'MyAccount') {
-				$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
-				$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
-				if (!empty($_REQUEST['recordId'])) {
-					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
-				}
-				header("Location: " . $followupUrl);
-				exit();
-			} elseif ($_REQUEST['followupAction'] == 'AccessOnline' && $_REQUEST['followupModule'] == 'EBSCOhost') {
-				$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
-				$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
-				if (!empty($_REQUEST['recordId'])) {
-					$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
-				}
-				header("Location: " . $followupUrl);
-				exit();
-			} elseif ($_REQUEST['followupModule'] == 'WebBuilder') {
-				echo("Redirecting to followup location");
-				$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
-				$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
-				if (!empty($_REQUEST['pageId'])) {
-					if ($_REQUEST['followupAction'] == "BasicPage") {
-						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-						$basicPage = new BasicPage();
-						$basicPage->id = $_REQUEST['pageId'];
-						if ($basicPage->find(true)) {
-							if ($basicPage->urlAlias) {
-								$followupUrl = $basicPage->urlAlias;
-							} else {
-								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-							}
-						} else {
-							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-						}
-					} elseif ($_REQUEST['followupAction'] == "PortalPage") {
-						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-						$portalPage = new PortalPage();
-						$portalPage->id = $_REQUEST['pageId'];
-						if ($portalPage->find(true)) {
-							if ($portalPage->urlAlias) {
-								$followupUrl = $portalPage->urlAlias;
-							} else {
-								$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
-							}
+		// For Masquerade Follow up, start directly instead of a redirect
+		if ($_REQUEST['followupAction'] == 'Masquerade' && $_REQUEST['followupModule'] == 'MyAccount') {
+			global $logger;
+			$logger->log("Processing Masquerade after logging in", Logger::LOG_ERROR);
+			require_once ROOT_DIR . '/services/MyAccount/Masquerade.php';
+			$masquerade = new MyAccount_Masquerade();
+			$masquerade->launch();
+			die;
+		} elseif ($_REQUEST['followupAction'] == 'MyList' && $_REQUEST['followupModule'] == 'MyAccount') {
+			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
+			$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
+			if (!empty($_REQUEST['recordId'])) {
+				$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+			}
+			header("Location: " . $followupUrl);
+			exit();
+		} elseif ($_REQUEST['followupAction'] == 'AccessOnline' && $_REQUEST['followupModule'] == 'EBSCOhost') {
+			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
+			$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
+			if (!empty($_REQUEST['recordId'])) {
+				$followupUrl .= "?id=" . strip_tags($_REQUEST['recordId']);
+			}
+			header("Location: " . $followupUrl);
+			exit();
+		} elseif ($_REQUEST['followupModule'] == 'WebBuilder') {
+			echo("Redirecting to followup location");
+			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
+			$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
+			if (!empty($_REQUEST['pageId'])) {
+				if ($_REQUEST['followupAction'] == "BasicPage") {
+					require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+					$basicPage = new BasicPage();
+					$basicPage->id = $_REQUEST['pageId'];
+					if ($basicPage->find(true)) {
+						if ($basicPage->urlAlias) {
+							$followupUrl = $basicPage->urlAlias;
 						} else {
 							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
 						}
 					} else {
 						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
 					}
+				} elseif ($_REQUEST['followupAction'] == "PortalPage") {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+					$portalPage = new PortalPage();
+					$portalPage->id = $_REQUEST['pageId'];
+					if ($portalPage->find(true)) {
+						if ($portalPage->urlAlias) {
+							$followupUrl = $portalPage->urlAlias;
+						} else {
+							$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+						}
+					} else {
+						$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
+					}
+				} else {
+					$followupUrl .= "?id=" . strip_tags($_REQUEST['pageId']);
 				}
-				header("Location: " . $followupUrl);
-				exit();
-			} else {
-				echo("Redirecting to followup location");
-				$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
-				if (!empty($_REQUEST['recordId'])) {
-					$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
-				}
-				$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
-				if (isset($_REQUEST['comment'])) {
-					$followupUrl .= "?comment=" . urlencode($_REQUEST['comment']);
-				}
-				header("Location: " . $followupUrl);
-				exit();
 			}
+			header("Location: " . $followupUrl);
+			exit();
+		} else {
+			echo("Redirecting to followup location");
+			$followupUrl = "/" . strip_tags($_REQUEST['followupModule']);
+			if (!empty($_REQUEST['recordId'])) {
+				$followupUrl .= "/" . strip_tags($_REQUEST['recordId']);
+			}
+			$followupUrl .= "/" . strip_tags($_REQUEST['followupAction']);
+			if (isset($_REQUEST['comment'])) {
+				$followupUrl .= "?comment=" . urlencode($_REQUEST['comment']);
+			}
+			header("Location: " . $followupUrl);
+			exit();
 		}
 	}
 	if (isset($_REQUEST['followupModule']) && isset($_REQUEST['followupAction'])) {
@@ -467,6 +465,8 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 		$interface->assign('guidingUser', $guidingUser);
 	}
 	$interface->assign('userHasCatalogConnection', UserAccount::getUserHasCatalogConnection());
+	$user = UserAccount::getActiveUserObj();
+	$interface->assign('enableReadingHistory', $user->isReadingHistoryEnabled());
 
 	$homeLibrary = Library::getLibraryForLocation(UserAccount::getUserHomeLocationId());
 	if (isset($homeLibrary)) {
@@ -482,6 +482,7 @@ if (UserAccount::isLoggedIn() && (!isset($_REQUEST['action']) || $_REQUEST['acti
 	$interface->assign('userHasCatalogConnection', false);
 	$interface->assign('hasInterlibraryLoanConnection', false);
 	$interface->assign('disableCoverArt', false);
+	$interface->assign('enableReadingHistory', false);
 }
 
 //Find a reasonable default location to go to

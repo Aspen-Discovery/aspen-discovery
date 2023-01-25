@@ -22,6 +22,14 @@ function getUpdates23_02_00(): array {
 				"ALTER TABLE location_records_to_include CHANGE COLUMN subLocation subLocation VARCHAR(150) NOT NULL DEFAULT '';",
 			]
 		], //increase_sublocation_to_include
+		'add_enable_reading_history_to_ptype' => [
+			'title' => 'PType - Add Enable Reading History',
+			'description' => 'Allow reading history to be disabled by PType',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE ptype ADD COLUMN enableReadingHistory TINYINT(1) DEFAULT 1;",
+			]
+		], //add_enable_reading_history_to_ptype
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [
