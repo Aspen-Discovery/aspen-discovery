@@ -494,14 +494,14 @@ class User extends DataObject {
 							$linkedUser->id = $userLink->linkedAccountId;
 							if ($linkedUser->find(true)) {
 								/** @var User $userData */
-								$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
-								if ($userData === false || isset($_REQUEST['reload'])) {
+								//$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
+								//if ($userData === false || isset($_REQUEST['reload'])) {
 									//Load full information from the catalog
 									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
-								} else {
-									$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
-									$linkedUser = $userData;
-								}
+								//} else {
+								//	$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
+								//	$linkedUser = $userData;
+								//}
 								if ($linkedUser && !($linkedUser instanceof AspenError)) {
 									$this->linkedUsers[] = clone($linkedUser);
 								}
@@ -2115,7 +2115,7 @@ class User extends DataObject {
 						if ($tmpResult['success']) {
 							$success++;
 						}
-					} /** @noinspection PhpStatementHasEmptyBodyInspection */ else/** @noinspection PhpStatementHasEmptyBodyInspection */ if ($holdType == 'cloud_library') {
+					} elseif ($holdType == 'cloud_library') {
 						//Cloud library holds cannot be frozen
 //						require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 //						$driver = new CloudLibraryDriver();
@@ -2174,25 +2174,25 @@ class User extends DataObject {
 		return $result;
 	}
 
-	function freezeOverDriveHold($overDriveId, $reactivationDate) {
+	function freezeOverDriveHold($overDriveId, $reactivationDate) : array {
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->freezeHold($this, $overDriveId, $reactivationDate);
 	}
 
-	function thawOverDriveHold($overDriveId) {
+	function thawOverDriveHold($overDriveId) : array {
 		require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 		$overDriveDriver = new OverDriveDriver();
 		return $overDriveDriver->thawHold($this, $overDriveId);
 	}
 
-	function freezeAxis360Hold($recordId) {
+	function freezeAxis360Hold($recordId) : array {
 		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 		$axis360Driver = new Axis360Driver();
 		return $axis360Driver->freezeHold($this, $recordId);
 	}
 
-	function thawAxis360Hold($recordId) {
+	function thawAxis360Hold($recordId) : array {
 		require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 		$axis360Driver = new Axis360Driver();
 		return $axis360Driver->thawHold($this, $recordId);
@@ -3949,6 +3949,10 @@ class User extends DataObject {
 		} else {
 			return $this->getAccountProfile()->ils;
 		}
+	}
+
+	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
+		return parent::find($fetchFirst, $requireOneMatchToReturn);
 	}
 }
 

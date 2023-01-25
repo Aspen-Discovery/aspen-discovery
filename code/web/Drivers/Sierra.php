@@ -425,7 +425,8 @@ class Sierra extends Millennium {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';
 				}
-
+				$curHold->sourceId = '';
+				$curHold->recordId = '';
 			} else {
 				///////////////
 				// ILS HOLD

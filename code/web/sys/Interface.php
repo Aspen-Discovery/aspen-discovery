@@ -755,11 +755,15 @@ class UInterface extends Smarty {
 
 		// if using SSO, determine if it's available to only staff users or not
 		$ssoStaffOnly = false;
-		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-		$ssoSettings = new SSOSetting();
-		$ssoSettings->id = $library->ssoSettingId;
-		if($ssoSettings->find(true)) {
-			$ssoStaffOnly = $ssoSettings->staffOnly;
+		try {
+			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+			$ssoSettings = new SSOSetting();
+			$ssoSettings->id = $library->ssoSettingId;
+			if($ssoSettings->find(true)) {
+				$ssoStaffOnly = $ssoSettings->staffOnly;
+			}
+		} catch (Exception $e) {
+			//This happens if the SSOSetting table does not exist yet.  
 		}
 		$this->assign('ssoStaffOnly', $ssoStaffOnly);
 

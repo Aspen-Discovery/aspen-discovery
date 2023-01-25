@@ -35,7 +35,6 @@ class CatalogConnection {
 	public function __construct($driver, $accountProfile) {
 		$path = ROOT_DIR . "/Drivers/{$driver}.php";
 		if (is_readable($path) && $driver != 'AbstractIlsDriver') {
-			/** @noinspection PhpIncludeInspection */
 			require_once $path;
 
 			try {
@@ -126,7 +125,7 @@ class CatalogConnection {
 			if ($user != null) {
 				//If we have a valid patron, only revalidate every 15 minutes
 				//Make sure the password is correct though
-				if ($user->lastLoginValidation < (time() - 15 * 60) /* && ($user->cat_password == $password) */) {
+				if ($user->lastLoginValidation < (time() - 15 * 60)) {
 					$doPatronLogin = true;
 				} else {
 					//If the password is the same, we're still ok
@@ -852,12 +851,13 @@ class CatalogConnection {
 		return $this->driver->renewCheckout($patron, $recordId, $itemId, $itemIndex);
 	}
 
-	public function renewAll(User $patron) {
+	public function renewAll(User $patron) : array {
 		if ($this->driver->hasFastRenewAll()) {
 			return $this->driver->renewAll($patron);
 		} else {
 			//Get all list of all transactions
 			$currentTransactions = $this->driver->getCheckouts($patron);
+			/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 			$renewResult = [
 				'success' => true,
 				'message' => [],

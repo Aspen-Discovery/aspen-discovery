@@ -141,7 +141,7 @@ const Format = (data) => {
      }
 
      return (
-          <Button size="sm" mb={1} mr={1} colorScheme="secondary" variant={btnStyle} onPress={() => updateFormat(data.data)}>
+          <Button size="sm" colorScheme="secondary" mb={1} mr={1} variant={btnStyle} onPress={() => updateFormat(data.data)}>
                {data.data}
           </Button>
      );
@@ -184,7 +184,11 @@ const getFormats = (formats) => {
                     <Text fontSize={{ base: 'xs', lg: 'md' }} bold mt={3} mb={1}>
                          {translate('grouped_work.format')}
                     </Text>
-                    <FlatList data={_.keys(formats)} renderItem={({ item }) => <Format data={item} isSelected={format} updateFormat={updateFormat} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap' }} />
+                   <Button.Group flexDirection="row" flexWrap="wrap">
+                       {_.map(_.keys(formats), function (item, index, array) {
+                           return <Format key={index} data={item} isSelected={format} updateFormat={updateFormat} />
+                       })}
+                   </Button.Group>
                </>
           );
      } else {
