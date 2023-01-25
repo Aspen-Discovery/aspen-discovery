@@ -12,65 +12,66 @@ class webhooks_ExpoEASBuild extends Action {
 		if($payload = $this->isValidRequest()) {
 			$payload = json_decode($payload, true);
 			$logger->log(print_r($payload, true), Logger::LOG_ERROR);
-			require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
-			$build = new AspenLiDABuild();
-			$build->buildId = $payload['id'];
-			$build->status = $payload['status'];
-			$build->appId = $payload['appId'];
-			$build->platform = $payload['platform'];
+			if($payload['status'] != 'canceled') {
+				require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
+				$build = new AspenLiDABuild();
+				$build->buildId = $payload['id'];
+				$build->status = $payload['status'];
+				$build->appId = $payload['appId'];
+				$build->platform = $payload['platform'];
 
-			$build->createdAt = $payload['createdAt'];
-			$build->completedAt = $payload['completedAt'];
-			$build->updatedAt = $payload['updatedAt'];
+				$build->createdAt = $payload['createdAt'];
+				$build->completedAt = $payload['completedAt'];
+				$build->updatedAt = $payload['updatedAt'];
 
-			$build->name = $payload['metadata']['appName'];
-			$build->version = $payload['metadata']['appVersion'];
-			$build->buildVersion = $payload['metadata']['appBuildVersion'];
-			$build->gitCommitHash = $payload['metadata']['gitCommitHash'];
-			$build->storeIdentifier = $payload['metadata']['appIdentifier'];
+				$build->name = $payload['metadata']['appName'];
+				$build->version = $payload['metadata']['appVersion'];
+				$build->buildVersion = $payload['metadata']['appBuildVersion'];
+				$build->gitCommitHash = $payload['metadata']['gitCommitHash'];
+				$build->storeIdentifier = $payload['metadata']['appIdentifier'];
 
-			if($payload['status'] == 'finished') {
-				if($payload['metadata']['channel'] == 'production' || $payload['metadata']['channel'] == 'beta' || $payload['metadata']['channel'] == 'store') {
-					if ($build->platform == 'android') {
+				if ($payload['status'] == 'finished') {
+					if ($payload['metadata']['channel'] == 'production' || $payload['metadata']['channel'] == 'beta' || $payload['metadata']['channel'] == 'store') {
+						if ($build->platform == 'android') {
+							$build->storeUrl = 'https://play.google.com/store/apps/details?id=' . $build->storeIdentifier;
+						} elseif ($build->platform == 'ios') {
+							$build->storeUrl = 'https://apps.apple.com/us/app/id' . $build->storeIdentifier;
+						}
+					}
+
+					if ($build->channel == 'alpha') {
 						$build->storeUrl = 'https://play.google.com/store/apps/details?id=' . $build->storeIdentifier;
-					} elseif ($build->platform == 'ios') {
-						$build->storeUrl = 'https://apps.apple.com/us/app/id' . $build->storeIdentifier;
+					}
+
+					if (isset($payload['artifacts'])) {
+						$build->artifact = $payload['artifacts']['buildUrl'];
 					}
 				}
 
-				if($build->channel == 'alpha') {
-					$build->storeUrl = 'https://play.google.com/store/apps/details?id=' . $build->storeIdentifier;
+				if (isset($payload['metadata']['channel'])) {
+					$build->channel = $payload['metadata']['channel'];
+				} else {
+					$build->channel = $payload['metadata']['buildProfile'];
 				}
 
-				if(isset($payload['artifacts'])) {
-					$build->artifact = $payload['artifacts']['buildUrl'];
+				if (isset($payload['metadata']['message'])) {
+					$build->buildMessage = $payload['metadata']['message'];
+					$build->isEASUpdate = 1;
+				}
+
+				if ($payload['status'] == 'errored') {
+					$build->error = 1;
+					$build->errorMessage = $payload['error']['errorCode'] . ": " . $payload['error']['message'];
+				}
+
+				if ($build->insert()) {
+					$success = true;
+					$message = 'Build data successfully saved.';
+					$this->sendSlackAlert($build);
+				} else {
+					$error = 'Unable to insert build data.';
 				}
 			}
-
-			if(isset($payload['metadata']['channel'])) {
-				$build->channel = $payload['metadata']['channel'];
-			} else {
-				$build->channel = $payload['metadata']['buildProfile'];
-			}
-
-			if(isset($payload['metadata']['message'])) {
-				$build->buildMessage = $payload['metadata']['message'];
-				$build->isEASUpdate = 1;
-			}
-
-			if($payload['status'] == 'errored') {
-				$build->error = 1;
-				$build->errorMessage = $payload['error']['errorCode'] . ": " . $payload['error']['message'];
-			}
-
-			if($build->insert()) {
-				$success = true;
-				$message = 'Build data successfully saved.';
-				$this->sendSlackAlert($build);
-			} else {
-				$error = 'Unable to insert build data.';
-			}
-
 			$logger->log('Finished processing webhook request.', Logger::LOG_ERROR);
 		} else {
 			$logger->log('Unable to validate request!', Logger::LOG_ERROR);

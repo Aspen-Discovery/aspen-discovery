@@ -12,29 +12,30 @@ class webhooks_ExpoEASSubmit extends Action {
 		if($payload = $this->isValidRequest()) {
 			$payload = json_decode($payload, true);
 			$logger->log(print_r($payload, true), Logger::LOG_ERROR);
-			require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
-			$build = new AspenLiDABuild();
-			$build->buildId = $payload['turtleBuildId'];
-			$build->appId = $payload['appId'];
-			$build->platform = $payload['platform'];
-			if($build->find(true)) {
-				if ($payload['status'] == 'errored') {
-					$build->error = 1;
-					$build->errorMessage = $payload['submissionInfo']['error']['errorCode'] . ': ' . $payload['submissionInfo']['error']['message'];
+			if($payload['status'] != 'canceled') {
+				require_once ROOT_DIR . '/sys/Greenhouse/AspenLiDABuild.php';
+				$build = new AspenLiDABuild();
+				$build->buildId = $payload['turtleBuildId'];
+				$build->appId = $payload['appId'];
+				$build->platform = $payload['platform'];
+				if ($build->find(true)) {
+					if ($payload['status'] == 'errored') {
+						$build->error = 1;
+						$build->errorMessage = $payload['submissionInfo']['error']['errorCode'] . ': ' . $payload['submissionInfo']['error']['message'];
+					} else {
+						$build->isSubmitted = 1;
+					}
+					if ($build->update() && $build->isSubmitted) {
+						$success = true;
+						$message = 'Build data successfully updated.';
+						$this->sendSlackAlert($build);
+					} else {
+						$error = 'Unable to update build data.';
+					}
 				} else {
-					$build->isSubmitted = 1;
+					$logger->log('Unable to find existing build.', Logger::LOG_ERROR);
 				}
-				if($build->update() && $build->isSubmitted) {
-					$success = true;
-					$message = 'Build data successfully updated.';
-					$this->sendSlackAlert($build);
-				} else {
-					$error = 'Unable to update build data.';
-				}
-			} else {
-				$logger->log('Unable to find existing build.', Logger::LOG_ERROR);
 			}
-
 			$logger->log('Finished processing webhook request.', Logger::LOG_ERROR);
 		} else {
 			$logger->log('Unable to validate request!', Logger::LOG_ERROR);
