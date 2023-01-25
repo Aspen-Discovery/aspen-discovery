@@ -15,6 +15,12 @@ class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
 		}
 		$interface->assign('showUnsupportedOnly', $showUnsupportedOnly);
 
+		$showSubmittedOnly = false;
+		if(isset($_REQUEST['showSubmittedOnly'])) {
+			$showSubmittedOnly = true;
+		}
+		$interface->assign('showSubmittedOnly', $showSubmittedOnly);
+
 		$appToShow = 1;
 		if (isset($_REQUEST['appToShow'])) {
 			$appToShow = $_REQUEST['appToShow'];
@@ -79,6 +85,10 @@ class Greenhouse_AspenLiDABuildTracker extends Admin_Admin {
 
 		if($showUnsupportedOnly) {
 			$builds->whereAdd("isSupported = 0");
+		}
+
+		if($showSubmittedOnly) {
+			$builds->whereAdd('isSubmitted = 1');
 		}
 
 		$builds->orderBy(['name ASC', 'version DESC', 'buildVersion DESC', 'patch DESC']);

@@ -9,9 +9,13 @@
 		<div class="row align-middle">
 			<div class="col-xs-12 col-md-2">
 		        <div class="btn-group form-check form-switch" id="showUnsupportedOnlySwitch">
-		              <input class="form-check-input" type="checkbox" id="showUnsupportedOnly" name="showUnsupportedOnly" {if $showUnsupportedOnly}checked{/if} style="position: relative; top: 5px">
+		              <input class="form-check-input" type="checkbox" id="showUnsupportedOnly" name="showUnsupportedOnly" {if $showUnsupportedOnly}checked{/if} style="position: relative; top: -3px">
 		              <label class="form-check-label" style="line-height: 18px" for="showUnsupportedOnly">{translate text='Show Unsupported Only' isPublicFacing=true}</label>
 		        </div>
+                <div class="btn-group form-check form-switch" id="showSubmittedOnlySwitch">
+                      <input class="form-check-input" type="checkbox" id="showSubmittedOnly" name="showSubmittedOnly" {if $showSubmittedOnly}checked{/if} style="position: relative; top: -3px">
+                      <label class="form-check-label" style="line-height: 18px" for="showSubmittedOnly">{translate text='Show Submitted Only' isPublicFacing=true}</label>
+                </div>
 		    </div>
 			<div class="col-xs-12 col-md-2">
                 <div class="form-group">
@@ -81,6 +85,7 @@
 					<th>{translate text="EAS Update" isAdminFacing=true}</th>
 					<th>{translate text="Supported" isAdminFacing=true}</th>
 					<th>{translate text="Download" isAdminFacing=true}</th>
+					<th>{translate text="Store Listing" isAdminFacing=true}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -117,7 +122,22 @@
 								<i class="fas fa-exclamation-triangle"></i> {translate text="No" isAdminFacing=true}
 							{/if}
 						</td>
-						<td style="vertical-align: middle"><a class="btn btn-default btn-sm" href="{$build.artifact}"><i class="fas fa-download"></i> {translate text="Download" isAdminFacing=true} .{file_ext url=$build.artifact}</a></td>
+						<td style="vertical-align: middle">
+							{if $build.channel == 'beta' || $build.channel == 'alpha' || $build.channel == 'development'}
+								<a class="btn btn-default btn-sm" href="{$build.artifact}">
+									<i class="fas fa-download"></i> {translate text="Download" isAdminFacing=true} .{file_ext url=$build.artifact}
+								</a>
+							{/if}
+						</td>
+						<td style="vertical-align: middle">
+							{if $build.storeUrl}
+								{if $build.platform == 'android'}
+		                            <a class="btn btn-default btn-sm" href="{$build.storeUrl}"><i class="fab fa-android"></i> {translate text="Play Store" isAdminFacing=true}</a>
+		                        {else}
+		                            <a class="btn btn-default btn-sm" href="{$build.storeUrl}"><i class="fab fa-apple"></i> {translate text="App Store" isAdminFacing=true}</a>
+		                        {/if}
+	                        {/if}
+						</td>
 					</tr>
 				{/foreach}
 			</tbody>

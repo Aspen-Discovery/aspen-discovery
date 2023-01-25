@@ -25,6 +25,9 @@ class AspenLiDABuild extends DataObject {
 	public $updateId;
 	public $patch;
 	public $updateCreated;
+	public $isSubmitted;
+	public $storeIdentifier;
+	public $storeUrl;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -112,6 +115,28 @@ class AspenLiDABuild extends DataObject {
 				'label' => 'Patch Update?',
 				'description' => 'Whether or not this was a patch update using EAS Update',
 			],
+			'isSubmitted' => [
+				'property' => 'isSubmitted',
+				'type' => 'checkbox',
+				'label' => 'Submitted to app store?',
+				'description' => 'Whether or not build has been submitted to the applicable app store',
+			],
+			'storeIdentifier' => [
+				'property' => 'storeIdentifier',
+				'type' => 'text',
+				'label' => 'Store Identifier',
+				'description' => "The identifying id for the app to it's applicable app store",
+				'hideInLists' => true,
+				'readOnly' => true,
+			],
+			'storeUrl' => [
+				'property' => 'storeUrl',
+				'type' => 'text',
+				'label' => 'Store Url',
+				'description' => 'The url to access the app listing',
+				'hideInLists' => true,
+				'readOnly' => true,
+			],
 			'updateId' => [
 				'property' => 'updateId',
 				'type' => 'text',
@@ -151,7 +176,8 @@ class AspenLiDABuild extends DataObject {
 			'id',
 			'error',
 			'isSupported',
-			'isEASUpdate'
+			'isEASUpdate',
+			'isSubmitted'
 		];
 	}
 

@@ -127,6 +127,26 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_staffonly_to_sso_settings
+		'add_expo_eas_submit_webhook_key' => [
+			'title' => 'Add Expo EAS Submit webhook key',
+			'description' => 'Add Expo EAS Submit webhook key to Greenhouse settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE greenhouse_settings ADD COLUMN expoEASSubmitWebhookKey VARCHAR(256) default NULL',
+			]
+		],
+		//add_expo_eas_submit_webhook_key
+		'add_isSubmitted_build_tracker' => [
+			'title' => 'Add isSubmitted and storeIdentifier to Aspen LiDA Build Tracker',
+			'description' => 'Add column to track if build has been submitted to app stores and the URL to access it',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE aspen_lida_build ADD COLUMN isSubmitted TINYINT(1) default 0',
+				'ALTER TABLE aspen_lida_build ADD COLUMN storeUrl VARCHAR(255) default NULL',
+				'ALTER TABLE aspen_lida_build ADD COLUMN storeIdentifier VARCHAR(255) default NULL',
+			]
+		],
+		//add_isSubmitted_build_tracker
 
 		//kodi
 
