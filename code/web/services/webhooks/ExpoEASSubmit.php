@@ -20,11 +20,11 @@ class webhooks_ExpoEASSubmit extends Action {
 			if($build->find(true)) {
 				if ($payload['status'] == 'errored') {
 					$build->error = 1;
-					$build->errorMessage = $payload['error']['errorCode'] . ': ' . $payload['error']['message'];
+					$build->errorMessage = $payload['submissionInfo']['error']['errorCode'] . ': ' . $payload['submissionInfo']['error']['message'];
 				} else {
 					$build->isSubmitted = 1;
 				}
-				if($build->update()) {
+				if($build->update() && $build->isSubmitted) {
 					$success = true;
 					$message = 'Build data successfully updated.';
 					$this->sendSlackAlert($build);
