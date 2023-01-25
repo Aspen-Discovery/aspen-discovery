@@ -13,7 +13,7 @@ import {loadingSpinner} from '../../components/loadingSpinner';
 import {loadError} from '../../components/loadError';
 
 const SelectVolumeHold = (props) => {
-     const { id, title, action, volumeInfo, prevRoute } = props;
+     const { id, title, action, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
      const [volume, setVolume] = React.useState('');
@@ -23,11 +23,6 @@ const SelectVolumeHold = (props) => {
      const { updateHolds } = React.useContext(HoldsContext);
 
      const isPlacingHold = action.includes('hold');
-
-     const [isOpen, setIsOpen] = React.useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
-     const [response, setResponse] = React.useState('');
 
      let promptForHoldType = true;
      let typeOfHold = 'item';
@@ -59,26 +54,6 @@ const SelectVolumeHold = (props) => {
      }
 
      const [location, setLocation] = React.useState(pickupLocation);
-
-     const handleNavigation = (action) => {
-          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigateStack('AccountScreenTab', 'MyHolds', {});
-               }
-          } else {
-               if (action.includes('Checkouts')) {
-                    setIsOpen(false);
-                    navigate('MyCheckouts', {});
-               } else {
-                    setIsOpen(false);
-                    navigate('MyHolds', {});
-               }
-          }
-     };
 
      return (
           <>
@@ -197,37 +172,23 @@ const SelectVolumeHold = (props) => {
                                         isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
                                         onPress={async () => {
                                              setLoading(true);
-                                             await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType).then(async (response) => {
-                                                  setResponse(response);
-                                                  if(response.success) {
-                                                       await refreshProfile(library.baseUrl).then((result) => {
-                                                            updateUser(result);
-                                                       });
+                                             await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType).then(async (result) => {
+                                                  setResponse(result);
+                                                  setShowModal(false);
+                                                  if(result) {
+                                                       setResponseIsOpen(true);
+                                                       if(result.success) {
+                                                            await refreshProfile(library.baseUrl).then((profile) => {
+                                                                 updateUser(profile);
+                                                            });
+                                                       }
                                                   }
-                                                  setLoading(false);
                                              });
-                                             setShowModal(false);
-                                             setIsOpen(true);
+                                             setLoading(false);
                                         }}>
                                         {title}
                                    </Button>
                               </Button.Group>
-                              <Center>
-                                   <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                                        <AlertDialog.Content>
-                                             <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                             <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                             <AlertDialog.Footer>
-                                                  <Button.Group space={3}>
-                                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                                       <Button variant="outline" colorScheme="primary" ref={cancelRef} onPress={() => setIsOpen(false)}>
-                                                            {translate('general.button_ok')}
-                                                       </Button>
-                                                  </Button.Group>
-                                             </AlertDialog.Footer>
-                                        </AlertDialog.Content>
-                                   </AlertDialog>
-                              </Center>
                          </Modal.Footer>
                     </Modal.Content>
                </Modal>
