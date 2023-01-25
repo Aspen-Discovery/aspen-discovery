@@ -14,6 +14,7 @@ class PType extends DataObject {
 	public $twoFactorAuthSettingId;
 	public $vdxClientCategory;
 	public $accountLinkingSetting;
+	public $enableReadingHistory;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -22,6 +23,7 @@ class PType extends DataObject {
 			'restrictMasquerade',
 			'twoFactorAuthSettingId',
 			'accountLinkingSetting',
+			'enableReadingHistory'
 		];
 	}
 
@@ -91,6 +93,15 @@ class PType extends DataObject {
 				'label' => 'Restrict masquerade from accessing patrons of this type',
 				'description' => 'Users without the ability to masquerade as restricted patrons will not be able to masquerade as this type',
 				'default' => 0,
+			],
+			'enableReadingHistory' => [
+				'property' => 'enableReadingHistory',
+				'type' => 'checkbox',
+				'label' => 'Enable Reading History',
+				'description' => 'Whether or not reading history should be enabled for users with this PType
+				',
+				'note' => "Reading History must also be enabled for the user's home library",
+				'default' => 1,
 			],
 			'twoFactorAuthSettingId' => [
 				'property' => 'twoFactorAuthSettingId',

@@ -277,9 +277,8 @@ class User extends DataObject {
 			$canUseTestRoles = false;
 			if ($this->id) {
 				//Get role based on patron type
-				$patronType = new PType();
-				$patronType->pType = $this->patronType;
-				if ($patronType->find(true)) {
+				$patronType = $this->getPTypeObj();
+				if (!empty($patronType)) {
 					if ($patronType->assignedRoleId != -1) {
 						$role = new Role();
 						$role->roleId = $patronType->assignedRoleId;
@@ -342,9 +341,8 @@ class User extends DataObject {
 		$rolesAssignedByPType = [];
 		if ($this->id) {
 			//Get role based on patron type
-			$patronType = new PType();
-			$patronType->pType = $this->patronType;
-			if ($patronType->find(true)) {
+			$patronType = $this->getPTypeObj();
+			if (!empty($patronType)) {
 				if ($patronType->assignedRoleId != -1) {
 					$role = new Role();
 					$role->roleId = $patronType->assignedRoleId;
@@ -2244,9 +2242,29 @@ class User extends DataObject {
 		return $renewAllResults;
 	}
 
-	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
+	public function isReadingHistoryEnabled() {
 		$catalogDriver = $this->getCatalogDriver();
 		if ($catalogDriver != null) {
+			//Check to see if it's enabled by home library
+			$homeLibrary =  $this->getHomeLibrary();
+			if ($homeLibrary->enableReadingHistory) {
+				//Check to see if it's enabled by PType
+				$patronType = $this->getPTypeObj();
+				if (!empty($patronType)) {
+					return $patronType->enableReadingHistory;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	public function getReadingHistory($page = 1, $recordsPerPage = 20, $sortOption = "checkedOut", $filter = "", $forExport = false) {
+		if ($this->isReadingHistoryEnabled()) {
 			return $this->getCatalogDriver()->getReadingHistory($this, $page, $recordsPerPage, $sortOption, $filter, $forExport);
 		} else {
 			return [
@@ -2260,8 +2278,8 @@ class User extends DataObject {
 	}
 
 	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles) {
-		$catalogDriver = $this->getCatalogDriver();
-		if ($catalogDriver != null) {
+		if ($this->isReadingHistoryEnabled()) {
+			$catalogDriver = $this->getCatalogDriver();
 			$results = $catalogDriver->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
 			$this->clearCache();
 			return $results;
@@ -2277,8 +2295,8 @@ class User extends DataObject {
 	}
 
 	public function deleteReadingHistoryEntryByTitleAuthor($title, $author) {
-		$catalogDriver = $this->getCatalogDriver();
-		if ($catalogDriver != null) {
+		if ($this->isReadingHistoryEnabled()) {
+			$catalogDriver = $this->getCatalogDriver();
 			return $catalogDriver->deleteReadingHistoryEntryByTitleAuthor($this, $title, $author);
 		} else {
 			return [
@@ -2292,8 +2310,8 @@ class User extends DataObject {
 	}
 
 	public function updateReadingHistoryBasedOnCurrentCheckouts() {
-		$catalogDriver = $this->getCatalogDriver();
-		if ($catalogDriver != null) {
+		if ($this->isReadingHistoryEnabled()) {
+			$catalogDriver = $this->getCatalogDriver();
 			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this);
 		}
 	}
@@ -2306,22 +2324,31 @@ class User extends DataObject {
 		if (count($this->getRoles()) > 0) {
 			return true;
 		} else {
-			require_once ROOT_DIR . '/sys/Account/PType.php';
-			$pType = new PType();
-			$pType->pType = $this->patronType;
-			if ($pType->find(true)) {
-				return $pType->isStaff;
+			$patronType = $this->getPTypeObj();
+			if (!empty($patronType)) {
+				return $patronType->isStaff;
 			}
 		}
 		return false;
 	}
 
-	public function getPType() {
-		require_once ROOT_DIR . '/sys/Account/PType.php';
-		$patronType = new PType();
-		$patronType->pType = $this->patronType;
-		$patronType->find(true);
-		return $patronType->pType;
+	public function getPType() : ?string {
+		return $this->patronType;
+	}
+
+	private $_pTypeObj = false;
+	public function getPTypeObj() : ?PType {
+		if ($this->_pTypeObj === false) {
+			require_once ROOT_DIR . '/sys/Account/PType.php';
+			$patronType = new PType();
+			$patronType->pType = $this->patronType;
+			if ($patronType->find(true)) {
+				$this->_pTypeObj = $patronType;
+			} else {
+				$this->_pTypeObj = null;
+			}
+		}
+		return $this->_pTypeObj;
 	}
 
 	public function updatePatronInfo($canUpdateContactInfo, $fromMasquerade = false) {
@@ -2452,15 +2479,20 @@ class User extends DataObject {
 
 	function getReadingHistorySize() {
 		if ($this->_readingHistorySize == null) {
-			if ($this->trackReadingHistory && $this->initialReadingHistoryLoaded) {
-				global $timer;
-				require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-				$readingHistoryDB = new ReadingHistoryEntry();
-				$readingHistoryDB->userId = $this->id;
-				$readingHistoryDB->whereAdd('deleted = 0');
-				$readingHistoryDB->groupBy('groupedWorkPermanentId');
-				$this->_readingHistorySize = $readingHistoryDB->count();
-				$timer->logTime("Updated reading history size");
+			if ($this->isReadingHistoryEnabled()) {
+				$catalogDriver = $this->getCatalogDriver();
+				if ($this->trackReadingHistory && $this->initialReadingHistoryLoaded) {
+					global $timer;
+					require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+					$readingHistoryDB = new ReadingHistoryEntry();
+					$readingHistoryDB->userId = $this->id;
+					$readingHistoryDB->whereAdd('deleted = 0');
+					$readingHistoryDB->groupBy('groupedWorkPermanentId');
+					$this->_readingHistorySize = $readingHistoryDB->count();
+					$timer->logTime("Updated reading history size");
+				} else {
+					$this->_readingHistorySize = 0;
+				}
 			} else {
 				$this->_readingHistorySize = 0;
 			}
@@ -2641,16 +2673,18 @@ class User extends DataObject {
 			$idsNotToSuggest[$ratings->groupedRecordPermanentId] = $ratings->groupedRecordPermanentId;
 		}
 		//Add everything in the user's reading history
-		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
-		$readingHistoryEntry = new ReadingHistoryEntry();
-		$readingHistoryEntry->userId = $this->id;
-		$readingHistoryEntry->selectAdd();
-		$readingHistoryEntry->selectAdd('groupedWorkPermanentId');
-		$readingHistoryEntry->groupBy('groupedWorkPermanentId');
-		$readingHistoryEntry->find();
-		while ($readingHistoryEntry->fetch()) {
-			if (!empty($readingHistoryEntry->groupedWorkPermanentId)) {
-				$idsNotToSuggest[$readingHistoryEntry->groupedWorkPermanentId] = $readingHistoryEntry->groupedWorkPermanentId;
+		if ($this->isReadingHistoryEnabled()) {
+			require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
+			$readingHistoryEntry = new ReadingHistoryEntry();
+			$readingHistoryEntry->userId = $this->id;
+			$readingHistoryEntry->selectAdd();
+			$readingHistoryEntry->selectAdd('groupedWorkPermanentId');
+			$readingHistoryEntry->groupBy('groupedWorkPermanentId');
+			$readingHistoryEntry->find();
+			while ($readingHistoryEntry->fetch()) {
+				if (!empty($readingHistoryEntry->groupedWorkPermanentId)) {
+					$idsNotToSuggest[$readingHistoryEntry->groupedWorkPermanentId] = $readingHistoryEntry->groupedWorkPermanentId;
+				}
 			}
 		}
 
@@ -3604,10 +3638,8 @@ class User extends DataObject {
 	}
 
 	public function get2FAStatusForPType() {
-		require_once ROOT_DIR . '/sys/Account/PType.php';
-		$patronType = new PType();
-		$patronType->pType = $this->patronType;
-		if ($patronType->find(true)) {
+		$patronType = $this->getPTypeObj();
+		if (!empty($patronType)) {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 			$twoFactorAuthSetting = new TwoFactorAuthSetting();
 			$twoFactorAuthSetting->id = $patronType->twoFactorAuthSettingId;
@@ -3621,10 +3653,8 @@ class User extends DataObject {
 	}
 
 	public function is2FARequired() {
-		require_once ROOT_DIR . '/sys/Account/PType.php';
-		$patronType = new PType();
-		$patronType->pType = $this->patronType;
-		if ($patronType->find(true)) {
+		$patronType = $this->getPTypeObj();
+		if (!empty($patronType)) {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
 			$twoFactorAuthSetting = new TwoFactorAuthSetting();
 			$twoFactorAuthSetting->id = $patronType->twoFactorAuthSettingId;
@@ -3656,10 +3686,8 @@ class User extends DataObject {
 					return true;
 				} elseif ($settings->sendTo == 1 || $settings->sendTo == '1') {
 					$isStaff = 0;
-					require_once ROOT_DIR . '/sys/Account/PType.php';
-					$patronType = new PType();
-					$patronType->pType = $this->patronType;
-					if ($patronType->find(true)) {
+					$patronType = $this->getPTypeObj();
+					if (!empty($patronType)) {
 						$isStaff = $patronType->isStaff;
 					}
 					if ($isStaff == 1 || $isStaff == '1') {

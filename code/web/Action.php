@@ -64,6 +64,7 @@ abstract class Action
 		$userIsStaff = $interface->getVariable('userIsStaff');
 
 		$user = UserAccount::getLoggedInUser();
+
 		$interface->assign('showResetUsernameLink', $user->showResetUsernameLink());
 
 		$showMyAccount = false;

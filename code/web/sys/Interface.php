@@ -577,7 +577,6 @@ class UInterface extends Smarty {
 
 		$this->assign('showCurbsidePickups', ($library->curbsidePickupSettingId != -1) ? 1 : 0);
 
-		$this->assign('enableReadingHistory', $library->enableReadingHistory);
 		$this->assign('enableSavedSearches', $library->enableSavedSearches);
 		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
 
@@ -849,6 +848,8 @@ class UInterface extends Smarty {
 	public function template_exists($templateName) {
 		if (file_exists($this->template_dir . $templateName)) {
 			return true;
+		} else {
+			return false;
 		}
 	}
 }

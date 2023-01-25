@@ -37,15 +37,20 @@ class Grouping_Variation {
 			$this->econtentSource = $record->getEContentSource();
 			$this->language = $record->language;
 		}
-		$this->label = $this->econtentSource;
-		if ($this->language != 'English' || !$this->isEcontent) {
+		if (!empty($this->econtentSource)) {
 			$this->label = trim(translate([
 					'text' => $this->econtentSource,
 					'isPublicFacing' => true,
-				]) . ' ' . translate([
-					'text' => $this->language,
-					'isPublicFacing' => true,
-				]));
+				])) . ' ';
+		} else {
+			$this->label = '';
+		}
+		if ($this->language != 'English' || !$this->isEcontent) {
+			$this->label .= translate([
+				'text' => $this->language,
+				'isPublicFacing' => true,
+			]);
+			$this->label = trim($this->label);
 		}
 		$this->id = trim($this->econtentSource . ' ' . $this->language);
 		$this->_statusInformation = new Grouping_StatusInformation();

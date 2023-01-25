@@ -75,7 +75,7 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 						'isPublicFacing' => true,
 					]);
 					$checkout->format = translate([
-						'Unknown - cloudLibrary',
+						'text' => 'Unknown - cloudLibrary',
 						'isPublicFacing' => true,
 					]);
 				}
