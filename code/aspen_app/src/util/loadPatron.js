@@ -128,7 +128,7 @@ export async function getILSMessages(url) {
      }
 }
 
-export async function getCheckedOutItems(url) {
+async function getCheckedOutItems(url) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
