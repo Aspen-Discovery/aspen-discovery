@@ -628,14 +628,11 @@ class UserAPI extends Action {
 				}
 				$userData->numLinkedUsers = count($linkedAccounts);
 
-				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
-				$userLink->linkedAccountId = $user->id;
-				$userLink->find();
-				$userData->numLinkedViewers = (int)$userLink->count();
-				$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
-
+				$linkedViewers = $user->getViewers();
+				$userData->numLinkedViewers = count($linkedViewers);
 			}
+
+			$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
 
 			global $activeLanguage;
 			$currencyCode = 'USD';
