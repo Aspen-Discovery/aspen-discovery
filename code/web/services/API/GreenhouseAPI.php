@@ -431,8 +431,14 @@ class GreenhouseAPI extends Action {
 						$theme->applyDefaults();
 
 						$themeArray['themeId'] = $theme->id;
-						$themeArray['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
-						$themeArray['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+						$themeArray['logo'] = '';
+						$themeArray['favicon'] = '';
+						if($theme->logoName) {
+							$themeArray['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+						}
+						if($theme->favicon) {
+							$themeArray['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+						}
 						$themeArray['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
 						$themeArray['primaryForegroundColor'] = $theme->primaryForegroundColor;
 						$themeArray['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;

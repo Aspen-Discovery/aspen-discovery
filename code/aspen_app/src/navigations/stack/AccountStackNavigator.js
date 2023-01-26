@@ -21,6 +21,7 @@ import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
+import {CreateVDXRequest} from '../../screens/GroupedWork/CreateVDXRequest';
 
 const AccountStackNavigator = () => {
      const Stack = createNativeStackNavigator();
@@ -204,6 +205,22 @@ const AccountStackNavigator = () => {
                          presentation: 'modal',
                     }}
                />
+              <Stack.Screen
+                  name="CreateVDXRequest"
+                  component={CreateVDXRequest}
+                  options={({ navigation }) => ({
+                      title: translate('ill.request_title'),
+                      presentation: 'modal',
+                      headerLeft: () => {
+                          return <></>;
+                      },
+                      headerRight: () => (
+                          <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                              <CloseIcon color="primary.baseContrast" />
+                          </Pressable>
+                      ),
+                  })}
+              />
           </Stack.Navigator>
      );
 };

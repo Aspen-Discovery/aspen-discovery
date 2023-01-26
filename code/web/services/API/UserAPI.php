@@ -628,14 +628,11 @@ class UserAPI extends Action {
 				}
 				$userData->numLinkedUsers = count($linkedAccounts);
 
-				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
-				$userLink->linkedAccountId = $user->id;
-				$userLink->find();
-				$userData->numLinkedViewers = (int)$userLink->count();
-				$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
-
+				$linkedViewers = $user->getViewers();
+				$userData->numLinkedViewers = count($linkedViewers);
 			}
+
+			$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
 
 			global $activeLanguage;
 			$currencyCode = 'USD';
@@ -648,7 +645,9 @@ class UserAPI extends Action {
 			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
 
 			//Add overdrive data
+			$userData->isValidForOverdrive = false;
 			if ($user->isValidForEContentSource('overdrive')) {
+				$userData->isValidForOverdrive = true;
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$overDriveSummary = $driver->getAccountSummary($user);
@@ -675,7 +674,9 @@ class UserAPI extends Action {
 			}
 
 			//Add hoopla data
+			$userData->isValidForHoopla = false;
 			if ($user->isValidForEContentSource('hoopla')) {
+				$userData->isValidForHoopla = true;
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
 				$hooplaSummary = $driver->getAccountSummary($user);
@@ -693,7 +694,9 @@ class UserAPI extends Action {
 			}
 
 			//Add cloudLibrary data
+			$userData->isValidForCloudLibrary = false;
 			if ($user->isValidForEContentSource('cloud_library')) {
+				$userData->isValidForCloudLibrary = true;
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
 				$cloudLibrarySummary = $driver->getAccountSummary($user);
@@ -719,7 +722,9 @@ class UserAPI extends Action {
 			}
 
 			//Add axis360 data
+			$userData->isValidForAxis360 = false;
 			if ($user->isValidForEContentSource('axis360')) {
+				$userData->isValidForAxis360 = true;
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
 				$axis360Summary = $driver->getAccountSummary($user);
@@ -745,7 +750,9 @@ class UserAPI extends Action {
 			}
 
 			//Add Interlibrary Loan
+			$userData->hasInterlibraryLoan = false;
 			if ($user->hasInterlibraryLoan()) {
+				$userData->hasInterlibraryLoan = true;
 				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 				$driver = new VdxDriver();
 				$vdxSummary = $driver->getAccountSummary($user);

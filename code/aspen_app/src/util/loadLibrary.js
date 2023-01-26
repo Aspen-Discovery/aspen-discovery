@@ -392,10 +392,10 @@ export async function getLanguages(libraryUrl) {
      }
 }
 
-export async function getVdxForm(libraryUrl, id) {
+export async function getVdxForm(url, id) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -403,9 +403,7 @@ export async function getVdxForm(libraryUrl, id) {
      });
      const response = await api.post('/SystemAPI?method=getVdxForm', postBody);
      if (response.ok) {
-          const vdxFormFields = response.data.result;
           LIBRARY.vdx = response.data.result;
-          await AsyncStorage.setItem('@vdxFormFields', JSON.stringify(vdxFormFields));
           return response.data.result;
      } else {
           popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
