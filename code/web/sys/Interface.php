@@ -763,7 +763,7 @@ class UInterface extends Smarty {
 				$ssoStaffOnly = $ssoSettings->staffOnly;
 			}
 		} catch (Exception $e) {
-			//This happens if the SSOSetting table does not exist yet.  
+			//This happens if the SSOSetting table does not exist yet.
 		}
 		$this->assign('ssoStaffOnly', $ssoStaffOnly);
 
