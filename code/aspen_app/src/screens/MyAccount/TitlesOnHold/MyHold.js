@@ -46,6 +46,9 @@ export const MyHold = (props) => {
 
      if (!hold.available && hold.source !== 'ils') {
           canCancel = hold.cancelable;
+          if(hold.source === 'axis360') {
+               canCancel = true;
+          }
      } else {
           canCancel = !hold.available && hold.source === 'ils';
      }
@@ -225,7 +228,7 @@ export const MyHold = (props) => {
                               {getOnHoldFor(hold.user)}
                               {getPickupLocation(hold.currentPickupName, hold.source)}
                               {getExpirationDate(hold.expirationDate, hold.available)}
-                              {getPosition(hold.position, hold.available)}
+                              {getPosition(hold.position, hold.available, hold.holdQueueLength)}
                               {getStatus(hold.status, hold.source)}
                          </VStack>
                     </HStack>

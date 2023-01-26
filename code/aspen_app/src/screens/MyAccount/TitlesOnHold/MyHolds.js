@@ -1,5 +1,6 @@
 import { ScrollView, Box, Button, Center, Text, HStack, Checkbox, Select, FormControl, CheckIcon, Heading } from 'native-base';
 import React from 'react';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import {SafeAreaView, SectionList} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
@@ -16,9 +17,11 @@ import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import {DisplayMessage} from '../../../components/Notifications';
 
 export const MyHolds = () => {
+     const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
+     const [holdSource, setHoldSource] = React.useState('all');
      const [readySort, setReadySort] = React.useState('expire');
      const [pendingSort, setPendingSort] = React.useState('sortTitle');
      const [isLoading, setLoading] = React.useState(true);
@@ -29,7 +32,7 @@ export const MyHolds = () => {
     const toggleReadySort = async (value) => {
         setReadySort(value);
         setLoading(true);
-        await getPatronHolds(readySort, pendingSort, library.baseUrl).then((result) => {
+        await getPatronHolds(value, pendingSort, holdSource, library.baseUrl).then((result) => {
             if (holds !== result) {
                 updateHolds(result);
             }
@@ -40,7 +43,7 @@ export const MyHolds = () => {
     const togglePendingSort = async (value) => {
         setPendingSort(value);
         setLoading(true);
-        await getPatronHolds(readySort, pendingSort, library.baseUrl).then((result) => {
+        await getPatronHolds(readySort, value, holdSource, library.baseUrl).then((result) => {
             if (holds !== result) {
                 updateHolds(result);
             }
@@ -48,10 +51,34 @@ export const MyHolds = () => {
         });
     };
 
+    const toggleHoldSource = async (value) => {
+        setHoldSource(value);
+        setLoading(true);
+        await getPatronHolds(readySort, pendingSort, value, library.baseUrl).then((result) => {
+            if (holds !== result) {
+                updateHolds(result);
+            }
+            if (!_.isNull(value)) {
+                if(value === 'ils') {
+                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "Physical Materials"})});
+                } else if (value === 'overdrive') {
+                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "OverDrive"})});
+                } else if (value === 'cloud_library') {
+                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "CloudLibrary"})});
+                } else if (value === 'axis360') {
+                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "Axis 360"})});
+                } else {
+                    navigation.setOptions({ title: translate('holds.title')});
+                }
+            }
+            setLoading(false);
+        })
+    }
+
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getPatronHolds(readySort, pendingSort, library.baseUrl).then((result) => {
+                    await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl).then((result) => {
                         if (holds !== result) {
                               updateHolds(result);
                          }
@@ -84,11 +111,11 @@ export const MyHolds = () => {
      const resetGroup = async () => {
           setLoading(true);
           clearGroupValue();
-          await reloadHolds(library.baseUrl).then((result) => {
-               if (holds !== result) {
-                    updateHolds(result);
-               }
-               setLoading(false);
+          await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl).then((result) => {
+             if (holds !== result) {
+                 updateHolds(result);
+             }
+             setLoading(false);
           });
           refreshProfile(library.baseUrl).then((result) => {
                updateUser(result);
@@ -121,7 +148,7 @@ export const MyHolds = () => {
 
      const refreshHolds = async () => {
           setLoading(true);
-          await reloadHolds(library.baseUrl).then((result) => {
+          await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl).then((result) => {
                if (holds !== result) {
                     updateHolds(result);
                }
@@ -154,11 +181,11 @@ export const MyHolds = () => {
                                           <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                           <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
-                                          <Select.Item label="Sort By Status" value="status" key={3}/>
-                                          <Select.Item label="Sort By Date Placed" value="placed" key={4}/>
-                                          <Select.Item label="Sort By Position" value="position" key={5}/>
-                                          <Select.Item label="Sort By Pickup Location" value="location" key={6}/>
-                                          <Select.Item label="Sort By Library Account" value="libraryAccount" key={7}/>
+                                          <Select.Item label={translate('general.sort_by', { sort: 'Status'})} value="status" key={3}/>
+                                          <Select.Item label={translate('general.sort_by', { sort: 'Date Placed'})} value="placed" key={4}/>
+                                          <Select.Item label={translate('general.sort_by', { sort: 'Position'})} value="position" key={5}/>
+                                          <Select.Item label={translate('general.sort_by', { sort: 'Pickup Location'})} value="location" key={6}/>
+                                          <Select.Item label={translate('general.sort_by', { sort: 'Library Account'})} value="libraryAccount" key={7}/>
                                       </Select>
                                   </FormControl>
                                   <ManageSelectedHolds selectedValues={values} onAllDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
@@ -188,11 +215,11 @@ export const MyHolds = () => {
                                       <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
-                                      <Select.Item label="Sort By Status" value="status" key={3}/>
-                                      <Select.Item label="Sort By Date Placed" value="placed" key={4}/>
-                                      <Select.Item label="Sort By Position" value="position" key={5}/>
-                                      <Select.Item label="Sort By Pickup Location" value="location" key={6}/>
-                                      <Select.Item label="Sort By Library Account" value="libraryAccount" key={7}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Status'})} value="status" key={3}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Date Placed'})} value="placed" key={4}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Position'})} value="position" key={5}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Pickup Location'})} value="location" key={6}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Library Account'})} value="libraryAccount" key={7}/>
                                   </Select>
                               </FormControl>
                               <ManageAllHolds data={holds} onDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
@@ -220,10 +247,10 @@ export const MyHolds = () => {
                                       <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
-                                      <Select.Item label="Sort By Expiration Date" value="expire" key={3}/>
-                                      <Select.Item label="Sort By Date Placed" value="placed" key={4}/>
-                                      <Select.Item label="Sort By Pickup Location" value="location" key={5}/>
-                                      <Select.Item label="Sort By Library Account" value="libraryAccount" key={6}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Expiration Date'})} value="expire" key={3}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Date Placed'})} value="placed" key={4}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Pickup Location'})} value="location" key={5}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: 'Library Account'})} value="libraryAccount" key={6}/>
                                   </Select>
                               </FormControl>
                           </HStack>
@@ -253,6 +280,23 @@ export const MyHolds = () => {
                          }}>
                          {translate('holds.reload_holds')}
                     </Button>
+                   <FormControl w={175}>
+                       <Select
+                           name="holdSource"
+                           selectedValue={holdSource}
+                           accessibilityLabel="Filter By Source"
+                           _selectedItem={{
+                               bg: 'tertiary.300',
+                               endIcon: <CheckIcon size="5"/>,
+                           }}
+                           onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
+                           <Select.Item label={translate('holds.filter_by', {source: 'All', num: user.numHolds ?? 0})} value="all" key={0}/>
+                           <Select.Item label={translate('holds.filter_by', {source: 'Physical Materials', num: user.numHoldsIls ?? 0})} value="ils" key={1}/>
+                           <Select.Item label={translate('holds.filter_by', {source: 'OverDrive', num: user.numHoldsOverDrive ?? 0})} value="overdrive" key={2}/>
+                           <Select.Item label={translate('holds.filter_by', {source: 'CloudLibrary', num: user.numHolds_cloudLibrary ?? 0})} value="cloud_library" key={3}/>
+                           <Select.Item label={translate('holds.filter_by', {source: 'Axis 360', num: user.numHolds_axis360 ?? 0})} value="axis360" key={3}/>
+                       </Select>
+                   </FormControl>
                </HStack>
               </ScrollView>
               </Box>
