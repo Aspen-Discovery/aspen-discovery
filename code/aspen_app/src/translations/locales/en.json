@@ -156,7 +156,11 @@
     "read_online": "Read Online at {{source}}",
     "listen_online": "Listen Online at {{source}}",
     "watch_online": "Watch Online at {{source}}",
-    "reload": "Reload Checkouts"
+    "reload": "Reload Checkouts",
+    "filter_by": "Filter by {{source}} ({{num}})",
+    "checkouts_for_source": "Checked Out Titles for {{source}}",
+    "source": "Source",
+    "renewed": "Renewed"
   },
   "holds": {
     "title": "Titles On Hold",
@@ -188,6 +192,9 @@
     "cancel_request": "Cancel Request",
     "status": "Status",
     "type": "Type",
+    "source": "Source",
+    "positionWithHoldQueueLength": "{{position}} out of {{queueLength}}",
+    "titles_on_hold_for_source": "Titles On Hold for {{source}}",
     "on_hold_for": "On Hold For",
     "multiple_holds": "Choose multiple holds to manage",
     "manage_all": "Manage All",
@@ -199,7 +206,8 @@
     "pending_holds_none": "You do not have any pending holds.",
     "holds_ready_for_pickup": "Holds Ready for Pickup",
     "holds_ready_for_pickup_message": "These titles have arrived at the library or are available online for you to use.",
-    "holds_ready_for_pickup_none": "You do not have any holds that are ready to be picked up."
+    "holds_ready_for_pickup_none": "You do not have any holds that are ready to be picked up.",
+    "filter_by": "Filter by {{source}} ({{num}})"
   },
   "lists": {
     "title": "Lists",
