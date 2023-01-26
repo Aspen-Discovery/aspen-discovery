@@ -76,8 +76,32 @@ export const getAuthor = (author) => {
      return null;
 };
 
-export const getFormat = (format) => {
+export const getFormat = (format, source = null) => {
      if (format !== 'Unknown') {
+         if(source) {
+             if(source !== 'ils') {
+                 if(source === 'interlibrary_loan') {
+                     source = 'Interlibrary Loan';
+                 } else if (source === 'axis360') {
+                     source = 'Axis 360';
+                 } else if (source === 'cloudlibrary') {
+                     source = 'CloudLibrary';
+                 } else if (source === 'hoopla') {
+                     source = 'Hoopla';
+                 } else if (source === 'overdrive') {
+                     source = 'OverDrive'
+                 }
+                 return (
+                     <Text
+                         fontSize={{
+                             base: 'xs',
+                             lg: 'sm',
+                         }}>
+                         <Text bold>{translate('grouped_work.format')}:</Text> {format} - {source}
+                     </Text>
+                 );
+             }
+         }
           return (
                <Text
                     fontSize={{
@@ -145,8 +169,18 @@ export const getStatus = (status, source) => {
 };
 
 export const getType = (type) => {
-     if (type && type === 'interlibrary_loan') {
-          type = 'Interlibrary Loan';
+     if (type && type !== 'ils') {
+         if(type === 'interlibrary_loan') {
+             type = 'Interlibrary Loan';
+         } else if (type === 'axis360') {
+             type = 'Axis 360';
+         } else if (type === 'cloudlibrary') {
+             type = 'CloudLibrary';
+         } else if (type === 'hoopla') {
+             type = 'Hoopla';
+         } else if (type === 'overdrive') {
+             type = 'OverDrive'
+         }
 
           return (
                <Text
@@ -154,7 +188,7 @@ export const getType = (type) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('holds.type')}:</Text> {type}
+                    <Text bold>{translate('holds.source')}:</Text> {type}
                </Text>
           );
      } else {
@@ -243,8 +277,19 @@ export const getPickupLocation = (location, source) => {
      }
 };
 
-export const getPosition = (position, available) => {
+export const getPosition = (position, available, length) => {
      if (position && !available && position !== 0 && position !== '0') {
+         if(length) {
+             return (
+                 <Text
+                     fontSize={{
+                         base: 'xs',
+                         lg: 'sm',
+                     }}>
+                     <Text bold>{translate('holds.position')}:</Text> {translate('holds.positionWithHoldQueueLength', { position: position, queueLength: length })}
+                 </Text>
+             );
+         }
           return (
                <Text
                     fontSize={{
@@ -276,3 +321,19 @@ export const getExpirationDate = (expiration, available) => {
           return null;
      }
 };
+
+export const getRenewalCount = (count, available = null) => {
+    if(available) {
+        return (
+            <Text
+                fontSize={{
+                    base: 'xs',
+                    lg: 'sm',
+                }}>
+                <Text bold>{translate('checkouts.renewed')}:</Text> {count} of {available} times
+            </Text>
+        );
+    } else {
+        return null;
+    }
+}
