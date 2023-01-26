@@ -1,5 +1,5 @@
 {* Create the base form *}
-<form id='objectEditor-{$id}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} action="{$submitUrl}" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}">
+<form id='objectEditor{if !empty($id)}-{$id}{/if}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} {if !empty($submitUrl)}action="{$submitUrl}"{/if} role="form" onsubmit="setFormSubmitting();" {if !empty($formLabel)}aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}"{/if}>
 	<div class='editor'>
 		{if !empty($id)}
 		<input type='hidden' name='id' value='{$id}' id="id" />
@@ -21,7 +21,7 @@
 			"{/literal}{translate text="Please check your input." isAdminFacing=true inAttribute=true}{literal}"
 		);
 		$(document).ready(function(){
-			var objectEditorObject = $('#objectEditor-{/literal}{$id}{literal}');
+			var objectEditorObject = $('#objectEditor{/literal}{if !empty($id)}-{$id}{/if}{literal}');
 
 			objectEditorObject.validate();
 
