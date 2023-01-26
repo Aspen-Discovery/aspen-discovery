@@ -2435,13 +2435,13 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 				$row[] = $dueDate;
 				if ($showRenewed){
-					$fields[] =$Renewed;
+					$row[] =$Renewed;
 				}
 				if ($showWaitList){
-					$fields[] =$waitList;
+					$row[] =$waitList;
 				}
 				if ($hasLinkedUsers){
-					$fields[] =$user;
+					$row[] =$userName;
 				}
 				fputcsv($fp, $row);
 			}
