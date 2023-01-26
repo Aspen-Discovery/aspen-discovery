@@ -419,10 +419,13 @@ var AspenDiscovery = (function(){
 			}
 		},
 
-		showLocationHoursAndMap: function(){
-			var selectedId = $("#selectLibraryHours").find(":selected").val();
-			$(".locationInfo").hide();
-			$("#locationAddress" + selectedId).show();
+		showLocationHoursAndMap: function(embedLocation){
+			if (embedLocation === undefined) {
+				embedLocation = "";
+			}
+			var selectedId = $("#selectLibraryHours" + embedLocation).find(":selected").val();
+			$(".locationInfo" + embedLocation).hide();
+			$("#locationAddress" + embedLocation + selectedId).show();
 			return false;
 		},
 

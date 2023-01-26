@@ -2,9 +2,9 @@
     {if count($libraryLocations) > 1}
         <form role="form">
             <div class="form-group">
-                <label for="selectLibraryHours">{translate text="Select a Location" isPublicFacing=true}</label>
-                <select name="selectLibraryHours" id="selectLibrary"
-                        onchange="return AspenDiscovery.showLocationHoursAndMap();" class="form-control">
+                <label for="selectLibraryHoursWB">{translate text="Select a Location" isPublicFacing=true}</label>
+                <select name="selectLibraryHours" id="selectLibraryHoursWB"
+                        onchange="return AspenDiscovery.showLocationHoursAndMap('WB');" class="form-control">
                     {foreach from=$libraryLocations item=curLocation}
                         <option value="{$curLocation.id}">{$curLocation.name}</option>
                     {/foreach}
@@ -12,9 +12,9 @@
             </div>
         </form>
     {/if}
-    {foreach from=$libraryLocations item=curLocation name=locationLoop}
-        <div class="locationInfo" id="locationAddress{$curLocation.id}"
-             {if empty($smarty.foreach.locationLoop.first)}style="display:none"{/if}>
+    {foreach from=$libraryLocations item=curLocation name=locationLoopWB}
+        <div class="locationInfoWB" id="locationAddressWB{$curLocation.id}"
+             {if empty($smarty.foreach.locationLoopWB.first)}style="display:none"{/if}>
             <div class="row">
                 <div class="col-xs-12">
                     <h2>{$curLocation.name}</h2>
