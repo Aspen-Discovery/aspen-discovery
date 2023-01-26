@@ -1,5 +1,4 @@
 import { API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5 } from '@env';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
@@ -7,9 +6,6 @@ import React, { useEffect } from 'react';
 import base64 from 'react-native-base64';
 
 import { GLOBALS } from './globals';
-import {RemoveData} from './logout';
-import {navigateStack} from '../helpers/RootNavigator';
-import {ForceLogout} from '../screens/Auth/ForceLogout';
 
 // polyfill for base64 (required for authentication)
 if (!global.btoa) {
