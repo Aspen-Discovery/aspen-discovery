@@ -3,9 +3,8 @@ import { Button, Center, Modal, FormControl, Input, Icon } from 'native-base';
 import React, { useState, useRef } from 'react';
 
 import { translate } from '../../../../translations/translations';
-import { addLinkedAccount } from '../../../../util/accountActions';
 import { LibrarySystemContext, UserContext } from '../../../../context/initialContext';
-import {reloadProfile, getLinkedAccounts, getViewerAccounts} from '../../../../util/api/user';
+import {reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount} from '../../../../util/api/user';
 
 // custom components and helper files
 
