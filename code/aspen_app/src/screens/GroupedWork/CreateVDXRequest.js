@@ -16,7 +16,6 @@ export const CreateVDXRequest = () => {
     const id = route.params.id;
     const {library} = React.useContext(LibrarySystemContext);
     const {location} = React.useContext(LibraryBranchContext);
-    const [isLoading, setLoading] = React.useState(false);
 
     if (location.vdxFormId === "-1" || _.isNull(location.vdxLocation)) {
           return loadError('Location not setup for VDX', '');
@@ -24,7 +23,7 @@ export const CreateVDXRequest = () => {
 
     const { data: item } = useQuery({
         queryKey: ['vdxItem', id, library.baseUrl],
-        queryFn: () => getBasicItemInfo(id, library.baseUrl),
+        queryFn: () => getBasicItemInfo(id, library.baseUrl)
     });
     const vdxItem = item;
 
@@ -34,7 +33,7 @@ export const CreateVDXRequest = () => {
         enabled: !!vdxItem,
     });
 
-    return <>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError(error, '') : <Request config={data} item={vdxItem}/>}</>;
+    return <>{status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <Request config={data} item={vdxItem}/>}</>;
 
 };
 
@@ -71,7 +70,9 @@ const Request = (payload) => {
         }
         await submitVdxRequest(library.baseUrl, request).then(result => {
             setIsSubmitting(false);
-            navigation.goBack();
+            if(result.success) {
+                navigation.goBack();
+            }
         });
     }
 
