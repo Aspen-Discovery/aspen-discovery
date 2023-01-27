@@ -25,6 +25,8 @@ class UserAPI extends Action {
 					'isLoggedIn',
 					'logout',
 					'login',
+					'loginToLiDA',
+					'resetExpiredPin',
 					'checkoutItem',
 					'placeHold',
 					'renewItem',
@@ -216,6 +218,158 @@ class UserAPI extends Action {
 		$logger->log("UserAPI/logout session: " . session_id(), Logger::LOG_DEBUG);
 		UserAccount::logout();
 		return true;
+	}
+
+	/**
+	 * Validates an account based on the username and PIN provided, while returning errors such as expired PINs.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>username - The barcode of the user.  Can be truncated to the last 7 or 9 digits.</li>
+	 * <li>password - The pin number for the user.
+	 * </ul>
+	 *
+	 * @noinspection PhpUnused
+	 **/
+	function loginToLiDA(): array {
+		[
+			$username,
+			$password,
+		] = $this->loadUsernameAndPassword();
+		$accountSource = null;
+		$parentAccount = null;
+		$validatedViaSSO = false;
+
+		require_once ROOT_DIR . '/CatalogFactory.php';
+		$driversToTest = UserAccount::getAccountProfiles();
+/*		if (strlen($library->casHost) > 0 && $username == null && $password == null) {
+			//Check CAS first
+			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
+			$casAuthentication = new CASAuthentication(null);
+			$logger->log('Checking CAS Authentication from UserAccount::validateAccount', Logger::LOG_DEBUG);
+			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
+			if ($casUsername == false || $casUsername instanceof AspenError) {
+				//The user could not be authenticated in CAS
+				$logger->log('User could not be authenticated in CAS', Logger::LOG_DEBUG);
+				self::$validatedAccounts[$username . $password] = false;
+				return false;
+			} else {
+				$logger->log('User was authenticated in CAS', Logger::LOG_DEBUG);
+				//Set both username and password since authentication methods could use either.
+				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
+				$username = $casUsername;
+				$password = $casUsername;
+				$validatedViaSSO = true;
+			}
+		}*/
+
+		foreach ($driversToTest as $driverName => $additionalInfo) {
+			if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name) {
+				try {
+					$authN = AuthenticationFactory::initAuthentication($additionalInfo['authenticationMethod'], $additionalInfo);
+				} catch (UnknownAuthenticationMethodException $e) {
+					return [
+						'success' => false,
+						'message' => 'Unknown authentication method'
+					];
+				}
+				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+				if ($validatedUser && !($validatedUser instanceof AspenError)) {
+					return [
+						'success' => true,
+						'message' => 'User is valid'
+					];
+				} else {
+					$invalidUser = (array) $validatedUser;
+					return [
+						'success' => false,
+						'id' => $invalidUser['id'],
+						'message' => $invalidUser['message'],
+						'resetToken' => $invalidUser['resetToken'] ?? null,
+						'userId' => $invalidUser['userId']
+ 					];
+				}
+			}
+		}
+		return [
+			'success' => false,
+			'message' => 'Unknown error logging in',
+		];
+	}
+
+	/**
+	 * Allows a user to reset an expired PIN.
+	 *
+	 * Parameters (POST):
+	 * <ul>
+	 * <li>token - The reset token provided at authentication to validate the request.</li>
+	 * <li>pin1 - The PIN for the user.
+	 * <li>pin2 - The PIN for the user (used to validate that they are the same).
+	 * </ul>
+	 *
+	 * @noinspection PhpUnused
+	 **/
+	function resetExpiredPin() {
+		$tokenValid = false;
+		$result = [
+			'success' => false,
+			'message' => ''
+		];
+		if(isset($_POST['token'])) {
+			require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+			$pinResetToken = new PinResetToken();
+			$pinResetToken->token = $_POST['token'];
+			if ($pinResetToken->find(true)) {
+				//Token should only be valid for 1 hour.
+				if ((time() - $pinResetToken->dateIssued) < 60 * 60) {
+					$tokenValid = true;
+				} else {
+					$result['message'] = translate([
+						'text' => 'Token has expired.',
+						'isPublicFacing' => true,
+					]);
+				}
+			} else {
+				$result['message'] = translate([
+					'text' => 'Token not found.',
+					'isPublicFacing' => true,
+				]);
+			}
+
+			$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+			if ((isset($_POST['pin1']) && isset($_POST['pin2'])) && $tokenValid) {
+				$userToResetPinFor = new User();
+				$userToResetPinFor->id = $pinResetToken->userId;
+				if ($userToResetPinFor->find(true)) {
+					$pin1 = $_POST['pin1'];
+					$pin2 = $_POST['pin2'];
+					if ($pin1 != $pin2) {
+						$result['message'] = translate([
+							'text' => 'The provided PINs do not match.',
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$resetResults = $catalog->driver->updatePin($userToResetPinFor, $userToResetPinFor->getPasswordOrPin(), $pin1);
+						if (!$resetResults['success']) {
+							$result['message'] = $resetResults['message'];
+						} else {
+							$result['success'] = true;
+							$result['message'] = translate([
+								'text' => 'PIN reset successfully.',
+								'isPublicFacing' => true,
+							]);
+						}
+					}
+				}
+			}
+		} else {
+			$result['message'] = translate([
+				'text' => 'No PIN reset token provided.',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return $result;
 	}
 
 	/**
@@ -449,6 +603,7 @@ class UserAPI extends Action {
 			$userData->expireClose = $accountSummary->isExpirationClose();
 			$userData->expired = $accountSummary->isExpired();
 
+			$userData->readingHistoryEnabled = (int)$user->isReadingHistoryEnabled();
 			$accountSummary->setReadingHistory($user->getReadingHistorySize());
 			$userData->numReadingHistory = $accountSummary->getReadingHistory();
 
@@ -473,14 +628,11 @@ class UserAPI extends Action {
 				}
 				$userData->numLinkedUsers = count($linkedAccounts);
 
-				require_once ROOT_DIR . '/sys/Account/UserLink.php';
-				$userLink = new UserLink();
-				$userLink->linkedAccountId = $user->id;
-				$userLink->find();
-				$userData->numLinkedViewers = (int)$userLink->count();
-				$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
-
+				$linkedViewers = $user->getViewers();
+				$userData->numLinkedViewers = count($linkedViewers);
 			}
+
+			$userData->numLinkedAccounts = $userData->numLinkedUsers + $userData->numLinkedViewers;
 
 			global $activeLanguage;
 			$currencyCode = 'USD';
@@ -493,7 +645,9 @@ class UserAPI extends Action {
 			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
 
 			//Add overdrive data
+			$userData->isValidForOverdrive = false;
 			if ($user->isValidForEContentSource('overdrive')) {
+				$userData->isValidForOverdrive = true;
 				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 				$driver = new OverDriveDriver();
 				$overDriveSummary = $driver->getAccountSummary($user);
@@ -520,7 +674,9 @@ class UserAPI extends Action {
 			}
 
 			//Add hoopla data
+			$userData->isValidForHoopla = false;
 			if ($user->isValidForEContentSource('hoopla')) {
+				$userData->isValidForHoopla = true;
 				require_once ROOT_DIR . '/Drivers/HooplaDriver.php';
 				$driver = new HooplaDriver();
 				$hooplaSummary = $driver->getAccountSummary($user);
@@ -538,7 +694,9 @@ class UserAPI extends Action {
 			}
 
 			//Add cloudLibrary data
+			$userData->isValidForCloudLibrary = false;
 			if ($user->isValidForEContentSource('cloud_library')) {
+				$userData->isValidForCloudLibrary = true;
 				require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 				$driver = new CloudLibraryDriver();
 				$cloudLibrarySummary = $driver->getAccountSummary($user);
@@ -564,7 +722,9 @@ class UserAPI extends Action {
 			}
 
 			//Add axis360 data
+			$userData->isValidForAxis360 = false;
 			if ($user->isValidForEContentSource('axis360')) {
+				$userData->isValidForAxis360 = true;
 				require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 				$driver = new Axis360Driver();
 				$axis360Summary = $driver->getAccountSummary($user);
@@ -590,7 +750,9 @@ class UserAPI extends Action {
 			}
 
 			//Add Interlibrary Loan
+			$userData->hasInterlibraryLoan = false;
 			if ($user->hasInterlibraryLoan()) {
+				$userData->hasInterlibraryLoan = true;
 				require_once ROOT_DIR . '/Drivers/VdxDriver.php';
 				$driver = new VdxDriver();
 				$vdxSummary = $driver->getAccountSummary($user);
@@ -772,9 +934,11 @@ class UserAPI extends Action {
 		} else {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
+				$unavailableSort = $_REQUEST['unavailableSort'] ?? 'sortTitle';
+				$availableSort = $_REQUEST['availableSort'] ?? 'expire';
 				$source = $_REQUEST['source'] ?? 'all';
 				$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
-				$allHolds = $user->getHolds($linkedUsers, 'sortTitle', 'expire', $source);
+				$allHolds = $user->getHolds($linkedUsers, $unavailableSort, $availableSort, $source);
 				$holdsToReturn = [
 					'available' => [],
 					'unavailable' => [],
@@ -791,7 +955,11 @@ class UserAPI extends Action {
 				}
 				return [
 					'success' => true,
-					'holds' => $holdsToReturn,
+					'sortMethods' => [
+						'unavailableSort' => $unavailableSort,
+						'availableSort' => $availableSort
+					],
+					'holds' => $holdsToReturn
 				];
 			} else {
 				return [

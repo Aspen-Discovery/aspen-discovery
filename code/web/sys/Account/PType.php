@@ -14,6 +14,7 @@ class PType extends DataObject {
 	public $twoFactorAuthSettingId;
 	public $vdxClientCategory;
 	public $accountLinkingSetting;
+	public $enableReadingHistory;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -22,6 +23,7 @@ class PType extends DataObject {
 			'restrictMasquerade',
 			'twoFactorAuthSettingId',
 			'accountLinkingSetting',
+			'enableReadingHistory'
 		];
 	}
 
@@ -92,6 +94,15 @@ class PType extends DataObject {
 				'description' => 'Users without the ability to masquerade as restricted patrons will not be able to masquerade as this type',
 				'default' => 0,
 			],
+			'enableReadingHistory' => [
+				'property' => 'enableReadingHistory',
+				'type' => 'checkbox',
+				'label' => 'Enable Reading History',
+				'description' => 'Whether or not reading history should be enabled for users with this PType
+				',
+				'note' => "Reading History must also be enabled for the user's home library",
+				'default' => 1,
+			],
 			'twoFactorAuthSettingId' => [
 				'property' => 'twoFactorAuthSettingId',
 				'type' => 'enum',
@@ -131,17 +142,29 @@ class PType extends DataObject {
 		return $structure;
 	}
 
-	static function getPatronTypeList(): array {
+	/**
+	 * @param boolean $addEmpty whether or not an empty value should be returned first
+	 * @param boolean $valueIsPType whether or not the value returned is the pType or database id (default)
+	 * @return array
+	 */
+	static function getPatronTypeList(bool $addEmpty = false, bool $valueIsPType = false): array {
 		$patronType = new pType();
 		$patronType->orderBy('pType');
 		$patronType->find();
 		$patronTypeList = [];
+		if($addEmpty) {
+			$patronTypeList[-1] = "";
+		}
+		$selectValue = 'id';
+		if($valueIsPType) {
+			$selectValue = 'pType';
+		}
 		while ($patronType->fetch()) {
 			$patronTypeLabel = $patronType->pType;
 			if (!empty($patronType->description)) {
 				$patronTypeLabel .= ' - ' . $patronType->description;
 			}
-			$patronTypeList[$patronType->id] = $patronTypeLabel;
+			$patronTypeList[$patronType->$selectValue] = $patronTypeLabel;
 		}
 		return $patronTypeList;
 	}

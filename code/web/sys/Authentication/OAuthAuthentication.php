@@ -16,6 +16,9 @@ class OAuthAuthentication extends Action {
 	protected $resourceOwner;
 	protected $redirectUri;
 	protected $matchpoints;
+	protected $staffPType;
+	protected $staffPTypeAttr;
+	protected $staffPTypeAttrValue;
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
@@ -33,6 +36,19 @@ class OAuthAuthentication extends Action {
 			$this->redirectUri = $ssoSettings->getRedirectUrl();
 			$this->matchpoints = $ssoSettings->getMatchpoints();
 			$this->grantType = $ssoSettings->getAuthenticationGrantType();
+			$this->staffPTypeAttr = $ssoSettings->oAuthStaffPTypeAttr ?? null;
+			$this->staffPTypeAttrValue = $ssoSettings->oAuthStaffPTypeAttrValue ?? null;
+
+			if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
+				$this->staffPType = $ssoSettings->oAuthStaffPType;
+			}
+
+			if(($ssoSettings->staffOnly === 0 || $ssoSettings->staffOnly === '0') &&
+				(!empty($ssoSettings->oAuthStaffPTypeAttr) && !empty($ssoSettings->oAuthStaffPTypeAttrValue)) &&
+				($ssoSettings->oAuthStaffPType != '-1' || $ssoSettings->oAuthStaffPType != -1)) {
+				$this->staffPType = $ssoSettings->oAuthStaffPType;
+			}
+
 		} else {
 			global $logger;
 			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT);
@@ -190,6 +206,10 @@ class OAuthAuthentication extends Action {
 			$newUser['firstname'] = $this->getFirstName();
 			$newUser['lastname'] = $this->getLastName();
 			$newUser['cat_username'] = $this->getUserId();
+			$newUser['category_id'] = null;
+			if($this->staffPType && $this->isStaffUser()) {
+				$newUser['category_id'] = $this->staffPType;
+			}
 			$selfReg = $catalogConnection->selfRegister(true, $newUser);
 			if ($selfReg['success'] != '1') {
 				//unable to register the user
@@ -198,8 +218,12 @@ class OAuthAuthentication extends Action {
 			}
 			$user = $catalogConnection->findNewUser($this->getUserId());
 		} else {
+			if($this->staffPType && ($this->isStaffUser() && ($user->patronType !== $this->staffPType))) {
+				$user->patronType = $this->staffPType;
+			}
 			$user->oAuthAccessToken = $this->accessToken;
 			$user->oAuthRefreshToken = $this->refreshToken;
+			$user->update();
 			$user->updatePatronInfo(true);
 			$user = $catalogConnection->findNewUser($this->getUserId());
 		}
@@ -249,6 +273,19 @@ class OAuthAuthentication extends Action {
 
 	private function getLastName() {
 		return $this->searchArray($this->resourceOwner, $this->matchpoints['lastName']);
+	}
+
+	private function getStaffAttribute() {
+		return $this->searchArray($this->resourceOwner, $this->staffPTypeAttr);
+	}
+
+	private function isStaffUser(): bool {
+		if($this->staffPTypeAttr && $this->staffPTypeAttrValue) {
+			if($this->getStaffAttribute() === $this->staffPTypeAttrValue) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private function newSSOSession($id) {

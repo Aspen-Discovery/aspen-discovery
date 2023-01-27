@@ -71,6 +71,50 @@ export async function reloadProfile(url) {
 }
 
 /**
+ * Validates the given credentials to initiate logging into Aspen LiDA. For Discovery 23.02.00 and later.
+ * @param {string} username
+ * @param {password} password
+ * @param {string} url
+ **/
+export async function loginToLiDA(username, password, url) {
+     const postBody = new FormData();
+     postBody.append('username', username);
+     postBody.append('password', password);
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const results = await discovery.post('/UserAPI?method=loginToLiDA', postBody);
+     if (results.ok) {
+          return results.data.result;
+     }
+}
+
+/**
+ * Validates the given credentials to initiate logging into Aspen LiDA. For Discovery 23.01.00 and older.
+ * @param {string} username
+ * @param {string} password
+ * @param {string} url
+ **/
+export async function validateUser(username, password, url) {
+     const postBody = new FormData();
+     postBody.append('username', username);
+     postBody.append('password', password);
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const results = await discovery.post('/UserAPI?method=validateAccount', postBody);
+     if (results.ok) {
+          return results.data.result;
+     }
+}
+
+/**
  * Checks if the user has an active Aspen Discovery session
  * @param {string} url
  **/
@@ -107,6 +151,101 @@ export async function logoutUser(url) {
      } else {
           console.log(response);
           return false;
+     }
+}
+
+/** *******************************************************************
+ * Checkouts and Holds
+ ******************************************************************* **/
+/**
+ * Return a list of current holds for a user
+ * @param {string} readySort
+ * @param {string} pendingSort
+ * @param {string} holdSource
+ * @param {string} url
+ * @param {boolean} refresh
+ **/
+export async function getPatronHolds(readySort='expire', pendingSort='sortTitle', holdSource = 'all', url, refresh = true) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               source: holdSource,
+               linkedUsers: true,
+               refreshHolds: refresh,
+               unavailableSort: pendingSort,
+               availableSort: readySort,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=getPatronHolds', postBody);
+     if (response.ok) {
+          const allHolds = response.data.result.holds;
+          let holds;
+          let holdsReady = [];
+          let holdsNotReady = [];
+
+          if (typeof allHolds !== 'undefined') {
+               if (typeof allHolds.unavailable !== 'undefined') {
+                    holdsNotReady = Object.values(allHolds.unavailable);
+               }
+
+               if (typeof allHolds.available !== 'undefined') {
+                    holdsReady = Object.values(allHolds.available);
+               }
+          }
+
+          holds = holdsReady.concat(holdsNotReady);
+          PATRON.holds = holds;
+          return [
+               {
+                    title: 'Ready',
+                    data: holdsReady,
+               },
+               {
+                    title: 'Pending',
+                    data: holdsNotReady,
+               }
+          ]
+     } else {
+          console.log(response);
+          return {
+               holds: [],
+               holdsReady: [],
+               holdsNotReady: [],
+          };
+     }
+}
+
+/**
+ * Return a list of current checkouts for a user
+ * @param {string} source
+ * @param {string} url
+ * @param {boolean} refresh
+ **/
+export async function getPatronCheckedOutItems(source = 'all', url, refresh = true) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               source: source,
+               linkedUsers: true,
+               refreshCheckouts: refresh
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
+     if (response.ok) {
+          let items = response.data?.result?.checkedOutItems ?? [];
+          items = _.sortBy(items, ['daysUntilDue', 'title']);
+          return items;
+     } else {
+          console.log(response);
+          return []
      }
 }
 
@@ -225,25 +364,21 @@ export async function getViewerAccounts(url) {
 
 /**
  * Add an account that the user wants to create a link to
- * @param {array} patronToAdd
+ * @param {string} username
+ * @param {string} password
  * @param {string} url
  **/
-export async function addLinkedAccount(patronToAdd, url) {
+export async function addLinkedAccount(username='', password='', url) {
      const postBody = await postData();
-     if (_.isArray(patronToAdd)) {
-          postBody.append('accountToLinkUsername', patronToAdd['username']);
-          postBody.append('accountToLinkPassword', patronToAdd['password']);
-     } else {
-          console.log('patronToAdd credentials not provided');
-          return false;
-     }
+     postBody.append(username);
+     postBody.append(password);
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}addAccountLink`, postBody);
+     const response = await discovery.post('/UserAPI?method=addAccountLink', postBody);
      if (response.ok) {
           let status = false;
           if (!_.isUndefined(response.data.result.success)) {
@@ -341,15 +476,15 @@ export async function removeViewerAccount(patronToRemove, url) {
 export async function saveLanguage(code, url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                languageCode: code,
           },
      });
-     const response = await discovery.post(`${endpoint.url}saveLanguage`, postBody);
+     const response = await discovery.post('/UserAPI?method=saveLanguage', postBody);
      if (response.ok) {
           i18n.locale = code;
           PATRON.language = code;
@@ -372,7 +507,7 @@ export async function saveLanguage(code, url) {
  **/
 export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url) {
      const postBody = await postData();
-     const instance = axios.create({
+     const api = create({
           baseURL: url + '/API',
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -383,10 +518,15 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
           },
      });
 
-     const { data } = await instance.post('/UserAPI?method=getPatronReadingHistory', postBody);
-     let morePages = true;
-     if (data.result?.page_current === data.result?.page_total) {
-          morePages = false;
+     const response = await api.post('/UserAPI?method=getPatronReadingHistory', postBody);
+
+     let data = [];
+     let morePages = false;
+     if(response.ok) {
+          data = response.data;
+          if (data.result?.page_current !== data.result?.page_total) {
+               morePages = true;
+          }
      }
 
      return {
@@ -407,14 +547,13 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
 export async function optIntoReadingHistory(url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}optIntoReadingHistory`, postBody);
+     const response = await discovery.post("/UserAPI?method=optIntoReadingHistory", postBody);
      if (response.ok) {
-          console.log(response.data);
           return true;
      }
      return false;
@@ -427,12 +566,12 @@ export async function optIntoReadingHistory(url) {
 export async function optOutOfReadingHistory(url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}optOutOfReadingHistory`, postBody);
+     const response = await discovery.post('/UserAPI?method=optOutOfReadingHistory', postBody);
      if (response.ok) {
           console.log(response.data);
           return true;
@@ -447,12 +586,12 @@ export async function optOutOfReadingHistory(url) {
 export async function deleteAllReadingHistory(url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}deleteAllFromReadingHistory`, postBody);
+     const response = await discovery.post('/UserAPI?method=deleteAllFromReadingHistory', postBody);
      if (response.ok) {
           console.log(response.data);
           if (response.data.result?.success) {
@@ -470,39 +609,18 @@ export async function deleteAllReadingHistory(url) {
 export async function deleteSelectedReadingHistory(item, url) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url,
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
                selected: item,
           },
      });
-     const response = await discovery.post(`${endpoint.url}deleteSelectedFromReadingHistory`, postBody);
+     const response = await discovery.post('/UserAPI?method=deleteSelectedFromReadingHistory', postBody);
      if (response.ok) {
           if (response.data.result?.success) {
                return true;
-          }
-     }
-     return false;
-}
-
-/**
- * Get list of available sort options for reading history
- * @param {string} url
- **/
-export async function getReadingHistorySortOptions(url) {
-     const postBody = await postData();
-     const discovery = create({
-          baseURL: url,
-          timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
-          auth: createAuthTokens(),
-     });
-     const response = await discovery.post(`${endpoint.url}getReadingHistorySortOptions`, postBody);
-     if (response.ok) {
-          if (response.data?.result) {
-               return response.data.result;
           }
      }
      return false;

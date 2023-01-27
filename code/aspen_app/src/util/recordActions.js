@@ -238,12 +238,13 @@ export async function submitVdxRequest(url, request) {
      });
      const response = await api.post('/UserAPI?method=submitVdxRequest', postBody);
      if (response.ok) {
-          if (response.data.result.success === true) {
+          if (response.data.result?.success === true) {
                popAlert(response.data.result.title, response.data.result.message, 'success');
+               return response.data.result;
           } else {
-               popAlert(response.data.result.title ?? 'Unknown Error', response.data.result.message, 'error');
+               popAlert(response.data.title ?? 'Unknown Error', response.data.message, 'error');
+               return response.data;
           }
-          return response.data;
      } else {
           const problem = problemCodeMap(response.problem);
           popAlert(problem.title, problem.message, 'warning');

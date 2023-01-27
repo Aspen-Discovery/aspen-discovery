@@ -96,7 +96,7 @@ abstract class DataObject {
 		return $this->__primaryKey;
 	}
 
-	public function find($fetchFirst = false): bool {
+	public function find($fetchFirst = false, $requireOneMatchToReturn = false): bool {
 		if (!isset($this->__table)) {
 			echo("Table not defined for class " . self::class);
 			die();
@@ -116,11 +116,21 @@ abstract class DataObject {
 		$this->__queryStmt->setFetchMode(PDO::FETCH_INTO, $this);
 		if ($this->__queryStmt->execute()) {
 			$this->__N = $this->__queryStmt->rowCount();
-			if ($this->__N != 0 && $fetchFirst) {
-				$this->fetch();
-				//If we are fetching the first record, we can cleanup since it won't be used again.
-				$this->__queryStmt->closeCursor();
-				$this->__queryStmt = null;
+			if ($this->__N > 0 && $fetchFirst) {
+				$okToFetch = ($this->__N === 1);
+				if (!$okToFetch && !$requireOneMatchToReturn) {
+					$okToFetch = true;
+				}
+				if ($okToFetch) {
+					$this->fetch();
+					//If we are fetching the first record, we can cleanup since it won't be used again.
+					$this->__queryStmt->closeCursor();
+					$this->__queryStmt = null;
+				} else {
+					$this->__queryStmt->closeCursor();
+					$this->__queryStmt = null;
+					return false;
+				}
 			}
 		} else {
 			echo("Failed to execute " . $query);

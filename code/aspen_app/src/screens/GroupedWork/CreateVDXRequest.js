@@ -6,17 +6,19 @@ import {useQuery} from '@tanstack/react-query';
 import {loadingSpinner} from '../../components/loadingSpinner';
 import {submitVdxRequest} from '../../util/recordActions';
 import {SafeAreaView} from 'react-native';
-import {LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {HoldsContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {getBasicItemInfo} from '../../util/api/item';
 import {loadError} from '../../components/loadError';
 import {getVdxForm} from '../../util/loadLibrary';
+import {refreshProfile, reloadProfile} from '../../util/api/user';
+import {reloadHolds} from '../../util/loadPatron';
 
 export const CreateVDXRequest = () => {
     const route = useRoute();
     const id = route.params.id;
     const {library} = React.useContext(LibrarySystemContext);
     const {location} = React.useContext(LibraryBranchContext);
-    const [isLoading, setLoading] = React.useState(false);
+    const {updateUser} = React.useContext(UserContext);
 
     if (location.vdxFormId === "-1" || _.isNull(location.vdxLocation)) {
           return loadError('Location not setup for VDX', '');
@@ -24,7 +26,7 @@ export const CreateVDXRequest = () => {
 
     const { data: item } = useQuery({
         queryKey: ['vdxItem', id, library.baseUrl],
-        queryFn: () => getBasicItemInfo(id, library.baseUrl),
+        queryFn: () => getBasicItemInfo(id, library.baseUrl)
     });
     const vdxItem = item;
 
@@ -34,7 +36,7 @@ export const CreateVDXRequest = () => {
         enabled: !!vdxItem,
     });
 
-    return <>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError(error, '') : <Request config={data} item={vdxItem}/>}</>;
+    return <>{status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <Request config={data} item={vdxItem}/>}</>;
 
 };
 
@@ -42,6 +44,8 @@ const Request = (payload) => {
     const navigation = useNavigation();
     const {config, item} = payload;
     const {library} = React.useContext(LibrarySystemContext);
+    const { updateUser } = React.useContext(UserContext);
+    const { updateHolds } = React.useContext(HoldsContext);
 
     let publisherValue = item.publisher;
     if(_.isArray(item.publisher)) {
@@ -69,9 +73,17 @@ const Request = (payload) => {
             catalogKey: item.id ?? null,
             pickupLocation: pickupLocation ?? null,
         }
-        await submitVdxRequest(library.baseUrl, request).then(result => {
+        await submitVdxRequest(library.baseUrl, request).then(async (result) => {
             setIsSubmitting(false);
-            navigation.goBack();
+            if(result.success) {
+                navigation.goBack();
+                await reloadHolds(library.baseUrl).then((result) => {
+                    updateHolds(result);
+                });
+                await reloadProfile(library.baseUrl).then((result) => {
+                    updateUser(result);
+                });
+            }
         });
     }
 
@@ -234,7 +246,7 @@ const Request = (payload) => {
                             bg: 'tertiary.300',
                             endIcon: <CheckIcon size="5"/>,
                         }}
-                        selectedValue={this.getValue('pickupLocation')}
+                        selectedValue={pickupLocation}
                         onValueChange={(itemValue) => {
                             setPickupLocation(itemValue)
                         }}>

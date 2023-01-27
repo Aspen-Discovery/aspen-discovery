@@ -4,5 +4,10 @@
   "buildCode": "",
   "sentryProjectOwner": "",
   "sentryAuthToken": "",
-  "devAppleId": ""
+  "devAppleId": "",
+  "ascApiKeyPath": "",
+  "ascApiKeyIssuerId": "",
+  "ascApiKeyId": "",
+  "googleServiceKeyPath": "",
+  "greenhouseUrl": ""
 }

@@ -59,6 +59,10 @@ fs.readFile('eas.json', 'utf8', function (err, data) {
           json = json.replace('{{DEV_APP_ID}}', app['ascAppId']);
           json = json.replace('{{DEV_TEAM_ID}}', app['appleTeamId']);
           json = json.replace('{{DEV_APPLE_ID}}', owner['devAppleId']);
+          json = json.replace('{{DEV_APPLE_API_KEY_PATH}}', app['ascApiKeyPath']);
+          json = json.replace('{{DEV_APPLE_API_KEY_ISSUER_ID}}', app['ascApiKeyIssuerId']);
+          json = json.replace('{{DEV_APPLE_API_KEY_ID}}', app['ascApiKeyId']);
+          json = json.replace('{{DEV_GOOGLE_SERVICE_KEY_PATH}}', app['googleServiceKeyPath']);
           const obj = JSON.parse(json);
           fs.writeFile('eas.json', obj, 'utf8', function (err) {
                if (err) {
@@ -128,7 +132,7 @@ const app_config = {
      },
      extra: {
           apiUrl: app['discoveryUrl'],
-          greenhouse: app['greenhouseUrl'],
+          greenhouseUrl: owner['greenhouseUrl'],
           loginLogo: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appLogin&slug=' + app['slug'],
           libraryCardLogo: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=logoApp&slug=' + app['slug'],
           backgroundColor: app['background'],
@@ -138,6 +142,8 @@ const app_config = {
           eas: {
                projectId: app['easId'],
           },
+          iosStoreUrl: 'https://apps.apple.com/us/app/id' + app['ascAppId'],
+          androidStoreUrl: 'https://play.google.com/store/apps/details?id=' + app['reverseDns']
      },
      hooks: {
           postPublish: [
@@ -151,7 +157,7 @@ const app_config = {
                },
           ],
      },
-     plugins: ['sentry-expo'],
+     plugins: ['sentry-expo', 'expo-community-flipper']
 };
 
 fs.readFile('app.config.js', 'utf8', function (err, data) {

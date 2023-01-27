@@ -14,6 +14,10 @@
 	"sentryAuth": "",
 	"sentryDsn": "",
 	"ascAppId": "",
-	"appleTeamId": ""
+	"appleTeamId": "",
+	"ascApiKeyPath": "",
+	"ascApiKeyIssuerId": "",
+	"ascApiKeyId": "",
+	"googleServiceKeyPath": ""
   }
 }

@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import moment from 'moment';
 import _ from 'lodash';
-import { ScrollView, Actionsheet, Badge, Box, Button, Center, FlatList, Icon, Pressable, Text, HStack, VStack, IconButton, Image } from 'native-base';
+import { ScrollView, Actionsheet, FormControl, Select, Box, Button, Center, FlatList, Icon, Pressable, Text, HStack, VStack, CheckIcon, Image } from 'native-base';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -10,24 +10,49 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { translate } from '../../../translations/translations';
 import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
-import { getCheckedOutItems, reloadCheckedOutItems } from '../../../util/loadPatron';
 import { CheckoutsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { refreshProfile } from '../../../util/api/user';
-import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
+import {getPatronCheckedOutItems, refreshProfile} from '../../../util/api/user';
+import {getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew} from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const MyCheckouts = () => {
+     const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const [isLoading, setLoading] = React.useState(true);
      const [renewAll, setRenewAll] = React.useState(false);
+     const [source, setSource] = React.useState('all');
+
+     const toggleSource = async (value) => {
+          setSource(value);
+          setLoading(true);
+          await getPatronCheckedOutItems(value, library.baseUrl).then((result) => {
+               if (checkouts !== result) {
+                    updateCheckouts(result);
+               }
+               if (!_.isNull(value)) {
+                    if(value === 'ils') {
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "Physical Materials"})});
+                    } else if (value === 'overdrive') {
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "OverDrive"})});
+                    } else if (value === 'cloud_library') {
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "CloudLibrary"})});
+                    } else if (value === 'axis360') {
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "Axis 360"})});
+                    } else {
+                         navigation.setOptions({ title: translate('checkouts.title')});
+                    }
+               }
+               setLoading(false);
+          });
+     };
 
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getCheckedOutItems(library.baseUrl).then((result) => {
+                    await getPatronCheckedOutItems(source, library.baseUrl).then((result) => {
                          if (checkouts !== result) {
                               updateCheckouts(result);
                          }
@@ -61,7 +86,7 @@ export const MyCheckouts = () => {
 
      const reloadCheckouts = async () => {
           setLoading(true);
-          await reloadCheckedOutItems(library.baseUrl).then((result) => {
+          await getPatronCheckedOutItems(source, library.baseUrl, true).then((result) => {
                if (checkouts !== result) {
                     updateCheckouts(result);
                }
@@ -74,7 +99,7 @@ export const MyCheckouts = () => {
 
      const refreshCheckouts = async () => {
           setLoading(true);
-          await getCheckedOutItems(library.baseUrl).then((result) => {
+          await getPatronCheckedOutItems(source, library.baseUrl, false).then((result) => {
                if (checkouts !== result) {
                     updateCheckouts(result);
                }
@@ -88,13 +113,12 @@ export const MyCheckouts = () => {
      const actionButtons = () => {
           if (numCheckedOut > 0) {
                return (
-                    <HStack>
+                    <HStack space={2}>
                          <Button
                               isLoading={renewAll}
                               isLoadingText="Renewing all..."
                               size="sm"
                               variant="solid"
-                              mr={1}
                               colorScheme="primary"
                               onPress={() => {
                                    setRenewAll(true);
@@ -115,6 +139,24 @@ export const MyCheckouts = () => {
                               }}>
                               {translate('checkouts.reload')}
                          </Button>
+                         <FormControl w={175}>
+                              <Select
+                                  name="holdSource"
+                                  selectedValue={source}
+                                  accessibilityLabel="Filter By Source"
+                                  _selectedItem={{
+                                       bg: 'tertiary.300',
+                                       endIcon: <CheckIcon size="5"/>,
+                                  }}
+                                  onValueChange={(itemValue) => toggleSource(itemValue)}>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'All', num: user.numCheckedOut ?? 0})} value="all" key={0}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'Physical Materials', num: user.numCheckedOutIls ?? 0})} value="ils" key={1}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'OverDrive', num: user.numCheckedOutOverDrive ?? 0})} value="overdrive" key={2}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'Hoopla', num: user.numCheckedOut_Hoopla ?? 0})} value="hoopla" key={3}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'CloudLibrary', num: user.numCheckedOut_cloudLibrary ?? 0})} value="cloud_library" key={4}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'Axis 360', num: user.numCheckedOut_axis360 ?? 0})} value="axis360" key={5}/>
+                              </Select>
+                         </FormControl>
                     </HStack>
                );
           } else {
@@ -139,28 +181,19 @@ export const MyCheckouts = () => {
                <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap">
                     <ScrollView horizontal>{actionButtons()}</ScrollView>
                </Box>
-               <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+               <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} reloadCheckouts={reloadCheckouts} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
           </SafeAreaView>
      );
 };
 
 const Checkout = (props) => {
      const checkout = props.data;
+     const reloadCheckouts = props.reloadCheckouts;
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
-     const refreshCheckouts = async () => {
-          await getCheckedOutItems(library.baseUrl).then((result) => {
-               if (checkouts !== result) {
-                    updateCheckouts(result);
-               }
-          });
-          refreshProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
-     };
 
      const openGroupedWork = (item, title) => {
           if(version >= '23.01.00') {
@@ -238,8 +271,6 @@ const Checkout = (props) => {
           returnEarly = true;
      }
 
-     console.log(returnEarly);
-
      let renewMessage = translate('checkouts.renew');
      if (!checkout.canRenew) {
           renewMessage = translate('checkouts.no_renewals');
@@ -267,9 +298,10 @@ const Checkout = (props) => {
                          {getTitle(checkout.title)}
                          {isOverdue(checkout.overdue)}
                          {getAuthor(checkout.author)}
-                         {getFormat(checkout.format)}
+                         {getFormat(checkout.format, checkout.source)}
                          {getCheckedOutTo(checkout.user)}
                          {getDueDate(checkout.dueDate)}
+                         {getRenewalCount(checkout.renewCount ?? 0, checkout.maxRenewals ?? null)}
                          {willAutoRenew(checkout.autoRenew ?? false, checkout.renewalDate)}
                     </VStack>
                </HStack>
@@ -301,7 +333,7 @@ const Checkout = (props) => {
                                    setRenew(true);
                                    renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
                                         setRenew(false);
-                                        refreshCheckouts();
+                                        reloadCheckouts();
                                         toggle();
                                    });
                               }}
@@ -343,9 +375,9 @@ const Checkout = (props) => {
                                         isLoadingText="Returning..."
                                         onPress={() => {
                                              setReturn(true);
-                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl).then((result) => {
+                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl, version, checkout.transactionId).then((result) => {
                                                   setReturn(false);
-                                                  refreshCheckouts();
+                                                  reloadCheckouts();
                                                   toggle();
                                              });
                                         }}
@@ -361,9 +393,9 @@ const Checkout = (props) => {
                                         isLoadingText="Returning..."
                                         onPress={() => {
                                              setReturn(true);
-                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl).then((result) => {
+                                             returnCheckout(checkout.userId, checkout.recordId, checkout.source, checkout.overDriveId, library.baseUrl, version, checkout.transactionId).then((result) => {
                                                   setReturn(false);
-                                                  refreshCheckouts();
+                                                  reloadCheckouts();
                                                   toggle();
                                              });
                                         }}

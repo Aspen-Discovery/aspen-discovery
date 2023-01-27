@@ -54,11 +54,11 @@ export async function getVariations(itemId, format, url) {
           format: data.format ?? format,
           variations: data.variations ?? [],
           volumeInfo: {
-               numItemsWithVolumes: data.numItemsWithVolumes,
-               numItemsWithoutVolumes: data.numItemsWithoutVolumes,
-               hasItemsWithoutVolumes: data.hasItemsWithoutVolumes,
-               majorityOfItemsHaveVolumes: data.majorityOfItemsHaveVolumes,
-               alwaysPlaceVolumeHoldWhenVolumesArePresent: data.alwaysPlaceVolumeHoldWhenVolumesArePresent
+               numItemsWithVolumes: data.numItemsWithVolumes ?? 0,
+               numItemsWithoutVolumes: data.numItemsWithoutVolumes ?? 0,
+               hasItemsWithoutVolumes: data.hasItemsWithoutVolumes ?? 0,
+               majorityOfItemsHaveVolumes: data.majorityOfItemsHaveVolumes ?? false,
+               alwaysPlaceVolumeHoldWhenVolumesArePresent: data.alwaysPlaceVolumeHoldWhenVolumesArePresent ?? false
           },
      };
 }
@@ -169,7 +169,7 @@ export async function getBasicItemInfo(id, url) {
           },
      });
 
-     return data.result;
+     return data;
 }
 
 export async function getRelatedRecord(id, recordId, format, url) {

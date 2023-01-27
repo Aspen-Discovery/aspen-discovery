@@ -1427,6 +1427,10 @@ abstract class MarcRecordProcessor {
 			printFormats.clear();
 			printFormats.add("BookClubKitLarge");
 		}
+		if (printFormats.contains("BookClubKit") && printFormats.contains("Kit")){
+			printFormats.clear();
+			printFormats.add("BookClubKit");
+		}
 		if (printFormats.contains("Book") && printFormats.contains("LargePrint")){
 			printFormats.remove("Book");
 		}
@@ -1770,7 +1774,7 @@ abstract class MarcRecordProcessor {
 	private String getGameFormatFromValue(String value) {
 		if (value.contains("kinect sensor")) {
 			return "Kinect";
-		} else if (value.contains("wii u")) {
+		} else if (value.contains("wii u") || value.contains("wiiu")) {
 			return "WiiU";
 		} else if (value.contains("nintendo wii") || value.contains("wii")) {
 			return "Wii";

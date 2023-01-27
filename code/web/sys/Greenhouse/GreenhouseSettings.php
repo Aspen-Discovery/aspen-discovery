@@ -13,6 +13,9 @@ class GreenhouseSettings extends DataObject {
 	public $notificationAccessToken;
 	public $requestTrackerBaseUrl;
 	public $requestTrackerAuthToken;
+	public $expoEASBuildWebhookKey;
+	public $expoEASSubmitWebhookKey;
+	public $sendBuildTrackerAlert;
 
 	public static function getObjectStructure($context = ''): array {
 		return [
@@ -92,6 +95,30 @@ class GreenhouseSettings extends DataObject {
 				'type' => 'storedPassword',
 				'label' => 'Request Tracker Auth Token',
 				'description' => 'Auth Token loading ticket information from Request Tracker',
+				'canBatchUpdate' => false,
+				'hideInLists' => true,
+			],
+			'expoEASBuildWebhookKey' => [
+				'property' => 'expoEASBuildWebhookKey',
+				'type' => 'storedPassword',
+				'label' => 'Expo EAS Build Webhook Key',
+				'description' => 'Webhook key provided by Expo for connecting the EAS Build webhook to track Aspen LiDA builds',
+				'canBatchUpdate' => false,
+				'hideInLists' => true,
+			],
+			'expoEASSubmitWebhookKey' => [
+				'property' => 'expoEASSubmitWebhookKey',
+				'type' => 'storedPassword',
+				'label' => 'Expo EAS Submit Webhook Key',
+				'description' => 'Webhook key provided by Expo for connecting the EAS Submit webhook to track Aspen LiDA builds',
+				'canBatchUpdate' => false,
+				'hideInLists' => true,
+			],
+			'sendBuildTrackerAlert' => [
+				'property' => 'sendBuildTrackerAlert',
+				'type' => 'checkbox',
+				'label' => 'Send Slack Alerts for new builds in Aspen LiDA Build Tracker',
+				'description' => 'Whether or not to send Slack alerts when new Aspen LiDA Builds are created',
 				'canBatchUpdate' => false,
 				'hideInLists' => true,
 			],

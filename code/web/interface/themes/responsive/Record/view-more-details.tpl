@@ -27,7 +27,7 @@
 		</div>
 	{/if}
 
-	{if empty($showPhysicalDescriptions) && $physicalDescriptions}
+	{if empty($showPhysicalDescriptions) && !empty($physicalDescriptions)}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Physical Desc' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -52,7 +52,7 @@
 		</div>
 	</div>
 
-	{if !empty($recordDriver) && !$showISBNs && count($recordDriver->getISBNs()) > 0}
+	{if !empty($recordDriver) && !empty($showISBNs) && count($recordDriver->getISBNs()) > 0}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='ISBN' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">

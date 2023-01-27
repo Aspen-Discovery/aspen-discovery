@@ -1,23 +1,41 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Button, Center, FormControl, Icon, Input } from 'native-base';
 import React, { useRef } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import Constants from 'expo-constants';
+import { create } from 'apisauce';
 
 // custom components and helper files
 import { AuthContext } from '../../components/navigation';
 import { translate } from '../../translations/translations';
 import { getBrowseCategories, getLibraryBranch, getLibrarySystem, getUserProfile } from '../../util/login';
 import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {ResetExpiredPin} from './ResetExpiredPin';
+import {GLOBALS} from '../../util/globals';
+import {createAuthTokens, getHeaders} from '../../util/apiAuth';
+import {formatDiscoveryVersion} from '../../util/loadLibrary';
+import {DisplayMessage} from '../../components/Notifications';
+import {loginToLiDA, validateUser} from '../../util/api/user';
 
 export const GetLoginForm = (props) => {
      const [loading, setLoading] = React.useState(false);
 
+     const [pinValidationRules, setPinValidationRules] = React.useState([]);
+     const [expiredPin, setExpiredPin] = React.useState(false);
+     const [resetToken, setResetToken] = React.useState('');
+     const [userId, setUserId] = React.useState('');
+
+     const [loginError, setLoginError] = React.useState(false);
+     const [loginErrorMessage, setLoginErrorMessage] = React.useState('');
+
      // securely set and store key:value pairs
-     const [valueUser, onChangeValueUser] = React.useState('');
-     const [valueSecret, onChangeValueSecret] = React.useState('');
+     const [valueUser, setUsername] = React.useState('');
+     const [valueSecret, setPassword] = React.useState('');
 
      // show:hide data from password field
-     const [show, setShow] = React.useState(false);
-     const handleClick = () => setShow(!show);
+     const [showPassword, setShowPassword] = React.useState(false);
+     const toggleShowPassword = () => setShowPassword(!showPassword);
 
      // make ref to move the user to next input field
      const passwordRef = useRef();
@@ -26,11 +44,94 @@ export const GetLoginForm = (props) => {
      const { updateLocation } = React.useContext(LibraryBranchContext);
      const { updateUser } = React.useContext(UserContext);
      const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
-     const libraryUrl = props.libraryUrl;
      const patronsLibrary = props.patronsLibrary;
+
+     const initialValidation = async () => {
+         const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
+         if(result.success) {
+             const version = formatDiscoveryVersion(result.library.discoveryVersion);
+             if(version >= '23.02.00') {
+                 setPinValidationRules(result.library.pinValidationRules);
+                 const validatedUser = await loginToLiDA(valueUser, valueSecret, patronsLibrary['baseUrl']);
+                 if(validatedUser) {
+                     if(validatedUser.success) {
+                         await setContext();
+                         await setAsyncStorage();
+                         signIn();
+                         setLoading(false);
+                     } else {
+                         if(validatedUser.resetToken) {
+                             console.log("Expired pin!")
+                             setResetToken(validatedUser.resetToken);
+                             setUserId(validatedUser.userId);
+                             setExpiredPin(true);
+                             setLoading(false);
+                         } else {
+                             console.log(validatedUser.message);
+                             setLoginError(true);
+                             setLoginErrorMessage(validatedUser.message);
+                             setLoading(false);
+                         }
+                     }
+                 }
+             } else {
+                 const validatedUser = await validateUser(valueUser, valueSecret, patronsLibrary['baseUrl']);
+                 if(validatedUser) {
+                     if(validatedUser.success['id']) {
+                         await setContext();
+                         await setAsyncStorage();
+                         signIn();
+                         setLoading(false);
+                     } else {
+                         console.log('Unable to validate user with provided information.');
+                         setLoginError(true);
+                         setLoginErrorMessage(translate('login.invalid_user'));
+                         setLoading(false);
+                     }
+                 }
+             }
+         } else {
+             setLoading(false);
+             setLoginError(true);
+             setLoginErrorMessage("Unable to establish connection with library. Please try again later.")
+         }
+     }
+
+     const setContext = async () => {
+         const library = await getLibrarySystem({ patronsLibrary });
+         updateLibrary(library);
+         const location = await getLibraryBranch({ patronsLibrary });
+         updateLocation(location);
+         const user = await getUserProfile({ patronsLibrary }, { valueUser }, { valueSecret });
+         updateUser(user);
+         const categories = await getBrowseCategories({ patronsLibrary }, { valueUser }, { valueSecret });
+         updateBrowseCategories(categories);
+     }
+
+     const setAsyncStorage = async () => {
+         await SecureStore.setItemAsync('userKey', valueUser);
+         await SecureStore.setItemAsync('secretKey', valueSecret);
+         await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
+         await AsyncStorage.setItem('@libraryId', patronsLibrary['libraryId']);
+         await SecureStore.setItemAsync('libraryName', patronsLibrary['name']);
+         await SecureStore.setItemAsync('locationId', patronsLibrary['locationId']);
+         await AsyncStorage.setItem('@locationId', patronsLibrary['locationId']);
+         await SecureStore.setItemAsync('solrScope', patronsLibrary['solrScope']);
+
+         await AsyncStorage.setItem('@solrScope', patronsLibrary['solrScope']);
+         await AsyncStorage.setItem('@pathUrl', patronsLibrary['baseUrl']);
+         await SecureStore.setItemAsync('pathUrl', patronsLibrary['baseUrl']);
+         await AsyncStorage.setItem('@lastStoredVersion', Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version);
+         await AsyncStorage.setItem('@patronLibrary', JSON.stringify(patronsLibrary));
+     }
+
+     if(expiredPin) {
+         return <ResetExpiredPin username={valueUser} userId={userId} resetToken={resetToken} url={patronsLibrary['baseUrl']} pinValidationRules={pinValidationRules} setExpiredPin={setExpiredPin} patronsLibrary={patronsLibrary} />
+     }
 
      return (
           <>
+              {loginError ? <DisplayMessage type="error" message={loginErrorMessage}/> : null}
                <FormControl>
                     <FormControl.Label
                          _text={{
@@ -45,7 +146,7 @@ export const GetLoginForm = (props) => {
                          autoCorrect={false}
                          variant="filled"
                          id="barcode"
-                         onChangeText={(text) => onChangeValueUser(text)}
+                         onChangeText={(text) => setUsername(text)}
                          returnKeyType="next"
                          textContentType="username"
                          required
@@ -66,27 +167,15 @@ export const GetLoginForm = (props) => {
                     <Input
                          variant="filled"
                          size="xl"
-                         type={show ? 'text' : 'password'}
+                         type={showPassword ? 'text' : 'password'}
                          returnKeyType="go"
                          textContentType="password"
                          ref={passwordRef}
-                         InputRightElement={<Icon as={<Ionicons name={show ? 'eye-outline' : 'eye-off-outline'} />} size="md" ml={1} mr={3} onPress={handleClick} roundedLeft={0} roundedRight="md" />}
-                         onChangeText={(text) => onChangeValueSecret(text)}
-                         onSubmitEditing={async (event) => {
-                              setLoading(true);
-                             setTimeout(function () {
-                                 setLoading(false);
-                             }, 1500);
-                              signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary });
-                              const library = await getLibrarySystem({ patronsLibrary });
-                              updateLibrary(library);
-                              const location = await getLibraryBranch({ patronsLibrary });
-                              updateLocation(location);
-                              const user = await getUserProfile({ patronsLibrary }, { valueUser }, { valueSecret });
-                              updateUser(user);
-                              const categories = await getBrowseCategories({ patronsLibrary }, { valueUser }, { valueSecret });
-                              updateBrowseCategories(categories);
-
+                         InputRightElement={<Icon as={<Ionicons name={showPassword ? 'eye-outline' : 'eye-off-outline'} />} size="md" ml={1} mr={3} onPress={toggleShowPassword} roundedLeft={0} roundedRight="md" />}
+                         onChangeText={(text) => setPassword(text)}
+                         onSubmitEditing={async () => {
+                             setLoading(true);
+                             await initialValidation()
                          }}
                          required
                     />
@@ -100,19 +189,8 @@ export const GetLoginForm = (props) => {
                          isLoading={loading}
                          isLoadingText="Logging in..."
                          onPress={async () => {
-                              setLoading(true);
-                             setTimeout(function () {
-                                 setLoading(false);
-                             }, 1500);
-                              signIn({ valueUser, valueSecret, libraryUrl, patronsLibrary });
-                              const library = await getLibrarySystem({ patronsLibrary });
-                              updateLibrary(library);
-                              const location = await getLibraryBranch({ patronsLibrary });
-                              updateLocation(location);
-                              const user = await getUserProfile({ patronsLibrary }, { valueUser }, { valueSecret });
-                              updateUser(user);
-                              const categories = await getBrowseCategories({ patronsLibrary }, { valueUser }, { valueSecret });
-                              updateBrowseCategories(categories);
+                             setLoading(true);
+                             await initialValidation();
                          }}>
                          {translate('general.login')}
                     </Button>
@@ -120,3 +198,27 @@ export const GetLoginForm = (props) => {
           </>
      );
 };
+
+async function checkAspenDiscovery(url, id) {
+    const discovery = create({
+        baseURL: url + '/API',
+        timeout: GLOBALS.timeoutFast,
+        headers: getHeaders(false),
+        auth: createAuthTokens(),
+        params: {
+            id: id
+        }
+    });
+    const response = await discovery.get('/SystemAPI?method=getLibraryInfo');
+    if(response.ok) {
+        return {
+            success: true,
+            library: response.data?.result?.library ?? [],
+        }
+    }
+
+    return {
+        success: false,
+        library: [],
+    };
+}

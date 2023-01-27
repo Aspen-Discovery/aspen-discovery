@@ -577,7 +577,6 @@ class UInterface extends Smarty {
 
 		$this->assign('showCurbsidePickups', ($library->curbsidePickupSettingId != -1) ? 1 : 0);
 
-		$this->assign('enableReadingHistory', $library->enableReadingHistory);
 		$this->assign('enableSavedSearches', $library->enableSavedSearches);
 		$this->assign('showCitationStyleGuides', $library->showCitationStyleGuides);
 
@@ -754,6 +753,20 @@ class UInterface extends Smarty {
 			}
 		}
 
+		// if using SSO, determine if it's available to only staff users or not
+		$ssoStaffOnly = false;
+		try {
+			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+			$ssoSettings = new SSOSetting();
+			$ssoSettings->id = $library->ssoSettingId;
+			if($ssoSettings->find(true)) {
+				$ssoStaffOnly = $ssoSettings->staffOnly;
+			}
+		} catch (Exception $e) {
+			//This happens if the SSOSetting table does not exist yet.
+		}
+		$this->assign('ssoStaffOnly', $ssoStaffOnly);
+
 		$loadRecaptcha = false;
 		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
 		$recaptcha = new RecaptchaSetting();
@@ -839,6 +852,8 @@ class UInterface extends Smarty {
 	public function template_exists($templateName) {
 		if (file_exists($this->template_dir . $templateName)) {
 			return true;
+		} else {
+			return false;
 		}
 	}
 }

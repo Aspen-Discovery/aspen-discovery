@@ -28,15 +28,15 @@
 				<select name="smsCarrier" id="smsCarrier" class="form-control">
 					<option value="-1">{translate text="Please select a carrier" isPublicFacing=true}</option>
 					{foreach from=$smsCarriers item=smsCarrier key=smsCarrierId}
-						<option value="{$smsCarrierId}" {if $opac_default_sms_carrier == $smsCarrierId}selected{/if}>{$smsCarrier}</option>
-					{/foreach}
+						<option value="{$smsCarrierId}" {if !empty($opac_default_sms_carrier)}{if $ == $smsCarrierId}selected{/if}{/if}>{$smsCarrier}</option>
+					{/foreach}opac_default_sms_carrier
 				</select>
-				<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Note: carrier charges may apply " isAdminFacing=true}</small></span>
+				<span id="smsCarrierHelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Note: carrier charges may apply " isAdminFacing=true}</small></span>
 			</div>
 			<div class="form-group">
 				<label class="control-label" for="smsNumber">{translate text="Mobile Number" isPublicFacing=true}</label>
-				<input type="tel" name="smsNumber" id="smsNumber" class="form-control" size="10" value="{$opac_default_sms_notify}">
-				<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Hint: use the full 10 digits of your phone #, no spaces, no dashes" isAdminFacing=true}</small></span>
+				<input type="tel" name="smsNumber" id="smsNumber" class="form-control" size="10" {if !empty($opac_default_sms_notify)}value="{$opac_default_sms_notify}"{/if}>
+				<span id="smsNumberHelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Hint: use the full 10 digits of your phone #, no spaces, no dashes" isAdminFacing=true}</small></span>
 			</div>
 		</div>
 	{/if}

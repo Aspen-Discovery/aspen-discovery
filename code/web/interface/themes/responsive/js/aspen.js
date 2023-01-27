@@ -4931,10 +4931,13 @@ var AspenDiscovery = (function(){
 			}
 		},
 
-		showLocationHoursAndMap: function(){
-			var selectedId = $("#selectLibraryHours").find(":selected").val();
-			$(".locationInfo").hide();
-			$("#locationAddress" + selectedId).show();
+		showLocationHoursAndMap: function(embedLocation){
+			if (embedLocation === undefined) {
+				embedLocation = "";
+			}
+			var selectedId = $("#selectLibraryHours" + embedLocation).find(":selected").val();
+			$(".locationInfo" + embedLocation).hide();
+			$("#locationAddress" + embedLocation + selectedId).show();
 			return false;
 		},
 
@@ -8945,117 +8948,50 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Admin.toggleSamlFields('hide');
 			AspenDiscovery.Admin.toggleOAuthGatewayFields();
 			AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-
+			AspenDiscovery.Admin.toggleSamlMetadataFields();
+			$("#clientSecret").attr('autocomplete', "off");
 			var ssoService = $("#serviceSelect").val();
 			if (ssoService === "oauth") {
 				AspenDiscovery.Admin.toggleoAuthFields('show');
 				AspenDiscovery.Admin.toggleSamlFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
-			} else {
+				AspenDiscovery.Admin.toggleSamlMetadataFields();
+			} else if (ssoService === "saml") {
 				AspenDiscovery.Admin.toggleSamlFields('show');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
+				AspenDiscovery.Admin.toggleSamlMetadataFields();
+			} else {
+				AspenDiscovery.Admin.toggleSamlFields('hide');
+				AspenDiscovery.Admin.toggleoAuthFields('hide');
+				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
+				AspenDiscovery.Admin.toggleSamlMetadataFields();
 			}
 		},
 		toggleoAuthFields: function (displayMode) {
 			if (displayMode === "show") {
-				$('#propertyRowclientId').show();
-				$('#propertyRowclientSecret').show();
-				$('#propertyRowgateway').show();
-				$('#propertyRowoAuthGatewayLabel').hide();
-				$('#propertyRowoAuthAccessTokenUrl').hide();
-				$('#propertyRowoAuthAuthorizeUrl').hide();
-				$('#propertyRowoAuthResourceOwnerUrl').hide();
-				$('#propertyRowoAuthLogoutUrl').hide();
-				$('#propertyRowoAuthScope').hide();
-				$('#propertyRowoAuthGrantType').hide();
-				$('#propertyRowoAuthPrivateKeys').hide();
-				$('#propertyRowoAuthGatewayIcon').hide();
-				$('#propertyRowoAuthButtonBackgroundColor').hide();
-				$('#propertyRowoAuthButtonTextColor').hide();
+				$('#propertyRowoAuthConfigSection').show();
 			} else {
-				$('#propertyRowclientId').hide();
-				$('#propertyRowclientSecret').hide();
-				$('#propertyRowgateway').hide();
-				$('#propertyRowoAuthGatewayLabel').hide();
-				$('#propertyRowoAuthAccessTokenUrl').hide();
-				$('#propertyRowoAuthAuthorizeUrl').hide();
-				$('#propertyRowoAuthResourceOwnerUrl').hide();
-				$('#propertyRowoAuthLogoutUrl').hide();
-				$('#propertyRowoAuthScope').hide();
-				$('#propertyRowoAuthGrantType').hide();
-				$('#propertyRowoAuthPrivateKeys').hide();
-				$('#propertyRowoAuthGatewayIcon').hide();
-				$('#propertyRowoAuthButtonBackgroundColor').hide();
-				$('#propertyRowoAuthButtonTextColor').hide();
+				$('#propertyRowoAuthConfigSection').hide();
+				document.getElementById("clientSecret").value = "";
 			}
 		},
 		toggleSamlFields: function (displayMode) {
 			if (displayMode === "show") {
-				$('#propertyRowssoName').show();
-				$('#propertyRowssoXmlUrl').show();
-				$('#propertyRowssoUniqueAttribute').show();
-				$('#propertyRowssoIdAttr').show();
-				$('#propertyRowssoUsernameAttr').show();
-				$('#propertyRowssoFirstnameAttr').show();
-				$('#propertyRowssoLastnameAttr').show();
-				$('#propertyRowssoEmailAttr').show();
-				$('#propertyRowssoDisplayNameAttr').show();
-				$('#propertyRowssoPhoneAttr').show();
-				$('#propertyRowssoAddressAttr').show();
-				$('#propertyRowssoCityAttr').show();
-				$('#propertyRowssoPatronTypeSection').show();
-				$('#propertyRowssoLibraryIdSection').show();
-				$('#propertyRowssoCategoryIdSection').show();
-				$('#propertyRowssoMetadataFilename').show();
-				$('#propertyRowssoEntityId').show();
+				$('#propertyRowsamlConfigSection').show();
 			} else {
-				$('#propertyRowssoName').hide();
-				$('#propertyRowssoXmlUrl').hide();
-				$('#propertyRowssoUniqueAttribute').hide();
-				$('#propertyRowssoIdAttr').hide();
-				$('#propertyRowssoUsernameAttr').hide();
-				$('#propertyRowssoFirstnameAttr').hide();
-				$('#propertyRowssoLastnameAttr').hide();
-				$('#propertyRowssoEmailAttr').hide();
-				$('#propertyRowssoDisplayNameAttr').hide();
-				$('#propertyRowssoPhoneAttr').hide();
-				$('#propertyRowssoAddressAttr').hide();
-				$('#propertyRowssoCityAttr').hide();
-				$('#propertyRowssoPatronTypeSection').hide();
-				$('#propertyRowssoLibraryIdSection').hide();
-				$('#propertyRowssoCategoryIdSection').hide();
-				$('#propertyRowssoMetadataFilename').hide();
-				$('#propertyRowssoEntityId').hide();
+				$('#propertyRowsamlConfigSection').hide();
 			}
 		},
 		toggleOAuthGatewayFields: function () {
 			var oAuthGateway = $("#oAuthGatewaySelect").val();
 			if (oAuthGateway === "custom") {
-				$('#propertyRowoAuthGatewayLabel').show();
-				$('#propertyRowoAuthAccessTokenUrl').show();
-				$('#propertyRowoAuthAuthorizeUrl').show();
-				$('#propertyRowoAuthResourceOwnerUrl').show();
-				$('#propertyRowoAuthLogoutUrl').show();
-				$('#propertyRowoAuthScope').show();
-				$('#propertyRowoAuthGrantType').show();
-				$('#propertyRowoAuthGatewayIcon').show();
-				$('#propertyRowoAuthButtonBackgroundColor').show();
-				$('#propertyRowoAuthButtonTextColor').show();
+				$('#propertyRowoAuthCustomGatewayOptionsSection').show();
 			} else {
-				$('#propertyRowoAuthGatewayLabel').hide();
-				$('#propertyRowoAuthAccessTokenUrl').hide();
-				$('#propertyRowoAuthAuthorizeUrl').hide();
-				$('#propertyRowoAuthResourceOwnerUrl').hide();
-				$('#propertyRowoAuthLogoutUrl').hide();
-				$('#propertyRowoAuthScope').hide();
-				$('#propertyRowoAuthGrantType').hide();
-				$('#propertyRowoAuthPrivateKeys').hide();
-				$('#propertyRowoAuthGatewayIcon').hide();
-				$('#propertyRowoAuthButtonBackgroundColor').hide();
-				$('#propertyRowoAuthButtonTextColor').hide();
+				$('#propertyRowoAuthCustomGatewayOptionsSection').hide();
 			}
 		},
 		toggleOAuthPrivateKeysField: function () {
@@ -9064,6 +9000,16 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowoAuthPrivateKeys').show();
 			} else {
 				$('#propertyRowoAuthPrivateKeys').hide();
+			}
+		},
+		toggleSamlMetadataFields: function () {
+			var metadataType = $("#samlMetadataOptionSelect").val();
+			if (metadataType === 'url') {
+				$('#propertyRowssoXmlUrl').show();
+				$('#propertyRowssoMetadataFilename').hide();
+			} else {
+				$('#propertyRowssoXmlUrl').hide();
+				$('#propertyRowssoMetadataFilename').show();
 			}
 		},
 		linkingSettingOptionChange: function () {

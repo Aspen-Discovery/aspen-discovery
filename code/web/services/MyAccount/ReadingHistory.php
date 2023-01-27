@@ -8,17 +8,6 @@ class ReadingHistory extends MyAccount {
 		global $interface;
 		global $library;
 
-		if (!$library->enableReadingHistory) {
-			//User shouldn't get here
-			$module = 'Error';
-			$action = 'Handle404';
-			$interface->assign('module', 'Error');
-			$interface->assign('action', 'Handle404');
-			require_once ROOT_DIR . "/services/Error/Handle404.php";
-			$actionClass = new Error_Handle404();
-			$actionClass->launch();
-			die();
-		}
 		$interface->assign('showRatings', $library->getGroupedWorkDisplaySettings()->showRatings);
 
 		global $offlineMode;
@@ -26,10 +15,22 @@ class ReadingHistory extends MyAccount {
 			$interface->assign('offline', false);
 		}
 		$user = UserAccount::getLoggedInUser();
-		$interface->assign('profile', $user);
 
 		// Get My Transactions
 		if ($user) {
+			if (!$user->isReadingHistoryEnabled()) {
+				//User shouldn't get here
+				$module = 'Error';
+				$action = 'Handle404';
+				$interface->assign('module', 'Error');
+				$interface->assign('action', 'Handle404');
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+				$actionClass = new Error_Handle404();
+				$actionClass->launch();
+				die();
+			}
+			$interface->assign('profile', $user);
+
 			$linkedUsers = $user->getLinkedUsers();
 			if (count($linkedUsers) > 0) {
 				array_unshift($linkedUsers, $user);

@@ -9,12 +9,12 @@ import _ from 'lodash';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { translate } from '../../translations/translations';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
-import { getBrowseCategoryListForUser, getCheckedOutItems, getILSMessages, reloadHolds, updateBrowseCategoryStatus } from '../../util/loadPatron';
+import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
-import {getLinkedAccounts} from '../../util/api/user';
+import {getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds} from '../../util/api/user';
 
 let maxCategories = 5;
 
@@ -44,13 +44,13 @@ export const DiscoverHomeScreen = () => {
                          }
                     });
 
-                    reloadHolds(library.baseUrl).then((result) => {
+                    getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true).then((result) => {
                          if (holds !== result) {
                               updateHolds(result);
                          }
                     });
 
-                    getCheckedOutItems(library.baseUrl).then((result) => {
+                    getPatronCheckedOutItems('all', library.baseUrl, true).then((result) => {
                          if (checkouts !== result) {
                               updateCheckouts(result);
                          }
