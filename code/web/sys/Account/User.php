@@ -721,6 +721,12 @@ class User extends DataObject {
 				if ($user->canReceiveNotifications($user, 'notifyAccount')) {
 					require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 					require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+					$appScheme = 'aspen-lida';
+					require_once ROOT_DIR . '/sys/SystemVariables.php';
+					$systemVariables = SystemVariables::getSystemVariables();
+					if ($systemVariables && !empty($systemVariables->appScheme)) {
+						$appScheme = $systemVariables->appScheme;
+					}
 					$notificationToken = new UserNotificationToken();
 					$notificationToken->userId = $user->id;
 					$notificationToken->find();
@@ -731,7 +737,7 @@ class User extends DataObject {
 							'body' => 'Your account at ' . $user->getHomeLocation()->displayName . ' was just linked to by ' . $this->displayName . ' - ' . $this->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
 							'categoryId' => 'accountAlert',
 							'channelId' => 'accountAlert',
-							'data' => ['url' => urlencode('aspen-lida://user/linked_accounts')],
+							'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
 						];
 						$expoNotification = new ExpoNotification();
 						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $user->id, 'linked_account');

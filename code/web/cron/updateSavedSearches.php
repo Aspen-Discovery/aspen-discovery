@@ -83,6 +83,12 @@ if ($search->getNumResults() > 0) {
 					if ($searchEntry->hasNewResults && $userForSearch->canReceiveNotifications($userForSearch, 'notifySavedSearch')) {
 						global $logger;
 						$logger->log("New results in search " . $searchEntry->title . " for user " . $userForSearch->id, Logger::LOG_ERROR);
+						$appScheme = 'aspen-lida';
+						require_once ROOT_DIR . '/sys/SystemVariables.php';
+						$systemVariables = SystemVariables::getSystemVariables();
+						if ($systemVariables && !empty($systemVariables->appScheme)) {
+							$appScheme = $systemVariables->appScheme;
+						}
 						$notificationToken = new UserNotificationToken();
 						$notificationToken->userId = $userForSearch->id;
 						$notificationToken->notifySavedSearch = 1;
@@ -95,7 +101,7 @@ if ($search->getNumResults() > 0) {
 								'body' => 'New titles have been added to your saved search "' . $searchEntry->title . '" at the library. Check them out!',
 								'categoryId' => 'savedSearch',
 								'channelId' => 'savedSearch',
-								'data' => ['url' => urlencode('aspen-lida://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title)],
+								'data' => ['url' => urlencode($appScheme . '://user/saved_search?search=' . $searchEntry->id . "&name=" . $searchEntry->title)],
 							];
 							$expoNotification = new ExpoNotification();
 							$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $searchEntry->user_id, "saved_search");
