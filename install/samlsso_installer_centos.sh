@@ -6,7 +6,7 @@ SAMLSSO=$(echo $SAMLSSO | tr '[:upper:]' '[:lower:]')
 if [ $SAMLSSO = "y" ]; then
 	mkdir /tmp/simplesamlphp
 	mkdir -p /etc/simplesamlphp/{cert,log,data,metadata}
-	curl -sL https://github.com/simplesamlphp/simplesamlphp/releases/download/v1.19.7/simplesamlphp-1.19.7.tar.gz --output /usr/share/simplesamlphp-1.19.7.tar.gz
+	curl -sL https://github.com/simplesamlphp/simplesamlphp/releases/download/v1.19.7/simplesamlphp-1.19.7.tar.gz --output /tmp/simplesamlphp/simplesamlphp-1.19.7.tar.gz
 	tar -xzf /tmp/simplesamlphp/simplesamlphp-1.19.7.tar.gz -C /usr/share
 	mv /usr/share/simplesamlphp-1.19.7 /usr/share/simplesamlphp
 	cp /usr/local/aspen-discovery/install/saml20-idp-remote.php /etc/simplesamlphp/metadata/
