@@ -657,6 +657,22 @@ class Koha extends AbstractIlsDriver {
 
 		$userExistsInDB = false;
 		foreach ($barcodesToTest as $i => $barcode) {
+			//Authenticate the user using KOHA DB for single sign-on
+			if($validatedViaSSO) {
+				/** @noinspection SqlResolve */
+				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+				if ($lookupUserResult->num_rows > 0) {
+					$userExistsInDB = true;
+					$lookupUserRow = $lookupUserResult->fetch_assoc();
+					$patronId = $lookupUserRow['borrowernumber'];
+					$newUser = $this->loadPatronInfoFromDB($patronId, null);
+					if (!empty($newUser) && !($newUser instanceof AspenError)) {
+						return $newUser;
+					}
+				}
+			}
+
 			//Authenticate the user using KOHA ILSDI
 			$authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
 			$params = [
@@ -694,7 +710,7 @@ class Koha extends AbstractIlsDriver {
 					if ($lookupUserResult->num_rows > 0) {
 						$userExistsInDB = true;
 						$lookupUserRow = $lookupUserResult->fetch_assoc();
-						if (UserAccount::isUserMasquerading() || $validatedViaSSO) {
+						if (UserAccount::isUserMasquerading()) {
 							$patronId = $lookupUserRow['borrowernumber'];
 							$newUser = $this->loadPatronInfoFromDB($patronId, null);
 							if (!empty($newUser) && !($newUser instanceof AspenError)) {
