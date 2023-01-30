@@ -41,7 +41,6 @@ if (array_key_exists('samlLogin', $_REQUEST) && array_key_exists('idp', $_REQUES
 
 // Get the attributes from the IdP response
 $usersAttributes = $auth->as->getAttributes();
-ExternalRequestLogEntry::logRequest('SAML.usersAttributes', $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), $_POST, '', $usersAttributes, []);
 
 // Someone has most likely hit this script directly, rather than having
 // come back from an IdP
@@ -49,10 +48,12 @@ if (count($usersAttributes) == 0) {
 	$logger->log("No SSO attributes found", Logger::LOG_ERROR);
 	header('Location: /');
 }
+$logger->log(print_r($usersAttributes, true), Logger::LOG_ERROR);
 
 // Create an associative array containing populated values
 // from the supplied IdP attributes
 $out = $auth->getAttributeValues();
+$logger->log(print_r($out, true), Logger::LOG_ERROR);
 
 // The user's UID
 $uid = $out['ssoUniqueAttribute'];
