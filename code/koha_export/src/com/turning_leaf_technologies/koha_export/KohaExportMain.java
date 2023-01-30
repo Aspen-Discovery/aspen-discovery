@@ -12,7 +12,6 @@ import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.marc4j.*;
@@ -83,7 +82,7 @@ public class KohaExportMain {
 		String processName = "koha_export";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long reindexerChecksumAtStart = JarUtil.getChecksumForJar(logger, "reindexer", "../reindexer/reindexer.jar");
 		long timeAtStart = new Date().getTime();
@@ -233,6 +232,7 @@ public class KohaExportMain {
 			//limit based on modification time
 			long curTime = new Date().getTime() / 1000;
 			Timestamp lastUpdateOfAuthorities = new Timestamp(indexingProfile.getLastUpdateOfAuthorities() * 1000);
+			//noinspection SpellCheckingInspection
 			PreparedStatement getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT modification_time, authtypecode, marc from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getAuthorAuthoritiesStmt.setTimestamp(1, lastUpdateOfAuthorities);
 			PreparedStatement addAuthorStmt = dbConn.prepareStatement("INSERT INTO author_authority (id, dateAdded, author) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
@@ -241,6 +241,7 @@ public class KohaExportMain {
 			ResultSet getAuthorAuthoritiesRS = getAuthorAuthoritiesStmt.executeQuery();
 			while (getAuthorAuthoritiesRS.next()){
 				String authTypeCode = getAuthorAuthoritiesRS.getString("authtypecode");
+				//noinspection SpellCheckingInspection
 				if (authTypeCode.equals("PERSO_NAME") || authTypeCode.equals("CORPO_NAME")) {
 					MarcReader catalogReader = new MarcStreamReader(getAuthorAuthoritiesRS.getBinaryStream("marc"), "UTF8");
 					if (catalogReader.hasNext()) {
@@ -316,10 +317,14 @@ public class KohaExportMain {
 			PreparedStatement getKohaCoverStmt;
 			float kohaVersion = getKohaVersion(kohaConn);
 			if (kohaVersion >= 20.11) {
+				//noinspection SpellCheckingInspection
 				getKohaCoversStmt = kohaConn.prepareStatement("SELECT timestamp, imagenumber, biblionumber from cover_images", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				//noinspection SpellCheckingInspection
 				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from cover_images  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}else{
+				//noinspection SpellCheckingInspection
 				getKohaCoversStmt = kohaConn.prepareStatement("SELECT timestamp, imagenumber, biblionumber from biblioimages", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				//noinspection SpellCheckingInspection
 				getKohaCoverStmt = kohaConn.prepareStatement("SELECT imagefile, mimetype from biblioimages  where imagenumber = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -339,14 +344,16 @@ public class KohaExportMain {
 					try{
 						kohaCoverTimestamp = kohaCoversRS.getTimestamp("timestamp");
 					}catch (SQLException e){
-						logger.warn("Null timestamp found while exporting bookcovers, ignoring.");
+						logger.warn("Null timestamp found while exporting book covers, ignoring.");
 					}
 					if (!coverFile.exists() || coverFile.length() == 0 || kohaCoverTimestamp == null || (coverFile.lastModified() < kohaCoverTimestamp.getTime())) {
+						//noinspection SpellCheckingInspection
 						getKohaCoverStmt.setLong(1, kohaCoversRS.getLong("imagenumber"));
 						ResultSet kohaCoverRS = getKohaCoverStmt.executeQuery();
 						if (kohaCoverRS.next()){
 							try {
 								FileOutputStream writer = new FileOutputStream(coverFile);
+								//noinspection SpellCheckingInspection
 								Blob kohaCover = kohaCoverRS.getBlob("imagefile");
 								long curPos = 1;
 								int bufferSize = 1024;
@@ -384,7 +391,7 @@ public class KohaExportMain {
 									Files.getFileAttributeView(coverFile.toPath(), PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS).setGroup(group);
 								}catch (Exception e){
 									//Errors get generated on Windows, just ignore.
-									logger.error("Error setting file permissions for " + coverFile.toString(), e);
+									logger.error("Error setting file permissions for " + coverFile, e);
 								}
 
 								numCoversExported++;
@@ -472,7 +479,7 @@ public class KohaExportMain {
 			ResultSet volumeInfoRS = null;
 			boolean loadError = false;
 
-			HashMap<Long, String> itemsForVolume = new HashMap<>(); //Volume Id, list of item
+			HashMap<Long, String> itemsForVolume = new HashMap<>(); //Volume ID, list of item
 			try {
 				volumeInfoRS = getVolumeInfoStmt.executeQuery();
 
@@ -1073,7 +1080,7 @@ public class KohaExportMain {
 			}else {
 				//Check to see if we should regroup all records
 				if (indexingProfile.isRegroupAllRecords()){
-					//Regrouping takes a long time and we don't need koha DB connection so close it while we regroup
+					//Regrouping takes a long time, and we don't need koha DB connection so close it while we regroup
 					kohaConn.close();
 					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor();
 					recordGrouper.regroupAllRecords(dbConn, indexingProfile, getGroupedWorkIndexer(), logEntry);
@@ -1115,7 +1122,7 @@ public class KohaExportMain {
 					logEntry.addNote(numRecordsWithChangedMetadata + " records had changes to the metadata, but not the bib.");
 				}
 
-				//Finally check the zebraqueue because some actions don't trigger either a biblio timestamp change or metadata timestamp change
+				//Finally, check the zebraqueue because some actions don't trigger either a biblio timestamp change or metadata timestamp change
 				// specifically we know that moving one item bib to another does not update the original bib
 				if (!indexingProfile.isRunFullUpdate()){
 					PreparedStatement getZebraQueueBibsToReindexStmt = kohaConn.prepareStatement("select biblio_auth_number from zebraqueue where time >= ? AND server = 'biblioserver'");

@@ -62,7 +62,6 @@ AspenDiscovery.Record = (function(){
 		submitVdxRequest: function(module, id) {
 			if (Globals.loggedIn){
 				document.body.style.cursor = "wait";
-				var module = module;
 				var params = {
 					'method': 'submitVdxRequest',
 					title: $('#title').val(),
@@ -469,6 +468,20 @@ AspenDiscovery.Record = (function(){
 					$("#staffViewPlaceHolder").replaceWith(data.staffView);
 				}
 			});
+		},
+
+		forceReindex: function (recordSource, id){
+			var url = Globals.path + '/Record/' + id + '/AJAX';
+			var params = {
+				method: 'forceReindex',
+				recordSource : recordSource
+			};
+			$.getJSON(url, params, function (data){
+					AspenDiscovery.showMessage("Success", data.message, true, false);
+					setTimeout("AspenDiscovery.closeLightbox();", 3000);
+				}
+			);
+			return false;
 		}
 	};
 }(AspenDiscovery.Record || {}));
