@@ -185,6 +185,14 @@ class CatalogConnection {
 	}
 
 	/**
+	 * @param string $patronEmail
+	 * @return bool|User
+	 */
+	public function findNewUserByEmail(string $patronEmail) {
+		return $this->driver->findNewUserByEmail($patronEmail);
+	}
+
+	/**
 	 * @param User $user
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user) {

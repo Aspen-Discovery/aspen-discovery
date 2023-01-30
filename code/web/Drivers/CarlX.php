@@ -1903,6 +1903,10 @@ class CarlX extends AbstractIlsDriver {
 		return false;
 	}
 
+	public function findNewUserByEmail($patronEmail): User|bool|string {
+		return false;
+	}
+
 	public function getAccountSummary(User $patron): AccountSummary {
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();

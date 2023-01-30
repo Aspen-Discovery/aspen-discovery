@@ -1674,6 +1674,10 @@ class Polaris extends AbstractIlsDriver {
 		}
 	}
 
+	public function findNewUserByEmail($patronEmail): User|bool|string {
+		return false;
+	}
+
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
 	 *
