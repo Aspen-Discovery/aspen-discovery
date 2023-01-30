@@ -8,6 +8,7 @@ class SSOSetting extends DataObject {
 	public $name;
 	public $service;
 	public $staffOnly;
+	public $bypassAspenLogin;
 
 	//oAuth
 	public $clientId;
@@ -146,6 +147,12 @@ class SSOSetting extends DataObject {
 				'label' => 'Only allow for staff',
 				'description' => 'Whether or not only staff should be able to use single sign-on',
 				'note' => 'This hides the single sign-on option from the patron-facing login screens',
+			],
+			'bypassAspenLogin' => [
+				'property' => 'bypassAspenLogin',
+				'type' => 'checkbox',
+				'label' => 'Bypass the Aspen Discovery staff login page when using footer link',
+				'description' => 'Whether or not the staff login link in the footer should first send the user to the Aspen Discovery login page',
 			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
@@ -752,7 +759,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['staffOnly'];
+		return ['localLogin', 'staffOnly', 'oAuthGrantType'];
 	}
 
 	public function genericOAuthProvider() {

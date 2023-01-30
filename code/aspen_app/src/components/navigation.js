@@ -76,6 +76,8 @@ Sentry.init({
      ],
 });
 
+Sentry.Native.setTag("patch", GLOBALS.appPatch);
+
 export function App() {
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));

@@ -4914,7 +4914,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where email = '" . mysqli_escape_string($this->dbConnection, $patronEmail) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $patronEmail) . "'";
+		$sql = "SELECT borrowernumber, cardnumber, email from borrowers where email = '" . mysqli_escape_string($this->dbConnection, $patronEmail) . "'";
 
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 		if ($lookupUserResult->num_rows == 1) {
