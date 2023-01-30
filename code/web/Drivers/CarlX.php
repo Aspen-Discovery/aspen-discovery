@@ -1903,7 +1903,7 @@ class CarlX extends AbstractIlsDriver {
 		return false;
 	}
 
-	public function findNewUserByEmail($patronEmail): User|bool|string {
+	public function findNewUserByEmail($patronEmail): mixed {
 		return false;
 	}
 
