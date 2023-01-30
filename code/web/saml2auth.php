@@ -11,6 +11,7 @@ global $library;
 global $logger;
 
 $staffPType = null;
+$uidAsEmail = false;
 
 $auth = new SAML2Authentication();
 
@@ -27,6 +28,11 @@ if($ssoSettings->find(true)) {
 		($ssoSettings->samlStaffPType != '-1' || $ssoSettings->samlStaffPType != -1)) {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
+
+	if(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
+		$uidAsEmail = true;
+	}
+
 } else {
 	$entityId = $library->ssoEntityId;
 }
@@ -80,10 +86,28 @@ foreach ($lmsToSso as $key => $mappings) {
 	}
 }
 
-$_REQUEST['username'] = $uid;
-
 // Does this user exist in the LMS
-$user = $catalogConnection->findNewUser($uid);
+if($uidAsEmail) {
+	$_REQUEST['username'] = '';
+	$user = $catalogConnection->findNewUserByEmail($uid);
+	if(is_string($user)) {
+		$logger->log($user, Logger::LOG_ERROR);
+		if($isStaffUser) {
+			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+			$launchAction = new MyAccount_StaffLogin();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		}
+	}
+} else {
+	$_REQUEST['username'] = $uid;
+	$user = $catalogConnection->findNewUser($uid);
+}
 
 // The user does not exist in Koha, so we should create it
 if (!$user instanceof User) {
@@ -92,25 +116,37 @@ if (!$user instanceof User) {
 	// If the self reg did not succeed, log the fact
 	if ($selfRegResult['success'] != '1') {
 		$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
+		if($isStaffUser) {
+			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+			$launchAction = new MyAccount_StaffLogin();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		}
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
-	$user = $catalogConnection->findNewUser($uid);
+	if($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+	} else {
+		$user = $catalogConnection->findNewUser($uid);
+	}
 } else {
 	// We need to update the user in the LMS
 	$user = $user->updatePatronInfo(true);
 	// findNewUser forces Aspen to update it's user with that of the LMS
-	$user = $catalogConnection->findNewUser($uid);
+	if($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+	} else {
+		$user = $catalogConnection->findNewUser($uid);
+	}
 }
 
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
-	// if an existing user should be staff, but is not, update their patron type
-	if($staffPType && ($isStaffUser && $user->patronType !== $staffPType)) {
-		$user->patronType = $staffPType;
-		$user->update();
-		$user = $user->updatePatronInfo(true);
-	}
-
 	$login = UserAccount::login(true);
 
 	global $configArray;
