@@ -8,8 +8,15 @@ AspenDiscovery.Record = (function(){
 				if (volume !== undefined){
 					url += "&volume=" + volume;
 				}
+
+				var targetButton = $('#actionButton'+id);
+				targetButton.prop('disabled', true);
+				targetButton.addClass('disabled');
+
 				$.getJSON(url, function(data){
 					document.body.style.cursor = "default";
+					targetButton.prop('disabled', false);
+					targetButton.removeClass('disabled');
 					if (data.holdFormBypassed) {
 						if (data.success) {
 							if (data.needsItemLevelHold){
@@ -23,12 +30,14 @@ AspenDiscovery.Record = (function(){
 						} else {
 							AspenDiscovery.showMessage(data.title, data.message, false, false);
 						}
+						AspenDiscovery.Account.reloadHolds()
 					}else {
 						if (data.success) {
 							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 						} else {
 							AspenDiscovery.showMessage(data.title, data.message);
 						}
+						AspenDiscovery.Account.reloadHolds()
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{

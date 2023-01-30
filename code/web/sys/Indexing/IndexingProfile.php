@@ -170,6 +170,8 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$lastUpdateOfAuthorities;
 
+	public $evergreenOrgUnitSchema;
+
 	private $_translationMaps;
 	private $_timeToReshelve;
 	private $_sierraFieldMappings;
@@ -1125,6 +1127,29 @@ class IndexingProfile extends DataObject {
 				'canDelete' => true,
 				'forcesReindex' => true,
 			],
+
+			'evergreenSection' => [
+				'property' => 'evergreenSection',
+				'type' => 'section',
+				'label' => 'Evergreen Settings',
+				'hideInLists' => true,
+				'properties' => [
+					'evergreenOrgUnitSchema' => [
+						'property' => 'evergreenOrgUnitSchema',
+						'type' => 'enum',
+						'label' => 'Org Unit Schema',
+						'values' => [
+							1 => 'Level 0 = Overall instance, Level 1 = Libraries, Level 2 = Branches',
+							2 => 'Level 0 = Overall instance, Level 1 = Consortium, Level 2 = Libraries, Level 3 = Branches'
+						],
+						'maxLength' => 3,
+						'description' => 'The MARC tag where order records can be found',
+						'forcesReindex' => true,
+						'default' => 1
+					],
+				],
+			],
+
 		];
 
 		$showSierraFieldMappings = false;

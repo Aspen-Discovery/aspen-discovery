@@ -32,7 +32,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
@@ -114,9 +113,9 @@ public class EvergreenExportMain {
 					System.exit(1);
 				}
 
-				String staffUsername = null;
-				String staffPassword = null;
-				String staffToken = null;
+				String staffUsername;
+				String staffPassword;
+				String staffToken;
 
 				PreparedStatement accountProfileStmt = dbConn.prepareStatement("SELECT * from account_profiles WHERE ils = 'evergreen'");
 				ResultSet accountProfileRS = accountProfileStmt.executeQuery();
@@ -546,7 +545,7 @@ public class EvergreenExportMain {
 	private static void loadOrganizationalUnit(JSONArray orgUnitPayload, int level, long parentId, long locationMapId, HashMap<String, String> existingLocations) {
 		String[] orgUnitFields = fetchIdl("aou");
 		HashMap<String, Object> mappedOrgUnitField = mapFields(orgUnitPayload, orgUnitFields);
-		if (level == 0){
+		if (level == 0 || (level == 1 && indexingProfile.getEvergreenOrgUnitSchema() == 2)){
 			//This is the top level unit, it is not written to Aspen, just process all the children
 			JSONArray children = (JSONArray) mappedOrgUnitField.get("children");
 			for (int i = 0; i < children.length(); i++){
@@ -556,7 +555,7 @@ public class EvergreenExportMain {
 					loadOrganizationalUnit(libraryUnitPayload, level +1, 0, locationMapId, existingLocations);
 				}
 			}
-		}else if(level == 1){
+		}else if((level == 1 && indexingProfile.getEvergreenOrgUnitSchema() == 1) || (level == 2 && indexingProfile.getEvergreenOrgUnitSchema() == 2)){
 			//This is a library, add it into the system.
 			long libraryId = 0;
 			try {
@@ -593,7 +592,7 @@ public class EvergreenExportMain {
 				}
 			}
 
-		}else if(level == 2){
+		}else if((level == 2 && indexingProfile.getEvergreenOrgUnitSchema() == 1) || (level == 3 && indexingProfile.getEvergreenOrgUnitSchema() == 2)){
 			//This is a branch, add it to the system
 			try {
 				Integer branchId = (Integer) mappedOrgUnitField.get("id");
@@ -884,6 +883,7 @@ public class EvergreenExportMain {
 		}
 
 		// process all the bibs now to index them
+		@SuppressWarnings("unused")
 		int numWorksReindexed = 0;
 		for (String idToProcess : idsToProcess) {
 			Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), idToProcess, logEntry);
@@ -903,7 +903,7 @@ public class EvergreenExportMain {
 		//After the files have been processed, delete them
 		for (File incrementalIdFile : incrementalIdFiles) {
 			if (!incrementalIdFile.delete()) {
-			//Temporarily rename to processed so we can replay deletes as needed
+			//Temporarily rename to processed, so we can replay deletes as needed
 			//if (!incrementalIdFile.renameTo(new File(incrementalIdFile.getAbsolutePath() + ".processed"))) {
 				logEntry.incErrors("Could not delete incremental ids file " + incrementalIdFile + " after processing.");
 			}
@@ -1698,6 +1698,7 @@ public class EvergreenExportMain {
 	public static String getAPIAuthToken(String staffUsername, String staffPassword)
 	{
 		String apiUrl = baseUrl +  "/osrf-gateway-v1";
+		@SuppressWarnings("SpellCheckingInspection")
 		String params = "service=open-ils.auth&method=open-ils.auth.login&param=%7B%22password%22%3A%22" + staffPassword + "%22%2C%22type%22%3A%22persist%22%2C%22org%22%3Anull%2C%22identifier%22%3A%22" + staffUsername + "%22%7D";
 
 		WebServiceResponse response = NetworkUtils.postToURL(apiUrl, params, "application/x-www-form-urlencoded", null, logger);
@@ -1709,7 +1710,9 @@ public class EvergreenExportMain {
 					JSONObject mainPayloadObject = mainPayload.getJSONObject(i);
 					if (mainPayloadObject.has("payload")){
 						JSONObject subPayload = mainPayloadObject.getJSONObject("payload");
+						//noinspection SpellCheckingInspection
 						if (subPayload.has("authtoken")){
+							//noinspection SpellCheckingInspection
 							return subPayload.getString("authtoken");
 						}
 					}
@@ -1720,7 +1723,7 @@ public class EvergreenExportMain {
 		return null;
 	}
 
-	private static HashMap<String, String[]> cachedIdl = new HashMap<>();
+	private static final HashMap<String, String[]> cachedIdl = new HashMap<>();
 	private static String[] fetchIdl(String className){
 		if (cachedIdl.containsKey(className)){
 			return cachedIdl.get(className);
@@ -1738,8 +1741,8 @@ public class EvergreenExportMain {
 					String tmpClassName = curClass.getAttribute("id");
 					if (tmpClassName.equals(className)) {
 						NodeList fieldsNodes = curClass.getElementsByTagName("fields");
-						for (int k = 0; k < fieldsNodes.getLength(); k++) {
-							Element fieldsNode = (Element)fieldsNodes.item(k);
+						if (fieldsNodes.getLength() > 0) {
+							Element fieldsNode = (Element)fieldsNodes.item(0);
 							NodeList fieldNodes = fieldsNode.getElementsByTagName("field");
 							String[] fieldMappings = new String[fieldNodes.getLength()];
 							for (int j = 0; j < fieldNodes.getLength(); j++) {
