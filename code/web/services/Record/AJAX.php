@@ -1567,4 +1567,37 @@ class Record_AJAX extends Action {
 				]) . "</button>",
 		];
 	}
+
+	/** @noinspection PhpUnused */
+	function forceReindex() : array {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':') > 0) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
+		}
+		$recordSource = $_REQUEST['recordSource'];
+
+		require_once ROOT_DIR . '/sys/MarcLoader.php';
+		if (MarcLoader::marcExistsForILSId("$recordSource:$id")) {
+			require_once ROOT_DIR . '/sys/Indexing/RecordIdentifiersToReload.php';
+			$recordIdentifierToReload = new RecordIdentifiersToReload();
+			$recordIdentifierToReload->type = $recordSource;
+			$recordIdentifierToReload->identifier = $id;
+			$recordIdentifierToReload->insert();
+
+			return [
+				'success' => true,
+				'message' => 'This title will be indexed again shortly.',
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Unable to mark the title for indexing. Could not find the title.',
+			];
+		}
+	}
 }
