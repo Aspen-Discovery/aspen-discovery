@@ -90,6 +90,13 @@ foreach ($lmsToSso as $key => $mappings) {
 if($uidAsEmail) {
 	$_REQUEST['username'] = '';
 	$user = $catalogConnection->findNewUserByEmail($uid);
+	if(is_string($user)) {
+		$logger->log($user, Logger::LOG_ERROR);
+		require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+		$launchAction = new MyAccount_StaffLogin();
+		$launchAction->launch("Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.");
+		exit();
+	}
 } else {
 	$_REQUEST['username'] = $uid;
 	$user = $catalogConnection->findNewUser($uid);
@@ -102,6 +109,10 @@ if (!$user instanceof User) {
 	// If the self reg did not succeed, log the fact
 	if ($selfRegResult['success'] != '1') {
 		$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
+		require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+		$launchAction = new MyAccount_StaffLogin();
+		$launchAction->launch('Unable to create a new user in the ILS.');
+		exit();
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
 	if($uidAsEmail) {

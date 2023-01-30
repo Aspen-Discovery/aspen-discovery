@@ -4924,7 +4924,10 @@ class Koha extends AbstractIlsDriver {
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
 				return $newUser;
 			}
+		} else if ($lookupUserResult->num_rows > 1) {
+			return 'Found more than one user.';
 		}
+
 		return false;
 	}
 
