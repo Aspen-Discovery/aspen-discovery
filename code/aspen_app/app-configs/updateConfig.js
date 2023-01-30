@@ -157,7 +157,7 @@ const app_config = {
                },
           ],
      },
-     plugins: ['sentry-expo', 'expo-community-flipper']
+     plugins: ['sentry-expo']
 };
 
 fs.readFile('app.config.js', 'utf8', function (err, data) {
