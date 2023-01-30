@@ -1174,7 +1174,7 @@ class Sierra extends Millennium {
 		return $user;
 	}
 
-	public function findNewUserByEmail($patronEmail): bool {
+	public function findNewUserByEmail($patronEmail): User|bool|string {
 		return false;
 	}
 

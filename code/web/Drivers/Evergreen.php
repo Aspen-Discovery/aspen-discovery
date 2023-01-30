@@ -1294,7 +1294,7 @@ class Evergreen extends AbstractIlsDriver {
 		return false;
 	}
 
-	public function findNewUserByEmail($patronEmail): bool {
+	public function findNewUserByEmail($patronEmail): User|bool|string {
 		return false;
 	}
 
