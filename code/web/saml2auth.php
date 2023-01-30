@@ -55,15 +55,17 @@ if (count($usersAttributes) == 0) {
 	$logger->log("No SSO attributes found", Logger::LOG_ERROR);
 	header('Location: /');
 }
-$logger->log(print_r($usersAttributes, true), Logger::LOG_ERROR);
 
 // Create an associative array containing populated values
 // from the supplied IdP attributes
 $out = $auth->getAttributeValues();
-$logger->log(print_r($out, true), Logger::LOG_ERROR);
 
 // The user's UID
-$uid = $out['ssoUniqueAttribute'];
+if($uidAsEmail) {
+	$uid = $out['ssoEmailAttr'];
+} else {
+	$uid = $out['ssoUniqueAttribute'];
+}
 $isStaffUser = $out['isStaffUser'] ?? false;
 
 // Establish a connection to the LMS
@@ -88,21 +90,19 @@ foreach ($lmsToSso as $key => $mappings) {
 
 // Does this user exist in the LMS
 if($uidAsEmail) {
-	$_REQUEST['username'] = '';
+	$_REQUEST['username'] = $uid;
 	$user = $catalogConnection->findNewUserByEmail($uid);
 	if(is_string($user)) {
 		$logger->log($user, Logger::LOG_ERROR);
 		if($isStaffUser) {
 			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
 			$launchAction = new MyAccount_StaffLogin();
-			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
-			exit();
 		} else {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$launchAction = new MyAccount_Login();
-			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
-			exit();
 		}
+		$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+		exit();
 	}
 } else {
 	$_REQUEST['username'] = $uid;
@@ -119,14 +119,12 @@ if (!$user instanceof User) {
 		if($isStaffUser) {
 			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
 			$launchAction = new MyAccount_StaffLogin();
-			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
-			exit();
 		} else {
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$launchAction = new MyAccount_Login();
-			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
-			exit();
 		}
+		$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+		exit();
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
 	if($uidAsEmail) {
@@ -147,6 +145,9 @@ if (!$user instanceof User) {
 
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
+	if($uidAsEmail) {
+		$_REQUEST['username'] = $user->cat_username;
+	}
 	$login = UserAccount::login(true);
 
 	global $configArray;

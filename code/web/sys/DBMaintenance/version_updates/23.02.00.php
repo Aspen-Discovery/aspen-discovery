@@ -164,6 +164,15 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_app_scheme_system_variables
+		'add_bypass_aspen_login_page' => [
+			'title' => 'Add option to bypass the Aspen login page to SSO Settings',
+			'description' => 'Add checkbox to bypass the Aspen login page and directly to SSO sign in',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN bypassAspenLogin TINYINT(1) default 0',
+			]
+		],
+		//add_bypass_aspen_login_page
 
 		//kodi
 
