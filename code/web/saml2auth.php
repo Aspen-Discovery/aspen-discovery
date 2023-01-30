@@ -11,6 +11,7 @@ global $library;
 global $logger;
 
 $staffPType = null;
+$uidAsEmail = false;
 
 $auth = new SAML2Authentication();
 
@@ -27,6 +28,11 @@ if($ssoSettings->find(true)) {
 		($ssoSettings->samlStaffPType != '-1' || $ssoSettings->samlStaffPType != -1)) {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
+
+	if(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
+		$uidAsEmail = true;
+	}
+
 } else {
 	$entityId = $library->ssoEntityId;
 }
@@ -80,10 +86,14 @@ foreach ($lmsToSso as $key => $mappings) {
 	}
 }
 
-$_REQUEST['username'] = $uid;
-
 // Does this user exist in the LMS
-$user = $catalogConnection->findNewUser($uid);
+if($uidAsEmail) {
+	$_REQUEST['username'] = '';
+	$user = $catalogConnection->findNewUserByEmail($uid);
+} else {
+	$_REQUEST['username'] = $uid;
+	$user = $catalogConnection->findNewUser($uid);
+}
 
 // The user does not exist in Koha, so we should create it
 if (!$user instanceof User) {
@@ -94,12 +104,20 @@ if (!$user instanceof User) {
 		$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
-	$user = $catalogConnection->findNewUser($uid);
+	if($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+	} else {
+		$user = $catalogConnection->findNewUser($uid);
+	}
 } else {
 	// We need to update the user in the LMS
 	$user = $user->updatePatronInfo(true);
 	// findNewUser forces Aspen to update it's user with that of the LMS
-	$user = $catalogConnection->findNewUser($uid);
+	if($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+	} else {
+		$user = $catalogConnection->findNewUser($uid);
+	}
 }
 
 // If we have an Aspen user, we can set up the session
