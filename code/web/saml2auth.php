@@ -1,5 +1,6 @@
 <?php
 require_once 'bootstrap.php';
+require_once 'bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Authentication/SAML2Authentication.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 require_once ROOT_DIR . '/sys/Account/PType.php';
