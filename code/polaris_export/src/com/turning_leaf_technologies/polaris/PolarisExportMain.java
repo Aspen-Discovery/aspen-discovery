@@ -18,6 +18,7 @@ import org.apache.commons.net.util.Base64;
 import org.apache.logging.log4j.Logger;
 import org.ini4j.Ini;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.marc4j.MarcXmlReader;
 import org.marc4j.marc.DataField;
@@ -1538,8 +1539,14 @@ public class PolarisExportMain {
 			logger.info("Authentication failed");
 		}else{
 			JSONObject authentication = authenticationResponse.getJSONResponse();
-			accessToken = authentication.getString("AccessToken");
-			accessSecret = authentication.getString("AccessSecret");
+			try {
+				accessToken = authentication.getString("AccessToken");
+				accessSecret = authentication.getString("AccessSecret");
+			}catch (JSONException e) {
+				logEntry.incErrors("Could not authenticate the staff user.");
+				logger.error(e);
+				logger.error(authenticationResponse.getResponseCode() + " " + authenticationResponse.getMessage());
+			}
 		}
 		return authenticationResponse;
 	}
