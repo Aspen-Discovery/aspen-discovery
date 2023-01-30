@@ -92,10 +92,17 @@ if($uidAsEmail) {
 	$user = $catalogConnection->findNewUserByEmail($uid);
 	if(is_string($user)) {
 		$logger->log($user, Logger::LOG_ERROR);
-		require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
-		$launchAction = new MyAccount_StaffLogin();
-		$launchAction->launch("Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.");
-		exit();
+		if($isStaffUser) {
+			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+			$launchAction = new MyAccount_StaffLogin();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		}
 	}
 } else {
 	$_REQUEST['username'] = $uid;
@@ -109,10 +116,17 @@ if (!$user instanceof User) {
 	// If the self reg did not succeed, log the fact
 	if ($selfRegResult['success'] != '1') {
 		$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
-		require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
-		$launchAction = new MyAccount_StaffLogin();
-		$launchAction->launch('Unable to create a new user in the ILS.');
-		exit();
+		if($isStaffUser) {
+			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+			$launchAction = new MyAccount_StaffLogin();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
+		}
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
 	if($uidAsEmail) {
