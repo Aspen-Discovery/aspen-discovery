@@ -4908,7 +4908,7 @@ class Koha extends AbstractIlsDriver {
 		return false;
 	}
 
-	public function findNewUserByEmail($patronEmail): User|bool|string {
+	public function findNewUserByEmail($patronEmail): mixed {
 		// Check the Koha database to see if the patron exists
 		//Use MySQL connection to load data
 		$this->initDatabaseConnection();
