@@ -419,7 +419,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function findNewUserByEmail(string $patronEmail): bool {
+	public function findNewUserByEmail(string $patronEmail): User|bool|string {
 		return false;
 	}
 
