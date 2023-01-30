@@ -122,13 +122,6 @@ if (!$user instanceof User) {
 
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
-	// if an existing user should be staff, but is not, update their patron type
-	if($staffPType && ($isStaffUser && $user->patronType !== $staffPType)) {
-		$user->patronType = $staffPType;
-		$user->update();
-		$user = $user->updatePatronInfo(true);
-	}
-
 	$login = UserAccount::login(true);
 
 	global $configArray;
