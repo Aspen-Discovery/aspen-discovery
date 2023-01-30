@@ -372,7 +372,7 @@ class SSOSetting extends DataObject {
 						'hideInLists' => true,
 					],
 					'ssoMetadataFilename' => [
-						'path' => "/data/aspen-discovery/{$serverName}/sso_metadata/",
+						'path' => "/data/aspen-discovery/$serverName/sso_metadata/",
 						'property' => 'ssoMetadataFilename',
 						'type' => 'file',
 						'label' => 'XML metadata file',

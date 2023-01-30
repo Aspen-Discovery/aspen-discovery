@@ -147,6 +147,15 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_isSubmitted_build_tracker
+		'add_app_scheme_system_variables' => [
+			'title' => 'Add app scheme into system variables',
+			'description' => 'Add column to set scheme for creating deep links into the app',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN appScheme VARCHAR(72) default "aspen-lida"',
+			]
+		],
+		//add_app_scheme_system_variables
 
 		//kodi
 

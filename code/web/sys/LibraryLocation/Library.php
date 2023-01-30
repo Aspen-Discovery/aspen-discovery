@@ -401,6 +401,7 @@ class Library extends DataObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
+		global $serverName;
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure($context);
 
@@ -945,7 +946,7 @@ class Library extends DataObject {
 						'permissions' => ['Library ILS Connection'],
 					],
 					'ssoMetadataFilename' => [
-						'path' => '/data/aspen-discovery/sso_metadata',
+						'path' => "/data/aspen-discovery/$serverName/sso_metadata/",
 						'property' => 'ssoMetadataFilename',
 						'type' => 'file',
 						'label' => 'XML metadata file',
