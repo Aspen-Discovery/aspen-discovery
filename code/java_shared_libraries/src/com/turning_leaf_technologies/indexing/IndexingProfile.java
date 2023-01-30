@@ -61,6 +61,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private String fallbackFormatField;
 	private String customMarcFieldsToIndexAsKeyword;
 	private boolean processRecordLinking;
+	private int evergreenOrgUnitSchema;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -144,6 +145,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 		this.customMarcFieldsToIndexAsKeyword = indexingProfileRS.getString("customMarcFieldsToIndexAsKeyword");
 		this.processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
+
+		this.evergreenOrgUnitSchema = indexingProfileRS.getInt("evergreenOrgUnitSchema");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -615,5 +618,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public boolean isProcessRecordLinking() {
 		return processRecordLinking;
+	}
+
+	public int getEvergreenOrgUnitSchema() {
+		return evergreenOrgUnitSchema;
 	}
 }
