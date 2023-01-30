@@ -4908,6 +4908,26 @@ class Koha extends AbstractIlsDriver {
 		return false;
 	}
 
+	public function findNewUserByEmail($patronEmail) {
+		// Check the Koha database to see if the patron exists
+		//Use MySQL connection to load data
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where borrower_email = '" . mysqli_escape_string($this->dbConnection, $patronEmail) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $patronEmail) . "'";
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+		if ($lookupUserResult->num_rows == 1) {
+			$lookupUserRow = $lookupUserResult->fetch_assoc();
+			$patronId = $lookupUserRow['borrowernumber'];
+			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			if (!empty($newUser) && !($newUser instanceof AspenError)) {
+				return $newUser;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * @return bool
 	 */

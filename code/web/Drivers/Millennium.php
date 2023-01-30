@@ -1466,6 +1466,10 @@ class Millennium extends AbstractIlsDriver {
 		}
 	}
 
+	public function findNewUserByEmail($patronEmail): bool {
+		return false;
+	}
+
 	/**
 	 * @param array $patronDump
 	 * @param $password

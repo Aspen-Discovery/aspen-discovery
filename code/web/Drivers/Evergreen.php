@@ -1294,6 +1294,10 @@ class Evergreen extends AbstractIlsDriver {
 		return false;
 	}
 
+	public function findNewUserByEmail($patronEmail): bool {
+		return false;
+	}
+
 	private function loadPatronInformation($userData, $username, $password): User {
 		$user = new User();
 		$user->username = $userData['id'];

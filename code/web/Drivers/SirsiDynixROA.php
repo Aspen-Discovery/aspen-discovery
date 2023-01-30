@@ -339,6 +339,10 @@ class SirsiDynixROA extends HorizonAPI {
 		return false;
 	}
 
+	public function findNewUserByEmail($patronEmail): bool {
+		return false;
+	}
+
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $timer;
 

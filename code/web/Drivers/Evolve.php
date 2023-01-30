@@ -816,8 +816,11 @@ class Evolve extends AbstractIlsDriver {
 	}
 
 	public function findNewUser($patronBarcode) {
+		//For Evolve, this can only be called when initiating masquerade
+		return false;
+	}
 
-		//For Evergreen, this can only be called when initiating masquerade
+	public function findNewUserByEmail($patronEmail): bool {
 		return false;
 	}
 
