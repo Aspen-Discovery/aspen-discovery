@@ -41,6 +41,7 @@ if (array_key_exists('samlLogin', $_REQUEST) && array_key_exists('idp', $_REQUES
 
 // Get the attributes from the IdP response
 $usersAttributes = $auth->as->getAttributes();
+ExternalRequestLogEntry::logRequest('SAML.usersAttributes', $_SERVER['REQUEST_METHOD'], $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'], getallheaders(), $_POST, $_SERVER['REDIRECT_STATUS'], $usersAttributes, []);
 
 // Someone has most likely hit this script directly, rather than having
 // come back from an IdP
