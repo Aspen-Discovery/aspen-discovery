@@ -53,6 +53,7 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 		if (!empty($versionToShow)) {
 			$sites->whereAdd("version LIKE '$versionToShow%'");
 		}
+		$sites->monitored = 1;
 
 		$sites->orderBy('name ASC');
 		$sites->find();
