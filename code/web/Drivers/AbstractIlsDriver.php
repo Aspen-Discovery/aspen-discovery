@@ -439,7 +439,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 	}
 
-	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): bool|array {
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
 		return false;
 	}
 

@@ -1343,7 +1343,7 @@ class CatalogConnection {
 		$this->driver->validateUniqueId($user);
 	}
 
-	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): bool|array {
+	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
 		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber);
 	}
 
