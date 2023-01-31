@@ -95,12 +95,14 @@ foreach ($lmsToSso as $key => $mappings) {
 		if(isset($mappings['useGivenUserId'])) {
 			$useSecondaryOverPrimary = $mappings['useGivenUserId'];
 			if($useSecondaryOverPrimary == '0') {
-				if($usernameFormat == '0') {
+				if($usernameFormat == '1') {
 					$_REQUEST[$key] = $out['ssoEmailAttr'];
-				} elseif($usernameFormat == '1') {
+				} elseif($usernameFormat == '2') {
 					$username = $out['ssoFirstnameAttr'] . '.' . $out['ssoLastnameAttr'];
 					$username = strtolower($username);
 					$_REQUEST[$key] = $username;
+				} elseif($usernameFormat == '0') {
+					$_REQUEST[$key] = null;
 				}
 			}
 		}

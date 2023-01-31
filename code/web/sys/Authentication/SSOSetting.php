@@ -106,8 +106,9 @@ class SSOSetting extends DataObject {
 		];
 
 		$username_format = [
-			'0' => 'email',
-			'1' => 'firstname.lastname',
+			'0' => 'Default for ILS',
+			'1' => 'email',
+			'2' => 'firstname.lastname',
 		];
 
 		return [
