@@ -23,7 +23,7 @@ class Report_StudentReport extends Admin_Admin {
 		}
 		asort($locationLookupList);
 		$interface->assign('locationLookupList', $locationLookupList);
-		$selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : reset($locationLookupList);
+		$selectedLocation = isset($_REQUEST['location']) ? $_REQUEST['location'] : '';
 		$interface->assign('selectedLocation', $selectedLocation);
 // OTHER FORM VARIABLES
 		$showOverdueOnly = isset($_REQUEST['showOverdueOnly']) ? $_REQUEST['showOverdueOnly'] : 'overdue';
