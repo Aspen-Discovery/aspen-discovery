@@ -6576,15 +6576,23 @@ class Koha extends AbstractIlsDriver {
 		Map from the property names required for self registration to
 		the IdP property names returned from SAML2Authentication
 	*/
-	public function lmsToSso(bool $isStaffUser = false) {
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
 		$categoryId = 'ssoCategoryIdAttr';
 		$categoryIdFallback = 'ssoCategoryIdFallback';
 		if($isStaffUser) {
 			$categoryId = 'staffPType';
 		}
 		return [
-			'userid' => ['primary' => 'ssoUniqueAttribute'],
-			'cardnumber' => ['primary' => 'ssoUniqueAttribute'],
+			'userid' => [
+				'primary' => 'ssoUniqueAttribute',
+				'fallback' => 'ssoUsernameAttr',
+				'useGivenUserId' => $useGivenUserId
+			],
+			'cardnumber' => [
+				'primary' => 'ssoUniqueAttribute',
+				'fallback' => 'ssoIdAttr',
+				'useGivenCardnumber' => $useGivenCardnumber
+			],
 			'borrower_firstname' => [
 				'primary' => 'ssoFirstnameAttr',
 				'fallback' => '',

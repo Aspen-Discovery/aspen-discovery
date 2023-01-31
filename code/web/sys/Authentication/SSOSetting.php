@@ -38,8 +38,11 @@ class SSOSetting extends DataObject {
 	public $ssoUniqueAttribute;
 	public $ssoMetadataFilename;
 	public $ssoEntityId;
+	public $ssoUseGivenUserId;
 	public $ssoIdAttr;
+	public $ssoUseGivenUsername;
 	public $ssoUsernameAttr;
+	public $ssoUsernameFormat;
 	public $ssoFirstnameAttr;
 	public $ssoLastnameAttr;
 	public $ssoEmailAttr;
@@ -100,6 +103,12 @@ class SSOSetting extends DataObject {
 			'0' => 'By Authorization Code (Standard)',
 			'1' => 'By Resource Owner Credentials',
 			'2' => 'By Client Credentials',
+		];
+
+		$username_format = [
+			'0' => 'Default for ILS',
+			'1' => 'email',
+			'2' => 'firstname.lastname',
 		];
 
 		return [
@@ -414,21 +423,63 @@ class SSOSetting extends DataObject {
 								'size' => '512',
 								'hideInLists' => true,
 							],
-							'ssoIdAttr' => [
-								'property' => 'ssoIdAttr',
-								'type' => 'text',
-								'label' => 'IdP attribute that contains the user ID',
-								'description' => 'This should be unique to each user',
-								'size' => '512',
+							'ssoUserIdSection' => [
+								'property' => 'ssoUserIdSection',
+								'type' => 'section',
+								'label' => 'Barcode / User Id',
 								'hideInLists' => true,
+								'expandByDefault' => true,
+								'properties' => [
+									'ssoUseGivenUserId' => [
+										'property' => 'ssoUseGivenUserId',
+										'type' => 'checkbox',
+										'label' => 'Create new users with a cardnumber (user id) provided by the IdP',
+										'description' => 'Whether or not new users should use a cardnumber (user id) provided by the IdP',
+										'hideInLists' => true,
+										'onchange' => 'return AspenDiscovery.Admin.toggleSamlUserIdFields();',
+									],
+									'ssoIdAttr' => [
+										'property' => 'ssoIdAttr',
+										'type' => 'text',
+										'label' => 'IdP attribute that contains the user id',
+										'description' => 'This should be unique to each user',
+										'size' => '512',
+										'hideInLists' => true,
+									]
+								]
 							],
-							'ssoUsernameAttr' => [
-								'property' => 'ssoUsernameAttr',
-								'type' => 'text',
-								'label' => 'IdP attribute that contains the user\'s username',
-								'description' => 'The user\'s username',
-								'size' => '512',
+							'ssoUsernameSection' => [
+								'property' => 'ssoUsernameSection',
+								'type' => 'section',
+								'label' => 'Username',
 								'hideInLists' => true,
+								'expandByDefault' => true,
+								'properties' => [
+									'ssoUseGivenUsername' => [
+										'property' => 'ssoUseGivenUsername',
+										'type' => 'checkbox',
+										'label' => 'Create new users with a username provided by the IdP',
+										'description' => 'Whether or not new users should use a username provided by the IdP',
+										'hideInLists' => true,
+										'onchange' => 'return AspenDiscovery.Admin.toggleSamlUsernameFormatFields();',
+									],
+									'ssoUsernameAttr' => [
+										'property' => 'ssoUsernameAttr',
+										'type' => 'text',
+										'label' => 'IdP attribute that contains the user\'s username',
+										'description' => 'The user\'s username',
+										'size' => '512',
+										'hideInLists' => true,
+									],
+									'ssoUsernameFormat' => [
+										'property' => 'ssoUsernameFormat',
+										'type' => 'enum',
+										'values' => $username_format,
+										'label' => 'Format of username',
+										'description' => 'How the username for the new user should be formatted',
+										'hideInLists' => true,
+									],
+								]
 							],
 							'ssoFirstnameAttr' => [
 								'property' => 'ssoFirstnameAttr',
@@ -759,7 +810,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['localLogin', 'staffOnly', 'oAuthGrantType'];
+		return ['localLogin', 'staffOnly', 'oAuthGrantType', 'ssoUseGivenUserId', 'ssoUseGivenUsername', 'ssoUsernameFormat'];
 	}
 
 	public function genericOAuthProvider() {
@@ -883,7 +934,7 @@ class SSOSetting extends DataObject {
 			if (strlen($xml) > 0) {
 				// Check it's a valid SAML message
 				try {
-					require_once '/usr/share/simplesamlphp/lib/_autoload.php';
+					require_once '/usr/local/simplesamlphp/lib/_autoload.php';
 					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
 				} catch (Exception $e) {
 					$logger->log($e, Logger::LOG_ERROR);

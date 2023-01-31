@@ -439,6 +439,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 	}
 
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+		return false;
+	}
+
 	public function getPatronIDChanges($searchPatronID): ?array {
 		return null;
 	}
