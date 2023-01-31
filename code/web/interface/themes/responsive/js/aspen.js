@@ -8957,12 +8957,15 @@ AspenDiscovery.Admin = (function () {
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 				AspenDiscovery.Admin.toggleSamlMetadataFields();
+
 			} else if (ssoService === "saml") {
 				AspenDiscovery.Admin.toggleSamlFields('show');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 				AspenDiscovery.Admin.toggleSamlMetadataFields();
+				AspenDiscovery.Admin.toggleSamlUserIdFields();
+				AspenDiscovery.Admin.toggleSamlUsernameFormatFields();
 			} else {
 				AspenDiscovery.Admin.toggleSamlFields('hide');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
@@ -9011,6 +9014,40 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowssoXmlUrl').hide();
 				$('#propertyRowssoMetadataFilename').show();
 			}
+		},
+		toggleSamlUserIdFields: function() {
+			var userIdOption = $('#ssoUseGivenUserId');
+			if (userIdOption.is(":checked")) {
+				$('#propertyRowssoIdAttr').show();
+			} else {
+				$('#propertyRowssoIdAttr').hide();
+			}
+			$(userIdOption).click(function () {
+				if (userIdOption.is(":checked")) {
+					$('#propertyRowssoIdAttr').show();
+				} else {
+					$('#propertyRowssoIdAttr').hide();
+				}
+			});
+		},
+		toggleSamlUsernameFormatFields: function() {
+			var usernameFormat = $('#ssoUseGivenUsername');
+			if (usernameFormat.is(":checked")) {
+				$('#propertyRowssoUsernameAttr').show();
+				$('#propertyRowssoUsernameFormat').hide();
+			} else {
+				$('#propertyRowssoUsernameFormat').show();
+				$('#propertyRowssoUsernameAttr').hide();
+			}
+			$(usernameFormat).click(function () {
+				if (usernameFormat.is(":checked")) {
+					$('#propertyRowssoUsernameAttr').show();
+					$('#propertyRowssoUsernameFormat').hide();
+				} else {
+					$('#propertyRowssoUsernameFormat').show();
+					$('#propertyRowssoUsernameAttr').hide();
+				}
+			});
 		},
 		linkingSettingOptionChange: function () {
 			var url = Globals.path + "/Admin/AJAX";

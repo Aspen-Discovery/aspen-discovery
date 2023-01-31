@@ -173,6 +173,17 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_bypass_aspen_login_page
+		'add_sso_user_options' => [
+			'title' => 'Add options for customizing user login options for SSO',
+			'description' => 'Add options for customizing user login options for new SSO users',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN ssoUseGivenUserId TINYINT(1) default 1',
+				'ALTER TABLE sso_setting ADD COLUMN ssoUseGivenUsername TINYINT(1) default 1',
+				'ALTER TABLE sso_setting ADD COLUMN ssoUsernameFormat TINYINT(1) default 0',
+			]
+		],
+		//add_sso_user_options
 
 		//kodi
 
