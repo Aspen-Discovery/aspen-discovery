@@ -31,13 +31,30 @@ function getUpdates23_02_00(): array {
 			]
 		], //add_enable_reading_history_to_ptype
 		'indexing_profile_evergreen_org_unit_schema' => [
-			'title' => 'Indexing Profile - Add ',
+			'title' => 'Indexing Profile - Add Evergreen Org Unit ',
 			'description' => 'Allow reading history to be disabled by PType',
 			'continueOnError' => false,
 			'sql' => [
 				"ALTER TABLE indexing_profiles ADD COLUMN evergreenOrgUnitSchema TINYINT(1) DEFAULT 1;",
 			]
 		], //indexing_profile_evergreen_org_unit_schema
+		'reading_history_updates_change_ils' => [
+			'title' => 'Reading History Updates change ILS',
+			'description' => 'Allow updating the ILS when opting in/out of reading history to be controlled',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN optInToReadingHistoryUpdatesILS TINYINT(1) DEFAULT 0;",
+				"ALTER TABLE library ADD COLUMN optOutOfReadingHistoryUpdatesILS TINYINT(1) DEFAULT 1;",
+			]
+		], //reading_history_updates_change_ils
+		'setUsePreferredNameInIlsOnUpdate'  => [
+			'title' => 'Library - Set Use Preferred Name In Ils On Update',
+			'description' => 'Allow updating the ILS when changing preferred name',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN setUsePreferredNameInIlsOnUpdate TINYINT(1) DEFAULT 1;",
+			]
+		], //setUsePreferredNameInIlsOnUpdate
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [

@@ -20,7 +20,7 @@
 					<tr>
 						<td>{translate text=$label isAdminFacing=true}</td>
 						{foreach from=$dataSeries item=seriesData}
-							<td>{$seriesData.data.$label|number_format}</td>
+							<td>{if (empty($seriesData.data.$label))}0{else}{$seriesData.data.$label|number_format}{/if}</td>
 						{/foreach}
 					</tr>
 				{/foreach}

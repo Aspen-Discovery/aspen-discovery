@@ -1281,11 +1281,11 @@ class CarlX extends AbstractIlsDriver {
 		];
 	}
 
-	public function performsReadingHistoryUpdatesOfILS() {
+	public function performsReadingHistoryUpdatesOfILS() : bool {
 		return true;
 	}
 
-	public function doReadingHistoryAction(User $patron, $action, $selectedTitles) {
+	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
 		if ($action == 'optIn' || $action == 'optOut') {
 			$request = $this->getSearchbyPatronIdRequest($patron);
 			if (!isset ($request->Patron)) {

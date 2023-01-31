@@ -2077,6 +2077,9 @@ class SirsiDynixROA extends HorizonAPI {
 
 							if (isset($_REQUEST['preferredName'])) {
 								$updatePatronInfoParameters['fields']['preferredName'] = $_REQUEST['preferredName'];
+								if ($homeLibrary->setUsePreferredNameInIlsOnUpdate) {
+									$updatePatronInfoParameters['fields']['usePreferredName'] = !empty($_REQUEST['preferredName']);
+								}
 								$patron->_preferredName = $_REQUEST['preferredName'];
 								$patron->displayName = $_REQUEST['preferredName'];
 							}
@@ -2756,11 +2759,11 @@ class SirsiDynixROA extends HorizonAPI {
 		];
 	}
 
-	public function performsReadingHistoryUpdatesOfILS() {
+	public function performsReadingHistoryUpdatesOfILS() : bool {
 		return true;
 	}
 
-	public function doReadingHistoryAction(User $patron, $action, $selectedTitles) {
+	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
 		if ($action == 'optIn' || $action == 'optOut') {
 			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
