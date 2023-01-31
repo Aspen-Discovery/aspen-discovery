@@ -205,6 +205,10 @@ class Record_AJAX extends Action {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
 
+			require_once ROOT_DIR . '/sys/Account/User.php';
+			$isOnHold = $user->isRecordOnHold($recordSource, $id);
+			$interface->assign('isOnHold', $isOnHold);
+
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)) {
 				return [
 					'holdFormBypassed' => false,
@@ -282,7 +286,7 @@ class Record_AJAX extends Action {
 				}
 			}
 
-			if ($bypassHolds) {
+			if ($bypassHolds && !$isOnHold) {
 				if (strpos($id, ':') !== false) {
 					[
 						,
@@ -400,10 +404,17 @@ class Record_AJAX extends Action {
 					'success' => true,
 				];
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
-							'text' => "Submit Hold Request",
-							'isPublicFacing' => true,
-						]) . "</button>";
+					if ($isOnHold){
+						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Yes, Place Hold",
+								'isPublicFacing' => true,
+							]) . "</button>";
+					}else{
+						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Submit Hold Request",
+								'isPublicFacing' => true,
+							]) . "</button>";
+					}
 				}
 			}
 		} else {
