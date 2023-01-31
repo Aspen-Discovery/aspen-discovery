@@ -1,4 +1,5 @@
 <?php
+
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCache.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
@@ -64,7 +65,9 @@ class GreenhouseAPI extends Action {
 		return ['success' => false];
 	}
 
-	public function getNotificationAccessToken() {
+
+	/** @noinspection PhpUnused */
+	public function getNotificationAccessToken() : array {
 		$accessToken = null;
 		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 		$greenhouseSettings = new GreenhouseSettings();
@@ -74,7 +77,8 @@ class GreenhouseAPI extends Action {
 		return ['token' => $accessToken];
 	}
 
-	public function updateSiteStatuses() {
+	/** @noinspection PhpUnused */
+	public function updateSiteStatuses() : array {
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCheck.php';
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
@@ -187,10 +191,10 @@ class GreenhouseAPI extends Action {
 
 
 			//We won't send slack alerts for anything that is a test site or still in implementation
-			if ($sites->implementationStatus == 0 || $sites->implementationStatus == 1 || $sites->implementationStatus == 4) {
+			if (($sites->implementationStatus == 0) || ($sites->implementationStatus == 1) || ($sites->implementationStatus == 4)) {
 				//The site is installing, implementing, or retired, don't alert
 				$sendAlert = false;
-			} elseif ($sites->libraryType != 0 ) {
+			} elseif ($sites->siteType != 0 ) {
 				//The site is not a library partner
 				$sendAlert = false;
 			}
@@ -216,12 +220,11 @@ class GreenhouseAPI extends Action {
 			//store stats
 			$numSitesUpdated++;
 		}
-		$return = [
+		return [
 			'success' => true,
 			'numSitesUpdated' => $numSitesUpdated,
 			'elapsedTime' => time() - $start,
 		];
-		return $return;
 	}
 
 	public function getLibraries($returnAll = false, $reload = true): array {
