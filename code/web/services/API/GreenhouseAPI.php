@@ -82,6 +82,7 @@ class GreenhouseAPI extends Action {
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSiteCheck.php';
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4 AND implementationStatus != 0');
+		$sites->monitored = 1;
 		$sites->orderBy('name ASC');
 		$sites->find();
 		$numSitesUpdated = 0;
