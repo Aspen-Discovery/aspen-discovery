@@ -21,6 +21,11 @@
 					<div id="holdError" class="pageWarning" style="display: none"></div>
 				</div>
 
+				{if $isOnHold && $rememberHoldPickupLocation}
+				<p class="alert alert-warning">
+					{translate text="This title is already on hold for you. Are you sure you want to place a duplicate hold?" isPublicFacing=true}&nbsp;
+				</p>
+				{else}
 				<p class="alert alert-info">
 					{if $pickupAt > 0}
 						{translate text="Holds allow you to request that a title be put aside for you to pick up at the library." isPublicFacing=true}&nbsp;
@@ -34,6 +39,7 @@
 						{translate text="You will then have 7 days to pick up the title from your home library." isPublicFacing=true}&nbsp;
 					{/if}
 				</p>
+				{/if}
 
 				<div id="holdOptions">
 					{assign var="onlyOnePickupLocation" value=false}
