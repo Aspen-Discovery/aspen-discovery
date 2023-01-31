@@ -865,7 +865,6 @@ class Koha extends AbstractIlsDriver {
 			$user->cat_password = $password;
 			$user->email = $userFromDb['email'];
 			$user->patronType = $userFromDb['categorycode'];
-			$user->_web_note = '';
 
 			$user->_address1 = trim($userFromDb['streetnumber'] . ' ' . $userFromDb['address']);
 			$user->_address2 = $userFromDb['address2'];
@@ -1022,6 +1021,77 @@ class Koha extends AbstractIlsDriver {
 
 	public function hasNativeReadingHistory(): bool {
 		return true;
+	}
+
+	public function performsReadingHistoryUpdatesOfILS() : bool {
+		return true;
+	}
+
+	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
+		$doUpdate = false;
+		if ($action == 'optIn') {
+			$doUpdate = true;
+			$newPrivacySetting = 0; // Keep reading history forever
+		}elseif ($action == 'optOut') {
+			$doUpdate = true;
+			$newPrivacySetting = 2; // Never keey reading history
+		}
+		if ($doUpdate) {
+			$this->initDatabaseConnection();
+			/** @noinspection SqlResolve */
+			$sql = "SELECT address, city FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+			$results = mysqli_query($this->dbConnection, $sql);
+			$address = '';
+			$city = '';
+			if ($results !== false && $results != null) {
+				while ($curRow = $results->fetch_assoc()) {
+					$address = $curRow['address'];
+					$city = $curRow['city'];
+				}
+			} else {
+				//We could not connect to the database, don't update, so we don't corrupt the DB
+				global $logger;
+				$logger->log("Could not load existing user information from the DB during doReadingHistoryAction", Logger::LOG_ERROR);
+				return;
+			}
+
+			$postVariables = [
+				'surname' => $patron->lastname,
+				'address' => $address,
+				'city' => $city,
+				'library_id' => $patron->getHomeLocationCode(),
+				'category_id' => $patron->patronType,
+				'privacy' => $newPrivacySetting
+			];
+
+			$oauthToken = $this->getOAuthToken();
+			if ($oauthToken == false) {
+				//The update failed, we don't return error messages from this so just log it
+				global $logger;
+				$logger->log("Unable to authenticate with the ILS from doReadingHistoryAction", Logger::LOG_ERROR);
+			} else {
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->username}";
+				$postParams = json_encode($postVariables);
+
+				$this->apiCurlWrapper->addCustomHeaders([
+					'Authorization: Bearer ' . $oauthToken,
+					'User-Agent: Aspen Discovery',
+					'Accept: */*',
+					'Cache-Control: no-cache',
+					'Content-Type: application/json;charset=UTF-8',
+					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				], true);
+
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'PUT', $postParams);
+				ExternalRequestLogEntry::logRequest('koha.updatePatronInfo', 'PUT', $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+				if ($this->apiCurlWrapper->getResponseCode() != 200) {
+					global $logger;
+					$logger->log("Failed to update ILS from doReadingHistoryAction " . $this->apiCurlWrapper->getResponseCode(), Logger::LOG_ERROR);
+				} else {
+					//Everything seems to have worked fine
+				}
+			}
+		}
 	}
 
 	/**
@@ -1902,7 +1972,6 @@ class Koha extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('koha.cancelHold', 'GET', $cancelHoldURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $cancelHoldResponse, []);
 
 				//Parse the result
-				/** @noinspection PhpStatementHasEmptyBodyInspection */
 				if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
 					//We cancelled the hold
 				} else {
@@ -2020,6 +2089,7 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function renewCheckout($patron, $recordId, $itemId = null, $itemIndex = null) {
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -2053,6 +2123,7 @@ class Koha extends AbstractIlsDriver {
 
 		/** @noinspection PhpBooleanCanBeSimplifiedInspection */
 		if (false && $this->getKohaVersion() >= 19.11) {
+			/** @noinspection PhpUnreachableStatementInspection */
 			$sourceId = null;
 			require_once ROOT_DIR . '/sys/User/Checkout.php';
 			$checkout = new Checkout();
@@ -2507,6 +2578,7 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function thawHold($patron, $recordId, $itemToThawId): array {
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -2519,6 +2591,7 @@ class Koha extends AbstractIlsDriver {
 			'text' => 'Error thawing hold',
 			'isPublicFacing' => true,
 		]);
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$result['api']['message'] = translate([
 			'text' => 'Unable to thaw your hold.',
 			'isPublicFacing' => true,
@@ -3610,6 +3683,7 @@ class Koha extends AbstractIlsDriver {
 			$captcha = '';
 			$captchaDigest = '';
 			$captchaInfo = [];
+			/** @noinspection RegExpUnnecessaryNonCapturingGroup */
 			if (preg_match('%<span class="hint">(?:.*)<strong>(.*?)</strong></span>%s', $selfRegPage, $captchaInfo)) {
 				$captcha = $captchaInfo[1];
 			}
@@ -4240,6 +4314,7 @@ class Koha extends AbstractIlsDriver {
 	function getMaterialsRequests(User $user) {
 		//Just use the database to get the requests
 		if (false && $this->getKohaVersion() > 21.05) {
+			/** @noinspection PhpUnreachableStatementInspection */
 			$result = [
 				'success' => false,
 				'message' => 'Unknown error loading materials requests.',
@@ -5106,6 +5181,7 @@ class Koha extends AbstractIlsDriver {
 				} else {
 					/** @noinspection SpellCheckingInspection */
 					if ($key == 'SMSnumber') {
+						/** @noinspection RegExpRedundantEscape */
 						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-z]/', '', $value));
 					} else {
 						$getParams[] = urlencode($key) . '=' . urlencode($value);
@@ -6534,6 +6610,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 		$errors = [];
 		foreach ($allUserBarcodes as $barcode => $currentBorrowerNummber) {
+			/** @noinspection SqlResolve */
 			$sql = "SELECT borrowernumber from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 			$borrowerNumberResult = mysqli_query($this->dbConnection, $sql);
 			if ($borrowerNumberResult !== FALSE) {

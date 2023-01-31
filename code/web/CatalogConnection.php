@@ -417,7 +417,7 @@ class CatalogConnection {
 	 * @param array $selectedTitles The titles to do the action on if applicable
 	 * @return array success and message are the array keys
 	 */
-	function doReadingHistoryAction($patron, $action, $selectedTitles) {
+	function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -500,7 +500,16 @@ class CatalogConnection {
 			]);
 		}
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
-			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+			$performIlsAction = true;
+			$homeLibrary = $patron->getHomeLibrary();
+			if ($action == 'optIn') {
+				$performIlsAction = $homeLibrary->optInToReadingHistoryUpdatesILS;
+			}elseif ($action == 'optOut') {
+				$performIlsAction = $homeLibrary->optOutOfReadingHistoryUpdatesILS;
+			}
+			if ($performIlsAction) {
+				$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+			}
 		}
 		return $result;
 	}

@@ -285,6 +285,8 @@ class Library extends DataObject {
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
 	public $enableReadingHistory;
+	public $optInToReadingHistoryUpdatesILS;
+	public $optOutOfReadingHistoryUpdatesILS;
 	public $enableSavedSearches;
 	public /** @noinspection PhpUnused */
 		$newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
@@ -1279,6 +1281,26 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Enable Reading History',
 						'description' => 'Whether or not users reading history is shown within Aspen.',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Options'],
+					],
+					'optInToReadingHistoryUpdatesILS' => [
+						'property' => 'optInToReadingHistoryUpdatesILS',
+						'type' => 'checkbox',
+						'label' => 'Opting in to Reading History Updates ILS settings',
+						'description' => 'Whether or not the user should be opted in to reading history within the ILS when they opt in within Aspen.',
+						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
+						'hideInLists' => true,
+						'default' => 0,
+						'permissions' => ['Library ILS Options'],
+					],
+					'optOutOfReadingHistoryUpdatesILS' => [
+						'property' => 'optOutOfReadingHistoryUpdatesILS',
+						'type' => 'checkbox',
+						'label' => 'Opting our of Reading History Updates ILS settings',
+						'description' => 'Whether or not the user should be opted out of reading history within the ILS when they opt out within Aspen.',
+						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
