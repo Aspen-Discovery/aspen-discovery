@@ -2077,6 +2077,9 @@ class SirsiDynixROA extends HorizonAPI {
 
 							if (isset($_REQUEST['preferredName'])) {
 								$updatePatronInfoParameters['fields']['preferredName'] = $_REQUEST['preferredName'];
+								if ($homeLibrary->setUsePreferredNameInIlsOnUpdate) {
+									$updatePatronInfoParameters['fields']['usePreferredName'] = !empty($_REQUEST['preferredName']);
+								}
 								$patron->_preferredName = $_REQUEST['preferredName'];
 								$patron->displayName = $_REQUEST['preferredName'];
 							}

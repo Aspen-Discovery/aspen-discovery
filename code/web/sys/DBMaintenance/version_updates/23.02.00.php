@@ -47,6 +47,14 @@ function getUpdates23_02_00(): array {
 				"ALTER TABLE library ADD COLUMN optOutOfReadingHistoryUpdatesILS TINYINT(1) DEFAULT 1;",
 			]
 		], //reading_history_updates_change_ils
+		'setUsePreferredNameInIlsOnUpdate'  => [
+			'title' => 'Library - Set Use Preferred Name In Ils On Update',
+			'description' => 'Allow updating the ILS when changing preferred name',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN setUsePreferredNameInIlsOnUpdate TINYINT(1) DEFAULT 1;",
+			]
+		], //setUsePreferredNameInIlsOnUpdate
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [

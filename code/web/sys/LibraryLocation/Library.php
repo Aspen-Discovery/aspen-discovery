@@ -190,6 +190,7 @@ class Library extends DataObject {
 	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
 	public $allowNameUpdates;
+	public $setUsePreferredNameInIlsOnUpdate;
 	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
 	public $cityStateField;
@@ -1476,6 +1477,17 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Allow Patrons to Update Their Name (Setting applies to Koha only)',
 								'description' => 'Whether or not patrons should be able to update their name in their profile.',
+								'hideInLists' => true,
+								'default' => 1,
+								'readOnly' => false,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'setUsePreferredNameInIlsOnUpdate' => [
+								'property' => 'setUsePreferredNameInIlsOnUpdate',
+								'type' => 'checkbox',
+								'label' => 'Set "Use Preferred Name" in the ILS when updating preferred name.',
+								'description' => 'Whether or not the "Use Preferred Name" checkbox is updated when setting preferred name.',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 1,
 								'readOnly' => false,
