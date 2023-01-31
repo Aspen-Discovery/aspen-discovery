@@ -1334,8 +1334,8 @@ class CatalogConnection {
 		$this->driver->validateUniqueId($user);
 	}
 
-	public function getLmsToSso(bool $isStaffUser = false, $useGivenUserId, $useGivenUsername) {
-		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenUsername);
+	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): bool|array {
+		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber);
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {
