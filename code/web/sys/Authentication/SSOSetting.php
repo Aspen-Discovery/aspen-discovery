@@ -809,7 +809,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['localLogin', 'staffOnly', 'oAuthGrantType'];
+		return ['localLogin', 'staffOnly', 'oAuthGrantType', 'ssoUseGivenUserId', 'ssoUseGivenUsername', 'ssoUsernameFormat'];
 	}
 
 	public function genericOAuthProvider() {

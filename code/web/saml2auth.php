@@ -12,6 +12,9 @@ global $logger;
 
 $staffPType = null;
 $uidAsEmail = false;
+$useGivenUserId = '1';
+$useGivenUsername = '1';
+$usernameFormat = '-1';
 
 $auth = new SAML2Authentication();
 
@@ -20,6 +23,9 @@ $ssoSettings->id = $library->ssoSettingId;
 $ssoSettings->service = 'saml';
 if($ssoSettings->find(true)) {
 	$entityId = $ssoSettings->ssoEntityId;
+	$useGivenUsername = $ssoSettings->ssoUseGivenUsername;
+	$useGivenUserId = $ssoSettings->ssoUseGivenUserId;
+	$usernameFormat = $ssoSettings->ssoUsernameFormat;
 	if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
@@ -72,13 +78,32 @@ $isStaffUser = $out['isStaffUser'] ?? false;
 $catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
 // Get a mapping from LMS self reg property names to SSO property names
-$lmsToSso = $catalogConnection->getLmsToSso($isStaffUser);
+$lmsToSso = $catalogConnection->getLmsToSso($isStaffUser, $useGivenUserId, $useGivenUsername);
 
 // Populate our $_REQUEST object that will be used by self reg
 foreach ($lmsToSso as $key => $mappings) {
 	$primaryAttr = $mappings['primary'];
+	$secondaryAttr = $mappings['fallback'];
 	if (array_key_exists($primaryAttr, $out)) {
 		$_REQUEST[$key] = $out[$primaryAttr];
+		if(isset($mappings['useGivenCardnumber'])) {
+			$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
+			if($useSecondaryOverPrimary == '0') {
+				$_REQUEST[$key] = null;
+			}
+		}
+		if(isset($mappings['useGivenUserId'])) {
+			$useSecondaryOverPrimary = $mappings['useGivenUserId'];
+			if($useSecondaryOverPrimary == '0') {
+				if($usernameFormat == '0') {
+					$_REQUEST[$key] = $out['ssoEmailAttr'];
+				} elseif($usernameFormat == '1') {
+					$username = $out['ssoFirstnameAttr'] . '.' . $out['ssoLastnameAttr'];
+					$username = strtolower($username);
+					$_REQUEST[$key] = $username;
+				}
+			}
+		}
 	} elseif (array_key_exists('fallback', $mappings)) {
 		if (strlen($mappings['fallback']) > 0) {
 			$_REQUEST[$key] = $out[$mappings['fallback']];
@@ -90,7 +115,6 @@ foreach ($lmsToSso as $key => $mappings) {
 
 // Does this user exist in the LMS
 if($uidAsEmail) {
-	$_REQUEST['username'] = $uid;
 	$user = $catalogConnection->findNewUserByEmail($uid);
 	if(is_string($user)) {
 		$logger->log($user, Logger::LOG_ERROR);
