@@ -201,9 +201,68 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_sso_user_options
+		'add_sso_aspen_lida_module' => [
+			'title' => 'Add modules for single sign-on and Aspen LiDA',
+			'description' => 'Add modules for single sign-on and Aspen LiDA',
+			'sql' => [
+				"INSERT INTO modules (name) VALUES ('Single sign-on')",
+				"INSERT INTO modules (name) VALUES ('Aspen LiDA')",
+				"updateAspenLiDAModule",
+				"updateSSOModule"
+			],
+		],
+		//add_sso_aspen_lida_module
+		'add_isssologin_user' => [
+			'title' => 'Add column to track if user is logged in via SSO',
+			'description' => 'Add column to track if a user is logged in via single sign-on',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN isLoggedInViaSSO TINYINT(1) default 0',
+			]
+		],
+		//add_isssologin_user
+		'add_sp_logout_url' => [
+			'title' => 'Add option to enable a redirect to the SP logout for SSO',
+			'description' => 'Add option to enable a redirect to the SP logout for SSO',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN ssoSPLogoutUrl VARCHAR(255) default NULL'
+			]
+		],
+		//add_isssologin_user
 
 		//kodi
 
 		//other
 	];
+}
+
+function updateAspenLiDAModule() {
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
+	$systemVariables = SystemVariables::getSystemVariables();
+	if (!empty($systemVariables)) {
+		if($systemVariables->greenhouseUrl == 'https://greenhouse.aspendiscovery.org/') {
+			require_once ROOT_DIR . '/sys/Module.php';
+			$module = new Module();
+			$module->name = 'Aspen LiDA';
+			if($module->find(true)) {
+				$module->enabled = 1;
+				$module->update();
+			}
+		}
+	}
+}
+
+function updateSSOModule() {
+	require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+	$ssoSettings = new SSOSetting();
+	if($ssoSettings->find(true)) {
+		require_once ROOT_DIR . '/sys/Module.php';
+		$module = new Module();
+		$module->name = 'Single sign-on';
+		if($module->find(true)) {
+			$module->enabled = 1;
+			$module->update();
+		}
+	}
 }

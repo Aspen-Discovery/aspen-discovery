@@ -18,7 +18,7 @@
 				</p>
 			</div>
 		{/if}
-		{if !(empty($ssoService))}
+		{if !(empty($ssoService)) && !ssoStaffOnly}
             {include file='MyAccount/sso-login.tpl'}
             {if $ssoLoginOptions == 0}
 	            <div class="hr-label">

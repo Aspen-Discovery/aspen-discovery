@@ -847,4 +847,18 @@ class UserAccount {
 		}
 		return false;
 	}
+
+	/**
+	 * Used to determine if the active user is logged in via single sign-on.
+	 * @return bool
+	 */
+	public static function isLoggedInViaSSO() {
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if($user->isLoggedInViaSSO) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

@@ -63,6 +63,7 @@ class SSOSetting extends DataObject {
 	public $samlBtnIcon;
 	public $samlBtnBgColor;
 	public $samlBtnTextColor;
+	public $ssoSPLogoutUrl;
 
 	public $loginHelpText;
 	public $loginOptions;
@@ -404,6 +405,14 @@ class SSOSetting extends DataObject {
 						'note' => 'This can be found in the IdP\'s metadata',
 						'size' => '512',
 						'hideInLists' => true,
+					],
+					'ssoSPLogoutUrl' => [
+						'property' => 'ssoSPLogoutUrl',
+						'type' => 'text',
+						'label' => 'Logout Url for SP',
+						'description' => 'Provide the URL to logout the user from the service provider if needed',
+						'hideInLists' => true,
+						'note' => 'In some cases such as Google SAML, we may need to logout the user from Google separately to force a new authentication when logging back in. Leave blank to not use.'
 					],
 					'ssoProfileSection' => [
 						'property' => 'ssoProfileSection',
