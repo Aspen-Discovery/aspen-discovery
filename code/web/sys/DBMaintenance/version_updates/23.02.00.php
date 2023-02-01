@@ -201,9 +201,50 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_sso_user_options
+		'add_sso_aspen_lida_module' => [
+			'title' => 'Add modules for single sign-on and Aspen LiDA',
+			'description' => 'Add modules for single sign-on and Aspen LiDA',
+			'sql' => [
+				"INSERT INTO modules (name) VALUES ('Single sign-on')",
+				"INSERT INTO modules (name) VALUES ('Aspen LiDA')",
+				"updateAspenLiDAModule",
+				"updateSSOModule"
+			],
+		],
+		//add_sso_aspen_lida_module
 
 		//kodi
 
 		//other
 	];
+}
+
+function updateAspenLiDAModule() {
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
+	$systemVariables = SystemVariables::getSystemVariables();
+	if (!empty($systemVariables)) {
+		if($systemVariables->greenhouseUrl == 'https://greenhouse.aspendiscovery.org/') {
+			require_once ROOT_DIR . '/sys/Module.php';
+			$module = new Module();
+			$module->name = 'Aspen LiDA';
+			if($module->find(true)) {
+				$module->enabled = 1;
+				$module->update();
+			}
+		}
+	}
+}
+
+function updateSSOModule() {
+	require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+	$ssoSettings = new SSOSetting();
+	if($ssoSettings->find(true)) {
+		require_once ROOT_DIR . '/sys/Module.php';
+		$module = new Module();
+		$module->name = 'Single sign-on';
+		if($module->find(true)) {
+			$module->enabled = 1;
+			$module->update();
+		}
+	}
 }

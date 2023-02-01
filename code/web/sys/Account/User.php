@@ -2921,7 +2921,10 @@ class User extends DataObject {
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
-		$sections['primary_configuration']->addAction(new AdminAction('Single Sign-on (SSO)', 'Administer single sign-on settings', '/Admin/SSOSettings'), 'Administer Single Sign-on');
+
+		if(array_key_exists('Single sign-on', $enabledModules)) {
+			$sections['primary_configuration']->addAction(new AdminAction('Single Sign-on (SSO)', 'Administer single sign-on settings', '/Admin/SSOSettings'), 'Administer Single Sign-on');
+		}
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()) {
@@ -3281,24 +3284,26 @@ class User extends DataObject {
 			]);
 		}
 
-		$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
-		$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
-		$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
-		$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
-		$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
-		if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')) {
-			$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
-		} else {
-			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+		if(array_key_exists('Aspen LiDA', $enabledModules)) {
+			$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
+			$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
+			$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
+			$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
+			if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')) {
+				$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
+			} else {
+				$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+			}
+			$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
+				'Send Notifications to All Libraries',
+				'Send Notifications to All Locations',
+				'Send Notifications to Home Library',
+				'Send Notifications to Home Location',
+				'Send Notifications to Home Library Locations',
+			]);
+			$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 		}
-		$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
-			'Send Notifications to All Libraries',
-			'Send Notifications to All Locations',
-			'Send Notifications to Home Library',
-			'Send Notifications to Home Location',
-			'Send Notifications to Home Library Locations',
-		]);
-		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
 		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
