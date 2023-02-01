@@ -212,6 +212,24 @@ function getUpdates23_02_00(): array {
 			],
 		],
 		//add_sso_aspen_lida_module
+		'add_isssologin_user' => [
+			'title' => 'Add column to track if user is logged in via SSO',
+			'description' => 'Add column to track if a user is logged in via single sign-on',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN isLoggedInViaSSO TINYINT(1) default 0',
+			]
+		],
+		//add_isssologin_user
+		'add_sp_logout_url' => [
+			'title' => 'Add option to enable a redirect to the SP logout for SSO',
+			'description' => 'Add option to enable a redirect to the SP logout for SSO',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN ssoSPLogoutUrl VARCHAR(255) default NULL'
+			]
+		],
+		//add_isssologin_user
 
 		//kodi
 

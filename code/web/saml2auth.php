@@ -176,6 +176,10 @@ if ($user instanceof User) {
 	}
 	$login = UserAccount::login(true);
 
+	// track if the user is logged in via sso so we can create a special logout url if needed
+	$user->isLoggedInViaSSO = 1;
+	$user->update();
+
 	global $configArray;
 	global $timer;
 	$session_type = $configArray['Session']['type'];

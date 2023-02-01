@@ -43,6 +43,7 @@ class User extends DataObject {
 	public $disableAccountLinking;
 	public $oAuthAccessToken;
 	public $oAuthRefreshToken;
+	public $isLoggedInViaSSO;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -2831,6 +2832,7 @@ class User extends DataObject {
 			$this->getCatalogDriver()->logout($this);
 		}
 		$this->lastLoginValidation = 0;
+		$this->isLoggedInViaSSO = 0;
 		$this->update();
 	}
 
