@@ -55,6 +55,14 @@ function getUpdates23_02_00(): array {
 				"ALTER TABLE library ADD COLUMN setUsePreferredNameInIlsOnUpdate TINYINT(1) DEFAULT 1;",
 			]
 		], //setUsePreferredNameInIlsOnUpdate
+		'forceReindexForAxis360_2302'  => [
+			'title' => 'Force a reindex of all titles in Axis 360',
+			'description' => 'Force a reindex of all titles in Axis 360',
+			'continueOnError' => false,
+			'sql' => [
+				"UPDATE axis360_settings set runFullUpdate = 1",
+			]
+		], //forceReindexForAxis360_2302
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [
@@ -232,6 +240,17 @@ function getUpdates23_02_00(): array {
 		//add_isssologin_user
 
 		//kodi
+		'set_include_econtent_and_onorder' => [
+			'title' => 'If Owned, Include Items On Order and eContent',
+			'description' => 'Set "Include Items On Order" and "Include eContent" to true in Records to Include for owned records',
+			'sql' => [
+				"UPDATE library_records_to_include SET includeItemsOnOrder = 1 WHERE markRecordsAsOwned = 1",
+				"UPDATE location_records_to_include SET includeItemsOnOrder = 1 WHERE markRecordsAsOwned = 1",
+				"UPDATE library_records_to_include SET includeEContent = 1 WHERE markRecordsAsOwned = 1",
+				"UPDATE location_records_to_include SET includeEContent = 1 WHERE markRecordsAsOwned = 1",
+			]
+		],
+		//set_include_econtent_and_onorder
 
 		//other
 	];
