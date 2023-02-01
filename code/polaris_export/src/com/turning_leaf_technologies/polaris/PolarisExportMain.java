@@ -1544,6 +1544,7 @@ public class PolarisExportMain {
 				accessSecret = authentication.getString("AccessSecret");
 			}catch (JSONException e) {
 				logEntry.incErrors("Could not authenticate the staff user.");
+				authenticationResponse.setSuccess(false);
 				logger.error(e);
 				logger.error(authenticationResponse.getResponseCode() + " " + authenticationResponse.getMessage());
 			}
