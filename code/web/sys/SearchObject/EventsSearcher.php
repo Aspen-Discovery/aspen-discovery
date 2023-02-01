@@ -43,7 +43,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		$this->sortOptions = [
 			'start_date_sort asc' => 'Event Date',
 			'relevance' => 'Best Match',
-			'title' => 'Title',
+			'title_sort' => 'Title',
 		];
 
 		// Debugging

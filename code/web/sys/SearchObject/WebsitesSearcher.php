@@ -41,7 +41,7 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
 		// Load sort preferences (or defaults if none in .ini file):
 		$this->sortOptions = [
 			'relevance' => 'Best Match',
-			'title' => 'Title',
+			'title_sort' => 'Title',
 		];
 
 		// Debugging
