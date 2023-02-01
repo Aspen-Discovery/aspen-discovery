@@ -55,6 +55,14 @@ function getUpdates23_02_00(): array {
 				"ALTER TABLE library ADD COLUMN setUsePreferredNameInIlsOnUpdate TINYINT(1) DEFAULT 1;",
 			]
 		], //setUsePreferredNameInIlsOnUpdate
+		'forceReindexForAxis360_2302'  => [
+			'title' => 'Force a reindex of all titles in Axis 360',
+			'description' => 'Force a reindex of all titles in Axis 360',
+			'continueOnError' => false,
+			'sql' => [
+				"UPDATE axis360_settings set runFullUpdate = 1",
+			]
+		], //forceReindexForAxis360_2302
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [
