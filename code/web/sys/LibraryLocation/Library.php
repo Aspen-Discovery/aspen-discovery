@@ -1299,7 +1299,7 @@ class Library extends DataObject {
 					'optOutOfReadingHistoryUpdatesILS' => [
 						'property' => 'optOutOfReadingHistoryUpdatesILS',
 						'type' => 'checkbox',
-						'label' => 'Opting our of Reading History Updates ILS settings',
+						'label' => 'Opting out of Reading History Updates ILS settings',
 						'description' => 'Whether or not the user should be opted out of reading history within the ILS when they opt out within Aspen.',
 						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
 						'hideInLists' => true,
