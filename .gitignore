@@ -216,3 +216,4 @@ code/aspen_app/.run/Start Aspen LiDA Instance.run.xml
 code/aspen_app/updateInternal.sh
 code/aspen_app/updateEASInternal.sh
 code/aspen_app/startInternal.sh
+install/createSiteSettings.ini
