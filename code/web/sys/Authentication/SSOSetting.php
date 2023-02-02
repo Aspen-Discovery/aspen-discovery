@@ -71,7 +71,6 @@ class SSOSetting extends DataObject {
 	public $ldapPassword;
 	public $ldapBaseDN;
 	public $ldapIdAttr;
-	public $ldapIdILSAttr;
 	public $ldapOrgUnit;
 
 	public $loginHelpText;
@@ -750,13 +749,6 @@ class SSOSetting extends DataObject {
 						'type' => 'text',
 						'label' => 'LDAP Attribute for Id',
 						'description' => 'LDAP attribute that is used to identify who the user is in the ILS',
-					],
-					'ldapIdILSAttr' => [
-						'property' => 'ldapIdILSAttr',
-						'type' => 'text',
-						'label' => 'ILS Attribute for Id',
-						'description' => 'The attribute in the ILS that is used to match against the LDAP id attribute',
-						'note' => 'Leave blank to use the default of barcode/cardnumber'
 					],
 					'ldapOrgUnit' => [
 						'property' => 'ldapOrgUnit',
