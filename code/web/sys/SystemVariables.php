@@ -25,6 +25,7 @@ class SystemVariables extends DataObject {
 	public $solrQueryTimeout;
 	public $catalogStatus;
 	public $offlineMessage;
+	public $appScheme;
 
 	static function getObjectStructure($context = ''): array {
 		return [
@@ -211,6 +212,12 @@ class SystemVariables extends DataObject {
 				'description' => 'A message to be displayed while Aspen is offline.',
 				'default' => 'The catalog is down for maintenance, please check back later.',
 				'hideInLists' => true,
+			],
+			'appScheme' => [
+				'property' => 'appScheme',
+				'type' => 'text',
+				'label' => 'App Scheme',
+				'description' => 'Scheme used for creating deep links into the app',
 			],
 		];
 	}

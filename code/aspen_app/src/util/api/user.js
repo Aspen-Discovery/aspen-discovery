@@ -370,8 +370,8 @@ export async function getViewerAccounts(url) {
  **/
 export async function addLinkedAccount(username='', password='', url) {
      const postBody = await postData();
-     postBody.append(username);
-     postBody.append(password);
+     postBody.append('accountToLinkUsername', username);
+     postBody.append('accountToLinkPassword', password);
      const discovery = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
@@ -384,9 +384,9 @@ export async function addLinkedAccount(username='', password='', url) {
           if (!_.isUndefined(response.data.result.success)) {
                status = response.data.result.success;
                if (status !== true) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               } else {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
                }
           }
           return status;

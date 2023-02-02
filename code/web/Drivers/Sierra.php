@@ -1174,6 +1174,10 @@ class Sierra extends Millennium {
 		return $user;
 	}
 
+	public function findNewUserByEmail($patronEmail): mixed {
+		return false;
+	}
+
 	public function getAccountSummary(User $patron): AccountSummary {
 		require_once ROOT_DIR . '/sys/User/AccountSummary.php';
 		$summary = new AccountSummary();

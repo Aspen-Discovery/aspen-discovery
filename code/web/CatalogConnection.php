@@ -185,6 +185,14 @@ class CatalogConnection {
 	}
 
 	/**
+	 * @param string $patronEmail
+	 * @return bool|User
+	 */
+	public function findNewUserByEmail(string $patronEmail) {
+		return $this->driver->findNewUserByEmail($patronEmail);
+	}
+
+	/**
 	 * @param User $user
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user) {
@@ -409,7 +417,7 @@ class CatalogConnection {
 	 * @param array $selectedTitles The titles to do the action on if applicable
 	 * @return array success and message are the array keys
 	 */
-	function doReadingHistoryAction($patron, $action, $selectedTitles) {
+	function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -492,7 +500,16 @@ class CatalogConnection {
 			]);
 		}
 		if ($this->driver->performsReadingHistoryUpdatesOfILS()) {
-			$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+			$performIlsAction = true;
+			$homeLibrary = $patron->getHomeLibrary();
+			if ($action == 'optIn') {
+				$performIlsAction = $homeLibrary->optInToReadingHistoryUpdatesILS;
+			}elseif ($action == 'optOut') {
+				$performIlsAction = $homeLibrary->optOutOfReadingHistoryUpdatesILS;
+			}
+			if ($performIlsAction) {
+				$this->driver->doReadingHistoryAction($patron, $action, $selectedTitles);
+			}
 		}
 		return $result;
 	}
@@ -1326,8 +1343,8 @@ class CatalogConnection {
 		$this->driver->validateUniqueId($user);
 	}
 
-	public function getLmsToSso(bool $isStaffUser = false) {
-		return $this->driver->lmsToSso($isStaffUser);
+	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber);
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {

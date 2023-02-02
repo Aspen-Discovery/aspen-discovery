@@ -153,6 +153,12 @@ class AppSetting extends DataObject {
 		$title = 'Unknown';
 		$fullPath = '';
 
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->appScheme)) {
+			$scheme = $systemVariables->appScheme;
+		}
+
 		if (strpos($name, 'grouped_work')) {
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 			$groupedWork = new GroupedWork();

@@ -897,9 +897,13 @@ public class SierraExportAPIMain {
 		try {
 			if (marcResults[0] != null){
 				if (marcResults[0].has("httpStatus")){
-					if (marcResults[0].getInt("code") == 107){
+					if (marcResults[0].getInt("code") == 107) {
 						//This record was deleted
 						logger.debug("id " + id + " was deleted");
+						return true;
+					}else if (marcResults[0].getInt("httpStatus") == 500){
+						//This record can't be loaded
+						logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API");
 						return true;
 					}else{
 						logEntry.incErrors("Unknown error " + marcResults[0]);

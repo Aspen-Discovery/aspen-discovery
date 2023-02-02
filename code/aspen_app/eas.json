@@ -35,6 +35,10 @@
 	  "ios": {
 		"simulator": true
 	  }
+	},
+	"internal": {
+	  "extends": "production",
+	  "channel": "internal"
 	}
   },
   "submit": {

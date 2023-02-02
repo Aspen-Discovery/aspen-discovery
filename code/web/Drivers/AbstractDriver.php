@@ -4,7 +4,7 @@
 abstract class AbstractDriver {
 	public abstract function hasNativeReadingHistory(): bool;
 
-	public function performsReadingHistoryUpdatesOfILS() {
+	public function performsReadingHistoryUpdatesOfILS() : bool {
 		return false;
 	}
 
@@ -16,8 +16,8 @@ abstract class AbstractDriver {
 		];
 	}
 
-	public function doReadingHistoryAction(User $patron, $action, $selectedTitles) {
-		return;
+	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
+
 	}
 
 	/**

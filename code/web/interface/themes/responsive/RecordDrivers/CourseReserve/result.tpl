@@ -51,7 +51,7 @@
 		{/if}
 
 		<div class="resultActions row">
-			{include file='CourseReserves/result-tools.tpl' id=$summId shortId=$shortId module=$summModule summTitle=$summTitle ratingData=$summRating recordUrl=$summUrl}
+			{include file='CourseReserves/result-tools.tpl' id=$summId shortId=$summShortId summTitle=$summTitle showMoreInfo=true}
 		</div>
 	</div>
 </div>

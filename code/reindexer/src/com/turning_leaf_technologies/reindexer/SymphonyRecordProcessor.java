@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Locale;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
-	private HashSet<String> bibsWithOrders = new HashSet<>();
 	SymphonyRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 		this.suppressRecordsWithNoCollection = false;
@@ -108,36 +107,6 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected void loadOnOrderItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, boolean hasTangibleItems){
-		if (bibsWithOrders.contains(recordInfo.getRecordIdentifier())){
-			if (recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0) {
-				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.setLocationCode("aacpl");
-				itemInfo.setItemIdentifier(recordInfo.getRecordIdentifier());
-				itemInfo.setNumCopies(1);
-				itemInfo.setIsEContent(false);
-				itemInfo.setIsOrderItem();
-				itemInfo.setCallNumber("ON ORDER");
-				itemInfo.setSortableCallNumber("ON ORDER");
-				itemInfo.setDetailedStatus("On Order");
-				Date tomorrow = new Date();
-				tomorrow.setTime(tomorrow.getTime() + 1000 * 60 * 60 * 24);
-				itemInfo.setDateAdded(tomorrow);
-				//Format and Format Category should be set at the record level, so we don't need to set them here.
-
-				//String formatByShelfLocation = translateValue("shelf_location_to_format", bibsWithOrders.get(recordInfo.getRecordIdentifier()), recordInfo.getRecordIdentifier());
-				//itemInfo.setFormat(translateValue("format", formatByShelfLocation, recordInfo.getRecordIdentifier()));
-				//itemInfo.setFormatCategory(translateValue("format_category", formatByShelfLocation, recordInfo.getRecordIdentifier()));
-				itemInfo.setFormat("On Order");
-				itemInfo.setFormatCategory("");
-
-				//Add the library this is on order for
-				itemInfo.setShelfLocation("On Order");
-				itemInfo.setDetailedLocation("On Order");
-
-				recordInfo.addItem(itemInfo);
-			}else{
-				logger.debug("Skipping order item because there are print or order records available");
-			}
-		}
+		//On Order items for Symphony are currently handled with item records with On Order status
 	}
 }

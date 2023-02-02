@@ -1,5 +1,5 @@
 {strip}
-<div id="listEntry{$listEntryId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$listEntryId}">
+<div id="listEntry{$summShortId}" class="resultsList listEntry" data-order="{$resultIndex}" data-list_entry_id="{$summShortId}">
 	<div class="row">
 		{if !empty($showCovers)}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">

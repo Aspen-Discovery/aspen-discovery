@@ -205,6 +205,10 @@ class Record_AJAX extends Action {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
 
+			require_once ROOT_DIR . '/sys/Account/User.php';
+			$isOnHold = $user->isRecordOnHold($recordSource, $id);
+			$interface->assign('isOnHold', $isOnHold);
+
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)) {
 				return [
 					'holdFormBypassed' => false,
@@ -282,7 +286,7 @@ class Record_AJAX extends Action {
 				}
 			}
 
-			if ($bypassHolds) {
+			if ($bypassHolds && !$isOnHold) {
 				if (strpos($id, ':') !== false) {
 					[
 						,
@@ -400,10 +404,17 @@ class Record_AJAX extends Action {
 					'success' => true,
 				];
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
-							'text' => "Submit Hold Request",
-							'isPublicFacing' => true,
-						]) . "</button>";
+					if ($isOnHold){
+						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Yes, Place Hold",
+								'isPublicFacing' => true,
+							]) . "</button>";
+					}else{
+						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Submit Hold Request",
+								'isPublicFacing' => true,
+							]) . "</button>";
+					}
 				}
 			}
 		} else {
@@ -1566,5 +1577,38 @@ class Record_AJAX extends Action {
 					'isPublicFacing' => true,
 				]) . "</button>",
 		];
+	}
+
+	/** @noinspection PhpUnused */
+	function forceReindex() : array {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':') > 0) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
+		}
+		$recordSource = $_REQUEST['recordSource'];
+
+		require_once ROOT_DIR . '/sys/MarcLoader.php';
+		if (MarcLoader::marcExistsForILSId("$recordSource:$id")) {
+			require_once ROOT_DIR . '/sys/Indexing/RecordIdentifiersToReload.php';
+			$recordIdentifierToReload = new RecordIdentifiersToReload();
+			$recordIdentifierToReload->type = $recordSource;
+			$recordIdentifierToReload->identifier = $id;
+			$recordIdentifierToReload->insert();
+
+			return [
+				'success' => true,
+				'message' => 'This title will be indexed again shortly.',
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Unable to mark the title for indexing. Could not find the title.',
+			];
+		}
 	}
 }

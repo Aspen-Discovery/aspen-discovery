@@ -12,6 +12,7 @@ class AspenSite extends DataObject {
 	public $libraryServes;
 	public $timezone;
 	public $implementationStatus;
+	public $monitored;
 	public $hosting;
 	public $appAccess;
 	public $operatingSystem;
@@ -174,6 +175,13 @@ class AspenSite extends DataObject {
 				'description' => 'The status of implementation',
 				'required' => true,
 				'default' => 0,
+			],
+			'monitored' => [
+				'property' => 'monitored',
+				'type' => 'checkbox',
+				'label' => 'Monitored',
+				'description' => 'Whether the site is monitored in the Greenhouse',
+				'default' => 1,
 			],
 			'contractSigningDate' => [
 				'property' => 'contractSigningDate',
