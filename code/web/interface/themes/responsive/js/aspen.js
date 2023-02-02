@@ -8951,6 +8951,7 @@ AspenDiscovery.Admin = (function () {
 			AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 			AspenDiscovery.Admin.toggleSamlMetadataFields();
 			$("#clientSecret").attr('autocomplete', "off");
+			$("#ldapPassword").attr('autocomplete', "off");
 			var ssoService = $("#serviceSelect").val();
 			if (ssoService === "oauth") {
 				AspenDiscovery.Admin.toggleoAuthFields('show');
@@ -9007,6 +9008,7 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowldapConfigSection').show();
 			} else {
 				$('#propertyRowldapConfigSection').hide();
+				document.getElementById("ldapPassword").value = "";
 			}
 		},
 		toggleOAuthGatewayFields: function () {

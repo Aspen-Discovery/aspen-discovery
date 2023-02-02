@@ -25,6 +25,7 @@ function getUpdates23_03_00(): array {
 				'ALTER TABLE sso_setting ADD COLUMN ldapPassword VARCHAR(75) default NULL',
 				'ALTER TABLE sso_setting ADD COLUMN ldapBaseDN VARCHAR(500) default NULL',
 				'ALTER TABLE sso_setting ADD COLUMN ldapIdAttr VARCHAR(75) default NULL',
+				'ALTER TABLE sso_setting ADD COLUMN ldapIdILSAttr VARCHAR(75) default NULL',
 				'ALTER TABLE sso_setting ADD COLUMN ldapOrgUnit VARCHAR(225) default NULL'
 			]
 		],

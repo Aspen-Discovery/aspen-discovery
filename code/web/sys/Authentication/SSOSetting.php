@@ -71,6 +71,7 @@ class SSOSetting extends DataObject {
 	public $ldapPassword;
 	public $ldapBaseDN;
 	public $ldapIdAttr;
+	public $ldapIdILSAttr;
 	public $ldapOrgUnit;
 
 	public $loginHelpText;
@@ -199,7 +200,7 @@ class SSOSetting extends DataObject {
 					],
 					'clientSecret' => [
 						'property' => 'clientSecret',
-						'type' => 'text',
+						'type' => 'storedPassword',
 						'label' => 'Client Secret',
 						'required' => false,
 						'description' => 'Client secret used for accessing the gateway provider',
@@ -722,38 +723,47 @@ class SSOSetting extends DataObject {
 						'property' => 'ldapHosts',
 						'type' => 'text',
 						'label' => 'LDAP Host(s)',
-						'description' => 'The LDAP host(s) to connect to',
-						'note' => 'ldaps://hostname:port',
+						'description' => 'The LDAP host(s) to connect to. To use more than one, use a space between each host name.',
+						'note' => 'Example: ldaps://hostname:port',
 					],
 					'ldapUsername' => [
 						'property' => 'ldapUsername',
 						'type' => 'text',
 						'label' => 'LDAP Username',
-						'description' => 'The LDAP host(s) to connect to',
+						'description' => 'LDAP RDN or DN',
 					],
 					'ldapPassword' => [
 						'property' => 'ldapPassword',
-						'type' => 'text',
+						'type' => 'storedPassword',
 						'label' => 'LDAP Password',
-						'description' => 'The LDAP host(s) to connect to',
+						'description' => 'Associated password for LDAP username',
 					],
 					'ldapBaseDN' => [
 						'property' => 'ldapBaseDN',
 						'type' => 'text',
-						'label' => 'LDAP BaseDN',
-						'description' => 'The LDAP host(s) to connect to',
+						'label' => 'LDAP Base DN',
+						'description' => 'The Base DN is the starting point an LDAP server uses when searching for users authentication within your Directory',
+						'note' => 'Example: DC=example-domain,DC=com'
 					],
 					'ldapIdAttr' => [
 						'property' => 'ldapIdAttr',
 						'type' => 'text',
-						'label' => 'LDAP Attribute for ID',
-						'description' => 'The LDAP host(s) to connect to',
+						'label' => 'LDAP Attribute for Id',
+						'description' => 'LDAP attribute that is used to identify who the user is in the ILS',
+					],
+					'ldapIdILSAttr' => [
+						'property' => 'ldapIdILSAttr',
+						'type' => 'text',
+						'label' => 'ILS Attribute for Id',
+						'description' => 'The attribute in the ILS that is used to match against the LDAP id attribute',
+						'note' => 'Leave blank to use the default of barcode/cardnumber'
 					],
 					'ldapOrgUnit' => [
 						'property' => 'ldapOrgUnit',
 						'type' => 'text',
-						'label' => 'LDAP Org Units',
-						'description' => 'The LDAP host(s) to connect to',
+						'label' => 'Applicable LDAP Org Units (OU)',
+						'description' => 'Specifies which LDAP Org Units (OU) will use this authentication',
+						'note' => 'Useful when the same username could be found in multiple libraries. Leave blank to not use.'
 					],
 				],
 			],
