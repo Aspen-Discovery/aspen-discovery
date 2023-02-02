@@ -43,7 +43,7 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
 
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: libraryUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           params: {
@@ -56,7 +56,6 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
      });
      const response = await api.post('/UserAPI?method=renewItem', postBody);
 
-     console.log(response);
      if (response.ok) {
           const fetchedData = response.data;
           const result = fetchedData.result;
@@ -81,10 +80,10 @@ export async function renewCheckout(barcode, recordId, source, itemId, libraryUr
      }
 }
 
-export async function renewAllCheckouts() {
+export async function renewAllCheckouts(url) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -624,7 +623,7 @@ export async function changeHoldPickUpLocation(holdId, newLocation, url = null, 
 export async function updateOverDriveEmail(itemId, source, patronId, overdriveEmail, promptForOverdriveEmail, libraryUrl) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: libraryUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -812,10 +811,10 @@ export async function removeLinkedViewerAccount(id, url) {
      }
 }
 
-export async function saveLanguage(code) {
+export async function saveLanguage(code, url) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -835,7 +834,7 @@ export async function saveLanguage(code) {
 export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: libraryUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),

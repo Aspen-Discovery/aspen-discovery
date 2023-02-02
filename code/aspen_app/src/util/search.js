@@ -38,7 +38,7 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
      }
 
      const api = create({
-          baseURL: LIBRARY.url + '/API/',
+          baseURL: libraryUrl + '/API/',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(),
           params: {
@@ -101,9 +101,9 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url) {
                SEARCH.id = response.data.result.id;
                SEARCH.sortMethod = response.data.result.sort;
                SEARCH.term = response.data.result.lookfor;
-               await getSortList();
-               await getAvailableFacets();
-               await getAppliedFilters();
+               await getSortList(baseUrl);
+               await getAvailableFacets(baseUrl);
+               await getAppliedFilters(baseUrl);
           }
 
           return {
@@ -119,10 +119,10 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url) {
      }
 }
 
-export async function getAppliedFilters() {
+export async function getAppliedFilters(url) {
      SEARCH.appliedFilters = [];
      const discovery = create({
-          baseURL: LIBRARY.url,
+          baseURL: url,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
@@ -146,9 +146,9 @@ export async function getAppliedFilters() {
      }
 }
 
-export async function getSortList() {
+export async function getSortList(url) {
      const discovery = create({
-          baseURL: LIBRARY.url,
+          baseURL: url,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
@@ -166,9 +166,9 @@ export async function getSortList() {
      }
 }
 
-export async function getAvailableFacets() {
+export async function getAvailableFacets(url) {
      const discovery = create({
-          baseURL: LIBRARY.url,
+          baseURL: url,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
@@ -180,7 +180,7 @@ export async function getAvailableFacets() {
      const data = await discovery.get(endpoint.url + 'getAvailableFacets');
      const response = getResponseCode(data);
      if (response.success) {
-          await getAvailableFacetsKeys();
+          await getAvailableFacetsKeys(url);
           SEARCH.availableFacets = response.data.result;
           const defaultOptions = response.data.result.data;
           let i = 1;
@@ -198,9 +198,9 @@ export async function getAvailableFacets() {
      }
 }
 
-export async function getAvailableFacetsKeys() {
+export async function getAvailableFacetsKeys(url) {
      const discovery = create({
-          baseURL: LIBRARY.url,
+          baseURL: url,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
@@ -235,7 +235,7 @@ export async function getFacetCluster() {
      return false;
 }
 
-export async function categorySearchResults(category, limit = 25, page, libraryUrl) {
+export async function categorySearchResults(category, limit = 25, page, url) {
      const postBody = await postData();
      const api = create({
           baseURL: LIBRARY.url + '/API',
