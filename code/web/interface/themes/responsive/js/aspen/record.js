@@ -22,22 +22,22 @@ AspenDiscovery.Record = (function(){
 							if (data.needsItemLevelHold){
 								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 							}else {
-								AspenDiscovery.showMessage(data.title, data.message, false, false);
+								AspenDiscovery.showMessage(data.title, data.message, false, true);
 								AspenDiscovery.Account.loadMenuData();
 							}
 						}else if (data.confirmationNeeded){
 							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 						} else {
-							AspenDiscovery.showMessage(data.title, data.message, false, false);
+							AspenDiscovery.showMessage(data.title, data.message, false, true);
 						}
 					}else {
 						if (data.success) {
-							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, true);
 						} else {
 							AspenDiscovery.showMessage(data.title, data.message);
 						}
 					}
-					AspenDiscovery.Account.reloadHolds()
+					AspenDiscovery.Account.reloadHolds();
 				}).fail(AspenDiscovery.ajaxFail);
 			}else{
 				AspenDiscovery.Account.ajaxLogin(null, function(){
