@@ -253,6 +253,21 @@ public class AspenStringUtils {
 		return numDecimals <= 1;
 	}
 
+	public static boolean isInteger(String stringToTest) {
+		if (stringToTest == null) {
+			return false;
+		}
+		if (stringToTest.length() == 0) {
+			return false;
+		}
+		for (char curChar : stringToTest.toCharArray()) {
+			if (!Character.isDigit(curChar)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static String getInputFromCommandLine(String prompt) {
 		//Prompt for the work to process
 		System.out.print(prompt + ": ");

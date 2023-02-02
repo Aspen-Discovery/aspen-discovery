@@ -500,15 +500,15 @@ class Library extends DataObject {
 			$compriseSettings[$compriseSetting->id] = $compriseSetting->customerName;
 		}
 
-		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
-		$proPaySetting = new ProPaySetting();
-		$proPaySetting->orderBy('name');
-		$proPaySettings = [];
-		$proPaySetting->find();
-		$proPaySettings[-1] = 'none';
-		while ($proPaySetting->fetch()) {
-			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
-		}
+//		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+//		$proPaySetting = new ProPaySetting();
+//		$proPaySetting->orderBy('name');
+//		$proPaySettings = [];
+//		$proPaySetting->find();
+//		$proPaySettings[-1] = 'none';
+//		while ($proPaySetting->fetch()) {
+//			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
+//		}
 
 		require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 		$payPalSetting = new PayPalSetting();
