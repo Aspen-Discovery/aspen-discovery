@@ -500,15 +500,15 @@ class Library extends DataObject {
 			$compriseSettings[$compriseSetting->id] = $compriseSetting->customerName;
 		}
 
-		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
-		$proPaySetting = new ProPaySetting();
-		$proPaySetting->orderBy('name');
-		$proPaySettings = [];
-		$proPaySetting->find();
-		$proPaySettings[-1] = 'none';
-		while ($proPaySetting->fetch()) {
-			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
-		}
+//		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+//		$proPaySetting = new ProPaySetting();
+//		$proPaySetting->orderBy('name');
+//		$proPaySettings = [];
+//		$proPaySetting->find();
+//		$proPaySettings[-1] = 'none';
+//		while ($proPaySetting->fetch()) {
+//			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
+//		}
 
 		require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 		$payPalSetting = new PayPalSetting();
@@ -2165,7 +2165,7 @@ class Library extends DataObject {
 							2 => 'PayPal',
 							3 => 'MSB',
 							4 => 'Comprise SMARTPAY',
-							5 => 'ProPay',
+//							5 => 'ProPay',
 							6 => 'Xpress-pay',
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
@@ -2257,15 +2257,15 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-					'proPaySettingId' => [
-						'property' => 'proPaySettingId',
-						'type' => 'enum',
-						'values' => $proPaySettings,
-						'label' => 'ProPay Settings',
-						'description' => 'The ProPay settings to use',
-						'hideInLists' => true,
-						'default' => -1,
-					],
+//					'proPaySettingId' => [
+//						'property' => 'proPaySettingId',
+//						'type' => 'enum',
+//						'values' => $proPaySettings,
+//						'label' => 'ProPay Settings',
+//						'description' => 'The ProPay settings to use',
+//						'hideInLists' => true,
+//						'default' => -1,
+//					],
 					'xpressPaySettingId' => [
 						'property' => 'xpressPaySettingId',
 						'type' => 'enum',
