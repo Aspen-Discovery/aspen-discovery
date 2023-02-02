@@ -65,6 +65,14 @@ class SSOSetting extends DataObject {
 	public $samlBtnTextColor;
 	public $ssoSPLogoutUrl;
 
+	//LDAP
+	public $ldapHosts;
+	public $ldapUsername;
+	public $ldapPassword;
+	public $ldapBaseDN;
+	public $ldapIdAttr;
+	public $ldapOrgUnit;
+
 	public $loginHelpText;
 	public $loginOptions;
 
@@ -83,6 +91,7 @@ class SSOSetting extends DataObject {
 			'0' => '',
 			'oauth' => 'OAuth 2.0',
 			'saml' => 'SAML 2',
+			'ldap' => 'LDAP'
 		];
 
 		$saml_metadata_options = [
@@ -701,6 +710,52 @@ class SSOSetting extends DataObject {
 						]
 					],
 				]
+			],
+			'ldapConfigSection' => [
+				'property' => 'ldapConfigSection',
+				'type' => 'section',
+				'label' => 'LDAP Configuration',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'ldapHosts' => [
+						'property' => 'ldapHosts',
+						'type' => 'text',
+						'label' => 'LDAP Host(s)',
+						'description' => 'The LDAP host(s) to connect to',
+						'note' => 'ldaps://hostname:port',
+					],
+					'ldapUsername' => [
+						'property' => 'ldapUsername',
+						'type' => 'text',
+						'label' => 'LDAP Username',
+						'description' => 'The LDAP host(s) to connect to',
+					],
+					'ldapPassword' => [
+						'property' => 'ldapPassword',
+						'type' => 'text',
+						'label' => 'LDAP Password',
+						'description' => 'The LDAP host(s) to connect to',
+					],
+					'ldapBaseDN' => [
+						'property' => 'ldapBaseDN',
+						'type' => 'text',
+						'label' => 'LDAP BaseDN',
+						'description' => 'The LDAP host(s) to connect to',
+					],
+					'ldapIdAttr' => [
+						'property' => 'ldapIdAttr',
+						'type' => 'text',
+						'label' => 'LDAP Attribute for ID',
+						'description' => 'The LDAP host(s) to connect to',
+					],
+					'ldapOrgUnit' => [
+						'property' => 'ldapOrgUnit',
+						'type' => 'text',
+						'label' => 'LDAP Org Units',
+						'description' => 'The LDAP host(s) to connect to',
+					],
+				],
 			],
 			'libraries' => [
 				'property' => 'libraries',
