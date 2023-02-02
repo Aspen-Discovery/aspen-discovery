@@ -1641,7 +1641,7 @@ class Millennium extends AbstractIlsDriver {
 							$listEntry->listId = $newList->id;
 							$listEntry->notes = '';
 							$listEntry->dateAdded = time();
-							$listEntry->title = StringUtils::trimStringToLengthAtWordBoundary($title, 50, true);
+							$listEntry->title = StringUtils::trimStringToLengthAtWordBoundary($groupedWork->full_title, 50, true);
 							$listEntry->insert();
 						}
 					}
