@@ -122,7 +122,7 @@ export const MyCheckouts = () => {
                               colorScheme="primary"
                               onPress={() => {
                                    setRenewAll(true);
-                                   renewAllCheckouts().then((r) => {
+                                   renewAllCheckouts(library.baseUrl).then((r) => {
                                         refreshCheckouts();
                                         setRenewAll(false);
                                    });
