@@ -65,6 +65,14 @@ class SSOSetting extends DataObject {
 	public $samlBtnTextColor;
 	public $ssoSPLogoutUrl;
 
+	//LDAP
+	public $ldapHosts;
+	public $ldapUsername;
+	public $ldapPassword;
+	public $ldapBaseDN;
+	public $ldapIdAttr;
+	public $ldapOrgUnit;
+
 	public $loginHelpText;
 	public $loginOptions;
 
@@ -83,6 +91,7 @@ class SSOSetting extends DataObject {
 			'0' => '',
 			'oauth' => 'OAuth 2.0',
 			'saml' => 'SAML 2',
+			'ldap' => 'LDAP'
 		];
 
 		$saml_metadata_options = [
@@ -190,7 +199,7 @@ class SSOSetting extends DataObject {
 					],
 					'clientSecret' => [
 						'property' => 'clientSecret',
-						'type' => 'text',
+						'type' => 'storedPassword',
 						'label' => 'Client Secret',
 						'required' => false,
 						'description' => 'Client secret used for accessing the gateway provider',
@@ -701,6 +710,54 @@ class SSOSetting extends DataObject {
 						]
 					],
 				]
+			],
+			'ldapConfigSection' => [
+				'property' => 'ldapConfigSection',
+				'type' => 'section',
+				'label' => 'LDAP Configuration',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'ldapHosts' => [
+						'property' => 'ldapHosts',
+						'type' => 'text',
+						'label' => 'LDAP Host(s)',
+						'description' => 'The LDAP host(s) to connect to. To use more than one, use a space between each host name.',
+						'note' => 'Example: ldaps://hostname:port',
+					],
+					'ldapUsername' => [
+						'property' => 'ldapUsername',
+						'type' => 'text',
+						'label' => 'LDAP Username',
+						'description' => 'LDAP RDN or DN',
+					],
+					'ldapPassword' => [
+						'property' => 'ldapPassword',
+						'type' => 'storedPassword',
+						'label' => 'LDAP Password',
+						'description' => 'Associated password for LDAP username',
+					],
+					'ldapBaseDN' => [
+						'property' => 'ldapBaseDN',
+						'type' => 'text',
+						'label' => 'LDAP Base DN',
+						'description' => 'The Base DN is the starting point an LDAP server uses when searching for users authentication within your Directory',
+						'note' => 'Example: DC=example-domain,DC=com'
+					],
+					'ldapIdAttr' => [
+						'property' => 'ldapIdAttr',
+						'type' => 'text',
+						'label' => 'LDAP Attribute for Id',
+						'description' => 'LDAP attribute that is used to identify who the user is in the ILS',
+					],
+					'ldapOrgUnit' => [
+						'property' => 'ldapOrgUnit',
+						'type' => 'text',
+						'label' => 'Applicable LDAP Org Units (OU)',
+						'description' => 'Specifies which LDAP Org Units (OU) will use this authentication',
+						'note' => 'Useful when the same username could be found in multiple libraries. Leave blank to not use.'
+					],
+				],
 			],
 			'libraries' => [
 				'property' => 'libraries',

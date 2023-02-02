@@ -1586,14 +1586,17 @@ AspenDiscovery.Admin = (function () {
 		getSSOFields: function () {
 			AspenDiscovery.Admin.toggleoAuthFields('hide');
 			AspenDiscovery.Admin.toggleSamlFields('hide');
+			AspenDiscovery.Admin.toggleLDAPFields('hide');
 			AspenDiscovery.Admin.toggleOAuthGatewayFields();
 			AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 			AspenDiscovery.Admin.toggleSamlMetadataFields();
 			$("#clientSecret").attr('autocomplete', "off");
+			$("#ldapPassword").attr('autocomplete', "off");
 			var ssoService = $("#serviceSelect").val();
 			if (ssoService === "oauth") {
 				AspenDiscovery.Admin.toggleoAuthFields('show');
 				AspenDiscovery.Admin.toggleSamlFields('hide');
+				AspenDiscovery.Admin.toggleLDAPFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 				AspenDiscovery.Admin.toggleSamlMetadataFields();
@@ -1601,6 +1604,16 @@ AspenDiscovery.Admin = (function () {
 			} else if (ssoService === "saml") {
 				AspenDiscovery.Admin.toggleSamlFields('show');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
+				AspenDiscovery.Admin.toggleLDAPFields('hide');
+				AspenDiscovery.Admin.toggleOAuthGatewayFields();
+				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
+				AspenDiscovery.Admin.toggleSamlMetadataFields();
+				AspenDiscovery.Admin.toggleSamlUserIdFields();
+				AspenDiscovery.Admin.toggleSamlUsernameFormatFields();
+			} else if (ssoService === 'ldap') {
+				AspenDiscovery.Admin.toggleSamlFields('hide');
+				AspenDiscovery.Admin.toggleoAuthFields('hide');
+				AspenDiscovery.Admin.toggleLDAPFields('show');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 				AspenDiscovery.Admin.toggleSamlMetadataFields();
@@ -1609,6 +1622,7 @@ AspenDiscovery.Admin = (function () {
 			} else {
 				AspenDiscovery.Admin.toggleSamlFields('hide');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
+				AspenDiscovery.Admin.toggleLDAPFields('hide');
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 				AspenDiscovery.Admin.toggleSamlMetadataFields();
@@ -1627,6 +1641,14 @@ AspenDiscovery.Admin = (function () {
 				$('#propertyRowsamlConfigSection').show();
 			} else {
 				$('#propertyRowsamlConfigSection').hide();
+			}
+		},
+		toggleLDAPFields: function (displayMode) {
+			if (displayMode === "show") {
+				$('#propertyRowldapConfigSection').show();
+			} else {
+				$('#propertyRowldapConfigSection').hide();
+				document.getElementById("ldapPassword").value = "";
 			}
 		},
 		toggleOAuthGatewayFields: function () {
