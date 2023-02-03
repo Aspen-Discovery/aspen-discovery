@@ -29,6 +29,15 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_ldap_to_sso
+		'add_ldap_label' => [
+			'title' => 'Add LDAP Label to SSO Settings',
+			'description' => 'Add field to give LDAP service a user-facing name for single sign-on settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN ldapLabel VARCHAR(75) default NULL',
+			]
+		],
+		//add_ldap_label
 
 		//kodi
 
