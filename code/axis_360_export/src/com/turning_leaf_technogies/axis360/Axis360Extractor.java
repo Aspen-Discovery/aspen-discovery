@@ -197,7 +197,7 @@ public class Axis360Extractor {
 			itemDetailsUrl += "2000-01-01T12:00:00Z";
 		}
 
-		WebServiceResponse response = NetworkUtils.getURL(itemDetailsUrl, logger, headers, 120000);
+		WebServiceResponse response = NetworkUtils.getURL(itemDetailsUrl, logger, headers, 240000);
 		if (!response.isSuccess()) {
 			logEntry.incErrors("Error calling " + itemDetailsUrl + ": " + response.getResponseCode() + " " + response.getMessage());
 		} else {
