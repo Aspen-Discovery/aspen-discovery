@@ -1114,7 +1114,9 @@ function loadModuleActionId() {
 	global $activeRecordProfile;
 	//Check to see if the module is a profile
 	if (isset($_REQUEST['module'])) {
-		/** @var IndexingProfile[] */ /** @var IndexingProfile $profile */ global $indexingProfiles;
+		/** @var IndexingProfile[] */
+		global $indexingProfiles;
+		/** @var IndexingProfile $profile */
 		foreach ($indexingProfiles as $profile) {
 			if ($profile->recordUrlComponent == $_REQUEST['module']) {
 				$newId = $profile->name . ':' . $_REQUEST['id'];
@@ -1140,6 +1142,15 @@ function loadModuleActionId() {
 				}
 				$activeRecordProfile = $profile;
 				break;
+			}
+		}
+		if (is_null($activeRecordProfile)) {
+			//We will default to the first indexing profile that has a catalog connection
+			foreach ($indexingProfiles as $profile) {
+				if (!empty($profile->catalogDriver)) {
+					$activeRecordProfile = $profile;
+					break;
+				}
 			}
 		}
 	}
