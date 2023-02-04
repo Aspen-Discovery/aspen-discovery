@@ -21,7 +21,7 @@
 					<div id="holdError" class="pageWarning" style="display: none"></div>
 				</div>
 
-				{if $isOnHold && $rememberHoldPickupLocation}
+				{if $isOnHold}
 				<p class="alert alert-warning">
 					{translate text="This title is already on hold for you. Are you sure you want to place a duplicate hold?" isPublicFacing=true}&nbsp;
 				</p>

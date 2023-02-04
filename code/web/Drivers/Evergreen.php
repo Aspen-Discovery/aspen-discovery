@@ -1119,7 +1119,7 @@ class Evergreen extends AbstractIlsDriver {
 			'message' => 'Unknown error completing fine payment'
 		];
 
-		$authToken = $this->getAPIAuthToken($patron);
+		$authToken = $this->getAPIAuthToken($patron, true);
 		if ($authToken == null) {
 			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
 			$logger->log('Unable to authenticate with Evergreen while completing fine payment', Logger::LOG_ERROR);
