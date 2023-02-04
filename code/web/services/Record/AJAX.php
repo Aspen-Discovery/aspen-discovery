@@ -292,8 +292,11 @@ class Record_AJAX extends Action {
 			}
 
 			//If the title is on hold for the user set $byPassHolds to false
+			if ($isOnHold) {
+				$bypassHolds = false;
+			}
 
-			if ($bypassHolds && !$isOnHold) {
+			if ($bypassHolds) {
 				if (strpos($id, ':') !== false) {
 					[
 						,
@@ -824,6 +827,7 @@ class Record_AJAX extends Action {
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
 							'title' => $return['title'] ?? '',
+							'newHoldButtonText' => $return['newHoldButtonText'],
 							'confirmationNeeded' => $confirmationNeeded,
 						];
 						if ($confirmationNeeded) {
