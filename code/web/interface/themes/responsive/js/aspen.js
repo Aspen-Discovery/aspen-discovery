@@ -12230,17 +12230,19 @@ AspenDiscovery.Record = (function(){
 							if (data.needsItemLevelHold){
 								AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 							}else {
-								AspenDiscovery.showMessage(data.title, data.message, false, true);
+								document.getElementById('actionButton'+id).innerHTML = data.newHoldButtonText;
+								AspenDiscovery.showMessage(data.title, data.message, false, false);
 								AspenDiscovery.Account.loadMenuData();
 							}
 						}else if (data.confirmationNeeded){
 							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 						} else {
-							AspenDiscovery.showMessage(data.title, data.message, false, true);
+							document.getElementById('actionButton'+id).innerHTML = data.newHoldButtonText;
+							AspenDiscovery.showMessage(data.title, data.message, false, false);
 						}
 					}else {
 						if (data.success) {
-							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, true);
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons, false);
 						} else {
 							AspenDiscovery.showMessage(data.title, data.message);
 						}
@@ -12410,6 +12412,7 @@ AspenDiscovery.Record = (function(){
 						AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
+						document.getElementById('actionButton'+id).innerHTML = data.newHoldButtonText;
 						if (!data.autologout){
 							AspenDiscovery.Account.loadMenuData();
 						}

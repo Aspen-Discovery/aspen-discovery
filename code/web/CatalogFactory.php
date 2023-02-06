@@ -30,7 +30,7 @@ class CatalogFactory {
 				$driver = $activeRecordProfile->catalogDriver;
 
 				//Load the account profile based on the indexing profile
-				$accountProfile = UserAccount::getAccountProfile($activeRecordProfile->name);
+				$accountProfile = UserAccount::getAccountProfileByRecordSource($activeRecordProfile->name);
 //				$accountProfile = new AccountProfile();
 //				$accountProfile->recordSource = $activeRecordProfile->name;
 //				if (!$accountProfile->find(true)) {

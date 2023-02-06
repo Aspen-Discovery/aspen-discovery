@@ -142,7 +142,7 @@ class OverDriveProcessor {
 								String onSaleDate = rawMetadataDecoded.getString("onSaleDate");
 							} else if (rawMetadataDecoded.has("publishDateText")) {
 								String publishDateText = rawMetadataDecoded.getString("publishDateText");
-								if (publishDateText.length() == 4 && AspenStringUtils.isNumeric(publishDateText)) {
+								if (publishDateText.length() == 4 && AspenStringUtils.isInteger(publishDateText)) {
 									GregorianCalendar publishCal = new GregorianCalendar();
 									publishCal.set(Integer.parseInt(publishDateText), Calendar.JANUARY, 1);
 									publishDate = publishCal.getTime();
