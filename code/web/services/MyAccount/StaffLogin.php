@@ -54,8 +54,7 @@ class MyAccount_StaffLogin extends Action {
 		if (isset($_REQUEST['username'])) {
 			$interface->assign('username', $_REQUEST['username']);
 		}
-		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
-		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
+
 		$interface->assign('checkRememberMe', 0);
 		if ($library->defaultRememberMe && $locationSingleton->getOpacStatus() == false) {
 			$interface->assign('checkRememberMe', 1);
@@ -91,8 +90,13 @@ class MyAccount_StaffLogin extends Action {
 							$interface->assign('samlBtnLabel', $sso->ssoName);
 							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
 							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
-							if ($sso->oAuthGatewayIcon) {
+							if ($sso->samlBtnIcon) {
 								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+							}
+						}
+						if($sso->service == 'ldap') {
+							if($sso->ldapLabel) {
+								$interface->assign('ldapLabel', $sso->ldapLabel);
 							}
 						}
 					}
@@ -139,7 +143,7 @@ class MyAccount_StaffLogin extends Action {
 		} elseif ($msg === 'You must enroll into two-factor authentication before logging in.') {
 			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');
 		} else {
-			$this->display('../MyAccount/login.tpl', 'Login', '');
+			$this->display('../MyAccount/login-staff.tpl', 'Staff Login', '');
 		}
 
 	}

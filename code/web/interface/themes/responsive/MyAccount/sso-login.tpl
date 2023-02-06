@@ -7,7 +7,7 @@
         </div>
     {/if}
     <div class="col-xs-12" style="text-align: center">
-    {if $ssoService == 'oAuth'}
+    {if $ssoService == 'oauth'}
         {if $oAuthGateway == "google"}
 	        <a href="/init_oauth.php" class="btn sso_oauth_google">{translate text="Sign in with Google" isPublicFacing=true}</a>
 	    {elseif $oAuthGateway == "custom"}

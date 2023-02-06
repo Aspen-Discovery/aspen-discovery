@@ -389,6 +389,8 @@ class Library extends DataObject {
 	public $lidaNotificationSettingId;
 	public $lidaQuickSearchId;
 
+	public $accountProfileId;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 
@@ -438,6 +440,17 @@ class Library extends DataObject {
 		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
+
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->orderBy('name');
+		$accountProfileOptions = [];
+		$accountProfile->find();
+		while ($accountProfile->fetch()) {
+			if($accountProfile->name !== 'admin') {
+				$accountProfileOptions[$accountProfile->id] = $accountProfile->name;
+			}
+		}
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();
@@ -712,6 +725,14 @@ class Library extends DataObject {
 				'required' => true,
 				'maxLength' => 80,
 				'editPermissions' => ['Library Domain Settings'],
+			],
+			'accountProfileId' => [
+				'property' => 'accountProfileId',
+				'type' => 'enum',
+				'values' => $accountProfileOptions,
+				'label' => 'Account Profile Id',
+				'description' => 'Account Profile to apply to this interface',
+				'permissions' => ['Administer Account Profiles'],
 			],
 			'showDisplayNameInHeader' => [
 				'property' => 'showDisplayNameInHeader',

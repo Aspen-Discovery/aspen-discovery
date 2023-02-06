@@ -72,6 +72,7 @@ class SSOSetting extends DataObject {
 	public $ldapBaseDN;
 	public $ldapIdAttr;
 	public $ldapOrgUnit;
+	public $ldapLabel;
 
 	public $loginHelpText;
 	public $loginOptions;
@@ -718,6 +719,12 @@ class SSOSetting extends DataObject {
 				'renderAsHeading' => true,
 				'showBottomBorder' => true,
 				'properties' => [
+					'ldapLabel' => [
+						'property' => 'ldapLabel',
+						'type' => 'text',
+						'label' => 'LDAP User-facing Name',
+						'description' => 'What this LDAP single sign-on service will be called on the interface',
+					],
 					'ldapHosts' => [
 						'property' => 'ldapHosts',
 						'type' => 'text',
