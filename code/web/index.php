@@ -297,6 +297,40 @@ if (isset($_REQUEST['lookfor'])) {
 		}
 	}
 }
+if (isset($_REQUEST['filter'])) {
+	if (is_array($_REQUEST['filter'])) {
+		foreach ($_REQUEST['filter'] as $i => $filterTerm) {
+			if (isSpammySearchTerm($filterTerm)) {
+				global $interface;
+				$interface->assign('module', 'Error');
+				$interface->assign('action', 'Handle404');
+				$module = 'Error';
+				$action = 'Handle404';
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+			}
+		}
+	}else{
+		if (isSpammySearchTerm($_REQUEST['filter'])) {
+			global $interface;
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
+			$module = 'Error';
+			$action = 'Handle404';
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		}
+	}
+}
+//Look for suspicous pararmaters
+foreach ($_REQUEST as $parameter => $value) {
+	if (strpos($parameter, 'nslookup') === 0) {
+		global $interface;
+		$interface->assign('module', 'Error');
+		$interface->assign('action', 'Handle404');
+		$module = 'Error';
+		$action = 'Handle404';
+		require_once ROOT_DIR . "/services/Error/Handle404.php";
+	}
+}
 
 $isLoggedIn = UserAccount::isLoggedIn();
 $timer->logTime('Check if user is logged in');
@@ -1194,6 +1228,8 @@ function isSpammySearchTerm($lookfor): bool {
 	} elseif (strpos($lookfor, 'window.location') !== false) {
 		return true;
 	} elseif (strpos($lookfor, 'window.top') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'nslookup') !== false) {
 		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);
