@@ -48,6 +48,15 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_account_profile_library_settings
+		'add_sso_settings_account_profile' => [
+			'title' => 'Add SSO settings to account profile',
+			'description' => 'Add column to store assigned single sign-on settings in account profile',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE account_profiles ADD COLUMN ssoSettingId TINYINT(11) default -1',
+			]
+		],
+		//add_sso_settings_account_profile
 
 		//kodi
 
