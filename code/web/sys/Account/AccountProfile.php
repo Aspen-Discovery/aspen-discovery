@@ -348,7 +348,7 @@ class AccountProfile extends DataObject {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->accountProfile = $this->id;
+				$obj->accountProfileId = $this->id;
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
@@ -409,14 +409,14 @@ class AccountProfile extends DataObject {
 				$library->find(true);
 				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the account profile to this library
-					if ($library->accountProfile != $this->id) {
-						$library->accountProfile = $this->id;
+					if ($library->accountProfileId != $this->id) {
+						$library->accountProfileId = $this->id;
 						$library->update();
 					}
 				} else {
 					//It should not be applied to this account profile. Only change if it was applied to the scope
-					if ($library->accountProfile == $this->id) {
-						$library->accountProfile = -1;
+					if ($library->accountProfileId == $this->id) {
+						$library->accountProfileId = -1;
 						$library->update();
 					}
 				}

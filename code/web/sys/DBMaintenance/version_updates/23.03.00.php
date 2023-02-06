@@ -43,7 +43,7 @@ function getUpdates23_03_00(): array {
 			'description' => 'Add account profile to library settings, then run script to update value to existing ils profile',
 			'continueOnError' => false,
 			'sql' => [
-				'ALTER TABLE library ADD COLUMN accountProfile INT(10) default -1',
+				'ALTER TABLE library ADD COLUMN accountProfileId INT(10) default -1',
 				'updateAccountProfileInLibrarySettings',
 			]
 		],
@@ -78,7 +78,7 @@ function updateAccountProfileInLibrarySettings(/** @noinspection PhpUnusedParame
 
 	if(!empty($libraries)) {
 		foreach ($libraries as $librarySettings) {
-			$librarySettings->accountProfile = $accountProfileId;
+			$librarySettings->accountProfileId = $accountProfileId;
 			$librarySettings->update();
 		}
 	}

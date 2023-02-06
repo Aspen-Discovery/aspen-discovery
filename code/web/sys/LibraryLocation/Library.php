@@ -389,7 +389,7 @@ class Library extends DataObject {
 	public $lidaNotificationSettingId;
 	public $lidaQuickSearchId;
 
-	public $accountProfile;
+	public $accountProfileId;
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
@@ -726,11 +726,11 @@ class Library extends DataObject {
 				'maxLength' => 80,
 				'editPermissions' => ['Library Domain Settings'],
 			],
-			'accountProfile' => [
-				'property' => 'accountProfile',
+			'accountProfileId' => [
+				'property' => 'accountProfileId',
 				'type' => 'enum',
 				'values' => $accountProfileOptions,
-				'label' => 'Account Profile',
+				'label' => 'Account Profile Id',
 				'description' => 'Account Profile to apply to this interface',
 				'permissions' => ['Administer Account Profiles'],
 			],
