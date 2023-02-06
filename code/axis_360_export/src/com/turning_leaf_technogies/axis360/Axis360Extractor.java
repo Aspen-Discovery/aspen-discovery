@@ -499,7 +499,7 @@ public class Axis360Extractor {
 			if (numTries > 0) {
 				try {
 					//Sleep a little bit to allow the server to calm down.
-					Thread.sleep(500);
+					Thread.sleep(5000);
 				} catch (InterruptedException e) {
 					//Not a big deal if this gets interrupted
 				}
@@ -534,7 +534,7 @@ public class Axis360Extractor {
 			numTries++;
 		}
 		if (numTries == 3 && !availabilityResponse.callSucceeded) {
-			logEntry.incErrors("Did not get a successful API response for " + availabilityUrl);
+			logEntry.incErrors("Did not get a successful API response after 3 tries for " + availabilityUrl);
 		}
 		return availabilityResponse;
 	}
