@@ -343,26 +343,6 @@ class SSOSetting extends DataObject {
 							]
 						]
 					],
-					'dataMapping' => [
-						'property' => 'dataMapping',
-						'type' => 'oneToMany',
-						'label' => 'User Data Mapping',
-						'renderAsHeading' => true,
-						'headingLevel' => 'h3',
-						'showBottomBorder' => true,
-						'description' => 'Define how service provider data matches up in Aspen',
-						'keyThis' => 'id',
-						'keyOther' => 'id',
-						'subObjectType' => 'SSOMapping',
-						'structure' => $fieldMapping,
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => false,
-						'canEdit' => false,
-						'hideInLists' => true,
-						'canAddNew' => true,
-						'canDelete' => true,
-					],
 				]
 			],
 			'samlConfigSection' => [
@@ -766,6 +746,32 @@ class SSOSetting extends DataObject {
 					],
 				],
 			],
+			'dataMappingSection' => [
+				'property' => 'dataMappingSection',
+				'type' => 'section',
+				'label' => 'Data Mapping',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'dataMapping' => [
+						'property' => 'dataMapping',
+						'type' => 'oneToMany',
+						'label' => 'User Profile',
+						'description' => 'Define how data matches up in Aspen and/or ILS',
+						'keyThis' => 'id',
+						'keyOther' => 'id',
+						'subObjectType' => 'SSOMapping',
+						'structure' => $fieldMapping,
+						'sortable' => false,
+						'storeDb' => true,
+						'allowEdit' => false,
+						'canEdit' => false,
+						'hideInLists' => true,
+						'canAddNew' => false,
+						'canDelete' => false,
+					],
+				],
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -815,6 +821,13 @@ class SSOSetting extends DataObject {
 			if ($dataMapping->find()) {
 				while ($dataMapping->fetch()) {
 					$this->_dataMapping[$dataMapping->id] = clone $dataMapping;
+				}
+			} else {
+				/** @var SSOMapping[] $defaultMappings */
+				// Default mappings to use when no mappings are defined
+				$defaultMappings = SSOMapping::getDefaults($this->id);
+				foreach ($defaultMappings as $index => $attributeMap) {
+					$this->_dataMapping[$attributeMap->id] = clone $attributeMap;
 				}
 			}
 		}
@@ -956,6 +969,10 @@ class SSOSetting extends DataObject {
 			'userId' => 'sub',
 			'firstName' => 'given_name',
 			'lastName' => 'family_name',
+			'displayName' => '',
+			'username' => '',
+			'patronType' => '',
+			'libraryCode' => ''
 		];
 
 		$mappings = new SSOMapping();
@@ -970,6 +987,16 @@ class SSOSetting extends DataObject {
 				$matchpoints['firstName'] = $mappings->responseField;
 			} elseif ($mappings->aspenField == "last_name") {
 				$matchpoints['lastName'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == 'display_name') {
+				$matchpoints['displayName'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == 'username') {
+				$matchpoints['username'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == 'patron_type') {
+				$matchpoints['patronType'] = $mappings->responseField;
+				$matchpoints['patronType_fallback'] = $mappings->fallbackValue;
+			} elseif ($mappings->aspenField == 'library_code') {
+				$matchpoints['libraryCode'] = $mappings->responseField;
+				$matchpoints['libraryCode_fallback'] = $mappings->fallbackValue;
 			}
 		}
 
