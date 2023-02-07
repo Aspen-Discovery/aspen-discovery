@@ -3,6 +3,7 @@ require_once 'bootstrap.php';
 require_once 'bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Authentication/SAML2Authentication.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 require_once ROOT_DIR . '/sys/Account/PType.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 require_once ROOT_DIR . '/sys/BotChecker.php';
@@ -15,6 +16,8 @@ $uidAsEmail = false;
 $useGivenUserId = '1';
 $useGivenUsername = '1';
 $usernameFormat = '-1';
+$ssoAuthOnly = false;
+$ssoSettingsId = -1;
 
 $auth = new SAML2Authentication();
 
@@ -22,6 +25,7 @@ $ssoSettings = new SSOSetting();
 $ssoSettings->id = $library->ssoSettingId;
 $ssoSettings->service = 'saml';
 if($ssoSettings->find(true)) {
+	$ssoSettingsId = $ssoSettings->id;
 	$entityId = $ssoSettings->ssoEntityId;
 	$useGivenUsername = $ssoSettings->ssoUseGivenUsername;
 	$useGivenUserId = $ssoSettings->ssoUseGivenUserId;
@@ -43,6 +47,16 @@ if($ssoSettings->find(true)) {
 	$entityId = $library->ssoEntityId;
 }
 
+$accountProfile = new AccountProfile();
+$accountProfile->id = $library->accountProfileId;
+if($accountProfile->find(true)) {
+	if($accountProfile->authenticationMethod === 'sso') {
+		$ssoAuthOnly = true;
+	}
+}
+
+
+/* KEEP HERE */
 // If we need to forward the user to an IdP
 if (array_key_exists('samlLogin', $_REQUEST) && array_key_exists('idp', $_REQUEST) && strlen($_REQUEST['samlLogin']) > 0 && strlen($_REQUEST['idp']) > 0 && $entityId && strlen($entityId) > 0) {
 	$auth->authenticate($_REQUEST['idp']);
@@ -114,91 +128,147 @@ foreach ($lmsToSso as $key => $mappings) {
 		}
 	}
 }
-
+if($ssoAuthOnly === false) {
 // Does this user exist in the LMS
-if($uidAsEmail) {
-	$user = $catalogConnection->findNewUserByEmail($uid);
-	if(is_string($user)) {
-		$logger->log($user, Logger::LOG_ERROR);
-		if($isStaffUser) {
-			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
-			$launchAction = new MyAccount_StaffLogin();
-		} else {
-			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			$launchAction = new MyAccount_Login();
+	if ($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+		if (is_string($user)) {
+			$logger->log($user, Logger::LOG_ERROR);
+			if ($isStaffUser) {
+				require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+				$launchAction = new MyAccount_StaffLogin();
+			} else {
+				require_once ROOT_DIR . '/services/MyAccount/Login.php';
+				$launchAction = new MyAccount_Login();
+			}
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
 		}
-		$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
-		exit();
+	} else {
+		$_REQUEST['username'] = $uid;
+		$user = $catalogConnection->findNewUser($uid);
 	}
-} else {
-	$_REQUEST['username'] = $uid;
-	$user = $catalogConnection->findNewUser($uid);
-}
 
 // The user does not exist in Koha, so we should create it
-if (!$user instanceof User) {
-	// Try to do the self reg
-	$selfRegResult = $catalogConnection->selfRegister();
-	// If the self reg did not succeed, log the fact
-	if ($selfRegResult['success'] != '1') {
-		$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
-		if($isStaffUser) {
-			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
-			$launchAction = new MyAccount_StaffLogin();
-		} else {
-			require_once ROOT_DIR . '/services/MyAccount/Login.php';
-			$launchAction = new MyAccount_Login();
+	if (!$user instanceof User) {
+		// Try to do the self reg
+		$selfRegResult = $catalogConnection->selfRegister();
+		// If the self reg did not succeed, log the fact
+		if ($selfRegResult['success'] != '1') {
+			$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
+			if ($isStaffUser) {
+				require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+				$launchAction = new MyAccount_StaffLogin();
+			} else {
+				require_once ROOT_DIR . '/services/MyAccount/Login.php';
+				$launchAction = new MyAccount_Login();
+			}
+			$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+			exit();
 		}
-		$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
-		exit();
-	}
-	// The user now exists in the LMS, so findNewUser should create an Aspen user
-	if($uidAsEmail) {
-		$user = $catalogConnection->findNewUserByEmail($uid);
+		// The user now exists in the LMS, so findNewUser should create an Aspen user
+		if ($uidAsEmail) {
+			$user = $catalogConnection->findNewUserByEmail($uid);
+		} else {
+			$user = $catalogConnection->findNewUser($uid);
+		}
 	} else {
-		$user = $catalogConnection->findNewUser($uid);
+		// We need to update the user in the LMS
+		$user = $user->updatePatronInfo(true);
+		// findNewUser forces Aspen to update it's user with that of the LMS
+		if ($uidAsEmail) {
+			$user = $catalogConnection->findNewUserByEmail($uid);
+		} else {
+			$user = $catalogConnection->findNewUser($uid);
+		}
 	}
-} else {
-	// We need to update the user in the LMS
-	$user = $user->updatePatronInfo(true);
-	// findNewUser forces Aspen to update it's user with that of the LMS
-	if($uidAsEmail) {
-		$user = $catalogConnection->findNewUserByEmail($uid);
-	} else {
-		$user = $catalogConnection->findNewUser($uid);
-	}
-}
 
 // If we have an Aspen user, we can set up the session
-if ($user instanceof User) {
-	if($uidAsEmail) {
-		$_REQUEST['username'] = $user->cat_username;
+	if ($user instanceof User) {
+		if ($uidAsEmail) {
+			$_REQUEST['username'] = $user->cat_username;
+		}
+		$login = UserAccount::login(true);
+
+		// track if the user is logged in via sso so we can create a special logout url if needed
+		$user->isLoggedInViaSSO = 1;
+		$user->update();
+
+		global $configArray;
+		global $timer;
+		$session_type = $configArray['Session']['type'];
+		$session_lifetime = $configArray['Session']['lifetime'];
+		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
+		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
+		require_once $sessionClass;
+
+		if (class_exists($session_type)) {
+			session_destroy();
+			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
+			/** @var SessionInterface $session */
+			$session = new $session_type();
+			$session->init($session_lifetime, $session_rememberMeLifetime);
+		}
+
+		$_SESSION['activeUserId'] = $login->id;
+		$_SESSION['rememberMe'] = false;
+		$_SESSION['loggedInViaSSO'] = true;
 	}
-	$login = UserAccount::login(true);
+} else {
+	global $library;
+	$tmpUser = new User();
+	$tmpUser->email = $this->getEmail();
+	$tmpUser->firstname = $this->getFirstName();
+	$tmpUser->lastname = $this->getLastName() ?? '';
+	$tmpUser->username = $this->getUserId();
+	$tmpUser->phone = '';
+	$tmpUser->displayName = '';
+	$tmpUser->patronType = '';
+	$tmpUser->trackReadingHistory = false;
 
-	// track if the user is logged in via sso so we can create a special logout url if needed
-	$user->isLoggedInViaSSO = 1;
-	$user->update();
-
-	global $configArray;
-	global $timer;
-	$session_type = $configArray['Session']['type'];
-	$session_lifetime = $configArray['Session']['lifetime'];
-	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-	require_once $sessionClass;
-
-	if (class_exists($session_type)) {
-		session_destroy();
-		session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-		/** @var SessionInterface $session */
-		$session = new $session_type();
-		$session->init($session_lifetime, $session_rememberMeLifetime);
+	$location = new Location();
+	$location->libraryId = $library->libraryId;
+	$location->orderBy('isMainBranch desc');
+	if (!$location->find(true)) {
+		$tmpUser->homeLocationId = 0;
+	} else {
+		$tmpUser->homeLocationId = $location->code;
 	}
+	$tmpUser->myLocation1Id = 0;
+	$tmpUser->myLocation2Id = 0;
+	$tmpUser->created = date('Y-m-d');
+	if($tmpUser->insert()) {
+		if($uidAsEmail) {
+			$user = UserAccount::findNewAspenUser('email', $uid);
+		} else {
+			$user = UserAccount::findNewAspenUser('user_id', $uid);
+		}
+		$login = UserAccount::loginWithAspen($user);
+		$user->isLoggedInViaSSO = 1;
+		$user->update();
 
-	$_SESSION['activeUserId'] = $login->id;
-	$_SESSION['rememberMe'] = false;
-	$_SESSION['loggedInViaSSO'] = true;
+		global $configArray;
+		global $timer;
+		$session_type = $configArray['Session']['type'];
+		$session_lifetime = $configArray['Session']['lifetime'];
+		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
+		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
+		require_once $sessionClass;
+
+		if (class_exists($session_type)) {
+			session_destroy();
+			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
+			/** @var SessionInterface $session */
+			$session = new $session_type();
+			$session->init($session_lifetime, $session_rememberMeLifetime);
+		}
+
+		$_SESSION['activeUserId'] = $login->id;
+		$_SESSION['rememberMe'] = false;
+		$_SESSION['loggedInViaSSO'] = true;
+	} else {
+		$logger->log('Error creating Aspen account for SAML user ' . $uid, Logger::LOG_ERROR);
+	}
 }
 
 // Redirect the user to the homepage
