@@ -213,3 +213,4 @@ code/aspen_app/.run/Update EAS.run.xml
 code/aspen_app/.run/Update Aspen LiDA Instance.run.xml
 code/aspen_app/.run/Start Aspen LiDA Instance.run.xml
 *.default
+install/createSiteSettings.ini
