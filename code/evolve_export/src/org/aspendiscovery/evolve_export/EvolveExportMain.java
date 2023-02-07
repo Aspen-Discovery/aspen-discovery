@@ -332,7 +332,7 @@ public class EvolveExportMain {
 								//We can't get the Marc record for an individual MARC, so we will load what we have and edit the correct item or insert it if we can't find it.
 								Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
 								if (marcRecord != null) {
-									String itemBarcode = curItem.getString("Barcode");
+									//String itemBarcode = curItem.getString("Barcode");
 									List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
 
 									@SuppressWarnings("WrapperTypeMayBePrimitive")
@@ -700,34 +700,58 @@ public class EvolveExportMain {
 	private static int checkForDeletedBibs(String accessToken) {
 		MarcRecordGrouper recordGroupingProcessor = getRecordGroupingProcessor();
 		GroupedWorkIndexer indexer = getGroupedWorkIndexer();
+		//Get the full list of active titles we know about
 		recordGroupingProcessor.loadExistingTitles(logEntry);
 		int recordsDeleted = 0;
+		int numRecordsStillActive = 0;
 
+		//Get a list of all bibs still left in the system.
 		String allBibsUrl = baseUrl + "/Holding/Token=" + accessToken + "%7CALLHOLDINGS=Yes";
 		WebServiceResponse allBibsResponse = NetworkUtils.getURL(allBibsUrl, logger);
 		if (allBibsResponse.isSuccess()) {
+			//Loop through all the titles and remove them from the list of active titles we know about.
 			JSONArray allBibsResponseData = allBibsResponse.getJSONResponseAsArray();
 			for (int i = 0; i < allBibsResponseData.length(); i++) {
 				JSONObject curBib = allBibsResponseData.getJSONObject(i);
 				if (!curBib.isNull("ID")){
 					String id = curBib.getString("ID");
-					getRecordGroupingProcessor().removeExistingRecord(id);
+					if (recordGroupingProcessor.getExistingRecords().containsKey(id)) {
+						recordGroupingProcessor.removeExistingRecord(id);
+						numRecordsStillActive++;
+					} else {
+						//Reactivate the id if it exists?
+						if (indexer.markIlsRecordAsRestored(indexingProfile.getName(), id) > 0) {
+							String groupedWorkId = recordGroupingProcessor.processMarcRecord(indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), id, logEntry), true, null);
+							if (groupedWorkId != null) {
+								indexer.processGroupedWork(groupedWorkId);
+							}
+							logEntry.incAdded();
+						}
+					}
 				}
 			}
+			logEntry.addNote(numRecordsStillActive + " still exist in the list of all records");
 
+			//Anything left in the list of active titles is something we should delete.
 			HashMap<String, IlsTitle> remainingRecords = recordGroupingProcessor.getExistingRecords();
 			for (String idToDelete : remainingRecords.keySet()) {
-				RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), idToDelete);
-				if (result.reindexWork) {
-					indexer.processGroupedWork(result.permanentId);
-				} else if (result.deleteWork) {
-					//Delete the work from solr and the database
-					indexer.deleteRecord(result.permanentId);
+				IlsTitle recordInfo = remainingRecords.get(idToDelete);
+				if (!recordInfo.isDeleted()) {
+					RemoveRecordFromWorkResult result = recordGroupingProcessor.removeRecordFromGroupedWork(indexingProfile.getName(), idToDelete);
+					indexer.markIlsRecordAsDeleted(indexingProfile.getName(), idToDelete);
+					if (result.reindexWork) {
+						indexer.processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						indexer.deleteRecord(result.permanentId);
+					}
+					logEntry.incDeleted();
+					recordsDeleted++;
 				}
-				logEntry.incDeleted();
-				recordsDeleted++;
 			}
+			logEntry.addNote("Deleted " + recordsDeleted + " records where the id no longer exists based on the list of all records and the id was not deleted already.");
 		}
+		logEntry.saveResults();
 		return recordsDeleted;
 	}
 
