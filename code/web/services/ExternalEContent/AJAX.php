@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
 global $configArray;
 
@@ -66,6 +67,103 @@ class ExternalEContent_AJAX extends Action {
 			]);
 		}
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function showSelectItemToViewForm(): array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$recordDriver = $this->loadRecordDriver($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$idWithSource = $recordDriver->getIdWithSource();
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$allItems = $relatedRecord->getItems();
+			$interface->assign('items', $allItems);
+
+			$buttonTitle = translate([
+				'text' => 'Access Online',
+				'isPublicFacing' => true,
+			]);
+			return [
+				'title' => translate([
+					'text' => 'Select Link to View',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("ExternalEContent/select-view-item-link-form.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#view856\").submit()'>$buttonTitle</button>",
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => translate([
+					'text' => 'Could not find a record with that id',
+					'isPublicFacing' => true,
+				]),
+				'modalButtons' => "",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function viewItem(): string {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$linkId = $_REQUEST['linkId'];
+
+		$recordDriver = $this->loadRecordDriver($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$validUrls = $recordDriver->getViewable856Links();
+			header('Location: ' . $validUrls[$linkId]['url']);
+			die();
+		} else {
+			header('Location: ' . "/Record/$id");
+			die();
+		}
+	}
+
+	function loadRecordDriver($id) : ExternalEContentDriver {
+		global $activeRecordProfile;
+		$subType = '';
+		if (isset($activeRecordProfile)) {
+			$subType = $activeRecordProfile;
+		} else {
+			$indexingProfile = new IndexingProfile();
+			$indexingProfile->name = 'ils';
+			if ($indexingProfile->find(true)) {
+				$subType = $indexingProfile->name;
+			} else {
+				$indexingProfile = new IndexingProfile();
+				$indexingProfile->id = 1;
+				if ($indexingProfile->find(true)) {
+					$subType = $indexingProfile->name;
+				}
+			}
+		}
+
+
+		return new ExternalEContentDriver($subType . ':' . $id);
 	}
 
 	function getBreadcrumbs(): array {

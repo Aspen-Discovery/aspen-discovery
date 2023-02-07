@@ -56,13 +56,13 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 		if (count($relatedUrls) > 3) {
 			//We will show a popup to let people choose the URL they want
 			$title = translate([
-				'text' => 'Access PDF',
+				'text' => 'Access Online',
 				'isPublicFacing' => true,
 			]);
-			$this->_actions[] = [
+			$actions[] = [
 				'title' => $title,
 				'url' => '',
-				'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}');",
+				'onclick' => "return AspenDiscovery.EContent.selectItemLink('{$this->getId()}');",
 				'requireLogin' => false,
 				'type' => 'access_online',
 			];
