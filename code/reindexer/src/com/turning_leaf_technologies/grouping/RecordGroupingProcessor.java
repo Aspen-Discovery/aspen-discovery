@@ -41,7 +41,6 @@ public class RecordGroupingProcessor {
 	private PreparedStatement updateNovelistStmt;
 	private PreparedStatement updateDisplayInfoStmt;
 
-	private PreparedStatement getAuthorAuthorityIdStmt;
 	private PreparedStatement getAuthoritativeAuthorStmt;
 	private PreparedStatement getTitleAuthorityStmt;
 	private boolean lookupAuthorAuthoritiesInDB = true;
@@ -97,7 +96,6 @@ public class RecordGroupingProcessor {
 			getAdditionalPrimaryIdentifierForWorkStmt.close();
 			getPermanentIdByWorkIdStmt.close();
 
-			getAuthorAuthorityIdStmt.close();
 			getAuthoritativeAuthorStmt.close();
 			getTitleAuthorityStmt.close();
 
@@ -194,7 +192,6 @@ public class RecordGroupingProcessor {
 			getAdditionalPrimaryIdentifierForWorkStmt = dbConnection.prepareStatement("SELECT * from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getPermanentIdByWorkIdStmt = dbConnection.prepareStatement("SELECT permanent_id from grouped_work WHERE id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
-			getAuthorAuthorityIdStmt = dbConnection.prepareStatement("SELECT authorId from author_authority_alternative where normalized = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement getNumAuthorAuthoritiesStmt = dbConnection.prepareStatement("SELECT count(*) as numAuthorities from author_authority", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet numAuthorAuthoritiesRS = getNumAuthorAuthoritiesStmt.executeQuery();
 			if (numAuthorAuthoritiesRS.next()) {
@@ -202,7 +199,7 @@ public class RecordGroupingProcessor {
 					lookupAuthorAuthoritiesInDB = false;
 				}
 			}
-			getAuthoritativeAuthorStmt = dbConnection.prepareStatement("SELECT normalized from author_authority where id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getAuthoritativeAuthorStmt = dbConnection.prepareStatement("SELECT author_authority.normalized from author_authority inner join author_authority_alternative on author_authority.id = authorId WHERE author_authority_alternative.normalized = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement getNumTitleAuthoritiesStmt = dbConnection.prepareStatement("SELECT count(*) as numAuthorities from title_authorities", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			ResultSet numTitleAuthoritiesRS = getNumTitleAuthoritiesStmt.executeQuery();
 			if (numTitleAuthoritiesRS.next()){
@@ -849,14 +846,10 @@ public class RecordGroupingProcessor {
 	String getAuthoritativeAuthor(String originalAuthor) {
 		if (lookupAuthorAuthoritiesInDB && originalAuthor.length() > 0) {
 			try {
-				getAuthorAuthorityIdStmt.setString(1, originalAuthor);
-				ResultSet authorityRS = getAuthorAuthorityIdStmt.executeQuery();
-				if (authorityRS.next()) {
-					getAuthoritativeAuthorStmt.setLong(1, authorityRS.getLong("authorId"));
-					ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
-					if (authoritativeAuthorRS.next()) {
-						return authoritativeAuthorRS.getString("normalized");
-					}
+				getAuthoritativeAuthorStmt.setString(1, originalAuthor);
+				ResultSet authoritativeAuthorRS = getAuthoritativeAuthorStmt.executeQuery();
+				if (authoritativeAuthorRS.next()) {
+					return authoritativeAuthorRS.getString("normalized");
 				}
 			} catch (SQLException e) {
 				logEntry.incErrors("Error getting authoritative author", e);

@@ -16,5 +16,3 @@ chmod o+x /data/aspen-discovery/$1/$2/
 
 chown -R www-data:aspen_apache /data/aspen-discovery/$1/$2/marc
 chmod o+x /data/aspen-discovery/$1/$2/marc
-chown -R www-data:aspen_apache /data/aspen-discovery/$1/$2/marc_recs
-chmod o+x /data/aspen-discovery/$1/$2/marc_recs

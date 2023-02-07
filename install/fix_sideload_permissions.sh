@@ -15,5 +15,3 @@ chmod 775 /data/aspen-discovery/$1/$2/
 
 chown -R apache:aspen_apache /data/aspen-discovery/$1/$2/marc
 chmod 775 /data/aspen-discovery/$1/$2/marc
-chown -R aspen:aspen_apache /data/aspen-discovery/$1/$2/marc_recs
-chmod 775 /data/aspen-discovery/$1/$2/marc_recs

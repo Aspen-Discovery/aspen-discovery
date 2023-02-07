@@ -1218,10 +1218,11 @@ class Location extends DataObject {
 			$homeLibrary = $librarySingleton->getLibraryForLocation($patronProfile->homeLocationId);
 		}
 
+		//Set up our query to get the correct locations from the location table.
 		if (isset($homeLibrary) && $homeLibrary->inSystemPickupsOnly == 1) {
-			/** The user can only pickup within their home system */
+			/** The user can only pick up within their home system */
 			if (strlen($homeLibrary->validPickupSystems) > 0) {
-				/** The system has additional related systems that you can pickup within */
+				/** The system has additional related systems that you can pick up materials from */
 				$pickupIds = [];
 				$pickupIds[] = $homeLibrary->libraryId;
 				$validPickupSystems = explode('|', $homeLibrary->validPickupSystems);
@@ -1235,12 +1236,14 @@ class Location extends DataObject {
 					}
 				}
 				$this->whereAdd("libraryId IN (" . implode(',', $pickupIds) . ")", 'AND');
+				//TODO: Do we need to limit based on validHoldPickupBranch
 			} else {
 				/** Only this system is valid */
 				$this->whereAdd("libraryId = {$homeLibrary->libraryId}", 'AND');
 				$this->whereAdd("validHoldPickupBranch = 1 OR validHoldPickupBranch = 3", 'AND');
 			}
 		} else {
+			//The user can pick up at any system
 			$this->whereAdd("validHoldPickupBranch = 1");
 			if ($homeLibrary !== null) {
 				$this->whereAdd("validHoldPickupBranch = 3 AND libraryId = {$homeLibrary->libraryId}", 'OR');
@@ -1249,6 +1252,7 @@ class Location extends DataObject {
 
 		$this->orderBy('displayName');
 
+		/** @var Location[] $tmpLocations */
 		$tmpLocations = $this->fetchAll();
 
 		//Load the locations and sort them based on the user profile information as well as their physical location.

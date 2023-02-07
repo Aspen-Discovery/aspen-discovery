@@ -660,6 +660,9 @@ class Grouping_Record {
 		if (array_key_exists($this->source, $indexingProfiles)) {
 			$indexingProfile = $indexingProfiles[$this->source];
 			$formatMap = $indexingProfile->formatMap;
+			//Loop through the format map to figure out if there are restrictions on the pickup location
+			//Grab the first value we find (if a format is listed multiple times with inconsistent pickup location restrictions,
+			//We don't handle that currently.
 			/** @var FormatMapValue $formatMapValue */
 			foreach ($formatMap as $formatMapValue) {
 				if (strcasecmp($formatMapValue->format, $this->format) === 0) {

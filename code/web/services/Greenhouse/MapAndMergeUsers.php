@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/services/Greenhouse/UserMerger.php';
+require_once ROOT_DIR . '/sys/Utils/UserUtils.php';
 
 class MapAndMergeUsers extends UserMerger {
 	function launch() {
@@ -64,7 +65,7 @@ class MapAndMergeUsers extends UserMerger {
 				$newUser = new User();
 				$newUser->username = $newUsername;
 				if ($newUser->find(true)) {
-					$this->mergeUsers($originalUser, $newUser, $result);
+					UserUtils::mergeUsers($originalUser, $newUser, $result);
 				} else {
 					//We just have the old record in the database, we can just update the username and reset
 					$originalUser->username = $newUsername;

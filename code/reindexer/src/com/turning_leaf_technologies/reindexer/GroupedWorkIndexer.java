@@ -1826,11 +1826,16 @@ public class GroupedWorkIndexer {
 		return id;
 	}
 
-	private final MaxSizeHashMap<String, Long> callNumberIds = new MaxSizeHashMap<>(1000);
-	private long getCallNumberId(String callNumber) {
+	private long lastRecordId = -1;
+	private final HashMap<String, Long> callNumberIds = new HashMap<>();
+	private long getCallNumberId(long recordId, String callNumber) {
 		if (callNumber == null){
 			return -1;
 		}
+		if (lastRecordId != recordId) {
+			callNumberIds.clear();
+		}
+		lastRecordId = recordId;
 		if (callNumber.length() > 255){
 			callNumber = callNumber.substring(0, 255);
 		}
@@ -1857,6 +1862,8 @@ public class GroupedWorkIndexer {
 				id = -1L;
 			}
 			callNumberIds.put(callNumber, id);
+		}else{
+			logger.debug("Found cached call number");
 		}
 		return id;
 	}
@@ -2060,12 +2067,12 @@ public class GroupedWorkIndexer {
 		}
 		try {
 			long shelfLocationId = this.getShelfLocationId(itemInfo.getDetailedLocation());
-			long callNumberId = this.getCallNumberId(itemInfo.getCallNumber());
+			long callNumberId = this.getCallNumberId(recordId, itemInfo.getCallNumber());
 			long sortableCallNumberId;
 			if (AspenStringUtils.compareStrings(itemInfo.getCallNumber(), itemInfo.getSortableCallNumber())){
 				sortableCallNumberId = callNumberId;
 			}else{
-				sortableCallNumberId = this.getCallNumberId(itemInfo.getSortableCallNumber());
+				sortableCallNumberId = this.getCallNumberId(recordId, itemInfo.getSortableCallNumber());
 			}
 			long statusId = this.getStatusId(itemInfo.getDetailedStatus());
 			long locationCodeId = this.getLocationCodeId(itemInfo.getLocationCode());

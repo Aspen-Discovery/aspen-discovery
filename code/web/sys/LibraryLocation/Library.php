@@ -513,15 +513,15 @@ class Library extends DataObject {
 			$compriseSettings[$compriseSetting->id] = $compriseSetting->customerName;
 		}
 
-		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
-		$proPaySetting = new ProPaySetting();
-		$proPaySetting->orderBy('name');
-		$proPaySettings = [];
-		$proPaySetting->find();
-		$proPaySettings[-1] = 'none';
-		while ($proPaySetting->fetch()) {
-			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
-		}
+//		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+//		$proPaySetting = new ProPaySetting();
+//		$proPaySetting->orderBy('name');
+//		$proPaySettings = [];
+//		$proPaySetting->find();
+//		$proPaySettings[-1] = 'none';
+//		while ($proPaySetting->fetch()) {
+//			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
+//		}
 
 		require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 		$payPalSetting = new PayPalSetting();
@@ -1320,7 +1320,7 @@ class Library extends DataObject {
 					'optOutOfReadingHistoryUpdatesILS' => [
 						'property' => 'optOutOfReadingHistoryUpdatesILS',
 						'type' => 'checkbox',
-						'label' => 'Opting our of Reading History Updates ILS settings',
+						'label' => 'Opting out of Reading History Updates ILS settings',
 						'description' => 'Whether or not the user should be opted out of reading history within the ILS when they opt out within Aspen.',
 						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
 						'hideInLists' => true,
@@ -2186,7 +2186,7 @@ class Library extends DataObject {
 							2 => 'PayPal',
 							3 => 'MSB',
 							4 => 'Comprise SMARTPAY',
-							5 => 'ProPay',
+							//PROPAY 5 => 'ProPay',
 							6 => 'Xpress-pay',
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
@@ -2278,7 +2278,7 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-					'proPaySettingId' => [
+					/*//PROPAY'proPaySettingId' => [
 						'property' => 'proPaySettingId',
 						'type' => 'enum',
 						'values' => $proPaySettings,
@@ -2286,7 +2286,7 @@ class Library extends DataObject {
 						'description' => 'The ProPay settings to use',
 						'hideInLists' => true,
 						'default' => -1,
-					],
+					],*/
 					'xpressPaySettingId' => [
 						'property' => 'xpressPaySettingId',
 						'type' => 'enum',

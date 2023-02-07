@@ -1859,7 +1859,19 @@ class User extends DataObject {
 	function placeHold($recordId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
+		$thisUser = translate([
+			'text' => 'You',
+			'isPublicFacing' => true,
+		]);
+		if (!empty($this->parentUser)){
+			$thisUser = $this->displayName;
+		}
 		if ($result['success']) {
+			$result['newHoldButtonText'] = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+			]);
 			$this->clearCache();
 		}
 		return $result;
@@ -1868,7 +1880,19 @@ class User extends DataObject {
 	function placeVolumeHold($recordId, $volumeId, $pickupBranch) {
 		$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch);
 		$this->updateAltLocationForHold($pickupBranch);
+		$thisUser = translate([
+			'text' => 'You',
+			'isPublicFacing' => true,
+		]);
+		if (!empty($this->parentUser)){
+			$thisUser = $this->displayName;
+		}
 		if ($result['success']) {
+			$result['newHoldButtonText'] = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+			]);
 			$this->clearCache();
 		}
 		return $result;
@@ -1921,7 +1945,19 @@ class User extends DataObject {
 	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
+		$thisUser = translate([
+			'text' => 'You',
+			'isPublicFacing' => true,
+		]);
+		if (!empty($this->parentUser)){
+			$thisUser = $this->displayName;
+		}
 		if ($result['success']) {
+			$result['newHoldButtonText'] = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+			]);
 			$this->clearCache();
 		}
 		return $result;
@@ -3049,7 +3085,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
-		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
+		//PROPAY $sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
 		$sections['ecommerce']->addAction(new AdminAction('ACI Speedpay Settings', 'Define Settings for ACI Speedpay.', '/Admin/ACISpeedpaySettings'), 'Administer ACI Speedpay');
 		$sections['ecommerce']->addAction(new AdminAction('InvoiceCloud Settings', 'Define Settings for InvoiceCloud.', '/Admin/InvoiceCloudSettings'), 'Administer InvoiceCloud');

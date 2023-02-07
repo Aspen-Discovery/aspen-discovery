@@ -66,9 +66,9 @@ class GroupedWork implements Cloneable {
 				}else{
 					String authoritativeAuthor = getAuthoritativeAuthor();
 					//TODO: Delete this if block
-					if (!authoritativeAuthor.equals(this.author)){
-						logger.debug("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
-					}
+//					if (!authoritativeAuthor.equals(this.author)){
+//						logger.debug("Authoritative author " + authoritativeAuthor + " used for " + fullTitle);
+//					}
 					idGenerator.update(authoritativeAuthor.getBytes());
 				}
 				if (groupingCategory.equals("")){
