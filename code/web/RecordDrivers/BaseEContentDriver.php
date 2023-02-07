@@ -96,7 +96,35 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 					'alt' => $alt,
 					'target' => '_blank',
 				];
-				$i++;
+			}
+		} else {
+			foreach ($relatedUrls as $urlInfo) {
+				$title = translate([
+					'text' => 'Access Online',
+					'isPublicFacing' => true,
+				]);
+				$alt = 'Available online from ' . $urlInfo['source'];
+				$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+				$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
+				if (strlen($fileOrUrl) > 0) {
+					if (strlen($fileOrUrl) >= 3) {
+						$extension = strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
+						if ($extension == 'pdf') {
+							$title = translate([
+								'text' => 'Access PDF',
+								'isPublicFacing' => true,
+							]);
+						}
+					}
+					$actions[] = [
+						'url' => $action,
+						'redirectUrl' => $fileOrUrl,
+						'title' => $title,
+						'requireLogin' => false,
+						'alt' => $alt,
+						'target' => '_blank',
+					];
+				}
 			}
 		}
 

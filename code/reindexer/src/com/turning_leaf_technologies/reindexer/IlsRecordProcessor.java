@@ -1503,7 +1503,92 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes){
-		return new ArrayList<>();
+		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
+		List<DataField> recordUrls = MarcUtil.getDataFields(record, 856);
+		if (recordUrls.size() == 0){
+			return unsuppressedEcontentRecords;
+		}else{
+			RecordInfo relatedRecord = null;
+			for (DataField recordUrl : recordUrls) {
+				Subfield urlSubfield = recordUrl.getSubfield('u');
+				if (urlSubfield == null) {
+					continue;
+				}
+				String url = urlSubfield.getData();
+				if (url != null) {
+					if (suppressRecordsWithUrlsMatching != null) {
+						if (suppressRecordsWithUrlsMatching.matcher(url).matches()) {
+							continue;
+						}
+					}
+					//Include first indicator of 4
+					if (recordUrl.getIndicator1() != '4') {
+						continue;
+					}
+					//Include second indicators of 0 or 1
+					if (recordUrl.getIndicator2() != '0' && recordUrl.getIndicator2() != '1') {
+						continue;
+					}
+					//Get the econtent source
+					String urlLower = url.toLowerCase();
+					String econtentSource;
+					Subfield publicNoteSubfield = recordUrl.getSubfield('z');
+					if (publicNoteSubfield != null) {
+						String publicNoteText = publicNoteSubfield.getData();
+						String publicNoteTextLower = publicNoteText.toLowerCase();
+						if (publicNoteTextLower.contains("gale virtual reference library")) {
+							econtentSource = "Gale Virtual Reference Library";
+						} else if (publicNoteTextLower.contains("gale directory library")) {
+							econtentSource = "Gale Directory Library";
+						} else if (publicNoteTextLower.contains("national geographic virtual library")) {
+							econtentSource = "National Geographic Virtual Library";
+						} else if ((publicNoteTextLower.contains("ebscohost") || urlLower.contains("netlibrary") || urlLower.contains("ebsco"))) {
+							econtentSource = "EbscoHost";
+						} else {
+							econtentSource = "Web Content";
+						}
+					} else {
+						econtentSource = "Web Content";
+					}
+
+					ItemInfo itemInfo = new ItemInfo();
+					itemInfo.setIsEContent(true);
+					itemInfo.setLocationCode("Online");
+					itemInfo.setCallNumber("Online");
+					itemInfo.seteContentSource(econtentSource);
+					itemInfo.setShelfLocation("Online");
+					Subfield linkTextSubfield = recordUrl.getSubfield('y');
+					if (linkTextSubfield != null) {
+						itemInfo.setDetailedLocation(linkTextSubfield.getData());
+					} else {
+						itemInfo.setDetailedLocation(econtentSource);
+					}
+					itemInfo.setIType("eCollection");
+					if (relatedRecord == null) {
+						relatedRecord = groupedWork.addRelatedRecord("external_econtent", identifier);
+						relatedRecord.setSubSource(profileType);
+						relatedRecord.setFormatBoost(10);
+						unsuppressedEcontentRecords.add(relatedRecord);
+					}
+					relatedRecord.addItem(itemInfo);
+					itemInfo.seteContentUrl(url);
+
+					//Set the format based on the material type
+					String formatFrom856 = MarcUtil.getFirstFieldVal(record, "856z");
+					if (formatFrom856 != null) {
+						itemInfo.setFormat(formatFrom856);
+					} else {
+						itemInfo.setFormat("Online Content");
+					}
+					itemInfo.setFormatCategory("eBook");
+
+					itemInfo.setDetailedStatus("Available Online");
+
+					logger.debug("Found eContent record from " + econtentSource);
+				}
+			}
+		}
+		return unsuppressedEcontentRecords;
 	}
 
 	private void loadPopularity(AbstractGroupedWorkSolr groupedWork, String recordIdentifier) {

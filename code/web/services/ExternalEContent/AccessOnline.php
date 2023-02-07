@@ -2,7 +2,7 @@
 
 class ExternalEContent_AccessOnline extends Action {
 	/** @var ExternalEContentDriver $recordDriver */
-	private $recordDriver;
+	private ExternalEContentDriver $recordDriver;
 
 	function launch() {
 		global $interface;
