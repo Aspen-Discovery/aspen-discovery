@@ -7,9 +7,7 @@ class SSOAuthentication implements Authentication {
 	private SSOSetting $ssoSettings;
 
 	public function __construct($additionalInfo) {
-		if(array_key_exists('ssoSettingId', $additionalInfo)) {
-			$this->accountProfile = $additionalInfo['accountProfile'];
-		}
+		$this->accountProfile = $additionalInfo['accountProfile'];
 		$this->ssoSettings = $this->getSSOSettings();
 	}
 
