@@ -22,6 +22,8 @@ class OAuthAuthentication extends Action {
 	/** @var CurlWrapper */
 	private $curlWrapper;
 
+	protected bool $ssoAuthOnly = false;
+
 	public function __construct() {
 		parent::__construct();
 
@@ -47,6 +49,15 @@ class OAuthAuthentication extends Action {
 				(!empty($ssoSettings->oAuthStaffPTypeAttr) && !empty($ssoSettings->oAuthStaffPTypeAttrValue)) &&
 				($ssoSettings->oAuthStaffPType != '-1' || $ssoSettings->oAuthStaffPType != -1)) {
 				$this->staffPType = $ssoSettings->oAuthStaffPType;
+			}
+
+			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+			$accountProfile = new AccountProfile();
+			$accountProfile->id = $library->accountProfileId;
+			if($accountProfile->find(true)) {
+				if($accountProfile->authenticationMethod === 'sso') {
+					$this->ssoAuthOnly = true;
+				}
 			}
 
 		} else {
@@ -189,51 +200,58 @@ class OAuthAuthentication extends Action {
 
 	private function validateAccount(): bool {
 		global $logger;
-		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
+		if($this->ssoAuthOnly === false) {
+			$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
-		if ($this->getUserId()) {
-			$logger->log('Checking to see if user ' . print_r($this->getUserId(), true) . ' exists in the database...', Logger::LOG_ERROR);
-		} else {
-			$logger->log('Error searching resource owner for userId', Logger::LOG_ERROR);
-			return false;
-		}
-
-		$user = $catalogConnection->findNewUser($this->getUserId());
-
-		if (!$user instanceof User) {
-			$logger->log('No user found in database... attempting to self-register...', Logger::LOG_ERROR);
-			$newUser['email'] = $this->getEmail();
-			$newUser['firstname'] = $this->getFirstName();
-			$newUser['lastname'] = $this->getLastName();
-			$newUser['cat_username'] = $this->getUserId();
-			$newUser['category_id'] = null;
-			if($this->staffPType && $this->isStaffUser()) {
-				$newUser['category_id'] = $this->staffPType;
-			}
-			$selfReg = $catalogConnection->selfRegister(true, $newUser);
-			if ($selfReg['success'] != '1') {
-				//unable to register the user
-				$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
+			if ($this->getUserId()) {
+				$logger->log('Checking to see if user ' . print_r($this->getUserId(), true) . ' exists in the database...', Logger::LOG_ERROR);
+			} else {
+				$logger->log('Error searching resource owner for userId', Logger::LOG_ERROR);
 				return false;
 			}
+
 			$user = $catalogConnection->findNewUser($this->getUserId());
+
+			if (!$user instanceof User) {
+				$logger->log('No user found in database... attempting to self-register...', Logger::LOG_ERROR);
+				$newUser['email'] = $this->getEmail();
+				$newUser['firstname'] = $this->getFirstName();
+				$newUser['lastname'] = $this->getLastName();
+				$newUser['cat_username'] = $this->getUserId();
+				$newUser['category_id'] = null;
+				if ($this->staffPType && $this->isStaffUser()) {
+					$newUser['category_id'] = $this->staffPType;
+				}
+				$selfReg = $catalogConnection->selfRegister(true, $newUser);
+				if ($selfReg['success'] != '1') {
+					//unable to register the user
+					$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
+					return false;
+				}
+				$user = $catalogConnection->findNewUser($this->getUserId());
+			} else {
+				$user->oAuthAccessToken = $this->accessToken;
+				$user->oAuthRefreshToken = $this->refreshToken;
+				$user->update();
+				$user->updatePatronInfo(true);
+				$user = $catalogConnection->findNewUser($this->getUserId());
+			}
+			return $this->login($user);
 		} else {
-			$user->oAuthAccessToken = $this->accessToken;
-			$user->oAuthRefreshToken = $this->refreshToken;
-			$user->update();
-			$user->updatePatronInfo(true);
-			$user = $catalogConnection->findNewUser($this->getUserId());
+			// we only want to authenticate the user via SSO as determined by the account profile
+			$user = UserAccount::findNewAspenUser('user_id', $this->getUserId());
+			if (!$user instanceof User) {
+				$logger->log('No user found in Aspen, creating a new one...', Logger::LOG_ERROR);
+				$tmpUser = $this->createNewAspenUser();
+				if($tmpUser) {
+					$user = UserAccount::findNewAspenUser('user_id', $this->getUserId());
+				} else {
+					$logger->log('Error creating Aspen user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
+					return false;
+				}
+			}
+			return $this->login($user);
 		}
-
-		if ($user instanceof User) {
-			$_REQUEST['username'] = $this->getUserId();
-			$_REQUEST['password'] = $user->password;
-			$login = UserAccount::login(true);
-			$this->newSSOSession($login->id);
-			return true;
-		}
-
-		return false;
 	}
 
 	private function getUserId() {
@@ -282,6 +300,54 @@ class OAuthAuthentication extends Action {
 				return true;
 			}
 		}
+		return false;
+	}
+
+	private function createNewAspenUser(): bool {
+		global $library;
+		$tmpUser = new User();
+		$tmpUser->email = $this->getEmail();
+		$tmpUser->firstname = $this->getFirstName();
+		$tmpUser->lastname = $this->getLastName() ?? '';
+		$tmpUser->username = $this->getUserId();
+		$tmpUser->phone = '';
+		$tmpUser->displayName = '';
+		$tmpUser->patronType = '';
+		$tmpUser->trackReadingHistory = false;
+
+		$location = new Location();
+		$location->libraryId = $library->libraryId;
+		$location->orderBy('isMainBranch desc');
+		if (!$location->find(true)) {
+			$tmpUser->homeLocationId = 0;
+		} else {
+			$tmpUser->homeLocationId = $location->code;
+		}
+		$tmpUser->myLocation1Id = 0;
+		$tmpUser->myLocation2Id = 0;
+		$tmpUser->created = date('Y-m-d');
+		if($tmpUser->insert()) {
+			return true;
+		}
+		return false;
+	}
+
+	private function login(User $user): bool {
+		if($this->ssoAuthOnly) {
+			$login = UserAccount::loginWithAspen($user);
+		} else {
+			$_REQUEST['username'] = $this->getUserId();
+			$_REQUEST['password'] = $user->password;
+			$login = UserAccount::login(true);
+		}
+
+		if($login) {
+			$user->isLoggedInViaSSO = 1;
+			$user->update();
+			$this->newSSOSession($login->id);
+			return true;
+		}
+
 		return false;
 	}
 
