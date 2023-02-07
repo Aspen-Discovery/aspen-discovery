@@ -49,6 +49,8 @@ class LDAPAuthentication extends Action {
 				if($accountProfile->find(true)) {
 					if($accountProfile->authenticationMethod === 'sso') {
 						$this->ssoAuthOnly = true;
+					} else {
+						$this->ssoAuthOnly = $ssoSettings->ssoAuthOnly;
 					}
 				}
 
@@ -78,8 +80,9 @@ class LDAPAuthentication extends Action {
 
 	public function validateAccount($username, $password): mixed {
 		if(LDAPAuthentication::$clientInitialized) {
-			$user = $this->findUser($username, $password);
-			if ($user) {
+			$user = $this->findUser($username);
+			$isAuthenticated = $this->validateWithLDAP($user, $password);
+			if ($user && $isAuthenticated) {
 				$attributes = $this->getUserAttributes($user);
 				if($this->ssoAuthOnly === false) {
 					if (!$this->validateWithILS($username)) {
@@ -106,7 +109,7 @@ class LDAPAuthentication extends Action {
 		return false;
 	}
 
-	private function findUser($username, $password): mixed {
+	private function findUser($username): mixed {
 		if($this->ldap_config['ou']) {
 			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], '(&(' . $this->ldap_config['idAttr'] . '=' . $username . ')(ou=' . $this->ldap_config['ou'] . '))');
 		} else {
@@ -164,6 +167,17 @@ class LDAPAuthentication extends Action {
 		}
 
 		return $this->login($user);
+	}
+
+	private function validateWithLDAP($user, $password): bool {
+		$userDN = @ldap_get_dn($this->ldap_client, $user);
+		if(@ldap_bind($this->ldap_client, $userDN, $password)) {
+			return true;
+		} else {
+			$this->message = @ldap_error($this->ldap_client);
+			AspenError::raiseError(new AspenError('Unable to authenticate user with LDAP Server. ' . @ldap_error($this->ldap_client)));
+		}
+		return false;
 	}
 
 	private function login(User $user, $username = ""): bool {
