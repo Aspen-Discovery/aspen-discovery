@@ -2290,13 +2290,14 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	public void markIlsRecordAsRestored(String name, String existingIdentifier){
+	public int markIlsRecordAsRestored(String name, String existingIdentifier){
 		try {
 			markIlsRecordAsRestoredStmt.setString(1, name);
 			markIlsRecordAsRestoredStmt.setString(2, existingIdentifier);
-			markIlsRecordAsRestoredStmt.executeUpdate();
+			return markIlsRecordAsRestoredStmt.executeUpdate();
 		}catch (Exception e) {
 			logEntry.incErrors("Could not mark ils record as deleted", e);
+			return 0;
 		}
 	}
 
