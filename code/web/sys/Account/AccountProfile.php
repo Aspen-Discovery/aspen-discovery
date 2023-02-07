@@ -128,9 +128,11 @@ class AccountProfile extends DataObject {
 						'values' => [
 							'ils' => 'ILS',
 							'db' => 'Database',
+							'sso' => 'Single Sign-on (SSO)'
 						],
 						'description' => 'The method of authentication to use',
 						'required' => true,
+						'onchange' => 'return AspenDiscovery.Admin.toggleSSOSettingsInAccountProfile();',
 					],
 					'ssoSettingId' => [
 						'property' => 'ssoSettingId',

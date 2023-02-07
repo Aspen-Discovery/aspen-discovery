@@ -64,4 +64,8 @@ class Admin_AccountProfiles extends ObjectEditor {
 	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Account Profiles');
 	}
+
+	function getInitializationJs(): string {
+		return 'AspenDiscovery.Admin.toggleSSOSettingsInAccountProfile();';
+	}
 }

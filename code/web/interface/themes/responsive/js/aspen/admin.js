@@ -1726,6 +1726,14 @@ AspenDiscovery.Admin = (function () {
 					return false;
 				}
 			});
-		}
+		},
+		toggleSSOSettingsInAccountProfile: function () {
+			var authMethod = $("#authenticationMethodSelect").val();
+			if (authMethod === "sso") {
+				$('#propertyRowssoSettingId').show();
+			} else {
+				$('#propertyRowssoSettingId').hide();
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
