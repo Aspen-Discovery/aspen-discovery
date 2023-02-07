@@ -75,6 +75,15 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_sso_account_profiles
+		'add_sso_auth_only' => [
+			'title' => 'Add option to SSO Settings to authenticate only with SSO',
+			'description' => 'Add option to SSO settings to authenticate only with SSO and not DB or ILS',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE sso_setting ADD COLUMN ssoAuthOnly TINYINT(1) default 0",
+			]
+		],
+		//add_sso_auth_only
 
 		//kodi
 

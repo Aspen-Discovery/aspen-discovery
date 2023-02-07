@@ -9,6 +9,7 @@ class SSOSetting extends DataObject {
 	public $service;
 	public $staffOnly;
 	public $bypassAspenLogin;
+	public $ssoAuthOnly;
 
 	//oAuth
 	public $clientId;
@@ -173,6 +174,13 @@ class SSOSetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Bypass the Aspen Discovery staff login page when using footer link',
 				'description' => 'Whether or not the staff login link in the footer should first send the user to the Aspen Discovery login page',
+			],
+			'ssoAuthOnly' => [
+				'property' => 'ssoAuthOnly',
+				'type' => 'checkbox',
+				'label' => 'Only authenticate users with single sign-on',
+				'description' => 'Whether or not users are authenticated only by single sign-on',
+				'note' => 'Aspen will not authenticate with the ILS when a user logs in with single sign-on. <em>This has potential security implications</em>',
 			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
