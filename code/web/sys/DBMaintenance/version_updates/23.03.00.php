@@ -57,6 +57,24 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_sso_settings_account_profile
+		'add_fallback_sso_mapping' => [
+			'title' => 'Add fallback column to SSO Mapping',
+			'description' => 'Add column to store fallback value for SSO user data mapping table',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_mapping ADD COLUMN fallbackValue VARCHAR(255) default NULL',
+			]
+		],
+		//add_fallback_sso_mapping
+		'add_sso_account_profiles' => [
+			'title' => 'Modify authenticationMethod in Account Profiles',
+			'description' => 'Modify enum authenticationMethod to include sso option in Account Profiles',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE account_profiles MODIFY COLUMN authenticationMethod enum('ils','sip2','db','ldap', 'sso')",
+			]
+		],
+		//add_sso_account_profiles
 
 		//kodi
 
