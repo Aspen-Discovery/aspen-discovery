@@ -57,6 +57,8 @@ class OAuthAuthentication extends Action {
 			if($accountProfile->find(true)) {
 				if($accountProfile->authenticationMethod === 'sso') {
 					$this->ssoAuthOnly = true;
+				} else {
+					$this->ssoAuthOnly = $ssoSettings->ssoAuthOnly;
 				}
 			}
 

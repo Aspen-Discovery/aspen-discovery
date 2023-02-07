@@ -52,6 +52,8 @@ $accountProfile->id = $library->accountProfileId;
 if($accountProfile->find(true)) {
 	if($accountProfile->authenticationMethod === 'sso') {
 		$ssoAuthOnly = true;
+	} else {
+		$this->ssoAuthOnly = $ssoSettings->ssoAuthOnly;
 	}
 }
 
