@@ -456,6 +456,10 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				}
 			}
 		}
+		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes);
+		if (parentEContentRecords.size() > 0) {
+			unsuppressedEcontentRecords.addAll(parentEContentRecords);
+		}
 		return unsuppressedEcontentRecords;
 	}
 
