@@ -10,14 +10,17 @@ require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 class LDAPAuthentication extends Action {
 
 	static bool $clientInitialized = false;
-	protected mixed $ldap_client;
+	protected mixed $ldap_client = null;
 	protected array $ldap_config = [];
+	protected int $timeout = 0;
 	protected bool $ssoAuthOnly = false;
+	protected string $message = "";
+	protected $matchpoints = [];
 
 	public function __construct() {
 		parent::__construct();
 		if(!$this->intializeClient()) {
-			AspenError::raiseError(new AspenError(ldap_error($this->ldap_client)));
+			AspenError::raiseError(new AspenError(@ldap_error($this->ldap_client) . ' Code: ' . @ldap_errno($this->ldap_client)));
 		} else {
 			LDAPAuthentication::$clientInitialized = true;
 		}
@@ -33,6 +36,7 @@ class LDAPAuthentication extends Action {
 			$ssoSettings->id = $library->ssoSettingId;
 			$ssoSettings->service = 'ldap';
 			if($ssoSettings->find(true)) {
+				$this->matchpoints = $ssoSettings->getMatchpoints();
 				$this->ldap_config['baseDir'] = $ssoSettings->ldapBaseDN;
 				$this->ldap_config['client'] = $ssoSettings->ldapUsername;
 				$this->ldap_config['secret'] = $ssoSettings->ldapPassword;
@@ -48,11 +52,24 @@ class LDAPAuthentication extends Action {
 					}
 				}
 
-				$this->ldap_client = ldap_connect($this->ldap_config['host']);
+				$this->ldap_client = @ldap_connect($this->ldap_config['host']);
+				@ldap_set_option($this->ldap_client, LDAP_OPT_DEBUG_LEVEL, 7);
+				@ldap_set_option($this->ldap_client, LDAP_OPT_PROTOCOL_VERSION, 3);
+				@ldap_set_option($this->ldap_client, LDAP_OPT_REFERRALS, false);
+				@ldap_set_option($this->ldap_client, LDAP_OPT_NETWORK_TIMEOUT, $this->timeout);
+				@ldap_set_option($this->ldap_client, LDAP_OPT_TIMELIMIT, $this->timeout);
+
+				if (stripos($this->ldap_config['host'], 'ldaps:')) {
+					if(!@ldap_start_tls($this->ldap_client)) {
+						AspenError::raiseError(new AspenError("Unable to force TLS"));
+					}
+				}
+
 				if($this->ldap_client) {
-					if(ldap_bind($this->ldap_client, $this->ldap_config['client'], $this->ldap_config['secret'])) {
+					if(@ldap_bind($this->ldap_client, $this->ldap_config['client'], $this->ldap_config['secret'])) {
 						return true;
 					}
+
 				}
 			}
 		}
@@ -61,29 +78,26 @@ class LDAPAuthentication extends Action {
 
 	public function validateAccount($username, $password): mixed {
 		if(LDAPAuthentication::$clientInitialized) {
-			$user = $this->findUser($username);
+			$user = $this->findUser($username, $password);
 			if ($user) {
-				if (ldap_bind($this->ldap_client, $username, $password)) {
-					$attributes = ldap_get_attributes($this->ldap_client, $user);
-					if($this->ssoAuthOnly === false) {
-						if (!$this->validateWithILS($username)) {
-							if ($this->selfRegister($attributes)) {
-								return $this->validateWithILS($username);
-							} else {
-								AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
-							}
+				$attributes = $this->getUserAttributes($user);
+				if($this->ssoAuthOnly === false) {
+					if (!$this->validateWithILS($username)) {
+						if ($this->selfRegister($attributes)) {
+							return $this->validateWithILS($username);
+						} else {
+							AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
 						}
-					} else {
-						if(!$this->validateWithAspen($username)) {
-							if($this->createNewAspenUser($attributes)) {
-								return $this->validateWithAspen($username);
-							} else {
-								AspenError::raiseError(new AspenError('Unable to create account with Aspen for new LDAP user.'));
-							}
-						}
-					}
+					} return $this->validateWithILS($username);
 				} else {
-					AspenError::raiseError(new AspenError('Unable to authenticate LDAP user. ' . ldap_error($this->ldap_client)));
+					if(!$this->validateWithAspen($username)) {
+						$newUser = $this->createNewAspenUser($attributes);
+						if($newUser instanceof User) {
+							return $this->validateWithAspen($username);
+						} else {
+							AspenError::raiseError(new AspenError('Unable to create account with Aspen for new LDAP user.'));
+						}
+					} return $this->validateWithAspen($username);
 				}
 			}
 			AspenError::raiseError(new AspenError('Unable to find user with that username in LDAP. ' . ldap_error($this->ldap_client)));
@@ -92,11 +106,40 @@ class LDAPAuthentication extends Action {
 		return false;
 	}
 
-	private function findUser($username): mixed {
+	private function findUser($username, $password): mixed {
 		if($this->ldap_config['ou']) {
-			return ldap_search($this->ldap_client, $this->ldap_config['baseDir'], '(&(' . $this->ldap_config['idAttr'] . '=' . $username . ')(ou=' . $this->ldap_config['ou'] . '))');
+			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], '(&(' . $this->ldap_config['idAttr'] . '=' . $username . ')(ou=' . $this->ldap_config['ou'] . '))');
+		} else {
+			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], $this->ldap_config['idAttr'] . '=' . $username);
 		}
-		return ldap_search($this->ldap_client, $this->ldap_config['baseDir'], $this->ldap_config['idAttr'] . '=' . $username);
+		return @ldap_first_entry($this->ldap_client, $result);
+	}
+
+	private function getUserAttributes($entry) {
+		if(!@ldap_get_attributes($this->ldap_client, $entry)) {
+			AspenError::raiseError(new AspenError(@ldap_error($this->ldap_client) . ' Code: ' . @ldap_errno($this->ldap_client)));
+			die();
+		}
+
+		$attributes = @ldap_get_attributes($this->ldap_client, $entry);
+		$user = [];
+		for ($i = 0; $i < $attributes['count']; $i++) {
+			$name = $attributes[$i];
+			$attribute = $attributes[$name];
+
+			$values = [];
+			for ($j = 0; $j < $attribute['count']; $j++)  {
+				$value = $attribute[$j];
+				if (strtolower($name) === 'jpegphoto' || strtolower($name) === 'objectguid') {
+					$values[] = base64_encode($value);
+				} else
+					$values[] = $value;
+			}
+
+			$user[$name] = $values;
+		}
+
+		return $user;
 	}
 
 	private function validateWithILS($username): bool {
@@ -114,7 +157,7 @@ class LDAPAuthentication extends Action {
 	}
 
 	private function validateWithAspen($username): bool {
-		$user = UserAccount::findNewAspenUser('user_id', $username);
+		$user = UserAccount::findNewAspenUser('username', $username);
 
 		if(!$user instanceof User){
 			return false;
@@ -143,7 +186,8 @@ class LDAPAuthentication extends Action {
 
 	private function selfRegister($attributes): bool {
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		$selfReg = $catalogConnection->selfRegister(true, $this->setupUser($attributes));
+		$userAttributes = $this->setupUser($attributes);
+		$selfReg = $catalogConnection->selfRegister(true, $userAttributes);
 		if($selfReg['success'] != '1') {
 			return false;
 		}
@@ -174,24 +218,31 @@ class LDAPAuthentication extends Action {
 
 	private function setupUser($user):array {
 		return [
-			'email' => $this->searchArray($user, 'email'),
-			'firstname' => $this->searchArray($user, 'firstname'),
-			'lastname' => $this->searchArray($user, 'lastname'),
-			'cat_username' => $this->searchArray($user, 'username'),
-			'category_id' => $this->searchArray($user, 'patronType'),
+			'email' => $this->searchArray($user, $this->matchpoints['email']),
+			'firstname' => $this->searchArray($user, $this->matchpoints['firstName']),
+			'lastname' => $this->searchArray($user, $this->matchpoints['lastName']),
+			'username' => $this->searchArray($user, $this->matchpoints['userId']),
+			'displayName' => $this->searchArray($user, $this->matchpoints['displayName']),
+			'cat_username' => $this->searchArray($user, $this->matchpoints['username']),
+			'category_id' => $this->searchArray($user, $this->matchpoints['patronType']),
 		];
 	}
 
 	private function createNewAspenUser($user) {
 		global $library;
 		$tmpUser = new User();
-		$tmpUser->email = $this->searchArray($user, 'email');
-		$tmpUser->firstname = $this->searchArray($user, 'firstname');
-		$tmpUser->lastname = $this->searchArray($user, 'lastname') ?? '';
-		$tmpUser->username = $this->searchArray($user, 'username');
+		$tmpUser->email = $this->searchArray($user, $this->matchpoints['email']);
+		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
+		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
+		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
 		$tmpUser->phone = '';
-		$tmpUser->displayName = '';
+		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
 		$tmpUser->patronType = '';
+		if($this->searchArray($user, $this->matchpoints['patronType'])) {
+			$tmpUser->patronType = $this->searchArray($user, $this->matchpoints['patronType']) ?? '';
+		} elseif($this->matchpoints['patronType_fallback']) {
+			$tmpUser->patronType = $this->matchpoints['patronType_fallback'];
+		}
 		$tmpUser->trackReadingHistory = false;
 
 		$location = new Location();
@@ -200,38 +251,29 @@ class LDAPAuthentication extends Action {
 		if (!$location->find(true)) {
 			$tmpUser->homeLocationId = 0;
 		} else {
-			$tmpUser->homeLocationId = $location->code;
+			$tmpUser->homeLocationId = $location->locationId;
 		}
 		$tmpUser->myLocation1Id = 0;
 		$tmpUser->myLocation2Id = 0;
 		$tmpUser->created = date('Y-m-d');
 		if(!$tmpUser->insert()) {
 			global $logger;
-			$logger->log('Error creating Aspen user ' . print_r($this->searchArray($user, 'username'), true), Logger::LOG_ERROR);
+			$logger->log('Error creating Aspen user ' . print_r($this->searchArray($user, $this->matchpoints['userId']), true), Logger::LOG_ERROR);
 			return false;
 		}
 
-		return UserAccount::findNewAspenUser('user_id', $this->searchArray($user, 'username'));
+		return UserAccount::findNewAspenUser('username', $this->searchArray($user, $this->matchpoints['userId']));
 	}
 
 	public function searchArray($array, $needle) {
-		$result = false;
-		foreach ($array as $obj) {
-			if (is_array($obj)) {
-				foreach ($obj as $n) {
-					if (array_key_exists($needle, $n)) {
-						$result = $n[$needle];
-						break;
-					}
-				}
+		if (array_key_exists($needle, $array)) {
+			if(is_array($array[$needle])) {
+				return $array[$needle][0];
 			} else {
-				if (array_key_exists($needle, $obj)) {
-					$result = $obj[$needle];
-					break;
-				}
+				return $array[$needle];
 			}
 		}
-		return $result;
+		return false;
 	}
 
 	function launch() {}
