@@ -776,7 +776,14 @@ class SSOSetting extends DataObject {
 						'canEdit' => false,
 						'hideInLists' => true,
 						'canAddNew' => false,
-						'canDelete' => false,
+						'canDelete' => true,
+						'additionalOneToManyActions' => [
+							0 => [
+								'text' => 'Reset Data Mapping to Defaults',
+								'url' => '/Admin/SSOSettings?id=$id&amp;objectAction=resetDataMappingToDefault',
+								'class' => 'btn-danger',
+							],
+						],
 					],
 				],
 			],
@@ -1068,6 +1075,29 @@ class SSOSetting extends DataObject {
 			// another site may use it
 			return '';
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function resetDataMappingToDefault() {
+		$dataMapping = new SSOMapping();
+		$ssoSettingsId = $_REQUEST['id'];
+		$dataMapping->ssoSettingId = $ssoSettingsId;
+		if($dataMapping->find(true)) {
+			$dataMapping->clearExistingDataMapping();
+			$defaultMapping = SSOMapping::getDefaults($ssoSettingsId);
+			$dataMapping->update();
+		}
+		header('Location: /Admin/SSOSettings?objectAction=edit&id=' . $ssoSettingsId);
+		die();
+	}
+
+	public function clearExistingDataMapping() {
+		$this->clearOneToManyOptions('SSOMapping', 'ssoSettingId');
+		$this->_dataMapping = [];
+	}
+
+	function setDataMappingValues($value) {
+		$this->_dataMapping = $value;
 	}
 
 }
