@@ -1,8 +1,8 @@
 #!/bin/sh
 
 #This will need to be copied to the server manually to do the setup.
-#Expects to be installed on CentOS8
-#Run as sudo ./installer.sh
+#Expects to be installed on CentOS7
+#Run as sudo ./installer_centos7.sh
 yum check-update
 yum -y install wget
 yum -y install httpd
