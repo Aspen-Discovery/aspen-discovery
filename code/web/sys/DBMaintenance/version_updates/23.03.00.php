@@ -84,6 +84,15 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_sso_auth_only
+		'migrate_library_sso_settings' => [
+			'title' => 'Migrate Library SSO Settings to SSO Settings',
+			'description' => 'Migrate any existing SSO Settings in Library Systems to SSO Settings',
+			'continueOnError' => false,
+			'sql' => [
+				'moveLibrarySSOSettings',
+			]
+		],
+		//migrate_library_sso_settings
 
 		//kodi
 
@@ -117,5 +126,58 @@ function updateAccountProfileInLibrarySettings(/** @noinspection PhpUnusedParame
 			$librarySettings->accountProfileId = $accountProfileId;
 			$librarySettings->update();
 		}
+	}
+}
+
+/** @noinspection PhpUnused */
+function moveLibrarySSOSettings(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+	global $aspen_db;
+	$oldLibrarySettingsSQL = 'SELECT libraryId, displayName, ssoXmlUrl, ssoUsernameAttr, ssoUniqueAttribute, ssoPhoneAttr, ssoPatronTypeFallback, ssoPatronTypeAttr, ssoName, ssoMetadataFilename, ssoLibraryIdFallback, ssoLibraryIdAttr, ssoLastnameAttr, ssoIdAttr, ssoFirstnameAttr, ssoEntityId, ssoEmailAttr, ssoDisplayNameAttr, ssoCityAttr, ssoCategoryIdFallback, ssoCategoryIdAttr, ssoAddressAttr FROM Library WHERE ssoSettingId = -1';
+	$oldLibrarySettingsRS = $aspen_db->query($oldLibrarySettingsSQL, PDO::FETCH_ASSOC);
+	$oldLibrarySettingsRow = $oldLibrarySettingsRS->fetch();
+
+	require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+	while ($oldLibrarySettingsRow != null) {
+		$ssoSettingId = '-1';
+		$ssoSetting = new SSOSetting();
+		$ssoSetting->ssoEntityId = $oldLibrarySettingsRow['ssoEntityId'];
+		$ssoSetting->ssoXmlUrl = $oldLibrarySettingsRow['ssoXmlUrl'];
+		$ssoSetting->ssoUsernameAttr = $oldLibrarySettingsRow['ssoUsernameAttr'];
+		$ssoSetting->ssoUniqueAttribute = $oldLibrarySettingsRow['ssoUniqueAttribute'];
+		$ssoSetting->ssoPhoneAttr = $oldLibrarySettingsRow['ssoPhoneAttr'];
+		$ssoSetting->ssoPatronTypeAttr = $oldLibrarySettingsRow['ssoPatronTypeAttr'];
+		$ssoSetting->ssoPatronTypeFallback = $oldLibrarySettingsRow['ssoPatronTypeFallback'];
+		$ssoSetting->ssoName = $oldLibrarySettingsRow['ssoName'];
+		$ssoSetting->ssoMetadataFilename = $oldLibrarySettingsRow['ssoMetadataFilename'];
+		$ssoSetting->ssoLibraryIdAttr = $oldLibrarySettingsRow['ssoLibraryIdAttr'];
+		$ssoSetting->ssoLibraryIdFallback = $oldLibrarySettingsRow['ssoLibraryIdFallback'];
+		$ssoSetting->ssoLastnameAttr = $oldLibrarySettingsRow['ssoLastnameAttr'];
+		$ssoSetting->ssoIdAttr = $oldLibrarySettingsRow['ssoIdAttr'];
+		$ssoSetting->ssoFirstnameAttr = $oldLibrarySettingsRow['ssoFirstnameAttr'];
+		$ssoSetting->ssoEmailAttr = $oldLibrarySettingsRow['ssoEmailAttr'];
+		$ssoSetting->ssoDisplayNameAttr = $oldLibrarySettingsRow['ssoDisplayNameAttr'];
+		$ssoSetting->ssoCityAttr = $oldLibrarySettingsRow['ssoCityAttr'];
+		$ssoSetting->ssoCategoryIdAttr = $oldLibrarySettingsRow['ssoCategoryIdAttr'];
+		$ssoSetting->ssoCategoryIdFallback = $oldLibrarySettingsRow['ssoCategoryIdFallback'];
+		$ssoSetting->ssoAddressAttr = $oldLibrarySettingsRow['ssoAddressAttr'];
+		$ssoSetting->service = 'saml';
+		if ($ssoSetting->find(true)) {
+			$ssoSettingId = $ssoSetting->id;
+		} else {
+			$ssoSetting->name = $oldLibrarySettingsRow['displayName'] . ' SAML Settings';
+			$ssoSetting->service = 'saml';
+			if ($ssoSetting->insert()) {
+				$ssoSettingId = $ssoSetting->id;
+			}
+		}
+
+		$library = new Library();
+		$library->libraryId = $oldLibrarySettingsRow['libraryId'];
+		if ($library->find(true)) {
+			$library->ssoSettingId = $ssoSettingId;
+			$library->update();
+		}
+
+		$oldLibrarySettingsRow = $oldLibrarySettingsRS->fetch();
 	}
 }
