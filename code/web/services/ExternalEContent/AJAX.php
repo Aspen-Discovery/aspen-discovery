@@ -68,6 +68,121 @@ class ExternalEContent_AJAX extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function showSelectItemToViewForm(): array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		$recordDriver = $this->loadRecordDriver($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$idWithSource = $recordDriver->getIdWithSource();
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$allItems = $relatedRecord->getItems();
+			$interface->assign('items', $allItems);
+
+			$buttonTitle = translate([
+				'text' => 'Access Online',
+				'isPublicFacing' => true,
+			]);
+			return [
+				'title' => translate([
+					'text' => 'Select Link to View',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("ExternalEContent/select-view-item-link-form.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewItem\").submit()'><i class='fas fa-external-link-alt'></i> $buttonTitle</button>",
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => translate([
+					'text' => 'Could not find a record with that id',
+					'isPublicFacing' => true,
+				]),
+				'modalButtons' => "",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function viewItem(): array {
+		$id = $_REQUEST['id'];
+		$itemId = $_REQUEST['selectedItem'];
+
+		$recordDriver = $this->loadRecordDriver($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+
+			$idWithSource = $recordDriver->getIdWithSource();
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$allItems = $relatedRecord->getItems();
+			foreach ($allItems as $item) {
+				if ($item->itemId == $itemId) {
+					$relatedUrls = $item->getRelatedUrls();
+					foreach ($relatedUrls as $relatedUrl) {
+						return [
+							'success' => true,
+							'url' => $relatedUrl['url']
+						];
+					}
+				}
+			}
+		}
+		return [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => translate([
+				'text' => 'Could not find the url to direct to',
+				'isPublicFacing' => true,
+			]),
+			'modalButtons' => "",
+		];
+
+	}
+
+	function loadRecordDriver($id) : ExternalEContentDriver {
+		global $activeRecordProfile;
+		$subType = '';
+		if (isset($activeRecordProfile)) {
+			$subType = $activeRecordProfile;
+		} else {
+			$indexingProfile = new IndexingProfile();
+			$indexingProfile->name = 'ils';
+			if ($indexingProfile->find(true)) {
+				$subType = $indexingProfile->name;
+			} else {
+				$indexingProfile = new IndexingProfile();
+				$indexingProfile->id = 1;
+				if ($indexingProfile->find(true)) {
+					$subType = $indexingProfile->name;
+				}
+			}
+		}
+
+
+		return new ExternalEContentDriver($subType . ':' . $id);
+	}
+
 	function getBreadcrumbs(): array {
 		return [];
 	}

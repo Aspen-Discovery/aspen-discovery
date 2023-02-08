@@ -53,7 +53,23 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 		global $configArray;
 		$actions = [];
 		$i = 0;
-		foreach ($relatedUrls as $urlInfo) {
+		if (count($relatedUrls) > 3) {
+			//We will show a popup to let people choose the URL they want
+			$title = translate([
+				'text' => 'Access Online',
+				'isPublicFacing' => true,
+			]);
+			$actions[] = [
+				'title' => $title,
+				'url' => '',
+				'onclick' => "return AspenDiscovery.EContent.selectItemLink('{$this->getId()}');",
+				'requireLogin' => false,
+				'type' => 'access_online',
+				'id' => "accessOnline_{$this->getId()}"
+			];
+		} elseif (count($relatedUrls)  == 1) {
+			$urlInfo = reset($relatedUrls);
+
 			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
 			$title = translate([
 				'text' => 'Access Online',
