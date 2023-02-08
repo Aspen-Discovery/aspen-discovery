@@ -2481,6 +2481,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		$items = $relatedRecord->getItems();
 		foreach ($items as $item) {
 			if ($pickupAtRule == 2) {
+				//Add all locations for the owning location's parent library
 				if (!isset($locations[$item->locationCode])) {
 					$location = new Location();
 					$location->code = $item->locationCode;
@@ -2492,6 +2493,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 			} else {
+				//Add the owning location
 				$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
 			}
 		}

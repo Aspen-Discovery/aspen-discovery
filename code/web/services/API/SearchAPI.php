@@ -267,7 +267,6 @@ class SearchAPI extends Action {
 				//Check to see how many settings we have
 				$numSettings = 1;
 				if (!empty($aspenModule->settingsClassPath) && !empty($aspenModule->settingsClassName)) {
-					/** @noinspection PhpIncludeInspection */
 					require_once ROOT_DIR . $aspenModule->settingsClassPath;
 					/** @var DataObject $settings */
 					$settings = new $aspenModule->settingsClassName;
@@ -276,7 +275,6 @@ class SearchAPI extends Action {
 				if ($numSettings == 0) {
 					continue;
 				}
-				/** @noinspection PhpIncludeInspection */
 				require_once ROOT_DIR . $aspenModule->logClassPath;
 				/** @var BaseLogEntry $logEntry */
 				$logEntry = new $aspenModule->logClassName();

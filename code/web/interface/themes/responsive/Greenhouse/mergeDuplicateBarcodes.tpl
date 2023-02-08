@@ -4,42 +4,77 @@
 			<h1 id="pageTitle">{$pageTitleShort}</h1>
 		</div>
 	</div>
-	{if isset($barcodesWithDuplicates)}
+	{if isset($duplicateUsers)}
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="alert alert-info">{translate text="This tool can be used to merge barcodes that have more than one user in the database for it." isAdminFacing=true}</div>
+			</div>
+		</div>
+		{if !empty($setupErrors)}
+			<div class="row">
+				<div class="col-xs-12">
+					{foreach from=$setupErrors item=setupError}
+						<div class="alert alert-danger">
+							{$setupError}
+						</div>
+					{/foreach}
+				</div>
+			</div>
+		{else}
+			<div class='editor'>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<button type="submit" name="submit" id="startMergeButton" onclick="startBarcodeMerge()" class="btn btn-primary">{translate text="Start Merge Process" isAdminFacing=true}</button>
+							<button type="submit" name="submit" id="stopMergeButton" onclick="stopBarcodeMerge()" class="btn btn-primary" disabled="disabled">{translate text="Stop Merge Process" isAdminFacing=true}</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		{/if}
 		<div class="row">
 			<div class="col-xs-12">
 				<h2>{translate text="Barcodes with Duplicates" isAdminFacing=true}</h2>
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-xs-3">
-				{translate text="Barcodes" isAdminFacing=true}
+			<div class="col-xs-2">
+				<strong>{translate text="Barcodes" isAdminFacing=true}</strong>
 			</div>
 			<div class="col-xs-3">
-				{translate text="Usernames" isAdminFacing=true}
+				<strong>{translate text="Usernames" isAdminFacing=true}</strong>
+			</div>
+			<div class="col-xs-2">
+				<strong>{translate text="Old User Id" isAdminFacing=true}</strong>
+			</div>
+			<div class="col-xs-2">
+				<strong>{translate text="New User Id" isAdminFacing=true}</strong>
 			</div>
 			<div class="col-xs-3">
-				{translate text="Old User Id" isAdminFacing=true}
-			</div>
-			<div class="col-xs-3">
-				{translate text="New User Id" isAdminFacing=true}
+				<strong>{translate text="Merge Info" isAdminFacing=true}</strong>
 			</div>
 		</div>
-		{foreach from=$barcodesWithDuplicates item=barcodeInfo}
-			<div class="row">
-				<div class="col-xs-3">
+		{foreach from=$duplicateUsers item=barcodeInfo}
+			<div class="row barcodeRow" id="barcode_{$barcodeInfo.cat_username|escapeCSS}" data-barcode="{$barcodeInfo.cat_username}" data-processed="false">
+				<div class="col-xs-2">
 					{$barcodeInfo.cat_username}
 				</div>
 				<div class="col-xs-3">
 					{$barcodeInfo.usernames}
 				</div>
-				<div class="col-xs-3">
-					{$barcodeInfo.oldUserId}
+				<div class="col-xs-2 oldUserId">
+{*					{$barcodeInfo.oldUserId}*}
 				</div>
-				<div class="col-xs-3">
-					{$barcodeInfo.newUserId}
+				<div class="col-xs-2 newUserId">
+{*					{$barcodeInfo.newUserId}*}
+				</div>
+				<div class="col-xs-3 mergeInfo">
+
 				</div>
 			</div>
 		{/foreach}
+	{else}
+		<p>{translate text="There are no users with duplicate barcodes" isAdminFacing=true}</p>
 	{/if}
 	{if isset($mergeResults)}
 		<div class="row">
@@ -125,34 +160,71 @@
 				</div>
 			{/if}
 		</div>
-	{else}
-		<div class="row">
-			<div class="col-xs-12">
-				<div class="alert alert-info">{translate text="This tool can be used to merge barcodes that have more than one user in the database for it." isAdminFacing=true}</div>
-			</div>
-		</div>
-		{if !empty($setupErrors)}
-			<div class="row">
-				<div class="col-xs-12">
-					{foreach from=$setupErrors item=setupError}
-						<div class="alert alert-danger">
-							{$setupError}
-						</div>
-					{/foreach}
-				</div>
-			</div>
-		{else}
-			<form id='importForm' method="post" role="form" onsubmit="setFormSubmitting();" aria-label="{translate text="Merge Users With Duplicate Barcodes" isAdminFacing=true inAttribute=true}">
-				<div class='editor'>
-					<div class="row">
-						<div class="col-xs-12">
-							<div class="form-group">
-								<button type="submit" name="submit" value="mergeUsersWithDuplicateBarcodes" class="btn btn-primary">{translate text="Merge Users With Duplicate Barcodes" isAdminFacing=true}</button>
-							</div>
-						</div>
-					</div>
-				</div>
-			</form>
-		{/if}
 	{/if}
 {/strip}
+{literal}
+	<script type="text/javascript">
+		var numProcessing = 0;
+		var stopProcessing = 0;
+		function startBarcodeMerge() {
+			stopProcessing = 0;
+			mergeBarcodes();
+		}
+
+		function mergeBarcodes() {
+			$("#startMergeButton").attr("disabled", "disabled");
+			$("#stopMergeButton").removeAttr("disabled")
+			var allBarcodeRows = document.getElementsByClassName('barcodeRow');
+			for (var i = 0; i < allBarcodeRows.length; i++) {
+				var barcodeRow = allBarcodeRows[i];
+				mergeBarcode(barcodeRow);
+				if (numProcessing >= 5) {
+					if (stopProcessing === 0) {
+						setTimeout(function () {
+							if (stopProcessing === 0) {
+								mergeBarcodes();
+							}
+						}, 1000);
+					}
+					break;
+				}
+			}
+			stopProcessing = 0;
+		}
+
+		function stopBarcodeMerge() {
+			stopProcessing = 1;
+			$("#stopMergeButton").attr("disabled", "disabled");
+			$("#startMergeButton").removeAttr("disabled")
+		}
+
+		function mergeBarcode(barcodeRow) {
+			if (barcodeRow.getAttribute("data-processed") === "false") {
+				numProcessing++;
+				var barcodeValue = barcodeRow.getAttribute("data-barcode");
+				var barcodeRowId = barcodeRow.getAttribute("id");
+				$("#" + barcodeRowId + " .mergeInfo").html("Processing " + barcodeValue);
+				barcodeRow.setAttribute("data-processed", "true");
+				var url = Globals.path + '/Greenhouse/AJAX?method=mergeBarcode&barcode=' + barcodeValue;
+				$.ajax({
+					url: url,
+					dataType: 'json',
+					success: function (data) {
+						if (data.success) {
+							$("#" + barcodeRowId + " .oldUserId").html(data.oldUserId);
+							$("#" + barcodeRowId + " .newUserId").html(data.newUserId);
+							$("#" + barcodeRowId + " .mergeInfo").html(data.message);
+						}else {
+							$("#" + barcodeRowId + " .mergeInfo").html(data.message);
+						}
+						numProcessing--;
+					},
+					async: true
+				}).fail(function () {
+					$("#" + barcodeRowId + " .mergeInfo").html("AJAX error<br/>" + Globals.requestFailedBody);
+					numProcessing--;
+				});
+			}
+		}
+	</script>
+{/literal}

@@ -91,10 +91,10 @@ export async function createList(title, description, isPublic = false, url) {
      }
 }
 
-export async function createListFromTitle(title, description, access, items) {
+export async function createListFromTitle(title, description, access, items, url) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),

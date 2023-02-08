@@ -50,7 +50,9 @@
 								</thead>
 								<tbody>
 								{foreach from=$sectionPermissions item=permission}
-									<tr>
+									{if $permission->name == "Administer ProPay"} {*//PROPAY don't display propay permission*}
+									{else}
+									<tr id="{$permission->name}">
 										<th scope="row" style="vertical-align: middle;">
 											<span style="display: block">{translate text=$permission->name isAdminFacing=true}</span>
 											<small class="text-muted">{translate text=$permission->description isAdminFacing=true}</small>
@@ -61,6 +63,7 @@
 											</div>
 										</td>
 									</tr>
+									{/if}
 								{/foreach}
 								</tbody>
 							</table>

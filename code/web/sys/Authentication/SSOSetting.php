@@ -190,7 +190,7 @@ class SSOSetting extends DataObject {
 					],
 					'clientSecret' => [
 						'property' => 'clientSecret',
-						'type' => 'text',
+						'type' => 'storedPassword',
 						'label' => 'Client Secret',
 						'required' => false,
 						'description' => 'Client secret used for accessing the gateway provider',

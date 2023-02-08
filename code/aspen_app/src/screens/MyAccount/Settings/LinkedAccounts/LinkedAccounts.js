@@ -1,15 +1,14 @@
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
-import { Box, Divider, HStack, Button, Text, Heading, FlatList } from 'native-base';
+import { Box, Divider, HStack, Button, Text, Heading, FlatList, ScrollView } from 'native-base';
 import React from 'react';
-import {SafeAreaView, ScrollView} from 'react-native';
 
 import { DisplayMessage } from '../../../../components/Notifications';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
 import { translate } from '../../../../translations/translations';
 import AddLinkedAccount from './AddLinkedAccount';
 import { LibrarySystemContext, UserContext } from '../../../../context/initialContext';
-import { refreshProfile, getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount, reloadProfile } from '../../../../util/api/user';
+import { getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount, reloadProfile } from '../../../../util/api/user';
 
 export const MyLinkedAccounts = () => {
      const navigation = useNavigation();
@@ -47,8 +46,7 @@ export const MyLinkedAccounts = () => {
      }
 
      return (
-         <ScrollView>
-          <Box flex={1} safeArea={5}>
+         <ScrollView p={5} flex={1}>
                <DisplayMessage type="info" message={translate('linked_accounts.info_message')} />
                <Heading fontSize="lg" pb={2}>
                     {translate('linked_accounts.additional_accounts')}
@@ -62,7 +60,6 @@ export const MyLinkedAccounts = () => {
                </Heading>
                <Text>{translate('linked_accounts.following_accounts_can_view')}</Text>
                <FlatList data={viewers} renderItem={({ item }) => <Account account={item} type="viewer" />} ListEmptyComponent={Empty} keyExtractor={(item, index) => index.toString()} />
-          </Box>
          </ScrollView>
      );
 };
@@ -109,8 +106,8 @@ const Account = (data) => {
 
      if (account) {
           return (
-               <HStack space={3} justifyContent="space-between" pt={2} pb={2} alignItems="center">
-                    <Text bold isTruncated w="75%">
+               <HStack justifyContent="space-between" pt={2} pb={2} alignItems="center" alignContent="flex-start">
+                    <Text bold isTruncated w="75%" maxW="75%">
                          {account.displayName} - {account.homeLocation}
                     </Text>
                     <Button isLoading={isRemoving} isLoadingText="Removing..." colorScheme="warning" size="sm" onPress={() => removeAccount()}>

@@ -1,10 +1,14 @@
 <?php
 require_once ROOT_DIR . '/services/Greenhouse/UserMerger.php';
+require_once ROOT_DIR . '/sys/Utils/UserUtils.php';
 
 class MergeDuplicateBarcodes extends UserMerger {
 	function launch() {
 		parent::launch();
 		global $interface;
+
+		$duplicateUsers = $this->getDuplicateUsers();
+		$interface->assign('duplicateUsers', $duplicateUsers);
 
 		if ($this->importDirExists && isset($_REQUEST['submit'])) {
 			$results = $this->mergeUsersWithDuplicateBarcodes();
@@ -14,6 +18,13 @@ class MergeDuplicateBarcodes extends UserMerger {
 		$interface->assign('setupErrors', $this->setupErrors);
 
 		$this->display('mergeDuplicateBarcodes.tpl', 'Merge Duplicate Barcodes', false);
+	}
+
+	function getDuplicateUsers() {
+		//Get a list of all barcodes that have more than one user for them
+		global $aspen_db;
+		$result = $aspen_db->query('select cat_username, count(*) as numUsers, GROUP_CONCAT(username) as usernames from user where cat_username != "" group by cat_username having numUsers > 1;');
+		return $result->fetchAll(PDO::FETCH_ASSOC);
 	}
 
 	function getBreadcrumbs(): array {
@@ -29,7 +40,7 @@ class MergeDuplicateBarcodes extends UserMerger {
 		global $aspen_db;
 		global $interface;
 		$mergeResults = $this->getBlankResult();
-		$result = $aspen_db->query('select cat_username, count(*) as numUsers from user where cat_username != "" group by cat_username having numUsers > 1;');
+		$result = $aspen_db->query("select cat_username, count(*) as numUsers from user where cat_username != '' group by cat_username having numUsers > 1;");
 		$allBarcodesWithDuplicates = $result->fetchAll(PDO::FETCH_ASSOC);
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		foreach ($allBarcodesWithDuplicates as $index => &$row) {
@@ -74,7 +85,7 @@ class MergeDuplicateBarcodes extends UserMerger {
 					//Merge the records
 					$mergeResults['numUsersUpdated']++;
 
-					$this->mergeUsers($oldUser, $newUser, $mergeResults);
+					UserUtils::mergeUsers($oldUser, $newUser, $mergeResults);
 				}
 			}
 		}
