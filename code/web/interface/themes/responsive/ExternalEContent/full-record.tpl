@@ -45,7 +45,7 @@
 							<div class="btn-group btn-group-vertical btn-block">
 								{* Options for the user to view online or download *}
 								{foreach from=$actions item=link}
-									<a href="{if !empty($link.url)}{$link.url}{else}#{/if}" {if !empty($link.onclick)}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if}>{translate text=$link.title isPublicFacing=true}</a>&nbsp;
+									<a href="{if !empty($link.url)}{$link.url}{else}#{/if}" {if !empty($link.onclick)}onclick="{$link.onclick}"{/if} class="btn btn-sm btn-action btn-wrap" {if !empty($link.target)}target="{$link.target}"{/if} {if !empty($link.id)}id="{$link.id}"{/if}>{translate text=$link.title isPublicFacing=true}</a>&nbsp;
 								{/foreach}
 							</div>
 						</div>

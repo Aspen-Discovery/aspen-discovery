@@ -99,7 +99,7 @@ class ExternalEContent_AJAX extends Action {
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch("ExternalEContent/select-view-item-link-form.tpl"),
-				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#view856\").submit()'>$buttonTitle</button>",
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewItem\").submit()'><i class='fas fa-external-link-alt'></i> $buttonTitle</button>",
 			];
 		} else {
 			return [
@@ -118,11 +118,9 @@ class ExternalEContent_AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function viewItem(): string {
-		global $interface;
-
+	function viewItem(): array {
 		$id = $_REQUEST['id'];
-		$linkId = $_REQUEST['linkId'];
+		$itemId = $_REQUEST['selectedItem'];
 
 		$recordDriver = $this->loadRecordDriver($id);
 		if ($recordDriver->isValid()) {
@@ -132,15 +130,35 @@ class ExternalEContent_AJAX extends Action {
 					$id,
 				] = explode(':', $id);
 			}
-			$interface->assign('id', $id);
 
-			$validUrls = $recordDriver->getViewable856Links();
-			header('Location: ' . $validUrls[$linkId]['url']);
-			die();
-		} else {
-			header('Location: ' . "/Record/$id");
-			die();
+			$idWithSource = $recordDriver->getIdWithSource();
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$allItems = $relatedRecord->getItems();
+			foreach ($allItems as $item) {
+				if ($item->itemId == $itemId) {
+					$relatedUrls = $item->getRelatedUrls();
+					foreach ($relatedUrls as $relatedUrl) {
+						return [
+							'success' => true,
+							'url' => $relatedUrl['url']
+						];
+					}
+				}
+			}
 		}
+		return [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => translate([
+				'text' => 'Could not find the url to direct to',
+				'isPublicFacing' => true,
+			]),
+			'modalButtons' => "",
+		];
+
 	}
 
 	function loadRecordDriver($id) : ExternalEContentDriver {
