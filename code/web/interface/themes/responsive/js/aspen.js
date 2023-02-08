@@ -5758,7 +5758,7 @@ AspenDiscovery.Account = (function () {
 				var loginErrorElem = $('#loginError');
 				var loadingElem = $('#loading');
 				var multiStep = $('#multiStep').val();
-				var ldapLogin = $('#ldapLogin').val();
+				var ldapLogin = $('#ldapLogin');
 				var url = Globals.path + "/AJAX/JSON?method=loginUser";
 				var params = {username: username, password: password, rememberMe: rememberMe, ldapLogin: ldapLogin};
 				if (!Globals.opac && AspenDiscovery.hasLocalStorage()) {
@@ -8991,29 +8991,26 @@ AspenDiscovery.Admin = (function () {
 		toggleoAuthFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowoAuthConfigSection').show();
-				$('#propertyRowdataMapping').show();
+				$('#propertyRowdataMappingSection').show();
 			} else {
 				$('#propertyRowoAuthConfigSection').hide();
-				$('#propertyRowdataMapping').hide();
 				document.getElementById("clientSecret").value = "";
 			}
 		},
 		toggleSamlFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowsamlConfigSection').show();
-				$('#propertyRowdataMapping').hide();
+				$('#propertyRowdataMappingSection').hide();
 			} else {
 				$('#propertyRowsamlConfigSection').hide();
-				$('#propertyRowdataMapping').hide();
 			}
 		},
 		toggleLDAPFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowldapConfigSection').show();
-				$('#propertyRowdataMapping').show();
+				$('#propertyRowdataMappingSection').show();
 			} else {
 				$('#propertyRowldapConfigSection').hide();
-				$('#propertyRowdataMapping').hide();
 				document.getElementById("ldapPassword").value = "";
 			}
 		},

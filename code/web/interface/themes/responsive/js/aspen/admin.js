@@ -1630,29 +1630,26 @@ AspenDiscovery.Admin = (function () {
 		toggleoAuthFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowoAuthConfigSection').show();
-				$('#propertyRowdataMapping').show();
+				$('#propertyRowdataMappingSection').show();
 			} else {
 				$('#propertyRowoAuthConfigSection').hide();
-				$('#propertyRowdataMapping').hide();
 				document.getElementById("clientSecret").value = "";
 			}
 		},
 		toggleSamlFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowsamlConfigSection').show();
-				$('#propertyRowdataMapping').hide();
+				$('#propertyRowdataMappingSection').hide();
 			} else {
 				$('#propertyRowsamlConfigSection').hide();
-				$('#propertyRowdataMapping').hide();
 			}
 		},
 		toggleLDAPFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowldapConfigSection').show();
-				$('#propertyRowdataMapping').show();
+				$('#propertyRowdataMappingSection').show();
 			} else {
 				$('#propertyRowldapConfigSection').hide();
-				$('#propertyRowdataMapping').hide();
 				document.getElementById("ldapPassword").value = "";
 			}
 		},
