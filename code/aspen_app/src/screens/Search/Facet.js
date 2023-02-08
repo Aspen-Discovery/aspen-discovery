@@ -87,14 +87,16 @@ export default class Facet extends Component {
       navigation.setOptions({
         headerLeft: () => (
           <Pressable
+              mr={3}
             onPress={() => {
               this.updateGlobal();
               this.props.navigation.navigate("Filters", {
                 pendingFilters: SEARCH.pendingFilters,
               });
             }}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
-            <ChevronLeftIcon color="primary.baseContrast" />
+            <ChevronLeftIcon size={5} color="primary.baseContrast" />
           </Pressable>
         ),
         headerRight: () => (
