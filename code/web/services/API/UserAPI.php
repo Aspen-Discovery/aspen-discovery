@@ -796,10 +796,6 @@ class UserAPI extends Action {
 
 			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
 			$userData->promptForHoldNotifications = $promptForHoldNotifications;
-			$userData->holdNotificationInfo = [];
-			if($promptForHoldNotifications) {
-				$userData->holdNotificationInfo = $user->getCatalogDriver()->getHoldNotificationTemplate($user);
-			}
 
 			return [
 				'success' => true,
