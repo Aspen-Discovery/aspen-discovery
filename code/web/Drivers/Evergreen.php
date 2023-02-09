@@ -1688,7 +1688,6 @@ class Evergreen extends AbstractIlsDriver {
 			$interface->assign('primaryEmail', $user->email);
 
 			return [
-				'success' => true,
 				'preferences' => $notificationPreferences,
 				'primaryEmail' => $user->email,
 				'smsCarriers' => $smsCarriers,
@@ -1696,11 +1695,9 @@ class Evergreen extends AbstractIlsDriver {
 		}
 
 		return [
-			'success' => false,
-			'message' => translate([
-				'text' => 'Unable to load hold notification preferences from Evergreen',
-				'isPublicFacing' => true,
-			])
+			'preferences' => [],
+			'primaryEmail' => '',
+			'smsCarriers' => [],
 		];
 	}
 
