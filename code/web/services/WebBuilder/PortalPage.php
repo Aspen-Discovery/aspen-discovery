@@ -35,6 +35,9 @@ class WebBuilder_PortalPage extends Action {
 				global $interface;
 				$interface->assign('module', 'Error');
 				$interface->assign('action', 'Handle401');
+				$interface->assign('followupModule', 'WebBuilder');
+				$interface->assign('followupAction', 'PortalPage');
+				$interface->assign('id', $id);
 				require_once ROOT_DIR . "/services/Error/Handle401.php";
 				$actionClass = new Error_Handle401();
 				$actionClass->launch();
