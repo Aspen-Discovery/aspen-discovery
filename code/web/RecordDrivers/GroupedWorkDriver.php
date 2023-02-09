@@ -2545,6 +2545,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 					$variations = $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']);
 					$this->_relatedManifestations = [];
+					//KODI TODO: Build all possible related manifestations based on the unique formats & format categories within variations
+
+					//Get the variations from the database and add to the appropriate manifestation
 					/** @var  $allVariations Grouping_Variation[] */
 					$allVariations = [];
 					foreach ($variations as $variation) {
@@ -2552,12 +2555,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$this->_relatedManifestations[$variation['format']] = new Grouping_Manifestation($variation);
 						}
 						$variationObj = new Grouping_Variation($variation);
+						//Add to the correct manifestation
 						$this->_relatedManifestations[$variation['format']]->addVariation($variationObj);
 						$allVariations[$variationObj->databaseId] = $variationObj;
 					}
 
 					$records = $this->getRawRecordDataFromDB($databaseIds['uniqueRecordIds']);
 
+					//Load all records
 					/** @var Grouping_Record[] $allRecords */
 					$allRecords = [];
 					foreach ($records as $record) {
@@ -2572,6 +2577,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true);
 						$relatedRecords[$relatedRecord->id] = $relatedRecord;
 						$allRecords[$relatedRecord->databaseId] = $relatedRecord;
+
+						//KODI TODO: Add the record to the appropriate variation(s) - problem, we can't do it here because we don't have the right format and format category
+						//short term, we will ignore the format & format category in the record table. We can do a query of the items to figure out which variations to add
+						//the record to.
 					}
 
 					$scopedItems = $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']);
