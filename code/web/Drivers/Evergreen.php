@@ -1554,6 +1554,10 @@ class Evergreen extends AbstractIlsDriver {
 		return 'Record/evergreenHoldNotifications.tpl';
 	}
 
+	public function loadHoldNotificationInfo(User $user): ?array {
+		return $this->loadHoldNotificationInfoFromEvergreen($user);
+	}
+
 	public function getHoldNotificationPreferencesTemplate(User $user): ?string {
 		$this->loadHoldNotificationInfoFromEvergreen($user);
 		return 'evergreenHoldNotificationPreferences.tpl';
@@ -1650,6 +1654,7 @@ class Evergreen extends AbstractIlsDriver {
 		$interface->assign('smsCarriers', $smsCarriers);
 
 		//Load notification preferences
+		$notificationPreferences = [];
 		if (!empty($user) && !empty($user->cat_password)) {
 			$authToken = $this->getAPIAuthToken($user, false);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
@@ -1674,12 +1679,29 @@ class Evergreen extends AbstractIlsDriver {
 					}
 
 					$interface->assign($name, $value);
+					$notificationPreferences[$name]['name'] = $name;
+					$notificationPreferences[$name]['value'] = $value;
 				}
 			}
 
 			$user = UserAccount::getActiveUserObj();
 			$interface->assign('primaryEmail', $user->email);
+
+			return [
+				'success' => true,
+				'preferences' => $notificationPreferences,
+				'primaryEmail' => $user->email,
+				'smsCarriers' => $smsCarriers,
+			];
 		}
+
+		return [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unable to load hold notification preferences from Evergreen',
+				'isPublicFacing' => true,
+			])
+		];
 	}
 
 	function fetchIdl($className): array {
