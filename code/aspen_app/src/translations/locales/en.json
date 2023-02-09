@@ -122,6 +122,10 @@
     "notification_settings": "Notification Settings",
     "allow_notifications": "Allow Notifications"
   },
+  "library_card": {
+    "open_barcode": "Open Barcode",
+    "expires_on": "Expires on {{date}}"
+  },
   "saved_searches": {
     "title": "Saved Searches"
   },

@@ -21,7 +21,7 @@ let maxCategories = 5;
 export const DiscoverHomeScreen = () => {
      const [loading, setLoading] = React.useState(true);
      const navigation = useNavigation();
-     const { user, locations, accounts, lists, updatePickupLocations, updateLinkedAccounts, updateLists } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -70,9 +70,12 @@ export const DiscoverHomeScreen = () => {
                          }
                     });
 
-                    getLinkedAccounts(library.baseUrl).then((result) => {
-                         if (accounts !== result) {
-                              updateLinkedAccounts(result);
+                    getLinkedAccounts(user, cards, library).then((result) => {
+                         if (accounts !== result.accounts) {
+                              updateLinkedAccounts(result.accounts);
+                         }
+                         if (cards !== result.cards) {
+                              updateLibraryCards(result.cards);
                          }
                     });
                     console.log('updated patron things');

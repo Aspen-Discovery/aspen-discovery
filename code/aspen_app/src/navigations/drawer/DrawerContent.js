@@ -425,8 +425,6 @@ const LinkedAccounts = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
-     console.log(user);
-
      if (library.allowLinkedAccounts === '1') {
           return (
                <Pressable
