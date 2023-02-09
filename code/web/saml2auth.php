@@ -53,7 +53,7 @@ if($accountProfile->find(true)) {
 	if($accountProfile->authenticationMethod === 'sso') {
 		$ssoAuthOnly = true;
 	} else {
-		$this->ssoAuthOnly = $ssoSettings->ssoAuthOnly;
+		$ssoAuthOnly = $ssoSettings->ssoAuthOnly;
 	}
 }
 
