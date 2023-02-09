@@ -7,9 +7,11 @@
 				<div class="alert alert-info">
 					{translate text="You may be able to view this page if you sign in." isPublicFacing=true}
 				</div>
-				<div>
-					<a href='/MyAccount/Login?followupModule={$module}&followupAction={$action}&pageId={$id}' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
-				</div>
+				{if (!empty($followupModule) && !empty($followupAction))}
+					<div>
+						<a href='/MyAccount/Login?followupModule={$followupModule}&followupAction={$followupAction}{if !empty($id)}&pageId={$id}{/if}' class="btn btn-primary">{translate text="Sign In" isPublicFacing=true}</a>
+					</div>
+				{/if}
 			{/if}
 		</div>
 	</div>
