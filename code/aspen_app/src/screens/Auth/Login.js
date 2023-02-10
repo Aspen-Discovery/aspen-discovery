@@ -132,6 +132,7 @@ export default class Login extends Component {
      };
 
      renderListItem = (item, setShowModal, showModal) => {
+          const libraryIcon = item.favicon;
           let isCommunity = true;
           if (GLOBALS.slug !== 'aspen-lida') {
                isCommunity = false;
@@ -139,7 +140,17 @@ export default class Login extends Component {
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" onPress={() => this.setNewLibraryBranch(item, showModal)} pl="4" pr="5" py="2">
                     <HStack space={3} alignItems="center">
-                         <Image borderRadius={100} source={{ uri: item.favicon }} fallbackSource={require('../../themes/default/aspenLogo.png')} size={6} alt={item.name} />
+                         <Image
+                             key={item.name}
+                             borderRadius={100}
+                             source={{ uri: libraryIcon }}
+                             fallbackSource={require('../../themes/default/aspenLogo.png')}
+                             bg="warmGray.200"
+                             _dark={{bgColor: 'coolGray.800'}}
+                             size={{
+                                  base: '25px',
+                             }}
+                             alt={item.name} />
                          <VStack>
                               <Text
                                    bold
