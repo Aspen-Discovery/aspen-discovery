@@ -281,13 +281,15 @@ class UserAPI extends Action {
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
-					return [
-						'success' => false,
-						'id' => $invalidUser['id'],
-						'message' => $invalidUser['message'],
-						'resetToken' => $invalidUser['resetToken'] ?? null,
-						'userId' => $invalidUser['userId']
- 					];
+					if(isset($invalidUser['resetToken'])) {
+						return [
+							'success' => false,
+							'id' => $invalidUser['id'],
+							'message' => $invalidUser['message'],
+							'resetToken' => $invalidUser['resetToken'] ?? null,
+							'userId' => $invalidUser['userId']
+						];
+					}
 				}
 			}
 		}
