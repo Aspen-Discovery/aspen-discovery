@@ -211,7 +211,16 @@
     "holds_ready_for_pickup": "Holds Ready for Pickup",
     "holds_ready_for_pickup_message": "These titles have arrived at the library or are available online for you to use.",
     "holds_ready_for_pickup_none": "You do not have any holds that are ready to be picked up.",
-    "filter_by": "Filter by {{source}} ({{num}})"
+    "filter_by": "Filter by {{source}} ({{num}})",
+    "notify_for_pickup": "Notify when hold is ready for pickup?",
+    "email_notification": "Yes, by email to {{email}}",
+    "phone_notification": "Yes, by phone",
+    "sms_notification": "Yes, by text message",
+    "sms_carrier": "Mobile Carrier",
+    "sms_number": "Mobile Number",
+    "sms_select_carrier": "Please select a carrier",
+    "sms_charges": "Note: carrier charges may apply",
+    "sms_format": "Hint: use the full 10 digits of your phone #, no spaces, no dashes"
   },
   "lists": {
     "title": "Lists",
@@ -298,5 +307,10 @@
     "no_open_resource": "Unable to open resource",
     "no_valid_url": "A valid access URL has not been provided for the record",
     "device_block_browser": "There was a problem opening item. Try again"
+  },
+  "updates": {
+    "update_available": "Update Available",
+    "update_message": "An update is available",
+    "update_now": "Update Now"
   }
 }

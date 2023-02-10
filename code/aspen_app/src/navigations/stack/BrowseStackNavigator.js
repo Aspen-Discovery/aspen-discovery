@@ -64,7 +64,7 @@ const BrowseStackNavigator = () => {
                                    return <></>;
                               },
                               headerRight: () => (
-                                   <Pressable onPress={() => navigation.goBack()} ml={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                                         <CloseIcon color="primary.baseContrast" size={5} />
                                    </Pressable>
                               ),
@@ -80,7 +80,7 @@ const BrowseStackNavigator = () => {
                                return <></>;
                            },
                            headerRight: () => (
-                               <Pressable onPress={() => navigation.goBack()} ml={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                               <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                                    <CloseIcon color="primary.baseContrast" size={5} />
                                </Pressable>
                            ),
@@ -129,7 +129,7 @@ export const EditionsModal = () => {
                          }
                     },
                     headerRight: () => (
-                         <Pressable onPress={() => navigation.getParent().pop()} ml={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                         <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                               <CloseIcon size={5} color="primary.baseContrast" />
                          </Pressable>
                     ),
