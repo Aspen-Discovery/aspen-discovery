@@ -9,6 +9,7 @@ class SSOSetting extends DataObject {
 	public $service;
 	public $staffOnly;
 	public $bypassAspenLogin;
+	public $ssoAuthOnly;
 
 	//oAuth
 	public $clientId;
@@ -173,6 +174,13 @@ class SSOSetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Bypass the Aspen Discovery staff login page when using footer link',
 				'description' => 'Whether or not the staff login link in the footer should first send the user to the Aspen Discovery login page',
+			],
+			'ssoAuthOnly' => [
+				'property' => 'ssoAuthOnly',
+				'type' => 'checkbox',
+				'label' => 'Only authenticate users with single sign-on',
+				'description' => 'Whether or not users are authenticated only by single sign-on',
+				'note' => 'Aspen will not authenticate with the ILS when a user logs in with single sign-on. <em>This has potential security implications</em>',
 			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
@@ -342,26 +350,6 @@ class SSOSetting extends DataObject {
 								'hideInLists' => true,
 							]
 						]
-					],
-					'dataMapping' => [
-						'property' => 'dataMapping',
-						'type' => 'oneToMany',
-						'label' => 'User Data Mapping',
-						'renderAsHeading' => true,
-						'headingLevel' => 'h3',
-						'showBottomBorder' => true,
-						'description' => 'Define how service provider data matches up in Aspen',
-						'keyThis' => 'id',
-						'keyOther' => 'id',
-						'subObjectType' => 'SSOMapping',
-						'structure' => $fieldMapping,
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => false,
-						'canEdit' => false,
-						'hideInLists' => true,
-						'canAddNew' => true,
-						'canDelete' => true,
 					],
 				]
 			],
@@ -766,6 +754,39 @@ class SSOSetting extends DataObject {
 					],
 				],
 			],
+			'dataMappingSection' => [
+				'property' => 'dataMappingSection',
+				'type' => 'section',
+				'label' => 'Data Mapping',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'dataMapping' => [
+						'property' => 'dataMapping',
+						'type' => 'oneToMany',
+						'label' => 'User Profile',
+						'description' => 'Define how data matches up in Aspen and/or ILS',
+						'keyThis' => 'id',
+						'keyOther' => 'id',
+						'subObjectType' => 'SSOMapping',
+						'structure' => $fieldMapping,
+						'sortable' => false,
+						'storeDb' => true,
+						'allowEdit' => false,
+						'canEdit' => false,
+						'hideInLists' => true,
+						'canAddNew' => false,
+						'canDelete' => true,
+						'additionalOneToManyActions' => [
+							0 => [
+								'text' => 'Reset Data Mapping to Defaults',
+								'url' => '/Admin/SSOSettings?id=$id&amp;objectAction=resetDataMappingToDefault',
+								'class' => 'btn-danger',
+							],
+						],
+					],
+				],
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -815,6 +836,13 @@ class SSOSetting extends DataObject {
 			if ($dataMapping->find()) {
 				while ($dataMapping->fetch()) {
 					$this->_dataMapping[$dataMapping->id] = clone $dataMapping;
+				}
+			} else {
+				/** @var SSOMapping[] $defaultMappings */
+				// Default mappings to use when no mappings are defined
+				$defaultMappings = SSOMapping::getDefaults($this->id);
+				foreach ($defaultMappings as $index => $attributeMap) {
+					$this->_dataMapping[$attributeMap->id] = clone $attributeMap;
 				}
 			}
 		}
@@ -956,6 +984,10 @@ class SSOSetting extends DataObject {
 			'userId' => 'sub',
 			'firstName' => 'given_name',
 			'lastName' => 'family_name',
+			'displayName' => '',
+			'username' => '',
+			'patronType' => '',
+			'libraryCode' => ''
 		];
 
 		$mappings = new SSOMapping();
@@ -970,6 +1002,16 @@ class SSOSetting extends DataObject {
 				$matchpoints['firstName'] = $mappings->responseField;
 			} elseif ($mappings->aspenField == "last_name") {
 				$matchpoints['lastName'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == 'display_name') {
+				$matchpoints['displayName'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == 'username') {
+				$matchpoints['username'] = $mappings->responseField;
+			} elseif ($mappings->aspenField == 'patron_type') {
+				$matchpoints['patronType'] = $mappings->responseField;
+				$matchpoints['patronType_fallback'] = $mappings->fallbackValue;
+			} elseif ($mappings->aspenField == 'library_code') {
+				$matchpoints['libraryCode'] = $mappings->responseField;
+				$matchpoints['libraryCode_fallback'] = $mappings->fallbackValue;
 			}
 		}
 
@@ -1033,6 +1075,29 @@ class SSOSetting extends DataObject {
 			// another site may use it
 			return '';
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function resetDataMappingToDefault() {
+		$dataMapping = new SSOMapping();
+		$ssoSettingsId = $_REQUEST['id'];
+		$dataMapping->ssoSettingId = $ssoSettingsId;
+		if($dataMapping->find(true)) {
+			$dataMapping->clearExistingDataMapping();
+			$defaultMapping = SSOMapping::getDefaults($ssoSettingsId);
+			$dataMapping->update();
+		}
+		header('Location: /Admin/SSOSettings?objectAction=edit&id=' . $ssoSettingsId);
+		die();
+	}
+
+	public function clearExistingDataMapping() {
+		$this->clearOneToManyOptions('SSOMapping', 'ssoSettingId');
+		$this->_dataMapping = [];
+	}
+
+	function setDataMappingValues($value) {
+		$this->_dataMapping = $value;
 	}
 
 }

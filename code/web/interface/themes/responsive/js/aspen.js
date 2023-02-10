@@ -5758,8 +5758,9 @@ AspenDiscovery.Account = (function () {
 				var loginErrorElem = $('#loginError');
 				var loadingElem = $('#loading');
 				var multiStep = $('#multiStep').val();
+				var ldapLogin = $('#ldapLogin');
 				var url = Globals.path + "/AJAX/JSON?method=loginUser";
-				var params = {username: username, password: password, rememberMe: rememberMe};
+				var params = {username: username, password: password, rememberMe: rememberMe, ldapLogin: ldapLogin};
 				if (!Globals.opac && AspenDiscovery.hasLocalStorage()) {
 					var showCovers = window.localStorage.getItem('showCovers') || false;
 					if (showCovers && showCovers.length > 0) { // if there is a set value, pass it back with the login info
@@ -8960,7 +8961,6 @@ AspenDiscovery.Admin = (function () {
 				AspenDiscovery.Admin.toggleOAuthGatewayFields();
 				AspenDiscovery.Admin.toggleOAuthPrivateKeysField();
 				AspenDiscovery.Admin.toggleSamlMetadataFields();
-
 			} else if (ssoService === "saml") {
 				AspenDiscovery.Admin.toggleSamlFields('show');
 				AspenDiscovery.Admin.toggleoAuthFields('hide');
@@ -8991,6 +8991,7 @@ AspenDiscovery.Admin = (function () {
 		toggleoAuthFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowoAuthConfigSection').show();
+				$('#propertyRowdataMappingSection').show();
 			} else {
 				$('#propertyRowoAuthConfigSection').hide();
 				document.getElementById("clientSecret").value = "";
@@ -8999,6 +9000,7 @@ AspenDiscovery.Admin = (function () {
 		toggleSamlFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowsamlConfigSection').show();
+				$('#propertyRowdataMappingSection').hide();
 			} else {
 				$('#propertyRowsamlConfigSection').hide();
 			}
@@ -9006,6 +9008,7 @@ AspenDiscovery.Admin = (function () {
 		toggleLDAPFields: function (displayMode) {
 			if (displayMode === "show") {
 				$('#propertyRowldapConfigSection').show();
+				$('#propertyRowdataMappingSection').show();
 			} else {
 				$('#propertyRowldapConfigSection').hide();
 				document.getElementById("ldapPassword").value = "";
@@ -9086,7 +9089,15 @@ AspenDiscovery.Admin = (function () {
 					return false;
 				}
 			});
-		}
+		},
+		toggleSSOSettingsInAccountProfile: function () {
+			var authMethod = $("#authenticationMethodSelect").val();
+			if (authMethod === "sso") {
+				$('#propertyRowssoSettingId').show();
+			} else {
+				$('#propertyRowssoSettingId').hide();
+			}
+		},
 	};
 }(AspenDiscovery.Admin || {}));
 AspenDiscovery.Authors = (function () {

@@ -13,14 +13,17 @@ import { getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewer
 export const MyLinkedAccounts = () => {
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(true);
-     const { accounts, viewers, updateLinkedAccounts, updateLinkedViewerAccounts } = React.useContext(UserContext);
+     const { user, accounts, viewers, cards, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
 
      React.useEffect(() => {
           const update = navigation.addListener('focus', async () => {
-               await getLinkedAccounts(library.baseUrl).then((result) => {
-                    if (accounts !== result) {
-                         updateLinkedAccounts(result);
+               await getLinkedAccounts(user, cards, library).then((result) => {
+                    if (accounts !== result.accounts) {
+                         updateLinkedAccounts(result.accounts);
+                    }
+                    if(cards !== result.cards) {
+                         updateLibraryCards(result.cards);
                     }
                });
                await getViewerAccounts(library.baseUrl).then((result) => {
@@ -68,13 +71,16 @@ const Account = (data) => {
      const account = data.account;
      const type = data.type;
      const [isRemoving, setIsRemoving] = React.useState(false);
-     const { user, accounts, viewers, updateUser, updateLinkedAccounts, updateLinkedViewerAccounts } = React.useContext(UserContext);
+     const { user, accounts, cards, viewers, updateUser, updateLinkedAccounts, updateLibraryCards, updateLinkedViewerAccounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
 
      const refreshLinkedAccounts = async () => {
-          await getLinkedAccounts(library.baseUrl).then((result) => {
-               if (accounts !== result) {
-                    updateLinkedAccounts(result);
+          await getLinkedAccounts(user, cards, library).then((result) => {
+               if (accounts !== result.accounts) {
+                    updateLinkedAccounts(result.accounts);
+               }
+               if(cards !== result.cards) {
+                    updateLibraryCards(result.cards);
                }
           });
           await getViewerAccounts(library.baseUrl).then((result) => {
@@ -88,7 +94,6 @@ const Account = (data) => {
      };
 
      const removeAccount = async () => {
-          console.log(type);
           if (type === 'viewer') {
                setIsRemoving(true);
                removeViewerAccount(account.id, library.baseUrl).then(async (res) => {

@@ -11,6 +11,9 @@ class MyAccount_Login extends Action {
 		global $locationSingleton;
 		global $configArray;
 
+		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
+
 		// Assign the followup task to come back to after they login -- note that
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
@@ -65,11 +68,22 @@ class MyAccount_Login extends Action {
 
 		//SSO
 		$loginOptions = 0;
-		if ($library->ssoSettingId != -1) {
+		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
+				$ssoSettingId = null;
+				if($isPrimaryAccountAuthenticationSSO) {
+					require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+					$accountProfile = new AccountProfile();
+					$accountProfile->id = $library->accountProfileId;
+					if($accountProfile->find(true)) {
+						$ssoSettingId = $accountProfile->ssoSettingId;
+					}
+				} else {
+					$ssoSettingId = $library->ssoSettingId;
+				}
 				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 				$sso = new \SSOSetting();
-				$sso->id = $library->ssoSettingId;
+				$sso->id = $ssoSettingId;
 				if ($sso->find(true)) {
 					if(!$sso->staffOnly) {
 						$loginOptions = $sso->loginOptions;

@@ -14,7 +14,7 @@
 				{/if}
 				{if empty($loggedIn)}{* Not Logged In *}
 					{if $ssoStaffOnly && !(empty($ssoService))}
-						{if $bypassAspenLogin == '1'}
+						{if $bypassAspenLogin == '1' && $ssoService != 'ldap'}
 							{if $ssoService == 'oauth'}
 								<br><small id="ssoStaffLogin"><a href="/init_oauth.php" id="ssoStaffLoginLink">{translate text='Staff Login' isPublicFacing=true}</a></small>
 							{/if}
