@@ -132,7 +132,7 @@ function updateAccountProfileInLibrarySettings(/** @noinspection PhpUnusedParame
 /** @noinspection PhpUnused */
 function moveLibrarySSOSettings(/** @noinspection PhpUnusedParameterInspection */ &$update) {
 	global $aspen_db;
-	$oldLibrarySettingsSQL = 'SELECT libraryId, displayName, ssoXmlUrl, ssoUsernameAttr, ssoUniqueAttribute, ssoPhoneAttr, ssoPatronTypeFallback, ssoPatronTypeAttr, ssoName, ssoMetadataFilename, ssoLibraryIdFallback, ssoLibraryIdAttr, ssoLastnameAttr, ssoIdAttr, ssoFirstnameAttr, ssoEntityId, ssoEmailAttr, ssoDisplayNameAttr, ssoCityAttr, ssoCategoryIdFallback, ssoCategoryIdAttr, ssoAddressAttr FROM Library WHERE ssoSettingId = -1';
+	$oldLibrarySettingsSQL = 'SELECT libraryId, displayName, ssoXmlUrl, ssoUsernameAttr, ssoUniqueAttribute, ssoPhoneAttr, ssoPatronTypeFallback, ssoPatronTypeAttr, ssoName, ssoMetadataFilename, ssoLibraryIdFallback, ssoLibraryIdAttr, ssoLastnameAttr, ssoIdAttr, ssoFirstnameAttr, ssoEntityId, ssoEmailAttr, ssoDisplayNameAttr, ssoCityAttr, ssoCategoryIdFallback, ssoCategoryIdAttr, ssoAddressAttr FROM library WHERE ssoSettingId = -1';
 	$oldLibrarySettingsRS = $aspen_db->query($oldLibrarySettingsSQL, PDO::FETCH_ASSOC);
 	$oldLibrarySettingsRow = $oldLibrarySettingsRS->fetch();
 
