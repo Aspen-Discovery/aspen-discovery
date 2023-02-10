@@ -54,11 +54,12 @@ export async function makeGreenhouseRequest(method, fetchAll = false) {
  * @param {date} updateDate
  **/
 export async function updateAspenLiDABuild(updateId, updateChannel, updateDate) {
+     const greenhouseUrl = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
      const iOSDist = Constants.manifest2?.extra?.expoClient?.ios?.buildNumber ?? Constants.manifest.ios.buildNumber;
      const androidDist = Constants.manifest2?.extra?.expoClient?.android?.versionCode ?? Constants.manifest.android.versionCode;
 
      const api = create({
-          baseURL: 'https://greenhouse.aspendiscovery.org/API',
+          baseURL: greenhouseUrl + 'API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(),
           auth: createAuthTokens(),
