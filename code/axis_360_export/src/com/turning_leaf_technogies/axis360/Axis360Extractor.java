@@ -2,7 +2,6 @@ package com.turning_leaf_technogies.axis360;
 
 import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
-import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -21,7 +20,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.zip.CRC32;
 
 public class Axis360Extractor {
@@ -32,7 +30,7 @@ public class Axis360Extractor {
 	private final Connection aspenConn;
 	private final Ini configIni;
 
-	private Long startTimeForLogging;
+	private final Long startTimeForLogging;
 	private final CRC32 checksumCalculator = new CRC32();
 
 	//Record grouper
@@ -152,7 +150,7 @@ public class Axis360Extractor {
 			numChanges = extractBooks(setting, existingRecords, numChanges);
 
 			if (setting.doFullReload()) {
-				//Un mark that a full update needs to be done
+				//Un-mark that a full update needs to be done
 				PreparedStatement updateSettingsStmt = aspenConn.prepareStatement("UPDATE axis360_settings set runFullUpdate = 0 where id = ?");
 				updateSettingsStmt.setLong(1, setting.getId());
 				updateSettingsStmt.executeUpdate();
@@ -199,7 +197,7 @@ public class Axis360Extractor {
 			itemDetailsUrl += "2000-01-01T12:00:00Z";
 		}
 
-		WebServiceResponse response = NetworkUtils.getURL(itemDetailsUrl, logger, headers, 120000);
+		WebServiceResponse response = NetworkUtils.getURL(itemDetailsUrl, logger, headers, 240000);
 		if (!response.isSuccess()) {
 			logEntry.incErrors("Error calling " + itemDetailsUrl + ": " + response.getResponseCode() + " " + response.getMessage());
 		} else {
@@ -241,12 +239,17 @@ public class Axis360Extractor {
 				logger.debug("processing " + axis360Id);
 
 				boolean active = itemDetails.getBoolean("active");
+				Axis360Title existingTitle = existingRecords.get(axis360Id);
 				if (!active){
-					//TODO: See if this needs to be deleted from the index
-					logEntry.addNote("Found an inactive record " + axis360Id + ", need to make sure it has been deleted");
+					//The record is no longer active, delete it if it still exists
+					if (existingTitle != null) {
+						HashMap<String, Axis360Title> titleToDelete = new HashMap<>();
+						existingTitle.setProcessed(false);
+						titleToDelete.put(axis360Id, existingTitle);
+						deleteItems(setting, titleToDelete);
+					}
 				}else {
 					//Check to see if the title metadata has changed
-					Axis360Title existingTitle = existingRecords.get(axis360Id);
 					boolean metadataChanged = false;
 					if (existingTitle != null) {
 						logger.debug("Record already exists");
@@ -264,44 +267,55 @@ public class Axis360Extractor {
 					String itemAvailabilityAsString;
 					long availabilityChecksum;
 					//Check if availability changed
-					JSONObject itemAvailability = getAvailabilityForTitle(axis360Id, setting);
+					AvailabilityResponse itemAvailability = getAvailabilityForTitle(axis360Id, setting);
 					long aspenId = existingTitle != null ? existingTitle.getId() : -1;
-					if (itemAvailability != null) {
-						checksumCalculator.reset();
-						itemAvailabilityAsString = itemAvailability.toString();
-						checksumCalculator.update(itemAvailabilityAsString.getBytes());
-						availabilityChecksum = checksumCalculator.getValue();
-						if (aspenId != -1) {
-							getExistingAxis360AvailabilityStmt.setLong(1, aspenId);
-							getExistingAxis360AvailabilityStmt.setLong(2, setting.getId());
-							ResultSet getExistingAvailabilityRS = getExistingAxis360AvailabilityStmt.executeQuery();
-							if (getExistingAvailabilityRS.next()) {
-								long existingChecksum = getExistingAvailabilityRS.getLong("rawChecksum");
-								logger.debug("Availability already exists");
-								if (existingChecksum != availabilityChecksum) {
-									logger.debug("Updating availability details");
+					if (itemAvailability.callSucceeded) {
+						if (itemAvailability.titleInformation != null) {
+							checksumCalculator.reset();
+							itemAvailabilityAsString = itemAvailability.titleInformation.toString();
+							checksumCalculator.update(itemAvailabilityAsString.getBytes());
+							availabilityChecksum = checksumCalculator.getValue();
+							if (aspenId != -1) {
+								getExistingAxis360AvailabilityStmt.setLong(1, aspenId);
+								getExistingAxis360AvailabilityStmt.setLong(2, setting.getId());
+								ResultSet getExistingAvailabilityRS = getExistingAxis360AvailabilityStmt.executeQuery();
+								if (getExistingAvailabilityRS.next()) {
+									long existingChecksum = getExistingAvailabilityRS.getLong("rawChecksum");
+									logger.debug("Availability already exists");
+									if (existingChecksum != availabilityChecksum) {
+										logger.debug("Updating availability details");
+										availabilityChanged = true;
+									}
+								} else {
+									logger.debug("Adding availability for " + axis360Id);
 									availabilityChanged = true;
 								}
 							} else {
-								logger.debug("Adding availability for " + axis360Id);
+								//This happens when we find a new title.  The id is inserted below , the following should never trigger, but it's a safety check
+								if (!metadataChanged) {
+									metadataChanged = true;
+									logEntry.incErrors("Did not find aspen id for axis360 id " + axis360Id + " but we thought it should exist");
+								}
 								availabilityChanged = true;
 							}
 						} else {
-							//This happens when we find a new title.  The id is inserted below , the following should never trigger, but it's a safety check
-							if (!metadataChanged){
-								metadataChanged = true;
-								logEntry.incErrors("Did not find aspen id for axis360 id " + axis360Id + " but we thought it should exist");
+							//noinspection IfStatementWithIdenticalBranches
+							if (itemAvailability.titleIsUnavailable) {
+								//The title is no longer available
+								if (existingTitle != null) {
+									HashMap<String, Axis360Title> titleToDelete = new HashMap<>();
+									existingTitle.setProcessed(false);
+									titleToDelete.put(axis360Id, existingTitle);
+									deleteItems(setting, titleToDelete);
+								}
+								continue;
+							} else {
+								//TODO: This is an undefined state, need to decide what to do, we didn't get a good response, but it also isn't unavailable. Reprocess or just skip?
+								continue;
 							}
-							availabilityChanged = true;
 						}
 					} else {
-						//The title is no longer available
-						if (existingTitle != null) {
-							HashMap<String, Axis360Title> titleToDelete = new HashMap<>();
-							existingTitle.setProcessed(false);
-							titleToDelete.put(axis360Id, existingTitle);
-							deleteItems(setting, titleToDelete);
-						}
+						//TODO: Call failed, we can try again or we can skip
 						continue;
 					}
 
@@ -358,7 +372,7 @@ public class Axis360Extractor {
 					}
 
 					if (availabilityChanged || setting.doFullReload()) {
-						JSONObject availabilityInfo = itemAvailability.getJSONObject("Availability");
+						JSONObject availabilityInfo = itemAvailability.titleInformation.getJSONObject("Availability");
 						logEntry.incAvailabilityChanges();
 						if (aspenId == -1){
 							logEntry.incErrors("Did not get an id for the title " + axis360Id + " prior to updating availability, this implies a new title that failed to insert");
@@ -465,12 +479,14 @@ public class Axis360Extractor {
 		return "";
 	}
 
-	private JSONObject getAvailabilityForTitle(String axis360Id, Axis360Setting setting) {
+	private AvailabilityResponse getAvailabilityForTitle(String axis360Id, Axis360Setting setting) {
+		AvailabilityResponse availabilityResponse = new AvailabilityResponse();
 		HashMap<String, String> headers = new HashMap<>();
 		String accessToken = getAxis360AccessToken(setting);
 		if (accessToken == null){
 			logEntry.incErrors("Did not get access token when checking availability");
-			return null;
+			availabilityResponse.callSucceeded = false;
+			return availabilityResponse;
 		}
 		headers.put("Authorization", getAxis360AccessToken(setting));
 		headers.put("Library", setting.getLibraryPrefix());
@@ -478,30 +494,49 @@ public class Axis360Extractor {
 		headers.put("Accept", "application/json");
 
 		String availabilityUrl = setting.getBaseUrl() + "/Services/VendorAPI/titleInfo/v2?titleIds=" + axis360Id;
-		WebServiceResponse response = NetworkUtils.getURL(availabilityUrl, logger, headers, 120000);
-		if (!response.isSuccess()) {
-			logEntry.incErrors("Error calling " + availabilityUrl + ": " + response.getResponseCode() + " " + response.getMessage());
-		} else {
-			try {
-				JSONObject responseJSON = response.getJSONResponse();
-				JSONObject availabilityResponseStatus = responseJSON.getJSONObject("status");
-				if (availabilityResponseStatus.getString("Code").equals("0000")) {
-					if (responseJSON.has("titles")) {
-						return responseJSON.getJSONArray("titles").getJSONObject(0);
-					} else {
-						logEntry.incErrors("Did not get titles while getting availability");
-					}
-				}else if (availabilityResponseStatus.getString("Code").equals("3103")){
-					//Invalid title, just delete availability for this title.
-					return null;
-				}else{
-					logEntry.incErrors("Did not get a good status while calling titleInfo " + availabilityResponseStatus.getString("Code") + " " + availabilityResponseStatus.getString("Message"));
+		int numTries = 0;
+		while (!availabilityResponse.callSucceeded && numTries < 3) {
+			if (numTries > 0) {
+				try {
+					//Sleep a little bit to allow the server to calm down.
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					//Not a big deal if this gets interrupted
 				}
-			} catch (JSONException e) {
-				logEntry.incErrors("Error parsing availability response for title " + axis360Id + ": " + e);
 			}
+			availabilityResponse.response = NetworkUtils.getURL(availabilityUrl, logger, headers, 120000);
+			if (!availabilityResponse.response.isSuccess()) {
+				logEntry.incErrors("Error calling " + availabilityUrl + ": " + availabilityResponse.response.getResponseCode() + " " + availabilityResponse.response.getMessage());
+				availabilityResponse.callSucceeded = false;
+			} else {
+				try {
+					JSONObject responseJSON = availabilityResponse.response.getJSONResponse();
+					JSONObject availabilityResponseStatus = responseJSON.getJSONObject("status");
+					if (availabilityResponseStatus.getString("Code").equals("0000")) {
+						availabilityResponse.callSucceeded = true;
+						if (responseJSON.has("titles")) {
+							availabilityResponse.titleInformation = responseJSON.getJSONArray("titles").getJSONObject(0);
+						} else {
+							logEntry.incErrors("Did not get titles while getting availability");
+						}
+					} else if (availabilityResponseStatus.getString("Code").equals("3103")) {
+						//Invalid title, just delete availability for this title.
+						//This does not actually seem to be true, subsequent calls to the same URL work?!?
+						availabilityResponse.titleIsUnavailable = true;
+						availabilityResponse.callSucceeded = false;
+					} else {
+						logEntry.incErrors("Did not get a good status while calling titleInfo " + availabilityResponseStatus.getString("Code") + " " + availabilityResponseStatus.getString("Message"));
+					}
+				} catch (JSONException e) {
+					logEntry.incErrors("Error parsing availability response for title " + axis360Id + ": " + e);
+				}
+			}
+			numTries++;
 		}
-		return null;
+		if (numTries == 3 && !availabilityResponse.callSucceeded) {
+			logEntry.incErrors("Did not get a successful API response after 3 tries for " + availabilityUrl);
+		}
+		return availabilityResponse;
 	}
 
 	private void indexAxis360Record(String permanentId) {

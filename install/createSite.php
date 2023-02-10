@@ -201,7 +201,7 @@ $centos = [
 $debian = [
 	'wwwUser' => 'www-data',
 	'service' => 'apache2',
-	'mysqlConf' => '/etc/mysql/mariadb.cnf',
+	'mysqlConf' => '/etc/mysql/mariadb.conf.d/60-aspen.cnf',
 	'permissions' => 'updateSitePermissions_debian.sh',
 	'apacheDir' => '/etc/apache2/sites-available'
 ];

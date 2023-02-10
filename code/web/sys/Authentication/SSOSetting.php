@@ -8,6 +8,7 @@ class SSOSetting extends DataObject {
 	public $name;
 	public $service;
 	public $staffOnly;
+	public $bypassAspenLogin;
 
 	//oAuth
 	public $clientId;
@@ -37,8 +38,11 @@ class SSOSetting extends DataObject {
 	public $ssoUniqueAttribute;
 	public $ssoMetadataFilename;
 	public $ssoEntityId;
+	public $ssoUseGivenUserId;
 	public $ssoIdAttr;
+	public $ssoUseGivenUsername;
 	public $ssoUsernameAttr;
+	public $ssoUsernameFormat;
 	public $ssoFirstnameAttr;
 	public $ssoLastnameAttr;
 	public $ssoEmailAttr;
@@ -59,6 +63,7 @@ class SSOSetting extends DataObject {
 	public $samlBtnIcon;
 	public $samlBtnBgColor;
 	public $samlBtnTextColor;
+	public $ssoSPLogoutUrl;
 
 	public $loginHelpText;
 	public $loginOptions;
@@ -99,6 +104,12 @@ class SSOSetting extends DataObject {
 			'0' => 'By Authorization Code (Standard)',
 			'1' => 'By Resource Owner Credentials',
 			'2' => 'By Client Credentials',
+		];
+
+		$username_format = [
+			'0' => 'Default for ILS',
+			'1' => 'email',
+			'2' => 'firstname.lastname',
 		];
 
 		return [
@@ -147,6 +158,12 @@ class SSOSetting extends DataObject {
 				'description' => 'Whether or not only staff should be able to use single sign-on',
 				'note' => 'This hides the single sign-on option from the patron-facing login screens',
 			],
+			'bypassAspenLogin' => [
+				'property' => 'bypassAspenLogin',
+				'type' => 'checkbox',
+				'label' => 'Bypass the Aspen Discovery staff login page when using footer link',
+				'description' => 'Whether or not the staff login link in the footer should first send the user to the Aspen Discovery login page',
+			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
 				'type' => 'section',
@@ -173,7 +190,7 @@ class SSOSetting extends DataObject {
 					],
 					'clientSecret' => [
 						'property' => 'clientSecret',
-						'type' => 'text',
+						'type' => 'storedPassword',
 						'label' => 'Client Secret',
 						'required' => false,
 						'description' => 'Client secret used for accessing the gateway provider',
@@ -372,7 +389,7 @@ class SSOSetting extends DataObject {
 						'hideInLists' => true,
 					],
 					'ssoMetadataFilename' => [
-						'path' => "/data/aspen-discovery/{$serverName}/sso_metadata/",
+						'path' => "/data/aspen-discovery/$serverName/sso_metadata/",
 						'property' => 'ssoMetadataFilename',
 						'type' => 'file',
 						'label' => 'XML metadata file',
@@ -388,6 +405,14 @@ class SSOSetting extends DataObject {
 						'note' => 'This can be found in the IdP\'s metadata',
 						'size' => '512',
 						'hideInLists' => true,
+					],
+					'ssoSPLogoutUrl' => [
+						'property' => 'ssoSPLogoutUrl',
+						'type' => 'text',
+						'label' => 'Logout Url for SP',
+						'description' => 'Provide the URL to logout the user from the service provider if needed',
+						'hideInLists' => true,
+						'note' => 'In some cases such as Google SAML, we may need to logout the user from Google separately to force a new authentication when logging back in. Leave blank to not use.'
 					],
 					'ssoProfileSection' => [
 						'property' => 'ssoProfileSection',
@@ -407,21 +432,63 @@ class SSOSetting extends DataObject {
 								'size' => '512',
 								'hideInLists' => true,
 							],
-							'ssoIdAttr' => [
-								'property' => 'ssoIdAttr',
-								'type' => 'text',
-								'label' => 'IdP attribute that contains the user ID',
-								'description' => 'This should be unique to each user',
-								'size' => '512',
+							'ssoUserIdSection' => [
+								'property' => 'ssoUserIdSection',
+								'type' => 'section',
+								'label' => 'Barcode / User Id',
 								'hideInLists' => true,
+								'expandByDefault' => true,
+								'properties' => [
+									'ssoUseGivenUserId' => [
+										'property' => 'ssoUseGivenUserId',
+										'type' => 'checkbox',
+										'label' => 'Create new users with a cardnumber (user id) provided by the IdP',
+										'description' => 'Whether or not new users should use a cardnumber (user id) provided by the IdP',
+										'hideInLists' => true,
+										'onchange' => 'return AspenDiscovery.Admin.toggleSamlUserIdFields();',
+									],
+									'ssoIdAttr' => [
+										'property' => 'ssoIdAttr',
+										'type' => 'text',
+										'label' => 'IdP attribute that contains the user id',
+										'description' => 'This should be unique to each user',
+										'size' => '512',
+										'hideInLists' => true,
+									]
+								]
 							],
-							'ssoUsernameAttr' => [
-								'property' => 'ssoUsernameAttr',
-								'type' => 'text',
-								'label' => 'IdP attribute that contains the user\'s username',
-								'description' => 'The user\'s username',
-								'size' => '512',
+							'ssoUsernameSection' => [
+								'property' => 'ssoUsernameSection',
+								'type' => 'section',
+								'label' => 'Username',
 								'hideInLists' => true,
+								'expandByDefault' => true,
+								'properties' => [
+									'ssoUseGivenUsername' => [
+										'property' => 'ssoUseGivenUsername',
+										'type' => 'checkbox',
+										'label' => 'Create new users with a username provided by the IdP',
+										'description' => 'Whether or not new users should use a username provided by the IdP',
+										'hideInLists' => true,
+										'onchange' => 'return AspenDiscovery.Admin.toggleSamlUsernameFormatFields();',
+									],
+									'ssoUsernameAttr' => [
+										'property' => 'ssoUsernameAttr',
+										'type' => 'text',
+										'label' => 'IdP attribute that contains the user\'s username',
+										'description' => 'The user\'s username',
+										'size' => '512',
+										'hideInLists' => true,
+									],
+									'ssoUsernameFormat' => [
+										'property' => 'ssoUsernameFormat',
+										'type' => 'enum',
+										'values' => $username_format,
+										'label' => 'Format of username',
+										'description' => 'How the username for the new user should be formatted',
+										'hideInLists' => true,
+									],
+								]
 							],
 							'ssoFirstnameAttr' => [
 								'property' => 'ssoFirstnameAttr',
@@ -752,7 +819,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['staffOnly'];
+		return ['localLogin', 'staffOnly', 'oAuthGrantType', 'ssoUseGivenUserId', 'ssoUseGivenUsername', 'ssoUsernameFormat'];
 	}
 
 	public function genericOAuthProvider() {
@@ -876,7 +943,7 @@ class SSOSetting extends DataObject {
 			if (strlen($xml) > 0) {
 				// Check it's a valid SAML message
 				try {
-					require_once '/usr/share/simplesamlphp/lib/_autoload.php';
+					require_once '/usr/local/simplesamlphp/lib/_autoload.php';
 					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
 				} catch (Exception $e) {
 					$logger->log($e, Logger::LOG_ERROR);

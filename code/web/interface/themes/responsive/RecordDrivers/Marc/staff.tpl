@@ -36,6 +36,10 @@
 				{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
 					<button onclick="return AspenDiscovery.GroupedWork.forceReindex('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
 				{/if}
+			{else}
+				{if !empty($loggedIn) && in_array('Force Reindexing of Records', $userPermissions)}
+					<button onclick="return AspenDiscovery.Record.forceReindex('{$recordDriver->getRecordType()}', '{$recordDriver->getId()}')" class="btn btn-sm btn-default">{translate text="Force Reindex" isAdminFacing=true}</button>
+				{/if}
 			{/if}
 			{if !empty($groupedWorkValid)}
 				{if !empty($loggedIn) && in_array('Set Grouped Work Display Information', $userPermissions)}

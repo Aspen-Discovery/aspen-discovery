@@ -419,6 +419,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function findNewUserByEmail(string $patronEmail): mixed {
+		return false;
+	}
+
 	public function hasIssueSummaries() {
 		return false;
 	}
@@ -433,6 +437,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 
 	function validateUniqueId(User $user) {
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
+	}
+
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+		return false;
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {

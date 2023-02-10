@@ -16,17 +16,17 @@ if [ -z "$3" ]
     echo "Please provide a Single Sign On admin password as the third argument."
     exit 1
 fi
-if [ -z "$5" ]
+if [ -z "$4" ]
   then
-    echo "Please provide a server name as the fifth argument."
+    echo "Please provide a server name as the fourth argument."
     exit 1
 fi
 cp $sourcepath/samlsso_config.php $targetpath/config.php
 
-escape_email=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$2")
-escape_timezone=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$3")
-escape_adminpassword=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$4")
-escape_servername=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$5")
+escape_email=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$1")
+escape_timezone=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$2")
+escape_adminpassword=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$3")
+escape_servername=$(sed 's/[^[:alnum:]]/\\&/g' <<<"$4")
 
 random_string() {
     local l=15

@@ -30,6 +30,39 @@ function getUpdates23_02_00(): array {
 				"ALTER TABLE ptype ADD COLUMN enableReadingHistory TINYINT(1) DEFAULT 1;",
 			]
 		], //add_enable_reading_history_to_ptype
+		'indexing_profile_evergreen_org_unit_schema' => [
+			'title' => 'Indexing Profile - Add Evergreen Org Unit ',
+			'description' => 'Allow reading history to be disabled by PType',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN evergreenOrgUnitSchema TINYINT(1) DEFAULT 1;",
+			]
+		], //indexing_profile_evergreen_org_unit_schema
+		'reading_history_updates_change_ils' => [
+			'title' => 'Reading History Updates change ILS',
+			'description' => 'Allow updating the ILS when opting in/out of reading history to be controlled',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN optInToReadingHistoryUpdatesILS TINYINT(1) DEFAULT 0;",
+				"ALTER TABLE library ADD COLUMN optOutOfReadingHistoryUpdatesILS TINYINT(1) DEFAULT 1;",
+			]
+		], //reading_history_updates_change_ils
+		'setUsePreferredNameInIlsOnUpdate'  => [
+			'title' => 'Library - Set Use Preferred Name In Ils On Update',
+			'description' => 'Allow updating the ILS when changing preferred name',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN setUsePreferredNameInIlsOnUpdate TINYINT(1) DEFAULT 1;",
+			]
+		], //setUsePreferredNameInIlsOnUpdate
+		'forceReindexForAxis360_2302'  => [
+			'title' => 'Force a reindex of all titles in Axis 360',
+			'description' => 'Force a reindex of all titles in Axis 360',
+			'continueOnError' => false,
+			'sql' => [
+				"UPDATE axis360_settings set runFullUpdate = 1",
+			]
+		], //forceReindexForAxis360_2302
 
 		//kirstien
 		'add_expo_eas_build_webhook_key' => [
@@ -147,9 +180,108 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//add_isSubmitted_build_tracker
+		'add_app_scheme_system_variables' => [
+			'title' => 'Add app scheme into system variables',
+			'description' => 'Add column to set scheme for creating deep links into the app',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN appScheme VARCHAR(72) default "aspen-lida"',
+			]
+		],
+		//add_app_scheme_system_variables
+		'add_bypass_aspen_login_page' => [
+			'title' => 'Add option to bypass the Aspen login page to SSO Settings',
+			'description' => 'Add checkbox to bypass the Aspen login page and directly to SSO sign in',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN bypassAspenLogin TINYINT(1) default 0',
+			]
+		],
+		//add_bypass_aspen_login_page
+		'add_sso_user_options' => [
+			'title' => 'Add options for customizing user login options for SSO',
+			'description' => 'Add options for customizing user login options for new SSO users',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN ssoUseGivenUserId TINYINT(1) default 1',
+				'ALTER TABLE sso_setting ADD COLUMN ssoUseGivenUsername TINYINT(1) default 1',
+				'ALTER TABLE sso_setting ADD COLUMN ssoUsernameFormat TINYINT(1) default 0',
+			]
+		],
+		//add_sso_user_options
+		'add_sso_aspen_lida_module' => [
+			'title' => 'Add modules for single sign-on and Aspen LiDA',
+			'description' => 'Add modules for single sign-on and Aspen LiDA',
+			'sql' => [
+				"INSERT INTO modules (name) VALUES ('Single sign-on')",
+				"INSERT INTO modules (name) VALUES ('Aspen LiDA')",
+				"updateAspenLiDAModule",
+				"updateSSOModule"
+			],
+		],
+		//add_sso_aspen_lida_module
+		'add_isssologin_user' => [
+			'title' => 'Add column to track if user is logged in via SSO',
+			'description' => 'Add column to track if a user is logged in via single sign-on',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN isLoggedInViaSSO TINYINT(1) default 0',
+			]
+		],
+		//add_isssologin_user
+		'add_sp_logout_url' => [
+			'title' => 'Add option to enable a redirect to the SP logout for SSO',
+			'description' => 'Add option to enable a redirect to the SP logout for SSO',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN ssoSPLogoutUrl VARCHAR(255) default NULL'
+			]
+		],
+		//add_isssologin_user
 
 		//kodi
+		'set_include_econtent_and_onorder' => [
+			'title' => 'If Owned, Include Items On Order and eContent',
+			'description' => 'Set "Include Items On Order" and "Include eContent" to true in Records to Include for owned records',
+			'sql' => [
+				"UPDATE library_records_to_include SET includeItemsOnOrder = 1 WHERE markRecordsAsOwned = 1",
+				"UPDATE location_records_to_include SET includeItemsOnOrder = 1 WHERE markRecordsAsOwned = 1",
+				"UPDATE library_records_to_include SET includeEContent = 1 WHERE markRecordsAsOwned = 1",
+				"UPDATE location_records_to_include SET includeEContent = 1 WHERE markRecordsAsOwned = 1",
+			]
+		],
+		//set_include_econtent_and_onorder
 
 		//other
 	];
+}
+
+function updateAspenLiDAModule() {
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
+	$systemVariables = SystemVariables::getSystemVariables();
+	if (!empty($systemVariables)) {
+		if($systemVariables->greenhouseUrl == 'https://greenhouse.aspendiscovery.org/') {
+			require_once ROOT_DIR . '/sys/Module.php';
+			$module = new Module();
+			$module->name = 'Aspen LiDA';
+			if($module->find(true)) {
+				$module->enabled = 1;
+				$module->update();
+			}
+		}
+	}
+}
+
+function updateSSOModule() {
+	require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+	$ssoSettings = new SSOSetting();
+	if($ssoSettings->find(true)) {
+		require_once ROOT_DIR . '/sys/Module.php';
+		$module = new Module();
+		$module->name = 'Single sign-on';
+		if($module->find(true)) {
+			$module->enabled = 1;
+			$module->update();
+		}
+	}
 }

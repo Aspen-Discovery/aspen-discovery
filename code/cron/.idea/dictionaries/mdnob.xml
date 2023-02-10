@@ -19,6 +19,7 @@
       <w>aspenlocal</w>
       <w>audiobook</w>
       <w>audiobooks</w>
+      <w>authtypecode</w>
       <w>barcodes</w>
       <w>basinlibraries</w>
       <w>bcode</w>
@@ -27,6 +28,7 @@
       <w>bibid</w>
       <w>biblio</w>
       <w>biblionumber</w>
+      <w>biblioserver</w>
       <w>bisac</w>
       <w>bisacmt</w>
       <w>bisacrt</w>
@@ -97,6 +99,7 @@
       <w>fountas</w>
       <w>freading</w>
       <w>fullcheckin</w>
+      <w>galegroup</w>
       <w>gifs</w>
       <w>hmac</w>
       <w>holdingbranch</w>
@@ -218,6 +221,7 @@
       <w>sublocation</w>
       <w>subpurpose</w>
       <w>synch</w>
+      <w>systempreferences</w>
       <w>tapecartridge</w>
       <w>tapecassette</w>
       <w>taperecording</w>
@@ -241,6 +245,7 @@
       <w>wkst</w>
       <w>xbox</w>
       <w>yourcloudlibrary</w>
+      <w>zebraqueue</w>
       <w>zzzz</w>
     </words>
   </dictionary>

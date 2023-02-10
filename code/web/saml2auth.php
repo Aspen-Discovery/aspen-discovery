@@ -1,5 +1,6 @@
 <?php
 require_once 'bootstrap.php';
+require_once 'bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Authentication/SAML2Authentication.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 require_once ROOT_DIR . '/sys/Account/PType.php';
@@ -10,6 +11,10 @@ global $library;
 global $logger;
 
 $staffPType = null;
+$uidAsEmail = false;
+$useGivenUserId = '1';
+$useGivenUsername = '1';
+$usernameFormat = '-1';
 
 $auth = new SAML2Authentication();
 
@@ -18,6 +23,9 @@ $ssoSettings->id = $library->ssoSettingId;
 $ssoSettings->service = 'saml';
 if($ssoSettings->find(true)) {
 	$entityId = $ssoSettings->ssoEntityId;
+	$useGivenUsername = $ssoSettings->ssoUseGivenUsername;
+	$useGivenUserId = $ssoSettings->ssoUseGivenUserId;
+	$usernameFormat = $ssoSettings->ssoUsernameFormat;
 	if($ssoSettings->staffOnly === 1 || $ssoSettings->staffOnly === '1') {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
@@ -26,6 +34,11 @@ if($ssoSettings->find(true)) {
 		($ssoSettings->samlStaffPType != '-1' || $ssoSettings->samlStaffPType != -1)) {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
+
+	if(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
+		$uidAsEmail = true;
+	}
+
 } else {
 	$entityId = $library->ssoEntityId;
 }
@@ -54,20 +67,45 @@ if (count($usersAttributes) == 0) {
 $out = $auth->getAttributeValues();
 
 // The user's UID
-$uid = $out['ssoUniqueAttribute'];
+if($uidAsEmail) {
+	$uid = $out['ssoEmailAttr'];
+} else {
+	$uid = $out['ssoUniqueAttribute'];
+}
 $isStaffUser = $out['isStaffUser'] ?? false;
 
 // Establish a connection to the LMS
 $catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 
 // Get a mapping from LMS self reg property names to SSO property names
-$lmsToSso = $catalogConnection->getLmsToSso($isStaffUser);
+$lmsToSso = $catalogConnection->getLmsToSso($isStaffUser, $useGivenUserId, $useGivenUsername);
 
 // Populate our $_REQUEST object that will be used by self reg
 foreach ($lmsToSso as $key => $mappings) {
 	$primaryAttr = $mappings['primary'];
+	$secondaryAttr = $mappings['fallback'];
 	if (array_key_exists($primaryAttr, $out)) {
 		$_REQUEST[$key] = $out[$primaryAttr];
+		if(isset($mappings['useGivenCardnumber'])) {
+			$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
+			if($useSecondaryOverPrimary == '0') {
+				$_REQUEST[$key] = null;
+			}
+		}
+		if(isset($mappings['useGivenUserId'])) {
+			$useSecondaryOverPrimary = $mappings['useGivenUserId'];
+			if($useSecondaryOverPrimary == '0') {
+				if($usernameFormat == '1') {
+					$_REQUEST[$key] = $out['ssoEmailAttr'];
+				} elseif($usernameFormat == '2') {
+					$username = $out['ssoFirstnameAttr'] . '.' . $out['ssoLastnameAttr'];
+					$username = strtolower($username);
+					$_REQUEST[$key] = $username;
+				} elseif($usernameFormat == '0') {
+					$_REQUEST[$key] = null;
+				}
+			}
+		}
 	} elseif (array_key_exists('fallback', $mappings)) {
 		if (strlen($mappings['fallback']) > 0) {
 			$_REQUEST[$key] = $out[$mappings['fallback']];
@@ -77,10 +115,25 @@ foreach ($lmsToSso as $key => $mappings) {
 	}
 }
 
-$_REQUEST['username'] = $uid;
-
 // Does this user exist in the LMS
-$user = $catalogConnection->findNewUser($uid);
+if($uidAsEmail) {
+	$user = $catalogConnection->findNewUserByEmail($uid);
+	if(is_string($user)) {
+		$logger->log($user, Logger::LOG_ERROR);
+		if($isStaffUser) {
+			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+			$launchAction = new MyAccount_StaffLogin();
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+		}
+		$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+		exit();
+	}
+} else {
+	$_REQUEST['username'] = $uid;
+	$user = $catalogConnection->findNewUser($uid);
+}
 
 // The user does not exist in Koha, so we should create it
 if (!$user instanceof User) {
@@ -89,26 +142,43 @@ if (!$user instanceof User) {
 	// If the self reg did not succeed, log the fact
 	if ($selfRegResult['success'] != '1') {
 		$logger->log("Error self registering user " . $uid, Logger::LOG_ERROR);
+		if($isStaffUser) {
+			require_once ROOT_DIR . '/services/MyAccount/StaffLogin.php';
+			$launchAction = new MyAccount_StaffLogin();
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/Login.php';
+			$launchAction = new MyAccount_Login();
+		}
+		$launchAction->launch('Unable to log that user in. We found more than one account with that email address, please update the ILS to resolve.');
+		exit();
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
-	$user = $catalogConnection->findNewUser($uid);
+	if($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+	} else {
+		$user = $catalogConnection->findNewUser($uid);
+	}
 } else {
 	// We need to update the user in the LMS
 	$user = $user->updatePatronInfo(true);
 	// findNewUser forces Aspen to update it's user with that of the LMS
-	$user = $catalogConnection->findNewUser($uid);
+	if($uidAsEmail) {
+		$user = $catalogConnection->findNewUserByEmail($uid);
+	} else {
+		$user = $catalogConnection->findNewUser($uid);
+	}
 }
 
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
-	// if an existing user should be staff, but is not, update their patron type
-	if($staffPType && ($isStaffUser && $user->patronType !== $staffPType)) {
-		$user->patronType = $staffPType;
-		$user->update();
-		$user = $user->updatePatronInfo(true);
+	if($uidAsEmail) {
+		$_REQUEST['username'] = $user->cat_username;
 	}
-
 	$login = UserAccount::login(true);
+
+	// track if the user is logged in via sso so we can create a special logout url if needed
+	$user->isLoggedInViaSSO = 1;
+	$user->update();
 
 	global $configArray;
 	global $timer;

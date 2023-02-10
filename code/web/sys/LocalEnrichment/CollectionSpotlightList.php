@@ -188,25 +188,27 @@ class CollectionSpotlightList extends BaseBrowsable {
 	public function getSearchObject() {
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject($this->source);
-		if (!empty($this->defaultFilter)) {
-			$defaultFilterInfo = $this->defaultFilter;
-			$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
-			foreach ($defaultFilters as $filter) {
-				$searchObject->addFilter(trim($filter));
+		if ($searchObject) {
+			if (!empty($this->defaultFilter)) {
+				$defaultFilterInfo = $this->defaultFilter;
+				$defaultFilters = preg_split('/[\r\n,;]+/', $defaultFilterInfo);
+				foreach ($defaultFilters as $filter) {
+					$searchObject->addFilter(trim($filter));
+				}
 			}
-		}
-		//Set Sorting, this is actually slightly mangled from the category to Solr
-		$searchObject->setSort($this->getSolrSort());
-		if ($this->searchTerm != '') {
-			$searchObject->setSearchTerm($this->searchTerm);
-		}
+			//Set Sorting, this is actually slightly mangled from the category to Solr
+			$searchObject->setSort($this->getSolrSort());
+			if ($this->searchTerm != '') {
+				$searchObject->setSearchTerm($this->searchTerm);
+			}
 
-		//Get titles for the list
-		$searchObject->clearFacets();
-		$searchObject->disableSpelling();
-		$searchObject->disableLogging();
-		$searchObject->setLimit($this->getCollectionSpotlight()->numTitlesToShow);
-		$searchObject->setPage(1);
+			//Get titles for the list
+			$searchObject->clearFacets();
+			$searchObject->disableSpelling();
+			$searchObject->disableLogging();
+			$searchObject->setLimit($this->getCollectionSpotlight()->numTitlesToShow);
+			$searchObject->setPage(1);
+		}
 
 		return $searchObject;
 	}

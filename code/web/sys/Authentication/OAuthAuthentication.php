@@ -218,9 +218,6 @@ class OAuthAuthentication extends Action {
 			}
 			$user = $catalogConnection->findNewUser($this->getUserId());
 		} else {
-			if($this->staffPType && ($this->isStaffUser() && ($user->patronType !== $this->staffPType))) {
-				$user->patronType = $this->staffPType;
-			}
 			$user->oAuthAccessToken = $this->accessToken;
 			$user->oAuthRefreshToken = $this->refreshToken;
 			$user->update();

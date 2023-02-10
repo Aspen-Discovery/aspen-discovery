@@ -7,9 +7,9 @@ class CatalogFactory {
 	/**
 	 * @param string|null $driver
 	 * @param AccountProfile $accountProfile
-	 * @return CatalogConnection
+	 * @return CatalogConnection|null
 	 */
-	public static function getCatalogConnectionInstance($driver = null, $accountProfile = null) {
+	public static function getCatalogConnectionInstance($driver = null, $accountProfile = null) : ?CatalogConnection {
 		require_once ROOT_DIR . '/CatalogConnection.php';
 		if ($driver == null) {
 			global $activeRecordProfile;
@@ -30,7 +30,7 @@ class CatalogFactory {
 				$driver = $activeRecordProfile->catalogDriver;
 
 				//Load the account profile based on the indexing profile
-				$accountProfile = UserAccount::getAccountProfile($activeRecordProfile->name);
+				$accountProfile = UserAccount::getAccountProfileByRecordSource($activeRecordProfile->name);
 //				$accountProfile = new AccountProfile();
 //				$accountProfile->recordSource = $activeRecordProfile->name;
 //				if (!$accountProfile->find(true)) {

@@ -1981,6 +1981,18 @@ class GroupedWork_AJAX extends JSON_Action {
 					]),
 				];
 			}
+		}  else {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Error updating cover.',
+					'isAdminFacing' => true,
+				]),
+				'title' => translate([
+					'text' => 'Sorry, your are not logged in or do not have permissions to set this cover.',
+					'isAdminFacing' => true,
+				]),
+			];
 		}
 	}
 

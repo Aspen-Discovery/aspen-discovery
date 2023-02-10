@@ -64,15 +64,24 @@
 	<h4>{translate text="Grouped Records" isPublicFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<thead>
-		<tr><th>{translate text="Type" isPublicFacing=true}</th><th>{translate text="Identifier" isPublicFacing=true}</th><th>{translate text="Use Cover for Grouped Work" isPublicFacing=true}</th></tr>
+			<tr>
+				<th>{translate text="Type" isPublicFacing=true}</th>
+				<th>{translate text="Identifier" isPublicFacing=true}</th>
+				{if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
+					<th>{translate text="Use Cover for Grouped Work" isPublicFacing=true}</th>
+				{/if}
+			</tr>
 		</thead>
 		{foreach from=$primaryIdentifiers item="groupedRecord"}
 			<tr>
 				<td>{$groupedRecord->type}</td>
 				<td>{$groupedRecord->identifier}</td>
-				<td><button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm {if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}btn-info{else}btn-default{/if}">
-					{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover" isPublicFacing=true}{else}{translate text="Preview Cover" isPublicFacing=true}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset" isPublicFacing=true}</button>{/if}
-				</td>
+				{if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
+					<td>
+						<button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm {if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}btn-info{else}btn-default{/if}">
+						{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover" isPublicFacing=true}{else}{translate text="Preview Cover" isPublicFacing=true}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset" isPublicFacing=true}</button>{/if}
+					</td>
+				{/if}
 			</tr>
 		{/foreach}
 	</table>

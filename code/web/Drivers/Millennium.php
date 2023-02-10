@@ -510,7 +510,7 @@ class Millennium extends AbstractIlsDriver {
 		return $millenniumReadingHistory->getReadingHistory($patron, $page, $recordsPerPage, $sortOption);
 	}
 
-	public function performsReadingHistoryUpdatesOfILS() {
+	public function performsReadingHistoryUpdatesOfILS() : bool {
 		return true;
 	}
 
@@ -525,7 +525,7 @@ class Millennium extends AbstractIlsDriver {
 	 * @param string $action The action to perform
 	 * @param array $selectedTitles The titles to do the action on if applicable
 	 */
-	function doReadingHistoryAction($patron, $action, $selectedTitles) {
+	function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
 		require_once ROOT_DIR . '/Drivers/marmot_inc/MillenniumReadingHistory.php';
 		$millenniumReadingHistory = new MillenniumReadingHistory($this);
 		$millenniumReadingHistory->doReadingHistoryAction($patron, $action, $selectedTitles);
@@ -1466,6 +1466,10 @@ class Millennium extends AbstractIlsDriver {
 		}
 	}
 
+	public function findNewUserByEmail($patronEmail): mixed {
+		return false;
+	}
+
 	/**
 	 * @param array $patronDump
 	 * @param $password
@@ -1637,6 +1641,7 @@ class Millennium extends AbstractIlsDriver {
 							$listEntry->listId = $newList->id;
 							$listEntry->notes = '';
 							$listEntry->dateAdded = time();
+							$listEntry->title = StringUtils::trimStringToLengthAtWordBoundary($groupedWork->full_title, 50, true);
 							$listEntry->insert();
 						}
 					}

@@ -1,7 +1,6 @@
 package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.marc.MarcUtil;
-import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Record;
@@ -152,11 +151,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	private float getKohaVersion(Connection kohaConn){
 		if (kohaVersion == -1) {
 			try {
+				//noinspection SpellCheckingInspection
 				PreparedStatement getKohaVersionStmt = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable='Version'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 				ResultSet kohaVersionRS = getKohaVersionStmt.executeQuery();
-				while (kohaVersionRS.next()){
+				if (kohaVersionRS.next()){
 					kohaVersion = kohaVersionRS.getFloat("value");
-					break;
 				}
 			} catch (SQLException e) {
 				logger.error("Error loading koha version", e);
@@ -479,6 +478,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		String sourceType = null;
 		if (itemField.getSubfield('e') != null){
 			sourceType = itemField.getSubfield('e').getData();
+			//noinspection SpellCheckingInspection
 			if (sourceType.equalsIgnoreCase("marcexpress")){
 				sourceType = "OverDrive";
 			}

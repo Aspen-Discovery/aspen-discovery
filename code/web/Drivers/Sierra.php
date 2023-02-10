@@ -738,8 +738,17 @@ class Sierra extends Millennium {
 			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/$shortId";
 			$itemInfo = $this->_callUrl('sierra.getItemInfo', $sierraUrl);
 			if (!empty($itemInfo)) {
-				$id = reset($itemInfo->bibIds);
-				$id = '.b' . $id . $this->getCheckDigit($id);
+				if (empty($itemInfo->bibIds)) {
+					$id = false;
+				}else if (is_array($itemInfo->bibIds)) {
+					$id = reset($itemInfo->bibIds);
+					$id = '.b' . $id . $this->getCheckDigit($id);
+				}else if (is_string($itemInfo->bibIds)) {
+					$id = $itemInfo->bibIds;
+					$id = '.b' . $id . $this->getCheckDigit($id);
+				}else{
+					$id = false;
+				}
 			} else {
 				$id = false;
 			}
@@ -1172,6 +1181,10 @@ class Sierra extends Millennium {
 		}
 
 		return $user;
+	}
+
+	public function findNewUserByEmail($patronEmail): mixed {
+		return false;
 	}
 
 	public function getAccountSummary(User $patron): AccountSummary {

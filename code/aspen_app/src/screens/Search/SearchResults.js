@@ -367,9 +367,9 @@ async function fetchSearchResults(term, page, scope, url) {
      SEARCH.sortMethod = data.result.sort;
      SEARCH.term = data.result.lookfor;
 
-     await getSortList();
-     await getAvailableFacets();
-     await getAppliedFilters();
+     await getSortList(url);
+     await getAvailableFacets(url);
+     await getAppliedFilters(url);
 
      return {
           results: data.result?.items,

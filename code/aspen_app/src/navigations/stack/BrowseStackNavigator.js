@@ -70,6 +70,22 @@ const BrowseStackNavigator = () => {
                               ),
                          })}
                     />
+                   <Stack.Screen
+                       name="CreateVDXRequest"
+                       component={CreateVDXRequest}
+                       options={({ navigation }) => ({
+                           title: translate('ill.request_title'),
+                           presentation: 'modal',
+                           headerLeft: () => {
+                               return <></>;
+                           },
+                           headerRight: () => (
+                               <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                   <CloseIcon color="primary.baseContrast" />
+                               </Pressable>
+                           ),
+                       })}
+                   />
                </Stack.Group>
                <Stack.Screen
                     name="EditionsModal"
@@ -79,16 +95,6 @@ const BrowseStackNavigator = () => {
                          presentation: 'modal',
                     }}
                />
-               <Stack.Group>
-                    <Stack.Screen
-                         name="CreateVDXRequest"
-                         component={CreateVDXRequest}
-                         options={{
-                              title: translate('ill.request_title'),
-                              presentation: 'modal',
-                         }}
-                    />
-               </Stack.Group>
               <Stack.Group>
                   <Stack.Screen
                       name="GroupedWorkScreen221200"

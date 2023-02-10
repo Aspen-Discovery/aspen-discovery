@@ -3,15 +3,16 @@
 	{if count($collectionSpotlight->lists) > 1}
 		{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 			{*Display Title Scroller Header*}
-			<div id="{$list->name|regex_replace:'/\W/':''|escape:url}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
-				{if $collectionSpotlight->showSpotlightTitle}
-					<div id="list-{$list->name|regex_replace:'/\W/':''|escape:url}Header" class="titleScrollerHeader">
+			{if $collectionSpotlight->showSpotlightTitle}
+				{assign var="firstList" value=$collectionSpotlight->lists|reset}
+				<div id="{$firstList->name|regex_replace:'/\W/':''|escape:url}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
+					<div id="list-{$firstList->name|regex_replace:'/\W/':''|escape:url}Header" class="titleScrollerHeader">
 						{if $collectionSpotlight->showSpotlightTitle && !empty($collectionSpotlight->name)}
 							<span class="listTitle resultInformationLabel">{if $collectionSpotlight->name}{translate text=$collectionSpotlight->name isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 						{/if}
 					</div>
-				{/if}
-			</div>
+				</div>
+			{/if}
 
 			{* Display Tabs *}
 			<ul class="nav nav-tabs" role="tablist">

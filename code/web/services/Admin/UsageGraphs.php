@@ -226,6 +226,30 @@ class Admin_UsageGraphs extends Admin_Admin {
 			];
 			$userUsage->selectAdd('SUM(pagesWithErrors) as sumPagesWithErrors');
 		}
+		if ($stat == 'searchesWithErrors' || $stat == 'exceptionsReport') {
+			$dataSeries['Searches with Errors'] = [
+				'borderColor' => 'rgba(154, 10, 120, 1)',
+				'backgroundColor' => 'rgba(154, 10, 120, 0.2)',
+				'data' => [],
+			];
+			$userUsage->selectAdd('SUM(searchesWithErrors) as sumSearchesWithErrors');
+		}
+		if ($stat == 'timedOutSearches' || $stat == 'exceptionsReport') {
+			$dataSeries['Timed Out Searches'] = [
+				'borderColor' => 'rgba(120, 10 244, 1)',
+				'backgroundColor' => 'rgba(120, 10, 244, 0.2)',
+				'data' => [],
+			];
+			$userUsage->selectAdd('SUM(timedOutSearches) as sumTimedOutSearches');
+		}
+		if ($stat == 'timedOutSearchesWithHighLoad' || $stat == 'exceptionsReport') {
+			$dataSeries['Timed Out Searches Under High Load'] = [
+				'borderColor' => 'rgba(10, 120, 244, 1)',
+				'backgroundColor' => 'rgba(10, 120, 244, 0.2)',
+				'data' => [],
+			];
+			$userUsage->selectAdd('SUM(timedOutSearchesWithHighLoad) as sumTimedOutSearchesWithHighLoad');
+		}
 
 
 		//Collect results
@@ -266,7 +290,7 @@ class Admin_UsageGraphs extends Admin_Admin {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['List Searches']['data'][$curPeriod] = $userUsage->sumUserListSearches;
 			}
-			if (array_key_exists('EBSCO EDS', $enabledModules) && ($stat == 'EbscoEdsSearches' || $stat == 'searches')) {
+			if (array_key_exists('EBSCO EDS', $enabledModules) && ($stat == 'edsSearches' || $stat == 'searches')) {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['EDS Searches']['data'][$curPeriod] = $userUsage->sumEbscoEdsSearches;
 			}
@@ -294,13 +318,25 @@ class Admin_UsageGraphs extends Admin_Admin {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Blocked Pages']['data'][$curPeriod] = $userUsage->sumBlockedRequests;
 			}
-			if ($stat == 'blockedPages' || $stat == 'exceptionsReport') {
+			if ($stat == 'blockedApiRequests' || $stat == 'exceptionsReport') {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Blocked API Requests']['data'][$curPeriod] = $userUsage->sumBlockedApiRequests;
 			}
 			if ($stat == 'errors' || $stat == 'exceptionsReport') {
 				/** @noinspection PhpUndefinedFieldInspection */
 				$dataSeries['Errors']['data'][$curPeriod] = $userUsage->sumPagesWithErrors;
+			}
+			if ($stat == 'timedOutSearches' || $stat == 'exceptionsReport') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Timed Out Searches']['data'][$curPeriod] = $userUsage->sumTimedOutSearches;
+			}
+			if ($stat == 'timedOutSearchesWithHighLoad' || $stat == 'exceptionsReport') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Timed Out Searches Under High Load']['data'][$curPeriod] = $userUsage->sumTimedOutSearchesWithHighLoad;
+			}
+			if ($stat == 'searchesWithErrors' || $stat == 'exceptionsReport') {
+				/** @noinspection PhpUndefinedFieldInspection */
+				$dataSeries['Searches with Errors']['data'][$curPeriod] = $userUsage->sumSearchesWithErrors;
 			}
 		}
 

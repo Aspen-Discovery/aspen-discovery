@@ -35,6 +35,10 @@
 	  "ios": {
 		"simulator": true
 	  }
+	},
+	"internal": {
+	  "extends": "production",
+	  "channel": "internal"
 	}
   },
   "submit": {
@@ -54,13 +58,13 @@
 	  }
 	},
 	"beta": {
-	  "extends": "release",
+	  "extends": "production",
 	  "android": {
 		"track": "beta"
 	  }
 	},
 	"internal": {
-	  "extends": "release",
+	  "extends": "production",
 	  "android": {
 		"track": "internal",
 		"releaseStatus": "completed"

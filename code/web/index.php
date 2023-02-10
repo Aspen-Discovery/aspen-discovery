@@ -297,6 +297,40 @@ if (isset($_REQUEST['lookfor'])) {
 		}
 	}
 }
+if (isset($_REQUEST['filter'])) {
+	if (is_array($_REQUEST['filter'])) {
+		foreach ($_REQUEST['filter'] as $i => $filterTerm) {
+			if (isSpammySearchTerm($filterTerm)) {
+				global $interface;
+				$interface->assign('module', 'Error');
+				$interface->assign('action', 'Handle404');
+				$module = 'Error';
+				$action = 'Handle404';
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+			}
+		}
+	}else{
+		if (isSpammySearchTerm($_REQUEST['filter'])) {
+			global $interface;
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
+			$module = 'Error';
+			$action = 'Handle404';
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		}
+	}
+}
+//Look for suspicous pararmaters
+foreach ($_REQUEST as $parameter => $value) {
+	if (strpos($parameter, 'nslookup') === 0) {
+		global $interface;
+		$interface->assign('module', 'Error');
+		$interface->assign('action', 'Handle404');
+		$module = 'Error';
+		$action = 'Handle404';
+		require_once ROOT_DIR . "/services/Error/Handle404.php";
+	}
+}
 
 $isLoggedIn = UserAccount::isLoggedIn();
 $timer->logTime('Check if user is logged in');
@@ -1114,7 +1148,9 @@ function loadModuleActionId() {
 	global $activeRecordProfile;
 	//Check to see if the module is a profile
 	if (isset($_REQUEST['module'])) {
-		/** @var IndexingProfile[] */ /** @var IndexingProfile $profile */ global $indexingProfiles;
+		/** @var IndexingProfile[] */
+		global $indexingProfiles;
+		/** @var IndexingProfile $profile */
 		foreach ($indexingProfiles as $profile) {
 			if ($profile->recordUrlComponent == $_REQUEST['module']) {
 				$newId = $profile->name . ':' . $_REQUEST['id'];
@@ -1140,6 +1176,15 @@ function loadModuleActionId() {
 				}
 				$activeRecordProfile = $profile;
 				break;
+			}
+		}
+		if (is_null($activeRecordProfile)) {
+			//We will default to the first indexing profile that has a catalog connection
+			foreach ($indexingProfiles as $profile) {
+				if (!empty($profile->catalogDriver)) {
+					$activeRecordProfile = $profile;
+					break;
+				}
 			}
 		}
 	}
@@ -1183,6 +1228,8 @@ function isSpammySearchTerm($lookfor): bool {
 	} elseif (strpos($lookfor, 'window.location') !== false) {
 		return true;
 	} elseif (strpos($lookfor, 'window.top') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'nslookup') !== false) {
 		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);

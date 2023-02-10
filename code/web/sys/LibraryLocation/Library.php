@@ -190,6 +190,7 @@ class Library extends DataObject {
 	public $showCitationStyleGuides;
 	public $restrictOwningBranchesAndSystems;
 	public $allowNameUpdates;
+	public $setUsePreferredNameInIlsOnUpdate;
 	public $allowDateOfBirthUpdates;
 	public $allowPatronAddressUpdates;
 	public $cityStateField;
@@ -285,6 +286,8 @@ class Library extends DataObject {
 	public $allowMasqueradeMode;
 	public $allowReadingHistoryDisplayInMasqueradeMode;
 	public $enableReadingHistory;
+	public $optInToReadingHistoryUpdatesILS;
+	public $optOutOfReadingHistoryUpdatesILS;
 	public $enableSavedSearches;
 	public /** @noinspection PhpUnused */
 		$newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
@@ -401,6 +404,7 @@ class Library extends DataObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
+		global $serverName;
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure($context);
 
@@ -496,15 +500,15 @@ class Library extends DataObject {
 			$compriseSettings[$compriseSetting->id] = $compriseSetting->customerName;
 		}
 
-		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
-		$proPaySetting = new ProPaySetting();
-		$proPaySetting->orderBy('name');
-		$proPaySettings = [];
-		$proPaySetting->find();
-		$proPaySettings[-1] = 'none';
-		while ($proPaySetting->fetch()) {
-			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
-		}
+//		require_once ROOT_DIR . '/sys/ECommerce/ProPaySetting.php';
+//		$proPaySetting = new ProPaySetting();
+//		$proPaySetting->orderBy('name');
+//		$proPaySettings = [];
+//		$proPaySetting->find();
+//		$proPaySettings[-1] = 'none';
+//		while ($proPaySetting->fetch()) {
+//			$proPaySettings[$proPaySetting->id] = $proPaySetting->name;
+//		}
 
 		require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 		$payPalSetting = new PayPalSetting();
@@ -945,7 +949,7 @@ class Library extends DataObject {
 						'permissions' => ['Library ILS Connection'],
 					],
 					'ssoMetadataFilename' => [
-						'path' => '/data/aspen-discovery/sso_metadata',
+						'path' => "/data/aspen-discovery/$serverName/sso_metadata/",
 						'property' => 'ssoMetadataFilename',
 						'type' => 'file',
 						'label' => 'XML metadata file',
@@ -1282,6 +1286,26 @@ class Library extends DataObject {
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
 					],
+					'optInToReadingHistoryUpdatesILS' => [
+						'property' => 'optInToReadingHistoryUpdatesILS',
+						'type' => 'checkbox',
+						'label' => 'Opting in to Reading History Updates ILS settings',
+						'description' => 'Whether or not the user should be opted in to reading history within the ILS when they opt in within Aspen.',
+						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
+						'hideInLists' => true,
+						'default' => 0,
+						'permissions' => ['Library ILS Options'],
+					],
+					'optOutOfReadingHistoryUpdatesILS' => [
+						'property' => 'optOutOfReadingHistoryUpdatesILS',
+						'type' => 'checkbox',
+						'label' => 'Opting out of Reading History Updates ILS settings',
+						'description' => 'Whether or not the user should be opted out of reading history within the ILS when they opt out within Aspen.',
+						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
+						'hideInLists' => true,
+						'default' => 1,
+						'permissions' => ['Library ILS Options'],
+					],
 					'enableSavedSearches' => [
 						'property' => 'enableSavedSearches',
 						'type' => 'checkbox',
@@ -1453,6 +1477,17 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Allow Patrons to Update Their Name (Setting applies to Koha only)',
 								'description' => 'Whether or not patrons should be able to update their name in their profile.',
+								'hideInLists' => true,
+								'default' => 1,
+								'readOnly' => false,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'setUsePreferredNameInIlsOnUpdate' => [
+								'property' => 'setUsePreferredNameInIlsOnUpdate',
+								'type' => 'checkbox',
+								'label' => 'Set "Use Preferred Name" in the ILS when updating preferred name.',
+								'description' => 'Whether or not the "Use Preferred Name" checkbox is updated when setting preferred name.',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 1,
 								'readOnly' => false,
@@ -2130,7 +2165,7 @@ class Library extends DataObject {
 							2 => 'PayPal',
 							3 => 'MSB',
 							4 => 'Comprise SMARTPAY',
-							5 => 'ProPay',
+							//PROPAY 5 => 'ProPay',
 							6 => 'Xpress-pay',
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
@@ -2222,7 +2257,7 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-					'proPaySettingId' => [
+					/*//PROPAY'proPaySettingId' => [
 						'property' => 'proPaySettingId',
 						'type' => 'enum',
 						'values' => $proPaySettings,
@@ -2230,7 +2265,7 @@ class Library extends DataObject {
 						'description' => 'The ProPay settings to use',
 						'hideInLists' => true,
 						'default' => -1,
-					],
+					],*/
 					'xpressPaySettingId' => [
 						'property' => 'xpressPaySettingId',
 						'type' => 'enum',

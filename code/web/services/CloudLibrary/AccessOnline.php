@@ -34,7 +34,14 @@ class CloudLibrary_AccessOnline extends Action {
 				AspenError::raiseError('Sorry, it looks like you don\'t have permissions to access checkouts for user.');
 			}
 		} else {
-			AspenError::raiseError('You must be logged in to access this title.');
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle401');
+			$interface->assign('followupModule', 'CloudLibrary');
+			$interface->assign('followupAction', 'AccessOnline');
+			require_once ROOT_DIR . "/services/Error/Handle401.php";
+			$actionClass = new Error_Handle401();
+			$actionClass->launch();
+			die();
 		}
 	}
 

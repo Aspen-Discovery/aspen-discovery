@@ -205,6 +205,10 @@ class Record_AJAX extends Action {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
 
+			require_once ROOT_DIR . '/sys/Account/User.php';
+			$isOnHold = $user->isRecordOnHold($recordSource, $id);
+			$interface->assign('isOnHold', $isOnHold);
+
 			if (!$this->setupHoldForm($recordSource, $rememberHoldPickupLocation, $marcRecord, $locations)) {
 				return [
 					'holdFormBypassed' => false,
@@ -228,13 +232,16 @@ class Record_AJAX extends Action {
 			$format = $marcRecord->getPrimaryFormat();
 
 			if (isset($_REQUEST['volume'])) {
+				//If we have a volume, we always place a volume hold
 				$holdType = 'volume';
 			} else {
 				global $indexingProfiles;
 				$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
 				$formatMap = $indexingProfile->formatMap;
 				/** @var FormatMapValue $formatMapValue */
+				//Start assuming we do a bib level hold
 				$holdType = 'bib';
+				//Check the format of the record to see what types of holds should be allowed
 				foreach ($formatMap as $formatMapValue) {
 					if (strcasecmp($formatMapValue->format, $format) === 0) {
 						$holdType = $formatMapValue->holdType;
@@ -269,6 +276,8 @@ class Record_AJAX extends Action {
 			//And it's a valid pickup location
 			$bypassHolds = false;
 			if ($rememberHoldPickupLocation) {
+				//This was done in the case of temporary/permanent branch closures to ensure users pick a new location.
+				//TODO: This should maybe be their selected pickup location rather than their home location?
 				$homeLocation = $user->getHomeLocation();
 				if ($homeLocation != null && $homeLocation->validHoldPickupBranch != 2) {
 					if ($holdType == 'bib') {
@@ -280,6 +289,11 @@ class Record_AJAX extends Action {
 					$rememberHoldPickupLocation = false;
 					$interface->assign('rememberHoldPickupLocation', $rememberHoldPickupLocation);
 				}
+			}
+
+			//If the title is on hold for the user set $byPassHolds to false
+			if ($isOnHold) {
+				$bypassHolds = false;
 			}
 
 			if ($bypassHolds) {
@@ -300,7 +314,10 @@ class Record_AJAX extends Action {
 						$results = $user->placeHold($id, $user->getPickupLocationCode());
 					}
 				}
+
 				if ($results['success']) {
+					//Only for Millennium?
+					// TODO: May no longer be needed?
 					if (empty($results['needsItemLevelHold'])) {
 						$results['title'] = translate([
 							'text' => 'Hold Placed Successfully',
@@ -400,10 +417,17 @@ class Record_AJAX extends Action {
 					'success' => true,
 				];
 				if ($holdType != 'none') {
-					$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
-							'text' => "Submit Hold Request",
-							'isPublicFacing' => true,
-						]) . "</button>";
+					if ($isOnHold){
+						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Yes, Place Hold",
+								'isPublicFacing' => true,
+							]) . "</button>";
+					}else{
+						$results['modalButtons'] = "<button type='submit' name='submit' id='requestTitleButton' class='btn btn-primary' onclick='return AspenDiscovery.Record.submitHoldForm();'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;" . translate([
+								'text' => "Submit Hold Request",
+								'isPublicFacing' => true,
+							]) . "</button>";
+					}
 				}
 			}
 		} else {
@@ -803,6 +827,7 @@ class Record_AJAX extends Action {
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
 							'title' => $return['title'] ?? '',
+							'newHoldButtonText' => $return['newHoldButtonText'],
 							'confirmationNeeded' => $confirmationNeeded,
 						];
 						if ($confirmationNeeded) {
@@ -1454,8 +1479,11 @@ class Record_AJAX extends Action {
 		//Check to see if the record must be picked up at the holding branch
 		$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 		$pickupAt = $relatedRecord->getHoldPickupSetting();
+		//1 = restrict to owning location
+		//2 = restrict to owning library
 		if ($pickupAt > 0) {
 			$itemLocations = $marcRecord->getValidPickupLocations($pickupAt);
+			//Loop through all pickup locations for the user and remove anything that is not valid for the record
 			foreach ($locations as $locationKey => $location) {
 				if (is_object($location) && !in_array(strtolower($location->code), $itemLocations)) {
 					unset($locations[$locationKey]);
@@ -1465,6 +1493,7 @@ class Record_AJAX extends Action {
 		$interface->assign('pickupAt', $pickupAt);
 
 		//Check to see if we need to prompt for hold notifications
+		//   (Evergreen requires the user to choose how they want to be notified for every hold)
 		$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
 		$interface->assign('promptForHoldNotifications', $promptForHoldNotifications);
 		if ($promptForHoldNotifications) {
@@ -1472,6 +1501,7 @@ class Record_AJAX extends Action {
 		}
 
 		global $library;
+		//Check to see if we can bypass the holds popup and just place the hold
 		if (!$multipleAccountPickupLocations && !$promptForHoldNotifications && $library->allowRememberPickupLocation) {
 			//If the patron's preferred pickup location is not valid then force them to pick a new location
 			$preferredPickupLocationIsValid = false;
@@ -1566,5 +1596,38 @@ class Record_AJAX extends Action {
 					'isPublicFacing' => true,
 				]) . "</button>",
 		];
+	}
+
+	/** @noinspection PhpUnused */
+	function forceReindex() : array {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+
+		$id = $_REQUEST['id'];
+		if (strpos($id, ':') > 0) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
+		}
+		$recordSource = $_REQUEST['recordSource'];
+
+		require_once ROOT_DIR . '/sys/MarcLoader.php';
+		if (MarcLoader::marcExistsForILSId("$recordSource:$id")) {
+			require_once ROOT_DIR . '/sys/Indexing/RecordIdentifiersToReload.php';
+			$recordIdentifierToReload = new RecordIdentifiersToReload();
+			$recordIdentifierToReload->type = $recordSource;
+			$recordIdentifierToReload->identifier = $id;
+			$recordIdentifierToReload->insert();
+
+			return [
+				'success' => true,
+				'message' => 'This title will be indexed again shortly.',
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Unable to mark the title for indexing. Could not find the title.',
+			];
+		}
 	}
 }

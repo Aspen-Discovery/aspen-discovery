@@ -282,12 +282,42 @@ class VdxDriver {
 			}
 		}
 
+		//Check required fields
+		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
+		$requestTitle = StringUtils::removeTrailingPunctuation(strip_tags($requestFields['title']));
+		if (empty($requestTitle)) {
+			return [
+				'title' => translate([
+					'text' => 'Request Failed',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "You must supply the title to place a request for.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
+		}
+		$pickupLocation = strip_tags($requestFields['pickupLocation']);
+		if (empty($pickupLocation)) {
+			return [
+				'title' => translate([
+					'text' => 'Request Failed',
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => "You must supply a valid pickup location for the request.",
+					'isPublicFacing' => true,
+				]),
+				'success' => false,
+			];
+		}
+
 		require_once ROOT_DIR . '/sys/VDX/VdxRequest.php';
 		$newRequest = new VdxRequest();
 		$newRequest->userId = $patron->id;
 		$newRequest->datePlaced = time();
-		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
-		$newRequest->title = StringUtils::removeTrailingPunctuation(strip_tags($requestFields['title']));
+		$newRequest->title = $requestTitle;
 		$newRequest->author = strip_tags($requestFields['author']);
 		$newRequest->publisher = strip_tags($requestFields['publisher']);
 		$newRequest->isbn = strip_tags($requestFields['isbn']);
@@ -295,7 +325,7 @@ class VdxDriver {
 		$newRequest->maximumFeeAmount = isset($requestFields['maximumFeeAmount']) ? strip_tags($requestFields['maximumFeeAmount']) : 0;
 		$newRequest->catalogKey = $catalogKeyRequested;
 		$newRequest->note = strip_tags($requestFields['note']);
-		$newRequest->pickupLocation = strip_tags($requestFields['pickupLocation']);
+		$newRequest->pickupLocation = $pickupLocation;
 		$newRequest->status = 'New';
 
 		//To submit, email the submission email address
@@ -314,6 +344,18 @@ class VdxDriver {
 		if ($pType->find(true)) {
 			if (!empty($pType->vdxClientCategory)) {
 				$clientCategory = $pType->vdxClientCategory;
+			} else {
+				return [
+					'title' => translate([
+						'text' => 'Request Failed',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => "Patrons with this profile are not allowed to place interlibrary loans. Please contact your library for more information.",
+						'isPublicFacing' => true,
+					]),
+					'success' => false,
+				];
 			}
 		}
 		$body .= "ClientCategory=$clientCategory\r\n";

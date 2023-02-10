@@ -43,6 +43,7 @@ class User extends DataObject {
 	public $disableAccountLinking;
 	public $oAuthAccessToken;
 	public $oAuthRefreshToken;
+	public $isLoggedInViaSSO;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -721,6 +722,12 @@ class User extends DataObject {
 				if ($user->canReceiveNotifications($user, 'notifyAccount')) {
 					require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 					require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+					$appScheme = 'aspen-lida';
+					require_once ROOT_DIR . '/sys/SystemVariables.php';
+					$systemVariables = SystemVariables::getSystemVariables();
+					if ($systemVariables && !empty($systemVariables->appScheme)) {
+						$appScheme = $systemVariables->appScheme;
+					}
 					$notificationToken = new UserNotificationToken();
 					$notificationToken->userId = $user->id;
 					$notificationToken->find();
@@ -731,7 +738,7 @@ class User extends DataObject {
 							'body' => 'Your account at ' . $user->getHomeLocation()->displayName . ' was just linked to by ' . $this->displayName . ' - ' . $this->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
 							'categoryId' => 'accountAlert',
 							'channelId' => 'accountAlert',
-							'data' => ['url' => urlencode('aspen-lida://user/linked_accounts')],
+							'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
 						];
 						$expoNotification = new ExpoNotification();
 						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $user->id, 'linked_account');
@@ -1852,7 +1859,19 @@ class User extends DataObject {
 	function placeHold($recordId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeHold($this, $recordId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
+		$thisUser = translate([
+			'text' => 'You',
+			'isPublicFacing' => true,
+		]);
+		if (!empty($this->parentUser)){
+			$thisUser = $this->displayName;
+		}
 		if ($result['success']) {
+			$result['newHoldButtonText'] = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+			]);
 			$this->clearCache();
 		}
 		return $result;
@@ -1861,7 +1880,19 @@ class User extends DataObject {
 	function placeVolumeHold($recordId, $volumeId, $pickupBranch) {
 		$result = $this->getCatalogDriver()->placeVolumeHold($this, $recordId, $volumeId, $pickupBranch);
 		$this->updateAltLocationForHold($pickupBranch);
+		$thisUser = translate([
+			'text' => 'You',
+			'isPublicFacing' => true,
+		]);
+		if (!empty($this->parentUser)){
+			$thisUser = $this->displayName;
+		}
 		if ($result['success']) {
+			$result['newHoldButtonText'] = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+			]);
 			$this->clearCache();
 		}
 		return $result;
@@ -1914,7 +1945,19 @@ class User extends DataObject {
 	function placeItemHold($recordId, $itemId, $pickupBranch, $cancelDate = null) {
 		$result = $this->getCatalogDriver()->placeItemHold($this, $recordId, $itemId, $pickupBranch, $cancelDate);
 		$this->updateAltLocationForHold($pickupBranch);
+		$thisUser = translate([
+			'text' => 'You',
+			'isPublicFacing' => true,
+		]);
+		if (!empty($this->parentUser)){
+			$thisUser = $this->displayName;
+		}
 		if ($result['success']) {
+			$result['newHoldButtonText'] = translate([
+				'text' => 'On Hold for %1%',
+				1 => $thisUser,
+				'isPublicFacing' => true,
+			]);
 			$this->clearCache();
 		}
 		return $result;
@@ -2277,7 +2320,7 @@ class User extends DataObject {
 		}
 	}
 
-	public function doReadingHistoryAction($readingHistoryAction, $selectedTitles) {
+	public function doReadingHistoryAction(string $readingHistoryAction, array $selectedTitles) {
 		if ($this->isReadingHistoryEnabled()) {
 			$catalogDriver = $this->getCatalogDriver();
 			$results = $catalogDriver->doReadingHistoryAction($this, $readingHistoryAction, $selectedTitles);
@@ -2825,6 +2868,7 @@ class User extends DataObject {
 			$this->getCatalogDriver()->logout($this);
 		}
 		$this->lastLoginValidation = 0;
+		$this->isLoggedInViaSSO = 0;
 		$this->update();
 	}
 
@@ -2915,7 +2959,10 @@ class User extends DataObject {
 		$sections['primary_configuration']->addAction(new AdminAction('Patron Types', 'Modify Permissions and limits based on Patron Type.', '/Admin/PTypes'), 'Administer Patron Types');
 		$sections['primary_configuration']->addAction(new AdminAction('Account Profiles', 'Define how account information is loaded from the ILS.', '/Admin/AccountProfiles'), 'Administer Account Profiles');
 		$sections['primary_configuration']->addAction(new AdminAction('Two-Factor Authentication', 'Administer two-factor authentication settings', '/Admin/TwoFactorAuth'), 'Administer Two-Factor Authentication');
-		$sections['primary_configuration']->addAction(new AdminAction('Single Sign-on (SSO)', 'Administer single sign-on settings', '/Admin/SSOSettings'), 'Administer Single Sign-on');
+
+		if(array_key_exists('Single sign-on', $enabledModules)) {
+			$sections['primary_configuration']->addAction(new AdminAction('Single Sign-on (SSO)', 'Administer single sign-on settings', '/Admin/SSOSettings'), 'Administer Single Sign-on');
+		}
 
 		//Materials Request if enabled
 		if (MaterialsRequest::enableAspenMaterialsRequest()) {
@@ -3038,7 +3085,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
-		$sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
+		//PROPAY $sections['ecommerce']->addAction(new AdminAction('ProPay Settings', 'Define Settings for ProPay.', '/Admin/ProPaySettings'), 'Administer ProPay');
 		$sections['ecommerce']->addAction(new AdminAction('Xpress-pay Settings', 'Define Settings for Xpress-pay.', '/Admin/XpressPaySettings'), 'Administer Xpress-pay');
 		$sections['ecommerce']->addAction(new AdminAction('ACI Speedpay Settings', 'Define Settings for ACI Speedpay.', '/Admin/ACISpeedpaySettings'), 'Administer ACI Speedpay');
 		$sections['ecommerce']->addAction(new AdminAction('InvoiceCloud Settings', 'Define Settings for InvoiceCloud.', '/Admin/InvoiceCloudSettings'), 'Administer InvoiceCloud');
@@ -3275,24 +3322,26 @@ class User extends DataObject {
 			]);
 		}
 
-		$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
-		$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
-		$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
-		$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
-		$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
-		if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')) {
-			$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
-		} else {
-			$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+		if(array_key_exists('Aspen LiDA', $enabledModules)) {
+			$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
+			$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
+			$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
+			$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
+			if ($sections['aspen_lida']->addAction($notificationSettingsAction, 'Administer Aspen LiDA Settings')) {
+				$notificationSettingsAction->addSubAction($notificationReportAction, 'View Notifications Reports');
+			} else {
+				$sections['aspen_lida']->addAction($notificationReportAction, 'View Notifications Reports');
+			}
+			$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
+				'Send Notifications to All Libraries',
+				'Send Notifications to All Locations',
+				'Send Notifications to Home Library',
+				'Send Notifications to Home Location',
+				'Send Notifications to Home Library Locations',
+			]);
+			$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 		}
-		$sections['aspen_lida']->addAction(new AdminAction('LiDA Notifications', 'LiDA Notifications allow you to send custom alerts to your patrons via the app.', '/Admin/LiDANotifications'), [
-			'Send Notifications to All Libraries',
-			'Send Notifications to All Locations',
-			'Send Notifications to Home Library',
-			'Send Notifications to Home Location',
-			'Send Notifications to Home Library Locations',
-		]);
-		$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');
 		$sections['support']->addAction(new AdminAction('Request Tracker Settings', 'Define settings for a Request Tracker support system.', '/Support/RequestTrackerConnections'), 'Administer Request Tracker Connection');
