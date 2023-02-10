@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
 import chroma from 'chroma-js';
 import _ from 'lodash';
-import { extendTheme, Box, Icon, IconButton, useColorMode, useColorModeValue } from 'native-base';
+import { extendTheme, Box, Icon, IconButton, useColorMode, useColorModeValue, StorageManager, ColorMode } from 'native-base';
 import React, { useState } from 'react';
 
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
@@ -154,7 +154,8 @@ function generateSwatches(swatch) {
      return object;
 }
 
-export async function createTheme() {
+export async function createTheme(colorMode) {
+     console.log("createTheme: " + colorMode);
      const response = await getThemeInfo();
      const theme = extendTheme({
           colors: {
@@ -164,14 +165,16 @@ export async function createTheme() {
           },
           config: {
                useAccessibleColors: true,
+               useSystemColorMode: false,
+               initialColorMode: colorMode,
           },
      });
      console.log('Theme created and saved.');
      return theme;
 }
 
-export async function saveTheme() {
-     await createTheme().then(async (response) => {
+export async function saveTheme(response) {
+     if(response) {
           const primaryColors = ['primaryColors', JSON.stringify(response.colors.primary)];
           const secondaryColors = ['secondaryColors', JSON.stringify(response.colors.secondary)];
           const tertiaryColors = ['tertiaryColors', JSON.stringify(response.colors.tertiary)];
@@ -185,7 +188,7 @@ export async function saveTheme() {
                console.log('Unable to save essential colors to async storage in theme.js');
                console.log(e);
           }
-     });
+     }
 }
 
 export async function fetchTheme() {
@@ -206,9 +209,17 @@ export async function fetchTheme() {
 export function UseColorMode() {
      const { toggleColorMode } = useColorMode();
      const currentMode = useColorModeValue('nightlight-round', 'wb-sunny');
+     const colorMode = useColorModeValue('dark', 'light');
+
+     const switchColorMode = async () => {
+          toggleColorMode();
+          console.log("Set colorMode to: " + colorMode);
+          await AsyncStorage.setItem('@colorMode', colorMode);
+     }
+
      return (
           <Box alignItems="center">
-               <IconButton onPress={toggleColorMode} icon={<Icon as={MaterialIcons} name={currentMode} />} borderRadius="full" _icon={{ size: 'sm' }} />
+               <IconButton onPress={switchColorMode} icon={<Icon as={MaterialIcons} name={currentMode} />} borderRadius="full" _icon={{ size: 'sm' }} />
           </Box>
      );
 }

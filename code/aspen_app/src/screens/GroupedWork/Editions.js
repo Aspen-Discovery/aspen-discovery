@@ -120,7 +120,7 @@ const Edition = (payload) => {
                          <Text fontSize="xs">
                               <Text bold>{records.publicationDate}</Text> {records.publisher}. {records.edition} {records.physical} {closedCaptioned === "1" ? (<Icon as={MaterialIcons} name="closed-caption" size="sm" mb={-1}/>) : null}
                          </Text>
-                         <HStack space={2} justifyContent="space-between" alignItems="center">
+                         <VStack space={1}>
                               <Badge colorScheme={statusIndicator.indicator} rounded="4px" _text={{ fontSize: 10 }}>
                                    {statusIndicator.label}
                               </Badge>
@@ -129,7 +129,7 @@ const Edition = (payload) => {
                                         {translate('copy_details.where_is_it')}
                                    </Button>
                               ) : null}
-                         </HStack>
+                         </VStack>
                     </VStack>
                     <Button.Group direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
                          <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />} />

@@ -29,7 +29,7 @@ import Manifestation from './Manifestation';
 export const GroupedWorkScreen = () => {
      const route = useRoute();
      const id = route.params.id;
-     const { locations, accounts, updatePickupLocations, updateLinkedAccounts } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, updatePickupLocations, updateLinkedAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
@@ -43,9 +43,12 @@ export const GroupedWorkScreen = () => {
                     if (isSubscribed) {
                          updateGroupedWork(data);
                          updateFormat(data.format);
-                         await getLinkedAccounts(library.baseUrl).then((result) => {
-                              if (accounts !== result) {
-                                   updateLinkedAccounts(result);
+                         await getLinkedAccounts(user, cards, library).then((result) => {
+                              if (accounts !== result.accounts) {
+                                   updateLinkedAccounts(result.accounts);
+                              }
+                              if(cards !== result.cards) {
+                                  updateLibraryCards(result.cards);
                               }
                          });
                          await getPickupLocations(library.baseUrl).then((result) => {

@@ -32,6 +32,7 @@ class AccountProfile extends DataObject {
 		$apiVersion;
 	public $workstationId;
 	public $weight;
+	public $ssoSettingId;
 
 	/** @var bool|IndexingProfile|null */
 	private $_indexingProfile = false;
@@ -40,6 +41,16 @@ class AccountProfile extends DataObject {
 
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+
+		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+		$ssoSettings = new SSOSetting();
+		$ssoSettings->orderBy('name');
+		$ssoSettingsOptions = [];
+		$ssoSettingsOptions[-1] = "";
+		$ssoSettings->find();
+		while ($ssoSettings->fetch()) {
+			$ssoSettingsOptions[$ssoSettings->id] = $ssoSettings->name . ' (' . $ssoSettings->service . ')';
+		}
 
 		return [
 			'id' => [
@@ -117,9 +128,18 @@ class AccountProfile extends DataObject {
 						'values' => [
 							'ils' => 'ILS',
 							'db' => 'Database',
+							'sso' => 'Single Sign-on (SSO)'
 						],
 						'description' => 'The method of authentication to use',
 						'required' => true,
+						'onchange' => 'return AspenDiscovery.Admin.toggleSSOSettingsInAccountProfile();',
+					],
+					'ssoSettingId' => [
+						'property' => 'ssoSettingId',
+						'type' => 'enum',
+						'label' => 'Primary Single Sign-on (SSO) Settings',
+						'values' => $ssoSettingsOptions,
+						'description' => 'The primary single sign-on settings to use for the account profile. Can be overridden at the library level.',
 					],
 				],
 			],
