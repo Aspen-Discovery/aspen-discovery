@@ -493,7 +493,12 @@ AspenDiscovery.Account = (function () {
 				var loginErrorElem = $('#loginError');
 				var loadingElem = $('#loading');
 				var multiStep = $('#multiStep').val();
-				var ldapLogin = $('#ldapLogin');
+				var ldapLoginObj = $('#ldapLogin');
+				if (ldapLoginObj !== undefined) {
+					ldapLogin = ldapLoginObj.val()
+				} else {
+					ldapLogin = "";
+				}
 				var url = Globals.path + "/AJAX/JSON?method=loginUser";
 				var params = {username: username, password: password, rememberMe: rememberMe, ldapLogin: ldapLogin};
 				if (!Globals.opac && AspenDiscovery.hasLocalStorage()) {
