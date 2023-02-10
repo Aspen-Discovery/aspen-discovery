@@ -14,7 +14,7 @@ import { getManifestation } from './item';
  **/
 export async function getGroupedWork(itemId, url) {
      const { data } = await axios.get('/WorkAPI?method=getGroupedWork', {
-          baseURL: url + '/API',
+          baseURL: url + 'API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(),
           auth: createAuthTokens(),
