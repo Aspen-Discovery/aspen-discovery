@@ -7,6 +7,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class WebServiceResponse {
 	private static Logger logger = LogManager.getLogger("WebServiceResponse");
@@ -14,7 +17,14 @@ public class WebServiceResponse {
 	private int responseCode;
 	private String message;
 	private boolean callTimedOut = false;
+	private Map<String, List<String>> responseHeaders = new HashMap();
 
+	public WebServiceResponse(boolean success, int responseCode, String message, Map<String, List<String>> responseHeaders){
+		this.success = success;
+		this.responseCode = responseCode;
+		this.message = message;
+		this.responseHeaders = responseHeaders;
+	}
 	public WebServiceResponse(boolean success, int responseCode, String message){
 		this.success = success;
 		this.responseCode = responseCode;
@@ -61,5 +71,17 @@ public class WebServiceResponse {
 
 	void setCallTimedOut(boolean callTimedOut) {
 		this.callTimedOut = callTimedOut;
+	}
+
+	public String getResponseHeaderValue(String headerName) {
+		if (responseHeaders != null) {
+			if (responseHeaders.containsKey(headerName)){
+				List<String> headerValues = responseHeaders.get(headerName);
+				if (headerValues.size() > 0) {
+					return headerValues.get(0);
+				}
+			}
+		}
+		return null;
 	}
 }
