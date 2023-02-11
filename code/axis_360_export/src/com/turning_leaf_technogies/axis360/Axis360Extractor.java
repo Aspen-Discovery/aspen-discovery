@@ -226,9 +226,9 @@ public class Axis360Extractor {
 
 	private int processAxis360Titles(Axis360Setting setting, HashMap<String, Axis360Title> existingRecords, JSONArray titleDetails) {
 		int numChanges = 0;
+		logEntry.incNumProducts(titleDetails.length());
 		for (int i = 0; i < titleDetails.length(); i++) {
 			try {
-				logEntry.incNumProducts();
 				JSONObject itemDetails = titleDetails.getJSONObject(i);
 				checksumCalculator.reset();
 				String itemDetailsAsString = itemDetails.toString();

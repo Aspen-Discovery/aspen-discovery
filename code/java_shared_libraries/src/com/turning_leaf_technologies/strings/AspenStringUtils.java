@@ -182,7 +182,7 @@ public class AspenStringUtils {
 		HashSet<String> trimmedCollection = new HashSet<>();
 		for (String field : fieldList) {
 			String trimmedField = trimTrailingPunctuation(field);
-			trimmedField = replacePipePattern.matcher(trimmedField).replaceAll(" -- ");
+			trimmedField = replacePipePattern.matcher(trimmedField).replaceAll(" -- ").trim();
 			trimmedCollection.add(trimmedField);
 		}
 		return trimmedCollection;
@@ -190,7 +190,7 @@ public class AspenStringUtils {
 
 	public static String normalizeSubject(String field) {
 		String trimmedField = trimTrailingPunctuation(field);
-		trimmedField = replacePipePattern.matcher(trimmedField).replaceAll(" -- ");
+		trimmedField = replacePipePattern.matcher(trimmedField).replaceAll(" -- ").trim();
 		return trimmedField;
 	}
 

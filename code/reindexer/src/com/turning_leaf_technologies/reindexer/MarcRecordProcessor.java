@@ -1660,7 +1660,9 @@ abstract class MarcRecordProcessor {
 						if (subfieldE != null && subfieldE.getData().toLowerCase().contains("book")){
 							result.add("CD+Book");
 						}else{
-							result.add("SoundDisc");
+							if (!physicalDescriptionData.contains("cd-rom")) {
+								result.add("SoundDisc");
+							}
 						}
 					} else if (subfield.getCode() == 'a' && (pagesPattern2.matcher(physicalDescriptionData).matches())){
 						Subfield subfieldE = field.getSubfield('e');
