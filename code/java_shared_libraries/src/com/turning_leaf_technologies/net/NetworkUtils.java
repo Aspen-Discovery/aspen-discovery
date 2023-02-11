@@ -18,6 +18,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 
 public class NetworkUtils {
@@ -56,14 +58,23 @@ public class NetworkUtils {
 			StringBuilder response = new StringBuilder();
 			if (conn.getResponseCode() == 200) {
 				// Get the response
-				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+				InputStream is = conn.getInputStream();
+				String contentEncoding = conn.getHeaderField("Content-Encoding");
+				if (contentEncoding != null && contentEncoding.equals("gzip")) {
+					try {
+						is = new GZIPInputStream(is);
+					} catch (Exception e) {
+						is = conn.getInputStream();
+					}
+				}
+				BufferedReader rd = new BufferedReader(new InputStreamReader(is));
 				String line;
 				while ((line = rd.readLine()) != null) {
 					response.append(line).append("\r\n");
 				}
 
 				rd.close();
-				retVal = new WebServiceResponse(true, 200, response.toString());
+				retVal = new WebServiceResponse(true, 200, response.toString(), conn.getHeaderFields());
 			} else {
 				if (logFailures) {
 					logger.error("Received error " + conn.getResponseCode() + " getting " + url);
