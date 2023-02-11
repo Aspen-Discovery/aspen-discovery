@@ -273,13 +273,13 @@ class SearchAPI extends Action {
 				/** @var OpenArchivesCollection $oaiSetting */
 				foreach ($allOaiSettings as $oaiSetting) {
 					require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
-					$oaiLogEntry = new OpenArchivesExportLogEntry();
-					$oaiLogEntry->collectionName = $oaiSetting->name;
-					$oaiLogEntry->orderBy("id DESC");
-					$oaiLogEntry->find();
-					if ($oaiLogEntry->getNumResults() > 0) {
-						$oaiLogEntry->fetch();
-						if ($oaiLogEntry->numErrors > 0) {
+					$websiteIndexingEntry = new OpenArchivesExportLogEntry();
+					$websiteIndexingEntry->collectionName = $oaiSetting->name;
+					$websiteIndexingEntry->orderBy("id DESC");
+					$websiteIndexingEntry->find();
+					if ($websiteIndexingEntry->getNumResults() > 0) {
+						$websiteIndexingEntry->fetch();
+						if ($websiteIndexingEntry->numErrors > 0) {
 							$oaiNote .= $oaiSetting->name . ' had an error on the last run<br/>';
 						}
 					}else{
@@ -292,7 +292,49 @@ class SearchAPI extends Action {
 				}else{
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $oaiNote);
 				}
-			}else {
+			} elseif ($aspenModule->name == 'Web Indexer') {
+				require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
+				$webIndexSettings = new WebsiteIndexSetting();
+				$webIndexSettings->deleted = false;
+				$webIndexSettings = $webIndexSettings->fetchAll();
+				$hasErrors = false;
+				$webIndexNote = '';
+				/** @var WebsiteIndexSetting $webIndexSetting */
+				foreach ($webIndexSettings as $webIndexSetting) {
+					require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
+					$websiteIndexingEntry = new WebsiteIndexLogEntry();
+					$websiteIndexingEntry->websiteName = $webIndexSetting->name;
+					$websiteIndexingEntry->orderBy("id DESC");
+					$websiteIndexingEntry->find();
+					if ($websiteIndexingEntry->getNumResults() > 0) {
+						$websiteIndexingEntry->fetch();
+						if ($websiteIndexingEntry->numErrors > 0) {
+							$webIndexNote .= $webIndexSetting->name . ' had an error on the last run<br/>';
+						}
+						if (empty($websiteIndexingEntry->endTime)){
+							//First indexing entry has not finished, check the one before that
+							if ($websiteIndexingEntry->getNumResults() > 1) {
+								$websiteIndexingEntry->fetch();
+								if ($websiteIndexingEntry->numErrors > 0) {
+									$webIndexNote .= $webIndexSetting->name . ' had an error on the last completed run<br/>';
+								} elseif (empty($websiteIndexingEntry->endTime)){
+									$webIndexNote .= $webIndexSetting->name . ' has not finished indexing on the last 2 tries<br/>';
+								}
+							} else {
+								$webIndexNote .= $webIndexSetting->name . ' has never finished indexing<br/>';
+							}
+						}
+					}else{
+						$hasErrors = true;
+						$webIndexNote .= $webIndexSetting->name . ' has never been indexed<br/>';
+					}
+				}
+				if (!$hasErrors) {
+					$this->addCheck($checks, $aspenModule->name);
+				}else{
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $webIndexNote);
+				}
+			} else {
 				if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)) {
 					//Check to see how many settings we have
 					$numSettings = 1;
@@ -300,11 +342,8 @@ class SearchAPI extends Action {
 						require_once ROOT_DIR . $aspenModule->settingsClassPath;
 						/** @var DataObject $settings */
 						$settings = new $aspenModule->settingsClassName;
-						if ($aspenModule->name == 'Open Archives') {
-							/** @var OpenArchivesCollection $settings */
-							$oaiSettings = $settings;
-							$oaiSettings->deleted = 0;
-							$numSettings = $settings->count();
+						if ($aspenModule->name == 'Web Builder') {
+							$numSettings = 1;
 						} else {
 							$numSettings = $settings->count();
 						}
@@ -318,6 +357,10 @@ class SearchAPI extends Action {
 					$logEntry = new $aspenModule->logClassName();
 					$logEntry->orderBy("id DESC");
 					$numEntriesToCheck = 3;
+					if ($aspenModule->name == 'Web Builder') {
+						/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+						$logEntry->websiteName = 'Web Builder Content';
+					}
 					$logEntry->limit(0, $numEntriesToCheck * $numSettings);
 					$logErrors = 0;
 					$logEntry->find();
@@ -341,9 +384,6 @@ class SearchAPI extends Action {
 						$isFirstEntry = false;
 					}
 					$checkEntriesInLast24Hours = true;
-					if ($aspenModule->name == 'Open Archives') {
-						$checkEntriesInLast24Hours = false;
-					}
 					if ($aspenModule->name == 'Web Builder') {
 						// Check to make sure there is web builder content to actually index
 						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
@@ -365,6 +405,8 @@ class SearchAPI extends Action {
 									$checkEntriesInLast24Hours = true;
 								} else {
 									$checkEntriesInLast24Hours = false;
+									//Nothing to index, skip adding a check.
+									continue;
 								}
 							}
 						}
