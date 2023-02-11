@@ -3,6 +3,8 @@ package com.turning_leaf_technologies.oai;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.indexing.IndexingUtils;
 import com.turning_leaf_technologies.logging.LoggingUtil;
+import com.turning_leaf_technologies.net.NetworkUtils;
+import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -14,18 +16,18 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 public class OaiIndexerMain {
 	private static Logger logger;
@@ -45,11 +47,16 @@ public class OaiIndexerMain {
 
 	public static void main(String[] args) {
 		String serverName;
+		int collectionToProcess = -1;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
+			}
+			String collectionToProcessStr = AspenStringUtils.getInputFromCommandLine("Enter the Collection ID to process (blank to process all)");
+			if (collectionToProcessStr.length() > 0 && AspenStringUtils.isInteger(collectionToProcessStr)) {
+				collectionToProcess = Integer.parseInt(collectionToProcessStr);
 			}
 		} else {
 			serverName = args[0];
@@ -75,7 +82,7 @@ public class OaiIndexerMain {
 			//Connect to the aspen database
 			connectToDatabase();
 
-			extractAndIndexOaiData();
+			extractAndIndexOaiData(collectionToProcess);
 		}
 
 		logger.info("Finished " + new Date());
@@ -99,7 +106,7 @@ public class OaiIndexerMain {
 		}
 	}
 
-	private static void extractAndIndexOaiData() {
+	private static void extractAndIndexOaiData(int collectionToIndex) {
 		String solrPort = configIni.get("Reindex", "solrPort");
 		setupSolrClient(solrPort);
 
@@ -121,72 +128,74 @@ public class OaiIndexerMain {
 
 			ResultSet collectionsRS = getOpenArchiveCollections.executeQuery();
 			while (collectionsRS.next()) {
-				String collectionName = collectionsRS.getString("name");
-				String fetchFrequency = collectionsRS.getString("fetchFrequency");
-				long lastFetched = collectionsRS.getLong("lastFetched");
-				boolean needsIndexing = false;
-				long currentTime = new Date().getTime() / 1000;
-				if (collectionsRS.wasNull() || lastFetched == 0 || fullReload) {
-					needsIndexing = true;
-				} else {
-					//'daily', 'weekly', 'monthly', 'yearly', 'once'
-					switch (fetchFrequency) {
-						case "hourly": //Legacy, no longer in the interface
-						case "daily":
-							needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
-							break;
-						case "weekly":
-							needsIndexing = lastFetched < (currentTime - 7 * 24 * 60 * 60);
-							break;
-						case "monthly":
-							needsIndexing = lastFetched < (currentTime - 30 * 24 * 60 * 60);
-							break;
-						case "yearly":
-							needsIndexing = lastFetched < (currentTime - 3655 * 24 * 60 * 60);
-							break;
+				if (collectionToIndex == -1 || collectionToIndex == collectionsRS.getInt("id")) {
+					String collectionName = collectionsRS.getString("name");
+					String fetchFrequency = collectionsRS.getString("fetchFrequency");
+					long lastFetched = collectionsRS.getLong("lastFetched");
+					boolean needsIndexing = false;
+					long currentTime = new Date().getTime() / 1000;
+					if (collectionsRS.wasNull() || lastFetched == 0 || fullReload) {
+						needsIndexing = true;
+					} else {
+						//'daily', 'weekly', 'monthly', 'yearly', 'once'
+						switch (fetchFrequency) {
+							case "hourly": //Legacy, no longer in the interface
+							case "daily":
+								needsIndexing = lastFetched < (currentTime - 24 * 60 * 60);
+								break;
+							case "weekly":
+								needsIndexing = lastFetched < (currentTime - 7 * 24 * 60 * 60);
+								break;
+							case "monthly":
+								needsIndexing = lastFetched < (currentTime - 30 * 24 * 60 * 60);
+								break;
+							case "yearly":
+								needsIndexing = lastFetched < (currentTime - 3655 * 24 * 60 * 60);
+								break;
+						}
 					}
-				}
-				if (needsIndexing) {
-					long collectionId = collectionsRS.getLong("id");
-					String baseUrl = collectionsRS.getString("baseUrl");
-					String setName = collectionsRS.getString("setName");
-					String subjectFilterString = collectionsRS.getString("subjectFilters");
-					boolean loadOneMonthAtATime = collectionsRS.getBoolean("loadOneMonthAtATime");
-					boolean deleted = collectionsRS.getBoolean("deleted");
-					ArrayList<Pattern> subjectFilters = new ArrayList<>();
-					if (subjectFilterString != null && subjectFilterString.length() > 0) {
-						String[] subjectFiltersRaw = subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
-						for (String subjectFilter : subjectFiltersRaw) {
-							if (subjectFilter.length() > 0) {
-								subjectFilters.add(Pattern.compile("(\\b|-)" + subjectFilter.toLowerCase() + "(\\b|-)", Pattern.CASE_INSENSITIVE));
+					if (needsIndexing) {
+						long collectionId = collectionsRS.getLong("id");
+						String baseUrl = collectionsRS.getString("baseUrl");
+						String setName = collectionsRS.getString("setName");
+						String subjectFilterString = collectionsRS.getString("subjectFilters");
+						boolean loadOneMonthAtATime = collectionsRS.getBoolean("loadOneMonthAtATime");
+						boolean deleted = collectionsRS.getBoolean("deleted");
+						ArrayList<Pattern> subjectFilters = new ArrayList<>();
+						if (subjectFilterString != null && subjectFilterString.length() > 0) {
+							String[] subjectFiltersRaw = subjectFilterString.split("\\s*(\\r\\n|\\n|\\r)\\s*");
+							for (String subjectFilter : subjectFiltersRaw) {
+								if (subjectFilter.length() > 0) {
+									subjectFilters.add(Pattern.compile("(\\b|-)" + subjectFilter.toLowerCase() + "(\\b|-)", Pattern.CASE_INSENSITIVE));
+								}
 							}
 						}
-					}
 
-					HashSet<String> scopesToInclude = new HashSet<>();
+						HashSet<String> scopesToInclude = new HashSet<>();
 
-					//Get a list of libraries and locations that the setting applies to
-					getLibrariesForCollectionStmt.setLong(1, collectionId);
-					ResultSet librariesForCollectionRS = getLibrariesForCollectionStmt.executeQuery();
-					while (librariesForCollectionRS.next()){
-						String subdomain = librariesForCollectionRS.getString("subdomain");
-						subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
-						scopesToInclude.add(subdomain.toLowerCase());
-					}
-
-					getLocationsForCollectionStmt.setLong(1, collectionId);
-					ResultSet locationsForCollectionRS = getLocationsForCollectionStmt.executeQuery();
-					while (locationsForCollectionRS.next()){
-						String subLocation = locationsForCollectionRS.getString("subLocation");
-						if (!locationsForCollectionRS.wasNull() && subLocation.length() > 0){
-							scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
-						}else {
-							String code = locationsForCollectionRS.getString("code");
-							scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+						//Get a list of libraries and locations that the setting applies to
+						getLibrariesForCollectionStmt.setLong(1, collectionId);
+						ResultSet librariesForCollectionRS = getLibrariesForCollectionStmt.executeQuery();
+						while (librariesForCollectionRS.next()) {
+							String subdomain = librariesForCollectionRS.getString("subdomain");
+							subdomain = subdomain.replaceAll("[^a-zA-Z0-9_]", "");
+							scopesToInclude.add(subdomain.toLowerCase());
 						}
-					}
 
-					extractAndIndexOaiCollection(collectionName, collectionId, deleted, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
+						getLocationsForCollectionStmt.setLong(1, collectionId);
+						ResultSet locationsForCollectionRS = getLocationsForCollectionStmt.executeQuery();
+						while (locationsForCollectionRS.next()) {
+							String subLocation = locationsForCollectionRS.getString("subLocation");
+							if (!locationsForCollectionRS.wasNull() && subLocation.length() > 0) {
+								scopesToInclude.add(subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+							} else {
+								String code = locationsForCollectionRS.getString("code");
+								scopesToInclude.add(code.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase());
+							}
+						}
+
+						extractAndIndexOaiCollection(collectionName, collectionId, deleted, subjectFilters, baseUrl, setName, currentTime, loadOneMonthAtATime, scopesToInclude);
+					}
 				}
 			}
 		} catch (SQLException e) {
@@ -278,12 +287,25 @@ public class OaiIndexerMain {
 							}
 							try {
 								logger.info("Loading from " + oaiUrl);
+								HashMap<String, String> headers = new HashMap<>();
+								headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
+								headers.put("Accept-Encoding", "gzip");
+								headers.put("Accept-Language", "en-US");
+								headers.put("Pragma", "no-cache");
+								WebServiceResponse oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
+
 								DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 								factory.setValidating(false);
 								factory.setIgnoringElementContentWhitespace(true);
 								DocumentBuilder builder = factory.newDocumentBuilder();
 
-								Document doc = builder.parse(oaiUrl);
+								byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
+								ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
+								String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
+								InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
+
+								Document doc = builder.parse(soapResponseInputSource);
+
 								Element docElement = doc.getDocumentElement();
 								//Normally we get list records, but if we are at the end of the list OAI may return an
 								//error rather than ListRecords (even though it gave us a resumption token)

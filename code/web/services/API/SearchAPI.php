@@ -263,88 +263,166 @@ class SearchAPI extends Action {
 		$aspenModule->enabled = true;
 		$aspenModule->find();
 		while ($aspenModule->fetch()) {
-			if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)) {
-				//Check to see how many settings we have
-				$numSettings = 1;
-				if (!empty($aspenModule->settingsClassPath) && !empty($aspenModule->settingsClassName)) {
-					require_once ROOT_DIR . $aspenModule->settingsClassPath;
-					/** @var DataObject $settings */
-					$settings = new $aspenModule->settingsClassName;
-					$numSettings = $settings->count();
-				}
-				if ($numSettings == 0) {
-					continue;
-				}
-				require_once ROOT_DIR . $aspenModule->logClassPath;
-				/** @var BaseLogEntry $logEntry */
-				$logEntry = new $aspenModule->logClassName();
-				$logEntry->orderBy("id DESC");
-				$numEntriesToCheck = 3;
-				if ($aspenModule->name == 'Open Archives') {
-					$numEntriesToCheck = 1;
-				}
-				$logEntry->limit(0, $numEntriesToCheck * $numSettings);
-				$logErrors = 0;
-				$logEntry->find();
-				$numUnfinishedEntries = 0;
-				$lastFinishTime = 0;
-				$isFirstEntry = true;
-				while ($logEntry->fetch()) {
-					if ($logEntry->numErrors > 0) {
-						$logErrors++;
-					}
-					if (empty($logEntry->endTime)) {
-						$numUnfinishedEntries++;
-						if ($isFirstEntry && (time() - $logEntry->startTime) >= 8 * 60 * 60) {
-							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last log entry for {$aspenModule->name} has been running for more than 8 hours");
+			if ($aspenModule->name == 'Open Archives') {
+				require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesCollection.php';
+				$oaiSettings = new OpenArchivesCollection();
+				$oaiSettings->deleted = false;
+				$allOaiSettings = $oaiSettings->fetchAll();
+				$hasErrors = false;
+				$oaiNote = '';
+				/** @var OpenArchivesCollection $oaiSetting */
+				foreach ($allOaiSettings as $oaiSetting) {
+					require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
+					$websiteIndexingEntry = new OpenArchivesExportLogEntry();
+					$websiteIndexingEntry->collectionName = $oaiSetting->name;
+					$websiteIndexingEntry->orderBy("id DESC");
+					$websiteIndexingEntry->find();
+					if ($websiteIndexingEntry->getNumResults() > 0) {
+						$websiteIndexingEntry->fetch();
+						if ($websiteIndexingEntry->numErrors > 0) {
+							$oaiNote .= $oaiSetting->name . ' had an error on the last run<br/>';
 						}
-					} else {
-						if ($logEntry->endTime > $lastFinishTime) {
-							$lastFinishTime = $logEntry->endTime;
-						}
+					}else{
+						$hasErrors = true;
+						$oaiNote .= $oaiSetting->name . ' has never been indexed<br/>';
 					}
-					$isFirstEntry = false;
 				}
-				$checkEntriesInLast24Hours = true;
-				if ($aspenModule->name == 'Open Archives') {
-					$checkEntriesInLast24Hours = false;
+				if (!$hasErrors) {
+					$this->addCheck($checks, $aspenModule->name);
+				}else{
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $oaiNote);
 				}
-				if ($aspenModule->name == 'Web Builder') {
-					// Check to make sure there is web builder content to actually index
-					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
-					require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
-					$portalPage = new PortalPage();
-					$basicPage = new BasicPage();
-					$webResource = new WebResource();
-					$portalPage->find();
-					$basicPage->find();
-					$webResource->find();
-					if ($portalPage->getNumResults() > 0) {
-						$checkEntriesInLast24Hours = true;
-					} else {
-						if ($basicPage->getNumResults() > 0) {
-							$checkEntriesInLast24Hours = true;
-						} else {
-							if ($webResource->getNumResults() > 0) {
-								$checkEntriesInLast24Hours = true;
+			} elseif ($aspenModule->name == 'Web Indexer') {
+				require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
+				$webIndexSettings = new WebsiteIndexSetting();
+				$webIndexSettings->deleted = false;
+				$webIndexSettings = $webIndexSettings->fetchAll();
+				$hasErrors = false;
+				$webIndexNote = '';
+				/** @var WebsiteIndexSetting $webIndexSetting */
+				foreach ($webIndexSettings as $webIndexSetting) {
+					require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexLogEntry.php';
+					$websiteIndexingEntry = new WebsiteIndexLogEntry();
+					$websiteIndexingEntry->websiteName = $webIndexSetting->name;
+					$websiteIndexingEntry->orderBy("id DESC");
+					$websiteIndexingEntry->find();
+					if ($websiteIndexingEntry->getNumResults() > 0) {
+						$websiteIndexingEntry->fetch();
+						if ($websiteIndexingEntry->numErrors > 0) {
+							$webIndexNote .= $webIndexSetting->name . ' had an error on the last run<br/>';
+						}
+						if (empty($websiteIndexingEntry->endTime)){
+							//First indexing entry has not finished, check the one before that
+							if ($websiteIndexingEntry->getNumResults() > 1) {
+								$websiteIndexingEntry->fetch();
+								if ($websiteIndexingEntry->numErrors > 0) {
+									$webIndexNote .= $webIndexSetting->name . ' had an error on the last completed run<br/>';
+								} elseif (empty($websiteIndexingEntry->endTime)){
+									$webIndexNote .= $webIndexSetting->name . ' has not finished indexing on the last 2 tries<br/>';
+								}
 							} else {
-								$checkEntriesInLast24Hours = false;
+								$webIndexNote .= $webIndexSetting->name . ' has never finished indexing<br/>';
 							}
 						}
+					}else{
+						$hasErrors = true;
+						$webIndexNote .= $webIndexSetting->name . ' has never been indexed<br/>';
 					}
-
 				}
-				if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
-					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
-				} else {
-					if ($logErrors > 0) {
-						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
-					} else {
-						if ($numUnfinishedEntries > $numSettings) {
-							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+				if (!$hasErrors) {
+					$this->addCheck($checks, $aspenModule->name);
+				}else{
+					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $webIndexNote);
+				}
+			} else {
+				if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)) {
+					//Check to see how many settings we have
+					$numSettings = 1;
+					if (!empty($aspenModule->settingsClassPath) && !empty($aspenModule->settingsClassName)) {
+						require_once ROOT_DIR . $aspenModule->settingsClassPath;
+						/** @var DataObject $settings */
+						$settings = new $aspenModule->settingsClassName;
+						if ($aspenModule->name == 'Web Builder') {
+							$numSettings = 1;
 						} else {
-							$this->addCheck($checks, $aspenModule->name);
+							$numSettings = $settings->count();
+						}
+
+					}
+					if ($numSettings == 0) {
+						continue;
+					}
+					require_once ROOT_DIR . $aspenModule->logClassPath;
+					/** @var BaseLogEntry $logEntry */
+					$logEntry = new $aspenModule->logClassName();
+					$logEntry->orderBy("id DESC");
+					$numEntriesToCheck = 3;
+					if ($aspenModule->name == 'Web Builder') {
+						/** @noinspection PhpPossiblePolymorphicInvocationInspection */
+						$logEntry->websiteName = 'Web Builder Content';
+					}
+					$logEntry->limit(0, $numEntriesToCheck * $numSettings);
+					$logErrors = 0;
+					$logEntry->find();
+					$numUnfinishedEntries = 0;
+					$lastFinishTime = 0;
+					$isFirstEntry = true;
+					while ($logEntry->fetch()) {
+						if ($logEntry->numErrors > 0) {
+							$logErrors++;
+						}
+						if (empty($logEntry->endTime)) {
+							$numUnfinishedEntries++;
+							if ($isFirstEntry && (time() - $logEntry->startTime) >= 8 * 60 * 60) {
+								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last log entry for {$aspenModule->name} has been running for more than 8 hours");
+							}
+						} else {
+							if ($logEntry->endTime > $lastFinishTime) {
+								$lastFinishTime = $logEntry->endTime;
+							}
+						}
+						$isFirstEntry = false;
+					}
+					$checkEntriesInLast24Hours = true;
+					if ($aspenModule->name == 'Web Builder') {
+						// Check to make sure there is web builder content to actually index
+						require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+						require_once ROOT_DIR . '/sys/WebBuilder/BasicPage.php';
+						require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
+						$portalPage = new PortalPage();
+						$basicPage = new BasicPage();
+						$webResource = new WebResource();
+						$portalPage->find();
+						$basicPage->find();
+						$webResource->find();
+						if ($portalPage->getNumResults() > 0) {
+							$checkEntriesInLast24Hours = true;
+						} else {
+							if ($basicPage->getNumResults() > 0) {
+								$checkEntriesInLast24Hours = true;
+							} else {
+								if ($webResource->getNumResults() > 0) {
+									$checkEntriesInLast24Hours = true;
+								} else {
+									$checkEntriesInLast24Hours = false;
+									//Nothing to index, skip adding a check.
+									continue;
+								}
+							}
+						}
+
+					}
+					if ($checkEntriesInLast24Hours && ($lastFinishTime < time() - 24 * 60 * 60)) {
+						$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "No log entries for {$aspenModule->name} have completed in the last 24 hours");
+					} else {
+						if ($logErrors > 0) {
+							$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "The last {$logErrors} log entry for {$aspenModule->name} had errors");
+						} else {
+							if ($numUnfinishedEntries > $numSettings) {
+								$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, "{$numUnfinishedEntries} of the last 3 log entries for {$aspenModule->name} did not finish.");
+							} else {
+								$this->addCheck($checks, $aspenModule->name);
+							}
 						}
 					}
 				}

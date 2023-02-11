@@ -344,6 +344,18 @@ class VdxDriver {
 		if ($pType->find(true)) {
 			if (!empty($pType->vdxClientCategory)) {
 				$clientCategory = $pType->vdxClientCategory;
+			} else {
+				return [
+					'title' => translate([
+						'text' => 'Request Failed',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => "Patrons with this profile are not allowed to place interlibrary loans. Please contact your library for more information.",
+						'isPublicFacing' => true,
+					]),
+					'success' => false,
+				];
 			}
 		}
 		$body .= "ClientCategory=$clientCategory\r\n";
