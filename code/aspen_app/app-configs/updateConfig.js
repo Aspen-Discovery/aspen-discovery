@@ -1,6 +1,7 @@
 const fs = require('fs');
 const data = require('./apps.json');
 const owner = require('./projectOwner.json');
+const version = require('./version.json');
 
 function getArgs() {
      const args = {};
@@ -73,7 +74,7 @@ fs.readFile('eas.json', 'utf8', function (err, data) {
      }
 });
 
-let versionAsInt = owner['buildCode'];
+let versionAsInt = version['build'];
 versionAsInt = parseInt(versionAsInt, 10);
 
 const app_config = {
@@ -83,7 +84,7 @@ const app_config = {
      owner: owner['expoProjectOwner'],
      privacy: 'public',
      platforms: ['ios', 'android'],
-     version: owner['versionCode'],
+     version: version['version'],
      sdkVersion: '46.0.0',
      orientation: 'default',
      icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
@@ -104,7 +105,7 @@ const app_config = {
      jsEngine: 'hermes',
      assetBundlePatterns: ['**/*'],
      ios: {
-          buildNumber: owner['buildCode'],
+          buildNumber: version['build'],
           bundleIdentifier: app['reverseDns'],
           supportsTablet: true,
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
