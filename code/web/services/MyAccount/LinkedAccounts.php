@@ -25,8 +25,9 @@ class LinkedAccounts extends MyAccount {
 			$userPType = $user->getPType();
 			require_once ROOT_DIR . '/sys/Account/PType.php';
 			$accountLinkingSetting = PType::getAccountLinkingSetting($userPType);
-
 			$interface->assign('linkSetting', $accountLinkingSetting);
+            $accountLinkRemoveSetting = PType::getAccountLinkRemoveSetting($userPType);
+            $interface->assign('linkRemoveSetting', $accountLinkRemoveSetting);
 			$interface->assign('profile', $patron);
 			$interface->assign('barcodePin', $patron->getAccountProfile()->loginConfiguration == 'barcode_pin');
 			// Switch for displaying the barcode in the account profile

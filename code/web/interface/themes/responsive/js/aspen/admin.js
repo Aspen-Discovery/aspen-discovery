@@ -1704,6 +1704,22 @@ AspenDiscovery.Admin = (function () {
 					return false;
 				}
 			});
+		},
+		linkRemoveSettingOptionChange: function () {
+			var url = Globals.path + "/Admin/AJAX";
+			var pType = $("#pType").val();
+			var selected = $('#accountLinkRemoveSettingSelect option:selected').val();
+			var params = {
+				method: "getFormPTypeSetting",
+				data: {pType: pType, selected: selected}
+			};
+			$.getJSON(url, params, function (data) {
+				if (data.success === true) {
+					AspenDiscovery.showMessageWithButtons(data.title, data.message, data.modalButtons);
+				} else {
+					return false;
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));

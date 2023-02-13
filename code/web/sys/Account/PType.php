@@ -14,6 +14,7 @@ class PType extends DataObject {
 	public $twoFactorAuthSettingId;
 	public $vdxClientCategory;
 	public $accountLinkingSetting;
+    public $accountLinkRemoveSetting;
 	public $enableReadingHistory;
 
 	public function getNumericColumnNames(): array {
@@ -23,6 +24,7 @@ class PType extends DataObject {
 			'restrictMasquerade',
 			'twoFactorAuthSettingId',
 			'accountLinkingSetting',
+            'accountLinkRemoveSetting',
 			'enableReadingHistory'
 		];
 	}
@@ -135,6 +137,13 @@ class PType extends DataObject {
 				'description' => 'The account linking setting tied to this patron type',
 				'onchange' => "return AspenDiscovery.Admin.linkingSettingOptionChange();",
 			],
+            'accountLinkRemoveSetting' => [
+                'property' => 'accountLinkRemoveSetting',
+                'type' => 'checkbox',
+                'label' => 'Allow users to remove managing account links',
+                'description' => 'Linkees with this patron type will have access to a Remove button to delete managing account links. Linkees without this permission will require staff intervention to delete managing account links.',
+                'onchange' => "return AspenDiscovery.Admin.linkingRemoveSettingOptionChange();",
+            ]
 		];
 		if (!UserAccount::userHasPermission('Administer Permissions')) {
 			unset($structure['assignedRoleId']);
@@ -177,6 +186,15 @@ class PType extends DataObject {
 		$setting = $pTypeSetting->accountLinkingSetting;
 		return $setting;
 	}
+
+    static function getAccountLinkRemoveSetting($pType): string {
+        $pTypeSetting = new pType();
+        $pTypeSetting->pType = $pType;
+        $pTypeSetting->find();
+        $pTypeSetting->fetch();
+        $setting = $pTypeSetting->accountLinkRemoveSetting;
+        return $setting;
+    }
 
 	public function update($context = '') {
 		if ($this->accountLinkingSetting == 0) {
