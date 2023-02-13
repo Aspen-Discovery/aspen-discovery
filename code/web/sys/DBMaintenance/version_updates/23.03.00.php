@@ -93,6 +93,15 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//migrate_library_sso_settings
+		'rename_general_settings' => [
+			'title' => 'Rename LiDA general settings to location settings',
+			'description' => 'Rename the aspen_lida_general_settings table to aspen_lida_location_settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE aspen_lida_general_settings RENAME TO aspen_lida_location_settings',
+			]
+		],
+		//rename_general_app_settings
 
 		//kodi
 

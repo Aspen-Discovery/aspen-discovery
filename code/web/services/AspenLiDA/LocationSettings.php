@@ -1,15 +1,15 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 
-class AspenLiDA_AppSettings extends ObjectEditor {
+class AspenLiDA_LocationSettings extends ObjectEditor {
 	function getObjectType(): string {
-		return 'AppSetting';
+		return 'LocationSetting';
 	}
 
 	function getToolName(): string {
-		return 'AppSettings';
+		return 'LocationSettings';
 	}
 
 	function getModule(): string {
@@ -17,13 +17,13 @@ class AspenLiDA_AppSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'App Settings';
+		return 'Location Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$list = [];
 
-		$object = new AppSetting();
+		$object = new LocationSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -40,7 +40,7 @@ class AspenLiDA_AppSettings extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return AppSetting::getObjectStructure($context);
+		return LocationSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -55,7 +55,7 @@ class AspenLiDA_AppSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#aspen_lida', 'Aspen LiDA');
-		$breadcrumbs[] = new Breadcrumb('/AspenLiDA/AppSettings', 'App Settings');
+		$breadcrumbs[] = new Breadcrumb('/AspenLiDA/LocationSettings', 'Location Settings');
 		return $breadcrumbs;
 	}
 

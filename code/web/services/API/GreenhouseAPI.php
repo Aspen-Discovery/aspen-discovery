@@ -359,7 +359,7 @@ class GreenhouseAPI extends Action {
 
 		require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
-		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+		require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 
 		$num = 0;
 		$enabledAccess = 0;
@@ -372,8 +372,8 @@ class GreenhouseAPI extends Action {
 			if ($library->find(true)) {
 				$version = $interface->getVariable('gitBranch');
 				if ($version >= "22.09.00") {
-					require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-					$appSettings = new AppSetting();
+					require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
+					$appSettings = new LocationSetting();
 					$appSettings->id = $location->lidaGeneralSettingId;
 					if ($appSettings->find(true)) {
 						$releaseChannel = $appSettings->releaseChannel;

@@ -1,6 +1,6 @@
 <?php
 
-class AppSetting extends DataObject {
+class LocationSetting extends DataObject {
 	public $__table = 'aspen_lida_general_settings';
 	public $id;
 	public $name;

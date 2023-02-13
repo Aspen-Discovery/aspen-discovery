@@ -264,8 +264,8 @@ class Location extends DataObject {
 			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
-		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-		$appSetting = new AppSetting();
+		require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
+		$appSetting = new LocationSetting();
 		$appSetting->orderBy('name');
 		$appSettings = [];
 		$appSetting->find();

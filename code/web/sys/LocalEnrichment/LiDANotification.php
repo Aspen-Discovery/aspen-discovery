@@ -7,7 +7,7 @@ require_once ROOT_DIR . '/sys/LocalEnrichment/LiDANotificationPType.php';
 
 require_once ROOT_DIR . '/sys/Account/User.php';
 require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
-require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 
 class LiDANotification extends DB_LibraryLocationLinkedObject {
 	public $__table = 'aspen_lida_notifications';
