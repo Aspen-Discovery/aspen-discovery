@@ -1,5 +1,4 @@
 {strip}
-{debug}
 <div id="page-content" class="col-xs-12">
 	<h1>{translate text='Sign in to your account' isPublicFacing=true}</h1>
 	<div id="loginFormWrapper">
