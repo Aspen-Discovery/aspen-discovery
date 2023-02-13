@@ -470,7 +470,7 @@ class UInterface extends Smarty {
 			$this->assign('homeLink', $location->homeLink);
 		} elseif (strlen($library->homeLink) > 0 && $library->homeLink != 'default') {
 			$this->assign('homeLink', $library->homeLink);
-		} elseif ($library->homeLink == 'default') {
+		} elseif ($library->homeLink == 'default' || $library->homeLink == null || $library->homeLink == 0) {
 			$this->assign('homeLink', '/');
 		}
 
