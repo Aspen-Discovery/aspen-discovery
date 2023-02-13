@@ -3324,6 +3324,7 @@ class User extends DataObject {
 
 		if(array_key_exists('Aspen LiDA', $enabledModules)) {
 			$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
+			$sections['aspen_lida']->addAction(new AdminAction('General Settings', 'Define general settings for Aspen LiDA.', '/AspenLiDA/GeneralSettings'), 'Administer Aspen LiDA Settings');
 			$sections['aspen_lida']->addAction(new AdminAction('Location Settings', 'Define location settings for Aspen LiDA.', '/AspenLiDA/LocationSettings'), 'Administer Aspen LiDA Settings');
 			$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
 			$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
