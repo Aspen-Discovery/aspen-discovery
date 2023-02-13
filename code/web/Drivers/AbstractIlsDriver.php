@@ -435,6 +435,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return null;
 	}
 
+	public function loadHoldNotificationInfo(User $user): ?array {
+		return [
+			'success' => false,
+			'message' => 'Hold Notification Preferences are not implemented for this ILS',
+		];
+	}
+
 	function validateUniqueId(User $user) {
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 	}

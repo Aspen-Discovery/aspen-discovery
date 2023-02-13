@@ -275,23 +275,31 @@ public class EvolveExportMain {
 			logEntry.addNote("Last Extract Time is more than 90 days ago, resetting to only load the next 90 days. ");
 			lastExtractTime = ninetyDaysAgo;
 		}
+
 		int numProcessed = 0;
 		long now = new Date().getTime();
 		boolean moreToLoad = true;
+
+		String patronLoginUrl = baseUrl + "/Authenticate";
+		@SuppressWarnings("SpellCheckingInspection")
+		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername + "\",\"Pwd\":\"" + staffPassword + "\"}";
+		WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
+		if (loginResponse.isSuccess()) {
+			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
+			JSONObject firstResponse = loginResponseData.getJSONObject(0);
+			String accessToken = firstResponse.getString("LoginToken");
+			numProcessed += checkForDeletedBibs(accessToken);
+		}
+
 		while (moreToLoad) {
 			String formattedExtractTime = lastExtractTimeFormatter.format(new Date(lastExtractTime));
 
 			//The integration token does not allow catalog search - so we need to log in with a patron.
-			String patronLoginUrl = baseUrl + "/Authenticate";
-			@SuppressWarnings("SpellCheckingInspection")
-			String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername + "\",\"Pwd\":\"" + staffPassword + "\"}";
-			WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
+			loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
 			if (loginResponse.isSuccess()) {
 				JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
 				JSONObject firstResponse = loginResponseData.getJSONObject(0);
 				String accessToken = firstResponse.getString("LoginToken");
-
-				numProcessed += checkForDeletedBibs(accessToken);
 
 				//Get a list of holdings that have changed from the last update time
 				String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|ModifiedFromDTM=" + formattedExtractTime;
@@ -348,20 +356,27 @@ public class EvolveExportMain {
 											} else {
 												if (StringUtils.equals(existingRecordNumberSubfield.getData(), holdingIdString)) {
 													isExistingItem = true;
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+													if (curItem.isNull("Barcode")) {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
+													} else {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+													}
 													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
 													if (curItem.isNull("CallNumber")){
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
 													}else{
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
 													}
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
 													if (curItem.isNull("DueDate")) {
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
 													} else {
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
 													}
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+													if (curItem.isNull("Location")) {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
+													} else {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+													}
 													break;
 												}
 											}
@@ -376,13 +391,22 @@ public class EvolveExportMain {
 											}else{
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
 											}
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+											if (curItem.isNull("Barcode")) {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
+											}else{
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+											}
 											if (curItem.isNull("DueDate")) {
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
 											} else {
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
 											}
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+											if (curItem.isNull("Location")) {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
+											}else {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+											}
+
 											marcRecord.addVariableField(newItemField);
 										}
 									} catch (Exception e) {
