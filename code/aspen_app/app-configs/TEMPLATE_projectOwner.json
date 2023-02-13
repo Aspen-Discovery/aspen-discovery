@@ -9,5 +9,7 @@
   "ascApiKeyIssuerId": "",
   "ascApiKeyId": "",
   "googleServiceKeyPath": "",
-  "greenhouseUrl": ""
+  "greenhouseUrl": "",
+  "language": "",
+  "country": ""
 }
