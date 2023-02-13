@@ -1,7 +1,7 @@
 <?php
 
 class LocationSetting extends DataObject {
-	public $__table = 'aspen_lida_general_settings';
+	public $__table = 'aspen_lida_location_settings';
 	public $id;
 	public $name;
 	public $enableAccess;
