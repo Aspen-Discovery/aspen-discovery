@@ -67,6 +67,7 @@ class MyAccount_Login extends Action {
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 		//SSO
+		$ssoService = null;
 		$loginOptions = 0;
 		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
@@ -87,8 +88,8 @@ class MyAccount_Login extends Action {
 				if ($sso->find(true)) {
 					if(!$sso->staffOnly) {
 						$loginOptions = $sso->loginOptions;
+						$ssoService = $sso->service;
 						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-						$interface->assign('ssoService', $sso->service);
 						if ($sso->service == "oauth") {
 							$interface->assign('oAuthGateway', $sso->oAuthGateway);
 							if ($sso->oAuthGateway == "custom") {
@@ -109,6 +110,11 @@ class MyAccount_Login extends Action {
 								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
 							}
 						}
+						if($sso->service == 'ldap') {
+							if($sso->ldapLabel) {
+								$interface->assign('ldapLabel', $sso->ldapLabel);
+							}
+						}
 					}
 				}
 			} catch (Exception $e) {
@@ -118,6 +124,7 @@ class MyAccount_Login extends Action {
 
 		$loginOptions = isset($_REQUEST['showBoth']) ? 0 : $loginOptions;
 
+		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML

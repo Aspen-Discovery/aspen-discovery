@@ -1412,7 +1412,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 		//SSO
 		$loginOptions = 0;
-		$ssoService = "none";
+		$ssoService = null;
 		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
 				$ssoSettingId = null;
@@ -1452,6 +1452,11 @@ class MyAccount_AJAX extends JSON_Action {
 							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
 							if ($sso->oAuthGatewayIcon) {
 								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+							}
+						}
+						if($sso->service == 'ldap') {
+							if($sso->ldapLabel) {
+								$interface->assign('ldapLabel', $sso->ldapLabel);
 							}
 						}
 					}
