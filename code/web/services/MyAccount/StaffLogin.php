@@ -15,7 +15,7 @@ class MyAccount_StaffLogin extends Action {
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
 
-		$followupAction = isset($_REQUEST['followupAction']) ? strip_tags($_REQUEST['followupAction']) : $action;
+		$followupAction = 'Home';
 		$followupModule = isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module;
 
 		// We should never access this module directly -- this is called by other
