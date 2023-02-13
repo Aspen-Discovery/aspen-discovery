@@ -370,6 +370,8 @@ class Koha extends AbstractIlsDriver {
 
 		$opacRenewalAllowed = $this->getKohaSystemPreference('OpacRenewalAllowed');
 
+		$kohaVersion = $this->getKohaVersion();
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -446,7 +448,11 @@ class Koha extends AbstractIlsDriver {
 			$curCheckout->dueDate = $dueTime;
 			$curCheckout->itemId = $itemNumber;
 			$curCheckout->renewIndicator = $curRow['itemnumber'];
-			$curCheckout->renewCount = $curRow['renewals'];
+			if ($kohaVersion >= 22.11) {
+				$curCheckout->renewCount = $curRow['renewals_count'];
+			} else {
+				$curCheckout->renewCount = $curRow['renewals'];
+			}
 
 			/** @noinspection SqlResolve */
 			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
