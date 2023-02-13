@@ -240,7 +240,7 @@ class SystemAPI extends Action {
 			if ($location->find(true)) {
 				require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 				$appSettings = new LocationSetting();
-				$appSettings->id = $location->lidaGeneralSettingId;
+				$appSettings->id = $location->lidaLocationSettingId;
 				if ($appSettings->find(true)) {
 					$settings['releaseChannel'] = $appSettings->releaseChannel;
 					$settings['enableAccess'] = $appSettings->enableAccess;

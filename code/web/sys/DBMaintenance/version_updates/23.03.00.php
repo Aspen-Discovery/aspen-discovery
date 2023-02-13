@@ -93,15 +93,30 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//migrate_library_sso_settings
-		'rename_general_settings' => [
+		'rename_general_settings_table' => [
 			'title' => 'Rename LiDA general settings to location settings',
 			'description' => 'Rename the aspen_lida_general_settings table to aspen_lida_location_settings',
 			'continueOnError' => false,
 			'sql' => [
 				'ALTER TABLE aspen_lida_general_settings RENAME TO aspen_lida_location_settings',
+				'ALTER TABLE location CHANGE COLUMN lidaGeneralSettingId lidaLocationSettingId INT(11) default -1',
 			]
 		],
 		//rename_general_app_settings
+		'add_aspen_lida_general_settings_table' => [
+			'title' => 'Add Aspen LiDA General Settings',
+			'description' => 'Add table to store general app settings for Aspen LiDA',
+			'continueOnError' => false,
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS aspen_lida_general_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL,
+					autoRotateCard TINYINT(1) DEFAULT 0
+				) ENGINE INNODB",
+				'ALTER TABLE library ADD COLUMN lidaGeneralSettingId INT(11) default -1',
+			]
+		],
+		//add_aspen_lida_general_settings
 
 		//kodi
 

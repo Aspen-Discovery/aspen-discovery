@@ -374,7 +374,7 @@ class GreenhouseAPI extends Action {
 				if ($version >= "22.09.00") {
 					require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 					$appSettings = new LocationSetting();
-					$appSettings->id = $location->lidaGeneralSettingId;
+					$appSettings->id = $location->lidaLocationSettingId;
 					if ($appSettings->find(true)) {
 						$releaseChannel = $appSettings->releaseChannel;
 						$enabledAccess = $appSettings->enableAccess;
