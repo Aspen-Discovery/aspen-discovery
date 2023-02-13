@@ -42,7 +42,7 @@
 						<p>{translate text="The following accounts can view checkout and hold information from this account.  If someone is viewing your account that you do not want to have access, please contact library staff." isPublicFacing=true}</p>
 						<ul>
 							{foreach from=$profile->getViewers() item=tmpUser}
-								<li>{$tmpUser->getNameAndLibraryLabel()} <button class="btn btn-xs btn-warning" onclick="AspenDiscovery.Account.removeManagingAccount({$tmpUser->id});">Remove</button> </li>
+								<li>{$tmpUser->getNameAndLibraryLabel()} {if $linkRemoveSetting != 0}<button class="btn btn-xs btn-warning" onclick="AspenDiscovery.Account.removeManagingAccount({$tmpUser->id});">Remove</button>{/if} </li>
 								{foreachelse}
 								<li>{translate text="None" isPublicFacing=true}</li>
 							{/foreach}

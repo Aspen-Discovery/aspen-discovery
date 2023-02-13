@@ -252,8 +252,19 @@ function getUpdates23_02_00(): array {
 		],
 		//set_include_econtent_and_onorder
 
-		//other
-	];
+		//james
+        'account_link_remove_setting_by_ptype' => [
+            'title' => 'Set account link remove setting by PType',
+            'description' => 'Set account link remove setting by PType',
+            'sql' => [
+                "ALTER TABLE ptype ADD COLUMN accountLinkRemoveSetting TINYINT(1) DEFAULT 1",
+            ],
+        ],
+        //add_account_link_remove_setting_by_ptype
+
+        //other
+
+    ];
 }
 
 function updateAspenLiDAModule() {
