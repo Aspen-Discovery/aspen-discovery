@@ -21,7 +21,7 @@
 					</label>
 					<input type="text" class="form-control" id="selected-marc-label" readonly>
 				</div>
-				<small id="marcFileHelp" class="form-text text-muted">{translate text="Zip Files, GZip Files, MRC, and MARC Files can be uploaded, must be %1%MB or less." 1=$max_file_size isAdminFacing=true}</small>
+				<small id="marcFileHelp" class="form-text text-muted">{translate text="MRC, and MARC Files can be uploaded, must be %1%MB or less." 1=$max_file_size isAdminFacing=true}</small>
 			</div>
 			<div class="form-group">
 				<label for="replaceExisting"><input type="checkbox" name="replaceExisting" id="replaceExisting"> {translate text="Replace Existing Files?" isAdminFacing=true}</label>
