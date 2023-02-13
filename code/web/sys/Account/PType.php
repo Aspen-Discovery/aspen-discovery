@@ -14,7 +14,7 @@ class PType extends DataObject {
 	public $twoFactorAuthSettingId;
 	public $vdxClientCategory;
 	public $accountLinkingSetting;
-    public $accountLinkRemoveSetting;
+	public $accountLinkRemoveSetting;
 	public $enableReadingHistory;
 
 	public function getNumericColumnNames(): array {
@@ -24,8 +24,8 @@ class PType extends DataObject {
 			'restrictMasquerade',
 			'twoFactorAuthSettingId',
 			'accountLinkingSetting',
-            'accountLinkRemoveSetting',
-			'enableReadingHistory'
+			'accountLinkRemoveSetting',
+			'enableReadingHistory',
 		];
 	}
 
@@ -137,13 +137,13 @@ class PType extends DataObject {
 				'description' => 'The account linking setting tied to this patron type',
 				'onchange' => "return AspenDiscovery.Admin.linkingSettingOptionChange();",
 			],
-            'accountLinkRemoveSetting' => [
-                'property' => 'accountLinkRemoveSetting',
-                'type' => 'checkbox',
-                'label' => 'Allow users to remove managing account links',
-                'description' => 'Linkees with this patron type will have access to a Remove button to delete managing account links. Linkees without this permission will require staff intervention to delete managing account links.',
-                'onchange' => "return AspenDiscovery.Admin.linkingRemoveSettingOptionChange();",
-            ]
+			'accountLinkRemoveSetting' => [
+				'property' => 'accountLinkRemoveSetting',
+				'type' => 'checkbox',
+				'label' => 'Allow users to remove managing account links',
+				'description' => 'Linkees with this patron type will have access to a Remove button to delete managing account links. Linkees without this permission will require staff intervention to delete managing account links.',
+				'onchange' => "return AspenDiscovery.Admin.linkingRemoveSettingOptionChange();",
+			],
 		];
 		if (!UserAccount::userHasPermission('Administer Permissions')) {
 			unset($structure['assignedRoleId']);
@@ -161,11 +161,11 @@ class PType extends DataObject {
 		$patronType->orderBy('pType');
 		$patronType->find();
 		$patronTypeList = [];
-		if($addEmpty) {
+		if ($addEmpty) {
 			$patronTypeList[-1] = "";
 		}
 		$selectValue = 'id';
-		if($valueIsPType) {
+		if ($valueIsPType) {
 			$selectValue = 'pType';
 		}
 		while ($patronType->fetch()) {
@@ -181,25 +181,27 @@ class PType extends DataObject {
 	static function getAccountLinkingSetting($pType): string {
 		$pTypeSetting = new pType();
 		$pTypeSetting->pType = $pType;
-		$pTypeSetting->find();
-		$pTypeSetting->fetch();
-		$setting = $pTypeSetting->accountLinkingSetting;
-		return $setting;
+		if ($pTypeSetting->find(true)) {
+			return $pTypeSetting->accountLinkingSetting;
+		} else {
+			return "0";
+		}
 	}
 
-    static function getAccountLinkRemoveSetting($pType): string {
-        $pTypeSetting = new pType();
-        $pTypeSetting->pType = $pType;
-        $pTypeSetting->find();
-        $pTypeSetting->fetch();
-        $setting = $pTypeSetting->accountLinkRemoveSetting;
-        return $setting;
-    }
+	static function getAccountLinkRemoveSetting($pType): string {
+		$pTypeSetting = new pType();
+		$pTypeSetting->pType = $pType;
+		if ($pTypeSetting->find(true)) {
+			return $pTypeSetting->accountLinkRemoveSetting;
+		} else {
+			return "1";
+		}
+	}
 
 	public function update($context = '') {
 		if ($this->accountLinkingSetting == 0) {
 			return parent::update();
-		}else{
+		} else {
 			$user = new User();
 			$user->patronType = $this->pType;
 			$user->find();
@@ -210,7 +212,7 @@ class PType extends DataObject {
 					$userLink = new UserLink();
 					$userLink->primaryAccountId = $user->id;
 					$userLink->delete(true);
-				} else if ($this->accountLinkingSetting == 2) {
+				} elseif ($this->accountLinkingSetting == 2) {
 					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 					$userLink = new UserLink();
 					$userLink->linkedAccountId = $user->id;
@@ -225,7 +227,7 @@ class PType extends DataObject {
 						$userMessage->message = "An account you were previously linked to, $user->displayName, is no longer able to be linked to. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 						$userMessage->update();
 					}
-				} else if ($this->accountLinkingSetting == 3) {
+				} elseif ($this->accountLinkingSetting == 3) {
 					//remove managing accounts
 					require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 					$userLink = new UserLink();
