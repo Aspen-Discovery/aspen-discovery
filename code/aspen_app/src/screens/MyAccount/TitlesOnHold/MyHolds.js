@@ -1,18 +1,16 @@
 import { ScrollView, Box, Button, Center, Text, HStack, Checkbox, Select, FormControl, CheckIcon, Heading } from 'native-base';
 import React from 'react';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import {SafeAreaView, SectionList} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import {useQuery, useQueryClient} from '@tanstack/react-query';
 import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { translate } from '../../../translations/translations';
-import { reloadHolds } from '../../../util/loadPatron';
 import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getPickupLocations } from '../../../util/loadLibrary';
-import {getPatronHolds, refreshProfile} from '../../../util/api/user';
+import {getPatronHolds, refreshProfile, reloadProfile} from '../../../util/api/user';
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import {DisplayMessage} from '../../../components/Notifications';
 
@@ -148,12 +146,12 @@ export const MyHolds = () => {
 
      const refreshHolds = async () => {
           setLoading(true);
-          await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl).then((result) => {
-               if (holds !== result) {
-                    updateHolds(result);
-               }
-               setLoading(false);
-          });
+          await reloadProfile(library.baseUrl).then((result) => {
+              if (user !== result) {
+                  updateUser(result);
+              }
+              setLoading(false);
+          })
      };
 
      const actionButtons = (section) => {
