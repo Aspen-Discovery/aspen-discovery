@@ -1,5 +1,5 @@
 #!/bin/bash
-targetpath="/etc/simplesamlphp"
+targetpath="/usr/share/simplesamlphp/config"
 sourcepath="/usr/local/aspen-discovery/install"
 if [ -z "$1" ]
   then
