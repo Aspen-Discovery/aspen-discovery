@@ -238,9 +238,9 @@ class SystemAPI extends Action {
 			$location = new Location();
 			$location->locationId = $_REQUEST['locationId'];
 			if ($location->find(true)) {
-				require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-				$appSettings = new AppSetting();
-				$appSettings->id = $location->lidaGeneralSettingId;
+				require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
+				$appSettings = new LocationSetting();
+				$appSettings->id = $location->lidaLocationSettingId;
 				if ($appSettings->find(true)) {
 					$settings['releaseChannel'] = $appSettings->releaseChannel;
 					$settings['enableAccess'] = $appSettings->enableAccess;

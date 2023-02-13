@@ -231,6 +231,13 @@ class LDAPAuthentication extends Action {
 	}
 
 	private function setupUser($user):array {
+		if($this->searchArray($user, $this->matchpoints['patronType'])) {
+			$patronType = $this->searchArray($user, $this->matchpoints['patronType']);
+		} elseif($this->matchpoints['patronType_fallback']) {
+			$patronType = $this->matchpoints['patronType_fallback'];
+		} else {
+			$patronType = null;
+		}
 		return [
 			'email' => $this->searchArray($user, $this->matchpoints['email']),
 			'firstname' => $this->searchArray($user, $this->matchpoints['firstName']),
@@ -238,7 +245,7 @@ class LDAPAuthentication extends Action {
 			'username' => $this->searchArray($user, $this->matchpoints['userId']),
 			'displayName' => $this->searchArray($user, $this->matchpoints['displayName']),
 			'cat_username' => $this->searchArray($user, $this->matchpoints['username']),
-			'category_id' => $this->searchArray($user, $this->matchpoints['patronType']),
+			'category_id' => $patronType,
 		];
 	}
 
@@ -251,12 +258,15 @@ class LDAPAuthentication extends Action {
 		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
 		$tmpUser->phone = '';
 		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
-		$tmpUser->patronType = '';
+
 		if($this->searchArray($user, $this->matchpoints['patronType'])) {
-			$tmpUser->patronType = $this->searchArray($user, $this->matchpoints['patronType']) ?? '';
+			$patronType = $this->searchArray($user, $this->matchpoints['patronType']);
 		} elseif($this->matchpoints['patronType_fallback']) {
-			$tmpUser->patronType = $this->matchpoints['patronType_fallback'];
+			$patronType = $this->matchpoints['patronType_fallback'];
+		} else {
+			$patronType = null;
 		}
+		$tmpUser->patronType = $patronType;
 		$tmpUser->trackReadingHistory = false;
 
 		$location = new Location();

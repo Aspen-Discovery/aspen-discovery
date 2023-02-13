@@ -33,6 +33,10 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 }
 
+if(file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+}
+
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class Library extends DataObject {
@@ -388,6 +392,7 @@ class Library extends DataObject {
 	//LiDA settings
 	public $lidaNotificationSettingId;
 	public $lidaQuickSearchId;
+	public $lidaGeneralSettingId;
 
 	public $accountProfileId;
 
@@ -646,6 +651,16 @@ class Library extends DataObject {
 		$quickSearchSettings[-1] = 'none';
 		while ($quickSearchSetting->fetch()) {
 			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+		$appGeneralSetting = new GeneralSetting();
+		$appGeneralSetting->orderBy('name');
+		$appGeneralSettings = [];
+		$appGeneralSetting->find();
+		$appGeneralSettings[-1] = 'none';
+		while ($appGeneralSetting->fetch()) {
+			$appGeneralSettings[$appGeneralSetting->id] = $appGeneralSetting->name;
 		}
 
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
@@ -3254,6 +3269,15 @@ class Library extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Administer Aspen LiDA Settings'],
 				'properties' => [
+					'lidaGeneralSettingId' => [
+						'property' => 'lidaGeneralSettingId',
+						'type' => 'enum',
+						'values' => $appGeneralSettings,
+						'label' => 'General Settings',
+						'description' => 'The General Settings to use for Aspen LiDA',
+						'hideInLists' => true,
+						'default' => -1,
+					],
 					'lidaNotificationSettingId' => [
 						'property' => 'lidaNotificationSettingId',
 						'type' => 'enum',
@@ -4044,6 +4068,22 @@ class Library extends DataObject {
 		return $lidaNotifications;
 	}
 
+	/**
+	 * @return array|null
+	 */
+	public function getLiDAGeneralSettings() {
+		$settings = [];
+
+		$setting = new GeneralSetting();
+		$setting->id = $this->lidaGeneralSettingId;
+		if ($setting->find(true)) {
+			$settings = clone $setting;
+		}
+
+		return $settings;
+	}
+
+
 // If the URL of the XML metadata has changed in any way, and is populated,
 // we need to use it to fetch the metadata and store the metadata's filename
 // in the DB, otherwise we delete the file
@@ -4191,6 +4231,10 @@ class Library extends DataObject {
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$pinValidationRules = $catalog->getPasswordPinValidationRules();
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
+
+		$generalSettings = $this->getLiDAGeneralSettings();
+		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
+
 		return $apiInfo;
 	}
 

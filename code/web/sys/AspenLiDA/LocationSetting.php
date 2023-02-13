@@ -1,7 +1,7 @@
 <?php
 
-class AppSetting extends DataObject {
-	public $__table = 'aspen_lida_general_settings';
+class LocationSetting extends DataObject {
+	public $__table = 'aspen_lida_location_settings';
 	public $id;
 	public $name;
 	public $enableAccess;
@@ -64,7 +64,7 @@ class AppSetting extends DataObject {
 			if (!isset($this->_locations) && $this->id) {
 				$this->_locations = [];
 				$obj = new Location();
-				$obj->lidaGeneralSettingId = $this->id;
+				$obj->lidaLocationSettingId = $this->id;
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_locations[$obj->locationId] = $obj->locationId;
@@ -109,14 +109,14 @@ class AppSetting extends DataObject {
 				$location->find(true);
 				if (in_array($locationId, $this->_locations)) {
 					//We want to apply the scope to this library
-					if ($location->lidaGeneralSettingId != $this->id) {
-						$location->lidaGeneralSettingId = $this->id;
+					if ($location->lidaLocationSettingId != $this->id) {
+						$location->lidaLocationSettingId = $this->id;
 						$location->update();
 					}
 				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->lidaGeneralSettingId == $this->id) {
-						$location->lidaGeneralSettingId = -1;
+					if ($location->lidaLocationSettingId == $this->id) {
+						$location->lidaLocationSettingId = -1;
 						$location->update();
 					}
 				}
@@ -126,7 +126,7 @@ class AppSetting extends DataObject {
 	}
 
 	function getEditLink($context): string {
-		return '/AspenLiDA/AppSettings?objectAction=edit&id=' . $this->id;
+		return '/AspenLiDA/LocationSettings?objectAction=edit&id=' . $this->id;
 	}
 
 	static function getDeepLinks(): array {

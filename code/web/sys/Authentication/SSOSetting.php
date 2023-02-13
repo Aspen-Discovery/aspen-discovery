@@ -360,6 +360,27 @@ class SSOSetting extends DataObject {
 				'renderAsHeading' => true,
 				'showBottomBorder' => true,
 				'properties' => [
+					'serviceProviderSection' => [
+						'property' => 'serviceProviderSection',
+						'type' => 'section',
+						'label' => 'Service Provider Details',
+						'properties' => [
+							'idpACSUrl' => [
+								'property' => 'idpACSUrl',
+								'type' => 'text',
+								'label' => 'ACS Url',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+							'idpEntityId' => [
+								'property' => 'idpEntityId',
+								'type' => 'text',
+								'label' => 'Entity Id',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+						],
+					],
 					'ssoName' => [
 						'property' => 'ssoName',
 						'type' => 'text',
@@ -800,6 +821,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function __get($name) {
+		global $configArray;
 		if ($name == "libraries") {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
@@ -813,6 +835,10 @@ class SSOSetting extends DataObject {
 			return $this->_libraries;
 		} elseif ($name == "dataMapping") {
 			return $this->getFieldMappings();
+		} elseif ($name == 'idpEntityId') {
+			return $configArray['Site']['url'] . '/sso/module.php/saml/sp/metadata.php/default-sp';
+		} elseif ($name == 'idpACSUrl') {
+			return $configArray['Site']['url'] . '/sso/module.php/saml/sp/saml2-acs.php/default-sp';
 		} else {
 			return $this->_data[$name] ?? null;
 		}
