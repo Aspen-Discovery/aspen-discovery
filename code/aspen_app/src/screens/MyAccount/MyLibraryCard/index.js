@@ -25,10 +25,12 @@ export const MyLibraryCard = () => {
      const [previousBrightness, setPreviousBrightness] = React.useState();
      const [isLandscape, setIsLandscape] = React.useState();
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
-    const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
+     //const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
      const { library } = React.useContext(LibrarySystemContext);
 
-    async function changeScreenOrientation(isLandscape) {
+     let autoRotate = library.generalSettings?.autoRotateCard ?? 0;
+
+/*     async function changeScreenOrientation(isLandscape) {
         console.log("changeScreenOrientation > " + isLandscape);
         await ScreenOrientation.unlockAsync().then(async result => {
                 if (isLandscape) {
@@ -38,9 +40,9 @@ export const MyLibraryCard = () => {
                 }
             }
         )
-    }
+    } */
 
-     useFocusEffect(
+      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
                     await getLinkedAccounts(user, cards, library).then(async (result) => {
@@ -50,9 +52,8 @@ export const MyLibraryCard = () => {
                         if(cards !== result.cards) {
                             updateLibraryCards(result.cards);
                         }
-                        console.log("cardStack > " + _.size(result.cards));
-                        setNumCards(_.size(result.cards));
 
+                        //setNumCards(_.size(result.cards));
                         setLoading(false);
                     });
                };
@@ -63,6 +64,12 @@ export const MyLibraryCard = () => {
      );
 
      React.useEffect(() => {
+         const updateAccounts = navigation.addListener('focus', async () => {
+             await getLinkedAccounts(user, cards, library).then(async (result) => {
+                 if (accounts !== result.accounts) {updateLinkedAccounts(result.accounts);}
+                 if(cards !== result.cards) {updateLibraryCards(result.cards);}
+             });
+         });
           const brightenScreen = navigation.addListener('focus', async () => {
                const { status } = await Brightness.requestPermissionsAsync();
                if (status === 'granted') {
@@ -77,12 +84,18 @@ export const MyLibraryCard = () => {
                }
           });
           const updateOrientation = navigation.addListener('focus', async () => {
-               const result = await ScreenOrientation.getOrientationAsync();
-               if (result === 5 || result === 6 || result === 7) {
-                    setIsLandscape(true);
-               } else {
-                    setIsLandscape(false);
-               }
+              if(autoRotate === "1" || autoRotate === 1) {
+                  await ScreenOrientation.unlockAsync();
+                  await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_LEFT);
+                  setIsLandscape(true);
+              } else {
+                  const result = await ScreenOrientation.getOrientationAsync();
+                  if (result === 5 || result === 6 || result === 7) {
+                      setIsLandscape(true);
+                  } else {
+                      setIsLandscape(false);
+                  }
+              }
           });
           const changeOrientation = ScreenOrientation.addOrientationChangeListener(({ orientationInfo, orientationLock }) => {
                switch (orientationInfo.orientation) {
@@ -98,7 +111,7 @@ export const MyLibraryCard = () => {
                          break;
                }
           });
-          return { brightenScreen, updateOrientation, changeOrientation };
+          return { updateAccounts, brightenScreen, updateOrientation, changeOrientation };
      }, [navigation]);
 
      React.useEffect(() => {
@@ -109,7 +122,7 @@ export const MyLibraryCard = () => {
                          console.log('Restoring previous screen brightness');
                          Brightness.setSystemBrightnessAsync(previousBrightness);
                     }
-                   console.log("navigationListener isLandscape > " + isLandscape);
+                    console.log("navigationListener isLandscape > " + isLandscape);
                     if(isLandscape) {
                         console.log('Restoring screen back to portrait mode');
                         await ScreenOrientation.unlockAsync().then(async () => {
@@ -119,9 +132,9 @@ export const MyLibraryCard = () => {
                })();
           });
           return () => {};
-     }, [navigation, previousBrightness, isLandscape]);
+     }, [navigation, previousBrightness]);
 
-     useFocusEffect(
+     /* useFocusEffect(
          React.useCallback(() => {
              console.log("numCards listener > " + numCards);
              console.log("isLandscape listener > " + isLandscape);
@@ -134,12 +147,12 @@ export const MyLibraryCard = () => {
              }
              return () => {};
          }, [numCards])
-     )
+     ) */
 
-    const toggleOrientation = () => {
+/*     const toggleOrientation = () => {
         setIsLandscape(!isLandscape)
         changeScreenOrientation(!isLandscape)
-    }
+    } */
 
      if (isLoading) {
           return loadingSpinner();
@@ -148,14 +161,14 @@ export const MyLibraryCard = () => {
      //MaterialCommunityIcons = phone-rotate-landscape
      return (
          <>
-             <CardCarousel cards={cards} orientation={isLandscape} toggleOrientation={toggleOrientation} />
+             <CardCarousel cards={cards} orientation={isLandscape} />
          </>
      );
 };
 
 const CreateLibraryCard = (data) => {
      const card = data.card;
-     const {toggleOrientation, numCards} = data;
+     const {numCards} = data;
 
      const { library } = React.useContext(LibrarySystemContext);
 
@@ -256,7 +269,7 @@ const CreateLibraryCard = (data) => {
                        </Text>
                    ) : null}
                    {numCards > 1 ? (
-                       <OpenBarcode toggleOrientation={toggleOrientation} barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError}/>
+                       <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError}/>
                    ) : (
                        <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />
                    )}
@@ -343,7 +356,7 @@ const CardCarousel = (data) => {
                     style={{
                          transform: [{ scale: 0.9 }],
                     }}>
-                    <CreateLibraryCard key={0} card={card} toggleOrientation={toggleOrientation} numCards={_.size(cards)} />
+                    <CreateLibraryCard key={0} card={card} numCards={_.size(cards)} />
                </Box>
           );
      }
@@ -364,7 +377,7 @@ const CardCarousel = (data) => {
                          parallaxScrollingOffset: 50,
                     }}
                     data={cards}
-                    renderItem={({ item, index }) => <CreateLibraryCard key={index} card={item} toggleOrientation={toggleOrientation} numCards={_.size(cards)}/>}
+                    renderItem={({ item, index }) => <CreateLibraryCard key={index} card={item} numCards={_.size(cards)}/>}
                />
                {!!progressValue && (
                     <Box flexDirection="row" flexWrap="wrap" alignContent="center" alignSelf="center" maxWidth="100%" justifyContent="center">
@@ -378,21 +391,16 @@ const CardCarousel = (data) => {
 };
 
 const OpenBarcode = (data) => {
-    const {toggleOrientation, barcodeValue, barcodeFormat, handleBarcodeError} = data;
+    const {barcodeValue, barcodeFormat, handleBarcodeError} = data;
     const [showModal, setShowModal] = React.useState(false);
 
     const toggleModal = () => {
         setShowModal(!showModal);
     };
 
-    const toggleBarcodeModal = () => {
-        toggleOrientation();
-        toggleModal()
-    }
-
     return <Center>
-        <Button variant="ghost" onPress={() => toggleBarcodeModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{translate('library_card.open_barcode')}</Button>
-        <Modal isOpen={showModal} onClose={() => toggleBarcodeModal()} size="xl" _backdrop={{opacity: 95}}>
+        <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{translate('library_card.open_barcode')}</Button>
+        <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{opacity: 95}}>
             <Modal.Content bgColor="white">
                 <Modal.CloseButton />
                 <Modal.Body bgColor="white">
