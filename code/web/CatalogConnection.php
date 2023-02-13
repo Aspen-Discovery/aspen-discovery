@@ -1339,10 +1339,6 @@ class CatalogConnection {
 		return $this->driver->getHoldNotificationTemplate($user);
 	}
 
-	public function loadHoldNotificationInfo(User $user): ?array {
-		return $this->driver->loadHoldNotificationInfo($user);
-	}
-
 	public function validateUniqueId(User $user) {
 		$this->driver->validateUniqueId($user);
 	}

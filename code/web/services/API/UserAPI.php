@@ -794,12 +794,6 @@ class UserAPI extends Action {
 
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
-			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
-			$userData->promptForHoldNotifications = $promptForHoldNotifications;
-			if($promptForHoldNotifications) {
-				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
-			}
-
 			return [
 				'success' => true,
 				'profile' => $userData,
