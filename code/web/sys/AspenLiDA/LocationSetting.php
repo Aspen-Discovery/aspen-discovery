@@ -126,7 +126,7 @@ class LocationSetting extends DataObject {
 	}
 
 	function getEditLink($context): string {
-		return '/AspenLiDA/AppSettings?objectAction=edit&id=' . $this->id;
+		return '/AspenLiDA/LocationSettings?objectAction=edit&id=' . $this->id;
 	}
 
 	static function getDeepLinks(): array {
