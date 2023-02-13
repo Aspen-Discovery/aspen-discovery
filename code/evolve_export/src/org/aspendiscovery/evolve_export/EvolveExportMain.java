@@ -372,7 +372,11 @@ public class EvolveExportMain {
 													} else {
 														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
 													}
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+													if (curItem.isNull("Location")) {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
+													} else {
+														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+													}
 													break;
 												}
 											}
@@ -397,7 +401,12 @@ public class EvolveExportMain {
 											} else {
 												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
 											}
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+											if (curItem.isNull("Location")) {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
+											}else {
+												MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+											}
+
 											marcRecord.addVariableField(newItemField);
 										}
 									} catch (Exception e) {
