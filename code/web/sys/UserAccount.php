@@ -491,7 +491,7 @@ class UserAccount {
 			}
 		}
 
-		if(isset($_REQUEST['ldapLogin'])) {
+		if(isset($_REQUEST['ldapLogin']) && !$validatedViaSSO) {
 			$logger->log('Logging the user in via LDAP', Logger::LOG_NOTICE);
 			require_once ROOT_DIR . '/sys/Authentication/LDAPAuthentication.php';
 			$ldapAuthentication = new LDAPAuthentication();
