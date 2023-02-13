@@ -1385,7 +1385,12 @@ class User extends DataObject {
 			$checkout->delete(true);
 
 			foreach ($allCheckedOut as $checkout) {
-				$checkout->insert();
+				if ($checkout->insert() == 0) {
+					if (IPAddress::showDebuggingInformation()) {
+						global $logger;
+						$logger->log(Logger::LOG_ERROR, "Could not save checkout to database");
+					}
+				}
 			}
 
 			$this->checkoutInfoLastLoaded = time();
