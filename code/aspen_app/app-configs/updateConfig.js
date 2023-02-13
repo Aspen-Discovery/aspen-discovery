@@ -144,7 +144,8 @@ const app_config = {
                projectId: app['easId'],
           },
           iosStoreUrl: 'https://apps.apple.com/us/app/id' + app['ascAppId'],
-          androidStoreUrl: 'https://play.google.com/store/apps/details?id=' + app['reverseDns']
+          androidStoreUrl: 'https://play.google.com/store/apps/details?id=' + app['reverseDns'],
+          patch: version['patch']
      },
      hooks: {
           postPublish: [
