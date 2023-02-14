@@ -6,10 +6,9 @@ require_once ROOT_DIR . "/Action.php";
 class MaterialsRequest_NewRequestVDX extends Action {
 	function launch() {
 		global $interface;
-		global $library;
 
 		if (!UserAccount::isLoggedIn()) {
-			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequestIls');
+			header('Location: /MyAccount/Home?followupModule=MaterialsRequest&followupAction=NewRequestVDX');
 			exit;
 		} else {
 			$user = UserAccount::getActiveUserObj();
