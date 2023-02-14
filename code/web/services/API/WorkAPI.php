@@ -94,10 +94,22 @@ class WorkAPI extends Action {
 
 			$itemData['series'] = $groupedWorkDriver->getIndexedSeries();
 
-			$formats = $groupedWorkDriver->getFormatsArray();
 			$itemData['formats'] = [];
+			$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+			foreach ($relatedManifestations as $relatedManifestation) {
+				foreach ($relatedManifestation->getVariations() as $obj) {
+					if(!array_key_exists($obj->manifestation->format, $itemData['formats'])) {
+						$format = $obj->manifestation->format;
+						$itemData['formats'][$format] = [];
+						$itemData['formats'][$format]['label'] = $format;
+						$itemData['formats'][$format]['category'] = $relatedManifestation->formatCategory;
+						$itemData['formats'][$format]['actions'] = $relatedManifestation->getActions();
+						$itemData['formats'][$format]['isAvailable'] = $relatedManifestation->isAvailable();
+					};
+				}
+			}
 
-			foreach ($formats as $format) {
+			/*foreach ($formats as $format) {
 				$itemData['formats'][$format] = [];
 				$relatedManifestation = null;
 				foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
@@ -110,7 +122,7 @@ class WorkAPI extends Action {
 				$itemData['formats'][$format]['actions'] = $relatedManifestation->getActions();
 				$itemData['formats'][$format]['isAvailable'] = $relatedManifestation->isAvailable();
 
-			}
+			}*/
 
 			return $itemData;
 		}
