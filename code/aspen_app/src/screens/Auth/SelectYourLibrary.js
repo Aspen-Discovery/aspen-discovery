@@ -37,6 +37,7 @@ export const SelectYourLibrary = (props) => {
             ListHeaderComponent={props.renderListHeader}
             refreshing={props.isRefreshing}
             extraData={props.extraData}
+            keyboardShouldPersistTaps="handled"
           />
         </Modal.Content>
       </Modal>
