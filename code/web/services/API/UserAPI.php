@@ -250,14 +250,16 @@ class UserAPI extends Action {
 				} catch (UnknownAuthenticationMethodException $e) {
 					return [
 						'success' => false,
-						'message' => 'Unknown authentication method'
+						'message' => 'Unknown authentication method',
+						'session' => false,
 					];
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					return [
 						'success' => true,
-						'message' => 'User is valid'
+						'message' => 'User is valid',
+						'session' => session_id(),
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
@@ -267,7 +269,8 @@ class UserAPI extends Action {
 							'id' => $invalidUser['id'] ?? null,
 							'message' => $invalidUser['message'],
 							'resetToken' => $invalidUser['resetToken'] ?? null,
-							'userId' => $invalidUser['userId'] ?? null
+							'userId' => $invalidUser['userId'] ?? null,
+							'session' => false,
 						];
 					}
 				}
