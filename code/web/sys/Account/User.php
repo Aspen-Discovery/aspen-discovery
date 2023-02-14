@@ -1385,7 +1385,18 @@ class User extends DataObject {
 			$checkout->delete(true);
 
 			foreach ($allCheckedOut as $checkout) {
-				$checkout->insert();
+				if (is_null($checkout->sourceId)) {
+					$checkout->sourceId = '';
+				}
+				if (is_null($checkout->recordId)) {
+					$checkout->recordId = '';
+				}
+				if ($checkout->insert() == 0) {
+					if (IPAddress::showDebuggingInformation()) {
+						global $logger;
+						$logger->log(Logger::LOG_ERROR, "Could not save checkout to database");
+					}
+				}
 			}
 
 			$this->checkoutInfoLastLoaded = time();
@@ -1517,12 +1528,24 @@ class User extends DataObject {
 			$hold->delete(true);
 
 			foreach ($allHolds['available'] as $holdToSave) {
+				if (is_null($holdToSave->sourceId)) {
+					$holdToSave->sourceId = '';
+				}
+				if (is_null($holdToSave->recordId)) {
+					$holdToSave->recordId = '';
+				}
 				if (!$holdToSave->insert()) {
 					global $logger;
 					$logger->log('Could not save available hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
 				}
 			}
 			foreach ($allHolds['unavailable'] as $holdToSave) {
+				if (is_null($holdToSave->sourceId)) {
+					$holdToSave->sourceId = '';
+				}
+				if (is_null($holdToSave->recordId)) {
+					$holdToSave->recordId = '';
+				}
 				if (!$holdToSave->insert()) {
 					global $logger;
 					$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
@@ -1537,8 +1560,9 @@ class User extends DataObject {
 			if ($source != 'all') {
 				$hold->type = $source;
 			}
-			$hold->find();
-			while ($hold->fetch()) {
+			/** @var Hold $allHolds */
+			$allHolds = $hold->fetchAll();
+			foreach ($allHolds as $hold) {
 				$key = $hold->source;
 				if (!empty($hold->cancelId)) {
 					$key .= $hold->cancelId;
@@ -1547,9 +1571,9 @@ class User extends DataObject {
 				}
 				$key .= $hold->userId;
 				if ($hold->available) {
-					$holdsToReturn['available'][$key] = clone $hold;
+					$holdsToReturn['available'][$key] = $hold;
 				} else {
-					$holdsToReturn['unavailable'][$key] = clone $hold;
+					$holdsToReturn['unavailable'][$key] = $hold;
 				}
 			}
 		}

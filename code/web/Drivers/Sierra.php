@@ -597,6 +597,8 @@ class Sierra extends Millennium {
 					$curCheckout->barcode = $entry->barcode;
 				}
 				if (strpos($entry->item, "@") !== false) {
+					$curCheckout->sourceId = '';
+					$curCheckout->recordId = '';
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
 					if ($titleAuthor != false) {
 						$curCheckout->title = $titleAuthor['title'];
