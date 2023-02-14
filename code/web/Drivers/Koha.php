@@ -2270,7 +2270,11 @@ class Koha extends AbstractIlsDriver {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
 					$checkoutBranch = $curRow['branchcode'];
-					$renewCount = $curRow['renewals'] + 1;
+					if ($this->getKohaVersion() >= 22.11) {
+						$renewCount = $curRow['renewals_count'] + 1;
+					} else {
+						$renewCount = $curRow['renewals'] + 1;
+					}
 					/** @noinspection SqlResolve */
 					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
