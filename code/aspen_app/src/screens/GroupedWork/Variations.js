@@ -14,6 +14,7 @@ import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { getStatusIndicator } from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
+import {decodeHTML} from '../../util/apiAuth';
 
 export const Variations = (props) => {
      const route = useRoute();
@@ -59,6 +60,10 @@ export const Variations = (props) => {
           }
      };
 
+     const decodeMessage = (string) => {
+          return decodeHTML(string)
+     }
+
      return (
          <>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError(error, '') :
              <>
@@ -67,7 +72,7 @@ export const Variations = (props) => {
                        <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
                             <AlertDialog.Content>
                                  <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                 <AlertDialog.Body>{response?.message}</AlertDialog.Body>
+                                 <AlertDialog.Body>{response?.message ? decodeMessage(response.message) : null}</AlertDialog.Body>
                                  <AlertDialog.Footer>
                                  <Button.Group space={3}>
                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
