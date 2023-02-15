@@ -1624,10 +1624,6 @@ class Evergreen extends AbstractIlsDriver {
 		return $result;
 	}
 
-	public function loadHoldNotificationInfo(User $user): ?array {
-		return $this->loadHoldNotificationInfoFromEvergreen($user);
-	}
-
 	/**
 	 * @param User $user
 	 */
@@ -1688,7 +1684,6 @@ class Evergreen extends AbstractIlsDriver {
 				}
 			}
 
-			$user = UserAccount::getActiveUserObj();
 			$interface->assign('primaryEmail', $user->email);
 
 			return [
