@@ -663,6 +663,16 @@ class Library extends DataObject {
 			$appGeneralSettings[$appGeneralSetting->id] = $appGeneralSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+		$ssoSetting = new SSOSetting();
+		$ssoSetting->orderBy('name');
+		$ssoSettings = [];
+		$ssoSetting->find();
+		$ssoSettings[-1] = 'none';
+		while ($ssoSetting->fetch()) {
+			$ssoSettings[$ssoSetting->id] = $ssoSetting->name;
+		}
+
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['libraryId']);
 
@@ -960,7 +970,7 @@ class Library extends DataObject {
 					],
 				],
 			],
-			'ssoSection' => [
+			/*'ssoSection' => [
 				'property' => 'ssoSection',
 				'type' => 'section',
 				'label' => 'Single Sign-on',
@@ -1177,7 +1187,7 @@ class Library extends DataObject {
 						],
 					],
 				],
-			],
+			],*/
 
 			// ILS/Account Integration //
 			'ilsSection' => [
@@ -3297,6 +3307,26 @@ class Library extends DataObject {
 						'default' => -1,
 					],
 				],
+			],
+
+			'ssoSection' => [
+				'property' => 'ssoSection',
+				'type' => 'section',
+				'label' => 'Single Sign-on',
+				'renderAsHeading' => true,
+				'hideInLists' => true,
+				'permissions' => ['Administer Aspen LiDA Settings'],
+				'properties' => [
+					'ssoSettingId' => [
+						'property' => 'ssoSettingId',
+						'type' => 'enum',
+						'values' => $ssoSettings,
+						'label' => 'Single Sign-on (SSO) Settings',
+						'description' => 'The single sign-on settings to use for this library',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+				]
 			],
 		];
 
