@@ -54,10 +54,19 @@ class SAMLAuthentication extends Action {
 				}
 			}
 
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			$technicalContactEmail = '';
+			if($systemVariables && !empty($systemVariables->errorEmail)) {
+				$technicalContactEmail = $systemVariables->errorEmail;
+			}
+
 			$settings = [
+				// Strict should always be set to true in production
 				'strict' => true,
 				'debug' => false,
 				'sp' => [
+					// Identifier of the SP entity  (must be a URI)
 					'entityId' => $configArray['Site']['url'] . '/Authentication/SAML2?metadata',
 					'assertionConsumerService' => [
 						'url' => $configArray['Site']['url'] . '/Authentication/SAML2?acs',
@@ -68,6 +77,27 @@ class SAMLAuthentication extends Action {
 					'NameIDFormat' => 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress'
 				],
 				'idp' => $metadata['idp'],
+				'security' => [
+					'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
+					'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
+				],
+				'contactPerson' => [
+					'technical' => [
+						'givenName' => 'Aspen Discovery',
+						'emailAddress' => $technicalContactEmail
+					],
+					'support' => [
+						'givenName' => $library->displayName,
+						'emailAddress' => $library->contactEmail ?? $technicalContactEmail
+					],
+				],
+				'organization' => [
+					'en-US' => [
+						'name' => $library->displayName,
+						'displayname' => $library->displayName,
+						'url' => $configArray['Site']['url']
+					],
+				]
 			];
 
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
