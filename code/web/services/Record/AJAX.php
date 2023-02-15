@@ -744,7 +744,7 @@ class Record_AJAX extends Action {
 							require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
 							require_once ROOT_DIR . '/sys/VDX/VdxForm.php';
 							//Check to see if we can use VDX.  We only allow VDX if the reason is: "hold not allowed"
-							if (array_key_exists('error_code', $return) && ($return['error_code'] == 'hatErrorResponse.17286')) {
+							if (array_key_exists('error_code', $return) && (($return['error_code'] == 'hatErrorResponse.17286') || ($return['error_code'] == 'hatErrorResponse.447'))) {
 								$vdxSettings = new VdxSetting();
 								if ($vdxSettings->find(true)) {
 									$homeLocation = Location::getDefaultLocationForUser();
