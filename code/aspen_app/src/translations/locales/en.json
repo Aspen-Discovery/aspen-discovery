@@ -215,6 +215,7 @@
     "notify_for_pickup": "Notify when hold is ready for pickup?",
     "email_notification": "Yes, by email to {{email}}",
     "phone_notification": "Yes, by phone",
+    "phone_number": "Phone Number",
     "sms_notification": "Yes, by text message",
     "sms_carrier": "Mobile Carrier",
     "sms_number": "Mobile Number",
