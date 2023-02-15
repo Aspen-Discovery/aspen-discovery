@@ -1684,8 +1684,8 @@ class Evergreen extends AbstractIlsDriver {
 				}
 			}
 
-			$userObj = UserAccount::getActiveUserObj();
-			$interface->assign('primaryEmail', $userObj->email);
+			$interface->assign('primaryEmail', $user->email);
+
 			return [
 				'preferences' => $notificationPreferences,
 				'primaryEmail' => $user->email,
