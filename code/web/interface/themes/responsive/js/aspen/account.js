@@ -772,6 +772,7 @@ AspenDiscovery.Account = (function () {
 					AspenDiscovery.Account.cancelHold(patronId, recordId, holdIdToCancel, isIll)
 				}, false);
 			}
+			AspenDiscovery.Account.reloadHolds();
 
 			return false
 		},
@@ -799,6 +800,7 @@ AspenDiscovery.Account = (function () {
 				this.ajaxLogin(null, this.cancelHoldSelectedTitles, true);
 				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
 			}
+			AspenDiscovery.Account.reloadHolds();
 			return false
 		},
 
@@ -822,6 +824,7 @@ AspenDiscovery.Account = (function () {
 				this.ajaxLogin(null, this.cancelHoldAll, true);
 				//auto close so that if user opts out of canceling, the login window closes; if the users continues, follow-up operations will reopen modal
 			}
+			AspenDiscovery.Account.reloadHolds();
 			return false;
 		},
 
