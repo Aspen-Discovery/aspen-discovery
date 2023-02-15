@@ -3315,7 +3315,7 @@ class Library extends DataObject {
 				'label' => 'Single Sign-on',
 				'renderAsHeading' => true,
 				'hideInLists' => true,
-				'permissions' => ['Administer Aspen LiDA Settings'],
+				'permissions' => ['Administer Single Sign-on'],
 				'properties' => [
 					'ssoSettingId' => [
 						'property' => 'ssoSettingId',
