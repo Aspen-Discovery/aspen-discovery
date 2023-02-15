@@ -14,6 +14,10 @@ class SAMLAuthentication extends Action {
 	protected OneLogin_Saml2_Settings $_settings;
 	protected array $_attributes;
 	protected array $matchpoints;
+	protected SSOSetting $config;
+	protected bool $uidAsEmail = false;
+	protected string $uid;
+	protected bool $isStaffUser = false;
 
 	protected bool $ssoAuthOnly = false;
 
@@ -30,7 +34,12 @@ class SAMLAuthentication extends Action {
 		$ssoSettings->id = $library->ssoSettingId;
 		$ssoSettings->service = "saml";
 		if($ssoSettings->find(true)) {
-			$this->matchpoints = $ssoSettings->getMatchpoints();
+			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system
+			$this->config = clone $ssoSettings;
+
+			if(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
+				$this->uidAsEmail = true;
+			}
 
 			$metadata = [];
 			if($ssoSettings->ssoXmlUrl || $ssoSettings->ssoMetadataFilename) {
@@ -142,34 +151,46 @@ class SAMLAuthentication extends Action {
 	}
 
 	public function validateAccount() {
+		global $logger;
 		$attributes = $this->getAttributes();
-		$username = $this->getUsername();
+		if(count($attributes) == 0) {
+			$logger->log("No SAML attributes found for user", Logger::LOG_ERROR);
+			return false;
+		}
+		$user = $this->setupUser($attributes);
 		if($this->ssoAuthOnly === false) {
-			if(!$this->validateWithILS($username)) {
-				if($this->selfRegister($attributes)) {
-					return $this->validateWithILS($username);
+			if(!$this->validateWithILS($user)) {
+				if($this->selfRegister($user)) {
+					return $this->validateWithILS($user);
 				} else {
 					AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
 				}
-			} return $this->validateWithILS($username);
+			} return $this->validateWithILS($user);
 		} else {
-			if(!$this->validateWithAspen($username)) {
-				$newUser = $this->selfRegisterAspenOnly($attributes);
+			if(!$this->validateWithAspen($this->uid)) {
+				$newUser = $this->selfRegisterAspenOnly($user);
 				if($newUser instanceof User) {
-					return $this->validateWithAspen($username);
+					return $this->validateWithAspen($this->uid);
 				} else {
 					AspenError::raiseError(new AspenError('Unable to create account with Aspen for new SAML user.'));
 				}
-			} return $this->validateWithAspen($username);
+			} return $this->validateWithAspen($this->uid);
 		}
 	}
 
-	private function validateWithILS($username): bool {
+	private function validateWithILS($attributes): bool {
+		$this->setupILSUser($attributes);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
-			$user = $catalogConnection->findNewUserByEmail($username);
+		if($this->uidAsEmail) {
+			$user = $catalogConnection->findNewUserByEmail($this->uid);
+			if(is_string($user)) {
+				global $logger;
+				$logger->log($user, Logger::LOG_ERROR);
+				return false;
+			}
 		} else {
-			$user = $catalogConnection->findNewUser($username);
+			$_REQUEST['username'] = $this->uid;
+			$user = $catalogConnection->findNewUser($this->uid);
 		}
 
 		if(!$user instanceof User) {
@@ -178,10 +199,10 @@ class SAMLAuthentication extends Action {
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
-			$user = $catalogConnection->findNewUserByEmail($username);
+		if ($this->uidAsEmail) {
+			$user = $catalogConnection->findNewUserByEmail($this->uid);
 		} else {
-			$user = $catalogConnection->findNewUser($username);
+			$user = $catalogConnection->findNewUser($this->uid);
 		}
 		return $this->aspenLogin($user);
 	}
@@ -219,22 +240,84 @@ class SAMLAuthentication extends Action {
 	}
 
 	private function setupUser($user) {
-		if($this->searchArray($user, $this->matchpoints['patronType'])) {
-			$patronType = $this->searchArray($user, $this->matchpoints['patronType']);
-		} elseif($this->matchpoints['patronType_fallback']) {
-			$patronType = $this->matchpoints['patronType_fallback'];
-		} else {
-			$patronType = null;
+		$tmpUser = [];
+		$tmpUser['isStaffUser'] = false;
+		$tmpUser['staffPType'] = null;
+		foreach ($this->matchpoints as $prop => $content) {
+			if(!empty($this->config->samlStaffPTypeAttr) && !empty($this->config->samlStaffPTypeAttrValue)
+			&& ($this->config->samlStaffPType != '-1' || $this->config->samlStaffPType != -1)) {
+				$staffAttr = $this->config->samlStaffPTypeAttr;
+				$staffAttrValue = $this->config->samlStaffPTypeAttrValue;
+				$attrArray = strlen($staffAttr) > 0 ? $user[$staffAttr] : [];
+				if(isset($attrArray) && count($attrArray) == 1) {
+					if(strlen($attrArray[0]) > 0) {
+						if($attrArray[0] == $staffAttrValue) {
+							$tmpUser['isStaffUser'] = true;
+							$tmpUser['staffPType'] = $this->config->samlStaffPType;
+						}
+					}
+				}
+			}
+			$attrName = $this->config->$prop;
+			$attrArray = strlen($attrName) > 0 ? $user[$attrName] : [];
+			if(isset($attrArray) && count($attrArray) == 1) {
+				if(strlen($attrArray[0]) > 0) {
+					$tmpUser[$prop] = $attrArray[0];
+				}
+			} elseif (array_key_exists('fallback', $content)) {
+				$fallback = $content['fallback'];
+				$propertyName = $fallback['propertyName'];
+				$tmpUser[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($user, $this->config) : $this->config->$propertyName;
+			}
 		}
-		return [
-			'email' => $this->searchArray($user, $this->matchpoints['email']),
-			'firstname' => $this->searchArray($user, $this->matchpoints['firstName']),
-			'lastname' => $this->searchArray($user, $this->matchpoints['lastName']),
-			'username' => $this->searchArray($user, $this->matchpoints['userId']),
-			'displayName' => $this->searchArray($user, $this->matchpoints['displayName']),
-			'cat_username' => $this->searchArray($user, $this->matchpoints['username']),
-			'category_id' => $patronType,
-		];
+
+		if($this->uidAsEmail) {
+			$this->uid = $tmpUser['ssoEmailAttr'];
+		} else {
+			$this->uid = $tmpUser['ssoUniqueAttribute'];
+		}
+
+		$this->isStaffUser = $tmpUser['isStaffUser'] ?? false;
+
+		return $tmpUser;
+	}
+
+	private function setupILSUser($user) {
+		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
+		$ilsMapping = $catalogConnection->getLmsToSso($this->isStaffUser, $this->config->ssoUseGivenUserId, $this->config->ssoUseGivenUsername);
+
+		foreach($ilsMapping as $key => $mappings) {
+			$primaryAttr = $mappings['primary'];
+			if (array_key_exists($primaryAttr, $user)) {
+				$_REQUEST[$key] = $user[$primaryAttr];
+				if(isset($mappings['useGivenCardnumber'])) {
+					$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
+					if($useSecondaryOverPrimary == '0') {
+						$_REQUEST[$key] = null;
+					}
+				}
+				if(isset($mappings['useGivenUserId'])) {
+					$useSecondaryOverPrimary = $mappings['useGivenUserId'];
+					if($useSecondaryOverPrimary == '0') {
+						if($this->config->ssoUsernameFormat == '1') {
+							$_REQUEST[$key] = $user['ssoEmailAttr'];
+						} elseif($this->config->ssoUsernameFormat == '2') {
+							$username = $user['ssoFirstnameAttr'] . '.' . $user['ssoLastnameAttr'];
+							$username = strtolower($username);
+							$_REQUEST[$key] = $username;
+						} elseif($this->config->ssoUsernameFormat == '0') {
+							$_REQUEST[$key] = null;
+						}
+					}
+				}
+			} elseif (array_key_exists('fallback', $mappings)) {
+				if (strlen($mappings['fallback']) > 0) {
+					$_REQUEST[$key] = $user[$mappings['fallback']];
+				} else {
+					$_REQUEST[$key] = $mappings['fallback'];
+				}
+			}
+		}
 	}
 
 	private function selfRegister($attributes): bool {
