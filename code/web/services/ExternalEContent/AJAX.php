@@ -1,8 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-
-global $configArray;
+require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
 class ExternalEContent_AJAX extends Action {
 

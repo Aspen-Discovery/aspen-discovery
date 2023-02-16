@@ -167,4 +167,17 @@ class ExternalEContentDriver extends BaseEContentDriver {
 	public function getIdWithSource() {
 		return 'external_econtent:' . $this->profileType . ':' . $this->id;
 	}
+
+	public function getItemActions($itemInfo) {
+		return [];
+	}
+
+	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null) {
+		$allItems = $relatedRecord->getItems();
+		$allItemUrls = [];
+		foreach ($allItems as $item) {
+			$allItemUrls = array_merge($allItemUrls, $item->getRelatedUrls());
+		}
+		return $this->createActionsFromUrls($allItemUrls);
+	}
 }
