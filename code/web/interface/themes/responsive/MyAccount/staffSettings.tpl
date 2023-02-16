@@ -52,7 +52,7 @@
 						</div>
 					{/if}
 
-					{if $profile->hasPermission('materials_request') && ($materialRequestType == 1)}
+					{if $profile->hasPermission('Manage Library Materials Requests') && ($materialRequestType == 1)}
 						<div class="row">
 							<div class="lead col-tn-12">{translate text="Materials Request Management" isPublicFacing=true}</div>
 						</div>
