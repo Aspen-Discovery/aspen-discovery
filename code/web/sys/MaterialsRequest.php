@@ -37,6 +37,7 @@ class MaterialsRequest extends DataObject {
 	public $createdBy;
 	public $dateUpdated;
 	public $emailSent;
+	public $createdEmailSent;
 	public $holdsCreated;
 	public $placeHoldWhenAvailable;
 	public $illItem;
@@ -50,6 +51,7 @@ class MaterialsRequest extends DataObject {
 			'emailSent',
 			'holdsCreated',
 			'assignedTo',
+			'createdEmailSent'
 		];
 	}
 
@@ -220,9 +222,9 @@ class MaterialsRequest extends DataObject {
 
 				$replyToAddress = $emailSignature = '';
 				if (!empty($this->assignedTo)) {
-					require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-					$staffSettings = new UserStaffSettings();
-					$staffSettings->get('userId', $this->assignedTo);
+					require_once ROOT_DIR . '/sys/Account/User.php';
+					$staffSettings = new User();
+					$staffSettings->id = $this->assignedTo;
 					if (!empty($staffSettings->materialsRequestReplyToAddress)) {
 						$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
 					}
@@ -262,6 +264,82 @@ class MaterialsRequest extends DataObject {
 				}
 			}
 		}
+	}
+
+	function sendStaffNewMaterialsRequestEmail() {
+		global $library;
+		global $configArray;
+		if($library->materialsRequestSendStaffEmailOnNew && !empty($library->materialsRequestNewEmail)) {
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mail = new Mailer();
+			$replyToAddress = '';
+			$subject = translate(['text' => "New Materials Request created", 'isAdminFacing' => true, 'isPublicFacing' => true]);
+			$body = "A new Materials Request has been created: <br>";
+			$body .= $this->getEmailBody($library->libraryId);
+			$body .= '------------------------------------------<br>';
+			$body .= translate(['text' => "View more details online at", 'isAdminFacing' => true, 'isPublicFacing' => true]) . ' ' . $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+			$mail->send($library->materialsRequestNewEmail, $subject, '', $replyToAddress, $body);
+			$this->createdEmailSent = 1;
+			$this->update();
+		}
+	}
+
+	function sendStaffNewMaterialsRequestAssignedEmail() {
+		global $library;
+		global $configArray;
+		if($library->materialsRequestSendStaffEmailOnAssign) {
+			$staffUser = new User();
+			$staffUser->id = $this->assignedTo;
+			if($staffUser->find(true)) {
+				if($staffUser->materialsRequestSendEmailOnAssign && $staffUser->email) {
+					$staffLibrary = $staffUser->getHomeLibrary();
+					if (is_null($staffLibrary)) {
+						$staffLibrary = $library;
+					}
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mail = new Mailer();
+					$replyToAddress = '';
+					$subject = translate(['text' => "You've been assigned a Materials Request", 'isAdminFacing' => true, 'isPublicFacing' => true]);
+					$body = "You've been assigned a Materials Request: <br>";
+					$body .= $this->getEmailBody($staffLibrary->libraryId);
+					$body .= '------------------------------------------<br>';
+					$body .= translate(['text' => "View more details online at", 'isAdminFacing' => true, 'isPublicFacing' => true]) . ' ' . $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+					$mail->send($staffUser->email, $subject, '', $replyToAddress, $body);
+				}
+			}
+		}
+	}
+
+	function getEmailBody($libraryId): string {
+		$requestFormFields = $this->getRequestFormFields($libraryId, true);
+		$body = "";
+		$body .= '<table>';
+		$body .= '<tbody>';
+		foreach($requestFormFields as $key => $formFields) {
+			foreach($formFields as $formField) {
+				$value = $formField->fieldType;
+				if($this->$value) {
+					if ($formField->fieldType == 'format' || $formField->fieldType == 'author' || $formField->fieldType == 'title' || $formField->fieldType == 'id') {
+						$body .= '<tr>';
+						$body .= '<td><strong>' . translate([
+								'text' => $formField->fieldLabel,
+								'isPublicFacing' => true,
+								'isAdminFacing' => true
+							]) . '</strong></td>';
+						$body .= '<td>' . translate([
+								'text' => $this->$value,
+								'isPublicFacing' => true,
+								'isAdminFacing' => true
+							]) . '</td>';
+						$body .= '</tr>';
+					}
+				}
+			}
+		}
+		$body .= '</tbody>';
+		$body .= '</table><br>';
+
+		return $body;
 	}
 
 	/** @noinspection PhpUnused */
