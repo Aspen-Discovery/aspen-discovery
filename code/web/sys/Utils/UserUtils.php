@@ -209,19 +209,6 @@ class UserUtils {
 				$result['numUserPaymentsMoved']++;
 			}
 
-			require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-			$userStaffSettings = new UserStaffSettings();
-			$userStaffSettings->userId = $newUser->id;
-			$userStaffSettings->find();
-			while ($userStaffSettings->fetch()) {
-				$clonedUserStaffSettings = clone $userStaffSettings;
-				$clonedUserStaffSettings->userId = $originalUser->id;
-				$clonedUserStaffSettings->update();
-				$clonedUserStaffSettings->__destruct();
-				$clonedUserStaffSettings = null;
-				$result['numUserStaffSettingsMoved']++;
-			}
-
 			$newUsername = $newUser->username;
 			$newUser->delete();
 			$originalUser->username = $newUsername;

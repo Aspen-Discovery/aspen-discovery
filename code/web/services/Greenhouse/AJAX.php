@@ -93,7 +93,6 @@ class Greenhouse_AJAX extends Action {
 							'numMaterialsRequestsAssignmentsMoved' => 0,
 							'numUserMessagesMoved' => 0,
 							'numUserPaymentsMoved' => 0,
-							'numUserStaffSettingsMoved' => 0,
 							'numRatingsReviewsMoved' => 0,
 							'errors' => [],
 						];
@@ -139,9 +138,6 @@ class Greenhouse_AJAX extends Action {
 						}
 						if (!empty($mergeResults['numUserPaymentsMoved'])) {
 							$result['message'] .= "<br/>Moved {$mergeResults['numUserPaymentsMoved']} user payments";
-						}
-						if (!empty($mergeResults['numUserStaffSettingsMoved'])) {
-							$result['message'] .= "<br/>Moved {$mergeResults['numUserStaffSettingsMoved']} user staff settings";
 						}
 						if (!empty($mergeResults['numRatingsReviewsMoved'])) {
 							$result['message'] .= "<br/>Moved {$mergeResults['numRatingsReviewsMoved']} ratings & reviews";
