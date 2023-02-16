@@ -53,7 +53,7 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 		global $configArray;
 		$actions = [];
 		$i = 0;
-		if (count($relatedUrls) > 3) {
+		if (count($relatedUrls) > 1) {
 			//We will show a popup to let people choose the URL they want
 			$title = translate([
 				'text' => 'Access Online',
