@@ -257,7 +257,8 @@ function getUpdates23_02_00(): array {
 			'sql' => [
 				"UPDATE user_list_entry 
     			INNER JOIN grouped_work ON user_list_entry.sourceId = grouped_work.permanent_id 	
-				SET user_list_entry.title = grouped_work.full_title WHERE user_list_entry.title = ''"
+				SET user_list_entry.title = grouped_work.full_title WHERE user_list_entry.title = ''
+				AND user_list_entry.source = 'GroupedWork'"
 			]
 		],
 		//update_list_entry_titles
