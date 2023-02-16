@@ -34,7 +34,7 @@
     {/if}
     {if $ssoService == 'saml'}
 	    {if !empty($samlBtnIcon)}
-	        <a href="/saml2auth.php?samlLogin=y&idp={$samlEntityId}" class="btn btn-default btn-lg"
+	        <a href="/Authentication/SAML2?init" class="btn btn-default btn-lg"
 	        style="
 	            background-image: url('{$samlBtnIcon}');
 	            background-position: left center;

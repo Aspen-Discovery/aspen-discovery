@@ -25,6 +25,7 @@ import {SafeAreaView} from 'react-native';
 import {GetOverDriveSettings} from './OverDriveSettings';
 import {getProfile, PATRON} from '../../util/loadPatron';
 import Manifestation from './Manifestation';
+import {decodeHTML} from '../../util/apiAuth';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -154,7 +155,7 @@ const getDescription = (description) => {
      if (description) {
           return (
                <Text mt={5} mb={5} fontSize={{ base: 'md', lg: 'lg' }} lineHeight={{ base: '22px', lg: '26px' }}>
-                    {description}
+                    {decodeHTML(description)}
                </Text>
           );
      } else {

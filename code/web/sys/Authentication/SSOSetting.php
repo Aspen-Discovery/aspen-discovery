@@ -363,7 +363,7 @@ class SSOSetting extends DataObject {
 					'serviceProviderSection' => [
 						'property' => 'serviceProviderSection',
 						'type' => 'section',
-						'label' => 'Service Provider Details',
+						'label' => 'Aspen Discovery Service Provider Details',
 						'properties' => [
 							'idpACSUrl' => [
 								'property' => 'idpACSUrl',
@@ -376,6 +376,20 @@ class SSOSetting extends DataObject {
 								'property' => 'idpEntityId',
 								'type' => 'text',
 								'label' => 'Entity Id',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+							'idpSLSUrl' => [
+								'property' => 'idpSLSUrl',
+								'type' => 'text',
+								'label' => 'SLS Url',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+							'idpNameIDFormat' => [
+								'property' => 'idpNameIDFormat',
+								'type' => 'text',
+								'label' => 'Name ID Format',
 								'readOnly' => true,
 								'hideInLists' => true,
 							],
@@ -836,9 +850,13 @@ class SSOSetting extends DataObject {
 		} elseif ($name == "dataMapping") {
 			return $this->getFieldMappings();
 		} elseif ($name == 'idpEntityId') {
-			return $configArray['Site']['url'] . '/sso/module.php/saml/sp/metadata.php/default-sp';
+			return $configArray['Site']['url'] . '/Authentication/SAML2?metadata';
 		} elseif ($name == 'idpACSUrl') {
-			return $configArray['Site']['url'] . '/sso/module.php/saml/sp/saml2-acs.php/default-sp';
+			return $configArray['Site']['url'] . '/Authentication/SAML2?acs';
+		} elseif ($name == 'idpSLSUrl') {
+			return $configArray['Site']['url'] . '/Authentication/SAML2?sls';
+		} elseif ($name == 'idpNameIDFormat') {
+			return 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 		} else {
 			return $this->_data[$name] ?? null;
 		}
@@ -1005,39 +1023,82 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getMatchpoints() {
-		$matchpoints = [
-			'email' => 'email',
-			'userId' => 'sub',
-			'firstName' => 'given_name',
-			'lastName' => 'family_name',
-			'displayName' => '',
-			'username' => '',
-			'patronType' => '',
-			'libraryCode' => ''
-		];
+		if($this->service == 'saml') {
+			$matchpoints = [
+				'ssoUniqueAttribute' => [],
+				'ssoIdAttr' => [],
+				'ssoUsernameAttr' => [
+					'aspenUser' => 'username',
+				],
+				'ssoFirstnameAttr' => [],
+				'ssoLastnameAttr' => [],
+				'ssoEmailAttr' => [],
+				'ssoDisplayNameAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoDisplayNameFallback',
+						'func' => function ($attributes) {
+							$comp = [
+								$attributes[$this->ssoFirstnameAttr][0],
+								$attributes[$this->ssoLastnameAttr][0],
+							];
+							return implode(' ', $comp);
+						},
+					],
+				],
+				'ssoPhoneAttr' => [],
+				'ssoPatronTypeAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoPatronTypeFallback',
+					],
+				],
+				'ssoAddressAttr' => [],
+				'ssoCityAttr' => [],
+				'ssoLibraryIdAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoLibraryIdFallback',
+					],
+				],
+				'ssoCategoryIdAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoCategoryIdFallback',
+					],
+				],
+			];
+		} else {
+			$matchpoints = [
+				'email' => 'email',
+				'userId' => 'sub',
+				'firstName' => 'given_name',
+				'lastName' => 'family_name',
+				'displayName' => '',
+				'username' => '',
+				'patronType' => '',
+				'libraryCode' => ''
+			];
 
-		$mappings = new SSOMapping();
-		$mappings->ssoSettingId = $this->id;
-		$mappings->find();
-		while ($mappings->fetch()) {
-			if ($mappings->aspenField == "email") {
-				$matchpoints['email'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "user_id") {
-				$matchpoints['userId'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "first_name") {
-				$matchpoints['firstName'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "last_name") {
-				$matchpoints['lastName'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == 'display_name') {
-				$matchpoints['displayName'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == 'username') {
-				$matchpoints['username'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == 'patron_type') {
-				$matchpoints['patronType'] = $mappings->responseField;
-				$matchpoints['patronType_fallback'] = $mappings->fallbackValue;
-			} elseif ($mappings->aspenField == 'library_code') {
-				$matchpoints['libraryCode'] = $mappings->responseField;
-				$matchpoints['libraryCode_fallback'] = $mappings->fallbackValue;
+			$mappings = new SSOMapping();
+			$mappings->ssoSettingId = $this->id;
+			$mappings->find();
+			while ($mappings->fetch()) {
+				if ($mappings->aspenField == 'email') {
+					$matchpoints['email'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'user_id') {
+					$matchpoints['userId'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'first_name') {
+					$matchpoints['firstName'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'last_name') {
+					$matchpoints['lastName'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'display_name') {
+					$matchpoints['displayName'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'username') {
+					$matchpoints['username'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'patron_type') {
+					$matchpoints['patronType'] = $mappings->responseField;
+					$matchpoints['patronType_fallback'] = $mappings->fallbackValue;
+				} elseif ($mappings->aspenField == 'library_code') {
+					$matchpoints['libraryCode'] = $mappings->responseField;
+					$matchpoints['libraryCode_fallback'] = $mappings->fallbackValue;
+				}
 			}
 		}
 

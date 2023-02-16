@@ -218,3 +218,4 @@ code/aspen_app/updateEASInternal.sh
 code/aspen_app/startInternal.sh
 install/createSiteSettings.ini
 code/aspen_app/credentials.json
+code/web/services/Authentication/SAML/certs/*

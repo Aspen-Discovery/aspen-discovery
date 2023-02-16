@@ -14,7 +14,7 @@ import _ from 'lodash';
  **/
 export async function getManifestation(itemId, format, url) {
      const {data} = await axios.get('/ItemAPI?method=getManifestation', {
-          baseURL: url + 'API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(),
           auth: createAuthTokens(),
@@ -39,7 +39,7 @@ export async function getManifestation(itemId, format, url) {
  **/
 export async function getVariations(itemId, format, url) {
      const {data} = await axios.get('/ItemAPI?method=getVariations', {
-          baseURL: url + 'API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(),
           auth: createAuthTokens(),
@@ -114,7 +114,7 @@ export async function getItemAvailability(recordId, url) {
 
 export async function getFirstRecord(itemId, format, url) {
      const {data} = await axios.get('/ItemAPI?method=getRecords', {
-          baseURL: url + 'API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(),
           auth: createAuthTokens(),

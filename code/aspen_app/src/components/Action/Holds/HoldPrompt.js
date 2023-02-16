@@ -23,11 +23,31 @@ export const HoldPrompt = (props) => {
 	let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
 	let holdNotificationInfo = user.holdNotificationInfo ?? [];
 
-	const [emailNotification, setEmailNotification] = React.useState(holdNotificationInfo.preferences?.emailNotification ?? 0);
-	const [phoneNotification, setPhoneNotification] = React.useState(holdNotificationInfo.preferences?.phoneNotification ?? 0);
-	const [smsNotification, setSMSNotification] = React.useState(holdNotificationInfo.preferences?.smsNotification ?? 0);
-	const [smsCarrier, setSMSCarrier] = React.useState(holdNotificationInfo.preferences?.smsCarrier ?? '');
-	const [smsNumber, setSMSNumber] = React.useState(holdNotificationInfo.preferences?.smsNumber ?? '');
+	let defaultEmailNotification = false;
+	let defaultPhoneNotification = false;
+	let defaultSMSNotification = false;
+	if(promptForHoldNotifications && holdNotificationInfo?.preferences?.opac_hold_notify?.value) {
+		const preferences = holdNotificationInfo.preferences.opac_hold_notify.value;
+		defaultEmailNotification = getNotificationPreference(preferences, 'email');
+		defaultPhoneNotification = getNotificationPreference(preferences, 'phone');
+		defaultSMSNotification = getNotificationPreference(preferences, 'sms');
+	}
+
+	const [emailNotification, setEmailNotification] = React.useState(defaultEmailNotification);
+	const [phoneNotification, setPhoneNotification] = React.useState(defaultPhoneNotification);
+	const [smsNotification, setSMSNotification] = React.useState(defaultSMSNotification);
+	const [smsCarrier, setSMSCarrier] = React.useState(holdNotificationInfo.preferences?.opac_default_sms_carrier?.value ?? -1);
+	const [smsNumber, setSMSNumber] = React.useState(holdNotificationInfo.preferences?.opac_default_sms_notify?.value ?? null);
+	const [phoneNumber, setPhoneNumber] = React.useState(holdNotificationInfo.preferences?.opac_default_phone?.value ?? null);
+
+	const holdNotificationPreferences = {
+		'emailNotification': emailNotification,
+		'phoneNotification': phoneNotification,
+		'smsNotification': smsNotification,
+		'phoneNumber': phoneNumber,
+		'smsNumber': smsNumber,
+		'smsCarrier': smsCarrier
+	}
 
 	let promptForHoldType = false;
 	let typeOfHold = 'default';
@@ -71,16 +91,19 @@ export const HoldPrompt = (props) => {
 					<Modal.Body>
 						{promptForHoldNotifications ? (
 							<HoldNotificationPreferences
+								user={user}
 								emailNotification={emailNotification}
 								setEmailNotification={setEmailNotification}
 								phoneNotification={phoneNotification}
 								setPhoneNotification={setPhoneNotification}
-								smsNotifciation={smsNotification}
+								smsNotification={smsNotification}
 								setSMSNotification={setSMSNotification}
 								smsCarrier={smsCarrier}
 								setSMSCarrier={setSMSCarrier}
 								smsNumber={smsNumber}
 								setSMSNumber={setSMSNumber}
+								phoneNumber={phoneNumber}
+								setPhoneNumber={setPhoneNumber}
 							/>
 						) : null}
 						{promptForHoldType || holdType === 'volume' ? (
@@ -127,7 +150,7 @@ export const HoldPrompt = (props) => {
 								isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
 								onPress={async () => {
 									setLoading(true);
-									await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType).then(async (result) => {
+									await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences).then(async (result) => {
 										setResponse(result);
 										setShowModal(false);
 										if(result) {
@@ -149,4 +172,11 @@ export const HoldPrompt = (props) => {
 			</Modal>
 		</>
 	)
+}
+
+function getNotificationPreference(haystack, needle) {
+	if(_.includes(haystack, needle)) {
+		return true;
+	}
+	return false;
 }

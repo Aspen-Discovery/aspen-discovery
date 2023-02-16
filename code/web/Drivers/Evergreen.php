@@ -1624,10 +1624,6 @@ class Evergreen extends AbstractIlsDriver {
 		return $result;
 	}
 
-	public function loadHoldNotificationInfo(User $user): ?array {
-		return $this->loadHoldNotificationInfoFromEvergreen($user);
-	}
-
 	/**
 	 * @param User $user
 	 */
