@@ -460,35 +460,37 @@ function moveLibraryQuickSearchesToSettings(/** @noinspection PhpUnusedParameter
 
 /** @noinspection PhpUnused */
 function moveLocationAppSettings(/** @noinspection PhpUnusedParameterInspection */ &$update) {
-	global $aspen_db;
+	if (file_exists(ROOT_DIR . '/sys/AspenLiDA/AppSetting.php')) {
+		global $aspen_db;
 
-	$oldLocationSettingsSQL = "SELECT locationId, displayName, enableAppAccess, appReleaseChannel FROM location WHERE lidaGeneralSettingId = -1";
-	$oldLocationSettingsRS = $aspen_db->query($oldLocationSettingsSQL, PDO::FETCH_ASSOC);
-	$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
-
-	require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-	while ($oldLocationSettingsRow != null) {
-		$appSettingId = "-1";
-		$appSetting = new AppSetting();
-		$appSetting->enableAccess = $oldLocationSettingsRow['enableAppAccess'];
-		$appSetting->releaseChannel = $oldLocationSettingsRow['appReleaseChannel'];
-		if ($appSetting->find(true)) {
-			$appSettingId = $appSetting->id;
-		} else {
-			$appSetting->name = $oldLocationSettingsRow['displayName'] . " - App Settings";
-			if ($appSetting->insert()) {
-				$appSettingId = $appSetting->id;
-			}
-		}
-
-		$location = new Location();
-		$location->locationId = $oldLocationSettingsRow['locationId'];
-		if ($location->find(true)) {
-			$location->lidaGeneralSettingId = $appSettingId;
-			$location->update();
-		}
-
+		$oldLocationSettingsSQL = "SELECT locationId, displayName, enableAppAccess, appReleaseChannel FROM location WHERE lidaGeneralSettingId = -1";
+		$oldLocationSettingsRS = $aspen_db->query($oldLocationSettingsSQL, PDO::FETCH_ASSOC);
 		$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
+		while ($oldLocationSettingsRow != null) {
+			$appSettingId = "-1";
+			$appSetting = new AppSetting();
+			$appSetting->enableAccess = $oldLocationSettingsRow['enableAppAccess'];
+			$appSetting->releaseChannel = $oldLocationSettingsRow['appReleaseChannel'];
+			if ($appSetting->find(true)) {
+				$appSettingId = $appSetting->id;
+			} else {
+				$appSetting->name = $oldLocationSettingsRow['displayName'] . " - App Settings";
+				if ($appSetting->insert()) {
+					$appSettingId = $appSetting->id;
+				}
+			}
+
+			$location = new Location();
+			$location->locationId = $oldLocationSettingsRow['locationId'];
+			if ($location->find(true)) {
+				$location->lidaGeneralSettingId = $appSettingId;
+				$location->update();
+			}
+
+			$oldLocationSettingsRow = $oldLocationSettingsRS->fetch();
+		}
 	}
 }
 
