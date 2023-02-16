@@ -285,6 +285,8 @@
 		<field name="geographic" type="searchable_text_minimal_stem" indexed="true" stored="true" multiValued="true"/>
 		<field name="geographic_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="geographic_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
+		<field name="personal_name_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+		<field name="corporate_name_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 		<field name="era" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true" termVectors="true"/>
 		<field name="era_proper" type="textProper" indexed="true" stored="false" multiValued="true"/>
 		<field name="literary_form_full" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
@@ -372,6 +374,8 @@
 	<copyField source="author2" dest="author_suggestions"/>
 	<copyField source="series" dest="title_suggestions"/>
 	<copyField source="subject_facet" dest="subject_suggestions"/>
+	<copyField source="personal_name_facet" dest="subject_suggestions"/>
+	<copyField source="corporate_name_facet" dest="subject_suggestions"/>
 
 	<copyField source="title" dest="spelling"/>
 	<copyField source="author" dest="spelling"/>

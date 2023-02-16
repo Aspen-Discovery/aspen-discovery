@@ -437,7 +437,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadPhysicalDescription(groupedWork, record, allRelatedRecords);
 			loadLanguageDetails(groupedWork, record, allRelatedRecords, identifier);
 			loadPublicationDetails(groupedWork, record, allRelatedRecords);
-			loadClosedCaptioning(groupedWork, record, allRelatedRecords);
+			loadClosedCaptioning(record, allRelatedRecords);
 
 			if (record.getControlNumber() != null){
 				groupedWork.addKeywords(record.getControlNumber());
