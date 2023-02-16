@@ -2320,7 +2320,7 @@ class User extends DataObject {
 				if (!empty($patronType)) {
 					return $patronType->enableReadingHistory;
 				} else {
-					return false;
+					return true;
 				}
 			} else {
 				return false;
@@ -2406,13 +2406,17 @@ class User extends DataObject {
 	private $_pTypeObj = false;
 	public function getPTypeObj() : ?PType {
 		if ($this->_pTypeObj === false) {
-			require_once ROOT_DIR . '/sys/Account/PType.php';
-			$patronType = new PType();
-			$patronType->pType = $this->patronType;
-			if ($patronType->find(true)) {
-				$this->_pTypeObj = $patronType;
-			} else {
+			if (empty($this->patronType)) {
 				$this->_pTypeObj = null;
+			}else {
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if ($patronType->find(true)) {
+					$this->_pTypeObj = $patronType;
+				} else {
+					$this->_pTypeObj = null;
+				}
 			}
 		}
 		return $this->_pTypeObj;

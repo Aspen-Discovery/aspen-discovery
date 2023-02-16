@@ -1,6 +1,6 @@
 {strip}
 	{* Details not shown in the Top/Main Section of the Record view should be shown here *}
-	{if !empty($recordDriver) && !$showPublicationDetails && $recordDriver->getPublicationDetails()}
+	{if !empty($recordDriver) && !empty($showPublicationDetails) && $recordDriver->getPublicationDetails()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Published' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">
@@ -18,7 +18,7 @@
 		</div>
 	{/if}
 
-	{if !empty($recordDriver) && !$showEditions && $recordDriver->getEditions()}
+	{if !empty($recordDriver) && !empty($showEditions) && $recordDriver->getEditions()}
 		<div class="row">
 			<div class="result-label col-xs-3">{translate text='Edition' isPublicFacing=true}</div>
 			<div class="col-xs-9 result-value">

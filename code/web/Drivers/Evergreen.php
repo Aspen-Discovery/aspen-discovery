@@ -1688,7 +1688,6 @@ class Evergreen extends AbstractIlsDriver {
 				}
 			}
 
-			$user = UserAccount::getActiveUserObj();
 			$interface->assign('primaryEmail', $user->email);
 
 			return [

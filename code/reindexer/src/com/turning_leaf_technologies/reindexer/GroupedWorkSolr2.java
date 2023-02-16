@@ -103,6 +103,10 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("geographic", geographic);
 			geographicFacets.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("geographic_facet", geographicFacets);
+			personalNameSubjects.removeAll(GroupedWorkIndexer.hideSubjects);
+			doc.addField("personal_name_facet", personalNameSubjects);
+			corporateNameSubjects.removeAll(GroupedWorkIndexer.hideSubjects);
+			doc.addField("corporate_name_facet", corporateNameSubjects);
 			eras.removeAll(GroupedWorkIndexer.hideSubjects);
 			doc.addField("era", eras);
 			//Check default values and inconsistent forms

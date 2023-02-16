@@ -22,9 +22,9 @@ abstract class MarcRecordProcessor {
 	protected GroupedWorkIndexer indexer;
 	protected BaseIndexingSettings settings;
 	protected String profileType;
-	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
-	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex1 = Pattern.compile(".*?Rated\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex2 = Pattern.compile(".*?(G|PG-13|PG|R|NC-17|NR|X)\\sRated.*", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex3 = Pattern.compile(".*?MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
@@ -391,11 +391,22 @@ abstract class MarcRecordProcessor {
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
+		List<DataField> personalNameFields = MarcUtil.getDataFields(record, 600);
+		for (DataField nameField : personalNameFields) {
+			String name = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(nameField, "abd", "")).toString();
+			groupedWork.addPersonalNameSubject(name);
+		}
+		List<DataField> corporateNameFields = MarcUtil.getDataFields(record, 610);
+		for (DataField nameField : corporateNameFields) {
+			String name = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(nameField, "abd", "")).toString();
+			groupedWork.addCorporateNameSubject(name);
+		}
+
 		boolean foundSeriesIn800or830 = false;
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, 830);
 		for (DataField seriesField : seriesFields){
 			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
-			//Remove anything in parenthesis since it's normally just the format
+			//Remove anything in parentheses since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");
@@ -627,6 +638,7 @@ abstract class MarcRecordProcessor {
 		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
 	}
 
+	@SuppressWarnings("unused")
 	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
@@ -872,6 +884,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
 		for (String elementToAdd : elementsToAdd) {
 			addToMapWithCount(map, elementToAdd, numberToAdd);
@@ -890,7 +903,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadClosedCaptioning(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords){
+	void loadClosedCaptioning(Record record, HashSet<RecordInfo> ilsRecords){
 		//Based on the 546 fields determine if the record is closed captioned
 		Pattern closedCaptionPattern = Pattern.compile("\\b(closed?[- ]caption|hearing impaired)", Pattern.CASE_INSENSITIVE);
 		Set<String> languageNoteFields = MarcUtil.getFieldList(record, "546a");
@@ -1049,6 +1062,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setTranslations(translatedLanguages);
 	}
 
+	@SuppressWarnings("unused")
 	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
@@ -1350,11 +1364,6 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("PlayawayBookpack")){
 			printFormats.clear();
 			printFormats.add("PlayawayBookpack");
-			return;
-		}
-		if (printFormats.contains("PlayawayView")){
-			printFormats.clear();
-			printFormats.add("PlayawayView");
 			return;
 		}
 		if (printFormats.contains("Wonderbook")){
