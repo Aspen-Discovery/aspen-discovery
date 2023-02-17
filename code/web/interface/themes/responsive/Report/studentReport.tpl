@@ -194,9 +194,9 @@
 							<div class="overdueRecordTable">
 								<div class="overdueRecordTableMessage">
 									The items below are
-									{if !empty($showOverdueOnly)}&nbsp;overdue{/if}
-									{if empty($showOverdueOnly)}&nbsp;checked out{/if}
-									. &nbsp; 
+									{if $showOverdueOnly == "overdue"}&nbsp;overdue
+									{elseif $showOverdueOnly == "checkedOut"}&nbsp;checked out
+									{elseif $showOverdueOnly == "fees"} billed{/if}
 									Please return them to your library. This notice was created {$reportDateTime}<br>
 									Check your account online at https://school.library.nashville.org/
 								</div>
