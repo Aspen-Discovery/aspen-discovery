@@ -21,6 +21,10 @@ class ImageUpload extends DataObject {
 	static $mediumSize = 400;
 	static $smallSize = 200;
 
+	public function getUniquenessFields(): array {
+		return ['id'];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		global $serverName;
 		return [

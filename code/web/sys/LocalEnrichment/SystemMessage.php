@@ -20,6 +20,10 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	protected $_locations;
 	protected $_preFormattedMessage;
 
+	public function getUniquenessFields(): array {
+		return ['id'];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All System Messages'));
 		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All System Messages'));

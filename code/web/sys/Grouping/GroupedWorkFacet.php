@@ -36,6 +36,8 @@ class GroupedWorkFacet extends FacetSetting {
 			"genre_facet" => "Genre",
 			"era" => "Era",
 			"geographic_facet" => "Region",
+			"personal_name_facet" => "Personal Name",
+			"corporate_name_facet" => "Corporate Name",
 			"target_audience_full" => "Reading Level",
 			"literary_form_full" => "Literary Form",
 			"lexile_code" => "Lexile code",

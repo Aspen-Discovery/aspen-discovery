@@ -8,6 +8,10 @@ class FileUpload extends DataObject {
 	public $thumbFullPath;
 	public $type;
 
+	public function getUniquenessFields(): array {
+		return ['id'];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [

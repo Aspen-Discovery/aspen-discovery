@@ -499,7 +499,7 @@ public class Axis360Extractor {
 			if (numTries > 0) {
 				try {
 					//Sleep a little bit to allow the server to calm down.
-					Thread.sleep(5000);
+					Thread.sleep(10000);
 				} catch (InterruptedException e) {
 					//Not a big deal if this gets interrupted
 				}
@@ -528,7 +528,7 @@ public class Axis360Extractor {
 						logEntry.incErrors("Did not get a good status while calling titleInfo " + availabilityResponseStatus.getString("Code") + " " + availabilityResponseStatus.getString("Message"));
 					}
 				} catch (JSONException e) {
-					logEntry.incErrors("Error parsing availability response for title " + axis360Id + ": " + e);
+					logEntry.incErrors("Error parsing availability response for title " + axis360Id + " last response code was " + availabilityResponse.response.getResponseCode() + ": " + e);
 				}
 			}
 			numTries++;
