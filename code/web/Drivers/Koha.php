@@ -1928,7 +1928,23 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 			} elseif ($curRow['found'] == 'W') {
-				$curHold->cancelable = false;
+				$canCancelWaitingHold = false;
+				if($this->getKohaVersion() >= 22.11) {
+					$patronType = $patron->patronType;
+					$itemType = $curRow['itype'];
+					/** @noinspection SqlResolve */
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+					if ($issuingRulesRS !== false) {
+						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+							if($issuingRulesRow['rule_value'] == 1 || $issuingRulesRow['rule_value'] == '1') {
+								$canCancelWaitingHold = true;
+							}
+						}
+						$issuingRulesRS->close();
+					}
+				}
+				$curHold->cancelable = $canCancelWaitingHold;
 				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
