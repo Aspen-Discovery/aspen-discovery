@@ -14,6 +14,7 @@
 				<select name="showOverdueOnly" id="showOverdueOnly" class="form-control input-sm">
 					<option value="overdue" {if $showOverdueOnly == "overdue"}selected="selected"{/if}>Overdue Items</option>
 					<option value="checkedOut" {if $showOverdueOnly == "checkedOut"}selected="selected"{/if}>All Checked Out</option>
+					<option value="fees" {if $showOverdueOnly == "fees"}selected="selected"{/if}>Fees</option>
 				</select>
 				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
