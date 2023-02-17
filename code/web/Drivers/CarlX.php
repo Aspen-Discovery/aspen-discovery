@@ -2229,7 +2229,7 @@ EOT;
                     , p.sponsor
                     , p.name
                     , itembranch.branchgroup
-                    , r.cn
+                    , r.callnumber
                     , r.title
 EOT;
         }
