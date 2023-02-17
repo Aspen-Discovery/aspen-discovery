@@ -1855,6 +1855,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
+		$allowUserToChangeBranch = $this->getKohaSystemPreference('OPACAllowUserToChangeBranch', 'none');
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
@@ -1921,15 +1922,30 @@ class Koha extends AbstractIlsDriver {
 					$curHold->status .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
 				$curHold->locationUpdateable = true;
+				if($this->getKohaVersion() >= 22.11) {
+					if(!str_contains($allowUserToChangeBranch, 'suspended')) {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			} elseif ($curRow['found'] == 'W') {
 				$curHold->cancelable = false;
 				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
+				if($this->getKohaVersion() >= 22.11) {
+					if(!str_contains($allowUserToChangeBranch, 'intransit')) {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			} else {
 				$curHold->status = "Pending";
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 				$curHold->locationUpdateable = true;
+				if($this->getKohaVersion() >= 22.11) {
+					if(!str_contains($allowUserToChangeBranch, 'pending')) {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
 
