@@ -13,11 +13,21 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			parent::__construct($recordData);
 			$this->valid = true;
 		} else {
-			require_once ROOT_DIR . '/sys/SearchObject/EventsSearcher.php';
-			$searchObject = new SearchObject_EventsSearcher();
-			$recordData = $searchObject->getRecord($recordData);
-			parent::__construct($recordData);
-			$this->valid = true;
+			disableErrorHandler();
+			try {
+				require_once ROOT_DIR . '/sys/SearchObject/EventsSearcher.php';
+				$searchObject = new SearchObject_EventsSearcher();
+				$recordData = $searchObject->getRecord($recordData);
+				if ($recordData == null) {
+					$this->valid = false;
+				} else {
+					parent::__construct($recordData);
+					$this->valid = true;
+				}
+			} catch (Exception $e) {
+				$this->valid = false;
+			}
+			enableErrorHandler();
 		}
 	}
 

@@ -3,7 +3,6 @@ package com.turning_leaf_technologies.reindexer;
 import com.sun.istack.internal.NotNull;
 import com.turning_leaf_technologies.dates.DateUtils;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
@@ -47,6 +46,8 @@ public abstract class AbstractGroupedWorkSolr {
 	protected HashSet<String> genreFacets = new HashSet<>();
 	protected HashSet<String> geographic = new HashSet<>();
 	protected HashSet<String> geographicFacets = new HashSet<>();
+	protected HashSet<String> personalNameSubjects = new HashSet<>();
+	protected HashSet<String> corporateNameSubjects = new HashSet<>();
 	protected String groupingCategory;
 	protected String primaryIsbn;
 	protected boolean primaryIsbnIsBook;
@@ -153,6 +154,10 @@ public abstract class AbstractGroupedWorkSolr {
 		clonedWork.geographic = (HashSet<String>) geographic.clone();
 		// noinspection unchecked
 		clonedWork.geographicFacets = (HashSet<String>) geographicFacets.clone();
+		// noinspection unchecked
+		clonedWork.personalNameSubjects = (HashSet<String>) personalNameSubjects.clone();
+		// noinspection unchecked
+		clonedWork.corporateNameSubjects = (HashSet<String>) corporateNameSubjects.clone();
 		// noinspection unchecked
 		clonedWork.isbns = (HashMap<String, Long>) isbns.clone();
 		// noinspection unchecked
@@ -865,6 +870,14 @@ public abstract class AbstractGroupedWorkSolr {
 
 	void addGeographicFacet(String fieldValue) {
 		this.geographicFacets.add(AspenStringUtils.normalizeSubject(fieldValue));
+	}
+
+	void addPersonalNameSubject(String fieldValue) {
+		this.personalNameSubjects.add(AspenStringUtils.normalizeSubject(fieldValue));
+	}
+
+	void addCorporateNameSubject(String fieldValue) {
+		this.corporateNameSubjects.add(AspenStringUtils.normalizeSubject(fieldValue));
 	}
 
 	void addEra(String fieldValue) {
