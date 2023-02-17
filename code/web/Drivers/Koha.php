@@ -193,6 +193,10 @@ class Koha extends AbstractIlsDriver {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 
+				if($this->getKohaVersion() >= 22.11) {
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+				}
+
 				// Patron extended attributes
 				if ($this->getKohaVersion() > 21.05) {
 					$extendedAttributes = $this->setExtendedAttributes();
@@ -3130,6 +3134,18 @@ class Koha extends AbstractIlsDriver {
 			],
 		];
 
+		if($this->getKohaVersion() >= 22.11) {
+			$fields['identitySection']['properties']['borrower_pronouns'] = [
+				'property' => 'borrower_pronouns',
+				'type' => 'text',
+				'label' => 'Pronouns',
+				'description' => 'Pronouns',
+				'maxLength' => 128,
+				'required' => false,
+				'autocomplete' => false,
+			];
+		}
+
 		if (empty($library->validSelfRegistrationStates)) {
 			$borrowerStateField = [
 				'property' => 'borrower_state',
@@ -3877,6 +3893,10 @@ class Koha extends AbstractIlsDriver {
 				$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 			} else {
 				$postVariables['category_id'] = $_REQUEST['category_id'];
+			}
+
+			if($this->getKohaVersion() >= 22.11) {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
 			}
 
 			// Patron extended attributes
