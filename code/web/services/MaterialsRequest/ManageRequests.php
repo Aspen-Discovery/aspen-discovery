@@ -90,12 +90,15 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 						$materialRequest->dateUpdated = time();
 						$materialRequest->update();
 
-						// Only send an email if not a bulk update
 						if($numRequests == 1 && $assignee != 'unassign') {
 							$materialRequest->sendStaffNewMaterialsRequestAssignedEmail();
 						}
 
 					}
+				}
+
+				if($numRequests > 1 && $assignee != 'unassign') {
+					MaterialsRequest::sendStaffNewMaterialsRequestAssignedEmailBulk($numRequests, $assignee);
 				}
 			} else {
 				$interface->assign('error', 'User to assign the request to was not valid.');
