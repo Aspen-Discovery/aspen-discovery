@@ -190,10 +190,12 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
           if (typeof allHolds !== 'undefined') {
                if (typeof allHolds.unavailable !== 'undefined') {
                     holdsNotReady = Object.values(allHolds.unavailable);
+                    holdsNotReady = _.orderBy(holdsNotReady, [pendingSort], ['asc']);
                }
 
                if (typeof allHolds.available !== 'undefined') {
                     holdsReady = Object.values(allHolds.available);
+                    holdsReady = _.orderBy(holdsReady, [readySort], ['asc']);
                }
           }
 
