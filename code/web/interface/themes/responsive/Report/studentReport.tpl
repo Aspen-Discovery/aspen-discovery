@@ -29,7 +29,7 @@
 			{if !empty($reportData)}
 				<br/>
 				<p>
-					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{else}items out{/if}.
+					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{elseif $showOverdueOnly == "checkedOut"}items out{elseif $showOverdueOnly == "fees"}fees{/if}.
 				</p>
 		</div>
 {literal}

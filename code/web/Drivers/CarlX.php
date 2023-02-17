@@ -2215,13 +2215,14 @@ EOT;
                     , r.callnumber AS Call_Number
                     , r.title AS Title
                     , to_char(jts.todate(r.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
-                    , r.amountowed AS Owed
+                    , r.amountowed / 100 as Owed
                     , to_char(jts.todate(r.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
                     , r.item AS Item
                 from p 
                 left join report3fines_v r on p.patronid = r.patronid
                 left join branch_v itembranch on r.branch = itembranch.branchnumber
                 where r.patronid is not null
+                and r.amountowed > 0
 EOT;
         }
 		$stid = oci_parse($this->dbConnection, $sql);
