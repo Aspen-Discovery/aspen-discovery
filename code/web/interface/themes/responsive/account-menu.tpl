@@ -26,14 +26,16 @@
 					</div>
 				{/if}
 			{/if}
-			{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
-				<div class="header-menu-option materialsRequestLink">
-					<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
-				</div>
-			{elseif $materialRequestType == 2 && $userHasCatalogConnection && $displayMaterialsRequest}
-				<div class="header-menu-option" >
-					<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
-				</div>
+			{if $user->canSuggestMaterials()}
+				{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
+					<div class="header-menu-option materialsRequestLink">
+						<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
+					</div>
+				{elseif $materialRequestType == 2 && $userHasCatalogConnection && $displayMaterialsRequest}
+					<div class="header-menu-option" >
+						<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true}</a>
+					</div>
+				{/if}
 			{/if}
 			{if !empty($userHasCatalogConnection) && $showUserCirculationModules}
 				<div class="header-menu-option" ><a href="/MyAccount/LibraryCard">{if !empty($showAlternateLibraryCard)}{translate text='Your Library Card(s)' isPublicFacing=true}{else}{translate text='Your Library Card' isPublicFacing=true}{/if}</a></div>

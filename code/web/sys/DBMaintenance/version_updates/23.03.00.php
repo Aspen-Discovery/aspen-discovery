@@ -150,6 +150,15 @@ function getUpdates23_03_00(): array {
 			],
 		],
 		//drop_user_staff_settings
+		'add_materials_requests_limit_by_ptype' => [
+			'title' => 'Add option to allow materials requests by ptype',
+			'description' => 'Add option to allow materials requests by ptype',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN canSuggestMaterials TINYINT(1) DEFAULT 1',
+			],
+		],
+		//add_materials_requests_limit_by_ptype
 
 		//kodi
 

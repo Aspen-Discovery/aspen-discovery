@@ -4029,6 +4029,16 @@ class User extends DataObject {
 		}
 	}
 
+	public function canSuggestMaterials(): bool {
+		$patronType = $this->getPTypeObj();
+		if (!empty($patronType)) {
+			if($patronType->canSuggestMaterials) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
 	}
