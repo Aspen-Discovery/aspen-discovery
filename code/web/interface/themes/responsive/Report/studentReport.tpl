@@ -206,7 +206,7 @@
                                         				<div class="CALL_NUMBER">CALL NUMBER</div>
                                         				<div class="TITLE">TITLE</div>
                                         				<div class="DUE_DATE">DUE DATE</div>
-									<div class="PRICE">PRICE</div>
+									<div class="PRICE">{if $showOverdueOnly == "overdue" || $showOverdueOnly == "checkedOut"}PRICE{elseif $showOverdueOnly == "fees"}OWED{/if}</div>
 								</div>
 		{assign var=previousPatron value=$dataRow.P_BARCODE}
 	{/if}
