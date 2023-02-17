@@ -46,6 +46,10 @@ class MaterialsRequest extends DataObject {
 	public $assignedTo;
 	public $staffComments;
 
+	public function getUniquenessFields(): array {
+		return ['id'];
+	}
+
 	public function getNumericColumnNames(): array {
 		return [
 			'emailSent',

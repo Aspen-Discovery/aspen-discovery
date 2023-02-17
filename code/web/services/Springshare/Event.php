@@ -11,6 +11,15 @@ class Springshare_Event extends Action {
 		$id = urldecode($_REQUEST['id']);
 
 		$this->recordDriver = new SpringshareLibCalEventRecordDriver($id);
+		if (!$this->recordDriver->isValid()) {
+			global $interface;
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+			$actionClass = new Error_Handle404();
+			$actionClass->launch();
+			die();
+		}
 		$interface->assign('recordDriver', $this->recordDriver);
 
 		/* TODO: User Lists for Events! 2022 03 16 James

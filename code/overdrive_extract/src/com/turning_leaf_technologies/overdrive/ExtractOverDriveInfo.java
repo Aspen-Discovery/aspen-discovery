@@ -1008,7 +1008,10 @@ class ExtractOverDriveInfo {
 							}
 							break;
 						}else{
-							logEntry.incErrors("Batch " + i + " did not have any products in it, but we got back a 200 code");
+							//This happens, retry and don't log the error unless we're at the end of trying.
+							if (tries == maxTries - 1) {
+								logEntry.incErrors("Batch " + i + " did not have any products in it, but we got back a 200 code");
+							}
 						}
 					} else {
 						if (tries == maxTries - 1) {
