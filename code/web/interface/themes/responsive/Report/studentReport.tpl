@@ -196,8 +196,8 @@
 									The items below are
 									{if $showOverdueOnly == "overdue"}&nbsp;overdue
 									{elseif $showOverdueOnly == "checkedOut"}&nbsp;checked out
-									{elseif $showOverdueOnly == "fees"} billed{/if}
-									. 
+									{elseif $showOverdueOnly == "fees"}&nbsp;billed{/if}
+									.&nbsp;
 									Please return them to your library. This notice was created {$reportDateTime}<br>
 									Check your account online at https://school.library.nashville.org/
 								</div>
