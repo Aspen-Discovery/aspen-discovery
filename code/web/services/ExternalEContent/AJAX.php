@@ -3,8 +3,6 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 
-global $configArray;
-
 class ExternalEContent_AJAX extends Action {
 
 	function launch() {
