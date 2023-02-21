@@ -4008,6 +4008,8 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$mandatoryFields = [];
 		}
+		//Make sure that title is always required
+		$mandatoryFields['title'] = true;
 
 
 		/** @noinspection SqlResolve */
