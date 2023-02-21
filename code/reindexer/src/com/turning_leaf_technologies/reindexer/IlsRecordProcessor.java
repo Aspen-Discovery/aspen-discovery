@@ -1067,13 +1067,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
 				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
 				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
-					boolean itemIsOwned = curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, true, true, false, record);
+					boolean itemIsOwned = curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, false, false, true, record);
 					scopingInfo.setLocallyOwned(itemIsOwned);
 					if (curScope.isLibraryScope()){
 						scopingInfo.setLibraryOwned(itemIsOwned);
 					}
-				}else if (curScope.isLibraryScope()) {
-					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, true, true, false, record));
+				}
+				if (curScope.isLibraryScope()) {
+					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, false, false, true, record));
 				}
 				//Check to see if we need to do url rewriting
 				if (originalUrl != null && !originalUrl.equals(result.localUrl)){
