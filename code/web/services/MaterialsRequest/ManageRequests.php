@@ -81,6 +81,7 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 			$selectedRequests = $_REQUEST['select'];
 			$assignee = $_REQUEST['newAssignee'];
 			if (ctype_digit($assignee) || $assignee == 'unassign') {
+				$numRequests = count($selectedRequests);
 				foreach ($selectedRequests as $requestId => $selected) {
 					$materialRequest = new MaterialsRequest();
 					$materialRequest->id = $requestId;
@@ -89,9 +90,15 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 						$materialRequest->dateUpdated = time();
 						$materialRequest->update();
 
-						//TODO: Email Assignee of the request?
+						if($numRequests == 1 && $assignee != 'unassign') {
+							$materialRequest->sendStaffNewMaterialsRequestAssignedEmail();
+						}
 
 					}
+				}
+
+				if($numRequests > 1 && $assignee != 'unassign') {
+					MaterialsRequest::sendStaffNewMaterialsRequestAssignedEmailBulk($numRequests, $assignee);
 				}
 			} else {
 				$interface->assign('error', 'User to assign the request to was not valid.');

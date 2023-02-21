@@ -37,6 +37,7 @@ class MaterialsRequest extends DataObject {
 	public $createdBy;
 	public $dateUpdated;
 	public $emailSent;
+	public $createdEmailSent;
 	public $holdsCreated;
 	public $placeHoldWhenAvailable;
 	public $illItem;
@@ -54,6 +55,7 @@ class MaterialsRequest extends DataObject {
 			'emailSent',
 			'holdsCreated',
 			'assignedTo',
+			'createdEmailSent'
 		];
 	}
 
@@ -224,9 +226,9 @@ class MaterialsRequest extends DataObject {
 
 				$replyToAddress = $emailSignature = '';
 				if (!empty($this->assignedTo)) {
-					require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-					$staffSettings = new UserStaffSettings();
-					$staffSettings->get('userId', $this->assignedTo);
+					require_once ROOT_DIR . '/sys/Account/User.php';
+					$staffSettings = new User();
+					$staffSettings->id = $this->assignedTo;
 					if (!empty($staffSettings->materialsRequestReplyToAddress)) {
 						$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
 					}
@@ -266,6 +268,175 @@ class MaterialsRequest extends DataObject {
 				}
 			}
 		}
+	}
+
+	function sendStaffNewMaterialsRequestEmail() {
+		global $library;
+		global $configArray;
+		global $interface;
+		if($library->materialsRequestSendStaffEmailOnNew && !empty($library->materialsRequestNewEmail)) {
+			$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mail = new Mailer();
+			$replyToAddress = '';
+			$subject = translate([
+				'text' => "New Materials Request submitted",
+				'isAdminFacing' => true,
+				'isPublicFacing' => true
+			]);
+			$body = translate([
+				'text' => 'Hi',
+				'isAdminFacing' => true,
+				'isPublicFacing' => true
+			]);
+			$body .= ', <br><br>';
+			$body .= translate([
+				'text' => "A new Materials Request has been submitted at $library->displayName",
+				'isAdminFacing' => true,
+				'isPublicFacing' => true,
+				]) . ": <br>";
+			$body .= $this->getEmailBody($library->libraryId);
+			$body .= "<br>";
+			$body .= translate([
+				'text' => "View more details online at %1%",
+				1 => $url,
+				'isAdminFacing' => true,
+				'isPublicFacing' => true
+				]);
+			$body .= '<br>' . translate([
+					'text' => 'Materials Request originated from',
+					'isAdminFacing' => true,
+					'isPublicFacing' => true
+				]) . ' ' . $interface->getVariable('url');
+			$body .= '<br><br>' . translate([
+					'text' => 'Thanks',
+					'isAdminFacing' => true,
+					'isPublicFacing' => true
+				]) . ', <br>' . $library->displayName;
+			$mail->send($library->materialsRequestNewEmail, $subject, '', $replyToAddress, $body);
+			$this->createdEmailSent = 1;
+			$this->update();
+		}
+	}
+
+	function sendStaffNewMaterialsRequestAssignedEmail() {
+		global $library;
+		global $configArray;
+		if($library->materialsRequestSendStaffEmailOnAssign) {
+			$staffUser = new User();
+			$staffUser->id = $this->assignedTo;
+			if($staffUser->find(true)) {
+				if($staffUser->materialsRequestSendEmailOnAssign && $staffUser->email) {
+					$staffLibrary = $staffUser->getHomeLibrary();
+					if (is_null($staffLibrary)) {
+						$staffLibrary = $library;
+					}
+					$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mail = new Mailer();
+					$subject = translate([
+						'text' => "You've been assigned a Materials Request",
+						'isAdminFacing' => true,
+						'isPublicFacing' => true]);
+					$body = translate([
+							'text' => 'Hi',
+							'isAdminFacing' => true,
+							'isPublicFacing' => true
+						]);
+					$body .= ", <br><br>";
+					$body .= translate([
+						'text' => "You've been assigned a Materials Request",
+							'isAdminFacing' => true,
+							'isPublicFacing' => true])
+						. ": <br>";
+					$body .= $this->getEmailBody($staffLibrary->libraryId);
+					$body .= "<br>" . translate([
+						'text' => "View more details online at",
+							'isAdminFacing' => true,
+							'isPublicFacing' => true])
+						. ' ' . $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+					$body .= '<br><br>' . translate([
+							'text' => 'Thanks',
+							'isAdminFacing' => true,
+							'isPublicFacing' => true
+						]) . ', <br>' . $staffLibrary->displayName;
+					$mail->send($staffUser->email, $subject, '', '', $body);
+				}
+			}
+		}
+	}
+
+	static function sendStaffNewMaterialsRequestAssignedEmailBulk($numRequests, $user) {
+		global $library;
+		global $configArray;
+		if($library->materialsRequestSendStaffEmailOnAssign) {
+			$staffUser = new User();
+			$staffUser->id = $user;
+			if($staffUser->find(true)) {
+				if($staffUser->materialsRequestSendEmailOnAssign && $staffUser->email) {
+					$staffLibrary = $staffUser->getHomeLibrary();
+					if (is_null($staffLibrary)) {
+						$staffLibrary = $library;
+					}
+					$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mail = new Mailer();
+					$subject = translate([
+						'text' => "You've been assigned %1% Materials Requests at %2%",
+						1 => $numRequests,
+						'isAdminFacing' => true,
+						'isPublicFacing' => true
+					]);
+					$body = translate([
+						'text' => "Hi",
+						'isAdminFacing' => true,
+						'isPublicFacing' => true
+					]);
+					$body .= ", <br><br>";
+					$body .= translate([
+						'text' => "You've been assigned %1% Materials Requests. You can view more details online at %2%",
+						1 => $numRequests,
+						2 => $url,'isAdminFacing' => true,
+						'isPublicFacing' => true
+					]);
+					$body .= "<br><br>";
+					$body .= translate([
+						'text' => 'Thanks',
+						'isAdminFacing' => true,
+						'isPublicFacing' => true
+					]) . ', <br>' . $staffLibrary->displayName;
+					$mail->send($staffUser->email, $subject, '', '', $body);
+				}
+			}
+		}
+	}
+
+	function getEmailBody($libraryId): string {
+		$requestFormFields = $this->getRequestFormFields($libraryId, true);
+		$body = '<table style="border: 1px solid black; border-collapse: collapse; margin-top: 5px; margin-bottom: 5px; width: 100%"><tbody>';
+		foreach($requestFormFields as $key => $formFields) {
+			foreach($formFields as $formField) {
+				$value = $formField->fieldType;
+				if($this->$value) {
+					if ($formField->fieldType == 'format' || $formField->fieldType == 'author' || $formField->fieldType == 'title' || $formField->fieldType == 'id') {
+						$body .= '<tr>';
+						$body .= '<td style="border: 1px solid black; border-collapse: collapse; padding: 5px; width: 25%"><strong>' . translate([
+								'text' => $formField->fieldLabel,
+								'isPublicFacing' => true,
+								'isAdminFacing' => true
+							]) . '</strong></td>';
+						$body .= '<td style="border: 1px solid black; border-collapse: collapse; padding: 5px">' . translate([
+								'text' => $this->$value,
+								'isPublicFacing' => true,
+								'isAdminFacing' => true
+							]) . '</td>';
+						$body .= '</tr>';
+					}
+				}
+			}
+		}
+		$body .= '</tbody></table>';
+		return $body;
 	}
 
 	/** @noinspection PhpUnused */

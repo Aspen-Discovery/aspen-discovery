@@ -297,6 +297,9 @@ class Library extends DataObject {
 		$newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
 	public /** @noinspection PhpUnused */
 		$materialsRequestDaysToPreserve;
+	public $materialsRequestSendStaffEmailOnNew;
+	public $materialsRequestSendStaffEmailOnAssign;
+	public $materialsRequestNewEmail;
 	public $showGroupedHoldCopiesCount;
 	public $interLibraryLoanName;
 	public $interLibraryLoanUrl;
@@ -2710,6 +2713,27 @@ class Library extends DataObject {
 						'description' => 'Whether or not Materials Request should be shown.',
 						'hideInLists' => true,
 						'default' => 1,
+					],
+					'materialsRequestSendStaffEmailOnNew' => [
+						'property' => 'materialsRequestSendStaffEmailOnNew',
+						'type' => 'checkbox',
+						'label' => 'Send email to library when Materials Requests are created',
+						'description' => 'Whether or not an email should be sent out when a new Materials Request has been created.',
+						'hideInLists' => true,
+					],
+					'materialsRequestNewEmail' => [
+						'property' => 'materialsRequestNewEmail',
+						'type' => 'text',
+						'label' => 'Email to receive notifications for new Materials Requests',
+						'description' => 'The email address that will receive emails when a patron creates a new Materials Request.',
+						'hideInLists' => true,
+					],
+					'materialsRequestSendStaffEmailOnAssign' => [
+						'property' => 'materialsRequestSendStaffEmailOnAssign',
+						'type' => 'checkbox',
+						'label' => 'Send an email to staff when they are assigned a Materials Request',
+						'description' => 'Whether or not staff are notified when assigned a Materials Request',
+						'hideInLists' => true,
 					],
 					'allowDeletingILSRequests' => [
 						'property' => 'allowDeletingILSRequests',

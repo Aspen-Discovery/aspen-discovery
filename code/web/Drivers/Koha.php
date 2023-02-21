@@ -193,6 +193,10 @@ class Koha extends AbstractIlsDriver {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 
+				if($this->getKohaVersion() >= 22.11) {
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+				}
+
 				// Patron extended attributes
 				if ($this->getKohaVersion() > 21.05) {
 					$extendedAttributes = $this->setExtendedAttributes();
@@ -1851,6 +1855,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
+		$allowUserToChangeBranch = $this->getKohaSystemPreference('OPACAllowUserToChangeBranch', 'none');
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
@@ -1917,15 +1922,46 @@ class Koha extends AbstractIlsDriver {
 					$curHold->status .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
 				$curHold->locationUpdateable = true;
+				if($this->getKohaVersion() >= 22.11) {
+					if(!str_contains($allowUserToChangeBranch, 'suspended')) {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			} elseif ($curRow['found'] == 'W') {
-				$curHold->cancelable = false;
+				$canCancelWaitingHold = false;
+				if($this->getKohaVersion() >= 22.11) {
+					$patronType = $patron->patronType;
+					$itemType = $curRow['itype'];
+					/** @noinspection SqlResolve */
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+					if ($issuingRulesRS !== false) {
+						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+							if($issuingRulesRow['rule_value'] == 1 || $issuingRulesRow['rule_value'] == '1') {
+								$canCancelWaitingHold = true;
+							}
+						}
+						$issuingRulesRS->close();
+					}
+				}
+				$curHold->cancelable = $canCancelWaitingHold;
 				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
+				if($this->getKohaVersion() >= 22.11) {
+					if(!str_contains($allowUserToChangeBranch, 'intransit')) {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			} else {
 				$curHold->status = "Pending";
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 				$curHold->locationUpdateable = true;
+				if($this->getKohaVersion() >= 22.11) {
+					if(!str_contains($allowUserToChangeBranch, 'pending')) {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
 
@@ -3130,6 +3166,18 @@ class Koha extends AbstractIlsDriver {
 			],
 		];
 
+		if($this->getKohaVersion() >= 22.11) {
+			$fields['identitySection']['properties']['borrower_pronouns'] = [
+				'property' => 'borrower_pronouns',
+				'type' => 'text',
+				'label' => 'Pronouns',
+				'description' => 'Pronouns',
+				'maxLength' => 128,
+				'required' => false,
+				'autocomplete' => false,
+			];
+		}
+
 		if (empty($library->validSelfRegistrationStates)) {
 			$borrowerStateField = [
 				'property' => 'borrower_state',
@@ -3877,6 +3925,10 @@ class Koha extends AbstractIlsDriver {
 				$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 			} else {
 				$postVariables['category_id'] = $_REQUEST['category_id'];
+			}
+
+			if($this->getKohaVersion() >= 22.11) {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
 			}
 
 			// Patron extended attributes

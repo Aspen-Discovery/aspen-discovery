@@ -31,9 +31,7 @@ export const MyHolds = () => {
         setReadySort(value);
         setLoading(true);
         await getPatronHolds(value, pendingSort, holdSource, library.baseUrl).then((result) => {
-            if (holds !== result) {
-                updateHolds(result);
-            }
+            updateHolds(result);
             setLoading(false);
         });
     };
@@ -42,9 +40,7 @@ export const MyHolds = () => {
         setPendingSort(value);
         setLoading(true);
         await getPatronHolds(readySort, value, holdSource, library.baseUrl).then((result) => {
-            if (holds !== result) {
-                updateHolds(result);
-            }
+            updateHolds(result);
             setLoading(false);
         });
     };
@@ -53,9 +49,7 @@ export const MyHolds = () => {
         setHoldSource(value);
         setLoading(true);
         await getPatronHolds(readySort, pendingSort, value, library.baseUrl).then((result) => {
-            if (holds !== result) {
-                updateHolds(result);
-            }
+            updateHolds(result);
             if (!_.isNull(value)) {
                 if(value === 'ils') {
                     navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "Physical Materials"})});

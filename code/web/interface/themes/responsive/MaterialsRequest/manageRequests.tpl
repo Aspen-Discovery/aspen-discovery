@@ -39,14 +39,14 @@
 						<fieldset class="form-group fieldset-collapsible">
 							<legend>{translate text="Date" isPublicFacing=true isAdminFacing=true}</legend>
 							<div class="form-group">
-								<label for="startDate">{translate text="From" isAdminFacing=true}</label> <input type="date" id="startDate" name="startDate" value="{$startDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
-								<label for="endDate">{translate text="To" isAdminFacing=true}</label> <input type="date" id="endDate" name="endDate" value="{$endDate}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
+								<label for="startDate">{translate text="From" isAdminFacing=true}</label> <input type="date" id="startDate" name="startDate" value="{if !empty($startDate)}{$startDate}{/if}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
+								<label for="endDate">{translate text="To" isAdminFacing=true}</label> <input type="date" id="endDate" name="endDate" value="{if !empty($endDate)}{$endDate}{/if}" size="8" max="{$smarty.now|date_format:"%Y-%m-%d"}">
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">
 							<legend>{translate text="Request IDs to Show (separated by commas)" isAdminFacing=true}</legend>
 							<div class="form-group">
-								<label for="idsToShow">{translate text="Request IDs" isAdminFacing=true}</label> <input type="text" id="idsToShow" name="idsToShow" value="{$idsToShow}" size="60" class="form-control">
+								<label for="idsToShow">{translate text="Request IDs" isAdminFacing=true}</label> <input type="text" id="idsToShow" name="idsToShow" value="{if !empty($idsToShow)}{$idsToShow}{/if}" size="60" class="form-control">
 							</div>
 						</fieldset>
 						<fieldset class="form-group fieldset-collapsible">

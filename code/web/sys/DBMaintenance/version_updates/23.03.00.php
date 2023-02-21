@@ -117,6 +117,48 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_aspen_lida_general_settings
+		'add_send_emails_new_materials_request' => [
+			'title' => 'Add options for sending emails for new materials requests',
+			'description' => 'Add options for sending emails when a new materials request has been created and/or assigned to a staff member',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN materialsRequestSendStaffEmailOnNew TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN materialsRequestSendStaffEmailOnAssign TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN materialsRequestNewEmail VARCHAR(75) DEFAULT NULL',
+				'ALTER TABLE user ADD COLUMN materialsRequestSendEmailOnAssign TINYINT(1) DEFAULT 0',
+				'ALTER TABLE materials_request ADD COLUMN createdEmailSent TINYINT(1) DEFAULT 0'
+			],
+		],
+		//add_send_emails_new_materials_request
+		'add_staff_settings_to_user' => [
+			'title' => 'Migrate staff settings into the user table',
+			'description' => 'Migrate staff settings into the user table from old user_staff_settings table',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN materialsRequestReplyToAddress VARCHAR(70) DEFAULT NULL',
+				'ALTER TABLE user ADD COLUMN materialsRequestEmailSignature TEXT DEFAULT NULL',
+				'moveStaffUserSettings',
+			],
+		],
+		//add_staff_settings_to_user
+		'drop_user_staff_settings' => [
+			'title' => 'Drop unused staff settings table',
+			'description' => 'Drop unused user_staff_settings table',
+			'continueOnError' => true,
+			'sql' => [
+				'DROP TABLE user_staff_settings',
+			],
+		],
+		//drop_user_staff_settings
+		'add_materials_requests_limit_by_ptype' => [
+			'title' => 'Add option to allow materials requests by ptype',
+			'description' => 'Add option to allow materials requests by ptype',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN canSuggestMaterials TINYINT(1) DEFAULT 1',
+			],
+		],
+		//add_materials_requests_limit_by_ptype
 
 		//kodi
 
@@ -203,5 +245,26 @@ function moveLibrarySSOSettings(/** @noinspection PhpUnusedParameterInspection *
 		}
 
 		$oldLibrarySettingsRow = $oldLibrarySettingsRS->fetch();
+	}
+}
+
+/** @noinspection PhpUnused */
+function moveStaffUserSettings(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+	global $aspen_db;
+	$oldStaffSettingsSQL = 'SELECT userId, materialsRequestEmailSignature, materialsRequestReplyToAddress FROM user_staff_settings';
+	$oldStaffSettingsRS = $aspen_db->query($oldStaffSettingsSQL, PDO::FETCH_ASSOC);
+	$oldStaffSettingsRow = $oldStaffSettingsRS->fetch();
+
+	require_once ROOT_DIR . '/sys/Account/User.php';
+	while ($oldStaffSettingsRow != null) {
+		$user = new User();
+		$user->id = $oldStaffSettingsRow['userId'];
+		if ($user->find(true)) {
+			$user->materialsRequestEmailSignature = $oldStaffSettingsRow['materialsRequestEmailSignature'];
+			$user->materialsRequestReplyToAddress = $oldStaffSettingsRow['materialsRequestReplyToAddress'];
+			$user->update();
+		}
+
+		$oldStaffSettingsRow = $oldStaffSettingsRS->fetch();
 	}
 }

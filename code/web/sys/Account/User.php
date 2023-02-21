@@ -118,6 +118,11 @@ class User extends DataObject {
 	public $_comingDueNotice;
 	public $_phoneType;
 
+	//Staff Settings
+	public $materialsRequestEmailSignature;
+	public $materialsRequestReplyToAddress;
+	public $materialsRequestSendEmailOnAssign;
+
 	function getNumericColumnNames(): array {
 		return [
 			'id',
@@ -126,6 +131,7 @@ class User extends DataObject {
 			'initialReadingHistoryLoaded',
 			'updateMessageIsError',
 			'rememberHoldPickupLocation',
+			'materialsRequestSendEmailOnAssign',
 		];
 	}
 
@@ -355,17 +361,6 @@ class User extends DataObject {
 			}
 		}
 		return $rolesAssignedByPType;
-	}
-
-	private $materialsRequestReplyToAddress;
-	private $materialsRequestEmailSignature;
-
-	function getStaffSettings() {
-		require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-		$staffSettings = new UserStaffSettings();
-		$staffSettings->get('userId', $this->id);
-		$this->materialsRequestReplyToAddress = $staffSettings->materialsRequestReplyToAddress;
-		$this->materialsRequestEmailSignature = $staffSettings->materialsRequestEmailSignature;
 	}
 
 	function getBarcode() {
@@ -1104,6 +1099,11 @@ class User extends DataObject {
 		}
 		if (isset($_REQUEST['materialsRequestReplyToAddress'])) {
 			$this->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
+		}
+		if (isset($_REQUEST['materialsRequestSendEmailOnAssign']) && ($_REQUEST['materialsRequestSendEmailOnAssign'] == 'yes' || $_REQUEST['materialsRequestSendEmailOnAssign'] == 'on')) {
+			$this->materialsRequestSendEmailOnAssign = 1;
+		} else {
+			$this->materialsRequestSendEmailOnAssign = 0;
 		}
 		$this->update();
 	}
@@ -4027,6 +4027,16 @@ class User extends DataObject {
 		} else {
 			return $this->getAccountProfile()->ils;
 		}
+	}
+
+	public function canSuggestMaterials(): bool {
+		$patronType = $this->getPTypeObj();
+		if (!empty($patronType)) {
+			if($patronType->canSuggestMaterials) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {

@@ -56,7 +56,6 @@ abstract class UserMerger extends Admin_Admin {
 			'numMaterialsRequestsAssignmentsMoved' => 0,
 			'numUserMessagesMoved' => 0,
 			'numUserPaymentsMoved' => 0,
-			'numUserStaffSettingsMoved' => 0,
 			'numRatingsReviewsMoved' => 0,
 			'errors' => [],
 		];
