@@ -2398,12 +2398,16 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					if (!empty($continuesRecordId)) {
 						$continuesRecordDriver = RecordDriverFactory::initRecordDriverById($this->profileType . ':' . $continuesRecordId);
 						if ($continuesRecordDriver->isValid()) {
+							$actions = [];
+							if ($continuesRecordDriver->getRelatedRecord() != null) {
+								$actions = $continuesRecordDriver->getRelatedRecord()->getActions();
+							}
 							$continuesRecords[] = [
 								'id' => $continuesRecordId,
 								'label' => $continuesRecordDriver->getTitle(),
 								'format' => $continuesRecordDriver->getPrimaryFormat(),
 								'link' => $continuesRecordDriver->getLinkUrl(),
-								'actions' => $continuesRecordDriver->getRelatedRecord()->getActions(),
+								'actions' => $actions,
 							];
 						}
 					}
