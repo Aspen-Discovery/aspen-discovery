@@ -423,7 +423,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function findUserByField(string $field, string $value): bool|User {
+	public function findUserByField(string $field, string $value) {
 		return false;
 	}
 
