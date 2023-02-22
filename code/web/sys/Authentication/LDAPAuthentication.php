@@ -20,7 +20,7 @@ class LDAPAuthentication extends Action {
 	public function __construct() {
 		parent::__construct();
 		if(!$this->intializeClient()) {
-			AspenError::raiseError(new AspenError(@ldap_error($this->ldap_client) . ' Code: ' . @ldap_errno($this->ldap_client)));
+			AspenError::raiseError(new AspenError(@ldap_error($this->ldap_client) . '. LDAP Error Code: ' . @ldap_errno($this->ldap_client)));
 		} else {
 			LDAPAuthentication::$clientInitialized = true;
 		}

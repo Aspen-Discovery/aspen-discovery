@@ -1858,7 +1858,7 @@ class Koha extends AbstractIlsDriver {
 		$allowUserToChangeBranch = $this->getKohaSystemPreference('OPACAllowUserToChangeBranch', 'none');
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron, items.itype, reserves.branchcode FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			//Each row in the table represents a hold
@@ -1923,7 +1923,9 @@ class Koha extends AbstractIlsDriver {
 				}
 				$curHold->locationUpdateable = true;
 				if($this->getKohaVersion() >= 22.11) {
-					if(!str_contains($allowUserToChangeBranch, 'suspended')) {
+					if(str_contains($allowUserToChangeBranch, 'suspended')) {
+						$curHold->locationUpdateable = true;
+					} else {
 						$curHold->locationUpdateable = false;
 					}
 				}
@@ -1932,6 +1934,7 @@ class Koha extends AbstractIlsDriver {
 				if($this->getKohaVersion() >= 22.11) {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
+					$checkoutBranch = $curRow['branchcode'];
 					/** @noinspection SqlResolve */
 					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
@@ -1949,8 +1952,8 @@ class Koha extends AbstractIlsDriver {
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
 				if($this->getKohaVersion() >= 22.11) {
-					if(!str_contains($allowUserToChangeBranch, 'intransit')) {
-						$curHold->locationUpdateable = false;
+					if(str_contains($allowUserToChangeBranch, 'intransit')) {
+						$curHold->locationUpdateable = true;
 					}
 				}
 			} else {
@@ -1958,7 +1961,9 @@ class Koha extends AbstractIlsDriver {
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 				$curHold->locationUpdateable = true;
 				if($this->getKohaVersion() >= 22.11) {
-					if(!str_contains($allowUserToChangeBranch, 'pending')) {
+					if(str_contains($allowUserToChangeBranch, 'pending')) {
+						$curHold->locationUpdateable = true;
+					} else {
 						$curHold->locationUpdateable = false;
 					}
 				}
@@ -2019,21 +2024,81 @@ class Koha extends AbstractIlsDriver {
 
 			//Post a request to koha
 			foreach ($holdKeys as $holdKey) {
-				$holdParams = [
-					'service' => 'CancelHold',
-					'patron_id' => $patron->username,
-					'item_id' => $holdKey,
-				];
+				if($this->getKohaVersion() >= 22.11) {
+					// Store result for API or app use
+					$result['api'] = [];
 
-				$cancelHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
-				$cancelHoldResponse = $this->getXMLWebServiceResponse($cancelHoldURL);
-				ExternalRequestLogEntry::logRequest('koha.cancelHold', 'GET', $cancelHoldURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $cancelHoldResponse, []);
+					$result = [
+						'success' => false,
+						'message' => 'Unknown error canceling hold.',
+					];
 
-				//Parse the result
-				if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
-					//We cancelled the hold
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Unable to cancel hold',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Unknown error canceling hold.',
+						'isPublicFacing' => true,
+					]);
+					$oauthToken = $this->getOAuthToken();
+					if ($oauthToken == false) {
+						$result['message'] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+
+						// Result for API or app use
+						$result['api']['message'] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$this->apiCurlWrapper->addCustomHeaders([
+							'Authorization: Bearer ' . $oauthToken,
+							'User-Agent: Aspen Discovery',
+							'Accept: */*',
+							'Cache-Control: no-cache',
+							'Content-Type: application/json',
+							'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+							'Accept-Encoding: gzip, deflate',
+						], true);
+						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
+						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
+						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+						if ($this->apiCurlWrapper->getResponseCode() !== 204) {
+							$cancel_response = json_decode($response, false);
+							$allCancelsSucceed = false;
+							if (isset($cancel_response->error)) {
+								$result['message'] = translate([
+									'text' => $cancel_response->error,
+									'isPublicFacing' => true,
+								]);
+								$result['success'] = false;
+								$result['api']['message'] = translate([
+									'text' => $cancel_response->error,
+									'isPublicFacing' => true,
+								]);
+							}
+						}
+					}
 				} else {
-					$allCancelsSucceed = false;
+					$holdParams = [
+						'service' => 'CancelHold',
+						'patron_id' => $patron->username,
+						'item_id' => $holdKey,
+					];
+					$cancelHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
+					$cancelHoldResponse = $this->getXMLWebServiceResponse($cancelHoldURL);
+					ExternalRequestLogEntry::logRequest('koha.cancelHold', 'GET', $cancelHoldURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $cancelHoldResponse, []);
+
+					//Parse the result
+					if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
+						//We cancelled the hold
+					} else {
+						$allCancelsSucceed = false;
+					}
 				}
 			}
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
@@ -2772,17 +2837,24 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 
-				$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
 				$postParams = [];
 
-				$postParams['pickup_library_id'] = $newPickupLocation;
-				$postParams['priority'] = $currentHold->priority;
-				if ($this->getKohaVersion() >= 21.05) {
-					$method = 'PATCH';
-				} else {
+				if($this->getKohaVersion() >= 22.11) {
+					$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId/pickup_location";
+					$postParams['pickup_library_id'] = $newPickupLocation;
 					$method = 'PUT';
-					$postParams['branchcode'] = $newPickupLocation;
+				} else {
+					$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
+					$postParams['pickup_library_id'] = $newPickupLocation;
+					$postParams['priority'] = $currentHold->priority;
+					if ($this->getKohaVersion() >= 21.05) {
+						$method = 'PATCH';
+					} else {
+						$method = 'PUT';
+						$postParams['branchcode'] = $newPickupLocation;
+					}
 				}
+
 				$postParams = json_encode($postParams);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, $method, $postParams);
 				ExternalRequestLogEntry::logRequest('koha.changeHoldPickupLocation', $method, $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);

@@ -13,13 +13,13 @@ import { useFocusEffect, useLinkTo } from '@react-navigation/native';
 import { showILSMessage } from '../../components/Notifications';
 import { AuthContext } from '../../components/navigation';
 import { UseColorMode } from '../../themes/theme';
-import { getLanguageDisplayName } from '../../translations/TranslationService';
+import {getLanguageDisplayName, getTranslation, translations} from '../../translations/TranslationService';
 import { translate } from '../../translations/translations';
 import { saveLanguage } from '../../util/accountActions';
 import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
 import { reloadProfile } from '../../util/api/user';
 import { getILSMessages, PATRON } from '../../util/loadPatron';
-import { LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 
 Notifications.setNotificationHandler({
@@ -157,6 +157,7 @@ export const DrawerContent = () => {
                               <LogOutButton />
                          </HStack>
                          <UseColorMode />
+                         {/* <LanguageSwitcher /> */}
                     </VStack>
                </VStack>
           </DrawerContentScrollView>
@@ -523,15 +524,14 @@ const ReloadProfileButton = (props) => {
      );
 };
 
-const LanguageSwitcher = (props) => {
-     const initialLabel = props.initial;
-     const [language, setLanguage] = useState(PATRON.language);
-     const [label, setLabel] = useState(initialLabel);
+const LanguageSwitcher = () => {
+     const { language, updateLanguage, languages } = React.useContext(LanguageContext);
+     const [label, setLabel] = useState(getLanguageDisplayName(language, languages));
 
-     const updateLanguage = async (newVal) => {
-          await saveLanguage(newVal);
-          setLanguage(newVal);
-          setLabel(getLanguageDisplayName(newVal));
+     const changeLanguage = async (val) => {
+          await saveLanguage(val);
+          updateLanguage(val);
+          setLabel(getLanguageDisplayName(val, languages));
      };
 
      return (
@@ -548,11 +548,13 @@ const LanguageSwitcher = (props) => {
                               </Pressable>
                          );
                     }}>
-                    <Menu.OptionGroup defaultValue={PATRON.language} title="Select a Language" type="radio" onChange={(val) => updateLanguage(val)}>
-                         {LIBRARY.languages.map((language) => {
+                    {_.isArray(languages) ? (
+                    <Menu.OptionGroup defaultValue={language} title="Select a Language" type="radio" onChange={(val) => changeLanguage(val)}>
+                         {languages.map((language) => {
                               return <Menu.ItemOption value={language.code}>{language.displayName}</Menu.ItemOption>;
                          })}
                     </Menu.OptionGroup>
+                    ) : null}
                </Menu>
           </Box>
      );
