@@ -15,6 +15,7 @@ class Grouping_Record {
 	public $publicationDate;
 	public $physical;
 	public $closedCaptioned;
+	public $variationFormat;
 
 	public $_driver;
 	public $_url;

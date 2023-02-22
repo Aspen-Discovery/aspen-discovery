@@ -2545,7 +2545,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 					$variations = $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']);
 					$this->_relatedManifestations = [];
-					//KODI TODO: Build all possible related manifestations based on the unique formats & format categories within variations
 
 					//Get the variations from the database and add to the appropriate manifestation
 					/** @var  $allVariations Grouping_Variation[] */
@@ -2566,28 +2565,48 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					/** @var Grouping_Record[] $allRecords */
 					$allRecords = [];
 					foreach ($records as $record) {
-						/** GroupedWorkSubDriver $recordDriver */
-						require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
-						$recordId = $record['source'];
-						$recordId .= ($record['subSource'] != null ? ':' . $record['subSource'] : '');
-						$recordId .= ':' . $record['recordIdentifier'];
-						$recordDriver = RecordDriverFactory::initRecordDriverById($recordId, $groupedWork);
 
-						$volumeData = $this->getVolumeDataForRecord($recordId);
-						$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true);
-						$relatedRecords[$relatedRecord->id] = $relatedRecord;
-						$allRecords[$relatedRecord->databaseId] = $relatedRecord;
+						//Get all the variations that the record should be attached to
+						$itemQuery = "SELECT groupedWorkVariationId from grouped_work_record_items WHERE groupedWorkRecordId = {$record['id']}";
+						$res = $aspen_db->query($itemQuery, PDO::FETCH_ASSOC);
+						$allItems = $res->fetchAll();
+						$res->closeCursor();
 
-						//KODI TODO: Add the record to the appropriate variation(s) - problem, we can't do it here because we don't have the right format and format category
-						//short term, we will ignore the format & format category in the record table. We can do a query of the items to figure out which variations to add
-						//the record to.
+						$recordVariations = [];
+						foreach ($allItems as $item) {
+							$thisVariation = $item['groupedWorkVariationId'];
+							foreach ($allVariations as $variation) {
+								if ($thisVariation == $variation->databaseId) {
+									$recordVariations[] = $variation;
+								}
+							}
+						}
+						//Create different Grouping_Record objects for each variation
+						foreach ($recordVariations as $variation) {
+							/** GroupedWorkSubDriver $recordDriver */
+							require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+							$recordId = $record['source'];
+							$recordId .= ($record['subSource'] != null ? ':' . $record['subSource'] : '');
+							$recordId .= ':' . $record['recordIdentifier'];
+							$recordDriver = RecordDriverFactory::initRecordDriverById($recordId, $groupedWork);
+
+							$volumeData = $this->getVolumeDataForRecord($recordId);
+							$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true);
+
+							$relatedRecord->variationFormat = $variation->manifestation->format;
+
+							$relatedRecords[$relatedRecord->id] = $relatedRecord;
+							$allRecords[$relatedRecord->databaseId . ':' . $variation->manifestation->format] = $relatedRecord;
+						}
 					}
 
 					$scopedItems = $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']);
 
 					foreach ($scopedItems as $scopedItem) {
-						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId']];
+						//Get the variation for the item
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
+						//Load the correct record based on the variation since the same record can exist in multiple variations
+						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId'] . ':' . $relatedVariation->manifestation->format];
 						$scopedItem['isEcontent'] = $relatedVariation->isEcontent;
 						$scopedItem['eContentSource'] = $relatedVariation->econtentSource;
 						$scopedItem['scopeId'] = $scopeId;
@@ -2606,14 +2625,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					//Finally, add records to the correct manifestation (so status updates properly)
 					foreach ($allRecords as $record) {
 						//Add to the correct manifestation
-						if (isset($this->_relatedManifestations[$record->format])) {
-							$this->_relatedManifestations[$record->format]->addRecord($record);
+						if (isset($this->_relatedManifestations[$record->variationFormat])) {
+							$this->_relatedManifestations[$record->variationFormat]->addRecord($record);
 						} else {
 							//This should not happen
 							$manifestation = new Grouping_Manifestation($record);
-							$this->_relatedManifestations[$record->format] = $manifestation;
+							$this->_relatedManifestations[$record->variationFormat] = $manifestation;
 							global $logger;
-							$logger->log("Manifestation not found for record {$record->id} {$record->format}", Logger::LOG_ERROR);
+							$logger->log("Manifestation not found for record {$record->id} {$record->variationFormat}", Logger::LOG_ERROR);
 						}
 					}
 
