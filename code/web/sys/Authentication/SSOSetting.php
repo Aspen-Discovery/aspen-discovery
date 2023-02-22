@@ -36,6 +36,7 @@ class SSOSetting extends DataObject {
 	public $ssoName;
 	public $ssoXmlUrl;
 	public $ssoUniqueAttribute;
+	public $ssoILSUniqueAttribute;
 	public $ssoMetadataFilename;
 	public $ssoEntityId;
 	public $ssoUseGivenUserId;
@@ -110,6 +111,14 @@ class SSOSetting extends DataObject {
 			'0' => 'Default for ILS',
 			'1' => 'email',
 			'2' => 'firstname.lastname',
+		];
+
+		$uid_ils_options = [
+			'' => 'Cardnumber (default)',
+			'borrowernumber' => 'Borrower Number',
+			'email' => 'Email',
+			'sort1' => 'Sort 1',
+			'sort2' => 'Sort 2',
 		];
 
 		return [
@@ -429,6 +438,16 @@ class SSOSetting extends DataObject {
 								'label' => 'IdP attribute that uniquely identifies a user',
 								'description' => 'This should be unique to each user',
 								'note' => 'This should be unique to each user',
+								'size' => '512',
+								'hideInLists' => true,
+							],
+							'ssoILSUniqueAttribute' => [
+								'property' => 'ssoILSUniqueAttribute',
+								'type' => 'enum',
+								'values' => $uid_ils_options,
+								'label' => 'ILS attribute that uniquely identifies a user',
+								'description' => 'This should be unique to each user',
+								'note' => 'This should be unique to each user and match the value that is provided by the unique IdP attribute. Leave blank to use barcode.',
 								'size' => '512',
 								'hideInLists' => true,
 							],

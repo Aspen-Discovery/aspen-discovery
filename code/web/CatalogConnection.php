@@ -193,6 +193,15 @@ class CatalogConnection {
 	}
 
 	/**
+	 * @param string $field
+	 * @param string $value
+	 * @return bool|User
+	 */
+	public function findUserByField(string $field, string $value) {
+		return $this->driver->findUserByField($field, $value);
+	}
+
+	/**
 	 * @param User $user
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user) {

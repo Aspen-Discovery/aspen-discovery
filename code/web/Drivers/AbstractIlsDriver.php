@@ -423,6 +423,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function findUserByField(string $field, string $value) {
+		return false;
+	}
+
 	public function hasIssueSummaries() {
 		return false;
 	}

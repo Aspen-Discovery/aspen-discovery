@@ -15,6 +15,7 @@ $uidAsEmail = false;
 $useGivenUserId = '1';
 $useGivenUsername = '1';
 $usernameFormat = '-1';
+$ilsUniqueAttribute = null;
 
 $auth = new SAML2Authentication();
 
@@ -35,7 +36,9 @@ if($ssoSettings->find(true)) {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
 
-	if(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
+	if($ssoSettings->ssoILSUniqueAttribute) {
+		$ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
+	} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
 		$uidAsEmail = true;
 	}
 
@@ -115,8 +118,11 @@ foreach ($lmsToSso as $key => $mappings) {
 	}
 }
 
+$_REQUEST['username'] = $uid;
 // Does this user exist in the LMS
-if($uidAsEmail) {
+if($ilsUniqueAttribute) {
+	$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
+} elseif($uidAsEmail) {
 	$user = $catalogConnection->findNewUserByEmail($uid);
 	if(is_string($user)) {
 		$logger->log($user, Logger::LOG_ERROR);
@@ -131,7 +137,6 @@ if($uidAsEmail) {
 		exit();
 	}
 } else {
-	$_REQUEST['username'] = $uid;
 	$user = $catalogConnection->findNewUser($uid);
 }
 
@@ -153,7 +158,9 @@ if (!$user instanceof User) {
 		exit();
 	}
 	// The user now exists in the LMS, so findNewUser should create an Aspen user
-	if($uidAsEmail) {
+	if($ilsUniqueAttribute) {
+		$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
+	} elseif($uidAsEmail) {
 		$user = $catalogConnection->findNewUserByEmail($uid);
 	} else {
 		$user = $catalogConnection->findNewUser($uid);
@@ -162,7 +169,9 @@ if (!$user instanceof User) {
 	// We need to update the user in the LMS
 	$user = $user->updatePatronInfo(true);
 	// findNewUser forces Aspen to update it's user with that of the LMS
-	if($uidAsEmail) {
+	if($ilsUniqueAttribute) {
+		$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
+	} elseif($uidAsEmail) {
 		$user = $catalogConnection->findNewUserByEmail($uid);
 	} else {
 		$user = $catalogConnection->findNewUser($uid);
