@@ -113,6 +113,14 @@ class SSOSetting extends DataObject {
 			'2' => 'firstname.lastname',
 		];
 
+		$uid_ils_options = [
+			'' => 'Cardnumber (default)',
+			'borrowernumber' => 'Borrower Number',
+			'email' => 'Email',
+			'sort1' => 'Sort 1',
+			'sort2' => 'Sort 2',
+		];
+
 		return [
 			'id' => [
 				'property' => 'id',
@@ -435,7 +443,8 @@ class SSOSetting extends DataObject {
 							],
 							'ssoILSUniqueAttribute' => [
 								'property' => 'ssoILSUniqueAttribute',
-								'type' => 'text',
+								'type' => 'enum',
+								'values' => $uid_ils_options,
 								'label' => 'ILS attribute that uniquely identifies a user',
 								'description' => 'This should be unique to each user',
 								'note' => 'This should be unique to each user and match the value that is provided by the unique IdP attribute. Leave blank to use barcode.',
