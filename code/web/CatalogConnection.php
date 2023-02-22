@@ -1356,7 +1356,13 @@ class CatalogConnection {
 		$this->driver->validateUniqueId($user);
 	}
 
-	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+	/**
+	 * Map from the property names required for self registration to
+	 * the IdP property names returned from SAML2Authentication
+	 *
+	 * @return array|bool
+	 */
+	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
 		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber);
 	}
 

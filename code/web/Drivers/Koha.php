@@ -4008,6 +4008,8 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$mandatoryFields = [];
 		}
+		//Make sure that title is always required
+		$mandatoryFields['title'] = true;
 
 
 		/** @noinspection SqlResolve */
@@ -6602,11 +6604,13 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	/*
-		Map from the property names required for self registration to
-		the IdP property names returned from SAML2Authentication
-	*/
-	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+	/**
+	 * Map from the property names required for self registration to
+	 * the IdP property names returned from SAML2Authentication
+	 *
+	 * @return array|bool
+	 */
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
 		$categoryId = 'ssoCategoryIdAttr';
 		$categoryIdFallback = 'ssoCategoryIdFallback';
 		if($isStaffUser) {
