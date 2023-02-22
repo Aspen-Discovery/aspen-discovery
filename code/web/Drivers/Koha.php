@@ -4008,6 +4008,8 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$mandatoryFields = [];
 		}
+		//Make sure that title is always required
+		$mandatoryFields['title'] = true;
 
 
 		/** @noinspection SqlResolve */
@@ -5012,6 +5014,30 @@ class Koha extends AbstractIlsDriver {
 
 		/** @noinspection SqlResolve */
 		$sql = "SELECT borrowernumber, cardnumber, email from borrowers where email = '" . mysqli_escape_string($this->dbConnection, $patronEmail) . "'";
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+		if ($lookupUserResult->num_rows == 1) {
+			$lookupUserRow = $lookupUserResult->fetch_assoc();
+			$patronId = $lookupUserRow['borrowernumber'];
+			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			if (!empty($newUser) && !($newUser instanceof AspenError)) {
+				return $newUser;
+			}
+		} else if ($lookupUserResult->num_rows > 1) {
+			return 'Found more than one user.';
+		}
+
+		return false;
+	}
+
+
+	public function findUserByField($field, $value) {
+		// Check the Koha database to see if the patron exists
+		//Use MySQL connection to load data
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT borrowernumber, cardnumber, " . mysqli_escape_string($this->dbConnection, $field) . " from borrowers where " . mysqli_escape_string($this->dbConnection, $field) . " = '" . mysqli_escape_string($this->dbConnection, $value) . "'";
 
 		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
 		if ($lookupUserResult->num_rows == 1) {
