@@ -446,7 +446,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		//By default, do nothing, this should be overridden for ILSs that use masquerade
 	}
 
-	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+	/**
+	 * Map from the property names required for self registration to
+	 * the IdP property names returned from SAML2Authentication
+	 *
+	 * @return array|bool
+	 */
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
 		return false;
 	}
 
