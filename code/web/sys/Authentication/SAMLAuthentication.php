@@ -16,6 +16,7 @@ class SAMLAuthentication extends Action {
 	protected array $matchpoints;
 	protected SSOSetting $config;
 	protected bool $uidAsEmail = false;
+	protected bool $ilsUniqueAttribute = false;
 	protected string $uid;
 	protected bool $isStaffUser = false;
 
@@ -37,7 +38,9 @@ class SAMLAuthentication extends Action {
 			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system
 			$this->config = clone $ssoSettings;
 
-			if(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
+			if($ssoSettings->ssoILSUniqueAttribute) {
+				$this->ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
+			} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
 				$this->uidAsEmail = true;
 			}
 
@@ -211,7 +214,14 @@ class SAMLAuthentication extends Action {
 	private function validateWithILS($attributes): bool {
 		$this->setupILSUser($attributes);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		if($this->uidAsEmail) {
+		if($this->ilsUniqueAttribute) {
+			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
+			if(is_string($user)) {
+				global $logger;
+				$logger->log($user, Logger::LOG_ERROR);
+				return false;
+			}
+		} elseif($this->uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -229,7 +239,14 @@ class SAMLAuthentication extends Action {
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		if ($this->uidAsEmail) {
+		if($this->ilsUniqueAttribute) {
+			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
+			if(is_string($user)) {
+				global $logger;
+				$logger->log($user, Logger::LOG_ERROR);
+				return false;
+			}
+		} elseif($this->uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 		} else {
 			$user = $catalogConnection->findNewUser($this->uid);
