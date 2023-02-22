@@ -14,6 +14,7 @@
 				<select name="showOverdueOnly" id="showOverdueOnly" class="form-control input-sm">
 					<option value="overdue" {if $showOverdueOnly == "overdue"}selected="selected"{/if}>Overdue Items</option>
 					<option value="checkedOut" {if $showOverdueOnly == "checkedOut"}selected="selected"{/if}>All Checked Out</option>
+					<option value="fees" {if $showOverdueOnly == "fees"}selected="selected"{/if}>Fees</option>
 				</select>
 				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
@@ -28,7 +29,7 @@
 			{if !empty($reportData)}
 				<br/>
 				<p>
-					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{else}items out{/if}.
+					There are a total of <strong>{$reportData|@count}</strong> {if $showOverdueOnly == "overdue"}overdue items{elseif $showOverdueOnly == "checkedOut"}items out{elseif $showOverdueOnly == "fees"}fees{/if}.
 				</p>
 		</div>
 {literal}
@@ -193,9 +194,10 @@
 							<div class="overdueRecordTable">
 								<div class="overdueRecordTableMessage">
 									The items below are
-									{if !empty($showOverdueOnly)}&nbsp;overdue{/if}
-									{if empty($showOverdueOnly)}&nbsp;checked out{/if}
-									. &nbsp; 
+									{if $showOverdueOnly == "overdue"}&nbsp;overdue
+									{elseif $showOverdueOnly == "checkedOut"}&nbsp;checked out
+									{elseif $showOverdueOnly == "fees"}&nbsp;billed{/if}
+									.&nbsp;
 									Please return them to your library. This notice was created {$reportDateTime}<br>
 									Check your account online at https://school.library.nashville.org/
 								</div>
@@ -205,7 +207,7 @@
                                         				<div class="CALL_NUMBER">CALL NUMBER</div>
                                         				<div class="TITLE">TITLE</div>
                                         				<div class="DUE_DATE">DUE DATE</div>
-									<div class="PRICE">PRICE</div>
+									<div class="PRICE">{if $showOverdueOnly == "overdue" || $showOverdueOnly == "checkedOut"}PRICE{elseif $showOverdueOnly == "fees"}OWED{/if}</div>
 								</div>
 		{assign var=previousPatron value=$dataRow.P_BARCODE}
 	{/if}
