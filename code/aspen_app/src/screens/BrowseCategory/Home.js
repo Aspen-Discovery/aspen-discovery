@@ -11,10 +11,11 @@ import { translate } from '../../translations/translations';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import {getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds} from '../../util/api/user';
+import {getTranslatedTerm} from '../../translations/TranslationService';
 
 let maxCategories = 5;
 
@@ -26,6 +27,7 @@ export const DiscoverHomeScreen = () => {
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
