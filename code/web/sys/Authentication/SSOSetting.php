@@ -36,6 +36,7 @@ class SSOSetting extends DataObject {
 	public $ssoName;
 	public $ssoXmlUrl;
 	public $ssoUniqueAttribute;
+	public $ssoILSUniqueAttribute;
 	public $ssoMetadataFilename;
 	public $ssoEntityId;
 	public $ssoUseGivenUserId;
@@ -429,6 +430,15 @@ class SSOSetting extends DataObject {
 								'label' => 'IdP attribute that uniquely identifies a user',
 								'description' => 'This should be unique to each user',
 								'note' => 'This should be unique to each user',
+								'size' => '512',
+								'hideInLists' => true,
+							],
+							'ssoILSUniqueAttribute' => [
+								'property' => 'ssoILSUniqueAttribute',
+								'type' => 'text',
+								'label' => 'ILS attribute that uniquely identifies a user',
+								'description' => 'This should be unique to each user',
+								'note' => 'This should be unique to each user and match the value that is provided by the unique IdP attribute. Leave blank to use barcode.',
 								'size' => '512',
 								'hideInLists' => true,
 							],
