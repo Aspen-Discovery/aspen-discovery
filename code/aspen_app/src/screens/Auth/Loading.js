@@ -85,10 +85,10 @@ export const LoadingScreen = () => {
                          });
                          await reloadLibrarySystem().then(async (result) => {
                               updateLibrary(result);
-                              await getTranslatedTerm(language ?? 'en', result.baseUrl).then((async result => {
+                              /*await getTranslatedTerm(language ?? 'en', result.baseUrl).then((async result => {
                                    await AsyncStorage.setItem('@translations', JSON.stringify(translations));
                                    console.log("Stored translations to AsyncStorage");
-                              }));
+                              }));*/
                          });
                          await reloadLibraryBranch().then((result) => {
                               updateLocation(result);
