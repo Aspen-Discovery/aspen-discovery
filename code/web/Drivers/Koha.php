@@ -5029,7 +5029,7 @@ class Koha extends AbstractIlsDriver {
 	}
 
 
-	public function findUserByField($field, $value): mixed {
+	public function findUserByField($field, $value): bool|User {
 		// Check the Koha database to see if the patron exists
 		//Use MySQL connection to load data
 		$this->initDatabaseConnection();
