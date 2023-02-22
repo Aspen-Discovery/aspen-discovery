@@ -6,14 +6,17 @@ import { useNavigation, useFocusEffect, useLinkTo } from '@react-navigation/nati
 import { Center, Heading, Spinner, VStack } from 'native-base';
 import _ from 'lodash';
 import { checkVersion } from "react-native-check-version";
-import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { formatBrowseCategories, LIBRARY } from '../../util/loadLibrary';
 import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBrowseCategoryListForUser } from '../../util/loadPatron';
+import {getBrowseCategoryListForUser, PATRON} from '../../util/loadPatron';
 import { ForceLogout } from './ForceLogout';
 import {UpdateAvailable} from './UpdateAvailable';
+import {getTranslatedTerm, getTranslations, translations} from '../../translations/TranslationService';
+
+const defaultTranslation = require('../../translations/defaults.json');
 
 const prefix = Linking.createURL('/');
 
@@ -40,6 +43,7 @@ export const LoadingScreen = () => {
      const { library, updateLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
+     const { language, updateLanguage, updateLanguages } = React.useContext(LanguageContext);
 
 
      React.useEffect(() => {
@@ -63,7 +67,7 @@ export const LoadingScreen = () => {
 
      useFocusEffect(
           React.useCallback(() => {
-               if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category)) {
+               if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category) && !_.isEmpty(language)) {
                     setLoading(false);
                } else {
                     const unsubscribe = async () => {
@@ -76,9 +80,15 @@ export const LoadingScreen = () => {
                                    setHasError(true);
                               }
                               updateUser(result);
+                              updateLanguage(result.interfaceLanguage ?? 'en');
+                              PATRON.language = result.interfaceLanguage ?? 'en';
                          });
-                         await reloadLibrarySystem().then((result) => {
+                         await reloadLibrarySystem().then(async (result) => {
                               updateLibrary(result);
+                              /*await getTranslatedTerm(language ?? 'en', result.baseUrl).then((async result => {
+                                   await AsyncStorage.setItem('@translations', JSON.stringify(translations));
+                                   console.log("Stored translations to AsyncStorage");
+                              }));*/
                          });
                          await reloadLibraryBranch().then((result) => {
                               updateLocation(result);
@@ -86,6 +96,9 @@ export const LoadingScreen = () => {
                          await getBrowseCategoryListForUser().then((result) => {
                               updateBrowseCategoryList(result);
                          });
+                         await getLibraryLanguages().then((result => {
+                              updateLanguages(result);
+                         }))
 
                          await AsyncStorage.getItem('@solrScope').then((result) => {
                               updateScope(result);
@@ -316,6 +329,27 @@ async function reloadPatronBrowseCategories(maxNum) {
           if (response.data.result) {
                return formatBrowseCategories(response.data.result);
           }
+     }
+     return [];
+}
+
+async function getLibraryLanguages() {
+     const api = create({
+          baseURL: LIBRARY.url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await api.get('/SystemAPI?method=getLanguages');
+     if (response.ok) {
+          let languages = [];
+          if (response?.data?.result) {
+               console.log('Library languages saved at Loading');
+               return _.sortBy(response.data.result.languages, 'id');
+          }
+          return languages;
+     } else {
+          console.log(response);
      }
      return [];
 }
