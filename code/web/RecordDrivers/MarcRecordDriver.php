@@ -1563,6 +1563,26 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			];
 		}
 
+		//Check to see if the record has children
+		$continuesRecords = $this->getContinuesRecords();
+		if (count($continuesRecords) > 0) {
+			$interface->assign('continuesRecords', $continuesRecords);
+			$moreDetailsOptions['continuesRecords'] = [
+				'label' => 'Continues',
+				'body' => $interface->fetch('Record/view-continues-records.tpl'),
+			];
+		}
+
+		//Check to see if the record has children
+		$continuedByRecords = $this->getContinuedByRecords();
+		if (count($continuedByRecords) > 0) {
+			$interface->assign('continuedByRecords', $continuedByRecords);
+			$moreDetailsOptions['continuedByRecords'] = [
+				'label' => 'Continued By',
+				'body' => $interface->fetch('Record/view-continued-by-records.tpl'),
+			];
+		}
+
 		//Check to see if the record has marc holdings (in 852, 853, 856, 866)
 		$marcHoldings = $this->getMarcHoldings();
 		if (count($marcHoldings) > 0) {
@@ -1589,6 +1609,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	public function getChildRecords() {
 		require_once ROOT_DIR . '/sys/ILS/RecordParent.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkRecord.php';
+		$childRecordsFromDB = $this->getGroupedWorkDriver()->getRelatedRecords();
+
 		$parentChildRecords = new RecordParent();
 		$parentChildRecords->parentRecordId = $this->id;
 		$parentChildRecords->orderBy('childTitle ASC');
@@ -1596,11 +1619,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		$childRecords = [];
 		if ($parentChildRecords->getNumResults() > 0) {
 			while ($parentChildRecords->fetch()) {
-				$childRecords[] = [
-					'id' => $parentChildRecords->childRecordId,
-					'label' => empty($parentChildRecords->childTitle) ? $parentChildRecords->childRecordId : $parentChildRecords->childTitle,
-					'link' => '/Record/' . $parentChildRecords->childRecordId . '/Home',
-				];
+				//Check to see if this is econtent or a regular record
+				foreach ($childRecordsFromDB as $childRecordFromDB) {
+					if (strpos($childRecordFromDB->id, ':' . $parentChildRecords->childRecordId) > 0) {
+						$childRecords[] = [
+							'id' => $parentChildRecords->childRecordId,
+							'label' => empty($parentChildRecords->childTitle) ? $parentChildRecords->childRecordId : $parentChildRecords->childTitle,
+							'format' => $childRecordFromDB->getFormat(),
+							'link' => $childRecordFromDB->getUrl(),
+							'actions' => $childRecordFromDB->getActions(),
+						];
+					}
+				}
 			}
 		}
 		return $childRecords;
@@ -2351,6 +2381,66 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 */
 	public function getRelatedRecord() {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+	}
+
+	private function getContinuesRecords() {
+		$continuesRecords = [];
+		$marcRecord = $this->getMarcRecord();
+		if (!empty($marcRecord)) {
+			$marc780Fields = $marcRecord->getFields('780');
+			/** @var File_MARC_Data_Field $marc780Field */
+			foreach ($marc780Fields as $marc780Field) {
+				//subfield w contains the bib id of the other record
+				$subfieldW = $marc780Field->getSubfield('w');
+				if ($subfieldW != null) {
+					$continuesRecordId = $subfieldW->getData();
+					$continuesRecordId = trim(preg_replace('/\(.*?\)/s', '', $continuesRecordId));
+					if (!empty($continuesRecordId)) {
+						$continuesRecordDriver = RecordDriverFactory::initRecordDriverById($this->profileType . ':' . $continuesRecordId);
+						if ($continuesRecordDriver->isValid()) {
+							$continuesRecords[] = [
+								'id' => $continuesRecordId,
+								'label' => $continuesRecordDriver->getTitle(),
+								'format' => $continuesRecordDriver->getPrimaryFormat(),
+								'link' => $continuesRecordDriver->getLinkUrl(),
+								'actions' => $continuesRecordDriver->getRelatedRecord()->getActions(),
+							];
+						}
+					}
+				}
+			}
+		}
+		return $continuesRecords;
+	}
+
+	private function getContinuedByRecords() {
+		$continuedByRecords = [];
+		$marcRecord = $this->getMarcRecord();
+		if (!empty($marcRecord)) {
+			$marc780Fields = $marcRecord->getFields('785');
+			/** @var File_MARC_Data_Field $marc780Field */
+			foreach ($marc780Fields as $marc780Field) {
+				//subfield w contains the bib id of the other record
+				$subfieldW = $marc780Field->getSubfield('w');
+				if ($subfieldW != null) {
+					$continuedByRecordId = $subfieldW->getData();
+					$continuedByRecordId = trim(preg_replace('/\(.*?\)/s', '', $continuedByRecordId));
+					if (!empty($continuedByRecordId)) {
+						$continuedByRecordDriver = RecordDriverFactory::initRecordDriverById($this->profileType . ':' . $continuedByRecordId);
+						if ($continuedByRecordDriver->isValid()) {
+							$continuedByRecords[] = [
+								'id' => $continuedByRecordId,
+								'label' => $continuedByRecordDriver->getTitle(),
+								'format' => $continuedByRecordDriver->getPrimaryFormat(),
+								'link' => $continuedByRecordDriver->getLinkUrl(),
+								'actions' => $continuedByRecordDriver->getRelatedRecord()->getActions(),
+							];
+						}
+					}
+				}
+			}
+		}
+		return $continuedByRecords;
 	}
 
 	private function getMarcHoldings() {
