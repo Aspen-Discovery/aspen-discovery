@@ -18,6 +18,7 @@ $useGivenUsername = '1';
 $usernameFormat = '-1';
 $ssoAuthOnly = false;
 $ssoSettingsId = -1;
+$ilsUniqueAttribute = null;
 
 $auth = new SAML2Authentication();
 
@@ -25,7 +26,6 @@ $ssoSettings = new SSOSetting();
 $ssoSettings->id = $library->ssoSettingId;
 $ssoSettings->service = 'saml';
 if($ssoSettings->find(true)) {
-	$ssoSettingsId = $ssoSettings->id;
 	$entityId = $ssoSettings->ssoEntityId;
 	$useGivenUsername = $ssoSettings->ssoUseGivenUsername;
 	$useGivenUserId = $ssoSettings->ssoUseGivenUserId;
@@ -39,7 +39,9 @@ if($ssoSettings->find(true)) {
 		$staffPType = $ssoSettings->samlStaffPType;
 	}
 
-	if(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
+	if($ssoSettings->ssoILSUniqueAttribute) {
+		$ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
+	} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'email')) {
 		$uidAsEmail = true;
 	}
 
@@ -57,8 +59,6 @@ if($accountProfile->find(true)) {
 	}
 }
 
-
-/* KEEP HERE */
 // If we need to forward the user to an IdP
 if (array_key_exists('samlLogin', $_REQUEST) && array_key_exists('idp', $_REQUEST) && strlen($_REQUEST['samlLogin']) > 0 && strlen($_REQUEST['idp']) > 0 && $entityId && strlen($entityId) > 0) {
 	$auth->authenticate($_REQUEST['idp']);
@@ -130,9 +130,12 @@ foreach ($lmsToSso as $key => $mappings) {
 		}
 	}
 }
+
 if($ssoAuthOnly === false) {
-// Does this user exist in the LMS
-	if ($uidAsEmail) {
+	// Does this user exist in the LMS
+	if ($ilsUniqueAttribute) {
+		$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
+	} elseif ($uidAsEmail) {
 		$user = $catalogConnection->findNewUserByEmail($uid);
 		if (is_string($user)) {
 			$logger->log($user, Logger::LOG_ERROR);
@@ -147,11 +150,10 @@ if($ssoAuthOnly === false) {
 			exit();
 		}
 	} else {
-		$_REQUEST['username'] = $uid;
 		$user = $catalogConnection->findNewUser($uid);
 	}
 
-// The user does not exist in Koha, so we should create it
+	// The user does not exist in Koha, so we should create it
 	if (!$user instanceof User) {
 		// Try to do the self reg
 		$selfRegResult = $catalogConnection->selfRegister();
@@ -169,7 +171,9 @@ if($ssoAuthOnly === false) {
 			exit();
 		}
 		// The user now exists in the LMS, so findNewUser should create an Aspen user
-		if ($uidAsEmail) {
+		if ($ilsUniqueAttribute) {
+			$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
+		} elseif ($uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($uid);
 		} else {
 			$user = $catalogConnection->findNewUser($uid);
@@ -178,17 +182,21 @@ if($ssoAuthOnly === false) {
 		// We need to update the user in the LMS
 		$user = $user->updatePatronInfo(true);
 		// findNewUser forces Aspen to update it's user with that of the LMS
-		if ($uidAsEmail) {
+		if ($ilsUniqueAttribute) {
+			$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
+		} elseif ($uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($uid);
 		} else {
 			$user = $catalogConnection->findNewUser($uid);
 		}
 	}
 
-// If we have an Aspen user, we can set up the session
+	// If we have an Aspen user, we can set up the session
 	if ($user instanceof User) {
-		if ($uidAsEmail) {
+		if ($uidAsEmail || $ilsUniqueAttribute) {
 			$_REQUEST['username'] = $user->cat_username;
+		} else {
+			$_REQUEST['username'] = $uid;
 		}
 		$login = UserAccount::login(true);
 
@@ -216,7 +224,7 @@ if($ssoAuthOnly === false) {
 		$_SESSION['rememberMe'] = false;
 		$_SESSION['loggedInViaSSO'] = true;
 	}
-} else {
+}else{
 	global $library;
 	$tmpUser = new User();
 	$tmpUser->email = $this->getEmail();
@@ -240,7 +248,7 @@ if($ssoAuthOnly === false) {
 	$tmpUser->myLocation2Id = 0;
 	$tmpUser->created = date('Y-m-d');
 	if($tmpUser->insert()) {
-		if($uidAsEmail) {
+		if ($uidAsEmail) {
 			$user = UserAccount::findNewAspenUser('email', $uid);
 		} else {
 			$user = UserAccount::findNewAspenUser('user_id', $uid);

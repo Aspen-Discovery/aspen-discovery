@@ -29,7 +29,7 @@
 		</td>
 		{if !empty($hasNote)}
 			<td>
-				{$holding.note}
+				{if !empty($holding.note)}{$holding.note}{/if}
 			</td>
 		{/if}
 		<td >

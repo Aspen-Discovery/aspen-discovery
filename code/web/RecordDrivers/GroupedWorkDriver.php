@@ -885,7 +885,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			if (isset($this->fields['author2-role'])) {
 				$contributorsInIndex = $this->fields['author2-role'];
 				if (is_string($contributorsInIndex)) {
-					$contributorsInIndex[] = $contributorsInIndex;
+					$contributorsInIndexTmp = [$contributorsInIndex];
+					$contributorsInIndex = $contributorsInIndexTmp;
 				}
 				foreach ($contributorsInIndex as $contributor) {
 					if (strpos($contributor, '|')) {
@@ -998,7 +999,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				$this->_indexedSeries = [];
 				$rawSeries = $this->fields['series_with_volume'];
 				if (is_string($rawSeries)) {
-					$rawSeries[] = $rawSeries;
+					$rawSeriesTmp = [$rawSeries];
+					$rawSeries = $rawSeriesTmp;
 				}
 				foreach ($rawSeries as $seriesInfo) {
 					if (strpos($seriesInfo, '|') > 0) {
@@ -1630,6 +1632,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	private $relatedRecords = null;
+	private $childRecords = null;
 	private $relatedItemsByRecordId = null;
 
 	/**
@@ -1715,11 +1718,20 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		//Build the link URL.
 		//If there is only one record for the work we will link straight to that.
 		$relatedRecords = $this->getRelatedRecords();
+		$firstNonChildRecord = null;
+		$numNonChildRecords = 0;
+		foreach ($relatedRecords as $record) {
+			if (!$record->hasParentRecord) {
+				$numNonChildRecords++;
+				if ($firstNonChildRecord == null) {
+					$firstNonChildRecord = $record;
+				}
+			}
+		}
 		$timer->logTime("Loaded related records");
 		$memoryWatcher->logMemory("Loaded related records");
-		if (count($relatedRecords) == 1) {
-			$firstRecord = reset($relatedRecords);
-			$linkUrl = $firstRecord->getUrl();
+		if ($numNonChildRecords == 1) {
+			$linkUrl = $firstNonChildRecord->getUrl();
 			$linkUrl .= '?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
 		} else {
 			$linkUrl = '/GroupedWork/' . $id . '/Home?searchId=' . $interface->get_template_vars('searchId') . '&amp;recordIndex=' . $interface->get_template_vars('recordIndex') . '&amp;page=' . $interface->get_template_vars('page');
@@ -2029,7 +2041,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 				$interface->assign('groupedWorkInternalId', $groupedWork->id);
 				$interface->assign('activeScopeId', $scopeId);
-				$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id);
+				$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id, true);
 				$interface->assign('variationData', $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']));
 				$interface->assign('recordData', $this->getRawRecordDataFromDB($databaseIds['uniqueRecordIds']));
 				$interface->assign('itemData', $this->getRawItemDataFromDB($databaseIds['uniqueItemIds']));
@@ -2458,6 +2470,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			global $library;
 			$scopingInfoFieldName = 'scoping_details_' . $solrScope;
 			$relatedRecords = [];
+			$childRecords = [];
 			if (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'Aspen LiDA') === 0) {
 				$forceLoadFromDB = true;
 			}
@@ -2541,7 +2554,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					}
 
 					//Get the ids of all the variations, records, and items attached to the work
-					$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id);
+					$databaseIds = $this->getVariationRecordAndItemIdsFromDB($scopeId, $groupedWork->id, true);
 
 					$variations = $this->getRawVariationsDataFromDB($databaseIds['uniqueVariationIds']);
 					$this->_relatedManifestations = [];
@@ -2624,6 +2637,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 					//Finally, add records to the correct manifestation (so status updates properly)
 					foreach ($allRecords as $record) {
+						if ($record->hasParentRecord) {
+							continue;
+						}
 						//Add to the correct manifestation
 						if (isset($this->_relatedManifestations[$record->variationFormat])) {
 							$this->_relatedManifestations[$record->variationFormat]->addRecord($record);
@@ -2676,6 +2692,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			]);
 
 			$this->relatedRecords = $relatedRecords;
+			$this->childRecords = $childRecords;
 			$timer->logTime("Finished loading related records {$this->getUniqueID()}");
 		}
 	}
@@ -2714,9 +2731,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	private function getVariationRecordAndItemIdsFromDB($scopeId, $groupedWorkId) {
 		global $aspen_db;
-		$getIdsQuery = "select groupedWorkId, groupedWorkVariationId, groupedWorkRecordId, grouped_work_record_items.id as groupedRecordItemId FROM 
-										grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id where 
-										(locationOwnedScopes like '%~$scopeId~%' OR libraryOwnedScopes like '%~$scopeId~%' OR recordIncludedScopes LIKE '%~$scopeId~%') and groupedWorkId = {$groupedWorkId}";
+		$getIdsQuery = "select groupedWorkId, groupedWorkVariationId, groupedWorkRecordId, grouped_work_record_items.id as groupedRecordItemId, hasParentRecord FROM 
+									grouped_work_record_items inner join grouped_work_records on groupedWorkRecordId = grouped_work_records.id where 
+									(locationOwnedScopes like '%~$scopeId~%' OR libraryOwnedScopes like '%~$scopeId~%' OR recordIncludedScopes LIKE '%~$scopeId~%') and groupedWorkId = {$groupedWorkId}";
 		$results = $aspen_db->query($getIdsQuery, PDO::FETCH_ASSOC);
 		$allIds = $results->fetchAll();
 		$results->closeCursor();
@@ -2764,7 +2781,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$records = [];
 		} else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language FROM grouped_work_records 
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, hasParentRecord, hasChildRecord FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id

@@ -47,6 +47,7 @@ public class ItemInfo{
 	private boolean holdable;
 	private boolean bookable = false;
 	private boolean inLibraryUseOnly;
+	private boolean isVirtual;
 
 	private RecordInfo recordInfo;
 
@@ -597,5 +598,13 @@ public class ItemInfo{
 			}
 		}
 		return formatCategoriesForIndexing;
+	}
+
+	public boolean isVirtual() {
+		return isVirtual;
+	}
+
+	public void setVirtual(boolean virtual) {
+		isVirtual = virtual;
 	}
 }

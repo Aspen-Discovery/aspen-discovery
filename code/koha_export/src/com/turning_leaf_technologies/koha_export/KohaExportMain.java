@@ -1412,7 +1412,7 @@ public class KohaExportMain {
 	}
 
 	private static String groupKohaRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {

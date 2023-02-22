@@ -1746,7 +1746,7 @@ public class SierraExportAPIMain {
 	}
 
 	private static String groupSierraRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor() {

@@ -280,7 +280,7 @@ public class CarlXExportMain {
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
-					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
+					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer(dbConn));
 					//Reindex the record
 					getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
 				}
@@ -406,7 +406,7 @@ public class CarlXExportMain {
 
 							GroupedWorkIndexer.MarcStatus marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null, getGroupedWorkIndexer(dbConn));
 								if (permanentId == null){
 									//Delete the record since it is suppressed
 									deleteRecord = true;
@@ -1527,7 +1527,7 @@ public class CarlXExportMain {
 	}
 
 	private static String groupRecord(Connection dbConn, Record marcRecord) {
-		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer(dbConn));
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){

@@ -327,7 +327,7 @@ public class SideLoadingMain {
 				Record marcRecord = indexer.loadMarcRecordFromDatabase(settings.getName(), recordIdentifier, logEntry);
 				if (marcRecord != null) {
 					//Regroup the record
-					String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null);
+					String groupedWorkId = recordGrouper.processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 					//Reindex the record
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
@@ -365,7 +365,7 @@ public class SideLoadingMain {
 							String recordNumber = recordIdentifier.getIdentifier();
 							GroupedWorkIndexer.MarcStatus marcStatus = reindexer.saveMarcRecordToDatabase(settings, recordNumber, marcRecord);
 							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || settings.isRunFullUpdate()) {
-								String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+								String permanentId = recordGrouper.processMarcRecord(marcRecord, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null, getGroupedWorkIndexer());
 								if (permanentId == null) {
 									//Delete the record since it is suppressed
 									deleteRecord = true;

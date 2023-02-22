@@ -1,8 +1,10 @@
 <?php
 
+require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
+
 class ExternalEContent_AccessOnline extends Action {
 	/** @var ExternalEContentDriver $recordDriver */
-	private ExternalEContentDriver $recordDriver;
+	private $recordDriver;
 
 	function launch() {
 		global $interface;
@@ -12,7 +14,7 @@ class ExternalEContent_AccessOnline extends Action {
 
 		global $activeRecordProfile;
 		if (isset($activeRecordProfile)) {
-			$subType = $activeRecordProfile;
+			$subType = $activeRecordProfile->name;
 		} else {
 			$indexingProfile = new IndexingProfile();
 			$indexingProfile->name = 'ils';
@@ -28,7 +30,6 @@ class ExternalEContent_AccessOnline extends Action {
 		}
 
 		/** @var ExternalEContentDriver $recordDriver */
-		require_once ROOT_DIR . '/RecordDrivers/ExternalEContentDriver.php';
 		$this->recordDriver = new ExternalEContentDriver($subType . ':' . $id);
 
 		if ($this->recordDriver->isValid()) {

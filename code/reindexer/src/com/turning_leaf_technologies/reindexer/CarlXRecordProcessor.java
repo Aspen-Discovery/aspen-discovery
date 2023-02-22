@@ -88,7 +88,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 
 	private static int numSampleRecordsWithMultiplePrintFormats = 0;
 	@Override
-	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record) {
+	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record, boolean hasChildRecords) {
 		List<DataField> items = MarcUtil.getDataFields(record, itemTagInt);
 		boolean allItemsAreOrderRecords = true;
 		HashMap<String, Integer> printFormats = new HashMap<>();
@@ -138,7 +138,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 		}
 
 		if (allItemsAreOrderRecords){
-			super.loadPrintFormatInformation(ilsRecord, record);
+			super.loadPrintFormatInformation(ilsRecord, record, hasChildRecords);
 			return;
 		}
 
