@@ -423,6 +423,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
+	public function findNewUserByField(string $field, string $value): mixed {
+		return false;
+	}
+
 	public function hasIssueSummaries() {
 		return false;
 	}
