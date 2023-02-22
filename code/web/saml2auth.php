@@ -118,7 +118,6 @@ foreach ($lmsToSso as $key => $mappings) {
 	}
 }
 
-$_REQUEST['username'] = $uid;
 // Does this user exist in the LMS
 if($ilsUniqueAttribute) {
 	$user = $catalogConnection->findUserByField($ilsUniqueAttribute, $uid);
@@ -180,8 +179,10 @@ if (!$user instanceof User) {
 
 // If we have an Aspen user, we can set up the session
 if ($user instanceof User) {
-	if($uidAsEmail) {
+	if($uidAsEmail || $ilsUniqueAttribute) {
 		$_REQUEST['username'] = $user->cat_username;
+	} else {
+		$_REQUEST['username'] = $uid;
 	}
 	$login = UserAccount::login(true);
 
