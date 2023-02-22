@@ -1553,7 +1553,7 @@ public class PolarisExportMain {
 	}
 
 	private synchronized static String groupPolarisRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
 	private synchronized static MarcRecordGrouper getRecordGroupingProcessor() {

@@ -659,7 +659,7 @@ public class EvergreenExportMain {
 	}
 
 	private synchronized static String groupEvergreenRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
 	private synchronized static MarcRecordGrouper getRecordGroupingProcessor() {
@@ -1253,7 +1253,7 @@ public class EvergreenExportMain {
 								marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 
 								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null, getGroupedWorkIndexer());
 									if (permanentId == null) {
 										//Delete the record since it is suppressed
 										deleteRecord = true;

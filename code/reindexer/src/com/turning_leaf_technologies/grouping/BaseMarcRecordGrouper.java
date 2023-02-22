@@ -3,11 +3,10 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.marc.MarcUtil;
+import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,7 +17,6 @@ import java.util.List;
 import java.util.Set;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
-	private final String recordNumberTag;
 	private final int recordNumberTagInt;
 	private final char recordNumberSubfield;
 	private final String recordNumberPrefix;
@@ -35,7 +33,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	BaseMarcRecordGrouper(String serverName, BaseIndexingSettings settings, Connection dbConn, BaseIndexingLogEntry logEntry, Logger logger) {
 		super(dbConn, serverName, logEntry, logger);
 		this.dbConn = dbConn;
-		recordNumberTag = settings.getRecordNumberTag();
+		String recordNumberTag = settings.getRecordNumberTag();
 		recordNumberTagInt = Integer.parseInt(recordNumberTag);
 		recordNumberSubfield = settings.getRecordNumberSubfield();
 		recordNumberPrefix = settings.getRecordNumberPrefix();
@@ -44,11 +42,12 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		baseSettings = settings;
 	}
 
-	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId);
+	public abstract String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer);
 
 	public RecordIdentifier getPrimaryIdentifierFromMarcRecord(Record marcRecord, BaseIndexingSettings indexingProfile) {
 		RecordIdentifier identifier = null;
 		if (marcRecord == null) {
+			isValid = false;
 			return null;
 		}
 		VariableField recordNumberField = marcRecord.getVariableField(recordNumberTagInt);
@@ -75,8 +74,10 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		if (identifier != null && identifier.isValid()) {
+			isValid = true;
 			return identifier;
 		} else {
+			isValid = false;
 			return null;
 		}
 	}
@@ -87,9 +88,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		ControlField fixedField = (ControlField) record.getVariableField(8);
 		char formatCode;
 
-		// check for music recordings quickly so we can figure out if it is music
+		// check for music recordings quickly, so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
-		// Disc/Phonograph, etc is difficult).
+		// Disc/Phonograph, etc. is difficult).
 		if (leader.length() >= 6) {
 			leaderBit = leader.charAt(6);
 			if (Character.toUpperCase(leaderBit) == 'J') {
@@ -138,7 +139,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		}
 
 		// Check for large print book (large format in 650, 300, or 250 fields)
-		// Check for blu-ray in 300 fields
+		// Check for Blu-ray in 300 fields
 		DataField edition = record.getDataField(250);
 		if (edition != null) {
 			if (edition.getSubfield('a') != null) {
@@ -205,7 +206,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 				if (formatField.getData() == null || formatField.getData().length() < 2) {
 					continue;
 				}
-				// Check for blu-ray (s in position 4)
+				// Check for Blu-ray (s in position 4)
 				// This logic does not appear correct.
 				/*
 				 * if (formatField.getData() != null && formatField.getData().length()
@@ -479,6 +480,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		//The 240 only gives good information if the language is not English.  If the language isn't English,
 		//it generally gives the english translation which could help to group translated versions with the original work.
 		// Not implementing this for now until we get additional feedback 2/2021
+		@SuppressWarnings("CommentedOutCode")
 		/*DataField field240 = marcRecord.getDataField(240);
 		if (field240 != null && field240.getSubfield('a') != null){
 			if (field240.getSubfield('l') != null) {
@@ -512,12 +514,9 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			numNonFilingCharacters = Integer.parseInt(Character.toString(nonFilingCharacters));
 		}
 
-		boolean isUniformTitle = false;
-		if (titleField.getTag().equals("130")){
-			isUniformTitle = true;
-		}
+		boolean isUniformTitle = titleField.getTag().equals("130");
 
-		//Add in subtitle (subfield b as well to avoid problems with gov docs, etc)
+		//Add in subtitle (subfield b as well to avoid problems with gov docs, etc.)
 		StringBuilder groupingSubtitle = new StringBuilder();
 		if (titleField.getSubfield('b') != null) {
 			groupingSubtitle.append(titleField.getSubfield('b').getData());
@@ -526,6 +525,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		//Group volumes, seasons, etc. independently
 		List<Subfield> partSubfields;
 		if (isUniformTitle) {
+			//noinspection SpellCheckingInspection
 			partSubfields = titleField.getSubfields("mnops");
 		}else{
 			partSubfields = titleField.getSubfields("fnp");
@@ -604,14 +604,6 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 		return numRemainingRecordsToDelete;
 	}
 
-	private Long getExistingChecksum(String recordNumber) {
-		IlsTitle curTitle = existingRecords.get(recordNumber);
-		if (curTitle != null) {
-			return curTitle.getChecksum();
-		}
-		return null;
-	}
-
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public int getNumExistingTitles(BaseIndexingLogEntry logEntry) {
 		try {
@@ -661,7 +653,7 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			return true;
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing titles", e);
-			logEntry.addNote("Error loading existing titles" + e.toString());
+			logEntry.addNote("Error loading existing titles" + e);
 			return false;
 		}
 	}
