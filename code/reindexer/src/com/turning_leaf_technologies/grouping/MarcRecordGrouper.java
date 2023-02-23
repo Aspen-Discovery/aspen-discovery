@@ -207,7 +207,11 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					//if the record does have a parent, we're going to cheat a bit and use the info for the parent record when grouping
 					if (firstParentRecordId != null) {
 						Record parentMarcRecord = indexer.loadMarcRecordFromDatabase(profile.getName(), firstParentRecordId, logEntry);
-						workForTitle = setupBasicWorkForIlsRecord(parentMarcRecord);
+						if (parentMarcRecord == null) {
+							indexer.forceRecordReindex(primaryIdentifier.getType(), primaryIdentifier.getIdentifier());
+						} else {
+							workForTitle = setupBasicWorkForIlsRecord(parentMarcRecord);
+						}
 					}
 				}
 			}

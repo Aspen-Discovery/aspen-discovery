@@ -157,6 +157,7 @@ public class GroupedWorkIndexer {
 	private String treatUnknownLanguageAs = "English";
 	private int indexVersion;
 	private int searchVersion;
+	private boolean includePersonalAndCorporateNamesInTopics;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -190,13 +191,14 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, includePersonalAndCorporateNamesInTopics from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 				this.indexVersion = systemVariablesRS.getInt("indexVersion");
 				this.searchVersion = systemVariablesRS.getInt("searchVersion");
+				this.includePersonalAndCorporateNamesInTopics = systemVariablesRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 				if (fullReindex) {
 					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
 				}
@@ -2338,6 +2340,10 @@ public class GroupedWorkIndexer {
 
 	public void setRegroupAllRecords(boolean regroupAllRecords) {
 		this.regroupAllRecords = regroupAllRecords;
+	}
+
+	public boolean isIncludePersonalAndCorporateNamesInTopics() {
+		return includePersonalAndCorporateNamesInTopics;
 	}
 
 	public enum MarcStatus {

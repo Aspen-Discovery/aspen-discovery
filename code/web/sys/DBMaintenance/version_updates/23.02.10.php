@@ -46,5 +46,13 @@ function getUpdates23_02_10(): array {
 				"ALTER TABLE grouped_work_record_items ADD COLUMN isVirtual TINYINT(1) NOT NULL DEFAULT 0;",
 			]
 		], //add_is_virtual_info_to_items
+		'includePersonalAndCorporateNamesInTopics' => [
+			'title' => 'Include Personal And Corporate Names In Topics',
+			'description' => 'Add includePersonalAndCorporateNamesInTopics to System Variables',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
+			]
+		], //includePersonalAndCorporateNamesInTopics
     ];
 }
