@@ -2387,7 +2387,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 	}
 
-	private function getContinuesRecords() {
+	public function getContinuesRecords() {
 		$continuesRecords = [];
 		$marcRecord = $this->getMarcRecord();
 		if (!empty($marcRecord)) {
@@ -2421,7 +2421,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $continuesRecords;
 	}
 
-	private function getContinuedByRecords() {
+	public function getContinuedByRecords() {
 		$continuedByRecords = [];
 		$marcRecord = $this->getMarcRecord();
 		if (!empty($marcRecord)) {

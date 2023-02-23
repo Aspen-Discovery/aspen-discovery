@@ -119,6 +119,45 @@ class ExternalEContentDriver extends BaseEContentDriver {
 			'label' => 'Citations',
 			'body' => $interface->fetch('Record/cite.tpl'),
 		];
+		//Check to see if the record has parents
+		$parentRecords = $this->getParentRecords();
+		if (count($parentRecords) > 0) {
+			$interface->assign('parentRecords', $parentRecords);
+			$moreDetailsOptions['parentRecords'] = [
+				'label' => 'Part Of',
+				'body' => $interface->fetch('Record/view-containing-records.tpl'),
+			];
+		}
+
+		//Check to see if the record has children
+		$childRecords = $this->getChildRecords();
+		if (count($childRecords) > 0) {
+			$interface->assign('childRecords', $childRecords);
+			$moreDetailsOptions['childRecords'] = [
+				'label' => 'Contains',
+				'body' => $interface->fetch('Record/view-contained-records.tpl'),
+			];
+		}
+
+		//Check to see if the record has children
+		$continuesRecords = $this->getContinuesRecords();
+		if (count($continuesRecords) > 0) {
+			$interface->assign('continuesRecords', $continuesRecords);
+			$moreDetailsOptions['continuesRecords'] = [
+				'label' => 'Continues',
+				'body' => $interface->fetch('Record/view-continues-records.tpl'),
+			];
+		}
+
+		//Check to see if the record has children
+		$continuedByRecords = $this->getContinuedByRecords();
+		if (count($continuedByRecords) > 0) {
+			$interface->assign('continuedByRecords', $continuedByRecords);
+			$moreDetailsOptions['continuedByRecords'] = [
+				'label' => 'Continued By',
+				'body' => $interface->fetch('Record/view-continued-by-records.tpl'),
+			];
+		}
 		if ($interface->getVariable('showStaffView')) {
 			$moreDetailsOptions['staff'] = [
 				'label' => 'Staff View',

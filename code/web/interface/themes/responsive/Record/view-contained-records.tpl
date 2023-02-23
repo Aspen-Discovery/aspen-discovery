@@ -8,7 +8,7 @@
 				<div class="col-xs-3">
 					{$childRecord.format}
 				</div>
-				<div class="col-xs-2">
+				<div class="col-xs-2 text-right">
 					{if !empty($childRecord.actions)}
 						<div class="btn-group btn-group-vertical btn-block">
 							{foreach from=$childRecord.actions item=curAction}
@@ -19,6 +19,8 @@
 								{/if}
 							{/foreach}
 						</div>
+					{else}
+						<a href="{$childRecord.link}" class="btn btn-sm btn-tools">{translate text="More Info" isPublicFacing=true}</a>
 					{/if}
 				</div>
 			</div>
