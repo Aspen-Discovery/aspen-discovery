@@ -95,7 +95,7 @@ class ExternalEContentDriver extends BaseEContentDriver {
 		$moreDetailsOptions = $this->getBaseMoreDetailsOptions($isbn);
 
 		$moreDetailsOptions['copies'] = [
-			'label' => 'Copies',
+			'label' => 'Links',
 			'body' => $interface->fetch('ExternalEContent/view-items.tpl'),
 			'openByDefault' => true,
 		];
