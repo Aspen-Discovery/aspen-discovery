@@ -16,6 +16,7 @@ class Grouping_Record {
 	public $physical;
 	public $closedCaptioned;
 	public $variationFormat;
+	public $recordVariations;
 	public $hasParentRecord;
 	public $hasChildRecord;
 

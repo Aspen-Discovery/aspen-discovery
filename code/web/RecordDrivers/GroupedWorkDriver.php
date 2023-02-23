@@ -1658,7 +1658,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			return null;
 		}
 	}
-
 	public function getScrollerTitle($index, $scrollerName) {
 		global $interface;
 		$interface->assign('index', $index);
@@ -2590,7 +2589,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$thisVariation = $item['groupedWorkVariationId'];
 							foreach ($allVariations as $variation) {
 								if ($thisVariation == $variation->databaseId) {
-									$recordVariations[] = $variation;
+									$recordVariations[$variation->manifestation->format] = $variation;
 								}
 							}
 						}
@@ -2607,6 +2606,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true);
 
 							$relatedRecord->variationFormat = $variation->manifestation->format;
+							$relatedRecord->recordVariations = $recordVariations;
 
 							$relatedRecords[$relatedRecord->id] = $relatedRecord;
 							$allRecords[$relatedRecord->databaseId . ':' . $variation->manifestation->format] = $relatedRecord;
