@@ -11,9 +11,16 @@ class MyRatings extends MyAccount {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+
+		$page = $_REQUEST['page'] ?? 1;
+		$pageSize = $_REQUEST['pageSize'] ?? 20;
+
 		$rating = new UserWorkReview();
 		$rating->userId = UserAccount::getActiveUserId();
 		$rating->orderBy('dateRated DESC');
+		$rating->find();
+		$numRated = $rating->getNumResults();
+		$rating->limit(($page - 1) * $pageSize, $pageSize);
 		$rating->find();
 		$ratings = [];
 		$ratedIds = [];
@@ -47,45 +54,16 @@ class MyRatings extends MyAccount {
 			}
 		}
 
-		//Load titles the user is not interested in
-		$notInterested = [];
-
-		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
-		$notInterestedObj = new NotInterested();
-		$notInterestedObj->userId = UserAccount::getActiveUserId();
-		$notInterestedObj->orderBy('dateMarked DESC');
-		$notInterestedObj->find();
-		$notInterestedIds = [];
-		while ($notInterestedObj->fetch()) {
-			$notInterestedIds[$notInterestedObj->groupedRecordPermanentId] = clone($notInterestedObj);
-		}
-		$timer->logTime("Loaded ids of titles the user is not interested in");
-
-		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
-		$searchObject = SearchObjectFactory::initSearchObject();
-		$records = $searchObject->getRecords(array_keys($notInterestedIds));
-		foreach ($notInterestedIds as $permanentId => $notInterestedObj) {
-			if (array_key_exists($permanentId, $notInterestedIds)) {
-				if (array_key_exists($permanentId, $records)) {
-					$groupedWorkDriver = $records[$permanentId];
-					if ($groupedWorkDriver->isValid) {
-						$notInterested[] = [
-							'id' => $notInterestedObj->id,
-							'title' => $groupedWorkDriver->getTitle(),
-							'author' => $groupedWorkDriver->getPrimaryAuthor(),
-							'dateMarked' => $notInterestedObj->dateMarked,
-							'link' => $groupedWorkDriver->getLinkUrl(),
-						];
-					}
-				}
-			}
-		}
-		$timer->logTime("Loaded grouped works for titles user is not interested in");
-
+		// Process Paging
+		$options = [
+			'perPage' => $pageSize,
+			'totalItems' => $numRated,
+			'append' => false,
+		];
+		$pager = new Pager($options);
+		$interface->assign('pageLinks', $pager->getLinks());
 		$interface->assign('ratings', $ratings);
-		$interface->assign('notInterested', $notInterested);
 		$interface->assign('showNotInterested', false);
-
 		$this->display('myRatings.tpl', 'My Ratings', 'Search/home-sidebar.tpl');
 	}
 
