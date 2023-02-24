@@ -18,7 +18,7 @@
 	{/if}
 
 	<div class="resultHead">
-		<h1>{translate text="Titles You're Not Interested In" isPublicFacing=true}</h1>
+		<h1>{translate text="Not Interested In Titles" isPublicFacing=true}</h1>
 
 		<div class="page">
 

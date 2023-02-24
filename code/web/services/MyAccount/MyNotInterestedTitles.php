@@ -66,13 +66,13 @@ class MyNotInterestedTitles extends MyAccount {
 		$interface->assign('notInterested', $notInterested);
 		$interface->assign('showNotInterested', false);
 
-		$this->display('myNotInterestedTitles.tpl', "Titles You're Not Interested In", 'Search/home-sidebar.tpl');
+		$this->display('myNotInterestedTitles.tpl', "Not Interested In Titles", 'Search/home-sidebar.tpl');
 	}
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
-		$breadcrumbs[] = new Breadcrumb('', "Titles You're Not Interested In");
+		$breadcrumbs[] = new Breadcrumb('', "Not Interested In Titles");
 		return $breadcrumbs;
 	}
 }
