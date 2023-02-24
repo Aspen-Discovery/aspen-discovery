@@ -9,8 +9,22 @@
 		<form role="form">
 			<div class="form-group">
 				<label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
-				<input  type="text" name="settingsSearch" id="settingsSearch"
-						onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
+				<div class="input-group">
+					<input  type="text" name="settingsSearch" id="settingsSearch"
+							onkeyup="return AspenDiscovery.Admin.searchSettings();" onkeydown="AspenDiscovery.preventEnterKey(e);" class="form-control" />
+					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
+					<script type="text/javascript">
+                        {literal}
+						$(document).ready(function() {
+							$("#settingsSearch").keydown("keydown", function (e) {
+								if (e.which === 13) {
+									e.preventDefault();
+								}
+							});
+						});
+                        {/literal}
+					</script>
+				</div>
 			</div>
 		</form>
 		<div id="adminSections" class="grid" data-colcade="columns: .grid-col, items: .grid-item">
