@@ -11,7 +11,7 @@
 	{/if}
 </p>
 
-{if $user->canSuggestMaterials()}
+{if $loggedIn && $user->canSuggestMaterials()}
 	{if $materialRequestType == 1 && $displayMaterialsRequest }
 		<p class="alert alert-info materialsRequestLink">
 			{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="/MaterialsRequest/NewRequest" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Submit Request' isPublicFacing=true}</a>

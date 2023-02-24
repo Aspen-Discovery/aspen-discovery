@@ -5,8 +5,8 @@
 			{*Display Title Scroller Header*}
 			{if $collectionSpotlight->showSpotlightTitle}
 				{assign var="firstList" value=$collectionSpotlight->lists|reset}
-				<div id="{$firstList->name|regex_replace:'/\W/':''|escape:url}" class="titleScrollerWrapper singleTitleSpotlightWrapper">
-					<div id="list-{$firstList->name|regex_replace:'/\W/':''|escape:url}Header" class="titleScrollerHeader">
+				<div id="collectionSpotlight{$collectionSpotlight->id}-wrapper" class="titleScrollerWrapper singleTitleSpotlightWrapper">
+					<div id="collectionSpotlight{$collectionSpotlight->id}-header" class="titleScrollerHeader">
 						{if $collectionSpotlight->showSpotlightTitle && !empty($collectionSpotlight->name)}
 							<span class="listTitle resultInformationLabel">{if $collectionSpotlight->name}{translate text=$collectionSpotlight->name isPublicFacing=true isAdminEnteredData=true}{/if}</span>
 						{/if}
@@ -20,7 +20,7 @@
 					{assign var="active" value=$smarty.foreach.spotlightList.first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 					<li {if !empty($active)}class="active"{/if}>
-						<a id="spotlightTab{$list->id}" href="#list-{$list->name|regex_replace:'/\W/':''|escape:url}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}" data-url="{$list->fullListLink()}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true}</a>
+						<a id="spotlightTab{$list->id}" href="#tab-{$list->id}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}" data-url="{$list->fullListLink()}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true}</a>
 					</li>
 					{/if}
 				{/foreach}
@@ -30,7 +30,7 @@
 				<select class="availableLists" id="availableLists{$collectionSpotlight->id}" onchange="changeSelectedList();return false;" aria-label="{translate text="Select a list to display" isPublicFacing=true inAttribute=true}">
 					{foreach from=$collectionSpotlight->lists item=list}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					<option value="list-{$list->name|regex_replace:'/\W/':''|escape:url}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
+					<option value="tab-{$list->id}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true inAttribute=true}</option>
 					{/if}
 					{/foreach}
 				</select>
@@ -47,9 +47,10 @@
 			{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn && $user->disableRecommendations == 0) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 				{assign var="listIndex" value=$listIndex+1}
 				{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
-				{assign var="scrollerName" value="$listName"}
-				{assign var="wrapperId" value="$listName"}
-				{assign var="scrollerVariable" value="listScroller$listName"}
+				{assign var="listId" value=$list->id}
+				{assign var="scrollerName" value="$listId"}
+				{assign var="wrapperId" value="$listId"}
+				{assign var="scrollerVariable" value="listScroller$listId"}
 				{assign var="scrollerTitle" value=$collectionSpotlight->name}
 				{assign var="fullListLink" value=$list->fullListLink()}
 				{assign var="showViewMoreLink" value=$collectionSpotlight->showViewMoreLink}
@@ -98,7 +99,7 @@
 
 			{foreach from=$collectionSpotlight->lists item=list}
 				{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					var listScroller{$list->name|regex_replace:'/\W/':''|escape:url};
+					var listScroller{$list->id};
 				{/if}
 			{/foreach}
 
@@ -114,8 +115,8 @@
 			        {assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 						{if $index == 0}
-							listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
-							listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
+							listScroller{$listId} = new TitleScroller('titleScroller{$listId}', '{$listId}', 'tab-{$listId}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
+							listScroller{$listId}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listId}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
 						{/if}
 						{assign var=index value=$index+1}
 					{/if}
@@ -154,15 +155,15 @@
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 						{if $index == 0}
 							if (listIndex === {$index}){ldelim}
-								listScroller{$listName}.activateCurrentTitle();
+								listScroller{$listId}.activateCurrentTitle();
 							{rdelim}
 						{else}
 							else if (listIndex === {$index}){ldelim}
-								if (listScroller{$listName} == null){ldelim}
-									listScroller{$listName} = new TitleScroller('titleScroller{$listName}', '{$listName}', 'list{$listName}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
-									listScroller{$listName}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listName}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
+								if (listScroller{$listId} == null){ldelim}
+									listScroller{$listId} = new TitleScroller('titleScroller{$listId}', '{$listId}', 'tab-{$listId}', {if $collectionSpotlight->autoRotate==1}true{else}false{/if}, '{$collectionSpotlight->style}');
+									listScroller{$listId}.loadTitlesFrom('/Search/AJAX?method=getSpotlightTitles%26id={$list->id}%26scrollerName={$listId}%26coverSize={$collectionSpotlight->coverSize}%26showRatings={$collectionSpotlight->showRatings}%26numTitlesToShow={$collectionSpotlight->numTitlesToShow}{if !empty($reload)}%26reload=true{/if}', false);
 								{rdelim}else{ldelim}
-									listScroller{$listName}.activateCurrentTitle();
+									listScroller{$listId}.activateCurrentTitle();
 								{rdelim}
 							{rdelim}
 						{/if}
