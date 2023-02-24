@@ -15,6 +15,9 @@ class MyNotInterestedTitles extends MyAccount {
 		$page = $_REQUEST['page'] ?? 1;
 		$pageSize = $_REQUEST['pageSize'] ?? 20;
 
+		$user = UserAccount::getActiveUserObj();
+		$numNotInterested = $user->getNumNotInterested();
+
 		//Load titles the user is not interested in
 		$notInterested = [];
 
@@ -22,8 +25,6 @@ class MyNotInterestedTitles extends MyAccount {
 		$notInterestedObj = new NotInterested();
 		$notInterestedObj->userId = UserAccount::getActiveUserId();
 		$notInterestedObj->orderBy('dateMarked DESC');
-		$notInterestedObj->find();
-		$numRated = $notInterestedObj->getNumResults();
 		$notInterestedObj->limit(($page - 1) * $pageSize, $pageSize);
 		$notInterestedObj->find();
 		$notInterestedIds = [];
@@ -56,7 +57,7 @@ class MyNotInterestedTitles extends MyAccount {
 		// Process Paging
 		$options = [
 			'perPage' => $pageSize,
-			'totalItems' => $numRated,
+			'totalItems' => $numNotInterested,
 			'append' => false,
 		];
 		$pager = new Pager($options);
