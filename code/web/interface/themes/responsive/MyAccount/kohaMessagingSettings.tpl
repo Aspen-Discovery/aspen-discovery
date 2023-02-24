@@ -160,6 +160,22 @@
 				</div>
 			</div>
 		{/if}
+		{if $canTranslateNotices}
+			<div class="row form-group" id="langRow">
+	            <div class="col-md-3">
+	                <label for="lang" class="control-label">{translate text="Preferred language for notices" isPublicFacing=true}</label>
+	            </div>
+	            <div class="col-md-9">
+	                {if !empty($canSave) && !empty($noticeLanguages)}
+		            <select class="form-control-sm" name="lang" aria-label="{translate text="Preferred language for notices" isPublicFacing=true}">
+	                    {foreach from=$noticeLanguages item="language" key=id}
+	                        <option value="{$id}" {if $preferredNoticeLanguage==$id}selected="selected"{/if}>{$language}</option>
+	                    {/foreach}
+	                </select>
+	                {/if}
+	            </div>
+	        </div>
+		{/if}
 		{if !empty($canSave)}
 			<button type="submit" class="btn btn-sm btn-primary" name="submit">{translate text="Update Settings" isPublicFacing=true}</button>
 		{/if}
