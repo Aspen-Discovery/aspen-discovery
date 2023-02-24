@@ -943,6 +943,12 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		} else {
 			$relatedRecord = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 			if ($relatedRecord != null) {
+				if (count($relatedRecord->recordVariations) > 1){
+					foreach ($relatedRecord->recordVariations as $variation){
+						$formats[] = $variation->manifestation->format;
+					}
+					return $formats;
+				}
 				return [$relatedRecord->format];
 			} else {
 				$recordDetails = $this->getGroupedWorkDriver()->getSolrField('record_details');
