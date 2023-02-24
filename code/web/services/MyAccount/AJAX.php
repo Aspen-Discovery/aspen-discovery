@@ -2298,6 +2298,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 			//Count of ratings
 			$result['ratings'] = $user->getNumRatings();
+			$result['notInterested'] = $user->getNumNotInterested();
 		}//User is not logged in
 
 		return $result;
