@@ -32,6 +32,9 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 	protected $publicQuery = null;
 	protected $idFieldName = 'id';
 
+	protected $facetSearchField;
+	protected $facetSearchTerm;
+
 	public function __construct() {
 		parent::__construct();
 		// Set appropriate debug mode:
@@ -352,6 +355,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 			}
 		}
 
+		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains"] = $this->facetSearchTerm;
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains.ignoreCase"] = 'true';
+		}
+
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}
@@ -490,6 +498,11 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 			'correctlySpelled' => $correctlySpelled,
 			'suggestions' => $returnArray,
 		];
+	}
+
+	public function addFacetSearch($searchField, $searchTerm) {
+		$this->facetSearchField = $searchField;
+		$this->facetSearchTerm = $searchTerm;
 	}
 
 	/**

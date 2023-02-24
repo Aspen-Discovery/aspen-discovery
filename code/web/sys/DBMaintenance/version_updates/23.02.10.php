@@ -37,6 +37,22 @@ function getUpdates23_02_10(): array {
 				"UPDATE grouped_work_more_details SET weight = (weight + 1) where weight >= 5",
 				"INSERT INTO grouped_work_more_details (groupedWorkSettingsId, source, collapseByDefault, weight) select grouped_work_display_settings.id, 'continuedByRecords', 0, 5 from grouped_work_display_settings where grouped_work_display_settings.id in (SELECT distinct groupedWorkSettingsId from grouped_work_more_details)",
 			],
-		],
+		], //add_continuedByRecords_more_details_section
+		'add_is_virtual_info_to_items' => [
+			'title' => 'Add Is Virtual Info to Items',
+			'description' => 'Add Is Virtual Info to Items',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE grouped_work_record_items ADD COLUMN isVirtual TINYINT(1) NOT NULL DEFAULT 0;",
+			]
+		], //add_is_virtual_info_to_items
+		'includePersonalAndCorporateNamesInTopics' => [
+			'title' => 'Include Personal And Corporate Names In Topics',
+			'description' => 'Add includePersonalAndCorporateNamesInTopics to System Variables',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
+			]
+		], //includePersonalAndCorporateNamesInTopics
     ];
 }

@@ -2375,7 +2375,7 @@ class SearchAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	private function restoreSearch($id) {
+	public function restoreSearch($id, $processSearch = true) {
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$search = new SearchEntry();
 		$search->id = $id;
@@ -2384,7 +2384,9 @@ class SearchAPI extends Action {
 			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
 			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
 			if ($searchObj) {
-				$searchObj->processSearch(false, true);
+				if ($processSearch) {
+					$searchObj->processSearch(false, true);
+				}
 				return $searchObj;
 			}
 		}
