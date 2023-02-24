@@ -409,7 +409,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return suppressionNotes;
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, boolean hasParentRecord, boolean hasChildRecords){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
@@ -451,12 +451,14 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				if (!isOverDrive && !isHoopla && !isOneClickDigital && !isCloudLibrary && isEContent){
 					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
 					if (eContentRecord != null) {
+						eContentRecord.setHasParentRecord(hasParentRecord);
+						eContentRecord.setHasChildRecord(hasChildRecords);
 						unsuppressedEcontentRecords.add(eContentRecord);
 					}
 				}
 			}
 		}
-		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes);
+		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, hasParentRecord, hasChildRecords);
 		if (parentEContentRecords.size() > 0) {
 			unsuppressedEcontentRecords.addAll(parentEContentRecords);
 		}

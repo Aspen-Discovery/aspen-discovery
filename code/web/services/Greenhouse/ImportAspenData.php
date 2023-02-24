@@ -47,11 +47,6 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				'className' => 'UserPayment',
 				'name' => 'User Payments',
 			],
-			'user_staff_settings' => [
-				'classFile' => ROOT_DIR . '/sys/Account/UserStaffSettings.php',
-				'className' => 'UserStaffSettings',
-				'name' => 'User Staff Settings',
-			],
 			'user_saved_searches' => [
 				'classFile' => ROOT_DIR . '/sys/SearchEntry.php',
 				'className' => 'SearchEntry',

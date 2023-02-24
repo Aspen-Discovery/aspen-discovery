@@ -24,6 +24,7 @@ class SystemAPI extends Action {
 					'getAppSettings',
 					'getLocationAppSettings',
 					'getTranslation',
+					'getTranslationWithValues',
 					'getLanguages',
 					'getVdxForm',
 				])) {
@@ -238,9 +239,9 @@ class SystemAPI extends Action {
 			$location = new Location();
 			$location->locationId = $_REQUEST['locationId'];
 			if ($location->find(true)) {
-				require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-				$appSettings = new AppSetting();
-				$appSettings->id = $location->lidaGeneralSettingId;
+				require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
+				$appSettings = new LocationSetting();
+				$appSettings->id = $location->lidaLocationSettingId;
 				if ($appSettings->find(true)) {
 					$settings['releaseChannel'] = $appSettings->releaseChannel;
 					$settings['enableAccess'] = $appSettings->enableAccess;
@@ -660,6 +661,64 @@ class SystemAPI extends Action {
 			$response['translations'][$term] = $translator->translate($term, $term, [], true, true);
 		}
 		return $response;
+	}
+
+	function getTranslationWithValues() {
+		if (isset($_REQUEST['term'])) {
+			$term = $_REQUEST['term'];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Please provide at least one term to translate.',
+			];
+		}
+
+		if (isset($_REQUEST['values'])) {
+			if(is_array($_REQUEST['values'])) {
+				$givenValues = $_REQUEST['values'];
+			} else {
+				$givenValues[] = $_REQUEST['values'];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Please provide at least one value to translate with the term.',
+			];
+		}
+
+		if (isset($_REQUEST['language'])) {
+			$language = new Language();
+			$language->code = $_REQUEST['language'];
+			if ($language->find(true)) {
+				global $activeLanguage;
+				$activeLanguage = $language;
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Invalid language code provided.',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Please provide a language code to translate to.',
+			];
+		}
+
+		$num = 1;
+		$values = [];
+		foreach ($givenValues as $value) {
+			$values[$num] = $value[0];
+			$num++;
+		}
+
+		/** @var Translator $translator */ global $translator;
+		return [
+			'success' => true,
+			'translation' => [
+				$term => $translator->translate($term, $term, $values, true, true)
+			],
+		];
 	}
 
 	function getLanguages() {

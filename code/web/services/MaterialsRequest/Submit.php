@@ -179,6 +179,7 @@ class MaterialsRequest_Submit extends Action {
 									MaterialsRequestUsage::incrementStat($materialsRequest->status, $homeLibrary->libraryId);
 
 									$materialsRequest->sendStatusChangeEmail();
+									$materialsRequest->sendStaffNewMaterialsRequestEmail();
 								} else {
 									$interface->assign('success', false);
 									$interface->assign('error', translate([

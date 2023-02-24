@@ -193,6 +193,15 @@ class CatalogConnection {
 	}
 
 	/**
+	 * @param string $field
+	 * @param string $value
+	 * @return bool|User
+	 */
+	public function findUserByField(string $field, string $value) {
+		return $this->driver->findUserByField($field, $value);
+	}
+
+	/**
 	 * @param User $user
 	 */
 	public function updateUserWithAdditionalRuntimeInformation($user) {
@@ -1347,7 +1356,13 @@ class CatalogConnection {
 		$this->driver->validateUniqueId($user);
 	}
 
-	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+	/**
+	 * Map from the property names required for self registration to
+	 * the IdP property names returned from SAML2Authentication
+	 *
+	 * @return array|bool
+	 */
+	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
 		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber);
 	}
 

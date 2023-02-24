@@ -4,10 +4,12 @@ import moment from "moment";
 
 // import language files from locales folder
 import en from "./locales/en.json";
+import {GLOBALS} from '../util/globals';
+import {PATRON} from '../util/loadPatron';
 
 // sets the locale from the device to determine the best language to load
-if (global.interfaceLanguage) {
-  i18n.locale = global.interfaceLanguage;
+if (PATRON.language) {
+  i18n.locale = PATRON.language;
 } else {
   i18n.locale = Localization.locale;
 }

@@ -136,8 +136,8 @@ const AccountStackNavigator = () => {
                                     return null;
                                 } else {
                                     return (
-                                        <Pressable onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                            <ChevronLeftIcon color="primary.baseContrast" />
+                                        <Pressable mr={3} onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                            <ChevronLeftIcon size={6} color="primary.baseContrast" />
                                         </Pressable>
                                     );
                                 }
@@ -192,7 +192,7 @@ const AccountStackNavigator = () => {
                          },
                          headerRight: () => (
                               <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                   <CloseIcon color="primary.baseContrast" />
+                                   <CloseIcon size={5} color="primary.baseContrast" />
                               </Pressable>
                          ),
                     })}
@@ -216,7 +216,7 @@ const AccountStackNavigator = () => {
                       },
                       headerRight: () => (
                           <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon color="primary.baseContrast" />
+                              <CloseIcon size={5} color="primary.baseContrast" />
                           </Pressable>
                       ),
                   })}

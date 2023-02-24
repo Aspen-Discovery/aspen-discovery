@@ -386,8 +386,8 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory) {
-		loadTitles(groupedWork, record, format, formatCategory);
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
+		loadTitles(groupedWork, record, format, formatCategory, hasParentRecord);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
 
@@ -1107,7 +1107,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(AbstractGroupedWorkSolr groupedWork, Record record, String format, String formatCategory) {
+	private void loadTitles(AbstractGroupedWorkSolr groupedWork, Record record, String format, String formatCategory, boolean hasParentRecord) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
@@ -1115,17 +1115,19 @@ abstract class MarcRecordProcessor {
 		String authorInTitleField = null;
 		if (titleField != null) {
 			String subTitle = titleField.getSubfieldsAsString("bfgnp");
-			groupedWork.setTitle(titleField.getSubfieldsAsString("a"), subTitle, titleField.getSubfieldsAsString("abfgnp"), this.getSortableTitle(record), format, formatCategory);
+			if (!hasParentRecord) {
+				groupedWork.setTitle(titleField.getSubfieldsAsString("a"), subTitle, titleField.getSubfieldsAsString("abfgnp"), this.getSortableTitle(record), format, formatCategory);
+			}
 			//title full
 			authorInTitleField = titleField.getSubfieldsAsString("c");
 		}
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
 		if ((authorInTitleField != null && authorInTitleField.length() > 0) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
 			groupedWork.addFullTitles(MarcUtil.getAllSubfields(record, "245", " "));
-		}else{
+		} else {
 			//We didn't get an author from the 245, combine with the 100
 			Set<String> titles = MarcUtil.getAllSubfields(record, "245", " ");
-			for (String title : titles){
+			for (String title : titles) {
 				groupedWork.addFullTitle(title + " " + standardAuthorData);
 			}
 		}
@@ -1155,14 +1157,16 @@ abstract class MarcRecordProcessor {
 		for (DataField urlField : urlFields){
 			//load url into the item
 			if (urlField.getSubfield('u') != null){
-				//Try to determine if this is a resource or not.
-				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0'){
-					if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
-						itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-						break;
+				String linkText = urlField.getSubfield('u').getData().trim();
+				if (linkText.length() > 0) {
+					//Try to determine if this is a resource or not.
+					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0') {
+						if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
+							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+							break;
+						}
 					}
 				}
-
 			}
 		}
 	}
@@ -1215,6 +1219,7 @@ abstract class MarcRecordProcessor {
 
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
+
 		String leader = record.getLeader().toString();
 		char leaderBit = ' ';
 		ControlField fixedField = (ControlField) record.getVariableField(8);
@@ -2221,4 +2226,21 @@ abstract class MarcRecordProcessor {
 			}
 		}
 	}
+
+	public HashSet<String> getParentRecordIds(Record record) {
+		List<DataField> analyticFields = record.getDataFields(773);
+		HashSet<String> parentRecords = new HashSet<>();
+		for (DataField analyticField : analyticFields){
+			Subfield linkingSubfield = analyticField.getSubfield('w');
+			if (linkingSubfield != null){
+				//Establish a link and suppress this record
+				String parentRecordId = linkingSubfield.getData();
+				//Remove anything in parentheses
+				parentRecordId = parentRecordId.replaceAll("\\(.*?\\)", "").trim();
+				parentRecords.add(parentRecordId);
+			}
+		}
+		return parentRecords;
+	}
+
 }

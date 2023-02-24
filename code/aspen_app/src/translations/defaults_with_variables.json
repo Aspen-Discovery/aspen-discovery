@@ -1,0 +1,49 @@
+{
+  "general": {
+	"last_updated_on": "Last updated on {{date}}",
+	"sort_by": "Sort By {{sort}}"
+  },
+  "grouped_work": {
+	"no_matches": "No matches found for this title in {{language}} for {{format}} format"
+  },
+  "user_profile": {
+	"saved_searches_updated": "{{count}} With Updates"
+  },
+  "library_card": {
+	"expires_on": "Expires on {{date}}"
+  },
+  "checkouts": {
+	"overdue_summary": "{{count}} Overdue",
+	"access_online": "Access Online at {{source}}",
+	"read_online": "Read Online at {{source}}",
+	"listen_online": "Listen Online at {{source}}",
+	"watch_online": "Watch Online at {{source}}",
+	"filter_by": "Filter by {{source}} ({{num}})",
+	"checkouts_for_source": "Checked Out Titles for {{source}}"
+  },
+  "holds": {
+	"ready_for_pickup": "{{count}} Ready for Pickup",
+	"cancel_holds_count": "Cancel holds ({{num}})",
+	"cancel_all_holds_count": "Cancel all holds ({{num}})",
+	"thaw_holds_count": "Thaw holds ({{num}})",
+	"thaw_all_holds_count": "Thaw all holds ({{num}})",
+	"freeze_holds_count": "Freeze holds ({{num}})",
+	"freeze_all_holds_count": "Freeze all holds ({{num}})",
+	"positionWithHoldQueueLength": "{{position}} out of {{queueLength}}",
+	"titles_on_hold_for_source": "Titles On Hold for {{source}}",
+	"manage_selected": "Managed Selected ({{num}})",
+	"filter_by": "Filter by {{source}} ({{num}})",
+	"email_notification": "Yes, by email to {{email}}"
+  },
+  "lists": {
+	"num_items_on_list": "{{num}} items"
+  },
+  "filters": {
+	"years": "{{num}} years",
+	"result": "{{num}} result",
+	"results": "{{num}} results"
+  },
+  "reading_history": {
+	"sort_by": "Sort By {{sort}}"
+  },
+}

@@ -15,6 +15,7 @@ import { GLOBALS, LOGIN_DATA } from '../../util/globals';
 import { makeGreenhouseRequestAll, makeGreenhouseRequestNearby } from '../../util/login';
 import { GetLoginForm } from './LoginForm';
 import { SelectYourLibrary } from './SelectYourLibrary';
+import {LIBRARY} from '../../util/loadLibrary';
 
 export default class Login extends Component {
      constructor(props) {
@@ -202,6 +203,7 @@ export default class Login extends Component {
      // showLibraries: handles storing the states based on selected library to use later on in validation
      setLibraryBranch = async (item) => {
           if (_.isObject(item) && !this.state.libraryName) {
+               LIBRARY.url = item.baseUrl;
                this.setState({
                     libraryName: item.name,
                     libraryUrl: item.baseUrl,
@@ -217,6 +219,7 @@ export default class Login extends Component {
 
      setNewLibraryBranch = async (item) => {
           if (_.isObject(item)) {
+               LIBRARY.url = item.baseUrl;
                this.setState({
                     libraryName: item.name,
                     libraryUrl: item.baseUrl,

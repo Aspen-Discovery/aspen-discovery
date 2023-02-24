@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 class MyAccount_StaffSettings extends MyAccount {
 	function launch() {
 		global $interface;
+		global $library;
 		$user = UserAccount::getLoggedInUser();
 
 		if ($user) {
@@ -37,6 +38,7 @@ class MyAccount_StaffSettings extends MyAccount {
 				$interface->assign('edit', false);
 			}
 
+			$interface->assign('sendEmailOnAssignmentForLibrary', $library->materialsRequestSendStaffEmailOnAssign);
 			$interface->assign('profile', $patron);
 		}
 

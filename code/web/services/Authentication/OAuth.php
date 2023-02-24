@@ -26,7 +26,7 @@ class Authentication_OAuth extends Action {
 				exit();
 			}
 		}catch (UnknownAuthenticationMethodException $e) {
-			$errorMessage = $result['message'];
+			$errorMessage = "Could not initialize authentication";
 			require_once ROOT_DIR . '/services/MyAccount/Login.php';
 			$launchAction = new MyAccount_Login();
 			$launchAction->launch("Could not initialize authentication");

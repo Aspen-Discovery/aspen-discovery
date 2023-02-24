@@ -12,6 +12,7 @@ class UserAccount {
 	private static $guidingUserObjectFromDB = null;
 	private static $userRoles = null;
 	private static $userPermissions = null;
+	private static $ssoAuthOnly = false;
 
 	/**
 	 * Check to see if the user is enrolled in 2 factor authentication and has been sent a verification code, but has not verified it.
@@ -467,6 +468,7 @@ class UserAccount {
 		global $logger;
 		global $usageByIPAddress;
 		$usageByIPAddress->numLoginAttempts++;
+		UserAccount::$ssoAuthOnly = UserAccount::isPrimaryAccountAuthenticationSSO();
 
 		if (isset($_REQUEST['casLogin'])) {
 			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
@@ -485,6 +487,21 @@ class UserAccount {
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$_REQUEST['username'] = $casUsername;
 				$_REQUEST['password'] = $casUsername;
+				$validatedViaSSO = true;
+			}
+		}
+
+		if(isset($_REQUEST['ldapLogin']) && !$validatedViaSSO) {
+			$logger->log('Logging the user in via LDAP', Logger::LOG_NOTICE);
+			require_once ROOT_DIR . '/sys/Authentication/LDAPAuthentication.php';
+			$ldapAuthentication = new LDAPAuthentication();
+			$isAuthenticated = $ldapAuthentication->validateAccount($_POST['username'], $_POST['password']);
+			if($isAuthenticated instanceof AspenError) {
+				$logger->log('The user could not be logged in', Logger::LOG_NOTICE);
+				$usageByIPAddress->numFailedLoginAttempts++;
+				return new AspenError('Could not authenticate in sign on service');
+			} else {
+				$logger->log("LDAP user logged in OK", Logger::LOG_NOTICE);
 				$validatedViaSSO = true;
 			}
 		}
@@ -508,20 +525,29 @@ class UserAccount {
 			// If we authenticated, store the user in the session:
 			if (!($tempUser instanceof AspenError) && $tempUser != null) {
 				if ($validatedViaSSO) {
-					$_SESSION['loggedInViaCAS'] = true;
+					if (isset($_REQUEST['casLogin'])) {
+						$_SESSION['loggedInViaCAS'] = true;
+					}
+
+					if (isset($_REQUEST['ldapLogin'])) {
+						$_SESSION['loggedInViaLDAP'] = true;
+					}
 				}
-				global $library;
-				if ($library->preventExpiredCardLogin && $tempUser->_expired) {
-					// Create error
-					$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
-					$usageByIPAddress->numFailedLoginAttempts++;
-					return $cardExpired;
-				} elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))) {
-					$disallowedMessage = empty($library->messageForPatronsOfOtherLibraries) ? 'Sorry, this catalog can only be accessed by patrons of ' . $library->displayName : $library->messageForPatronsOfOtherLibraries;
-					return new AspenError($disallowedMessage);
-				} elseif ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->preventLogin)) {
-					$disallowedMessage = empty($tempUser->getHomeLibrary()->preventLoginMessage) ? 'Sorry, patrons of ' . $library->displayName . ' cannot login at this time.' : $tempUser->getHomeLibrary()->preventLoginMessage;
-					return new AspenError($disallowedMessage);
+
+				if(!UserAccount::$ssoAuthOnly) {
+					global $library;
+					if ($library->preventExpiredCardLogin && $tempUser->_expired) {
+						// Create error
+						$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
+						$usageByIPAddress->numFailedLoginAttempts++;
+						return $cardExpired;
+					} elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))) {
+						$disallowedMessage = empty($library->messageForPatronsOfOtherLibraries) ? 'Sorry, this catalog can only be accessed by patrons of ' . $library->displayName : $library->messageForPatronsOfOtherLibraries;
+						return new AspenError($disallowedMessage);
+					} elseif ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->preventLogin)) {
+						$disallowedMessage = empty($tempUser->getHomeLibrary()->preventLoginMessage) ? 'Sorry, patrons of ' . $library->displayName . ' cannot login at this time.' : $tempUser->getHomeLibrary()->preventLoginMessage;
+						return new AspenError($disallowedMessage);
+					}
 				}
 
 				//global $memCache;
@@ -570,6 +596,17 @@ class UserAccount {
 			$usageByIPAddress->numFailedLoginAttempts++;
 			return $lastError;
 		}
+	}
+
+	public static function loginWithAspen(User $user) {
+		self::updateSession($user);
+		UserAccount::$isLoggedIn = true;
+		UserAccount::$primaryUserData = $user;
+		if (isset($_COOKIE['searchPreferenceLanguage']) && $user->searchPreferenceLanguage == -1) {
+			$user->searchPreferenceLanguage = $_COOKIE['searchPreferenceLanguage'];
+			$user->update();
+		}
+		return $user;
 	}
 
 	private static $validatedAccounts = [];
@@ -634,7 +671,13 @@ class UserAccount {
 					//$memCache->set("user_{$serverName}_{$validatedUser->id}", $validatedUser, $configArray['Caching']['user']);
 					//$logger->log("Cached user {$validatedUser->id}", Logger::LOG_DEBUG);
 					if ($validatedViaSSO) {
-						$_SESSION['loggedInViaCAS'] = true;
+						if (isset($_REQUEST['casLogin'])) {
+							$_SESSION['loggedInViaCAS'] = true;
+						}
+
+						if (isset($_REQUEST['ldapLogin'])) {
+							$_SESSION['loggedInViaLDAP'] = true;
+						}
 					}
 					UserAccount::$validatedAccounts[$username . $password] = $validatedUser;
 					return $validatedUser;
@@ -781,9 +824,33 @@ class UserAccount {
 		return null;
 	}
 
+	public static function getLibraryAccountProfile() : ?AccountProfile {
+		global $library;
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		if($accountProfile->find(true)) {
+			return $accountProfile;
+		}
+		return null;
+	}
+
+	public static function isPrimaryAccountAuthenticationSSO(): bool {
+		global $library;
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		if($accountProfile->find(true)) {
+			if($accountProfile->authenticationMethod === 'sso') {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	static function has2FAEnabledForPType() {
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false) {
+		if (UserAccount::$primaryUserObjectFromDB != false  && UserAccount::$ssoAuthOnly === false) {
 			return UserAccount::$primaryUserObjectFromDB->get2FAStatusForPType();
 		}
 		return false;
@@ -791,7 +858,7 @@ class UserAccount {
 
 	static function isRequired2FA() {
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false) {
+		if (UserAccount::$primaryUserObjectFromDB != false && UserAccount::$ssoAuthOnly === false) {
 			return UserAccount::$primaryUserObjectFromDB->is2FARequired();
 		}
 		return false;
@@ -799,7 +866,7 @@ class UserAccount {
 
 	static function has2FAEnabled() {
 		UserAccount::loadUserObjectFromDatabase();
-		if (UserAccount::$primaryUserObjectFromDB != false) {
+		if (UserAccount::$primaryUserObjectFromDB != false && UserAccount::$ssoAuthOnly === false) {
 			return UserAccount::$primaryUserObjectFromDB->get2FAStatus();
 		}
 		return false;
@@ -824,6 +891,23 @@ class UserAccount {
 					return $tmpUser;
 				}
 			}
+		}
+		return false;
+	}
+
+	/**
+	 * Look up in Aspen for a user based on the given key and value.
+	 *
+	 * @param string $key The column in the User table to search
+	 * @param string $value Value needed to match the given key to find the user
+	 *
+	 * @return false|User
+	 */
+	public static function findNewAspenUser(string $key, string $value): mixed {
+		$newUser = new User();
+		$newUser->$key = $value;
+		if($newUser->find(true)) {
+			return $newUser;
 		}
 		return false;
 	}

@@ -25,11 +25,12 @@ import {SafeAreaView} from 'react-native';
 import {GetOverDriveSettings} from './OverDriveSettings';
 import {getProfile, PATRON} from '../../util/loadPatron';
 import Manifestation from './Manifestation';
+import {decodeHTML} from '../../util/apiAuth';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
      const id = route.params.id;
-     const { locations, accounts, updatePickupLocations, updateLinkedAccounts } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, updatePickupLocations, updateLinkedAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
@@ -43,9 +44,12 @@ export const GroupedWorkScreen = () => {
                     if (isSubscribed) {
                          updateGroupedWork(data);
                          updateFormat(data.format);
-                         await getLinkedAccounts(library.baseUrl).then((result) => {
-                              if (accounts !== result) {
-                                   updateLinkedAccounts(result);
+                         await getLinkedAccounts(user, cards, library).then((result) => {
+                              if (accounts !== result.accounts) {
+                                   updateLinkedAccounts(result.accounts);
+                              }
+                              if(cards !== result.cards) {
+                                  updateLibraryCards(result.cards);
                               }
                          });
                          await getPickupLocations(library.baseUrl).then((result) => {
@@ -151,7 +155,7 @@ const getDescription = (description) => {
      if (description) {
           return (
                <Text mt={5} mb={5} fontSize={{ base: 'md', lg: 'lg' }} lineHeight={{ base: '22px', lg: '26px' }}>
-                    {description}
+                    {decodeHTML(description)}
                </Text>
           );
      } else {

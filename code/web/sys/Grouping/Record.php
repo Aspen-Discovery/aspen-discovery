@@ -15,6 +15,9 @@ class Grouping_Record {
 	public $publicationDate;
 	public $physical;
 	public $closedCaptioned;
+	public $variationFormat;
+	public $hasParentRecord;
+	public $hasChildRecord;
 
 	public $_driver;
 	public $_url;
@@ -57,7 +60,7 @@ class Grouping_Record {
 	 * @param string $source
 	 * @param bool $useAssociativeArray
 	 */
-	public function __construct($recordId, $recordDetails, $recordDriver, $volumeData, $source, $useAssociativeArray = false) {
+	public function __construct(string $recordId, array $recordDetails, GroupedWorkSubDriver $recordDriver, array $volumeData, string $source, bool $useAssociativeArray = false) {
 		$this->_driver = $recordDriver;
 		$this->_url = $recordDriver != null ? $recordDriver->getRecordUrl() : '';
 		$this->id = $recordId;
@@ -73,6 +76,8 @@ class Grouping_Record {
 			if (isset($recordDetails['isClosedCaptioned'])) {
 				$this->closedCaptioned = $recordDetails['isClosedCaptioned'];
 			}
+			$this->hasParentRecord = $recordDetails['hasParentRecord'];
+			$this->hasChildRecord = $recordDetails['hasChildRecord'];
 		} else {
 			$this->format = $recordDetails[1];
 			$this->formatCategory = $recordDetails[2];

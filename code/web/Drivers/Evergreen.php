@@ -1554,6 +1554,10 @@ class Evergreen extends AbstractIlsDriver {
 		return 'Record/evergreenHoldNotifications.tpl';
 	}
 
+	public function loadHoldNotificationInfo(User $user): ?array {
+		return $this->loadHoldNotificationInfoFromEvergreen($user);
+	}
+
 	public function getHoldNotificationPreferencesTemplate(User $user): ?string {
 		$this->loadHoldNotificationInfoFromEvergreen($user);
 		return 'evergreenHoldNotificationPreferences.tpl';
@@ -1618,10 +1622,6 @@ class Evergreen extends AbstractIlsDriver {
 		}
 
 		return $result;
-	}
-
-	public function loadHoldNotificationInfo(User $user): ?array {
-		return $this->loadHoldNotificationInfoFromEvergreen($user);
 	}
 
 	/**
@@ -1692,6 +1692,7 @@ class Evergreen extends AbstractIlsDriver {
 				'smsCarriers' => $smsCarriers,
 			];
 		}
+
 		return [
 			'preferences' => [],
 			'primaryEmail' => '',

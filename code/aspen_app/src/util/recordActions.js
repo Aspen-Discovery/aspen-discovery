@@ -1,4 +1,5 @@
 import { create } from 'apisauce';
+import _ from 'lodash';
 import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
@@ -87,22 +88,57 @@ export async function checkoutItem(url, itemId, source, patronId) {
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
  **/
-export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null) {
+export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null, holdNotificationPreferences = null) {
+     const setParams = {
+          itemId,
+          itemSource: source,
+          userId: patronId,
+          pickupBranch,
+          volumeId: volumeId ?? '',
+          holdType,
+          recordId,
+     };
+
+     if(holdNotificationPreferences) {
+          if(holdNotificationPreferences.emailNotification === true) {
+               _.assign(setParams, {
+                    emailNotification: 'on',
+               })
+          }
+
+          if(holdNotificationPreferences.phoneNotification === true) {
+               _.assign(setParams, {
+                    phoneNotification: 'on',
+               })
+               if(holdNotificationPreferences.phoneNumber && holdNotificationPreferences.phoneNumber.length > 0) {
+                    _.assign(setParams, {
+                         phoneNumber: holdNotificationPreferences.phoneNumber,
+                    })
+               }
+          }
+
+          if(holdNotificationPreferences.smsNotification === true) {
+               _.assign(setParams, {
+                    smsNotification: 'on',
+               })
+               if(holdNotificationPreferences.smsNumber && holdNotificationPreferences.smsNumber.length > 0) {
+                    if(holdNotificationPreferences.smsCarrier && holdNotificationPreferences.smsCarrier !== -1) {
+                         _.assign(setParams, {
+                              smsCarrier: holdNotificationPreferences.smsCarrier,
+                              smsNumber: holdNotificationPreferences.smsNumber,
+                         })
+                    }
+               }
+          }
+     }
+
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
-          params: {
-               itemId,
-               itemSource: source,
-               userId: patronId,
-               pickupBranch,
-               volumeId: volumeId ?? '',
-               holdType,
-               recordId,
-          },
+          params: setParams,
      });
      const response = await api.post('/UserAPI?method=placeHold', postBody);
      if (response.ok) {

@@ -135,14 +135,16 @@
 								{/if}
 							{/if}
 							{if empty($offline) && $userHasCatalogConnection && $showUserCirculationModules}
-								{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
-									<div class="myAccountLink materialsRequestLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
-										<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
-									</div>
-								{elseif $materialRequestType == 2 && $userHasCatalogConnection && $displayMaterialsRequest}
-									<div class="myAccountLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
-										<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
-									</div>
+								{if $user->canSuggestMaterials()}
+									{if $materialRequestType == 1 && $enableAspenMaterialsRequest && $displayMaterialsRequest}
+										<div class="myAccountLink materialsRequestLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
+											<a href="/MaterialsRequest/MyRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
+										</div>
+									{elseif $materialRequestType == 2 && $userHasCatalogConnection && $displayMaterialsRequest}
+										<div class="myAccountLink" title="{translate text='Materials Requests' inAttribute=true isPublicFacing=true}">
+											<a href="/MaterialsRequest/IlsRequests">{translate text='Materials Requests' isPublicFacing=true} <span class="badge"><span class="materialsRequests-placeholder">??</span></span></a>
+										</div>
+									{/if}
 								{/if}
 							{/if}
 

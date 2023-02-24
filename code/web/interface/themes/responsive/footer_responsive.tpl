@@ -14,12 +14,12 @@
 				{/if}
 				{if empty($loggedIn)}{* Not Logged In *}
 					{if $ssoStaffOnly && !(empty($ssoService))}
-						{if $bypassAspenLogin == '1'}
+						{if $bypassAspenLogin == '1' && $ssoService != 'ldap'}
 							{if $ssoService == 'oauth'}
 								<br><small id="ssoStaffLogin"><a href="/init_oauth.php" id="ssoStaffLoginLink">{translate text='Staff Login' isPublicFacing=true}</a></small>
 							{/if}
 							{if $ssoService == 'saml'}
-								<br><small id="ssoStaffLogin"><a href="/saml2auth.php?samlLogin=y&idp={$samlEntityId}" id="ssoStaffLoginLink">{translate text='Staff Login' isPublicFacing=true}</a></small>
+								<br><small id="ssoStaffLogin"><a href="/Authentication/SAML2?init" id="ssoStaffLoginLink">{translate text='Staff Login' isPublicFacing=true}</a></small>
 							{/if}
 						{else}
 							<br><small id="ssoStaffLogin"><a href="/MyAccount/StaffLogin" id="ssoStaffLoginLink">{translate text='Staff Login' isPublicFacing=true}</a></small>

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4">
   <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$/../../../../usr/share/simplesamlphp">
+      <sourceFolder url="file://$MODULE_DIR$/../../../../usr/share/simplesamlphp/lib" isTestSource="false" />
+    </content>
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
     </content>

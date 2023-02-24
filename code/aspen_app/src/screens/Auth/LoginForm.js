@@ -9,8 +9,8 @@ import { create } from 'apisauce';
 // custom components and helper files
 import { AuthContext } from '../../components/navigation';
 import { translate } from '../../translations/translations';
-import { getBrowseCategories, getLibraryBranch, getLibrarySystem, getUserProfile } from '../../util/login';
-import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {getBrowseCategories, getLanguages, getLibraryBranch, getLibrarySystem, getUserProfile} from '../../util/login';
+import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {ResetExpiredPin} from './ResetExpiredPin';
 import {GLOBALS} from '../../util/globals';
 import {createAuthTokens, getHeaders} from '../../util/apiAuth';
@@ -44,6 +44,7 @@ export const GetLoginForm = (props) => {
      const { updateLocation } = React.useContext(LibraryBranchContext);
      const { updateUser } = React.useContext(UserContext);
      const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
+     const { updateLanguage, updateLanguages } = React.useContext(LanguageContext);
      const patronsLibrary = props.patronsLibrary;
 
      const initialValidation = async () => {
@@ -104,8 +105,11 @@ export const GetLoginForm = (props) => {
          updateLocation(location);
          const user = await getUserProfile({ patronsLibrary }, { valueUser }, { valueSecret });
          updateUser(user);
+         updateLanguage(user.interfaceLanguage ?? 'en');
          const categories = await getBrowseCategories({ patronsLibrary }, { valueUser }, { valueSecret });
          updateBrowseCategories(categories);
+         const languages = await getLanguages({ patronsLibrary });
+         updateLanguages(languages);
      }
 
      const setAsyncStorage = async () => {

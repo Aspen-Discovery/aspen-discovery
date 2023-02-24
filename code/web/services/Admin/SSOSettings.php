@@ -48,6 +48,21 @@ class SSOSettings extends ObjectEditor {
 		return 'id';
 	}
 
+	/** @noinspection PhpUnused */
+	function resetDataMappingToDefault() {
+		$ssoSettingsId = $_REQUEST['id'];
+		$settings = new SSOSetting();
+		$settings->id = $ssoSettingsId;
+		if($settings->find(true)) {
+			$settings->clearExistingDataMapping();
+			$defaultMapping = SSOMapping::getDefaults($ssoSettingsId);
+			$settings->setDataMappingValues($defaultMapping);
+			$settings->update();
+		}
+		header('Location: /Admin/SSOSettings?objectAction=edit&id=' . $ssoSettingsId);
+		die();
+	}
+
 	function getInstructions(): string {
 		return '';
 	}

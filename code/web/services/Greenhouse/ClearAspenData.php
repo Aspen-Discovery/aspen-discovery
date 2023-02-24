@@ -144,9 +144,6 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 						require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 						$message .= $this->deleteAll('UserPayment');
 
-						require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-						$message .= $this->deleteAll('UserStaffSettings');
-
 						require_once ROOT_DIR . '/sys/Administration/BlockPatronAccountLink.php';
 						$message .= $this->deleteAll('BlockPatronAccountLink');
 

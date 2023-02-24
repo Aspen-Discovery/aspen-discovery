@@ -264,17 +264,17 @@ class UserAPI extends Action {
 				} else {
 					$invalidUser = (array) $validatedUser;
 					if(isset($invalidUser['message'])) {
-					return [
-						'success' => false,
-						'id' => $invalidUser['id'] ?? null,
-						'message' => $invalidUser['message'],
-						'resetToken' => $invalidUser['resetToken'] ?? null,
-						'userId' => $invalidUser['userId'] ?? null,
-						'session' => false,
- 					];
+						return [
+							'success' => false,
+							'id' => $invalidUser['id'] ?? null,
+							'message' => $invalidUser['message'],
+							'resetToken' => $invalidUser['resetToken'] ?? null,
+							'userId' => $invalidUser['userId'] ?? null,
+							'session' => false,
+						];
+					}
 				}
 			}
-		}
 		}
 		return [
 			'success' => false,

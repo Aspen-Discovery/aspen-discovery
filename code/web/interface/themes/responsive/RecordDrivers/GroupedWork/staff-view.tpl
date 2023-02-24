@@ -127,7 +127,7 @@
 {/if}
 
 {if isset($variationData)}
-	<h4>{translate text="Record Details from Database" isAdminFacing="true"}</h4>
+	<h4>{translate text="Details from Database" isAdminFacing="true"}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		<tr>
 			<th>{translate text="Grouped Work Internal ID" isAdminFacing=true}</th>
@@ -165,6 +165,7 @@
 {/if}
 
 {if isset($recordData)}
+	<h4>{translate text="Record Details from Database" isAdminFacing="true"}</h4>
 	<table class="table-striped table table-condensed notranslate" style="display:block; overflow: auto;">
 		<thead>
 		<tr>
@@ -180,6 +181,8 @@
 			<th>{translate text="Format Category" isAdminFacing="true"}</th>
 			<th>{translate text="Language" isAdminFacing="true"}</th>
 			<th>{translate text="Closed Captioned?" isAdminFacing="true"}</th>
+			<th>{translate text="Has Parent Record?" isAdminFacing="true"}</th>
+			<th>{translate text="Has Child Record(s)?" isAdminFacing="true"}</th>
 		</tr>
 		</thead>
 		<tbody>
@@ -197,6 +200,8 @@
 				<th>{$row.formatCategory}</th>
 				<th>{$row.language}</th>
 				<th>{if !empty($row.isClosedCaptioned)}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
+				<th>{if !empty($row.hasParentRecord)}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
+				<th>{if !empty($row.hasChildRecord)}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}</th>
 			</tr>
         {/foreach}
 		</tbody>

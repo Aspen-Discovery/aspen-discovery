@@ -1376,7 +1376,8 @@ public abstract class AbstractGroupedWorkSolr {
 		HashSet<Long> foundVariations = new HashSet<>();
 		//Save all the records
 		for (RecordInfo recordInfo : relatedRecords.values()){
-			String relatedRecordKey = groupedWorkIndexer.getSourceId(recordInfo.getSource(), recordInfo.getSubSource()) + ":" + recordInfo.getRecordIdentifier();
+			long formatId = groupedWorkIndexer.getFormatId(recordInfo.getPrimaryFormat());
+			String relatedRecordKey = groupedWorkIndexer.getSourceId(recordInfo.getSource(), recordInfo.getSubSource()) + ":" + recordInfo.getRecordIdentifier() + ":" + formatId;
 			SavedRecordInfo savedRecord = null;
 			if (existingRecords.containsKey(relatedRecordKey)){
 				savedRecord = existingRecords.get(relatedRecordKey);

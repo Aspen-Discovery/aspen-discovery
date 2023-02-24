@@ -82,10 +82,6 @@
 					<dt>{translate text="Num User Payments Moved" isAdminFacing=true}</dt>
 					<dd>{$mergeResults.numUserPaymentsMoved}</dd>
 				</dl>
-				<dl>
-					<dt>{translate text="Num User Staff Settings Moved" isAdminFacing=true}</dt>
-					<dd>{$mergeResults.numUserStaffSettingsMoved}</dd>
-				</dl>
 			</div>
 			{if count($mergeResults.errors) > 0}
 				<div class="col-xs-12">

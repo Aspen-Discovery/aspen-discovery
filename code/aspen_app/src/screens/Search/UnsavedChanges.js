@@ -39,8 +39,8 @@ export const UnsavedChangesBack = (props) => {
 
      return (
           <Center>
-               <Pressable onPress={() => getStatus()}>
-                    <ChevronLeftIcon color="primary.baseContrast" />
+               <Pressable onPress={() => getStatus()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} ml={3}>
+                    <ChevronLeftIcon size={5} color="primary.baseContrast" />
                </Pressable>
                <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                     <AlertDialog.Content>
@@ -105,8 +105,8 @@ export const UnsavedChangesExit = (props) => {
 
      return (
           <Center>
-               <Pressable onPress={() => getStatus()}>
-                    <CloseIcon color="primary.baseContrast" />
+               <Pressable onPress={() => getStatus()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }} ml={3}>
+                    <CloseIcon size={5} color="primary.baseContrast" />
                </Pressable>
                <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                     <AlertDialog.Content>

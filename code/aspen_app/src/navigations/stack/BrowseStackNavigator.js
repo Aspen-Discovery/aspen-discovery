@@ -22,8 +22,8 @@ const BrowseStackNavigator = () => {
                     headerLeft: () => {
                          if (route.name !== 'HomeScreen') {
                               return (
-                                   <Pressable onPress={() => navigation.goBack()}>
-                                        <ChevronLeftIcon color="primary.baseContrast" />
+                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                        <ChevronLeftIcon size={6} color="primary.baseContrast" />
                                    </Pressable>
                               );
                          } else {
@@ -65,7 +65,7 @@ const BrowseStackNavigator = () => {
                               },
                               headerRight: () => (
                                    <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                        <CloseIcon color="primary.baseContrast" />
+                                        <CloseIcon color="primary.baseContrast" size={5} />
                                    </Pressable>
                               ),
                          })}
@@ -81,7 +81,7 @@ const BrowseStackNavigator = () => {
                            },
                            headerRight: () => (
                                <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                   <CloseIcon color="primary.baseContrast" />
+                                   <CloseIcon color="primary.baseContrast" size={5} />
                                </Pressable>
                            ),
                        })}
@@ -120,8 +120,8 @@ export const EditionsModal = () => {
                     headerLeft: () => {
                          if (route.name !== 'Editions') {
                               return (
-                                   <Pressable onPress={() => navigation.goBack()} ml={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                        <ChevronLeftIcon color="primary.baseContrast" />
+                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                        <ChevronLeftIcon size={5} color="primary.baseContrast" />
                                    </Pressable>
                               );
                          } else {
@@ -130,7 +130,7 @@ export const EditionsModal = () => {
                     },
                     headerRight: () => (
                          <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon color="primary.baseContrast" />
+                              <CloseIcon size={5} color="primary.baseContrast" />
                          </Pressable>
                     ),
                })}>

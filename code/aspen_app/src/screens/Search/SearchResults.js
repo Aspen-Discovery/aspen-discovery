@@ -22,6 +22,7 @@ import {navigate, navigateStack} from '../../helpers/RootNavigator';
 
 export const SearchResults = () => {
      const [page, setPage] = React.useState(1);
+     const [storedTerm, setStoredTerm] = React.useState('');
      const { library } = React.useContext(LibrarySystemContext);
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
@@ -29,9 +30,21 @@ export const SearchResults = () => {
      let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
 
-     console.log(term);
+     let params = useRoute().params.pendingParams ?? [];
 
-     const params = useRoute().params.pendingParams ?? [];
+     if(term && (term !== storedTerm)) {
+          console.log("Search term changed. Clearing previous search options...");
+          setStoredTerm(term);
+          SEARCH.pendingFilters = [];
+          SEARCH.sortMethod = 'relevance';
+          SEARCH.appliedFilters = [];
+          SEARCH.sortList = [];
+          SEARCH.availableFacets = [];
+          SEARCH.defaultFacets = [];
+          SEARCH.pendingFilters = [];
+          SEARCH.appendedParams = '';
+          params = [];
+     }
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params], () => fetchSearchResults(term, page, scope, url), {
           keepPreviousData: true,

@@ -251,6 +251,17 @@ function getUpdates23_02_00(): array {
 			]
 		],
 		//set_include_econtent_and_onorder
+		'update_list_entry_titles' => [
+			'title' => 'Update List Entry Titles',
+			'description' => 'Update list entry titles for entries with no title in the database',
+			'sql' => [
+				"UPDATE user_list_entry 
+    			INNER JOIN grouped_work ON user_list_entry.sourceId = grouped_work.permanent_id 	
+				SET user_list_entry.title = LEFT(grouped_work.full_title, 50) WHERE user_list_entry.title = ''
+				AND user_list_entry.source = 'GroupedWork'"
+			]
+		],
+		//update_list_entry_titles
 
 		//james
         'account_link_remove_setting_by_ptype' => [

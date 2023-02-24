@@ -611,7 +611,7 @@ const OnHoldForYou = (props) => {
 };
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null) {
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null, holdNotificationPreferences) {
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];
@@ -628,13 +628,11 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
           console.log(e);
      }
 
-     //console.log(patronProfile);
-
      if (actionType.includes('checkout')) {
           return await checkoutItem(url, itemId, source, patronId);
      } else if (actionType.includes('hold')) {
           if (volumeId) {
-               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, volumeId, holdType, id, holdNotificationPreferences);
           } else if (_.isObject(patronProfile)) {
                if (!patronProfile.overdriveEmail && patronProfile.promptForOverdriveEmail === 1 && source === 'overdrive') {
                     const getPromptForOverdriveEmail = [];
@@ -647,7 +645,7 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
                     return getPromptForOverdriveEmail;
                }
           } else {
-               return await placeHold(url, itemId, source, patronId, pickupBranch, null, holdType, id);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, null, holdType, id, holdNotificationPreferences);
           }
      } else if (actionType.includes('sample')) {
           return await overDriveSample(url, formatId, itemId, sampleNumber);

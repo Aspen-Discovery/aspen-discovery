@@ -190,10 +190,12 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
           if (typeof allHolds !== 'undefined') {
                if (typeof allHolds.unavailable !== 'undefined') {
                     holdsNotReady = Object.values(allHolds.unavailable);
+                    holdsNotReady = _.orderBy(holdsNotReady, [pendingSort], ['asc']);
                }
 
                if (typeof allHolds.available !== 'undefined') {
                     holdsReady = Object.values(allHolds.available);
+                    holdsReady = _.orderBy(holdsReady, [readySort], ['asc']);
                }
           }
 
@@ -311,24 +313,57 @@ export async function hideBrowseCategory(categoryId, patronId, url) {
  ******************************************************************* **/
 /**
  * Return a list of accounts that the user has initiated account linking with
- * @param {string} url
+ * @param {array} primaryUser
+ * @param {array} cards
+ * @param {array} library
+ * @return array
  **/
-export async function getLinkedAccounts(url) {
+export async function getLinkedAccounts(primaryUser, cards, library) {
      const postBody = await postData();
      const discovery = create({
-          baseURL: url + '/API',
+          baseURL: library.baseUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
      const response = await discovery.post('/UserAPI?method=getLinkedAccounts', postBody);
      if (response.ok) {
+          let count = 1;
+          let cardStack = [];
           let accounts = [];
+          const primaryCard = {
+               key: 0,
+               displayName: primaryUser.displayName,
+               cat_username: primaryUser.cat_username ?? primaryUser.barcode,
+               expired: primaryUser.expired,
+               expires: primaryUser.expires,
+               barcodeStyle: library.barcodeStyle,
+          };
+          cardStack.push(primaryCard);
           if (!_.isUndefined(response.data.result.linkedAccounts)) {
-               accounts = response.data.result.linkedAccounts;
+               accounts = _.values(response.data.result.linkedAccounts);
                PATRON.linkedAccounts = accounts;
+               if (_.size(accounts) >= 1) {
+                    accounts.forEach((account) => {
+                         if (_.includes(cards, account.cat_username) === false) {
+                              count = count + 1;
+                              const card = {
+                                   key: count,
+                                   displayName: account.displayName,
+                                   cat_username: account.cat_username ?? account.barcode,
+                                   expired: account.expired,
+                                   expires: account.expires,
+                                   barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
+                              };
+                              cardStack.push(card);
+                         }
+                    });
+               }
           }
-          return _.values(accounts);
+          return {
+               accounts: accounts ?? [],
+               cards: cardStack ?? [],
+          };
      } else {
           console.log(response);
           return false;
@@ -349,7 +384,6 @@ export async function getViewerAccounts(url) {
      });
      const response = await discovery.post('/UserAPI?method=getViewers', postBody);
      if (response.ok) {
-          console.log(_.values(response.data.result.viewers));
           let viewers = [];
           if (!_.isUndefined(response.data.result.viewers)) {
                viewers = response.data.result.viewers;
@@ -447,7 +481,6 @@ export async function removeViewerAccount(patronToRemove, url) {
           },
      });
      const response = await discovery.post('/UserAPI?method=removeViewerLink', postBody);
-     console.log(response);
      if (response.ok) {
           let status = false;
           if (!_.isUndefined(response.data.result.success)) {

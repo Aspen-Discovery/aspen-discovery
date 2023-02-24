@@ -1398,6 +1398,9 @@ class MyAccount_AJAX extends JSON_Action {
 		global $locationSingleton;
 		global $configArray;
 
+		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
+
 		$interface->assign('enableSelfRegistration', $library->enableSelfRegistration);
 		$interface->assign('selfRegistrationUrl', $library->selfRegistrationUrl);
 		$interface->assign('checkRememberMe', 0);
@@ -1409,16 +1412,28 @@ class MyAccount_AJAX extends JSON_Action {
 
 		//SSO
 		$loginOptions = 0;
-		if ($library->ssoSettingId != -1) {
+		$ssoService = null;
+		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
+				$ssoSettingId = null;
+				if($isPrimaryAccountAuthenticationSSO) {
+					require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+					$accountProfile = new AccountProfile();
+					$accountProfile->id = $library->accountProfileId;
+					if($accountProfile->find(true)) {
+						$ssoSettingId = $accountProfile->ssoSettingId;
+					}
+				} else {
+					$ssoSettingId = $library->ssoSettingId;
+				}
 				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 				$sso = new SSOSetting();
-				$sso->id = $library->ssoSettingId;
+				$sso->id = $ssoSettingId;
 				if ($sso->find(true)) {
 					if(!$sso->staffOnly) {
+						$ssoService = $sso->service;
 						$loginOptions = $sso->loginOptions;
 						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-						$interface->assign('ssoService', $sso->service);
 						if ($sso->service == "oauth") {
 							$interface->assign('oAuthGateway', $sso->oAuthGateway);
 							if ($sso->oAuthGateway == "custom") {
@@ -1439,6 +1454,11 @@ class MyAccount_AJAX extends JSON_Action {
 								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
 							}
 						}
+						if($sso->service == 'ldap') {
+							if($sso->ldapLabel) {
+								$interface->assign('ldapLabel', $sso->ldapLabel);
+							}
+						}
 					}
 				}
 			} catch (Exception $e) {
@@ -1446,6 +1466,7 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 
+		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML

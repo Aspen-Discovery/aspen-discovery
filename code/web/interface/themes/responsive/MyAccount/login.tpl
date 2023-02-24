@@ -18,7 +18,7 @@
 				</p>
 			</div>
 		{/if}
-		{if !(empty($ssoService)) && !ssoStaffOnly}
+		{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO}
             {include file='MyAccount/sso-login.tpl'}
             {if $ssoLoginOptions == 0}
 	            <div class="hr-label">
@@ -26,7 +26,7 @@
 	            </div>
             {/if}
         {/if}
-        {if $ssoLoginOptions == 0}
+        {if $ssoLoginOptions == 0 || ($isPrimaryAccountAuthenticationSSO && $ssoService == 'ldap')}
 	        <form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
 		        <div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel translateParameters=true isPublicFacing=true}</div>
 		        <div id="loginFormFields">
@@ -102,13 +102,18 @@
 
 		            <div id="loginActions" class="form-group">
 		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
-		                    <input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
+		                    {if !$ssoStaffOnly && $ssoService == 'ldap' && !empty($ldapLabel)}
+                                <input type="submit" name="submit" value="{translate text="Sign in with %1%" 1=$ldapLabel isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
+                            {else}
+                                <input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
+                            {/if}
 		                    {if !empty($followupModule)}<input type="hidden" name="followupModule" value="{$followupModule}">{/if}
 		                    {if !empty($followupAction)}<input type="hidden" name="followupAction" value="{$followupAction}">{/if}
 		                    {if !empty($recordId)}<input type="hidden" name="recordId" value="{$recordId|escape:"html"}">{/if}
 		                    {if !empty($pageId)}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
 		                    {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
 		                    {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
+		                    {if !$ssoStaffOnly && $ssoService == 'ldap'}<input type="hidden" name="ldapLogin" value="true">{/if}
 		                </div>
 		            </div>
 		        </div>

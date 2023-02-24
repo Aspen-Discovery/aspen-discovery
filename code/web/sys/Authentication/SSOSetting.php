@@ -9,6 +9,7 @@ class SSOSetting extends DataObject {
 	public $service;
 	public $staffOnly;
 	public $bypassAspenLogin;
+	public $ssoAuthOnly;
 
 	//oAuth
 	public $clientId;
@@ -36,6 +37,7 @@ class SSOSetting extends DataObject {
 	public $ssoName;
 	public $ssoXmlUrl;
 	public $ssoUniqueAttribute;
+	public $ssoILSUniqueAttribute;
 	public $ssoMetadataFilename;
 	public $ssoEntityId;
 	public $ssoUseGivenUserId;
@@ -65,6 +67,15 @@ class SSOSetting extends DataObject {
 	public $samlBtnTextColor;
 	public $ssoSPLogoutUrl;
 
+	//LDAP
+	public $ldapHosts;
+	public $ldapUsername;
+	public $ldapPassword;
+	public $ldapBaseDN;
+	public $ldapIdAttr;
+	public $ldapOrgUnit;
+	public $ldapLabel;
+
 	public $loginHelpText;
 	public $loginOptions;
 
@@ -83,6 +94,7 @@ class SSOSetting extends DataObject {
 			'0' => '',
 			'oauth' => 'OAuth 2.0',
 			'saml' => 'SAML 2',
+			'ldap' => 'LDAP'
 		];
 
 		$saml_metadata_options = [
@@ -110,6 +122,14 @@ class SSOSetting extends DataObject {
 			'0' => 'Default for ILS',
 			'1' => 'email',
 			'2' => 'firstname.lastname',
+		];
+
+		$uid_ils_options = [
+			'' => 'Cardnumber (default)',
+			'borrowernumber' => 'Borrower Number',
+			'email' => 'Email',
+			'sort1' => 'Sort 1',
+			'sort2' => 'Sort 2',
 		];
 
 		return [
@@ -163,6 +183,13 @@ class SSOSetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Bypass the Aspen Discovery staff login page when using footer link',
 				'description' => 'Whether or not the staff login link in the footer should first send the user to the Aspen Discovery login page',
+			],
+			'ssoAuthOnly' => [
+				'property' => 'ssoAuthOnly',
+				'type' => 'checkbox',
+				'label' => 'Only authenticate users with single sign-on',
+				'description' => 'Whether or not users are authenticated only by single sign-on',
+				'note' => 'Aspen will not authenticate with the ILS when a user logs in with single sign-on. <em>This has potential security implications</em>',
 			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
@@ -333,26 +360,6 @@ class SSOSetting extends DataObject {
 							]
 						]
 					],
-					'dataMapping' => [
-						'property' => 'dataMapping',
-						'type' => 'oneToMany',
-						'label' => 'User Data Mapping',
-						'renderAsHeading' => true,
-						'headingLevel' => 'h3',
-						'showBottomBorder' => true,
-						'description' => 'Define how service provider data matches up in Aspen',
-						'keyThis' => 'id',
-						'keyOther' => 'id',
-						'subObjectType' => 'SSOMapping',
-						'structure' => $fieldMapping,
-						'sortable' => false,
-						'storeDb' => true,
-						'allowEdit' => false,
-						'canEdit' => false,
-						'hideInLists' => true,
-						'canAddNew' => true,
-						'canDelete' => true,
-					],
 				]
 			],
 			'samlConfigSection' => [
@@ -362,6 +369,41 @@ class SSOSetting extends DataObject {
 				'renderAsHeading' => true,
 				'showBottomBorder' => true,
 				'properties' => [
+					'serviceProviderSection' => [
+						'property' => 'serviceProviderSection',
+						'type' => 'section',
+						'label' => 'Aspen Discovery Service Provider Details',
+						'properties' => [
+							'idpACSUrl' => [
+								'property' => 'idpACSUrl',
+								'type' => 'text',
+								'label' => 'ACS Url',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+							'idpEntityId' => [
+								'property' => 'idpEntityId',
+								'type' => 'text',
+								'label' => 'Entity Id',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+							'idpSLSUrl' => [
+								'property' => 'idpSLSUrl',
+								'type' => 'text',
+								'label' => 'SLS Url',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+							'idpNameIDFormat' => [
+								'property' => 'idpNameIDFormat',
+								'type' => 'text',
+								'label' => 'Name ID Format',
+								'readOnly' => true,
+								'hideInLists' => true,
+							],
+						],
+					],
 					'ssoName' => [
 						'property' => 'ssoName',
 						'type' => 'text',
@@ -429,6 +471,16 @@ class SSOSetting extends DataObject {
 								'label' => 'IdP attribute that uniquely identifies a user',
 								'description' => 'This should be unique to each user',
 								'note' => 'This should be unique to each user',
+								'size' => '512',
+								'hideInLists' => true,
+							],
+							'ssoILSUniqueAttribute' => [
+								'property' => 'ssoILSUniqueAttribute',
+								'type' => 'enum',
+								'values' => $uid_ils_options,
+								'label' => 'ILS attribute that uniquely identifies a user',
+								'description' => 'This should be unique to each user',
+								'note' => 'This should be unique to each user and match the value that is provided by the unique IdP attribute. Leave blank to use barcode.',
 								'size' => '512',
 								'hideInLists' => true,
 							],
@@ -702,6 +754,93 @@ class SSOSetting extends DataObject {
 					],
 				]
 			],
+			'ldapConfigSection' => [
+				'property' => 'ldapConfigSection',
+				'type' => 'section',
+				'label' => 'LDAP Configuration',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'ldapLabel' => [
+						'property' => 'ldapLabel',
+						'type' => 'text',
+						'label' => 'LDAP User-facing Name',
+						'description' => 'What this LDAP single sign-on service will be called on the interface',
+					],
+					'ldapHosts' => [
+						'property' => 'ldapHosts',
+						'type' => 'text',
+						'label' => 'LDAP Host(s)',
+						'description' => 'The LDAP host(s) to connect to. To use more than one, use a space between each host name.',
+						'note' => 'Example: ldaps://hostname:port',
+					],
+					'ldapUsername' => [
+						'property' => 'ldapUsername',
+						'type' => 'text',
+						'label' => 'LDAP Username',
+						'description' => 'LDAP RDN or DN',
+					],
+					'ldapPassword' => [
+						'property' => 'ldapPassword',
+						'type' => 'storedPassword',
+						'label' => 'LDAP Password',
+						'description' => 'Associated password for LDAP username',
+					],
+					'ldapBaseDN' => [
+						'property' => 'ldapBaseDN',
+						'type' => 'text',
+						'label' => 'LDAP Base DN',
+						'description' => 'The Base DN is the starting point an LDAP server uses when searching for users authentication within your Directory',
+						'note' => 'Example: DC=example-domain,DC=com'
+					],
+					'ldapIdAttr' => [
+						'property' => 'ldapIdAttr',
+						'type' => 'text',
+						'label' => 'LDAP Attribute for Id',
+						'description' => 'LDAP attribute that is used to identify who the user is in the ILS',
+					],
+					'ldapOrgUnit' => [
+						'property' => 'ldapOrgUnit',
+						'type' => 'text',
+						'label' => 'Applicable LDAP Org Units (OU)',
+						'description' => 'Specifies which LDAP Org Units (OU) will use this authentication',
+						'note' => 'Useful when the same username could be found in multiple libraries. Leave blank to not use.'
+					],
+				],
+			],
+			'dataMappingSection' => [
+				'property' => 'dataMappingSection',
+				'type' => 'section',
+				'label' => 'Data Mapping',
+				'renderAsHeading' => true,
+				'showBottomBorder' => true,
+				'properties' => [
+					'dataMapping' => [
+						'property' => 'dataMapping',
+						'type' => 'oneToMany',
+						'label' => 'User Profile',
+						'description' => 'Define how data matches up in Aspen and/or ILS',
+						'keyThis' => 'id',
+						'keyOther' => 'id',
+						'subObjectType' => 'SSOMapping',
+						'structure' => $fieldMapping,
+						'sortable' => false,
+						'storeDb' => true,
+						'allowEdit' => false,
+						'canEdit' => false,
+						'hideInLists' => true,
+						'canAddNew' => false,
+						'canDelete' => true,
+						'additionalOneToManyActions' => [
+							0 => [
+								'text' => 'Reset Data Mapping to Defaults',
+								'url' => '/Admin/SSOSettings?id=$id&amp;objectAction=resetDataMappingToDefault',
+								'class' => 'btn-danger',
+							],
+						],
+					],
+				],
+			],
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -715,6 +854,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function __get($name) {
+		global $configArray;
 		if ($name == "libraries") {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
@@ -728,6 +868,14 @@ class SSOSetting extends DataObject {
 			return $this->_libraries;
 		} elseif ($name == "dataMapping") {
 			return $this->getFieldMappings();
+		} elseif ($name == 'idpEntityId') {
+			return $configArray['Site']['url'] . '/Authentication/SAML2?metadata';
+		} elseif ($name == 'idpACSUrl') {
+			return $configArray['Site']['url'] . '/Authentication/SAML2?acs';
+		} elseif ($name == 'idpSLSUrl') {
+			return $configArray['Site']['url'] . '/Authentication/SAML2?sls';
+		} elseif ($name == 'idpNameIDFormat') {
+			return 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 		} else {
 			return $this->_data[$name] ?? null;
 		}
@@ -751,6 +899,13 @@ class SSOSetting extends DataObject {
 			if ($dataMapping->find()) {
 				while ($dataMapping->fetch()) {
 					$this->_dataMapping[$dataMapping->id] = clone $dataMapping;
+				}
+			} else {
+				/** @var SSOMapping[] $defaultMappings */
+				// Default mappings to use when no mappings are defined
+				$defaultMappings = SSOMapping::getDefaults($this->id);
+				foreach ($defaultMappings as $index => $attributeMap) {
+					$this->_dataMapping[$attributeMap->id] = clone $attributeMap;
 				}
 			}
 		}
@@ -887,25 +1042,82 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getMatchpoints() {
-		$matchpoints = [
-			'email' => 'email',
-			'userId' => 'sub',
-			'firstName' => 'given_name',
-			'lastName' => 'family_name',
-		];
+		if($this->service == 'saml') {
+			$matchpoints = [
+				'ssoUniqueAttribute' => [],
+				'ssoIdAttr' => [],
+				'ssoUsernameAttr' => [
+					'aspenUser' => 'username',
+				],
+				'ssoFirstnameAttr' => [],
+				'ssoLastnameAttr' => [],
+				'ssoEmailAttr' => [],
+				'ssoDisplayNameAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoDisplayNameFallback',
+						'func' => function ($attributes) {
+							$comp = [
+								$attributes[$this->ssoFirstnameAttr][0],
+								$attributes[$this->ssoLastnameAttr][0],
+							];
+							return implode(' ', $comp);
+						},
+					],
+				],
+				'ssoPhoneAttr' => [],
+				'ssoPatronTypeAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoPatronTypeFallback',
+					],
+				],
+				'ssoAddressAttr' => [],
+				'ssoCityAttr' => [],
+				'ssoLibraryIdAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoLibraryIdFallback',
+					],
+				],
+				'ssoCategoryIdAttr' => [
+					'fallback' => [
+						'propertyName' => 'ssoCategoryIdFallback',
+					],
+				],
+			];
+		} else {
+			$matchpoints = [
+				'email' => 'email',
+				'userId' => 'sub',
+				'firstName' => 'given_name',
+				'lastName' => 'family_name',
+				'displayName' => '',
+				'username' => '',
+				'patronType' => '',
+				'libraryCode' => ''
+			];
 
-		$mappings = new SSOMapping();
-		$mappings->ssoSettingId = $this->id;
-		$mappings->find();
-		while ($mappings->fetch()) {
-			if ($mappings->aspenField == "email") {
-				$matchpoints['email'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "user_id") {
-				$matchpoints['userId'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "first_name") {
-				$matchpoints['firstName'] = $mappings->responseField;
-			} elseif ($mappings->aspenField == "last_name") {
-				$matchpoints['lastName'] = $mappings->responseField;
+			$mappings = new SSOMapping();
+			$mappings->ssoSettingId = $this->id;
+			$mappings->find();
+			while ($mappings->fetch()) {
+				if ($mappings->aspenField == 'email') {
+					$matchpoints['email'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'user_id') {
+					$matchpoints['userId'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'first_name') {
+					$matchpoints['firstName'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'last_name') {
+					$matchpoints['lastName'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'display_name') {
+					$matchpoints['displayName'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'username') {
+					$matchpoints['username'] = $mappings->responseField;
+				} elseif ($mappings->aspenField == 'patron_type') {
+					$matchpoints['patronType'] = $mappings->responseField;
+					$matchpoints['patronType_fallback'] = $mappings->fallbackValue;
+				} elseif ($mappings->aspenField == 'library_code') {
+					$matchpoints['libraryCode'] = $mappings->responseField;
+					$matchpoints['libraryCode_fallback'] = $mappings->fallbackValue;
+				}
 			}
 		}
 
@@ -969,6 +1181,29 @@ class SSOSetting extends DataObject {
 			// another site may use it
 			return '';
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function resetDataMappingToDefault() {
+		$dataMapping = new SSOMapping();
+		$ssoSettingsId = $_REQUEST['id'];
+		$dataMapping->ssoSettingId = $ssoSettingsId;
+		if($dataMapping->find(true)) {
+			$dataMapping->clearExistingDataMapping();
+			$defaultMapping = SSOMapping::getDefaults($ssoSettingsId);
+			$dataMapping->update();
+		}
+		header('Location: /Admin/SSOSettings?objectAction=edit&id=' . $ssoSettingsId);
+		die();
+	}
+
+	public function clearExistingDataMapping() {
+		$this->clearOneToManyOptions('SSOMapping', 'ssoSettingId');
+		$this->_dataMapping = [];
+	}
+
+	function setDataMappingValues($value) {
+		$this->_dataMapping = $value;
 	}
 
 }

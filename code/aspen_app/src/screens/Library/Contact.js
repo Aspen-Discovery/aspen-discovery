@@ -16,13 +16,9 @@ import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../c
 import { PATRON } from '../../util/loadPatron';
 
 export const ContactLibrary = () => {
-     const navigation = useNavigation();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
-
-     const [userLat, setUserLat] = React.useState(0);
-     const [userLon, setUserLon] = React.useState(0);
 
      const dialCall = (number) => {
           const phoneNumber = `tel:${number}`;
@@ -42,20 +38,12 @@ export const ContactLibrary = () => {
           }
      };
 
-     const setUserCoordinates = () => {
-          if (PATRON.coords.lat && PATRON.coords.long) {
-               setUserLat(PATRON.coords.lat);
-               setUserLon(PATRON.coords.long);
-          }
-     };
-
      const getDirections = async (locationLatitude, locationLongitude) => {
-          setUserCoordinates();
           showLocation({
                latitude: locationLatitude,
                longitude: locationLongitude,
-               sourceLatitude: userLat,
-               sourceLongitude: userLon,
+               sourceLatitude: PATRON.coords.lat ?? 0,
+               sourceLongitude: PATRON.coords.long ?? 0,
                googleForceLatLon: true,
           });
      };

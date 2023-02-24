@@ -11,6 +11,9 @@ class MyAccount_Login extends Action {
 		global $locationSingleton;
 		global $configArray;
 
+		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
+
 		// Assign the followup task to come back to after they login -- note that
 		//     we need to check for a pre-existing followup task in case we've
 		//     looped back here due to an error (bad username/password, etc.).
@@ -64,17 +67,29 @@ class MyAccount_Login extends Action {
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 		//SSO
+		$ssoService = null;
 		$loginOptions = 0;
-		if ($library->ssoSettingId != -1) {
+		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
+				$ssoSettingId = null;
+				if($isPrimaryAccountAuthenticationSSO) {
+					require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+					$accountProfile = new AccountProfile();
+					$accountProfile->id = $library->accountProfileId;
+					if($accountProfile->find(true)) {
+						$ssoSettingId = $accountProfile->ssoSettingId;
+					}
+				} else {
+					$ssoSettingId = $library->ssoSettingId;
+				}
 				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 				$sso = new \SSOSetting();
-				$sso->id = $library->ssoSettingId;
+				$sso->id = $ssoSettingId;
 				if ($sso->find(true)) {
 					if(!$sso->staffOnly) {
 						$loginOptions = $sso->loginOptions;
+						$ssoService = $sso->service;
 						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-						$interface->assign('ssoService', $sso->service);
 						if ($sso->service == "oauth") {
 							$interface->assign('oAuthGateway', $sso->oAuthGateway);
 							if ($sso->oAuthGateway == "custom") {
@@ -95,6 +110,11 @@ class MyAccount_Login extends Action {
 								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
 							}
 						}
+						if($sso->service == 'ldap') {
+							if($sso->ldapLabel) {
+								$interface->assign('ldapLabel', $sso->ldapLabel);
+							}
+						}
 					}
 				}
 			} catch (Exception $e) {
@@ -104,6 +124,7 @@ class MyAccount_Login extends Action {
 
 		$loginOptions = isset($_REQUEST['showBoth']) ? 0 : $loginOptions;
 
+		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML

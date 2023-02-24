@@ -5,10 +5,11 @@ import _ from "lodash";
 import { createAuthTokens, getHeaders } from "../util/apiAuth";
 import { GLOBALS } from "../util/globals";
 import { LIBRARY } from "../util/loadLibrary";
+import defaults from './defaults.json';
 
-export async function getTranslation(term, language, libraryUrl) {
+export async function getTranslation(term, language, url) {
   const api = create({
-    baseURL: libraryUrl + "/API",
+    baseURL: url + "/API",
     timeout: GLOBALS.timeoutAverage,
     headers: getHeaders(),
     auth: createAuthTokens(),
@@ -19,18 +20,16 @@ export async function getTranslation(term, language, libraryUrl) {
   });
 
   if (response.ok) {
-    if (response.data.result.success) {
-      return _.values(response.data.result.translations);
-    } else {
-      return term;
-    }
-  } else {
-    console.log(response);
-    // no data yet
+    const translation = response?.data?.result?.translations[term] ?? term;
+    console.log(translation);
+    return translation;
   }
+  // just return the original term back if we don't get a good translation
+  return term;
 }
 
-export async function getTranslations(terms, language, libraryUrl) {
+const defaultTranslation = require('../translations/defaults.json');
+export async function getTranslations(language, libraryUrl) {
   const api = create({
     baseURL: libraryUrl + "/API",
     timeout: GLOBALS.timeoutAverage,
@@ -38,8 +37,8 @@ export async function getTranslations(terms, language, libraryUrl) {
     auth: createAuthTokens(),
   });
   const response = await api.get("/SystemAPI?method=getTranslation", {
-    terms,
-    language,
+    terms: _.toArray(defaultTranslation.user_profile),
+    language: 'es',
   });
 
   if (response.ok) {
@@ -172,10 +171,41 @@ export async function getDefaultTranslation(term, language, libraryUrl) {
   }
 }
 
-export function getLanguageDisplayName(code) {
-  let language = _.filter(LIBRARY.languages, ["code", code]);
+export function getLanguageDisplayName(code, languages) {
+  let language = _.filter(languages, ["code", code]);
   language = _.values(language[0]);
   return language[2];
 }
 
 export async function getAvailableTranslations() {}
+
+export let translations = {};
+
+export async function getTranslatedTerm(language, url) {
+  let defaults = require('../translations/defaults.json');
+  _.map(defaults, async function (terms, index, array) {
+    const api = create({
+      baseURL: url + "/API",
+      timeout: GLOBALS.timeoutFast,
+      headers: getHeaders(true),
+      auth: createAuthTokens(),
+    });
+    const response = await api.get("/SystemAPI?method=getTranslation", {
+      terms: _.toArray(terms),
+      language
+    });
+    if(response.ok) {
+      const translation = response?.data?.result?.translations ?? terms;
+      if(_.isObject(translation)) {
+        const obj = {
+          [language]: {
+            [index]: translation,
+          }
+        }
+        _.merge(translations, obj);
+      }
+      return true;
+    }
+    return false;
+  })
+}

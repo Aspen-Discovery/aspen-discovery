@@ -118,6 +118,11 @@ class User extends DataObject {
 	public $_comingDueNotice;
 	public $_phoneType;
 
+	//Staff Settings
+	public $materialsRequestEmailSignature;
+	public $materialsRequestReplyToAddress;
+	public $materialsRequestSendEmailOnAssign;
+
 	function getNumericColumnNames(): array {
 		return [
 			'id',
@@ -126,6 +131,7 @@ class User extends DataObject {
 			'initialReadingHistoryLoaded',
 			'updateMessageIsError',
 			'rememberHoldPickupLocation',
+			'materialsRequestSendEmailOnAssign',
 		];
 	}
 
@@ -355,17 +361,6 @@ class User extends DataObject {
 			}
 		}
 		return $rolesAssignedByPType;
-	}
-
-	private $materialsRequestReplyToAddress;
-	private $materialsRequestEmailSignature;
-
-	function getStaffSettings() {
-		require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-		$staffSettings = new UserStaffSettings();
-		$staffSettings->get('userId', $this->id);
-		$this->materialsRequestReplyToAddress = $staffSettings->materialsRequestReplyToAddress;
-		$this->materialsRequestEmailSignature = $staffSettings->materialsRequestEmailSignature;
 	}
 
 	function getBarcode() {
@@ -1104,6 +1099,11 @@ class User extends DataObject {
 		}
 		if (isset($_REQUEST['materialsRequestReplyToAddress'])) {
 			$this->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
+		}
+		if (isset($_REQUEST['materialsRequestSendEmailOnAssign']) && ($_REQUEST['materialsRequestSendEmailOnAssign'] == 'yes' || $_REQUEST['materialsRequestSendEmailOnAssign'] == 'on')) {
+			$this->materialsRequestSendEmailOnAssign = 1;
+		} else {
+			$this->materialsRequestSendEmailOnAssign = 0;
 		}
 		$this->update();
 	}
@@ -3352,7 +3352,8 @@ class User extends DataObject {
 
 		if(array_key_exists('Aspen LiDA', $enabledModules)) {
 			$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
-			$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('General Settings', 'Define general settings for Aspen LiDA.', '/AspenLiDA/GeneralSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('Location Settings', 'Define location settings for Aspen LiDA.', '/AspenLiDA/LocationSettings'), 'Administer Aspen LiDA Settings');
 			$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
 			$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
 			$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
@@ -4026,6 +4027,16 @@ class User extends DataObject {
 		} else {
 			return $this->getAccountProfile()->ils;
 		}
+	}
+
+	public function canSuggestMaterials(): bool {
+		$patronType = $this->getPTypeObj();
+		if (!empty($patronType)) {
+			if($patronType->canSuggestMaterials) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
