@@ -101,7 +101,7 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $user->canSuggestMaterials()}
+	{if $loggedIn && $user->canSuggestMaterials()}
 		{if $materialRequestType == 1 && $displayMaterialsRequest}
 			<div class="materialsRequestLink">
 				<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
