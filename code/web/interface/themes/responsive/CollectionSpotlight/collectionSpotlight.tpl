@@ -3,6 +3,7 @@
 {strip}
 	<head>
 		{assign var='spotlightName' value=$collectionSpotlight->name}
+		{assign var='spotlightId' value=$collectionSpotlight->id}
 		<title>{translate text=$spotlightName isPublicFacing=true isAdminEnteredData=true}</title>
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 
