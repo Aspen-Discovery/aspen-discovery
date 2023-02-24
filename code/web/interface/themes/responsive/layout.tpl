@@ -101,7 +101,7 @@
 					{include file='horizontal-menu-bar.tpl'}
 				</div>
 				<div id="horizontal-search-container" class="col-tn-12 {if !empty($fullWidthTheme)}fullWidth{/if}" role="search">
-					{if $action == 'Home' && empty($showBrowseContent)}
+					{if $action == 'Home' && $module == 'Search' && empty($showBrowseContent)}
 						{include file="Search/home-searchbox.tpl"}
 					{else}
 						{include file="Search/horizontal-searchbox.tpl"}
