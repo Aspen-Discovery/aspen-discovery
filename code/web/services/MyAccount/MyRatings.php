@@ -15,11 +15,11 @@ class MyRatings extends MyAccount {
 		$page = $_REQUEST['page'] ?? 1;
 		$pageSize = $_REQUEST['pageSize'] ?? 20;
 
+		$user = UserAccount::getActiveUserObj();
+		$numRated = $user->getNumRatings();
 		$rating = new UserWorkReview();
 		$rating->userId = UserAccount::getActiveUserId();
 		$rating->orderBy('dateRated DESC');
-		$rating->find();
-		$numRated = $rating->getNumResults();
 		$rating->limit(($page - 1) * $pageSize, $pageSize);
 		$rating->find();
 		$ratings = [];
