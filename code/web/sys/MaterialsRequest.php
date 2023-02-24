@@ -382,7 +382,7 @@ class MaterialsRequest extends DataObject {
 					require_once ROOT_DIR . '/sys/Email/Mailer.php';
 					$mail = new Mailer();
 					$subject = translate([
-						'text' => "You've been assigned %1% Materials Requests at %2%",
+						'text' => "You've been assigned %1% Materials Requests at $library->displayName",
 						1 => $numRequests,
 						'isAdminFacing' => true,
 						'isPublicFacing' => true
