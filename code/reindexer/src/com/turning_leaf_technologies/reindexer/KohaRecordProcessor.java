@@ -409,7 +409,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return suppressionNotes;
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, boolean hasParentRecord, boolean hasChildRecords){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
@@ -449,16 +449,11 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 				}
 				if (!isOverDrive && !isHoopla && !isOneClickDigital && !isCloudLibrary && isEContent){
-					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
-					if (eContentRecord != null) {
-						eContentRecord.setHasParentRecord(hasParentRecord);
-						eContentRecord.setHasChildRecord(hasChildRecords);
-						unsuppressedEcontentRecords.add(eContentRecord);
-					}
+					getIlsEContentItems(groupedWork, record, mainRecordInfo, identifier, itemField);
 				}
 			}
 		}
-		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, hasParentRecord, hasChildRecords);
+		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, mainRecordInfo, hasParentRecord, hasChildRecords);
 		if (parentEContentRecords.size() > 0) {
 			unsuppressedEcontentRecords.addAll(parentEContentRecords);
 		}
@@ -466,7 +461,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	@Override
-	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+	protected void loadIlsEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		if (econtentItem.getITypeCode() != null) {
 			String iType = econtentItem.getITypeCode().toLowerCase();
 			String translatedFormat = translateValue("format", iType, econtentRecord.getRecordIdentifier());
