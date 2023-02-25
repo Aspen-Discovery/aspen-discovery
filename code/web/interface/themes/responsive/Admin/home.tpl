@@ -6,6 +6,13 @@
 			{translate text=$error isAdminFacing=true}
 		</div>
 	{else}
+		<form role="form">
+			<div class="form-group">
+				<label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
+				<input  type="text" name="settingsSearch" id="settingsSearch"
+						onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
+			</div>
+		</form>
 		<div id="adminSections" class="grid" data-colcade="columns: .grid-col, items: .grid-item">
 			<!-- columns -->
 			<div class="grid-col grid-col--1"></div>

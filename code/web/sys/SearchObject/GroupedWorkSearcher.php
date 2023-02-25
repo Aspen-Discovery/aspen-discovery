@@ -385,6 +385,10 @@ class SearchObject_GroupedWorkSearcher extends SearchObject_AbstractGroupedWorkS
 				$this->facetOptions['f.available_at.facet.missing'] = 'true';
 			}
 		}
+		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains"] = $this->facetSearchTerm;
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains.ignoreCase"] = 'true';
+		}
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}

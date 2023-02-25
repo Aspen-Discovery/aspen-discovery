@@ -290,6 +290,43 @@ AspenDiscovery.Searches = (function(){
 				}
 			);
 			return false;
+		},
+
+		showSearchFacetPopup: function (searchId, facetName) {
+			var url = Globals.path + '/Search/AJAX?method=getSearchFacetPopup&searchId=' + searchId + '&facetName=' + facetName;
+			$.getJSON(url, function(data){
+				if (data.success === true){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.buttons);
+				}else{
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			});
+			return false;
+		},
+
+		searchFacetValues: function () {
+			$("#facetSearchResultsPopularHelp").hide();
+			$("#facetSearchResultsLoading").show();
+			$("#facetSearchResults").html("");
+			var searchForm = $("#searchFacetValuesForm");
+			var searchId = searchForm.find("#searchId").val();
+			var facetName = searchForm.find("#facetName").val();
+			var facetSearchTerm = searchForm.find("#facetSearchTerm").val();
+			var url = Globals.path + '/Search/AJAX';
+			var params = {
+				'method': 'searchFacetTerms',
+				'searchId': searchId,
+				'facetName': facetName,
+				'searchTerm': facetSearchTerm
+			}
+			$.getJSON(url, params, function(data){
+				$("#facetSearchResultsLoading").hide();
+				if (data.success === true){
+					$("#facetSearchResults").html(data.facetResults);
+				}else{
+					$("#facetSearchResults").html(data.message);
+				}
+			});
 		}
 	}
 }(AspenDiscovery.Searches || {}));

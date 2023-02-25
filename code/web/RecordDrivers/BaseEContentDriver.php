@@ -65,7 +65,8 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 				'onclick' => "return AspenDiscovery.EContent.selectItemLink('{$this->getId()}');",
 				'requireLogin' => false,
 				'type' => 'access_online',
-				'id' => "accessOnline_{$this->getId()}"
+				'id' => "accessOnline_{$this->getId()}",
+				'target' => '_blank',
 			];
 		} elseif (count($relatedUrls)  == 1) {
 			$urlInfo = reset($relatedUrls);

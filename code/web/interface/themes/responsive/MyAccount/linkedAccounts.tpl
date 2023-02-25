@@ -47,7 +47,7 @@
 								<li>{translate text="None" isPublicFacing=true}</li>
 							{/foreach}
 						</ul>
-						<button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Account.disableAccountLinkingPopup()">{translate text="Disable Account Linking" isPublicFacing=true}</button>
+						{if $linkRemoveSetting != 0}<button class="btn btn-sm btn-danger" onclick="AspenDiscovery.Account.disableAccountLinkingPopup()">{translate text="Disable Account Linking" isPublicFacing=true}</button>{/if}
 					{/if}
 				{else}
 					{if $linkSetting == 3}

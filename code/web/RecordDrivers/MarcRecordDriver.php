@@ -1044,6 +1044,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
 							'requireLogin' => false,
 							'type' => 'marc_access_online',
+							'target' => '_blank',
 						];
 					}
 				}
@@ -1562,6 +1563,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		//Check to see if the record has children
 		$childRecords = $this->getChildRecords();
 		if (count($childRecords) > 0) {
+			if (count($this->holdings) == 0) {
+				unset($moreDetailsOptions['copies']);
+			}
 			$interface->assign('childRecords', $childRecords);
 			$moreDetailsOptions['childRecords'] = [
 				'label' => 'Contains',
@@ -2389,7 +2393,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 	}
 
-	private function getContinuesRecords() {
+	public function getContinuesRecords() {
 		$continuesRecords = [];
 		$marcRecord = $this->getMarcRecord();
 		if (!empty($marcRecord)) {
@@ -2423,7 +2427,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $continuesRecords;
 	}
 
-	private function getContinuedByRecords() {
+	public function getContinuedByRecords() {
 		$continuedByRecords = [];
 		$marcRecord = $this->getMarcRecord();
 		if (!empty($marcRecord)) {

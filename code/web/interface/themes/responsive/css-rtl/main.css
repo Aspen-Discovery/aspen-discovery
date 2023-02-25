@@ -9920,6 +9920,14 @@ a.browse-thumbnail-sorted.active {
   font-size: 13px;
   font-weight: bold;
 }
+.contained-record {
+  margin-top: 2px;
+  margin-bottom: 2px;
+  padding: 4px;
+}
+.contained-record-title {
+  font-size: 110%;
+}
 .result {
   border-bottom: 2px solid #d5d6da;
   padding: 10px 0 15px;

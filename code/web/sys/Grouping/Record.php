@@ -462,13 +462,18 @@ class Grouping_Record {
 	public function getItemDetails(): array {
 		if (empty($this->_itemDetails)) {
 			foreach ($this->_items as $item) {
-				$key = $item->getSummaryKey();
-				$itemSummary = $item->getSummary();
-				$this->addItemDetails($key . $item->itemId, $itemSummary);
-				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+				if (!$item->isVirtual) {
+					$key = $item->getSummaryKey();
+					$itemSummary = $item->getSummary();
+					$this->addItemDetails($key . $item->itemId, $itemSummary);
+					$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+				}
 			}
 			$this->sortItemDetails();
 			$this->sortItemSummary();
+			if ($this->_itemsDisplayedByDefault == null) {
+				$this->_itemsDisplayedByDefault = [];
+			}
 		}
 		return $this->_itemDetails;
 	}

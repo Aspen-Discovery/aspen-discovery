@@ -398,6 +398,10 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$this->facetOptions["f.$facetName.facet.prefix"] = "$solrScope#";
 			}
 		}
+		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains"] = $this->facetSearchTerm;
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains.ignoreCase"] = 'true';
+		}
 		if (!empty($this->facetOptions)) {
 			$facetSet['additionalOptions'] = $this->facetOptions;
 		}
