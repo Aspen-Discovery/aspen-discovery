@@ -1004,50 +1004,58 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$treatVolumeHoldsAsItemHolds = $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
 
 			if (isset($interface)) {
-				global $library;
-				$searchLocation = Location::getSearchLocation(null);
+//				global $library;
+//				$searchLocation = Location::getSearchLocation(null);
+//
+//				if ($searchLocation) {
+//					$show856LinksAsAccessOnlineButtons = $searchLocation->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+//				} else {
+//					$show856LinksAsAccessOnlineButtons = $library->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+//				}
 
-				if ($searchLocation) {
-					$show856LinksAsAccessOnlineButtons = $searchLocation->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
-				} else {
-					$show856LinksAsAccessOnlineButtons = $library->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
+				$allItems = $relatedRecord->getItems();
+				$relatedUrls = [];
+				foreach ($allItems as $item) {
+					$relatedUrls = array_merge($relatedUrls, $item->getRelatedUrls());
 				}
 
-				if ($show856LinksAsAccessOnlineButtons) {
-					//Get any 856 links for the marc record
-					$validUrls = $this->getViewable856Links();
-					if (count($validUrls) == 1) {
-						$this->_actions[] = [
-							'title' => translate([
-								'text' => 'Access Online',
-								'isPublicFacing' => true,
-							]),
-							'url' => $validUrls[0]['url'],
-							'requireLogin' => false,
-							'type' => 'marc_access_online',
-							'target' => '_blank',
-						];
-					} elseif (count($validUrls) >= 2) {
-//						$this->_actions[] = array(
-//							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
-//							'url' => $validUrls[0],
+				$this->_actions = array_merge($this->_actions, $this->createActionsFromUrls($relatedUrls));
+
+//				if ($show856LinksAsAccessOnlineButtons) {
+//					//Get any 856 links for the marc record
+//					$validUrls = $this->getViewable856Links();
+//					if (count($validUrls) == 1) {
+//						$this->_actions[] = [
+//							'title' => translate([
+//								'text' => 'Access Online',
+//								'isPublicFacing' => true,
+//							]),
+//							'url' => $validUrls[0]['url'],
 //							'requireLogin' => false,
 //							'type' => 'marc_access_online',
-//							'target' => '_blank'
-//						);
-						$this->_actions[] = [
-							'title' => translate([
-								'text' => 'Access Online',
-								'isPublicFacing' => true,
-							]),
-							'url' => "",
-							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
-							'requireLogin' => false,
-							'type' => 'marc_access_online',
-							'target' => '_blank',
-						];
-					}
-				}
+//							'target' => '_blank',
+//						];
+//					} elseif (count($validUrls) >= 2) {
+////						$this->_actions[] = array(
+////							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
+////							'url' => $validUrls[0],
+////							'requireLogin' => false,
+////							'type' => 'marc_access_online',
+////							'target' => '_blank'
+////						);
+//						$this->_actions[] = [
+//							'title' => translate([
+//								'text' => 'Access Online',
+//								'isPublicFacing' => true,
+//							]),
+//							'url' => "",
+//							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
+//							'requireLogin' => false,
+//							'type' => 'marc_access_online',
+//							'target' => '_blank',
+//						];
+//					}
+//				}
 
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -1267,6 +1275,90 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 		return $this->_actions;
 	}
+
+	function createActionsFromUrls($relatedUrls) {
+		global $configArray;
+		$actions = [];
+		$i = 0;
+		if (count($relatedUrls) > 1) {
+			//We will show a popup to let people choose the URL they want
+			$title = translate([
+				'text' => 'Access Online',
+				'isPublicFacing' => true,
+			]);
+			$actions[] = [
+				'title' => $title,
+				'url' => '',
+				'onclick' => "return AspenDiscovery.EContent.selectItemLink('{$this->getId()}');",
+				'requireLogin' => false,
+				'type' => 'access_online',
+				'id' => "accessOnline_{$this->getId()}",
+				'target' => '_blank',
+			];
+		} elseif (count($relatedUrls)  == 1) {
+			$urlInfo = reset($relatedUrls);
+
+			//Revert to access online per Karen at CCU.  If people want to switch it back, we can add a per library switch
+			$title = translate([
+				'text' => 'Access Online',
+				'isPublicFacing' => true,
+			]);
+			$alt = 'Available online from ' . $urlInfo['source'];
+			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
+			if (strlen($fileOrUrl) > 0) {
+				if (strlen($fileOrUrl) >= 3) {
+					$extension = strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
+					if ($extension == 'pdf') {
+						$title = translate([
+							'text' => 'Access PDF',
+							'isPublicFacing' => true,
+						]);
+					}
+				}
+				$actions[] = [
+					'url' => $action,
+					'redirectUrl' => $fileOrUrl,
+					'title' => $title,
+					'requireLogin' => false,
+					'alt' => $alt,
+					'target' => '_blank',
+				];
+			}
+		} else {
+			foreach ($relatedUrls as $urlInfo) {
+				$title = translate([
+					'text' => 'Access Online',
+					'isPublicFacing' => true,
+				]);
+				$alt = 'Available online from ' . $urlInfo['source'];
+				$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+				$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
+				if (strlen($fileOrUrl) > 0) {
+					if (strlen($fileOrUrl) >= 3) {
+						$extension = strtolower(substr($fileOrUrl, strlen($fileOrUrl), 3));
+						if ($extension == 'pdf') {
+							$title = translate([
+								'text' => 'Access PDF',
+								'isPublicFacing' => true,
+							]);
+						}
+					}
+					$actions[] = [
+						'url' => $action,
+						'redirectUrl' => $fileOrUrl,
+						'title' => $title,
+						'requireLogin' => false,
+						'alt' => $alt,
+						'target' => '_blank',
+					];
+				}
+			}
+		}
+
+		return $actions;
+	}
+
 
 	private $catalogDriver = null;
 
