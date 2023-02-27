@@ -168,6 +168,15 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//extend_grouped_work_id_not_interested
+		'extend_bookcover_info_source' => [
+			'title' => 'Extend imageSource in bookcover_info',
+			'description' => 'Extend column for storing imageSource in bookcover_info table',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE bookcover_info MODIFY COLUMN imageSource VARCHAR(100)',
+			]
+		],
+		//extend_bookcover_info_source
 
 		//kodi
 
