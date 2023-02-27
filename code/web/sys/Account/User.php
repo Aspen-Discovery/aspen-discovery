@@ -3905,8 +3905,13 @@ class User extends DataObject {
 		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
 		foreach ($jsonData as $property => $value) {
 			if ($property != $this->getPrimaryKey() && $property != 'links') {
-				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)) {
-					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+				if (in_array($property, $encryptedFields)) {
+					if (!empty($sourceEncryptionKey)){
+						$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+					} else {
+						//Source key was not provided, decrypt using our encryption key (assuming the source and destination match.
+						$value = EncryptionUtils::decryptField($value);
+					}
 				}
 				if ($property == 'username') {
 					if (array_key_exists($value, $mappings['users'])) {

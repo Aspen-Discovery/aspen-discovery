@@ -597,6 +597,13 @@ class AJAX extends Action {
 					$interface->assign('facetTitlePlural', $facetTitlePlural);
 					$interface->assign('isMultiSelect', $isMultiSelect);
 
+					$appliedFacets = $restoredSearch->getFilterList();
+					$appliedFacetValues = [];
+					if (array_key_exists($facetTitle, $appliedFacets)) {
+						$appliedFacetValues = $appliedFacets[$facetTitle];
+					}
+					$interface->assign('appliedFacetValues', $appliedFacetValues);
+
 					$allFacets = $restoredSearch->getFacetList();
 					$topResults = $allFacets[$facetName];
 					$interface->assign('topResults', $topResults['list']);
@@ -611,7 +618,7 @@ class AJAX extends Action {
 						'success' => true,
 						'title' => translate([
 							'text' => 'More %1%',
-							'1' => $facetTitle,
+							'1' => $facetTitlePlural,
 							'isPublicFacing' => true,
 							'translateParameters' => true
 						]),
@@ -691,6 +698,13 @@ class AJAX extends Action {
 					$interface->assign('facetTitle', $facetTitle);
 					$interface->assign('facetTitlePlural', $facetTitlePlural);
 					$interface->assign('isMultiSelect', $isMultiSelect);
+
+					$appliedFacets = $restoredSearch->getFilterList();
+					$appliedFacetValues = [];
+					if (array_key_exists($facetTitle, $appliedFacets)) {
+						$appliedFacetValues = $appliedFacets[$facetTitle];
+					}
+					$interface->assign('appliedFacetValues', $appliedFacetValues);
 
 					$allFacets = $newSearch->getFacetList();
 					if (isset($allFacets[$facetName])) {

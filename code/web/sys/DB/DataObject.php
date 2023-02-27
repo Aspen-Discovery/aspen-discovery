@@ -1027,7 +1027,7 @@ abstract class DataObject {
 			$okToLoad = true;
 			if ($property == 'links') {
 				$okToLoad = false;
-			}else if ($property != $this->getPrimaryKey()) {
+			}else if ($property == $this->getPrimaryKey()) {
 				if (!in_array($property, $uniquenessFields)){
 					$okToLoad = false;
 				}

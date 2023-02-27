@@ -278,7 +278,7 @@ class Koha extends AbstractIlsDriver {
 				if (!isset($_REQUEST['library_id']) || $_REQUEST['library_id'] == -1) {
 					$postVariables['borrower_branchcode'] = $patron->getHomeLocation()->code;
 				} else {
-					$postVariables = $this->setPostField($postVariables, 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
 				}
 				$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);

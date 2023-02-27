@@ -26,8 +26,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 
 	public function getUniquenessFields(): array {
 		return [
-			'title',
-			'urlAlias',
+			'id',
 		];
 	}
 
