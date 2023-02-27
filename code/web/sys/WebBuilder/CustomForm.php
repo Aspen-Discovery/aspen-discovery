@@ -3,7 +3,7 @@
 require_once ROOT_DIR . '/sys/WebBuilder/CustomFormField.php';
 require_once ROOT_DIR . '/sys/WebBuilder/LibraryCustomForm.php';
 
-class CustomForm extends DataObject {
+class CustomForm extends DB_LibraryLinkedObject {
 	public $__table = 'web_builder_custom_form';
 	public $id;
 	public $title;
@@ -17,6 +17,12 @@ class CustomForm extends DataObject {
 	private $_libraries;
 	/** @var CustomFormField[] */
 	private $_formFields;
+
+	public function getUniquenessFields(): array {
+		return [
+			'id',
+		];
+	}
 
 	public function getNumericColumnNames(): array {
 		return ['requireLogin'];
@@ -161,7 +167,7 @@ class CustomForm extends DataObject {
 		return $ret;
 	}
 
-	public function getLibraries() {
+	public function getLibraries() : ?array {
 		if (!isset($this->_libraries) && $this->id) {
 			$this->_libraries = [];
 			$libraryLink = new LibraryCustomForm();
@@ -276,5 +282,38 @@ class CustomForm extends DataObject {
 			}
 		}
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
+	}
+
+	public function getLinksForJSON(): array {
+		$links = parent::getLinksForJSON();
+
+		//Form Fields
+		$formFields = $this->getFormFields();
+		$links['formFields'] = [];
+		foreach ($formFields as $formField) {
+			$fieldArray = $formField->toArray(false, true);
+			$links['formFields'][] = $fieldArray;
+		}
+
+		return $links;
+	}
+
+	public function loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting = 'keepExisting'): bool {
+		$result = parent::loadRelatedLinksFromJSON($jsonLinks, $mappings, $overrideExisting);
+
+		if (array_key_exists('formFields', $jsonLinks)) {
+			$formFields = [];
+			foreach ($jsonLinks['formFields'] as $formField) {
+				$formFieldObj = new CustomFormField();
+				$formFieldObj->formId = $this->id;
+				unset($formField['formId']);
+				$formFieldObj->loadFromJSON($formField, $mappings, $overrideExisting);
+				$formFields[$formFieldObj->id] = $formFieldObj;
+			}
+			$this->_formFields = $formFields;
+			$result = true;
+		}
+
+		return $result;
 	}
 }

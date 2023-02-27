@@ -10,6 +10,12 @@ class CustomFormSubmission extends DataObject {
 	public $dateSubmitted;
 	public $submission;
 
+	public function getUniquenessFields(): array {
+		return [
+			'id',
+		];
+	}
+
 	public static function getObjectStructure($context = ''): array {
 		return [
 			'id' => [
