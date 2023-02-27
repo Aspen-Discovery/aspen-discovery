@@ -25,6 +25,12 @@ class BasicPage extends DB_LibraryLinkedObject {
 	private $_allowAccess;
 	private $_allowableHomeLocations;
 
+	public function getUniquenessFields(): array {
+		return [
+			'id',
+		];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Basic Pages'));
 		$locationsList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Basic Pages'));
