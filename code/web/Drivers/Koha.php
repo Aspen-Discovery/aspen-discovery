@@ -1163,7 +1163,22 @@ class Koha extends AbstractIlsDriver {
 
 			//Borrowed from C4:Members.pm
 			/** @noinspection SqlResolve */
-			$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
+			if($this->getKohaVersion() >= 22.11) {
+				$readingHistoryTitleSql = "SELECT issues.*,issues.renewals_count AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
+				FROM issues
+				LEFT JOIN items on items.itemnumber=issues.itemnumber
+				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "'
+				UNION ALL
+				SELECT old_issues.*,old_issues.renewals_count AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
+				FROM old_issues
+				LEFT JOIN items on items.itemnumber=old_issues.itemnumber
+				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+			} else {
+				$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM issues
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
@@ -1176,6 +1191,7 @@ class Koha extends AbstractIlsDriver {
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
 				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+			}
 			$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
 			if ($readingHistoryTitleRS) {
 				while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
@@ -2354,7 +2370,7 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
 			}
-			
+
 			$renewResults = mysqli_query($this->dbConnection, $renewSql);
 			$maxRenewals = 0;
 
