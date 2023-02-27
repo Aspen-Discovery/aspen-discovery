@@ -171,7 +171,6 @@ class IndexingProfile extends DataObject {
 		$lastUpdateOfAuthorities;
 
 	public $evergreenOrgUnitSchema;
-	public $index856Links;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -200,37 +199,38 @@ class IndexingProfile extends DataObject {
 				'description' => 'The unique id within the database',
 			],
 
-            'name' => [
-                'property' => 'name',
-                'hiddenByDefault' => true,
-                'type' => 'text',
-                'label' => 'Name',
-                'maxLength' => 50,
-                'description' => 'A name for this indexing profile',
-                'required' => true,
-            ],
+			'indexingClass' => [
+				'property' => 'indexingClass',
+				'type' => 'enum',
+				'label' => 'Indexing Class',
+				'values' => [
+					'' => '...',
+					'Koha' => 'Koha',
+					'ArlingtonKoha' => 'Arlington Koha',
+					'CarlX' => 'Carl.X',
+					'Evergreen' => 'Evergreen',
+					'Evolve' => 'Evolve',
+					'Folio' => 'Folio',
+					'III' => 'III',
+					'Polaris' => 'Polaris',
+					'Symphony' => 'Symphony'
+				],
+				'description' => 'The class to use while indexing the records',
+				'required' => true,
+				'onchange' => 'return AspenDiscovery.IndexingClass.indexingClassSelect();',
+				'default' => 'IlsRecord',
+				'forcesReindex' => true,
+			],
 
-            'indexingClass' => [
-                'property' => 'indexingClass',
-                'type' => 'enum',
-                'label' => 'Indexing Class',
-                'values' => [
-                    'koha' => 'Koha',
-                    'arlingtonkoha' => 'Arlington Koha',
-                    'carlx' => 'Carl.X',
-                    'evergreen' => 'Evergreen',
-                    'evolve' => 'Evolve',
-                    'folio' => 'Folio',
-                    'iii' => 'III',
-                    'polaris' => 'Polaris',
-                    'sideloadedecontent' => 'Side Loaded e-Content',
-                    'symphony' => 'Symphony'],
-                'description' => 'The class to use while indexing the records',
-                'required' => true,
-                'onchange' => 'return AspenDiscovery.IndexingClass.indexingClassSelect();',
-                'default' => 'IlsRecord',
-                'forcesReindex' => true,
-            ],
+			'name' => [
+				'property' => 'name',
+				'hiddenByDefault' => true,
+				'type' => 'text',
+				'label' => 'Name',
+				'maxLength' => 50,
+				'description' => 'A name for this indexing profile',
+				'required' => true,
+			],
 
 			'marcPath' => [
 				'property' => 'marcPath',
@@ -419,16 +419,6 @@ class IndexingProfile extends DataObject {
 				'maxLength' => 50,
 				'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown',
 				'default' => 'English',
-				'forcesReindex' => true,
-			],
-
-			'index856Links' => [
-				'property' => 'index856Links',
-				'type' => 'checkbox',
-				'label' => 'Index 856 links',
-				'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 are indexed and treated as items.',
-				'defaultValue' => false,
-				'hideInLists' => true,
 				'forcesReindex' => true,
 			],
 
