@@ -84,6 +84,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char orderCopiesSubfield;
 	private char orderStatusSubfield;
 
+	private boolean index856Links;
+
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	protected final HashSet<String> formatsToSuppress = new HashSet<>();
@@ -251,6 +253,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			singleOrderLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocationSingle");
 			orderCopiesSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
 			orderStatusSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
+
+			index856Links = indexingProfileRS.getBoolean("index856Links");
 
 			treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = indexingProfileRS.getString("treatUndeterminedLanguageAs");
@@ -1563,85 +1567,87 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
-		List<DataField> recordUrls = MarcUtil.getDataFields(record, 856);
-		if (recordUrls.size() == 0){
-			return unsuppressedEcontentRecords;
-		}else{
-			int i = 0;
-			for (DataField recordUrl : recordUrls) {
-				Subfield urlSubfield = recordUrl.getSubfield('u');
-				if (urlSubfield == null) {
-					continue;
-				}
-				String url = urlSubfield.getData();
-				if (url != null && url.length() > 0) {
-					if (suppressRecordsWithUrlsMatching != null) {
-						if (suppressRecordsWithUrlsMatching.matcher(url).matches()) {
+		if (index856Links) {
+			List<DataField> recordUrls = MarcUtil.getDataFields(record, 856);
+			if (recordUrls.size() == 0) {
+				return unsuppressedEcontentRecords;
+			} else {
+				int i = 0;
+				for (DataField recordUrl : recordUrls) {
+					Subfield urlSubfield = recordUrl.getSubfield('u');
+					if (urlSubfield == null) {
+						continue;
+					}
+					String url = urlSubfield.getData();
+					if (url != null && url.length() > 0) {
+						if (suppressRecordsWithUrlsMatching != null) {
+							if (suppressRecordsWithUrlsMatching.matcher(url).matches()) {
+								continue;
+							}
+						}
+						//Include first indicator of 4
+						if (recordUrl.getIndicator1() != '4') {
 							continue;
 						}
-					}
-					//Include first indicator of 4
-					if (recordUrl.getIndicator1() != '4') {
-						continue;
-					}
-					//Include second indicators of 0 or 1
-					if (recordUrl.getIndicator2() != '0' && recordUrl.getIndicator2() != '1') {
-						continue;
-					}
-					//Get the econtent source
-					String urlLower = url.toLowerCase();
-					String econtentSource;
-					Subfield publicNoteSubfield = recordUrl.getSubfield('z');
-					if (publicNoteSubfield != null) {
-						String publicNoteText = publicNoteSubfield.getData();
-						String publicNoteTextLower = publicNoteText.toLowerCase();
-						if (publicNoteTextLower.contains("gale virtual reference library")) {
-							econtentSource = "Gale Virtual Reference Library";
-						} else if (publicNoteTextLower.contains("gale directory library")) {
-							econtentSource = "Gale Directory Library";
-						} else if (publicNoteTextLower.contains("national geographic virtual library")) {
-							econtentSource = "National Geographic Virtual Library";
-						} else if ((publicNoteTextLower.contains("ebscohost") || urlLower.contains("netlibrary") || urlLower.contains("ebsco"))) {
-							econtentSource = "EbscoHost";
+						//Include second indicators of 0 or 1
+						if (recordUrl.getIndicator2() != '0' && recordUrl.getIndicator2() != '1') {
+							continue;
+						}
+						//Get the econtent source
+						String urlLower = url.toLowerCase();
+						String econtentSource;
+						Subfield publicNoteSubfield = recordUrl.getSubfield('z');
+						if (publicNoteSubfield != null) {
+							String publicNoteText = publicNoteSubfield.getData();
+							String publicNoteTextLower = publicNoteText.toLowerCase();
+							if (publicNoteTextLower.contains("gale virtual reference library")) {
+								econtentSource = "Gale Virtual Reference Library";
+							} else if (publicNoteTextLower.contains("gale directory library")) {
+								econtentSource = "Gale Directory Library";
+							} else if (publicNoteTextLower.contains("national geographic virtual library")) {
+								econtentSource = "National Geographic Virtual Library";
+							} else if ((publicNoteTextLower.contains("ebscohost") || urlLower.contains("netlibrary") || urlLower.contains("ebsco"))) {
+								econtentSource = "EbscoHost";
+							} else {
+								econtentSource = "Web Content";
+							}
 						} else {
 							econtentSource = "Web Content";
 						}
-					} else {
-						econtentSource = "Web Content";
+
+						ItemInfo itemInfo = new ItemInfo();
+						itemInfo.setItemIdentifier(identifier + ":856link:" + i);
+						itemInfo.setIsEContent(true);
+						itemInfo.setLocationCode("Online");
+						itemInfo.setCallNumber("Online");
+						itemInfo.seteContentSource(econtentSource);
+						itemInfo.setShelfLocation("Online");
+						Subfield linkTextSubfield = recordUrl.getSubfield('y');
+						if (linkTextSubfield != null) {
+							itemInfo.setDetailedLocation(linkTextSubfield.getData());
+						} else {
+							itemInfo.setDetailedLocation(econtentSource);
+						}
+						itemInfo.setIType("eCollection");
+						mainRecordInfo.addItem(itemInfo);
+						mainRecordInfo.setHasChildRecord(hasChildRecords);
+						mainRecordInfo.setHasParentRecord(hasParentRecord);
+						mainRecordInfo.setFormatBoost(6);
+						itemInfo.seteContentUrl(url);
+
+						//Set the format based on the material type
+						itemInfo.setFormat("Online Content");
+						itemInfo.setFormatCategory("Other");
+
+						itemInfo.setDetailedStatus("Available Online");
+
+						if (unsuppressedEcontentRecords.size() == 0) {
+							unsuppressedEcontentRecords.add(mainRecordInfo);
+						}
+
+						logger.debug("Found eContent item from " + econtentSource);
+						i++;
 					}
-
-					ItemInfo itemInfo = new ItemInfo();
-					itemInfo.setItemIdentifier(identifier + ":856link:" + i);
-					itemInfo.setIsEContent(true);
-					itemInfo.setLocationCode("Online");
-					itemInfo.setCallNumber("Online");
-					itemInfo.seteContentSource(econtentSource);
-					itemInfo.setShelfLocation("Online");
-					Subfield linkTextSubfield = recordUrl.getSubfield('y');
-					if (linkTextSubfield != null) {
-						itemInfo.setDetailedLocation(linkTextSubfield.getData());
-					} else {
-						itemInfo.setDetailedLocation(econtentSource);
-					}
-					itemInfo.setIType("eCollection");
-					mainRecordInfo.addItem(itemInfo);
-					mainRecordInfo.setHasChildRecord(hasChildRecords);
-					mainRecordInfo.setHasParentRecord(hasParentRecord);
-					mainRecordInfo.setFormatBoost(6);
-					itemInfo.seteContentUrl(url);
-
-					//Set the format based on the material type
-					itemInfo.setFormat("Online Content");
-					itemInfo.setFormatCategory("Other");
-
-					itemInfo.setDetailedStatus("Available Online");
-
-					if (unsuppressedEcontentRecords.size() == 0){
-						unsuppressedEcontentRecords.add(mainRecordInfo);
-					}
-
-					logger.debug("Found eContent item from " + econtentSource);
-					i++;
 				}
 			}
 		}

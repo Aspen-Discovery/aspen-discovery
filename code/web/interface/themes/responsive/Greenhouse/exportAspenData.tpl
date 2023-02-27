@@ -34,7 +34,7 @@
 						<div class="checkbox">
 							{foreach from=$dataElements item=propertyName key=propertyValue}
 								<label for="dataElement_{$propertyValue|escapeCSS}">
-									<input class="dataElement" id="dataElement_{$propertyValue|escapeCSS}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName.name isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+									<input class="dataElement" id="dataElement_{$propertyValue|escapeCSS}" name='dataElement[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName.name isAdminFacing=true}<br>
 								</label>
 							{/foreach}
 						</div>
@@ -55,7 +55,7 @@
 						<div class="checkbox">
 	                        {foreach from=$libraries item=propertyName key=propertyValue}
 								<label for="libraries_{$propertyValue|escapeCSS}">
-									<input class="libraries" id="libraries_{$propertyValue|escapeCSS}" name='libraries[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+									<input class="libraries" id="libraries_{$propertyValue|escapeCSS}" name='libraries[]' type="checkbox" value='{$propertyValue}'> {translate text=$propertyName isAdminFacing=true}<br>
 								</label>
 	                        {/foreach}
 						</div>
@@ -66,7 +66,7 @@
 					<div class="col-xs-12">
 						<div style="margin-bottom: .5em">
 							<p class="h2" style="display: inline; vertical-align: top; margin-right: .25em">{translate text="Export Data for These Locations" isAdminFacing=true}</p>
-							<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {translate text="If no locations are selected, data for all locations of the selected libraries will be included." isAdminFacing=true}</small></span>
+							<span id="exportLocationHelpBlock" class="help-block" style="margin-top:0"><small><i class="fas fa-info-circle"></i> {translate text="If no locations are selected, data for all locations of the selected libraries will be included." isAdminFacing=true}</small></span>
 						</div>
 						<div class="form-group checkbox">
 							<label for="selectAllLocations">
