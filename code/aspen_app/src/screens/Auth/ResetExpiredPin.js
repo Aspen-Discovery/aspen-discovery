@@ -158,7 +158,6 @@ export const ResetExpiredPin = (props) => {
 								</FormControl.Label>
 								<Input
 									keyboardType={pinValidationRules.onlyDigitsAllowed === '1' ? 'numeric' : 'default'}
-									maxLength={pinValidationRules.maxLength}
 									autoCapitalize="none"
 									size="xl"
 									autoCorrect={false}
@@ -187,7 +186,6 @@ export const ResetExpiredPin = (props) => {
 								</FormControl.Label>
 								<Input
 									keyboardType={pinValidationRules.onlyDigitsAllowed === '1' ? 'numeric' : 'default'}
-									maxLength={pinValidationRules.maxLength}
 									autoCapitalize="none"
 									size="xl"
 									autoCorrect={false}

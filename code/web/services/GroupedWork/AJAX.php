@@ -2057,7 +2057,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				unlink($largeUploadedImage);
 			}
 
-			$bookcoverInfo->imageSource = 'default';
+			$bookcoverInfo->imageSource = '';
 			$bookcoverInfo->update();
 			return [
 				'success' => true,
