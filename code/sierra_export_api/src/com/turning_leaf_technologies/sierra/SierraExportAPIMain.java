@@ -900,6 +900,15 @@ public class SierraExportAPIMain {
 					if (marcResults[0].getInt("code") == 107) {
 						//This record was deleted
 						logger.debug("id " + id + " was deleted");
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), id);
+						getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), id);
+						if (result.reindexWork) {
+							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+						} else if (result.deleteWork) {
+							//Delete the work from solr and the database
+							getGroupedWorkIndexer().deleteRecord(result.permanentId);
+						}
+						logEntry.incDeleted();
 						return true;
 					}else if (marcResults[0].getInt("httpStatus") == 500){
 						//This record can't be loaded

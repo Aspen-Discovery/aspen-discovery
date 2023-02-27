@@ -597,6 +597,8 @@ class Sierra extends Millennium {
 					$curCheckout->barcode = $entry->barcode;
 				}
 				if (strpos($entry->item, "@") !== false) {
+					$curCheckout->sourceId = '';
+					$curCheckout->recordId = '';
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
 					if ($titleAuthor != false) {
 						$curCheckout->title = $titleAuthor['title'];
@@ -738,8 +740,17 @@ class Sierra extends Millennium {
 			$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/items/$shortId";
 			$itemInfo = $this->_callUrl('sierra.getItemInfo', $sierraUrl);
 			if (!empty($itemInfo)) {
-				$id = reset($itemInfo->bibIds);
-				$id = '.b' . $id . $this->getCheckDigit($id);
+				if (empty($itemInfo->bibIds)) {
+					$id = false;
+				}else if (is_array($itemInfo->bibIds)) {
+					$id = reset($itemInfo->bibIds);
+					$id = '.b' . $id . $this->getCheckDigit($id);
+				}else if (is_string($itemInfo->bibIds)) {
+					$id = $itemInfo->bibIds;
+					$id = '.b' . $id . $this->getCheckDigit($id);
+				}else{
+					$id = false;
+				}
 			} else {
 				$id = false;
 			}

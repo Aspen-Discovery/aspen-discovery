@@ -146,8 +146,8 @@ class Axis360ExtractLogEntry implements BaseIndexingLogEntry {
 		return numErrors > 0;
 	}
 
-	void incNumProducts() {
-		this.numProducts++;
+	void incNumProducts(int increment) {
+		this.numProducts += increment;
 		if (this.numProducts % 250 == 0) {
 			this.saveResults();
 		}

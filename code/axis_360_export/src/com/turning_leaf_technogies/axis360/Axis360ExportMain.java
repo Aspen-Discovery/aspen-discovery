@@ -25,11 +25,16 @@ public class Axis360ExportMain {
 
 	public static void main(String[] args) {
 		String serverName;
+		int settingToProcess = -1;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
+			}
+			String settingToProcessStr = AspenStringUtils.getInputFromCommandLine("Enter the Setting ID to process (blank to process all)");
+			if (settingToProcessStr.length() > 0 && AspenStringUtils.isInteger(settingToProcessStr)) {
+				settingToProcess = Integer.parseInt(settingToProcessStr);
 			}
 		} else {
 			serverName = args[0];
@@ -61,32 +66,34 @@ public class Axis360ExportMain {
 //			ThreadPoolExecutor es = (ThreadPoolExecutor)Executors.newFixedThreadPool(5);
 //			int numSettingsAdded = 0;
 			for(Axis360Setting setting : settings) {
+				if (settingToProcess == -1 || settingToProcess == setting.getId()) {
 //				try {
 //					es.execute(() -> {
-						Axis360ExtractLogEntry logEntry = createDbLogEntry(startTime, setting.getId(), aspenConn);
-						if (!logEntry.saveResults()) {
-							logger.error("Could not save log entry to database, quitting");
-							return;
-						}
+					Axis360ExtractLogEntry logEntry = createDbLogEntry(startTime, setting.getId(), aspenConn);
+					if (!logEntry.saveResults()) {
+						logger.error("Could not save log entry to database, quitting");
+						return;
+					}
 
-						Axis360Extractor extractor = new Axis360Extractor(serverName, aspenConn, setting, configIni, logEntry, logger);
-						numChanges[0] += extractor.extractAxis360Data();
+					Axis360Extractor extractor = new Axis360Extractor(serverName, aspenConn, setting, configIni, logEntry, logger);
+					numChanges[0] += extractor.extractAxis360Data();
 
-						if (logEntry.hasErrors()) {
-							logger.error("There were errors during the export for setting " + setting.getId());
-						}
+					if (logEntry.hasErrors()) {
+						logger.error("There were errors during the export for setting " + setting.getId());
+					}
 
-						logger.info("Finished " + new Date());
-						long endTime = new Date().getTime();
-						long elapsedTime = endTime - startTime.getTime();
-						logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+					logger.info("Finished " + new Date());
+					long endTime = new Date().getTime();
+					long elapsedTime = endTime - startTime.getTime();
+					logger.info("Elapsed Minutes " + (elapsedTime / 60000));
 
-						logEntry.setFinished();
+					logEntry.setFinished();
 //					});
 //					numSettingsAdded++;
 //				}catch (Exception e){
 //					logger.error("Error adding setting for processing " + setting.getId() + " - " + numSettingsAdded + " added so far");
 //				}
+				}
 			}
 //			es.shutdown();
 //			while (true) {

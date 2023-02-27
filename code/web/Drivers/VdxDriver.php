@@ -344,6 +344,18 @@ class VdxDriver {
 		if ($pType->find(true)) {
 			if (!empty($pType->vdxClientCategory)) {
 				$clientCategory = $pType->vdxClientCategory;
+			} else {
+				return [
+					'title' => translate([
+						'text' => 'Request Failed',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => "Patrons with this profile are not allowed to place interlibrary loans. Please contact your library for more information.",
+						'isPublicFacing' => true,
+					]),
+					'success' => false,
+				];
 			}
 		}
 		$body .= "ClientCategory=$clientCategory\r\n";
@@ -367,9 +379,11 @@ class VdxDriver {
 		$body .= "ReqMaxCostCurr=USD " . "\r\n";
 		$body .= "ReqMaxCost=" . $newRequest->maximumFeeAmount . "\r\n";
 		$body .= "ReqISBN=" . $newRequest->isbn . "\r\n";
-		$body .= "ControlNumbers._new=1\r\n";
-		$body .= "ControlNumbers.icn_rota_pos=-1\r\n";
-		$body .= "ControlNumbers.icn_loc_well_known=4\r\n";
+		if (!$isFromEmptyRequest) {
+			$body .= "ControlNumbers._new=1\r\n";
+			$body .= "ControlNumbers.icn_rota_pos=-1\r\n";
+			$body .= "ControlNumbers.icn_loc_well_known=4\r\n";
+		}
 
 		if (!empty($_REQUEST['oclcNumber'])) {
 			$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $_REQUEST['oclcNumber']) . "\r\n";

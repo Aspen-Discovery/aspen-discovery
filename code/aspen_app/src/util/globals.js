@@ -1,4 +1,3 @@
-import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 import * as Updates from 'expo-updates';
 import { Platform } from 'react-native';
@@ -16,7 +15,7 @@ export const GLOBALS = {
      appVersion: Constants.manifest2?.extra?.expoClient?.version ?? Constants.manifest.version,
      appBuild: Platform.OS === 'android' ? androidDist : iOSDist,
      appSessionId: Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId,
-     appPatch: 0,
+     appPatch: Constants.manifest2?.extra?.expoClient?.extra?.patch ?? Constants.manifest.extra.patch,
      showSelectLibrary: true,
      runGreenhouse: true,
      slug: Constants.manifest2?.extra?.expoClient?.slug ?? Constants.manifest.slug,
