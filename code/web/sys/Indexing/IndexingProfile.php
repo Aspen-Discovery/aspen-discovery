@@ -199,16 +199,42 @@ class IndexingProfile extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id within the database',
 			],
-			'name' => [
-				'property' => 'name',
-				'type' => 'text',
-				'label' => 'Name',
-				'maxLength' => 50,
-				'description' => 'A name for this indexing profile',
-				'required' => true,
-			],
+
+            'name' => [
+                'property' => 'name',
+                'hiddenByDefault' => true,
+                'type' => 'text',
+                'label' => 'Name',
+                'maxLength' => 50,
+                'description' => 'A name for this indexing profile',
+                'required' => true,
+            ],
+
+            'indexingClass' => [
+                'property' => 'indexingClass',
+                'type' => 'enum',
+                'label' => 'Indexing Class',
+                'values' => [
+                    'koha' => 'Koha',
+                    'arlingtonkoha' => 'Arlington Koha',
+                    'carlx' => 'Carl.X',
+                    'evergreen' => 'Evergreen',
+                    'evolve' => 'Evolve',
+                    'folio' => 'Folio',
+                    'iii' => 'III',
+                    'polaris' => 'Polaris',
+                    'sideloadedecontent' => 'Side Loaded e-Content',
+                    'symphony' => 'Symphony'],
+                'description' => 'The class to use while indexing the records',
+                'required' => true,
+                'onchange' => 'return AspenDiscovery.IndexingClass.indexingClassSelect();',
+                'default' => 'IlsRecord',
+                'forcesReindex' => true,
+            ],
+
 			'marcPath' => [
 				'property' => 'marcPath',
+				'hiddenByDefault' => true,
 				'type' => 'text',
 				'label' => 'MARC Path',
 				'maxLength' => 100,
@@ -216,8 +242,10 @@ class IndexingProfile extends DataObject {
 				'required' => true,
 				'forcesReindex' => true,
 			],
+
 			'filenamesToInclude' => [
 				'property' => 'filenamesToInclude',
+				'hiddenByDefault' => true,
 				'type' => 'regularExpression',
 				'label' => 'Filenames to Include',
 				'maxLength' => 250,
@@ -226,8 +254,10 @@ class IndexingProfile extends DataObject {
 				'default' => '.*\.ma?rc',
 				'forcesReindex' => true,
 			],
+
 			'marcEncoding' => [
 				'property' => 'marcEncoding',
+				'hiddenByDefault' => true,
 				'type' => 'enum',
 				'label' => 'MARC Encoding',
 				'values' => [
@@ -240,8 +270,10 @@ class IndexingProfile extends DataObject {
 				'default' => 'MARC8',
 				'forcesReindex' => true,
 			],
+
 			'individualMarcPath' => [
 				'property' => 'individualMarcPath',
+				'hiddenByDefault' => true,
 				'type' => 'text',
 				'label' => 'Individual MARC Path',
 				'maxLength' => 100,
@@ -249,8 +281,10 @@ class IndexingProfile extends DataObject {
 				'required' => true,
 				'forcesReindex' => true,
 			],
+
 			'numCharsToCreateFolderFrom' => [
 				'property' => 'numCharsToCreateFolderFrom',
+				'hiddenByDefault' => true,
 				'type' => 'integer',
 				'label' => 'Number of characters to create folder from',
 				'maxLength' => 50,
@@ -259,8 +293,10 @@ class IndexingProfile extends DataObject {
 				'default' => '4',
 				'forcesReindex' => true,
 			],
+
 			'createFolderFromLeadingCharacters' => [
 				'property' => 'createFolderFromLeadingCharacters',
+				'hiddenByDefault' => true,
 				'type' => 'checkbox',
 				'label' => 'Create Folder From Leading Characters',
 				'description' => 'Whether we should look at the start or end of the folder when .',
@@ -271,6 +307,7 @@ class IndexingProfile extends DataObject {
 
 			'groupingClass' => [
 				'property' => 'groupingClass',
+				'hiddenByDefault' => true,
 				'type' => 'text',
 				'label' => 'Grouping Class',
 				'maxLength' => 50,
@@ -279,18 +316,10 @@ class IndexingProfile extends DataObject {
 				'default' => 'MarcRecordGrouper',
 				'forcesReindex' => true,
 			],
-			'indexingClass' => [
-				'property' => 'indexingClass',
-				'type' => 'text',
-				'label' => 'Indexing Class',
-				'maxLength' => 50,
-				'description' => 'The class to use while indexing the records',
-				'required' => true,
-				'default' => 'IlsRecord',
-				'forcesReindex' => true,
-			],
+
 			'recordDriver' => [
 				'property' => 'recordDriver',
+				'hiddenByDefault' => true,
 				'type' => 'text',
 				'label' => 'Record Driver',
 				'maxLength' => 50,
@@ -298,8 +327,10 @@ class IndexingProfile extends DataObject {
 				'required' => true,
 				'default' => 'MarcRecordDriver',
 			],
+
 			'catalogDriver' => [
 				'property' => 'catalogDriver',
+				'hiddenByDefault' => true,
 				'type' => 'text',
 				'label' => 'Catalog Driver',
 				'maxLength' => 50,
@@ -311,6 +342,7 @@ class IndexingProfile extends DataObject {
 
 			'recordUrlComponent' => [
 				'property' => 'recordUrlComponent',
+				'hiddenByDefault' => true,
 				'type' => 'text',
 				'label' => 'Record URL Component',
 				'maxLength' => 50,
@@ -321,6 +353,7 @@ class IndexingProfile extends DataObject {
 
 			'processRecordLinking' => [
 				'property' => 'processRecordLinking',
+				'hiddenByDefault' => true ,
 				'type' => 'checkbox',
 				'label' => 'Process Record Linking',
 				'description' => 'Whether or not record linking between MARC records (in 760-787 fields) should be processed',
@@ -330,6 +363,7 @@ class IndexingProfile extends DataObject {
 
 			'recordNumberTag' => [
 				'property' => 'recordNumberTag',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Record Number Tag',
 				'maxLength' => 3,
@@ -339,6 +373,7 @@ class IndexingProfile extends DataObject {
 			],
 			'recordNumberSubfield' => [
 				'property' => 'recordNumberSubfield',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Record Number Subfield',
 				'maxLength' => 1,
@@ -349,6 +384,7 @@ class IndexingProfile extends DataObject {
 			],
 			'recordNumberPrefix' => [
 				'property' => 'recordNumberPrefix',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Record Number Prefix',
 				'maxLength' => 10,
@@ -357,6 +393,7 @@ class IndexingProfile extends DataObject {
 			],
 			'customMarcFieldsToIndexAsKeyword' => [
 				'property' => 'customMarcFieldsToIndexAsKeyword',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'MARC 0XX and 9XX Fields to Index as Keyword',
 				'maxLength' => 255,
@@ -366,6 +403,7 @@ class IndexingProfile extends DataObject {
 
 			'treatUnknownLanguageAs' => [
 				'property' => 'treatUnknownLanguageAs',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Treat Unknown Language As',
 				'maxLength' => 50,
@@ -375,6 +413,7 @@ class IndexingProfile extends DataObject {
 			],
 			'treatUndeterminedLanguageAs' => [
 				'property' => 'treatUndeterminedLanguageAs',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Treat Undetermined Language As',
 				'maxLength' => 50,
@@ -395,6 +434,7 @@ class IndexingProfile extends DataObject {
 
 			'suppressRecordsWithUrlsMatching' => [
 				'property' => 'suppressRecordsWithUrlsMatching',
+				'hiddenByDefault' => true ,
 				'type' => 'regularExpression',
 				'label' => 'Suppress Records With Urls Matching',
 				'description' => 'Any records with an 856u matching the pattern will be suppressed',
@@ -405,6 +445,7 @@ class IndexingProfile extends DataObject {
 
 			'bCode3sToSuppress' => [
 				'property' => 'bCode3sToSuppress',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'bCode3 values to suppress',
 				'description' => 'A regular expression containing the bCode3 values to suppress (Sierra Only).',
@@ -413,6 +454,7 @@ class IndexingProfile extends DataObject {
 
 			'determineAudienceBy' => [
 				'property' => 'determineAudienceBy',
+				'hiddenByDefault' => true ,
 				'type' => 'enum',
 				'values' => [
 					'0' => 'By Bib Record Data',
@@ -428,6 +470,7 @@ class IndexingProfile extends DataObject {
 			],
 			'audienceSubfield' => [
 				'property' => 'audienceSubfield',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Audience Subfield',
 				'maxLength' => 1,
@@ -436,6 +479,7 @@ class IndexingProfile extends DataObject {
 			],
 			'treatUnknownAudienceAs' => [
 				'property' => 'treatUnknownAudienceAs',
+				'hiddenByDefault' => true ,
 				'type' => 'enum',
 				'label' => 'Treat Unknown Audience As',
 				'values' => [
@@ -450,6 +494,7 @@ class IndexingProfile extends DataObject {
 
 			'determineLiteraryFormBy' => [
 				'property' => 'determineLiteraryFormBy',
+				'hiddenByDefault' => true ,
 				'type' => 'enum',
 				'values' => [
 					'0' => 'By Bib Record Data',
@@ -463,6 +508,7 @@ class IndexingProfile extends DataObject {
 			],
 			'literaryFormSubfield' => [
 				'property' => 'literaryFormSubfield',
+				'hiddenByDefault' => true ,
 				'type' => 'text',
 				'label' => 'Literary Form Subfield',
 				'maxLength' => 1,
@@ -472,6 +518,7 @@ class IndexingProfile extends DataObject {
 			],
 			'hideUnknownLiteraryForm' => [
 				'property' => 'hideUnknownLiteraryForm',
+				'hiddenByDefault' => true ,
 				'type' => 'checkbox',
 				'label' => 'Hide Unknown Literary Forms',
 				'description' => 'Whether or not Literary Form Facets of Unknown are shown',
@@ -480,6 +527,7 @@ class IndexingProfile extends DataObject {
 			],
 			'hideNotCodedLiteraryForm' => [
 				'property' => 'hideNotCodedLiteraryForm',
+				'hiddenByDefault' => true ,
 				'type' => 'checkbox',
 				'label' => 'Hide Not Coded Literary Forms',
 				'description' => 'Whether or not Literary Form Facets of Not Coded are shown',
@@ -489,6 +537,7 @@ class IndexingProfile extends DataObject {
 
 			'itemSection' => [
 				'property' => 'itemSection',
+				'hiddenByDefault' => true ,
 				'type' => 'section',
 				'label' => 'Item Information',
 				'hideInLists' => true,
@@ -838,6 +887,7 @@ class IndexingProfile extends DataObject {
 
 			'formatSection' => [
 				'property' => 'formatMappingSection',
+				'hiddenByDefault' => true ,
 				'type' => 'section',
 				'label' => 'Format Information',
 				'hideInLists' => true,
@@ -940,6 +990,7 @@ class IndexingProfile extends DataObject {
 
 			'statusMappingSection' => [
 				'property' => 'statusMappingSection',
+				'hiddenByDefault' => true ,
 				'type' => 'section',
 				'label' => 'Status Mappings',
 				'hideInLists' => true,
@@ -966,6 +1017,7 @@ class IndexingProfile extends DataObject {
 
 			'orderSection' => [
 				'property' => 'orderSection',
+				'hiddenByDefault' => true ,
 				'type' => 'section',
 				'label' => 'Order Record Fields (Sierra Only, not frequently used)',
 				'hideInLists' => true,
@@ -1023,6 +1075,7 @@ class IndexingProfile extends DataObject {
 
 			'regroupAllRecords' => [
 				'property' => 'regroupAllRecords',
+				'hiddenByDefault' => true ,
 				'type' => 'checkbox',
 				'label' => 'Regroup all Records',
 				'description' => 'Whether or not all existing records should be regrouped',
@@ -1030,6 +1083,7 @@ class IndexingProfile extends DataObject {
 			],
 			'runFullUpdate' => [
 				'property' => 'runFullUpdate',
+				'hiddenByDefault' => true ,
 				'type' => 'checkbox',
 				'label' => 'Run Full Update',
 				'description' => 'Whether or not a full update of all records should be done on the next pass of indexing',
@@ -1037,6 +1091,7 @@ class IndexingProfile extends DataObject {
 			],
 			'lastUpdateOfChangedRecords' => [
 				'property' => 'lastUpdateOfChangedRecords',
+				'hiddenByDefault' => true ,
 				'type' => 'timestamp',
 				'label' => 'Last Update of Changed Records',
 				'description' => 'The timestamp when just changes were loaded',
@@ -1044,6 +1099,7 @@ class IndexingProfile extends DataObject {
 			],
 			'lastUpdateOfAllRecords' => [
 				'property' => 'lastUpdateOfAllRecords',
+				'hiddenByDefault' => true ,
 				'type' => 'timestamp',
 				'label' => 'Last Update of All Records',
 				'description' => 'The timestamp when all records were loaded from the API',
@@ -1051,6 +1107,7 @@ class IndexingProfile extends DataObject {
 			],
 			'lastChangeProcessed' => [
 				'property' => 'lastChangeProcessed',
+				'hiddenByDefault' => true ,
 				'type' => 'integer',
 				'label' => 'Last Change Processed',
 				'description' => 'The index of the last change that was processed. Can be used for resuming API extracts if errors are generated.  (Koha only)',
@@ -1058,6 +1115,7 @@ class IndexingProfile extends DataObject {
 			],
 			'fullMarcExportRecordIdThreshold' => [
 				'property' => 'fullMarcExportRecordIdThreshold',
+				'hiddenByDefault' => true ,
 				'type' => 'integer',
 				'label' => 'Full MARC Export Record Id Threshold',
 				'description' => 'When indexing a full MARC export, verify that the maximum MARC record id in the export is at least this value',
@@ -1065,6 +1123,7 @@ class IndexingProfile extends DataObject {
 			],
 			'lastUpdateFromMarcExport' => [
 				'property' => 'lastUpdateFromMarcExport',
+				'hiddenByDefault' => true ,
 				'type' => 'timestamp',
 				'label' => 'Last Update from MARC Export',
 				'description' => 'The timestamp when all records were loaded from a MARC export',
@@ -1072,6 +1131,7 @@ class IndexingProfile extends DataObject {
 			],
 			'lastVolumeExportTimestamp' => [
 				'property' => 'lastVolumeExportTimestamp',
+				'hiddenByDefault' => true ,
 				'type' => 'timestamp',
 				'label' => 'Last Volume Export Timestamp (Symphony Only)',
 				'description' => 'The timestamp of the last volume export file used',
@@ -1079,6 +1139,7 @@ class IndexingProfile extends DataObject {
 			],
 			'lastUpdateOfAuthorities' => [
 				'property' => 'lastUpdateOfAuthorities',
+				'hiddenByDefault' => true ,
 				'type' => 'timestamp',
 				'label' => 'Last Authority Export Timestamp (Koha Only)',
 				'description' => 'The timestamp when authorities were last loaded',
@@ -1087,6 +1148,7 @@ class IndexingProfile extends DataObject {
 
 			'translationMaps' => [
 				'property' => 'translationMaps',
+				'hiddenByDefault' => true ,
 				'type' => 'oneToMany',
 				'label' => 'Translation Maps',
 				'description' => 'The translation maps for the profile.',
@@ -1105,6 +1167,7 @@ class IndexingProfile extends DataObject {
 
 			'timeToReshelve' => [
 				'property' => 'timeToReshelve',
+				'hiddenByDefault' => true ,
 				'type' => 'oneToMany',
 				'label' => 'Time to Reshelve',
 				'description' => 'Overrides for time to reshelve.',
@@ -1123,6 +1186,7 @@ class IndexingProfile extends DataObject {
 
 			'sierraFieldMappings' => [
 				'property' => 'sierraFieldMappings',
+				'hiddenByDefault' => true ,
 				'type' => 'oneToMany',
 				'label' => 'Sierra Field Mappings (Sierra Systems only)',
 				'description' => 'Field Mappings for exports from Sierra.',
@@ -1500,7 +1564,6 @@ class IndexingProfile extends DataObject {
 		$formatValue->update();
 		$this->_formatMap[$formatValue->id] = $formatValue;
 	}
-
 	private $_accountProfile = false;
 	public function getAccountProfile() : ?AccountProfile {
 		if ($this->_accountProfile === false) {
@@ -1515,3 +1578,4 @@ class IndexingProfile extends DataObject {
 		return $this->_accountProfile;
 	}
 }
+
