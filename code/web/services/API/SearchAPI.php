@@ -2341,11 +2341,22 @@ class SearchAPI extends Action {
 				$items[$recordKey]['image'] = $configArray['Site']['url'] . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
 				$items[$recordKey]['language'] = $record['language'][0];
 				$items[$recordKey]['summary'] = $record['display_description'];
-				$i = 0;
-				foreach ($record['format'] as $format) {
-					$items[$recordKey]['itemList'][$i]['key'] = $i;
-					$items[$recordKey]['itemList'][$i]['name'] = $format;
-					$i++;
+				$items[$recordKey]['itemList'] = [];
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+				if ($groupedWorkDriver->isValid()) {
+					$i = 0;
+					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+					foreach ($relatedManifestations as $relatedManifestation) {
+						foreach ($relatedManifestation->getVariations() as $obj) {
+							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+								$format = $obj->manifestation->format;
+								$items[$recordKey]['itemList'][$i]['key'] = $i;
+								$items[$recordKey]['itemList'][$i]['name'] = $format;
+								$i++;
+							};
+						}
+					}
 				}
 			}
 			$results['items'] = $items;
