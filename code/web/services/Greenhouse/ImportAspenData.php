@@ -307,6 +307,11 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				'className' => 'CustomForm',
 				'name' => 'Web Builder Custom Forms',
 			],
+			'web_builder_form_submissions' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php',
+				'className' => 'CustomFormSubmission',
+				'name' => 'Web Builder Custom Form Submissions',
+			],
 			'uploaded_images' => [
 				'name' => 'Uploaded Images',
 			],

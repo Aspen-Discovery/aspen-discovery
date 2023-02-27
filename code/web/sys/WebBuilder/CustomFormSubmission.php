@@ -80,4 +80,62 @@ class CustomFormSubmission extends DataObject {
 		}
 		return false;
 	}
+
+	public function okToExport(array $selectedFilters): bool {
+		$okToExport = parent::okToExport($selectedFilters);
+		if (in_array($this->libraryId, $selectedFilters['libraries'])) {
+			$okToExport = true;
+		}
+		return $okToExport;
+	}
+
+	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
+		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
+		unset ($return['libraryId']);
+
+		return $return;
+	}
+
+	public function getLinksForJSON(): array {
+		$links = parent::getLinksForJSON();
+		//library
+		$allLibraries = Library::getLibraryListAsObjects(false);
+		if (array_key_exists($this->libraryId, $allLibraries)) {
+			$library = $allLibraries[$this->libraryId];
+			$links['library'] = empty($library->subdomain) ? $library->ilsCode : $library->subdomain;
+		}
+		//User
+		$user = new User();
+		$user->id = $this->userId;
+		if ($user->find(true)) {
+			$links['user'] = $user->cat_username;
+		}
+		return $links;
+	}
+
+	public function loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting') {
+		parent::loadEmbeddedLinksFromJSON($jsonData, $mappings, $overrideExisting = 'keepExisting');
+
+		if (isset($jsonData['library'])) {
+			$allLibraries = Library::getLibraryListAsObjects(false);
+			$subdomain = $jsonData['library'];
+			if (array_key_exists($subdomain, $mappings['libraries'])) {
+				$subdomain = $mappings['libraries'][$subdomain];
+			}
+			foreach ($allLibraries as $tmpLibrary) {
+				if ($tmpLibrary->subdomain == $subdomain || $tmpLibrary->ilsCode == $subdomain) {
+					$this->libraryId = $tmpLibrary->libraryId;
+					break;
+				}
+			}
+		}
+		if (isset($jsonData['user'])) {
+			$username = $jsonData['user'];
+			$user = new User();
+			$user->cat_username = $username;
+			if ($user->find(true)) {
+				$this->userId = $user->id;
+			}
+		}
+	}
 }
