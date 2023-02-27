@@ -1552,14 +1552,16 @@ class BookCoverProcessor {
 	}
 
 	private function getUploadedGroupedWorkCover($permanentId) {
-		$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
-		if (file_exists($uploadedImage)) {
-			return $this->processImageURL('upload', $uploadedImage);
-		} elseif (strlen($permanentId) == 40) {
-			$permanentId = substr($permanentId, 0, 36);
+		if($this->bookCoverInfo->imageSource == 'upload') {
 			$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
 			if (file_exists($uploadedImage)) {
 				return $this->processImageURL('upload', $uploadedImage);
+			} elseif (strlen($permanentId) == 40) {
+				$permanentId = substr($permanentId, 0, 36);
+				$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
+				if (file_exists($uploadedImage)) {
+					return $this->processImageURL('upload', $uploadedImage);
+				}
 			}
 		}
 		return false;
