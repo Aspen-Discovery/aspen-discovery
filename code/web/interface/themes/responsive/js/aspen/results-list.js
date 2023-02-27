@@ -79,6 +79,5 @@ AspenDiscovery.ResultsList = (function(){
 			return false;
 
 		}
-
 	};
 }(AspenDiscovery.ResultsList || {}));

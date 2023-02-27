@@ -338,6 +338,7 @@ AspenDiscovery.Account = (function () {
 			var url = Globals.path + "/MyAccount/AJAX?method=getRatingsData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function (data) {
 				$(".ratings-placeholder").html(data.ratings);
+				$(".notInterested-placeholder").html(data.notInterested);
 			});
 			return false;
 		},

@@ -50,6 +50,7 @@ class Grouping_Item {
 	 */
 	public $numHolds = 0;
 	public $available = false;
+	public $isVirtual = false;
 	private $_relatedUrls = [];
 	private $_actions = [];
 	private $_displayByDefault = false;
@@ -93,6 +94,7 @@ class Grouping_Item {
 			$this->locationCode = $itemDetails['locationCode'];
 			$this->subLocation = $itemDetails['subLocationCode'];
 			$this->lastCheckInDate = $itemDetails['lastCheckInDate'];
+			$this->isVirtual = $itemDetails['isVirtual'];
 		} else {
 			//Item details stored in solr
 			$this->itemId = $itemDetails[1] == 'null' ? '' : $itemDetails[1];

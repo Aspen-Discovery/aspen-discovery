@@ -2548,6 +2548,13 @@ class User extends DataObject {
 		return $rating->count();
 	}
 
+	function getNumNotInterested() {
+		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+		$obj = new NotInterested();
+		$obj->whereAdd("userId = {$this->id}");
+		return $obj->count();
+	}
+
 	function getReadingHistorySize() {
 		if ($this->_readingHistorySize == null) {
 			if ($this->isReadingHistoryEnabled()) {

@@ -146,11 +146,14 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-
-							groupedWork.addTopic(curSubfield.getData());
+							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+								groupedWork.addTopic(curSubfield.getData());
+							}
 						}
 						if (curSubfield.getCode() == 'a' || curSubfield.getCode() == 'x') {
-							groupedWork.addTopicFacet(curSubfield.getData());
+							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+								groupedWork.addTopicFacet(curSubfield.getData());
+							}
 						} else if (curSubfield.getCode() == 'v') {
 							groupedWork.addGenreFacet(curSubfield.getData());
 						} else if (curSubfield.getCode() == 'z') {
@@ -170,8 +173,9 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-
-							groupedWork.addTopic(curSubfield.getData());
+							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+								groupedWork.addTopic(curSubfield.getData());
+							}
 						}
 						if (curSubfield.getCode() == 'x') {
 							groupedWork.addTopicFacet(curSubfield.getData());

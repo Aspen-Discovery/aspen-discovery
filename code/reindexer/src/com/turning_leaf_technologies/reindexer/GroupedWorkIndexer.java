@@ -157,6 +157,7 @@ public class GroupedWorkIndexer {
 	private String treatUnknownLanguageAs = "English";
 	private int indexVersion;
 	private int searchVersion;
+	private boolean includePersonalAndCorporateNamesInTopics;
 
 	public GroupedWorkIndexer(String serverName, Connection dbConn, Ini configIni, boolean fullReindex, boolean clearIndex, BaseIndexingLogEntry logEntry, Logger logger) {
 		this(serverName, dbConn, configIni, fullReindex, clearIndex, false, logEntry, logger);
@@ -190,13 +191,14 @@ public class GroupedWorkIndexer {
 
 		//Check to see if we should store record details in Solr
 		try{
-			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks from system_variables");
+			PreparedStatement systemVariablesStmt = dbConn.prepareStatement("SELECT storeRecordDetailsInSolr, storeRecordDetailsInDatabase, indexVersion, searchVersion, processEmptyGroupedWorks, includePersonalAndCorporateNamesInTopics from system_variables");
 			ResultSet systemVariablesRS = systemVariablesStmt.executeQuery();
 			if (systemVariablesRS.next()){
 				this.storeRecordDetailsInSolr = systemVariablesRS.getBoolean("storeRecordDetailsInSolr");
 				this.storeRecordDetailsInDatabase = systemVariablesRS.getBoolean("storeRecordDetailsInDatabase");
 				this.indexVersion = systemVariablesRS.getInt("indexVersion");
 				this.searchVersion = systemVariablesRS.getInt("searchVersion");
+				this.includePersonalAndCorporateNamesInTopics = systemVariablesRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 				if (fullReindex) {
 					this.processEmptyGroupedWorks = systemVariablesRS.getBoolean("processEmptyGroupedWorks");
 				}
@@ -238,9 +240,9 @@ public class GroupedWorkIndexer {
 			addVariationForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_variation (groupedWorkId, primaryLanguageId, eContentSourceId, formatId, formatCategoryId) VALUES (?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			removeVariationStmt = dbConn.prepareStatement("DELETE FROM grouped_work_variation WHERE id = ?");
 			getExistingItemsForRecordStmt = dbConn.prepareStatement("SELECT * from grouped_work_record_items WHERE groupedWorkRecordId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			addItemForRecordStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_items (groupedWorkRecordId, groupedWorkVariationId, itemId, shelfLocationId, callNumberId, sortableCallNumberId, numCopies, isOrderItem, statusId, dateAdded, locationCodeId, subLocationCodeId, lastCheckInDate, groupedStatusId, available, holdable, inLibraryUseOnly, locationOwnedScopes, libraryOwnedScopes, recordIncludedScopes, isVirtual) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
 			updateItemForRecordStmt = dbConn.prepareStatement("UPDATE grouped_work_record_items set groupedWorkVariationId = ?, shelfLocationId = ?, callNumberId = ?, sortableCallNumberId = ?, numCopies = ?, isOrderItem = ?, statusId = ?, dateAdded = ?, " +
-					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ? WHERE id = ?");
+					"locationCodeId = ?, subLocationCodeId = ?, lastCheckInDate = ?, groupedStatusId = ?, available = ?, holdable = ?, inLibraryUseOnly = ?, locationOwnedScopes = ?, libraryOwnedScopes = ?, recordIncludedScopes = ?, isVirtual = ? WHERE id = ?");
 			removeItemStmt = dbConn.prepareStatement("DELETE FROM grouped_work_record_items WHERE id = ?");
 			addItemUrlStmt = dbConn.prepareStatement("INSERT INTO grouped_work_record_item_url (groupedWorkItemId, scopeId, url) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url) ");
 			getRecordSourceStmt = dbConn.prepareStatement("SELECT id from indexed_record_source where source = ? and subSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -2117,6 +2119,7 @@ public class GroupedWorkIndexer {
 					addItemForRecordStmt.setString(18, itemInfo.getLocationOwnedScopes());
 					addItemForRecordStmt.setString(19, itemInfo.getLibraryOwnedScopes());
 					addItemForRecordStmt.setString(20, itemInfo.getRecordsIncludedScopes());
+					addItemForRecordStmt.setBoolean(21, itemInfo.isVirtual());
 					addItemForRecordStmt.executeUpdate();
 					ResultSet addItemForWorkRS = addItemForRecordStmt.getGeneratedKeys();
 					if (addItemForWorkRS.next()) {
@@ -2161,7 +2164,8 @@ public class GroupedWorkIndexer {
 					updateItemForRecordStmt.setString(16, itemInfo.getLocationOwnedScopes());
 					updateItemForRecordStmt.setString(17, itemInfo.getLibraryOwnedScopes());
 					updateItemForRecordStmt.setString(18, itemInfo.getRecordsIncludedScopes());
-					updateItemForRecordStmt.setLong(19, itemId);
+					updateItemForRecordStmt.setBoolean(19, itemInfo.isVirtual());
+					updateItemForRecordStmt.setLong(20, itemId);
 					updateItemForRecordStmt.executeUpdate();
 				}catch (SQLException e){
 					logEntry.incErrors("Error updating item " + itemId + " record " + recordId);
@@ -2336,6 +2340,10 @@ public class GroupedWorkIndexer {
 
 	public void setRegroupAllRecords(boolean regroupAllRecords) {
 		this.regroupAllRecords = regroupAllRecords;
+	}
+
+	public boolean isIncludePersonalAndCorporateNamesInTopics() {
+		return includePersonalAndCorporateNamesInTopics;
 	}
 
 	public enum MarcStatus {

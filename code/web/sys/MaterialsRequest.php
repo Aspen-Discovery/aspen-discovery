@@ -291,7 +291,8 @@ class MaterialsRequest extends DataObject {
 			]);
 			$body .= ', <br><br>';
 			$body .= translate([
-				'text' => "A new Materials Request has been submitted at $library->displayName",
+				'text' => "A new Materials Request has been submitted at %1%",
+				1 => $library->displayName,
 				'isAdminFacing' => true,
 				'isPublicFacing' => true,
 				]) . ": <br>";
@@ -384,6 +385,7 @@ class MaterialsRequest extends DataObject {
 					$subject = translate([
 						'text' => "You've been assigned %1% Materials Requests at %2%",
 						1 => $numRequests,
+						2 => $library->displayName,
 						'isAdminFacing' => true,
 						'isPublicFacing' => true
 					]);

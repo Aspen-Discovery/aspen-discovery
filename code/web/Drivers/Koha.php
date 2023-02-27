@@ -5326,6 +5326,39 @@ class Koha extends AbstractIlsDriver {
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
 
+		$canTranslateNotices = $this->getKohaSystemPreference('TranslateNotices', 0);
+		$noticeLanguages['default'] = 'Default';
+		$preferredNoticeLanguage = 'default';
+		if($canTranslateNotices) {
+			$languages = $this->getKohaSystemPreference('OPACLanguages', []);
+			$languages = explode(',', $languages);
+			foreach($languages as $language) {
+				$languageLocale = explode('-', $language);
+				/** @noinspection SqlResolve */
+				if(array_key_exists(1, $languageLocale)) {
+					$languageSql = "SELECT subtag, lang, description FROM language_descriptions where subtag = '$languageLocale[0]' AND lang = '$languageLocale[1]'";
+				} else {
+					$languageSql = "SELECT subtag, lang, description FROM language_descriptions where subtag = '$languageLocale[0]' AND lang = '$languageLocale[0]'";
+				}
+				$languageRS = mysqli_query($this->dbConnection, $languageSql);
+				if ($languageRow = $languageRS->fetch_assoc()) {
+					$noticeLanguages[$language] = $languageRow['description'] . " (" . $language . ")";
+				} else {
+					$noticeLanguages[$language] = $language;
+				}
+			}
+			/** @noinspection SqlResolve */
+			$borrowerLanguageSql = "SELECT lang FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
+			$borrowerLanguageRS = mysqli_query($this->dbConnection, $borrowerLanguageSql);
+			if ($borrowerLanguageRow = $borrowerLanguageRS->fetch_assoc()) {
+				$preferredNoticeLanguage = $borrowerLanguageRow['lang'];
+			}
+
+		}
+		$interface->assign('canTranslateNotices', $canTranslateNotices);
+		$interface->assign('noticeLanguages', $noticeLanguages);
+		$interface->assign('preferredNoticeLanguage', $preferredNoticeLanguage);
+
 		$library = $patron->getHomeLibrary();
 		if ($library != null && $library->allowProfileUpdates) {
 			$interface->assign('canSave', true);

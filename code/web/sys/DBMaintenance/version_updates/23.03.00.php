@@ -159,6 +159,15 @@ function getUpdates23_03_00(): array {
 			],
 		],
 		//add_materials_requests_limit_by_ptype
+		'extend_grouped_work_id_not_interested' => [
+			'title' => 'Extend groupedRecordPermanentId in user_not_interested',
+			'description' => 'Extend groupedRecordPermanentId in user_not_interested',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE user_not_interested MODIFY COLUMN groupedRecordPermanentId VARCHAR(40)",
+			]
+		],
+		//extend_grouped_work_id_not_interested
 
 		//kodi
 
