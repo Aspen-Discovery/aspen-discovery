@@ -54,5 +54,34 @@ function getUpdates23_02_10(): array {
 				"ALTER TABLE system_variables ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
 			]
 		], //includePersonalAndCorporateNamesInTopics
+		'index856Links' => [
+			'title' => 'Index 856 links',
+			'description' => 'Add the ability to disable or enable the indexing of 856 links from the MARC record',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN index856Links TINYINT(1) NOT NULL DEFAULT 0;",
+				"updateIndex856Links",
+				"ALTER TABLE grouped_work_display_settings DROP COLUMN show856LinksAsAccessOnlineButtons",
+			]
+		], //includePersonalAndCorporateNamesInTopics
     ];
+}
+
+function updateIndex856Links(&$update) {
+	$groupedWorkDisplay = new GroupedWorkDisplaySetting();
+	$groupedWorkDisplay->whereAdd('show856LinksAsAccessOnlineButtons = 1');
+	$numMatches = $groupedWorkDisplay->count();
+	if ($numMatches > 0) {
+		$indexingProfile = new IndexingProfile();
+		$indexingProfile->find();
+		/** @var IndexingProfile[] $allIndexingProfiles */
+		$allIndexingProfiles = $indexingProfile->fetchAll();
+		foreach ($allIndexingProfiles as $indexingProfile) {
+			$indexingProfile->index856Links = 1;
+			$indexingProfile->update();
+			$update['status'] .= "Set Indexing Profile $indexingProfile->name to index 856 links.<br/>";
+		}
+	}
+
+	$update['success'] = true;
 }

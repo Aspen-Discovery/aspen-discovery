@@ -1372,6 +1372,7 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowformatMap").show();
 				$("#propertyRowcheckRecordForLargePrint").hide();
 			}
+			AspenDiscovery.IndexingClass.indexingClassSelect();
 		},
 		updateLayoutSettingsFields: function () {
 			var useHomeLink = $('#useHomeLinkSelect').val();

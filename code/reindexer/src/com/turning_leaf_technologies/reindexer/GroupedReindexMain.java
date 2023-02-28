@@ -34,6 +34,7 @@ public class GroupedReindexMain {
 	private static boolean clearIndex = false;
 	private static boolean isNightlyReindex = false;
 	private static String individualWorkToProcess;
+	private static boolean processEmptyWorks = false;
 	private static Ini configIni;
 	private static String baseLogPath;
 
@@ -54,7 +55,11 @@ public class GroupedReindexMain {
 		serverName = args[0];
 
 		boolean checkNightlyIndexRunning = false;
-		if (args.length >= 2 && args[1].equalsIgnoreCase("full")) {
+		if (args.length >= 2 && args[1].equalsIgnoreCase("processEmpty")) {
+			fullReindex = false;
+			clearIndex = false;
+			processEmptyWorks = true;
+		}else if (args.length >= 2 && args[1].equalsIgnoreCase("full")) {
 			fullReindex = true;
 			clearIndex = true;
 		}else if (args.length >= 2 && (args[1].equalsIgnoreCase("fullNoClear") || args[1].equalsIgnoreCase("nightly"))){
@@ -131,6 +136,9 @@ public class GroupedReindexMain {
 					} catch (Exception e) {
 						logger.error("Unable to process individual work " + individualWorkToProcess, e);
 					}
+				} else if (processEmptyWorks) {
+					logger.info("Processing Empty Works");
+					groupedWorkIndexer.processEmptyGroupedWorks();
 				} else {
 					logger.info("Running Reindex");
 					groupedWorkIndexer.processGroupedWorks();

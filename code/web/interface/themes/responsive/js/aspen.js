@@ -8742,6 +8742,7 @@ AspenDiscovery.Admin = (function () {
 				$("#propertyRowformatMap").show();
 				$("#propertyRowcheckRecordForLargePrint").hide();
 			}
+			AspenDiscovery.IndexingClass.indexingClassSelect();
 		},
 		updateLayoutSettingsFields: function () {
 			var useHomeLink = $('#useHomeLinkSelect').val();
@@ -9152,6 +9153,7 @@ AspenDiscovery.Admin = (function () {
 		}
 	};
 }(AspenDiscovery.Admin || {}));
+
 AspenDiscovery.Authors = (function () {
 	return {
 		loadEnrichmentInfo: function (id) {
@@ -12806,6 +12808,38 @@ AspenDiscovery.Record = (function(){
 				}
 			);
 			return false;
+		},
+
+		selectItemLink: function( recordId) {
+			var url = Globals.path + '/Record/' + recordId + '/AJAX';
+			var params = {
+				method: 'showSelectItemToViewForm'
+			};
+			$("accessOnline_" + recordId).enabled = false;
+			$.getJSON(url, params, function (data){
+				$("accessOnline_" + recordId).enabled = true;
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			});
+			return false;
+		},
+
+		viewItemLink: function () {
+			var selectedItem = $('#selectedItem').val();
+			var id = $('#id').val();
+			var url = Globals.path + '/Record/' + id + '/AJAX';
+			var params = {
+				method: 'viewItem',
+				selectedItem: selectedItem
+			};
+			$.getJSON(url, params, function (data){
+				if (data.success) {
+					AspenDiscovery.closeLightbox();
+					window.open(data.url, '_blank');
+				}else {
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			});
+			return false;
 		}
 	};
 }(AspenDiscovery.Record || {}));
@@ -14015,3 +14049,49 @@ AspenDiscovery.Wikipedia = (function(){
 		}
 	};
 }(AspenDiscovery.Wikipedia));
+AspenDiscovery.IndexingClass = (function () {
+	return {
+
+		indexingClassSelect: function (id) {
+			//Hide all
+			$(".form-group").each(function () {
+				$(this).hide();
+			});
+
+			//Show Class Select
+			$("#propertyRowid").show();
+			$("#propertyRowindexingClass").show();
+			$(".btn-group").parent().show();
+
+
+			//Config per Class
+			var ilsOptions = {
+				//Common for all classes
+				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude', 'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom', 'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver', 'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking', 'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix', 'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs', 'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching', 'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs', 'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm', 'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs', 'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers', 'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp', 'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations', 'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection', 'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode', 'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress', 'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts', 'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes', 'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated', 'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat', 'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield', 'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField', 'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost', 'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection', 'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle', 'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords', 'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords', 'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport', 'propertyRowtranslationMaps', 'FloatingSave'],
+				//Specific per class
+				Koha: ['propertyRowlastUpdateOfAuthorities'],
+				Evolve: [],
+				ArlingtonKoha: ['propertyRowlastUpdateOfAuthorities'],
+				CarlX: [],
+				Folio: [],
+				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection'],
+				Symphony: ['propertyRowlastVolumeExportTimestamp'],
+				Polaris: [],
+				Evergreen: []
+			};
+
+			//Show rows for selected class
+			var selectedIndexingClass = $("#indexingClassSelect").val();
+			var selectedIndexingClassText = $("#indexingClassSelect option:selected").text();
+
+			if (selectedIndexingClass !== '...' && selectedIndexingClass !== '') {
+				var iterator = ilsOptions[selectedIndexingClass];
+				iterator = $.merge(ilsOptions['commonFields'], iterator);
+				iterator.forEach(function (value) {
+					$("#" + value).show();
+				});
+			}
+		}
+	}
+}(AspenDiscovery.IndexingClass || {}));
+

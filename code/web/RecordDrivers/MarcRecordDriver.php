@@ -1289,7 +1289,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$actions[] = [
 				'title' => $title,
 				'url' => '',
-				'onclick' => "return AspenDiscovery.EContent.selectItemLink('{$this->getId()}');",
+				'onclick' => "return AspenDiscovery.Record.selectItemLink('{$this->getId()}');",
 				'requireLogin' => false,
 				'type' => 'access_online',
 				'id' => "accessOnline_{$this->getId()}",

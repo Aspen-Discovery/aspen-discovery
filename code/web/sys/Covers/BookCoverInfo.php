@@ -19,6 +19,7 @@ class BookCoverInfo extends DataObject {
 
 	public function getNumericColumnNames(): array {
 		return [
+			'id',
 			'sourceWidth',
 			'sourceHeight',
 			'thumbnailLoaded',

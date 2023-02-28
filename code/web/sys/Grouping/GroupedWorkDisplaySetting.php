@@ -59,7 +59,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	//Full record display
 	public $show856LinksAsTab;
-	public $show856LinksAsAccessOnlineButtons;
+//	public $show856LinksAsAccessOnlineButtons;
 	public $showCheckInGrid;
 	public $showStaffView;
 	public $showLCSubjects; // Library of Congress Subjects
@@ -434,14 +434,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'hideInLists' => true,
 						'default' => 1,
 					],
-					'show856LinksAsAccessOnlineButtons' => [
-						'property' => 'show856LinksAsAccessOnlineButtons',
-						'type' => 'checkbox',
-						'label' => 'Show 856 Links as Access Online Buttons',
-						'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.',
-						'hideInLists' => true,
-						'default' => 0,
-					],
+//					'show856LinksAsAccessOnlineButtons' => [
+//						'property' => 'show856LinksAsAccessOnlineButtons',
+//						'type' => 'checkbox',
+//						'label' => 'Show 856 Links as Access Online Buttons',
+//						'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.',
+//						'hideInLists' => true,
+//						'default' => 0,
+//					],
 					'showCheckInGrid' => [
 						'property' => 'showCheckInGrid',
 						'type' => 'checkbox',
