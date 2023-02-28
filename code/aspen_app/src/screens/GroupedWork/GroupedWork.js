@@ -3,6 +3,7 @@ import _ from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HStack, Box, Button, Center, Icon, Image, ScrollView, Text, FlatList, AlertDialog } from 'native-base';
 import React, {Component, useEffect} from 'react';
+import { useToken } from 'native-base';
 import { Rating } from 'react-native-elements';
 
 // custom components and helper files
@@ -90,13 +91,14 @@ export const GroupedWorkScreen = () => {
 };
 
 const DisplayGroupedWork = (payload) => {
+     const backgroundColor = useToken('colors', 'warmGray.200');
      const groupedWork = payload.data;
      const { format } = React.useContext(GroupedWorkContext);
 
      return (
           <Box safeArea={5} w="100%">
                <Center mt={5} width="100%">
-                    <Image resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} shadow={3} style={{ borderRadius: 4 }} />
+                    <Image resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} shadow={3} style={{ borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>
