@@ -822,31 +822,55 @@ public class GroupedWorkIndexer {
 			groupedWorks.close();
 			setLastUpdatedTime.close();
 
-			if (processEmptyGroupedWorks){
-				PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id, permanent_id, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-				logEntry.addNote("Starting to process grouped works with no records attached to them.");
-
-				ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery();
-				int numDeleted = 0;
-				while (emptyGroupedWorksRS.next()) {
-					String permanentId = emptyGroupedWorksRS.getString("permanent_id");
-					deleteRecord(permanentId);
-					numDeleted++;
-					if (numDeleted % 10000 == 0) {
-						try {
-							updateServer.commit(false, false, true);
-						} catch (Exception e) {
-							logger.warn("Error committing changes", e);
-						}
-					}
-				}
-				logEntry.addNote("Finished processing " + numDeleted + " grouped works with no records attached to them.");
+			if (processEmptyGroupedWorks) {
+				processEmptyGroupedWorks();
 			}
 
 		} catch (SQLException e) {
 			logEntry.incErrors("Unexpected SQL error", e);
 		}
 		logger.info("Finished processing grouped works.  Processed a total of " + numWorksProcessed + " grouped works");
+	}
+
+	protected void processEmptyGroupedWorks() throws SQLException {
+		PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id as grouped_work_id, permanent_id, grouping_category, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getPrimaryIdentifiersForGroupedWorkStmt = dbConn.prepareStatement("SELECT count(*) as numIdentifiers from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		logEntry.addNote("Starting to process grouped works with no records attached to them.");
+
+		ResultSet emptyGroupedWorksRS = getEmptyGroupedWorksStmt.executeQuery();
+		int numDeleted = 0;
+		boolean localRegroupAll = this.regroupAllRecords;
+		setRegroupAllRecords(true);
+		logEntry.addNote("Preparing to process empty grouped works");
+		while (emptyGroupedWorksRS.next()) {
+			long groupedWorkId = emptyGroupedWorksRS.getLong("grouped_work_id");
+			String permanentId = emptyGroupedWorksRS.getString("permanent_id");
+
+			getPrimaryIdentifiersForGroupedWorkStmt.setLong(1, groupedWorkId);
+			ResultSet numPrimaryIdentifiersRS = getPrimaryIdentifiersForGroupedWorkStmt.executeQuery();
+			boolean hasIdentifiersAttached = false;
+			if (numPrimaryIdentifiersRS.next()) {
+				if (numPrimaryIdentifiersRS.getLong("numIdentifiers") > 0) {
+					hasIdentifiersAttached = true;
+				}
+			}
+
+			if (hasIdentifiersAttached) {
+				processGroupedWork(groupedWorkId, permanentId, emptyGroupedWorksRS.getString("grouping_category"));
+			}else {
+				deleteRecord(permanentId);
+				numDeleted++;
+				if (numDeleted % 10000 == 0) {
+					try {
+						updateServer.commit(false, false, true);
+					} catch (Exception e) {
+						logger.warn("Error committing changes", e);
+					}
+				}
+			}
+		}
+		setRegroupAllRecords(localRegroupAll);
+		logEntry.addNote("Finished processing empty grouped works.");
 	}
 
 	public synchronized void processGroupedWork(String permanentId) {
@@ -901,7 +925,7 @@ public class GroupedWorkIndexer {
 		HashSet<String> regroupedIdsToProcess = new HashSet<>();
 		HashSet<RecordIdentifier> regroupedIdentifiers = new HashSet<>();
 
-		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||") || permanentId.endsWith("   ")){
+		if ((regroupAllRecords && allowRegrouping) || permanentId.endsWith("|||") || permanentId.contains(" ")){
 			for (RecordIdentifier recordIdentifier : recordIdentifiers) {
 				String type = recordIdentifier.getType();
 				String identifier = recordIdentifier.getIdentifier();
