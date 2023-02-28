@@ -1469,12 +1469,6 @@ class MyAccount_AJAX extends JSON_Action {
 		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
-		//SAML
-		if (!empty($library->ssoMetadataFilename) && !empty($library->ssoEntityId)) {
-			$interface->assign('ssoEntityId', $library->ssoEntityId);
-		}
-		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
-
 		if (!empty($library->loginNotes)) {
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();

@@ -75,15 +75,6 @@
 		                    </div>
 		                </div>
 		            {/if}
-		            {if !(empty($ssoEntityId))}
-		            <div id="SAMLLoginRow" class="form-group">
-		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
-		                    <p class="help-block">
-		                        <a href="/saml2auth.php?samlLogin=y&idp={$ssoEntityId}">Log in using {$ssoName}</a>
-		                    </p>
-		                </div>
-		            </div>
-		            {/if}
 		            <div id="loginPasswordRow2" class="form-group">
 		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
 		                    <label for="showPwd" class="checkbox">
