@@ -5,6 +5,28 @@
 		</div>
 	</div>
 
+	<form role="form">
+        <div class="form-group">
+            <label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
+            <div class="input-group">
+                <input  type="text" name="settingsSearch" id="settingsSearch"
+                        onkeyup="return AspenDiscovery.Admin.searchSettings();" onkeydown="AspenDiscovery.preventEnterKey(e);" class="form-control" />
+                <span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
+                <script type="text/javascript">
+                    {literal}
+                    $(document).ready(function() {
+                        $("#settingsSearch").keydown("keydown", function (e) {
+                            if (e.which === 13) {
+                                e.preventDefault();
+                            }
+                        });
+                    });
+                    {/literal}
+                </script>
+            </div>
+        </div>
+    </form>
+
 	<div id="adminSections" class="grid" data-colcade="columns: .grid-col, items: .grid-item">
 		<!-- columns -->
 		<div class="grid-col grid-col--1"></div>
@@ -395,6 +417,14 @@
                             </div>
                             <div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
                                 <div class="adminActionLabel"><a href="/Greenhouse/AspenLiDABuildTracker">{translate text="Aspen LiDA Build Tracker"  isAdminFacing=true}</a></div>
+                            </div>
+                        </div>
+						<div class="adminAction row">
+                            <div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+                                <a href="/Greenhouse/AspenLiDASiteListingCache" title="{translate text="Aspen LiDA Site Listing Cache" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+                            </div>
+                            <div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+                                <div class="adminActionLabel"><a href="/Greenhouse/AspenLiDASiteListingCache">{translate text="Aspen LiDA Site Listing Cache"  isAdminFacing=true}</a></div>
                             </div>
                         </div>
                     </div>
