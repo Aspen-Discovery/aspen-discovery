@@ -753,24 +753,45 @@ class UInterface extends Smarty {
 			}
 		}
 
+		$ssoIsEnabled = false;
+
 		// if using SSO, determine if it's available to only staff users or not
 		$ssoStaffOnly = false;
 		$bypassAspenLogin = false;
 		$ssoService = null;
 		$samlEntityId = null;
+		$ssoSettingId = -1;
+
 		try {
-			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-			$ssoSettings = new SSOSetting();
-			$ssoSettings->id = $library->ssoSettingId;
-			if($ssoSettings->find(true)) {
-				$ssoStaffOnly = $ssoSettings->staffOnly;
-				$ssoService = $ssoSettings->service;
-				$bypassAspenLogin = $ssoSettings->bypassAspenLogin ?? true;
-				$samlEntityId = $ssoSettings->ssoEntityId;
+			if(UserAccount::isPrimaryAccountAuthenticationSSO()) {
+				require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+				$accountProfile = new AccountProfile();
+				$accountProfile->id = $library->accountProfileId;
+				if($accountProfile->find(true)) {
+					$ssoSettingId = $accountProfile->ssoSettingId;
+				}
+			} else {
+				$ssoSettingId = $library->ssoSettingId;
+			}
+
+			global $enabledModules;
+			if (array_key_exists('Single sign-on', $enabledModules) && $ssoSettingId > 0) {
+				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+				$ssoSettings = new SSOSetting();
+				$ssoSettings->id = $ssoSettingId;
+				if($ssoSettings->find(true)) {
+					$ssoStaffOnly = $ssoSettings->staffOnly;
+					$ssoService = $ssoSettings->service;
+					$bypassAspenLogin = $ssoSettings->bypassAspenLogin ?? true;
+					$samlEntityId = $ssoSettings->ssoEntityId;
+					$ssoIsEnabled = true;
+				}
 			}
 		} catch (Exception $e) {
 			//This happens if the SSOSetting table does not exist yet.
 		}
+
+		$this->assign('ssoIsEnabled', $ssoIsEnabled);
 		$this->assign('ssoStaffOnly', $ssoStaffOnly);
 		$this->assign('ssoService', $ssoService);
 		$this->assign('bypassAspenLogin', $bypassAspenLogin);

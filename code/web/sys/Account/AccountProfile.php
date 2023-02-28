@@ -42,17 +42,33 @@ class AccountProfile extends DataObject {
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
 
-		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-		$ssoSettings = new SSOSetting();
-		$ssoSettings->orderBy('name');
+		$ssoIsEnabled = false;
 		$ssoSettingsOptions = [];
-		$ssoSettingsOptions[-1] = "";
-		$ssoSettings->find();
-		while ($ssoSettings->fetch()) {
-			$ssoSettingsOptions[$ssoSettings->id] = $ssoSettings->name . ' (' . $ssoSettings->service . ')';
+		global $enabledModules;
+		if (array_key_exists('Single sign-on', $enabledModules)) {
+			$ssoIsEnabled = true;
+			$authenticationMethodOptions = [
+				'ils' => 'ILS',
+				'db' => 'Database',
+				'sso' => 'Single Sign-on (SSO)'
+			];
+			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+			$ssoSettings = new SSOSetting();
+			$ssoSettings->orderBy('name');
+			$ssoSettingsOptions = [];
+			$ssoSettingsOptions[-1] = '';
+			$ssoSettings->find();
+			while ($ssoSettings->fetch()) {
+				$ssoSettingsOptions[$ssoSettings->id] = $ssoSettings->name . ' (' . $ssoSettings->service . ')';
+			}
+		} else {
+			$authenticationMethodOptions = [
+				'ils' => 'ILS',
+				'db' => 'Database',
+			];
 		}
 
-		return [
+		$structure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -125,11 +141,7 @@ class AccountProfile extends DataObject {
 						'property' => 'authenticationMethod',
 						'type' => 'enum',
 						'label' => 'Authentication Method',
-						'values' => [
-							'ils' => 'ILS',
-							'db' => 'Database',
-							'sso' => 'Single Sign-on (SSO)'
-						],
+						'values' => $authenticationMethodOptions,
 						'description' => 'The method of authentication to use',
 						'required' => true,
 						'onchange' => 'return AspenDiscovery.Admin.toggleSSOSettingsInAccountProfile();',
@@ -361,6 +373,12 @@ class AccountProfile extends DataObject {
 				'hideInLists' => true,
 			],
 		];
+
+		if (!array_key_exists('Single sign-on', $enabledModules)) {
+			unset($structure['authConfigurationSection']['properties']['ssoSettingId']);
+		}
+
+		return $structure;
 	}
 
 	public function __get($name) {

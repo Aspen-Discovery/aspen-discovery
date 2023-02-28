@@ -12,7 +12,7 @@
 					<small class='session_info'> / {translate text="session %1%" 1=$session isAdminFacing=true}</small>
 					<small class='scope_info'> / {translate text="scope %1%" 1=$solrScope isAdminFacing=true}</small>
 				{/if}
-				{if empty($loggedIn)}{* Not Logged In *}
+				{if empty($loggedIn) && $ssoIsEnabled}{* Not Logged In *}
 					{if $ssoStaffOnly && !(empty($ssoService))}
 						{if $bypassAspenLogin == '1' && $ssoService != 'ldap'}
 							{if $ssoService == 'oauth'}
