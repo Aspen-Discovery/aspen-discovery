@@ -980,6 +980,29 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
+	function hasMultipleVariations() {
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if (count($relatedRecord->recordVariations) > 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function getRecordVariations() {
+		require_once ROOT_DIR . '/sys/Grouping/Variation.php';
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		$records = [];
+		foreach($relatedRecord->recordVariations as $record){
+			$records = array_merge($records, $record->getRecords());
+		}
+		$sorter = function ($a, $b) {
+			return strcasecmp($a->variationFormat, $b->variationFormat);
+		};
+		uasort($records, $sorter);
+		return $records;
+	}
+
 	function getFormatCategory() {
 		return $this->getGroupedWorkDriver()->getFormatCategory();
 	}
