@@ -228,7 +228,32 @@ class Record_AJAX extends Action {
 
 			//Figure out what types of holds to allow
 			$items = $marcRecord->getCopies();
-			$format = $marcRecord->getPrimaryFormat();
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+			if (count($relatedRecord->recordVariations) > 1){
+				foreach ($relatedRecord->recordVariations as $variation){
+					$formatValue = $variation->manifestation->format;
+					global $indexingProfiles;
+					$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+					$formatMap = $indexingProfile->formatMap;
+					//Loop through the format map
+					/** @var FormatMapValue $formatMapValue */
+					//Check for a format with a hold type that is not 'none'
+					foreach ($formatMap as $formatMapValue) {
+						if (strcasecmp($formatMapValue->format, $formatValue) === 0) {
+							$holdType = $formatMapValue->holdType;
+							if ($holdType != 'none') {
+								$format = $formatValue;
+							}
+						}
+					}
+				}
+				//if we get no result and all hold types are 'none' just return the marc primary format
+				if (empty($format)){
+					$format = $marcRecord->getPrimaryFormat();
+				}
+			}else{
+				$format = $marcRecord->getPrimaryFormat();
+			}
 
 			if (isset($_REQUEST['volume'])) {
 				//If we have a volume, we always place a volume hold
