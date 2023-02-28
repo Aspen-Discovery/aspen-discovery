@@ -311,9 +311,9 @@ class GreenhouseAPI extends Action {
 								} else {
 									$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
 								}
-							} elseif ($aspenSite->name == "Test (ByWater)") {
+							}/* elseif ($aspenSite->name == "Test (ByWater)") {
 								$return['libraries'][] = $this->setLibrary($aspenSite, $libraryLocation, $distance);
-							}
+							}*/
 						}
 					}
 				}

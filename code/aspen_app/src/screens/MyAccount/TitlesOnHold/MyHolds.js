@@ -236,7 +236,7 @@ export const MyHolds = () => {
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
                                       onValueChange={(itemValue) => toggleReadySort(itemValue)}>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
                                       <Select.Item label={translate('general.sort_by', { sort: 'Expiration Date'})} value="expire" key={3}/>
