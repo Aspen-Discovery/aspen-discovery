@@ -187,15 +187,29 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
           let holdsReady = [];
           let holdsNotReady = [];
 
+          let pendingSortMethod = pendingSort;
+          if(pendingSort === 'sortTitle') {
+               pendingSortMethod = 'title';
+          } else if (pendingSort === 'libraryAccount') {
+               pendingSortMethod = 'user';
+          }
+
+          let readySortMethod = readySort;
+          if(readySort === 'sortTitle') {
+               readySortMethod = 'title';
+          } else if (readySort === 'libraryAccount') {
+               readySortMethod = 'user';
+          }
+
           if (typeof allHolds !== 'undefined') {
                if (typeof allHolds.unavailable !== 'undefined') {
                     holdsNotReady = Object.values(allHolds.unavailable);
-                    holdsNotReady = _.orderBy(holdsNotReady, [pendingSort], ['asc']);
+                    holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['asc']);
                }
 
                if (typeof allHolds.available !== 'undefined') {
                     holdsReady = Object.values(allHolds.available);
-                    holdsReady = _.orderBy(holdsReady, [readySort], ['asc']);
+                    holdsReady = _.orderBy(holdsReady, [readySortMethod], ['asc']);
                }
           }
 
