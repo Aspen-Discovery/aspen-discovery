@@ -84,4 +84,8 @@ class Greenhouse_Settings extends ObjectEditor {
 		}
 		return false;
 	}
+
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
 }
