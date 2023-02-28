@@ -3411,6 +3411,12 @@ class Library extends DataObject {
 		if (!array_key_exists('Open Archives', $enabledModules)) {
 			unset($structure['oaiSection']);
 		}
+		if (!array_key_exists('Aspen LiDA', $enabledModules)) {
+			unset($structure['aspenLiDASection']);
+		}
+		if (!array_key_exists('Single sign-on', $enabledModules)) {
+			unset($structure['ssoSection']);
+		}
 		return $structure;
 	}
 

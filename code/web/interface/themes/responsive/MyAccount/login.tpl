@@ -18,15 +18,17 @@
 				</p>
 			</div>
 		{/if}
-		{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO}
-            {include file='MyAccount/sso-login.tpl'}
-            {if $ssoLoginOptions == 0}
-	            <div class="hr-label">
-	                <span class="text">{translate text="or" isPublicFacing=true}</span>
-	            </div>
-            {/if}
+		{if $ssoIsEnabled}
+			{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO}
+	            {include file='MyAccount/sso-login.tpl'}
+	            {if $ssoLoginOptions == 0}
+		            <div class="hr-label">
+		                <span class="text">{translate text="or" isPublicFacing=true}</span>
+		            </div>
+	            {/if}
+	        {/if}
         {/if}
-        {if $ssoLoginOptions == 0 || ($isPrimaryAccountAuthenticationSSO && $ssoService == 'ldap')}
+        {if $ssoLoginOptions == 0 || ($ssoIsEnabled && $isPrimaryAccountAuthenticationSSO && $ssoService == 'ldap')}
 	        <form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
 		        <div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel translateParameters=true isPublicFacing=true}</div>
 		        <div id="loginFormFields">
@@ -104,7 +106,7 @@
 		                    {if !empty($pageId)}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
 		                    {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
 		                    {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
-		                    {if !$ssoStaffOnly && $ssoService == 'ldap'}<input type="hidden" name="ldapLogin" value="true">{/if}
+		                    {if $ssoIsEnabled && !$ssoStaffOnly && $ssoService == 'ldap'}<input type="hidden" name="ldapLogin" value="true">{/if}
 		                </div>
 		            </div>
 		        </div>
