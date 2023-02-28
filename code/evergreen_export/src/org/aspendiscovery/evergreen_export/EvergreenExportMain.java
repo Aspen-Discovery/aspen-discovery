@@ -1449,24 +1449,28 @@ public class EvergreenExportMain {
 										String ind1 = curElement.getAttribute("ind1");
 										String ind2 = curElement.getAttribute("ind2");
 										if (AspenStringUtils.isNumeric(tag)) {
-											DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
-											for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
-												Node curChild2 = curElement.getChildNodes().item(k);
-												if (curChild2 instanceof Element) {
-													Element curElement2 = (Element) curChild2;
-													if (curElement2.getTagName().equals("subfield")) {
-														String code = curElement2.getAttribute("code");
-														String data = curElement2.getTextContent();
-														if (code.length() == 1) {
-															Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
-															curField.addSubfield(curSubField);
-														}else{
-															hasInvalidData = true;
+											//Make sure we don't load item tags, these get handled as part of the holdings.
+											// if there are any item tags, they are from old imports and should be deleted.
+											if (!tag.equals(indexingProfile.getItemTag())) {
+												DataField curField = marcFactory.newDataField(tag, ind1.charAt(0), ind2.charAt(0));
+												for (int k = 0; k < curElement.getChildNodes().getLength(); k++) {
+													Node curChild2 = curElement.getChildNodes().item(k);
+													if (curChild2 instanceof Element) {
+														Element curElement2 = (Element) curChild2;
+														if (curElement2.getTagName().equals("subfield")) {
+															String code = curElement2.getAttribute("code");
+															String data = curElement2.getTextContent();
+															if (code.length() == 1) {
+																Subfield curSubField = marcFactory.newSubfield(code.charAt(0), data);
+																curField.addSubfield(curSubField);
+															}else{
+																hasInvalidData = true;
+															}
 														}
 													}
 												}
+												marcRecord.addVariableField(curField);
 											}
-											marcRecord.addVariableField(curField);
 										}else{
 											hasInvalidData = true;
 										}

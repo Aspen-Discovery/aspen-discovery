@@ -668,6 +668,28 @@ class Grouping_Record {
 	public function getHoldPickupSetting() {
 		$result = 0;
 		global $indexingProfiles;
+
+		if (count($this->recordVariations) > 1){
+			foreach ($this->recordVariations as $variation) {
+				$formatValue = $variation->manifestation->format;
+				if (array_key_exists($this->source, $indexingProfiles)) {
+					$indexingProfile = $indexingProfiles[$this->source];
+					$formatMap = $indexingProfile->formatMap;
+					//Loop through the format map
+					/** @var FormatMapValue $formatMapValue */
+					//Check for a format with a hold type that is not 'none'
+					foreach ($formatMap as $formatMapValue) {
+						if (strcasecmp($formatMapValue->format, $formatValue) === 0) {
+							$holdType = $formatMapValue->holdType;
+							if ($holdType != 'none') {
+								return max($result, $formatMapValue->pickupAt);
+							}
+						}
+					}
+				}
+			}
+		}
+		//if only one variation or if all hold types are 'none'
 		if (array_key_exists($this->source, $indexingProfiles)) {
 			$indexingProfile = $indexingProfiles[$this->source];
 			$formatMap = $indexingProfile->formatMap;

@@ -601,11 +601,13 @@ class AJAX extends Action {
 					$appliedFacetValues = [];
 					if (array_key_exists($facetTitle, $appliedFacets)) {
 						$appliedFacetValues = $appliedFacets[$facetTitle];
+						asort($appliedFacetValues);
 					}
 					$interface->assign('appliedFacetValues', $appliedFacetValues);
 
 					$allFacets = $restoredSearch->getFacetList();
 					$topResults = $allFacets[$facetName];
+					asort($topResults['list']);
 					$interface->assign('topResults', $topResults['list']);
 					$buttons = '';
 					if ($isMultiSelect) {
@@ -703,12 +705,14 @@ class AJAX extends Action {
 					$appliedFacetValues = [];
 					if (array_key_exists($facetTitle, $appliedFacets)) {
 						$appliedFacetValues = $appliedFacets[$facetTitle];
+						asort($appliedFacetValues);
 					}
 					$interface->assign('appliedFacetValues', $appliedFacetValues);
 
 					$allFacets = $newSearch->getFacetList();
 					if (isset($allFacets[$facetName])) {
 						$facetSearchResults = $allFacets[$facetName];
+						asort($facetSearchResults['list']);
 						$interface->assign('facetSearchResults', $facetSearchResults['list']);
 						return [
 							'success' => true,
