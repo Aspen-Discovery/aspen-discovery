@@ -75,34 +75,6 @@ class Donation extends DataObject {
 				'description' => 'The location where the user wants to send the donation',
 				'readOnly' => true,
 			],
-			'comments' => [
-				'property' => 'comments',
-				'type' => 'text',
-				'label' => 'Earmark',
-				'description' => 'An earmark the user would like the donation applied to',
-				'readOnly' => true,
-			],
-			'dedicateType' => [
-				'property' => 'dedicateType',
-				'type' => 'text',
-				'label' => 'Dedication',
-				'description' => 'The location where the user wants to send the donation',
-				'readOnly' => true,
-			],
-			'honoreeFirstName' => [
-				'property' => 'honoreeFirstName',
-				'type' => 'text',
-				'label' => 'Honoree First Name',
-				'description' => 'The first name of the person being honored',
-				'readOnly' => true,
-			],
-			'honoreeLastName' => [
-				'property' => 'honoreeLastName',
-				'type' => 'text',
-				'label' => 'Honoree Last Name',
-				'description' => 'The last name of the person being honored',
-				'readOnly' => true,
-			],
 			'donationValue' => [
 				'property' => 'donationValue',
 				'type' => 'text',
@@ -116,6 +88,99 @@ class Donation extends DataObject {
 				'label' => 'Donation Completed',
 				'description' => 'Whether or not payment for the donation has been completed',
 				'readOnly' => true,
+			],
+			'comments' => [
+				'property' => 'comments',
+				'type' => 'text',
+				'label' => 'Earmark',
+				'description' => 'An earmark the user would like the donation applied to',
+				'readOnly' => true,
+			],
+			'shouldBeDedicated' => [
+				'property' => 'shouldBeDedicated',
+				'type' => 'checkbox',
+				'label' => 'Dedicated?',
+				'description' => 'Whether or not the donor wants to dedicate their donation in honor or memory of someone',
+				'readOnly' => true,
+			],
+			'dedicateType' => [
+				'property' => 'dedicateType',
+				'type' => 'text',
+				'label' => 'Dedication Type',
+				'description' => 'The location where the user wants to send the donation',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'honoreeFirstName' => [
+				'property' => 'honoreeFirstName',
+				'type' => 'text',
+				'label' => 'Honoree First Name',
+				'description' => 'The first name of the person being honored',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'honoreeLastName' => [
+				'property' => 'honoreeLastName',
+				'type' => 'text',
+				'label' => 'Honoree Last Name',
+				'description' => 'The last name of the person being honored',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'shouldBeNotified' => [
+				'property' => 'shouldBeNotified',
+				'type' => 'checkbox',
+				'label' => 'Notify someone of gift?',
+				'description' => 'Whether or not the donor wants someone to be notified about this gift',
+				'readOnly' => true,
+			],
+			'notificationFirstName' => [
+				'property' => 'notificationFirstName',
+				'type' => 'text',
+				'label' => 'Notification Party First Name',
+				'description' => 'The first name of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationLastName' => [
+				'property' => 'notificationLastName',
+				'type' => 'text',
+				'label' => 'Notification Party Last Name',
+				'description' => 'The last name of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationAddress' => [
+				'property' => 'notificationAddress',
+				'type' => 'text',
+				'label' => 'Notification Party Address',
+				'description' => 'The address of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationCity' => [
+				'property' => 'notificationCity',
+				'type' => 'text',
+				'label' => 'Notification Party Address - City',
+				'description' => 'The city of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationState' => [
+				'property' => 'notificationState',
+				'type' => 'text',
+				'label' => 'Notification Party Address - State',
+				'description' => 'The state of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationZip' => [
+				'property' => 'notificationZip',
+				'type' => 'text',
+				'label' => 'Notification Party Address - Zip',
+				'description' => 'The zipcode of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
 			],
 		];
 	}
@@ -397,7 +462,4 @@ class Donation extends DataObject {
 		];
 	}
 
-	function canActiveUserEdit() {
-		return false;
-	}
 }
