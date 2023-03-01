@@ -2170,8 +2170,24 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			if ($groupedWorkDriver->isValid) {
 				$recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 				if ($recordFromIndex != null) {
+					//Check if there are different variations we need to add to $this->holdings
+					if (count($recordFromIndex->recordVariations) > 0) {
+						$holdings = [];
+						foreach ($recordFromIndex->recordVariations as $variation){
+							$record = $variation->getRecords();
+							//getItemDetails needs an object not an array, return the first object in the array since only one record should be attached anywya
+							$oneRecord = $record[0];
+							$holdings = array_merge($oneRecord->getItemDetails(), $holdings);
+							//TODO KODI: assign a format to each hold item - currently not working (Warning: Attempt to assign property 'format' of non-object)
+							/*foreach ($holdings as $holdItem){
+								$holdItem->format = $oneRecord->variationFormat;
+							}*/
+						}
+						$this->holdings = $holdings;
+					}else{
+						$this->holdings = $recordFromIndex->getItemDetails();
+					}
 					//Divide the items into sections and create the status summary
-					$this->holdings = $recordFromIndex->getItemDetails();
 					$this->holdingSections = [];
 					$itemsFromMarc = [];
 					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)) {
