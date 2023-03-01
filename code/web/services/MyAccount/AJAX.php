@@ -3421,7 +3421,29 @@ class MyAccount_AJAX extends JSON_Action {
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
-		$toLocation = isset($_REQUEST['toLocation']) ? $_REQUEST['toLocation'] : $library->libraryId;
+		$toLocation = $_REQUEST['toLocation'] ?? $library->libraryId;
+		$donateToLibrary = 'Unknown';
+		if($toLocation) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+			$location = new Location();
+			$location->locationId = $toLocation;
+			if ($location->find(true)) {
+				$donateToLibrary = $location->displayName;
+			}
+		} else {
+			$donateToLibrary = 'None';
+		}
+
+		$earmarkId = $_REQUEST['earmark'] ?? null;
+		$comments = 'None';
+		if($earmarkId) {
+			require_once ROOT_DIR . '/sys/Donations/DonationEarmark.php';
+			$earmark = new DonationEarmark();
+			$earmark->id = $earmarkId;
+			if ($earmark->find(true)) {
+				$comments = $earmark->label;
+			}
+		}
 
 		// check for a minimum value to donate
 		// for now we will use minimumFineAmount and decide later if donations should be separate
@@ -3504,8 +3526,9 @@ class MyAccount_AJAX extends JSON_Action {
 			'email' => $_REQUEST['emailAddress'],
 			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
 			'donateToLibraryId' => $toLocation,
+			'donateToLibrary' => $donateToLibrary,
 			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
-			'comments' => isset($_REQUEST['earmark']) ? $_REQUEST['earmark'] : "",
+			'comments' => $comments,
 			'donationSettingId' => $_REQUEST['settingId'],
 		];
 

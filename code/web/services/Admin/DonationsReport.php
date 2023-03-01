@@ -57,7 +57,7 @@ class Admin_DonationsReport extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ecommerce', 'eCommerce');
-		$breadcrumbs[] = new Breadcrumb('/Admin/donationsReport', 'donations Report');
+		$breadcrumbs[] = new Breadcrumb('/Admin/donationsReport', 'Donations Report');
 		return $breadcrumbs;
 	}
 
