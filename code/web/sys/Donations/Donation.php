@@ -32,6 +32,13 @@ class Donation extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id within the database',
 			],
+			'dateCompleted' => [
+				'property' => 'dateCompleted',
+				'type' => 'timestamp',
+				'label' => 'Date Completed',
+				'description' => 'The date the donation was completed',
+				'readOnly' => true,
+			],
 			'firstName' => [
 				'property' => 'firstName',
 				'type' => 'text',
@@ -166,6 +173,15 @@ class Donation extends DataObject {
 					return 'Unknown';
 				}
 
+			}
+		} elseif ($name == 'dateCompleted') {
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->id = $this->paymentId;
+			if($payment->find(true)) {
+				return $payment->transactionDate;
+			} else {
+				return 'Unknown';
 			}
 		} else {
 			return $this->_data[$name] ?? null;
