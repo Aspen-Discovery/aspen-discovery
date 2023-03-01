@@ -16,6 +16,7 @@ class Donation extends DataObject {
 	public $email;
 	public $anonymous;
 	public $donateToLibraryId;
+	public $donateToLibrary;
 	public $comments;
 	public $dedicate;
 	public $dedicateType;
@@ -67,39 +68,11 @@ class Donation extends DataObject {
 				'description' => 'Whether or not the donor wants to remain anonymous',
 				'readOnly' => true,
 			],
-			'donationLibrary' => [
-				'property' => 'donationLibrary',
+			'donateToLibrary' => [
+				'property' => 'donateToLibrary',
 				'type' => 'text',
-				'label' => 'Donate To',
+				'label' => 'Donate To Location',
 				'description' => 'The location where the user wants to send the donation',
-				'readOnly' => true,
-			],
-			'earmark' => [
-				'property' => 'earmark',
-				'type' => 'text',
-				'label' => 'Earmark',
-				'description' => 'An earmark the user would like the donation applied to',
-				'readOnly' => true,
-			],
-			'dedicateType' => [
-				'property' => 'dedicateType',
-				'type' => 'text',
-				'label' => 'Dedication',
-				'description' => 'The location where the user wants to send the donation',
-				'readOnly' => true,
-			],
-			'honoreeFirstName' => [
-				'property' => 'honoreeFirstName',
-				'type' => 'text',
-				'label' => 'Honoree First Name',
-				'description' => 'The first name of the person being honored',
-				'readOnly' => true,
-			],
-			'honoreeLastName' => [
-				'property' => 'honoreeLastName',
-				'type' => 'text',
-				'label' => 'Honoree Last Name',
-				'description' => 'The last name of the person being honored',
 				'readOnly' => true,
 			],
 			'donationValue' => [
@@ -115,6 +88,99 @@ class Donation extends DataObject {
 				'label' => 'Donation Completed',
 				'description' => 'Whether or not payment for the donation has been completed',
 				'readOnly' => true,
+			],
+			'comments' => [
+				'property' => 'comments',
+				'type' => 'text',
+				'label' => 'Earmark',
+				'description' => 'An earmark the user would like the donation applied to',
+				'readOnly' => true,
+			],
+			'shouldBeDedicated' => [
+				'property' => 'shouldBeDedicated',
+				'type' => 'checkbox',
+				'label' => 'Dedicated?',
+				'description' => 'Whether or not the donor wants to dedicate their donation in honor or memory of someone',
+				'readOnly' => true,
+			],
+			'dedicateType' => [
+				'property' => 'dedicateType',
+				'type' => 'text',
+				'label' => 'Dedication Type',
+				'description' => 'The location where the user wants to send the donation',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'honoreeFirstName' => [
+				'property' => 'honoreeFirstName',
+				'type' => 'text',
+				'label' => 'Honoree First Name',
+				'description' => 'The first name of the person being honored',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'honoreeLastName' => [
+				'property' => 'honoreeLastName',
+				'type' => 'text',
+				'label' => 'Honoree Last Name',
+				'description' => 'The last name of the person being honored',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'shouldBeNotified' => [
+				'property' => 'shouldBeNotified',
+				'type' => 'checkbox',
+				'label' => 'Notify someone of gift?',
+				'description' => 'Whether or not the donor wants someone to be notified about this gift',
+				'readOnly' => true,
+			],
+			'notificationFirstName' => [
+				'property' => 'notificationFirstName',
+				'type' => 'text',
+				'label' => 'Notification Party First Name',
+				'description' => 'The first name of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationLastName' => [
+				'property' => 'notificationLastName',
+				'type' => 'text',
+				'label' => 'Notification Party Last Name',
+				'description' => 'The last name of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationAddress' => [
+				'property' => 'notificationAddress',
+				'type' => 'text',
+				'label' => 'Notification Party Address',
+				'description' => 'The address of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationCity' => [
+				'property' => 'notificationCity',
+				'type' => 'text',
+				'label' => 'Notification Party Address - City',
+				'description' => 'The city of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationState' => [
+				'property' => 'notificationState',
+				'type' => 'text',
+				'label' => 'Notification Party Address - State',
+				'description' => 'The state of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
+			],
+			'notificationZip' => [
+				'property' => 'notificationZip',
+				'type' => 'text',
+				'label' => 'Notification Party Address - Zip',
+				'description' => 'The zipcode of the person to notify about the gift',
+				'readOnly' => true,
+				'hideInLists' => true,
 			],
 		];
 	}
@@ -146,33 +212,6 @@ class Donation extends DataObject {
 				return $payment->completed ? 'true' : 'false';
 			} else {
 				return 'false';
-			}
-		} elseif ($name == 'donationLibrary') {
-			if (empty($this->donateToLibraryId)) {
-				return 'None';
-			} else {
-				$location = new Location();
-				$location->locationId = $this->donateToLibraryId;
-				if ($location->find(true)) {
-					return $location->displayName;
-				} else {
-					return 'Unknown';
-				}
-			}
-		} elseif ($name == 'earmark') {
-			if (empty($this->comments)) {
-				return 'None';
-			} else {
-				require_once ROOT_DIR . '/sys/Donations/DonationEarmark.php';
-				$earmark = new DonationEarmark();
-				$earmark->donationSettingId = $this->donationSettingId;
-				$earmark->id = $this->comments;
-				if ($earmark->find(true)) {
-					return $earmark->label;
-				} else {
-					return 'Unknown';
-				}
-
 			}
 		} elseif ($name == 'dateCompleted') {
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -423,7 +462,4 @@ class Donation extends DataObject {
 		];
 	}
 
-	function canActiveUserEdit() {
-		return false;
-	}
 }
