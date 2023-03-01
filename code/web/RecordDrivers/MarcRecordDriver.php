@@ -980,6 +980,29 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 	}
 
+	function hasMultipleVariations() {
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if (count($relatedRecord->recordVariations) > 1) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	function getRecordVariations() {
+		require_once ROOT_DIR . '/sys/Grouping/Variation.php';
+		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		$records = [];
+		foreach($relatedRecord->recordVariations as $record){
+			$records = array_merge($records, $record->getRecords());
+		}
+		$sorter = function ($a, $b) {
+			return strcasecmp($a->variationFormat, $b->variationFormat);
+		};
+		uasort($records, $sorter);
+		return $records;
+	}
+
 	function getFormatCategory() {
 		return $this->getGroupedWorkDriver()->getFormatCategory();
 	}
@@ -2147,8 +2170,24 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			if ($groupedWorkDriver->isValid) {
 				$recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 				if ($recordFromIndex != null) {
+					//Check if there are different variations we need to add to $this->holdings
+					if (count($recordFromIndex->recordVariations) > 0) {
+						$holdings = [];
+						foreach ($recordFromIndex->recordVariations as $variation){
+							$record = $variation->getRecords();
+							//getItemDetails needs an object not an array, return the first object in the array since only one record should be attached anywya
+							$oneRecord = $record[0];
+							$holdings = array_merge($oneRecord->getItemDetails(), $holdings);
+							//TODO KODI: assign a format to each hold item - currently not working (Warning: Attempt to assign property 'format' of non-object)
+							/*foreach ($holdings as $holdItem){
+								$holdItem->format = $oneRecord->variationFormat;
+							}*/
+						}
+						$this->holdings = $holdings;
+					}else{
+						$this->holdings = $recordFromIndex->getItemDetails();
+					}
 					//Divide the items into sections and create the status summary
-					$this->holdings = $recordFromIndex->getItemDetails();
 					$this->holdingSections = [];
 					$itemsFromMarc = [];
 					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)) {

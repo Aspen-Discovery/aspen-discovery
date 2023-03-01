@@ -2006,13 +2006,15 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}else{
 			//Load based on a subfield of the items
 			for (ItemInfo printItem : printItems) {
-				Subfield subfield = printItem.getMarcField().getSubfield(literaryFormSubfield);
-				if (subfield != null){
-					if (subfield.getData() != null){
-						String translatedValue = translateValue("literary_form", subfield.getData(), identifier, true);
-						if (translatedValue != null) {
-							groupedWork.addLiteraryForm(translatedValue);
-							groupedWork.addLiteraryFormFull(translatedValue);
+				if (printItem.getMarcField() != null) {
+					Subfield subfield = printItem.getMarcField().getSubfield(literaryFormSubfield);
+					if (subfield != null) {
+						if (subfield.getData() != null) {
+							String translatedValue = translateValue("literary_form", subfield.getData(), identifier, true);
+							if (translatedValue != null) {
+								groupedWork.addLiteraryForm(translatedValue);
+								groupedWork.addLiteraryFormFull(translatedValue);
+							}
 						}
 					}
 				}

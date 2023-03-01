@@ -224,44 +224,45 @@ function moveLibrarySSOSettings(/** @noinspection PhpUnusedParameterInspection *
 	while ($oldLibrarySettingsRow != null) {
 		$ssoSettingId = '-1';
 		$ssoSetting = new SSOSetting();
-		$ssoSetting->ssoEntityId = $oldLibrarySettingsRow['ssoEntityId'];
-		$ssoSetting->ssoXmlUrl = $oldLibrarySettingsRow['ssoXmlUrl'];
-		$ssoSetting->ssoUsernameAttr = $oldLibrarySettingsRow['ssoUsernameAttr'];
-		$ssoSetting->ssoUniqueAttribute = $oldLibrarySettingsRow['ssoUniqueAttribute'];
-		$ssoSetting->ssoPhoneAttr = $oldLibrarySettingsRow['ssoPhoneAttr'];
-		$ssoSetting->ssoPatronTypeAttr = $oldLibrarySettingsRow['ssoPatronTypeAttr'];
-		$ssoSetting->ssoPatronTypeFallback = $oldLibrarySettingsRow['ssoPatronTypeFallback'];
-		$ssoSetting->ssoName = $oldLibrarySettingsRow['ssoName'];
-		$ssoSetting->ssoMetadataFilename = $oldLibrarySettingsRow['ssoMetadataFilename'];
-		$ssoSetting->ssoLibraryIdAttr = $oldLibrarySettingsRow['ssoLibraryIdAttr'];
-		$ssoSetting->ssoLibraryIdFallback = $oldLibrarySettingsRow['ssoLibraryIdFallback'];
-		$ssoSetting->ssoLastnameAttr = $oldLibrarySettingsRow['ssoLastnameAttr'];
-		$ssoSetting->ssoIdAttr = $oldLibrarySettingsRow['ssoIdAttr'];
-		$ssoSetting->ssoFirstnameAttr = $oldLibrarySettingsRow['ssoFirstnameAttr'];
-		$ssoSetting->ssoEmailAttr = $oldLibrarySettingsRow['ssoEmailAttr'];
-		$ssoSetting->ssoDisplayNameAttr = $oldLibrarySettingsRow['ssoDisplayNameAttr'];
-		$ssoSetting->ssoCityAttr = $oldLibrarySettingsRow['ssoCityAttr'];
-		$ssoSetting->ssoCategoryIdAttr = $oldLibrarySettingsRow['ssoCategoryIdAttr'];
-		$ssoSetting->ssoCategoryIdFallback = $oldLibrarySettingsRow['ssoCategoryIdFallback'];
-		$ssoSetting->ssoAddressAttr = $oldLibrarySettingsRow['ssoAddressAttr'];
-		$ssoSetting->service = 'saml';
-		if ($ssoSetting->find(true)) {
-			$ssoSettingId = $ssoSetting->id;
-		} else {
-			$ssoSetting->name = $oldLibrarySettingsRow['displayName'] . ' SAML Settings';
+		if(!empty($oldLibrarySettingsRow['ssoEntityId']) && $oldLibrarySettingsRow['ssoEntityId'] != '') {
+			$ssoSetting->ssoEntityId = $oldLibrarySettingsRow['ssoEntityId'];
+			$ssoSetting->ssoXmlUrl = $oldLibrarySettingsRow['ssoXmlUrl'];
+			$ssoSetting->ssoUsernameAttr = $oldLibrarySettingsRow['ssoUsernameAttr'];
+			$ssoSetting->ssoUniqueAttribute = $oldLibrarySettingsRow['ssoUniqueAttribute'];
+			$ssoSetting->ssoPhoneAttr = $oldLibrarySettingsRow['ssoPhoneAttr'];
+			$ssoSetting->ssoPatronTypeAttr = $oldLibrarySettingsRow['ssoPatronTypeAttr'];
+			$ssoSetting->ssoPatronTypeFallback = $oldLibrarySettingsRow['ssoPatronTypeFallback'];
+			$ssoSetting->ssoName = $oldLibrarySettingsRow['ssoName'];
+			$ssoSetting->ssoMetadataFilename = $oldLibrarySettingsRow['ssoMetadataFilename'];
+			$ssoSetting->ssoLibraryIdAttr = $oldLibrarySettingsRow['ssoLibraryIdAttr'];
+			$ssoSetting->ssoLibraryIdFallback = $oldLibrarySettingsRow['ssoLibraryIdFallback'];
+			$ssoSetting->ssoLastnameAttr = $oldLibrarySettingsRow['ssoLastnameAttr'];
+			$ssoSetting->ssoIdAttr = $oldLibrarySettingsRow['ssoIdAttr'];
+			$ssoSetting->ssoFirstnameAttr = $oldLibrarySettingsRow['ssoFirstnameAttr'];
+			$ssoSetting->ssoEmailAttr = $oldLibrarySettingsRow['ssoEmailAttr'];
+			$ssoSetting->ssoDisplayNameAttr = $oldLibrarySettingsRow['ssoDisplayNameAttr'];
+			$ssoSetting->ssoCityAttr = $oldLibrarySettingsRow['ssoCityAttr'];
+			$ssoSetting->ssoCategoryIdAttr = $oldLibrarySettingsRow['ssoCategoryIdAttr'];
+			$ssoSetting->ssoCategoryIdFallback = $oldLibrarySettingsRow['ssoCategoryIdFallback'];
+			$ssoSetting->ssoAddressAttr = $oldLibrarySettingsRow['ssoAddressAttr'];
 			$ssoSetting->service = 'saml';
-			if ($ssoSetting->insert()) {
+			if ($ssoSetting->find(true)) {
 				$ssoSettingId = $ssoSetting->id;
+			} else {
+				$ssoSetting->name = $oldLibrarySettingsRow['displayName'] . ' SAML Settings';
+				$ssoSetting->service = 'saml';
+				if ($ssoSetting->insert()) {
+					$ssoSettingId = $ssoSetting->id;
+				}
+			}
+
+			$library = new Library();
+			$library->libraryId = $oldLibrarySettingsRow['libraryId'];
+			if ($library->find(true)) {
+				$library->ssoSettingId = $ssoSettingId;
+				$library->update();
 			}
 		}
-
-		$library = new Library();
-		$library->libraryId = $oldLibrarySettingsRow['libraryId'];
-		if ($library->find(true)) {
-			$library->ssoSettingId = $ssoSettingId;
-			$library->update();
-		}
-
 		$oldLibrarySettingsRow = $oldLibrarySettingsRS->fetch();
 	}
 }

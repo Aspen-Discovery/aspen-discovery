@@ -403,24 +403,30 @@ public class ItemInfo{
 	}
 
 	DataField getMarcField() {
-		return  this.marcField;
+		return this.marcField;
 	}
 
 	public String getSubfield(char audienceSubfield) {
-		Subfield subfield = this.marcField.getSubfield(audienceSubfield);
-		if (subfield == null){
+		if (this.marcField != null) {
+			Subfield subfield = this.marcField.getSubfield(audienceSubfield);
+			if (subfield == null) {
+				return null;
+			} else {
+				return subfield.getData();
+			}
+		} else {
 			return null;
-		}else{
-			return subfield.getData();
 		}
 	}
 
 	public List<String> getSubfields(char subFieldSpec) {
-		List<Subfield> subfields = this.marcField.getSubfields(subFieldSpec);
 		List<String> subfieldData = new ArrayList<>();
-		for (Subfield subfield : subfields){
-			if (subfield.getData() != null){
-				subfieldData.add(subfield.getData());
+		if (this.marcField != null) {
+			List<Subfield> subfields = this.marcField.getSubfields(subFieldSpec);
+			for (Subfield subfield : subfields) {
+				if (subfield.getData() != null) {
+					subfieldData.add(subfield.getData());
+				}
 			}
 		}
 		return subfieldData;

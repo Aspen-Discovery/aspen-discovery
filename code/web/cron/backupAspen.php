@@ -29,6 +29,11 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 //tar and gzip them
 exec("cd /tmp;tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz $serverName.$curDateTime.*");
 
+//TODO: optionally move the file to the Google backup bucket
+// Load the system settings
+	// See if we have a bucket to backup to
+		//Perform the backup
+
 //Cleanup the files
 foreach ($allTables as $table) {
 	$exportFile = "/tmp/$serverName.$curDateTime.$table.sql";

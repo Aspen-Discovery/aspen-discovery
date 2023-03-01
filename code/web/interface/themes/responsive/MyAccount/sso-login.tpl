@@ -1,3 +1,4 @@
+{if $ssoIsEnabled}
 <div id="ssoLoginRow" class="form-group">
 	{if !(empty($ssoLoginHelpText))}
 		<div class="col-xs-12">
@@ -55,3 +56,4 @@
 	{/if}
 	</div>
 </div>
+{/if}

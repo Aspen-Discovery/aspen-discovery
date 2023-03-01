@@ -171,6 +171,7 @@ class IndexingProfile extends DataObject {
 		$lastUpdateOfAuthorities;
 
 	public $evergreenOrgUnitSchema;
+	public $index856Links;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -419,6 +420,16 @@ class IndexingProfile extends DataObject {
 				'maxLength' => 50,
 				'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown',
 				'default' => 'English',
+				'forcesReindex' => true,
+			],
+
+			'index856Links' => [
+				'property' => 'index856Links',
+				'type' => 'checkbox',
+				'label' => 'Index 856 links',
+				'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 are indexed and treated as items.',
+				'defaultValue' => false,
+				'hideInLists' => true,
 				'forcesReindex' => true,
 			],
 

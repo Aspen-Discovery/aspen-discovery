@@ -82,37 +82,42 @@ class MyAccount_Login extends Action {
 				} else {
 					$ssoSettingId = $library->ssoSettingId;
 				}
-				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-				$sso = new \SSOSetting();
-				$sso->id = $ssoSettingId;
-				if ($sso->find(true)) {
-					if(!$sso->staffOnly) {
-						$loginOptions = $sso->loginOptions;
-						$ssoService = $sso->service;
-						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-						if ($sso->service == "oauth") {
-							$interface->assign('oAuthGateway', $sso->oAuthGateway);
-							if ($sso->oAuthGateway == "custom") {
-								$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
-								$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
-								$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
-								if ($sso->oAuthGatewayIcon) {
-									$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+
+				// only try to find SSO settings if the module is enabled
+				global $enabledModules;
+				if (array_key_exists('Single sign-on', $enabledModules) && $ssoSettingId > 0) {
+					require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+					$sso = new \SSOSetting();
+					$sso->id = $ssoSettingId;
+					if ($sso->find(true)) {
+						if (!$sso->staffOnly) {
+							$loginOptions = $sso->loginOptions;
+							$ssoService = $sso->service;
+							$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
+							if ($sso->service == "oauth") {
+								$interface->assign('oAuthGateway', $sso->oAuthGateway);
+								if ($sso->oAuthGateway == "custom") {
+									$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
+									$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
+									$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
+									if ($sso->oAuthGatewayIcon) {
+										$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+									}
 								}
 							}
-						}
-						if($sso->service == 'saml') {
-							$interface->assign('samlEntityId', $sso->ssoEntityId);
-							$interface->assign('samlBtnLabel', $sso->ssoName);
-							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
-							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
-							if ($sso->oAuthGatewayIcon) {
-								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+							if ($sso->service == 'saml') {
+								$interface->assign('samlEntityId', $sso->ssoEntityId);
+								$interface->assign('samlBtnLabel', $sso->ssoName);
+								$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
+								$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
+								if ($sso->oAuthGatewayIcon) {
+									$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+								}
 							}
-						}
-						if($sso->service == 'ldap') {
-							if($sso->ldapLabel) {
-								$interface->assign('ldapLabel', $sso->ldapLabel);
+							if ($sso->service == 'ldap') {
+								if ($sso->ldapLabel) {
+									$interface->assign('ldapLabel', $sso->ldapLabel);
+								}
 							}
 						}
 					}
@@ -127,11 +132,6 @@ class MyAccount_Login extends Action {
 		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
-		//SAML
-		if (isset($library->ssoMetadataFilename) && isset($library->ssoEntityId)) {
-			$interface->assign('ssoEntityId', $library->ssoEntityId);
-		}
-		$interface->assign('ssoName', isset($library->ssoName) ? $library->ssoName : 'single sign-on');
 		if (!empty($library->loginNotes)) {
 			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 			$parsedown = AspenParsedown::instance();
