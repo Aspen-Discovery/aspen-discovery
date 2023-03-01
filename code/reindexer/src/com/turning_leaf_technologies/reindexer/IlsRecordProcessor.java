@@ -864,12 +864,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			for (DataField urlField : urlFields){
 				//load url into the item
 				if (urlField.getSubfield('u') != null){
+					urlSubfield = urlField.getSubfield('u');
 					String linkText = urlSubfield.getData().trim();
 					if (linkText.length() > 0) {
 						//Try to determine if this is a resource or not.
 						if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0' || urlField.getIndicator1() == '7') {
 							if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '8') {
-								itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+								itemInfo.seteContentUrl(urlSubfield.getData().trim());
 								break;
 							}
 						}
