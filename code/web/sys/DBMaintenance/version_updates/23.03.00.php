@@ -196,6 +196,15 @@ function getUpdates23_03_00(): array {
 			],
 		],
 		//add_donationEarmark
+		'truncate_donation_form_fields' => [
+			'title' => 'Truncate donation form fields to trigger a reload of defaults',
+			'description' => 'Truncate donation form fields to trigger a reload of defaults',
+			'continueOnError' => true,
+			'sql' => [
+				'TRUNCATE TABLE donations_form_fields',
+			],
+		],
+		//truncate_donation_form_fields
 
 		//kodi
 
