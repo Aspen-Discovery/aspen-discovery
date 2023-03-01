@@ -982,7 +982,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	function hasMultipleVariations() {
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
-		if (count($relatedRecord->recordVariations) > 1) {
+		if ($relatedRecord != null && count($relatedRecord->recordVariations) > 1) {
 			return true;
 		} else {
 			return false;
