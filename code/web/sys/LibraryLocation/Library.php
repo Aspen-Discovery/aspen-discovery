@@ -1478,7 +1478,7 @@ class Library extends DataObject {
 								'label' => 'Allow Patrons to Update Their Name (Setting applies to Koha only)',
 								'description' => 'Whether or not patrons should be able to update their name in their profile.',
 								'hideInLists' => true,
-								'default' => 1,
+								'default' => 0,
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],
@@ -1486,7 +1486,7 @@ class Library extends DataObject {
 								'property' => 'setUsePreferredNameInIlsOnUpdate',
 								'type' => 'checkbox',
 								'label' => 'Set "Use Preferred Name" in the ILS when updating preferred name.',
-								'description' => 'Whether or not the "Use Preferred Name" checkbox is updated when setting preferred name.',
+								'description' => 'Whether or not the Use Preferred Name checkbox is updated when setting preferred name.',
 								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 1,
@@ -1499,7 +1499,7 @@ class Library extends DataObject {
 								'label' => 'Allow Patrons to Update Their Date of Birth (Setting applies to Koha only)',
 								'description' => 'Whether or not patrons should be able to update their date of birth in their profile.',
 								'hideInLists' => true,
-								'default' => 1,
+								'default' => 0,
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],
@@ -1915,7 +1915,7 @@ class Library extends DataObject {
 								'description' => 'The label to show for the username when logging in',
 								'size' => '100',
 								'hideInLists' => true,
-								'default' => 'Your Name',
+								'default' => 'Library Card Number',
 							],
 							'loginFormPasswordLabel' => [
 								'property' => 'loginFormPasswordLabel',
@@ -1924,7 +1924,7 @@ class Library extends DataObject {
 								'description' => 'The label to show for the password when logging in',
 								'size' => '100',
 								'hideInLists' => true,
-								'default' => 'Library Card Number',
+								'default' => 'PIN or Password',
 							],
 							'loginNotes' => [
 								'property' => 'loginNotes',
@@ -2839,7 +2839,7 @@ class Library extends DataObject {
 						'label' => 'Interlibrary Loan URL',
 						'description' => 'The link for the ILL Service.',
 						'hideInLists' => true,
-						'size' => '80',
+						'size' => '200',
 					],
 
 					'prospectorSection' => [

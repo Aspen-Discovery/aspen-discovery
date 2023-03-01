@@ -203,7 +203,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 									3 => 'Show Where Is It link only',
 								],
 								'label' => 'Copy Information to show',
-								'description' => 'What to show for copy summary and where is it link.',
+								'description' => 'What to show for copy summary and in the Where Is It link.',
 								'hideInLists' => true,
 							],
 							'showInSearchResultsMainDetails' => [
@@ -232,7 +232,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 								'property' => 'showRelatedRecordLabels',
 								'type' => 'checkbox',
 								'label' => 'Show Related Record Labels',
-								'description' => 'Turn on to show labels next to information about the records that make up information about a record in a format',
+								'description' => 'Turn on to show labels next to edition information in grouped works. Ex: Published, Physical Description, etc',
 								'default' => true,
 								'hideInLists' => true,
 							],
