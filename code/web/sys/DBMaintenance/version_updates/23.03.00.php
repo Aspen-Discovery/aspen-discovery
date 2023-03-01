@@ -177,6 +177,25 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//extend_bookcover_info_source
+		'add_donateToLibrary' => [
+			'title' => 'Add field to store location name for donation',
+			'description' => 'Add field to store location name for donation for filtering',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE donations ADD COLUMN donateToLibrary VARCHAR(60) DEFAULT NULL',
+				'addDonationLocationName'
+			],
+		],
+		//add_donateToLibrary
+		'add_donationEarmark' => [
+			'title' => 'Add earmark label to donations table',
+			'description' => 'Add earmark label to donations table for filtering',
+			'continueOnError' => true,
+			'sql' => [
+				'addDonationEarmark'
+			],
+		],
+		//add_donationEarmark
 
 		//kodi
 
@@ -285,5 +304,69 @@ function moveStaffUserSettings(/** @noinspection PhpUnusedParameterInspection */
 		}
 
 		$oldStaffSettingsRow = $oldStaffSettingsRS->fetch();
+	}
+}
+
+/** @noinspection PhpUnused */
+function addDonationLocationName(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+	global $aspen_db;
+	$donationsSQL = 'SELECT id, donateToLibraryId FROM donations';
+	$donationsRS = $aspen_db->query($donationsSQL, PDO::FETCH_ASSOC);
+	$donationsRow = $donationsRS->fetch();
+
+	while ($donationsRow != null) {
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->id = $donationsRow['id'];
+		if($donation->find(true)) {
+			if(!empty($donationsRow['donateToLibraryId']) && $donationsRow['donateToLibraryId'] != 0 && $donationsRow['donateToLibraryId'] != '0') {
+				require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
+				$location = new Location();
+				$location->locationId = $donationsRow['donateToLibraryId'];
+				if ($location->find(true)) {
+					$donation->donateToLibrary = $location->displayName;
+				} else {
+					$donation->donateToLibrary = 'Unknown';
+				}
+			} else {
+				$donation->donateToLibrary = 'None';
+			}
+
+			$donation->update();
+		}
+
+		$donationsRow = $donationsRS->fetch();
+	}
+}
+
+/** @noinspection PhpUnused */
+function addDonationEarmark(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+	global $aspen_db;
+	$donationsSQL = 'SELECT id, comments FROM donations';
+	$donationsRS = $aspen_db->query($donationsSQL, PDO::FETCH_ASSOC);
+	$donationsRow = $donationsRS->fetch();
+
+	while ($donationsRow != null) {
+		require_once ROOT_DIR . '/sys/Donations/Donation.php';
+		$donation = new Donation();
+		$donation->id = $donationsRow['id'];
+		if ($donation->find(true)) {
+			if (!empty($donationsRow['comments'])) {
+				if ($donationsRow['comments'] != 0 && $donationsRow['comments'] != '0' && $donationsRow['comments'] != 'null') {
+					require_once ROOT_DIR . '/sys/Donations/DonationEarmark.php';
+					$earmark = new DonationEarmark();
+					$earmark->id = $donationsRow['comments'];
+					if ($earmark->find(true)) {
+						$donation->comments = $earmark->label;
+					}
+				} elseif($donationsRow['comments'] == 0 || $donationsRow['comments'] == '0' || $donationsRow['comments'] == 'null') {
+					$donation->comments = 'None';
+				}
+			} else {
+				$donation->comments = 'None';
+			}
+			$donation->update();
+		}
+		$donationsRow = $donationsRS->fetch();
 	}
 }

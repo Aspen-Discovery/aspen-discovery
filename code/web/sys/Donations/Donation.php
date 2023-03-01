@@ -16,6 +16,7 @@ class Donation extends DataObject {
 	public $email;
 	public $anonymous;
 	public $donateToLibraryId;
+	public $donateToLibrary;
 	public $comments;
 	public $dedicate;
 	public $dedicateType;
@@ -67,15 +68,15 @@ class Donation extends DataObject {
 				'description' => 'Whether or not the donor wants to remain anonymous',
 				'readOnly' => true,
 			],
-			'donationLibrary' => [
-				'property' => 'donationLibrary',
+			'donateToLibrary' => [
+				'property' => 'donateToLibrary',
 				'type' => 'text',
-				'label' => 'Donate To',
+				'label' => 'Donate To Location',
 				'description' => 'The location where the user wants to send the donation',
 				'readOnly' => true,
 			],
-			'earmark' => [
-				'property' => 'earmark',
+			'comments' => [
+				'property' => 'comments',
 				'type' => 'text',
 				'label' => 'Earmark',
 				'description' => 'An earmark the user would like the donation applied to',
@@ -146,33 +147,6 @@ class Donation extends DataObject {
 				return $payment->completed ? 'true' : 'false';
 			} else {
 				return 'false';
-			}
-		} elseif ($name == 'donationLibrary') {
-			if (empty($this->donateToLibraryId)) {
-				return 'None';
-			} else {
-				$location = new Location();
-				$location->locationId = $this->donateToLibraryId;
-				if ($location->find(true)) {
-					return $location->displayName;
-				} else {
-					return 'Unknown';
-				}
-			}
-		} elseif ($name == 'earmark') {
-			if (empty($this->comments)) {
-				return 'None';
-			} else {
-				require_once ROOT_DIR . '/sys/Donations/DonationEarmark.php';
-				$earmark = new DonationEarmark();
-				$earmark->donationSettingId = $this->donationSettingId;
-				$earmark->id = $this->comments;
-				if ($earmark->find(true)) {
-					return $earmark->label;
-				} else {
-					return 'Unknown';
-				}
-
 			}
 		} elseif ($name == 'dateCompleted') {
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
