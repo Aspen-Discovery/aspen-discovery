@@ -35,14 +35,13 @@
 			{if $numRemainingCopies > 0 || ($showQuickCopy == 2 || $showQuickCopy == 3)}
 				{if $showQuickCopy == 1 || $showQuickCopy == 2 || $showQuickCopy == 3}
 					<div class="itemSummary">
-						{* showElementInPopup('Copy Summary', '#itemSummaryPopup_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{if !empty($recordViewUrl)}, '#itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'{/if}); *}
-						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{if !empty($relatedManifestation)}{$relatedManifestation->format|urlencode}{/if}', '{$itemSummaryId}');">
+						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{if !empty($relatedManifestation)}{$relatedManifestation->format|urlencode}{else}{$format}{/if}', '{$itemSummaryId}');">
 							{translate text="Where is it?" isPublicFacing=true}
 						</a>
 					</div>
 				{/if}
 				{if !empty($recordViewUrl)}
-					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" style="display: none">
+					<div id="itemSummaryPopupButtons_{$itemSummaryId|escapeCSS}_{if !empty($relatedManifestation)}{$relatedManifestation->format|escapeCSS}{else}{$format|escapeCSS}{/if}" style="display: none">
 						<a href="{$recordViewUrl}" class="btn btn-primary" role="button">{translate text="See Full Copy Details" isPublicFacing=true}</a>
 					</div>
 				{/if}
