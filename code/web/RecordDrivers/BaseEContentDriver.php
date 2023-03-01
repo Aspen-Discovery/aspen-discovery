@@ -45,7 +45,7 @@ abstract class BaseEContentDriver extends MarcRecordDriver {
 		}
 	}
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null) {
+	public function getRecordActions($relatedRecord, $variationId, $isAvailable, $isHoldable, $volumeData = null) {
 		return [];
 	}
 

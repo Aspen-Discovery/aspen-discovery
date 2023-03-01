@@ -2606,6 +2606,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true);
 
 							$relatedRecord->variationFormat = $variation->manifestation->format;
+							$relatedRecord->variationId = $variation->databaseId;
 							$relatedRecord->recordVariations = $recordVariations;
 
 							$relatedRecords[$relatedRecord->id] = $relatedRecord;
@@ -3027,7 +3028,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$memoryWatcher->logMemory("Setup record items");
 
 		if (!$forCovers) {
-			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $volumeData) : []);
+			$relatedRecord->setActions($recordDriver != null ? $recordDriver->getRecordActions($relatedRecord, null, $relatedRecord->getStatusInformation()->isAvailableLocally() || $relatedRecord->getStatusInformation()->isAvailableOnline(), $relatedRecord->isHoldable(), $volumeData) : []);
 			$timer->logTime("Loaded actions");
 			$memoryWatcher->logMemory("Loaded actions");
 		}

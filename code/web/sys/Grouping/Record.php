@@ -16,6 +16,8 @@ class Grouping_Record {
 	public $physical;
 	public $closedCaptioned;
 	public $variationFormat;
+	public $variationId;
+	/** @var Grouping_Variation[] */
 	public $recordVariations;
 	public $hasParentRecord;
 	public $hasChildRecord;
@@ -514,37 +516,44 @@ class Grouping_Record {
 		$this->_callNumber = $callNumber;
 	}
 
-	private $_allActions = null;
+	private $_allActions = [];
 
 	/**
 	 * @return array
 	 */
-	public function getActions(): array {
-		if ($this->_allActions == null) {
+	public function getActions($variationId = ''): array {
+		if (empty($variationId)) {
+			$variationId = 'any';
+		}
+		if (!array_key_exists($variationId, $this->_allActions)) {
+			$this->_allActions[$variationId] = [];
+
 			//TODO: Add volume information
 			if ($this->_driver != null) {
-				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
+				$this->setActions($variationId, $this->_driver->getRecordActions($this, $variationId, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
 			}
 
-			$actionsToReturn = $this->_actions;
-			if (empty($this->_actions) && $this->_driver != null) {
+			$actionsToReturn = $this->_actions[$variationId];
+			if (empty($this->_allActions[$variationId]) && $this->_driver != null) {
 				foreach ($this->_items as $item) {
-					$item->setActions($this->_driver->getItemActions($item));
-					$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+					if ($item->variationId == $variationId || $variationId == 'any') {
+						$item->setActions($this->_driver->getItemActions($item));
+						$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+					}
 				}
 			}
 
-			$this->_allActions = $actionsToReturn;
+			$this->_allActions[$variationId] = $actionsToReturn;
 		}
 
-		return $this->_allActions;
+		return $this->_allActions[$variationId];
 	}
 
 	/**
 	 * @param array $actions
 	 */
-	public function setActions(array $actions): void {
-		$this->_actions = $actions;
+	public function setActions(string $variationId, array $actions): void {
+		$this->_actions[$variationId] = $actions;
 	}
 
 	/**
@@ -637,15 +646,21 @@ class Grouping_Record {
 	/**
 	 * @return null|GroupedWorkSubDriver
 	 */
-	function getDriver() {
+	function getDriver() : ?GroupedWorkSubDriver{
 		return $this->_driver;
 	}
 
-	public function getItems() {
+	/**
+	 * @return Grouping_Item[]
+	 */
+	public function getItems() : array {
 		return $this->_items;
 	}
 
-	public function getVolumeData() {
+	/**
+	 * @return IlsVolumeInfo[]
+	 */
+	public function getVolumeData() : array{
 		return $this->_volumeData;
 	}
 
