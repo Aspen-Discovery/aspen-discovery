@@ -2228,7 +2228,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 					$this->statusSummary = $recordFromIndex;
 
-					$this->statusSummary->_driver = null;
+					$this->statusSummary->discardDriver();
 					global $timer;
 					$timer->logTime("Loaded Copy information");
 				} else {

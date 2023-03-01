@@ -2252,8 +2252,8 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	public function getTableOfContents() {
 		$tableOfContents = [];
 		foreach ($this->getRelatedRecords() as $record) {
-			if ($record->_driver) {
-				$driver = $record->_driver;
+			if ($record->getDriver()) {
+				$driver = $record->getDriver();
 				/** @var GroupedWorkSubDriver $driver */
 				$recordTOC = $driver->getTableOfContents();
 				if ($recordTOC != null && count($recordTOC) > 0) {
