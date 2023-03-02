@@ -943,7 +943,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		} else {
 			$relatedRecord = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 			if ($relatedRecord != null) {
-				if (count($relatedRecord->recordVariations) > 1){
+				if ($relatedRecord->recordVariations != null && count($relatedRecord->recordVariations) > 1){
 					foreach ($relatedRecord->recordVariations as $variation){
 						$formats[] = $variation->manifestation->format;
 					}
@@ -982,7 +982,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	function hasMultipleVariations() {
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
-		if ($relatedRecord != null && count($relatedRecord->recordVariations) > 1) {
+		if ($relatedRecord != null && $relatedRecord->recordVariations != null && count($relatedRecord->recordVariations) > 1) {
 			return true;
 		} else {
 			return false;
@@ -2132,7 +2132,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				$recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 				if ($recordFromIndex != null) {
 					//Check if there are different variations we need to add to $this->holdings
-					if (count($recordFromIndex->recordVariations) > 0) {
+					if (!empty($recordFromIndex->recordVariations)) {
 						$holdings = [];
 						foreach ($recordFromIndex->recordVariations as $variation){
 							$record = $variation->getRecords();
