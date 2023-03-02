@@ -47,9 +47,12 @@ const Request = (payload) => {
     const { updateUser } = React.useContext(UserContext);
     const { updateHolds } = React.useContext(HoldsContext);
 
-    let publisherValue = item.publisher;
-    if(_.isArray(item.publisher)) {
-        publisherValue = item.publisher[0];
+    let publisherValue = "";
+    if(!_.isUndefined(item.publisher)) {
+        publisherValue = item.publisher;
+        if (_.isArray(item.publisher)) {
+            publisherValue = item.publisher[0];
+        }
     }
 
     const [title, setTitle] = React.useState(item.title);
