@@ -62,7 +62,7 @@
 					{if !empty($record->volume)}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Volume' isPublicFacing=true}</div>
-							<div class="col-sm-12 col-md-7 result-value">{$record->volume|escape}</div>
+							<div class="col-sm-12 col-md-7 result-value">{$record->volume|escape|format_float_with_min_decimals}</div>
 						</div>
 					{/if}
 
