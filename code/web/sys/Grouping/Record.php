@@ -555,7 +555,10 @@ class Grouping_Record {
 	/**
 	 * @param array $actions
 	 */
-	public function setActions(string $variationId, array $actions): void {
+	public function setActions(?string $variationId, array $actions): void {
+		if ($variationId == null) {
+			$variationId = 'any';
+		}
 		$this->_actions[$variationId] = $actions;
 	}
 
