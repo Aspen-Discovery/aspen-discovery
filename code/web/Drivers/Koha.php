@@ -1939,7 +1939,7 @@ class Koha extends AbstractIlsDriver {
 				}
 				$curHold->locationUpdateable = true;
 				if($this->getKohaVersion() >= 22.11) {
-					if(str_contains($allowUserToChangeBranch, 'suspended')) {
+					if(strpos($allowUserToChangeBranch, 'suspended') !== false) {
 						$curHold->locationUpdateable = true;
 					} else {
 						$curHold->locationUpdateable = false;
@@ -1968,7 +1968,7 @@ class Koha extends AbstractIlsDriver {
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
 				if($this->getKohaVersion() >= 22.11) {
-					if(str_contains($allowUserToChangeBranch, 'intransit')) {
+					if(strpos($allowUserToChangeBranch, 'intransit') !== false) {
 						$curHold->locationUpdateable = true;
 					}
 				}
@@ -1977,7 +1977,7 @@ class Koha extends AbstractIlsDriver {
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 				$curHold->locationUpdateable = true;
 				if($this->getKohaVersion() >= 22.11) {
-					if(str_contains($allowUserToChangeBranch, 'pending')) {
+					if(strpos($allowUserToChangeBranch, 'pending') !== false) {
 						$curHold->locationUpdateable = true;
 					} else {
 						$curHold->locationUpdateable = false;

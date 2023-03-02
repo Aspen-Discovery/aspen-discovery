@@ -19,7 +19,7 @@
 				<div class="col-tn-8 col-tn-offset-4 col-xs-8 col-xs-offset-4 col-md-4 col-md-offset-0 col-lg-3 manifestation-actions">
 					<div class="btn-toolbar">
 						<div class="btn-group btn-group-vertical btn-block">
-							{if $record->isHoldable()}
+							{if $record->isHoldable() || $record->isEContent()}
 							{* actions *}
 							{foreach from=$record->getActions($record->variationId) item=curAction}
 								<a href="{$curAction.url}" {if !empty($curAction.target)}target="{$curAction.target}"{/if} {if !empty($curAction.onclick)}onclick="{$curAction.onclick}"{/if} class="btn btn-sm {if empty($curAction.btnType)}btn-action{else}{$curAction.btnType}{/if} btn-wrap">{if !empty($curAction.target) && $curAction.target == "_blank"}<i class="fas fa-external-link-alt"></i> {/if}{$curAction.title}</a>
