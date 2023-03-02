@@ -982,7 +982,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	function hasMultipleVariations() {
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
-		if (count($relatedRecord->recordVariations) > 1) {
+		if ($relatedRecord != null && count($relatedRecord->recordVariations) > 1) {
 			return true;
 		} else {
 			return false;
@@ -993,8 +993,8 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		require_once ROOT_DIR . '/sys/Grouping/Variation.php';
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 		$records = [];
-		foreach($relatedRecord->recordVariations as $record){
-			$records = array_merge($records, $record->getRecords());
+		foreach($relatedRecord->recordVariations as $variation){
+			$records = array_merge($records, $variation->getRecords());
 		}
 		$sorter = function ($a, $b) {
 			return strcasecmp($a->variationFormat, $b->variationFormat);
@@ -1012,73 +1012,30 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return "/" . $this->getModule() . "/$recordId";
 	}
 
-	protected $_actions = null;
+	protected $_actions = [];
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null) {
-		if ($this->_actions === null) {
-			$this->_actions = [];
+	public function getRecordActions($relatedRecord, $variationId, $isAvailable, $isHoldable, $volumeData = null) {
+		if (!array_key_exists($variationId, $this->_actions)) {
+			$this->_actions[$variationId] = [];
 			global $interface;
 
 			if (UserAccount::isLoggedIn()) {
 				$user = UserAccount::getActiveUserObj();
-				$this->_actions = array_merge($this->_actions, $user->getCirculatedRecordActions($this->getIndexingProfile()->name, $this->id));
+				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $user->getCirculatedRecordActions($this->getIndexingProfile()->name, $this->id));
 			}
 
 			$treatVolumeHoldsAsItemHolds = $this->getCatalogDriver()->treatVolumeHoldsAsItemHolds();
 
 			if (isset($interface)) {
-//				global $library;
-//				$searchLocation = Location::getSearchLocation(null);
-//
-//				if ($searchLocation) {
-//					$show856LinksAsAccessOnlineButtons = $searchLocation->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
-//				} else {
-//					$show856LinksAsAccessOnlineButtons = $library->getGroupedWorkDisplaySettings()->show856LinksAsAccessOnlineButtons;
-//				}
-
 				$allItems = $relatedRecord->getItems();
 				$relatedUrls = [];
 				foreach ($allItems as $item) {
-					$relatedUrls = array_merge($relatedUrls, $item->getRelatedUrls());
+					if ($item->variationId == $variationId || $variationId == 'any') {
+						$relatedUrls = array_merge($relatedUrls, $item->getRelatedUrls());
+					}
 				}
 
-				$this->_actions = array_merge($this->_actions, $this->createActionsFromUrls($relatedUrls));
-
-//				if ($show856LinksAsAccessOnlineButtons) {
-//					//Get any 856 links for the marc record
-//					$validUrls = $this->getViewable856Links();
-//					if (count($validUrls) == 1) {
-//						$this->_actions[] = [
-//							'title' => translate([
-//								'text' => 'Access Online',
-//								'isPublicFacing' => true,
-//							]),
-//							'url' => $validUrls[0]['url'],
-//							'requireLogin' => false,
-//							'type' => 'marc_access_online',
-//							'target' => '_blank',
-//						];
-//					} elseif (count($validUrls) >= 2) {
-////						$this->_actions[] = array(
-////							'title' => translate(['text' => 'Access Online', 'isPublicFacing'=>true]),
-////							'url' => $validUrls[0],
-////							'requireLogin' => false,
-////							'type' => 'marc_access_online',
-////							'target' => '_blank'
-////						);
-//						$this->_actions[] = [
-//							'title' => translate([
-//								'text' => 'Access Online',
-//								'isPublicFacing' => true,
-//							]),
-//							'url' => "",
-//							'onclick' => "return AspenDiscovery.Record.select856Link('{$this->getId()}')",
-//							'requireLogin' => false,
-//							'type' => 'marc_access_online',
-//							'target' => '_blank',
-//						];
-//					}
-//				}
+				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls));
 
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -1131,23 +1088,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							//Check to see if we have any items that are owned by any of the records in any of the groups.
 							//If we do, we don't need to use VDX
 							foreach ($relatedRecord->getItems() as $itemDetail) {
-								//Only check holdable items
-								if ($itemDetail->holdable) {
-									//The patron's home location is always valid!
-									if ($itemDetail->locationCode == $homeLocation->code) {
-										$useVdxForRecord = false;
-										break;
-									}
-
-									foreach ($vdxGroups as $vdxGroup) {
-										if (in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+								if ($itemDetail->variationId == $variationId || $variationId == 'any') {
+									//Only check holdable items
+									if ($itemDetail->holdable) {
+										//The patron's home location is always valid!
+										if ($itemDetail->locationCode == $homeLocation->code) {
 											$useVdxForRecord = false;
 											break;
 										}
+
+										foreach ($vdxGroups as $vdxGroup) {
+											if (in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+												$useVdxForRecord = false;
+												break;
+											}
+										}
 									}
-								}
-								if (!$useVdxForRecord) {
-									break;
+									if (!$useVdxForRecord) {
+										break;
+									}
 								}
 							}
 						}
@@ -1161,20 +1120,22 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						$hasItemsWithoutVolumes = false;
 						$holdableVolumes = [];
 						foreach ($relatedRecord->getItems() as $itemDetail) {
-							if ($itemDetail->holdable) {
-								if (!empty($itemDetail->volumeId)) {
-									$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = [
-										'volumeName' => $itemDetail->volume,
-										'volumeId' => $itemDetail->volumeId,
-									];
-								} else {
-									$hasItemsWithoutVolumes = true;
+							if ($itemDetail->variationId == $variationId || $variationId == 'any') {
+								if ($itemDetail->holdable) {
+									if (!empty($itemDetail->volumeId)) {
+										$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = [
+											'volumeName' => $itemDetail->volume,
+											'volumeId' => $itemDetail->volumeId,
+										];
+									} else {
+										$hasItemsWithoutVolumes = true;
+									}
 								}
 							}
 						}
 						if (count($holdableVolumes) > 3 || $hasItemsWithoutVolumes) {
 							//Show a dialog to enable the patron to select a volume to place a hold on
-							$this->_actions[] = [
+							$this->_actions[$variationId][] = [
 								'title' => translate([
 									'text' => 'Place Hold',
 									'isPublicFacing' => true,
@@ -1188,7 +1149,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						} else {
 							ksort($holdableVolumes);
 							foreach ($holdableVolumes as $volumeId => $volumeInfo) {
-								$this->_actions[] = [
+								$this->_actions[$variationId][] = [
 									'title' => translate([
 										'text' => 'Hold %1%',
 										1 => $volumeInfo['volumeName'],
@@ -1203,7 +1164,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							}
 						}
 					} else {
-						$this->_actions[] = [
+						$this->_actions[$variationId][] = [
 							'title' => translate([
 								'text' => 'Place Hold',
 								'isPublicFacing' => true,
@@ -1216,7 +1177,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						];
 					}
 				} else {
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => translate([
 							'text' => 'Request',
 							'isPublicFacing' => true,
@@ -1234,7 +1195,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			if (count($uploadedPDFs) > 0) {
 				if (count($uploadedPDFs) == 1) {
 					$recordFile = reset($uploadedPDFs);
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => translate([
 							'text' => 'View PDF',
 							'isPublicFacing' => true,
@@ -1243,7 +1204,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						'requireLogin' => false,
 						'type' => 'view_pdf',
 					];
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => translate([
 							'text' => 'Download PDF',
 							'isPublicFacing' => true,
@@ -1253,14 +1214,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						'type' => 'download_pdf',
 					];
 				} else {
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => 'View PDF',
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.selectFileToView('{$this->getId()}', 'RecordPDF');",
 						'requireLogin' => false,
 						'type' => 'view_pdf',
 					];
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => 'Download PDF',
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordPDF');",
@@ -1275,14 +1236,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			if (count($supplementalFiles) > 0) {
 				if (count($supplementalFiles) == 1) {
 					$recordFile = reset($supplementalFiles);
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => 'Download Supplemental File',
 						'url' => "/Record/{$this->getId()}/DownloadSupplementalFile?fileId={$recordFile->id}",
 						'requireLogin' => false,
 						'type' => 'download_supplemental_file',
 					];
 				} else {
-					$this->_actions[] = [
+					$this->_actions[$variationId][] = [
 						'title' => 'Download Supplemental File',
 						'url' => '',
 						'onclick' => "return AspenDiscovery.Record.selectFileDownload('{$this->getId()}', 'RecordSupplementalFile');",
@@ -1296,7 +1257,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$timer->logTime("Done loading actions for MarcRecordDriver");
 		}
 
-		return $this->_actions;
+		return $this->_actions[$variationId];
 	}
 
 	function createActionsFromUrls($relatedUrls) {
@@ -2267,7 +2228,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 					$this->statusSummary = $recordFromIndex;
 
-					$this->statusSummary->_driver = null;
+					$this->statusSummary->discardDriver();
 					global $timer;
 					$timer->logTime("Loaded Copy information");
 				} else {

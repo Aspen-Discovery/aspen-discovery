@@ -767,7 +767,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 	protected $_actions = null;
 
-	public function getRecordActions($relatedRecord, $isAvailable, $isHoldable, $volumeData = null) {
+	public function getRecordActions($relatedRecord, $variationId, $isAvailable, $isHoldable, $volumeData = null) {
 		if ($this->_actions === null) {
 			$this->_actions = [];
 			//Check to see if OverDrive circulation is enabled

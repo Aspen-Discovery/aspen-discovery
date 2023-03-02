@@ -356,7 +356,7 @@ abstract class Solr {
 
 		$result = $this->_process($result);
 
-		if (count($result['response']['docs']) >= 1) {
+		if ($result != null && count($result['response']['docs']) >= 1) {
 			$record = $result['response']['docs'][0];
 		} else {
 			AspenError::raiseError("Record not found $id");

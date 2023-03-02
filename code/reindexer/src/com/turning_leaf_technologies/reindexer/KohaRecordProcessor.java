@@ -530,18 +530,16 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 			//If the source type is still null, try the location of the item
 			if (sourceType == null){
-				DataField field037 = record.getDataField(37);
-				DataField field949 = record.getDataField(949);
-				if (field037 != null && field037.getSubfield('b') != null) {
-					sourceType = field037.getSubfield('b').getData();
-				}else if (field949 != null && field949.getSubfield('a') != null){
-					sourceType = field949.getSubfield('a').getData();
-				}else{
+//				DataField field037 = record.getDataField(37);
+//				if (field037 != null && field037.getSubfield('b') != null) {
+//					sourceType = field037.getSubfield('b').getData();
+//				}else{
 					//Try the location for the item
-					if (itemField.getSubfield('a') != null){
-						sourceType = itemField.getSubfield('a').getData();
+					if (itemField.getSubfield(locationSubfieldIndicator) != null){
+						sourceType = itemField.getSubfield(locationSubfieldIndicator).getData();
 					}
-				}
+//				}
+				sourceType = "Online Content";
 			}
 		}
 		return sourceType;

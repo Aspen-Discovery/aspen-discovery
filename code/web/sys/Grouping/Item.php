@@ -5,6 +5,7 @@ class Grouping_Item {
 	/** @var Grouping_Record */
 	private $_record;
 	public $recordId;
+	public $variationId;
 	public $shelfLocation;
 	public $callNumber;
 	public $numCopies;
@@ -95,6 +96,7 @@ class Grouping_Item {
 			$this->subLocation = $itemDetails['subLocationCode'];
 			$this->lastCheckInDate = $itemDetails['lastCheckInDate'];
 			$this->isVirtual = $itemDetails['isVirtual'];
+			$this->variationId = $itemDetails['groupedWorkVariationId'];
 		} else {
 			//Item details stored in solr
 			$this->itemId = $itemDetails[1] == 'null' ? '' : $itemDetails[1];

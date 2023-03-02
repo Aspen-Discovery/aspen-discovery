@@ -120,7 +120,7 @@ class DonationFormFields extends DataObject {
 
 		$defaultField = new DonationFormFields();
 		$defaultField->donationSettingId = $donationSettingId;
-		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->category = 'Honoree information';
 		$defaultField->label = 'Choose an amount to donate';
 		$defaultField->textId = 'dedicationType';
 		$defaultField->type = 'radio';
@@ -130,7 +130,7 @@ class DonationFormFields extends DataObject {
 
 		$defaultField = new DonationFormFields();
 		$defaultField->donationSettingId = $donationSettingId;
-		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->category = 'Honoree information';
 		$defaultField->label = 'Honoree\'s First Name';
 		$defaultField->textId = 'honoreeFirstName';
 		$defaultField->type = 'text';
@@ -140,9 +140,79 @@ class DonationFormFields extends DataObject {
 
 		$defaultField = new DonationFormFields();
 		$defaultField->donationSettingId = $donationSettingId;
-		$defaultField->category = 'Choose an amount to donate';
+		$defaultField->category = 'Honoree information';
 		$defaultField->label = 'Honoree\'s Last Name';
 		$defaultField->textId = 'honoreeLastName';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Honoree information';
+		$defaultField->label = 'Notify someone about this in memory or in honor of gift';
+		$defaultField->textId = 'shouldBeNotified';
+		$defaultField->type = 'checkbox';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Notification Party First Name';
+		$defaultField->textId = 'notificationFirstName';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Notification Party Last Name';
+		$defaultField->textId = 'notificationLastName';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Address';
+		$defaultField->textId = 'notificationAddress';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'City';
+		$defaultField->textId = 'notificationCity';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'State';
+		$defaultField->textId = 'notificationState';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Notification party information';
+		$defaultField->label = 'Zipcode';
+		$defaultField->textId = 'notificationZip';
 		$defaultField->type = 'text';
 		$defaultField->required = 0;
 		$defaultField->insert();

@@ -96,6 +96,13 @@ class Grouping_Manifestation {
 		return $this->_isHideByDefault;
 	}
 
+	function showActionButton(): bool {
+		if ($this->_relatedRecords[0]->isHoldable() || $this->_relatedRecords[0]->isEContent()){
+			return true;
+		}
+		return false;
+	}
+
 	function loadHiddenInformation() {
 		if ($this->_isHideByDefault == null) {
 			$this->_hasHiddenFormats = false;

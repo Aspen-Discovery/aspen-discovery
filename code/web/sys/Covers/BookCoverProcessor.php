@@ -1189,7 +1189,7 @@ class BookCoverProcessor {
 						return true;
 					}
 				}
-				$driver = $relatedRecord->_driver;
+				$driver = $relatedRecord->getDriver();
 				if ($driver != null) {
 					//First check to see if there is a specific record defined in an 856 etc.
 					if ($driver->hasMarcRecord() && $this->getCoverFromMarc($driver->getMarcRecord())) {
