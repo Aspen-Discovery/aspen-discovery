@@ -781,18 +781,64 @@ public class KohaExportMain {
 
 	private static void updatePatronTypes(Connection dbConn, Connection kohaConn) {
 		try {
+			//Prepared queries
 			PreparedStatement kohaPatronTypeStmt = kohaConn.prepareStatement("SELECT * from categories");
 			PreparedStatement existingAspenPatronTypesStmt = dbConn.prepareStatement("SELECT id from ptype where pType = ?");
 			PreparedStatement addAspenPatronTypeStmt = dbConn.prepareStatement("INSERT INTO ptype (pType) VALUES (?)");
 
+			PreparedStatement getKohaPSLimits = kohaConn.prepareStatement("SELECT value FROM systempreferences WHERE variable = 'suggestionPatronCategoryExceptions'");
+			PreparedStatement getPatronTypeSuggestLimit = dbConn.prepareStatement("SELECT canSuggestMaterials FROM ptype WHERE pType = ?");
+			PreparedStatement updatePatronTypeCannotSuggest = dbConn.prepareStatement("UPDATE ptype SET canSuggestMaterials = 0 WHERE pType = ?");
+			PreparedStatement updatePatronTypeCanSuggest = dbConn.prepareStatement("UPDATE ptype SET canSuggestMaterials = 1 WHERE pType = ?");
+
+			//variables
+			String kohaPSLimits = "";
+			float kohaVersion = getKohaVersion(kohaConn);
+
+			//get purchase suggestion limit rules if possible
+			if (kohaVersion >= 22.11) {
+				try {
+					ResultSet kohaPSLimitsRS = getKohaPSLimits.executeQuery();
+
+					if (kohaPSLimitsRS.next()){
+						kohaPSLimits = kohaPSLimitsRS.getString("value");
+					}
+
+				} catch (SQLException e) {
+					logEntry.incErrors("Error loading suggestion patron category exceptions", e);
+				}
+			}
+
+			//go through pTypes
 			ResultSet kohaPTypes = kohaPatronTypeStmt.executeQuery();
 			while (kohaPTypes.next()) {
 				existingAspenPatronTypesStmt.setString(1, kohaPTypes.getString("categorycode"));
 				ResultSet existingAspenPatronTypesRS = existingAspenPatronTypesStmt.executeQuery();
+				String ptype = kohaPTypes.getString("categorycode");
+
 				if (!existingAspenPatronTypesRS.next()) {
 					addAspenPatronTypeStmt.setString(1, kohaPTypes.getString("categorycode"));
 					addAspenPatronTypeStmt.executeUpdate();
 				}
+
+				//if 22.11, check if the current pType is in kohaPSLimits
+				if(kohaVersion >= 22.11 ){
+					getPatronTypeSuggestLimit.setString(1, kohaPTypes.getString("categorycode"));
+					ResultSet currentSetting = getPatronTypeSuggestLimit.executeQuery();
+
+					if (currentSetting.next()) {
+						if (kohaPSLimits.contains(ptype) && currentSetting.getString("canSuggestMaterials").equals("1")) {
+							updatePatronTypeCannotSuggest.setString(1, ptype);
+							updatePatronTypeCannotSuggest.executeUpdate();
+						}
+						if (!(kohaPSLimits.contains(ptype)) && currentSetting.getString("canSuggestMaterials").equals("0")) {
+							updatePatronTypeCanSuggest.setString(1, ptype);
+							updatePatronTypeCanSuggest.executeUpdate();
+						}
+					}
+
+				}
+
 				existingAspenPatronTypesRS.close();
 			}
 			kohaPTypes.close();
