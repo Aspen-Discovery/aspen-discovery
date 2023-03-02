@@ -13,6 +13,13 @@ function getUpdates23_03_00(): array {
 		], //sample*/
 
 		//mark
+		'increase_ill_link_size' => [
+			'title' => 'Increase the length of the  Interlibrary Loan URL',
+			'description' => 'Increase the length of the  Interlibrary Loan URL',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN interLibraryLoanUrl interLibraryLoanUrl VARCHAR(200);",
+			],
+		],
 
 		//kirstien
 		'add_ldap_to_sso' => [
