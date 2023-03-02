@@ -2349,10 +2349,10 @@ class SearchAPI extends Action {
 					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
 					foreach ($relatedManifestations as $relatedManifestation) {
 						foreach ($relatedManifestation->getVariations() as $obj) {
-							if(!in_array($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 								$format = $obj->manifestation->format;
-								$items[$recordKey]['itemList'][$i]['key'] = $i;
-								$items[$recordKey]['itemList'][$i]['name'] = $format;
+								$items[$recordKey]['itemList'][$format]['key'] = $i;
+								$items[$recordKey]['itemList'][$format]['name'] = $format;
 								$i++;
 							};
 						}
