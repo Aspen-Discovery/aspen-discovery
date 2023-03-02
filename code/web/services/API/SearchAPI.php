@@ -2351,8 +2351,8 @@ class SearchAPI extends Action {
 						foreach ($relatedManifestation->getVariations() as $obj) {
 							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 								$format = $obj->manifestation->format;
-								$items[$recordKey]['itemList'][$i]['key'] = $i;
-								$items[$recordKey]['itemList'][$i]['name'] = $format;
+								$items[$recordKey]['itemList'][$format]['key'] = $i;
+								$items[$recordKey]['itemList'][$format]['name'] = $format;
 								$i++;
 							};
 						}
