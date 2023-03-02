@@ -694,7 +694,7 @@ class Grouping_Record {
 		$result = 0;
 		global $indexingProfiles;
 
-		if (count($this->recordVariations) > 1){
+		if (!empty($this->recordVariations)){
 			foreach ($this->recordVariations as $variation) {
 				$formatValue = $variation->manifestation->format;
 				if (array_key_exists($this->source, $indexingProfiles)) {
