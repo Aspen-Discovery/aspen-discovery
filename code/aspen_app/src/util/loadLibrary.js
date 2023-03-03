@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
-import _, { max } from 'lodash';
+import _ from 'lodash';
 import React from 'react';
 
 // custom components and helper files

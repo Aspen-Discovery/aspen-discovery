@@ -7,9 +7,6 @@ import i18n from 'i18n-js';
 import { create } from 'apisauce';
 import { PATRON } from '../loadPatron';
 import { popAlert } from '../../components/loadError';
-import { LIBRARY } from '../loadLibrary';
-import { SEARCH } from '../search';
-import axios from 'axios';
 
 const endpoint = ENDPOINT.user;
 
@@ -535,7 +532,7 @@ export async function saveLanguage(code, url) {
      if (response.ok) {
           i18n.locale = code;
           PATRON.language = code;
-          return code;
+          return true;
      } else {
           console.log(response);
           return false;

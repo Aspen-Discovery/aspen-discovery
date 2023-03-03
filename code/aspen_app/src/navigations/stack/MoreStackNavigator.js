@@ -3,10 +3,11 @@ import React from 'react';
 
 import { ContactLibrary } from '../../screens/Library/Contact';
 import More from '../../screens/More/More';
-import { translate } from '../../translations/translations';
-import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const MoreStackNavigator = () => {
+     const { language } = React.useContext(LanguageContext);
      const Stack = createNativeStackNavigator();
      return (
           <Stack.Navigator
@@ -18,14 +19,14 @@ const MoreStackNavigator = () => {
                <Stack.Screen
                     name="More"
                     component={More}
-                    options={{ title: translate('navigation.more') }}
+                    options={{ title: getTermFromDictionary(language, 'nav_more') }}
                     initialParams={{
                          libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
                          locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
                          userContext: React.useContext(UserContext),
                     }}
                />
-               <Stack.Screen name="Contact" component={ContactLibrary} options={{ title: translate('general.contact') }} />
+               <Stack.Screen name="Contact" component={ContactLibrary} options={{ title: getTermFromDictionary(language, 'contact') }} />
           </Stack.Navigator>
      );
 };

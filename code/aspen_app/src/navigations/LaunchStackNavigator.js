@@ -8,7 +8,7 @@ const LaunchStackNavigator = () => {
      const Stack = createNativeStackNavigator();
      return (
          <LanguageContext.Consumer>
-              {(language, updateLanguage, languages, updateLanguages) => (
+              {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
                     <LibrarySystemContext.Consumer>
                          {(library, version, url) => (
                               <LibraryBranchContext.Consumer>
@@ -54,7 +54,7 @@ const LaunchStackNavigator = () => {
                                                                                                },
                                                                                                checkoutsContext: checkouts,
                                                                                                holdsContext: holds,
-                                                                                               languageContext: { language, updateLanguage, languages, updateLanguages }
+                                                                                               languageContext: { language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary }
                                                                                           }}
                                                                                      />
                                                                                 </Stack.Navigator>
