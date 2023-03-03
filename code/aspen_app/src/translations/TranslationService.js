@@ -139,14 +139,10 @@ export async function getTranslatedTerm(language, url) {
             language
         },
     });
-    const response = await api.post("/SystemAPI?method=getBulkTranslations", {
-        terms: defaults,
-    },
-        {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }
+    const response = await api.post("/SystemAPI?method=getBulkTranslations",
+        {terms: defaults},
+        {headers: {'Content-Type': 'application/json'}
+    }
     );
     if(response.ok) {
         const translation = response?.data?.result[language] ?? defaults;
@@ -163,38 +159,6 @@ export async function getTranslatedTerm(language, url) {
         }
         translationsLibrary = _.merge(translationsLibrary, obj);
     }
-}
-
-export async function getTranslatedTerm_Original(language, url) {
-    // Load in the terms used for Aspen LiDA
-    let defaults = require('../translations/defaults.json');
-    return Promise.all (
-        _.map(defaults, async function (terms, index, array) {
-            const api = create({
-                baseURL: url + "/API",
-                timeout: GLOBALS.timeoutFast,
-                headers: getHeaders(true),
-                auth: createAuthTokens(),
-            });
-            const response = await api.get("/SystemAPI?method=getTranslation", {
-                terms: _.toArray(terms),
-                language
-            });
-            if(response.ok) {
-                const translation = response?.data?.result?.translations ?? terms;
-                if(_.isObject(translation)) {
-                    const obj = {
-                        [language]: {
-                            [index]: translation,
-                        }
-                    }
-                    translationsLibrary = _.merge(translationsLibrary, obj);
-                }
-            } else {
-                console.log(response);
-            }
-        })
-    )
 }
 
 export async function getTranslatedTermsForAllLanguages(languages, url) {
@@ -224,3 +188,37 @@ export const getTermFromDictionary = (language, key) => {
     let defaults = require('../translations/defaults.json');
     return defaults[key]
 }
+
+/*
+ export async function getTranslatedTerm_Original(language, url) {
+ // Load in the terms used for Aspen LiDA
+ let defaults = require('../translations/defaults.json');
+ return Promise.all (
+ _.map(defaults, async function (terms, index, array) {
+ const api = create({
+ baseURL: url + "/API",
+ timeout: GLOBALS.timeoutFast,
+ headers: getHeaders(true),
+ auth: createAuthTokens(),
+ });
+ const response = await api.get("/SystemAPI?method=getTranslation", {
+ terms: _.toArray(terms),
+ language
+ });
+ if(response.ok) {
+ const translation = response?.data?.result?.translations ?? terms;
+ if(_.isObject(translation)) {
+ const obj = {
+ [language]: {
+ [index]: translation,
+ }
+ }
+ translationsLibrary = _.merge(translationsLibrary, obj);
+ }
+ } else {
+ console.log(response);
+ }
+ })
+ )
+ }
+ */
