@@ -4237,6 +4237,8 @@ class Library extends DataObject {
 			'allowProfileUpdates' => $this->allowProfileUpdates,
 			'showShareOnExternalSites' => $this->showShareOnExternalSites,
 			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit'),
+			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
+			'passwordLabel' => $this->loginFormPasswordLabel ?? 'Library Card Number'
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
