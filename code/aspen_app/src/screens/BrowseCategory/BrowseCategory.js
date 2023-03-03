@@ -6,6 +6,7 @@ import { Button, FlatList, HStack, Icon, Text, View } from 'native-base';
 import React, { useCallback, useEffect } from 'react';
 
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
+import {translate} from '../../translations/translations';
 
 const BrowseCategory = (props) => {
      const { categoryLabel, categoryKey, renderItem, hideCategory, user, libraryUrl, isHidden } = props;
@@ -45,7 +46,7 @@ const BrowseCategory = (props) => {
                                    {categoryLabel}
                               </Text>
                               <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(libraryUrl, categoryKey, user.id)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                                   Hide
+                                   {translate('general.hide')}
                               </Button>
                          </HStack>
                          <FlatList horizontal data={items} renderItem={({ item }) => renderItem(item, libraryUrl)} keyExtractor={(item, index) => index.toString()} initialNumToRender={5} />
