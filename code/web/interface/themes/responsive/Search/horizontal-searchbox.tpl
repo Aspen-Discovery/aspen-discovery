@@ -3,7 +3,7 @@
 	<form method="get" action="/Union/Search" id="searchForm" class="form-inline">
 
 		{* Hidden Inputs *}
-		<input type="hidden" name="view" id="view" value="{$displayMode}">
+		<input type="hidden" name="view" id="view" value="{if !empty($displayMode)}{$displayMode}{/if}">
 
 		{if isset($showCovers)}
 			<input type="hidden" name="showCovers" value="{if !empty($showCovers)}on{else}off{/if}">
@@ -13,7 +13,7 @@
 		{* Switch sizing when no search source is to be displayed *}
 		{if empty($searchSources) || count($searchSources) == 1}
 			{assign var="hiddenSearchSource" value=true}
-			<input type="hidden" name="searchSource" value="{$searchSource}">
+			<input type="hidden" name="searchSource" value="{if !empty($searchSource)}{$searchSource}{/if}">
 		{/if}
 
 		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">

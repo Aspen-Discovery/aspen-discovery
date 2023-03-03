@@ -595,6 +595,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function buildExcel($result = null) {
 		global $configArray;
+		global $solrScope;
 		try {
 			// First, get the search results if none were provided
 			// (we'll go for 50 at a time)
@@ -654,13 +655,22 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				}
 
 				// Formats
-				if (!is_array($curDoc['format'])) {
-					$formats = (array)$curDoc['format'];
+				$formatField = 'format_' . $solrScope;
+				if (array_key_exists($formatField, $curDoc)) {
+					if (!is_array($curDoc[$formatField])) {
+						$formats = (array)$curDoc[$formatField];
+					} else {
+						$formats = $curDoc[$formatField];
+					}
 				} else {
-					$formats = $curDoc['format'];
-				}
-				foreach ($formats as $key => $format) {
-					$formats[$key] = substr($format, strpos($format, '#') + 1);
+					if (!is_array($curDoc['format'])) {
+						$formats = (array)$curDoc['format'];
+					} else {
+						$formats = $curDoc['format'];
+					}
+					foreach ($formats as $key => $format) {
+						$formats[$key] = substr($format, strpos($format, '#') + 1);
+					}
 				}
 				$uniqueFormats = array_unique($formats);
 				$uniqueFormats = implode(';', $uniqueFormats);
@@ -696,11 +706,13 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 										$output = array_unique($output);
 										$output = array_slice($output, 0, 3);
 									}
+									$record->discardDriver();
 								}
 							}
 						}
 					}
 				}
+				$groupedWorkDriver = null;
 				$output = implode(',', $output);
 				$row = array ($link, $title, $author, $publisher, $publishDate, $uniqueFormats, $output);
 				fputcsv($fp, $row);

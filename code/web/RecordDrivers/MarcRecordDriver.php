@@ -994,7 +994,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
 		$records = [];
 		foreach($relatedRecord->recordVariations as $variation){
-			$records = array_merge($records, $variation->getRecords());
+			$allVariationRecords = $variation->getRecords();
+			//make sure we're showing the correct record, not all records that have this format
+			foreach($allVariationRecords as $recordToShow){
+				if ($recordToShow->databaseId == $relatedRecord->databaseId){
+					$records[] = $recordToShow;
+				}
+			}
 		}
 		$sorter = function ($a, $b) {
 			return strcasecmp($a->variationFormat, $b->variationFormat);
@@ -2135,14 +2141,13 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					if (!empty($recordFromIndex->recordVariations)) {
 						$holdings = [];
 						foreach ($recordFromIndex->recordVariations as $variation){
-							$record = $variation->getRecords();
-							//getItemDetails needs an object not an array, return the first object in the array since only one record should be attached anywya
-							$oneRecord = $record[0];
-							$holdings = array_merge($oneRecord->getItemDetails(), $holdings);
-							//TODO KODI: assign a format to each hold item - currently not working (Warning: Attempt to assign property 'format' of non-object)
-							/*foreach ($holdings as $holdItem){
-								$holdItem->format = $oneRecord->variationFormat;
-							}*/
+							$allVariationRecords = $variation->getRecords();
+							foreach($allVariationRecords as $recordToShow){
+								if ($recordToShow->databaseId == $recordFromIndex->databaseId){
+									//getItemDetails needs an object not an array, return the first object in the array since only one record should be attached anywya
+									$holdings = array_merge($recordToShow->getItemDetails(), $holdings);
+								}
+							}
 						}
 						$this->holdings = $holdings;
 					}else{

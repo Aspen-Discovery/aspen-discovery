@@ -192,12 +192,6 @@ public class DatabaseCleanup implements IProcessHandler {
 				processLog.addNote("Deleted " + numUpdates + " search where the user does not exist");
 			}
 
-			numUpdates = dbConn.prepareStatement("DELETE FROM user_staff_settings where userId NOT IN (select id from user)").executeUpdate();
-			if (numUpdates > 0){
-				processLog.incUpdated();
-				processLog.addNote("Deleted " + numUpdates + " user_staff_settings where the user does not exist");
-			}
-
 			numUpdates = dbConn.prepareStatement("DELETE FROM user_work_review where userId NOT IN (select id from user)").executeUpdate();
 			if (numUpdates > 0){
 				processLog.incUpdated();
