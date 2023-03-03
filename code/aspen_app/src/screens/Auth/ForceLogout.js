@@ -2,6 +2,7 @@ import { AlertDialog, Button, Center } from 'native-base';
 import React from 'react';
 
 import {AuthContext} from '../../components/navigation';
+import {translate} from '../../translations/translations';
 
 export const ForceLogout = () => {
 	const { signOut } = React.useContext(AuthContext);
@@ -13,12 +14,12 @@ export const ForceLogout = () => {
 		<Center>
 			<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 				<AlertDialog.Content>
-					<AlertDialog.Header>Error</AlertDialog.Header>
-					<AlertDialog.Body>There was a problem retrieving your previous session. Please log in again.</AlertDialog.Body>
+					<AlertDialog.Header>{translate('error.title')}</AlertDialog.Header>
+					<AlertDialog.Body>{translate('error.invalid_session')}</AlertDialog.Body>
 					<AlertDialog.Footer>
 						<Button.Group space={3}>
 							<Button colorScheme="primary" onPress={signOut} ref={cancelRef}>
-								OK
+								{translate('general.button_ok')}
 							</Button>
 						</Button.Group>
 					</AlertDialog.Footer>
