@@ -1765,7 +1765,7 @@ class User extends DataObject {
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $user) {
-					$ilsFines += $user->getFines(false); // keep keys as userId
+					$ilsFines += $user->getFines(false, $APIRequest); // keep keys as userId
 				}
 			}
 		}

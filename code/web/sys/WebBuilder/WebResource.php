@@ -65,6 +65,7 @@ class WebResource extends DB_LibraryLinkedObject {
 				'description' => 'The url of the resource',
 				'size' => '40',
 				'maxLength' => 255,
+				'required' => true
 			],
 			'openInNewTab' => [
 				'property' => 'openInNewTab',
@@ -119,6 +120,7 @@ class WebResource extends DB_LibraryLinkedObject {
 				'label' => 'Teaser',
 				'description' => 'A short description of the resource to show in lists',
 				'hideInLists' => true,
+				'maxLength' => 512
 			],
 			'description' => [
 				'property' => 'description',
