@@ -61,7 +61,7 @@ export const Variations = (props) => {
      };
 
      const decodeMessage = (string) => {
-          const withoutEntities = decodeMessage(string);
+          const withoutEntities = decodeHTML(string);
           return stripHTML(withoutEntities)
      }
 
