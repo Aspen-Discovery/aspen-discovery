@@ -811,26 +811,6 @@ export async function removeLinkedViewerAccount(id, url) {
      }
 }
 
-export async function saveLanguage(code, url) {
-     const postBody = await postData();
-     const api = create({
-          baseURL: url + '/API',
-          timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(true),
-          auth: createAuthTokens(),
-     });
-     const response = await api.post('/UserAPI?method=saveLanguage&languageCode=' + code, postBody);
-     if (response.ok) {
-          console.log(response.data);
-          i18n.locale = code;
-          PATRON.language = code;
-          console.log(PATRON.language);
-          return code;
-     } else {
-          console.log(response);
-     }
-}
-
 export async function cancelVdxRequest(libraryUrl, sourceId, cancelId) {
      const postBody = await postData();
      const api = create({
