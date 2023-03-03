@@ -307,7 +307,8 @@
     "permission_error": "The library has incorrect permissions for connecting via LiDA",
     "no_open_resource": "Unable to open resource",
     "no_valid_url": "A valid access URL has not been provided for the record",
-    "device_block_browser": "There was a problem opening item. Try again"
+    "device_block_browser": "There was a problem opening item. Try again",
+    "invalid_session": "There was a problem retrieving your previous session. Please log in again."
   },
   "updates": {
     "update_available": "Update Available",
