@@ -25,6 +25,7 @@ class SystemAPI extends Action {
 					'getLocationAppSettings',
 					'getTranslation',
 					'getTranslationWithValues',
+					'getBulkTranslations',
 					'getLanguages',
 					'getVdxForm',
 				])) {
@@ -658,9 +659,50 @@ class SystemAPI extends Action {
 		];
 		/** @var Translator $translator */ global $translator;
 		foreach ($terms as $term) {
-			$response['translations'][$term] = $translator->translate($term, $term, [], true, true);
+			$response[$_REQUEST['language']][$term] = $translator->translate($term, $term, [], true, true);
 		}
 		return $response;
+	}
+
+	function getBulkTranslations() {
+		if(isset($_REQUEST['language'])) {
+			$language = new Language();
+			$language->code = $_REQUEST['language'];
+			if ($language->find(true)) {
+				global $activeLanguage;
+				$activeLanguage = $language;
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Invalid language code provided.',
+				];
+			}
+			if (file_get_contents('php://input')) {
+				$data = file_get_contents('php://input');
+				$terms = json_decode($data, true);
+				$translatedTerms = [];
+
+				/** @var Translator $translator */ global $translator;
+				foreach ($terms['terms'] as $key => $term) {
+					$translatedTerms[$key] = $translator->translate($term, $term, [], true, true);
+				}
+
+				return [
+					'success' => true,
+					$_REQUEST['language'] => $translatedTerms,
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Please provide terms as JSON data',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Please provide a language code to translate to.',
+			];
+		}
 	}
 
 	function getTranslationWithValues() {
