@@ -222,6 +222,14 @@ function getUpdates23_03_00(): array {
 		//truncate_donation_form_fields
 
 		//kodi
+		'google_bucket' => [
+			'title' => 'Google Bucket',
+			'description' => 'Add variable for Google backup bucket in system variables',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN googleBucket VARCHAR(128) DEFAULT NULL'
+			],
+		],
+		//google_bucket
 
 		//other
 	];
