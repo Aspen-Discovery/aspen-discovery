@@ -13,6 +13,21 @@ function getUpdates23_03_00(): array {
 		], //sample*/
 
 		//mark
+		'increase_ill_link_size' => [
+			'title' => 'Increase the length of the  Interlibrary Loan URL',
+			'description' => 'Increase the length of the  Interlibrary Loan URL',
+			'sql' => [
+				"ALTER TABLE library CHANGE COLUMN interLibraryLoanUrl interLibraryLoanUrl VARCHAR(200);",
+			],
+		],
+
+		'allow_decimal_series_display_orders' => [
+			'title' => 'Allow Decimal Series Display Orders',
+			'description' => 'Increase the length of the  Interlibrary Loan URL',
+			'sql' => [
+				"ALTER TABLE grouped_work_display_info CHANGE COLUMN seriesDisplayOrder seriesDisplayOrder DECIMAL(6,2);",
+			],
+		],
 
 		//kirstien
 		'add_ldap_to_sso' => [

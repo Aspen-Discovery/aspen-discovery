@@ -22,10 +22,10 @@
 		<h4>{translate text="Display Information" isPublicFacing=true}</h4>
 		<table class="table-striped table table-condensed notranslate">
 			<tr><th>{translate text="Title" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->title}</td></tr>
-			<tr><th>{translate text="Subtitle" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->subtitle}</td></tr>
+			<tr><th>{translate text="Subtitle" isPublicFacing=true}</th><td>{if !empty($specifiedDisplayInfo->subtitle)}{$specifiedDisplayInfo->subtitle}{/if}</td></tr>
 			<tr><th>{translate text="Author" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->author}</td></tr>
 			<tr><th>{translate text="Series Name" isPublicFacing=true}</th><td>{$specifiedDisplayInfo->seriesName}</td></tr>
-			<tr><th>{translate text="Series Display Order" isPublicFacing=true}</th><td>{if $specifiedDisplayInfo->seriesDisplayOrder != 0}{$specifiedDisplayInfo->seriesDisplayOrder}{/if}</td></tr>
+			<tr><th>{translate text="Series Display Order" isPublicFacing=true}</th><td>{if $specifiedDisplayInfo->seriesDisplayOrder != 0}{$specifiedDisplayInfo->seriesDisplayOrder|format_float_with_min_decimals}{/if}</td></tr>
 		</table>
 		{if !empty($loggedIn) && in_array('Set Grouped Work Display Information', $userPermissions)}
 			<tr><th></th><td><a onclick="AspenDiscovery.GroupedWork.deleteDisplayInfo('{$recordDriver->getPermanentId()}')" class="btn btn-danger btn-sm">{translate text="Delete" isPublicFacing=true}</a></td></tr>

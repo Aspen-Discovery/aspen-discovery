@@ -55,7 +55,7 @@
 						<div class="row">
 							<div class="result-label col-tn-4">{translate text='Volume' isPublicFacing=true}</div>
 							<div class="col-tn-8 result-value">
-								{$record->volume}
+								{$record->volume|format_float_with_min_decimals}
 							</div>
 						</div>
 					{/if}
