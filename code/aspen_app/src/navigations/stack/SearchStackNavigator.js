@@ -7,8 +7,7 @@ import { enableScreens } from 'react-native-screens';
 import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
 import Facet from '../../screens/Search/Facet';
 import { FiltersScreen } from '../../screens/Search/Filters';
-import { translate } from '../../translations/translations';
-import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import Search from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
 import SearchByCategory from '../../screens/Search/SearchByCategory';
@@ -17,10 +16,12 @@ import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
 import {CreateVDXRequest} from '../../screens/GroupedWork/CreateVDXRequest';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 enableScreens();
 
 const SearchStackNavigator = ({ options, route, back, navigation }) => {
+     const { language } = React.useContext(LanguageContext);
      const Stack = createStackNavigator();
      return (
           <Stack.Navigator
@@ -36,7 +37,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SearchScreen"
                          component={Search}
                          options={{
-                              title: translate('search.title'),
+                              title: getTermFromDictionary(language, 'search'),
                          }}
                          initialParams={{
                               libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
@@ -48,7 +49,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SearchResults"
                          component={SearchResults}
                          options={({ route }) => ({
-                              title: translate('search.search_results_title') + route.params.term,
+                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.term,
                               params: {
                                    pendingParams: [],
                               },
@@ -58,7 +59,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="ResultItem"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
@@ -66,7 +67,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                        name="ResultItem221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -75,14 +76,14 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SearchByCategory"
                          component={SearchByCategory}
                          options={({ route }) => ({
-                              title: translate('search.search_results_title') + route.params.title,
+                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
                          })}
                     />
                     <Stack.Screen
                          name="CategoryResultItem"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
@@ -90,7 +91,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                        name="CategoryResultItem221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -100,21 +101,21 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SearchByList"
                          component={SearchResultsForList}
                          options={({ route }) => ({
-                              title: translate('search.search_results_title') + route.params.title,
+                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
                          })}
                     />
                     <Stack.Screen
                          name="ListResults"
                          component={SearchResultsForList}
                          options={({ route }) => ({
-                              title: translate('search.search_results_title') + route.params.title,
+                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
                          })}
                     />
                     <Stack.Screen
                          name="ListResultItem"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
@@ -122,7 +123,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                        name="ListResultItem221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -131,7 +132,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SearchBySavedSearch"
                          component={SearchBySavedSearch}
                          options={({ route }) => ({
-                              title: translate('search.search_results_title') + route.params.title,
+                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
                               libraryContext: React.useContext(LibrarySystemContext),
                               locationContext: React.useContext(LibraryBranchContext),
                               userContext: React.useContext(UserContext),
@@ -141,7 +142,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SavedSearchResultItem"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
@@ -149,7 +150,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                        name="SavedSearchResultItem221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -157,7 +158,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                     name="CopyDetails"
                     component={WhereIsIt}
                     options={({ navigation }) => ({
-                         title: translate('copy_details.where_is_it'),
+                         title: getTermFromDictionary(language, 'where_is_it'),
                          headerShown: true,
                          presentation: 'modal',
                          headerLeft: () => {
@@ -190,7 +191,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                   name="CreateVDXRequest"
                   component={CreateVDXRequest}
                   options={({ navigation }) => ({
-                      title: translate('ill.request_title'),
+                      title: getTermFromDictionary(language, 'ill_request_title'),
                       presentation: 'modal',
                       headerLeft: () => {
                           return <></>;
@@ -208,6 +209,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
 
 const FilterModalStack = createNativeStackNavigator();
 const FilterModal = () => {
+    const { language } = React.useContext(LanguageContext);
      return (
           <FilterModalStack.Navigator
                id="SearchFilters"
@@ -236,7 +238,7 @@ const FilterModal = () => {
                     name="Filters"
                     component={FiltersScreen}
                     options={{
-                         title: 'Filters',
+                         title: getTermFromDictionary(language, 'filters'),
                          headerShown: true,
                          presentation: 'card',
                     }}

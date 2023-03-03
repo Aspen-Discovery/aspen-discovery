@@ -4,15 +4,17 @@ import { DrawerActions } from '@react-navigation/native';
 import { useToken, useColorModeValue } from 'native-base';
 import React from 'react';
 
-import { translate } from '../../translations/translations';
 import DrawerNavigator from '../drawer/DrawerNavigator';
 import AccountStackNavigator from '../stack/AccountStackNavigator';
 import BrowseStackNavigator from '../stack/BrowseStackNavigator';
 import LibraryCardStackNavigator from '../stack/LibraryCardStackNavigator';
 import MoreStackNavigator from '../stack/MoreStackNavigator';
 import SearchStackNavigator from '../stack/SearchStackNavigator';
+import {LanguageContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export default function TabNavigator() {
+     const { language } = React.useContext(LanguageContext);
      const Tab = createBottomTabNavigator();
      const [activeIcon, inactiveIcon] = useToken('colors', [useColorModeValue('gray.800', 'coolGray.200'), useColorModeValue('gray.500', 'coolGray.400')]);
      const tabBarBackgroundColor = useColorModeValue('light', 'dark');
@@ -52,7 +54,7 @@ export default function TabNavigator() {
                     name="HomeTab"
                     component={BrowseStackNavigator}
                     options={{
-                         tabBarLabel: translate('navigation.home'),
+                         tabBarLabel: getTermFromDictionary(language, "nav_discover"),
                     }}
                     screenOptions={{
                          headerShown: false,
@@ -62,7 +64,7 @@ export default function TabNavigator() {
                     name="SearchTab"
                     component={SearchStackNavigator}
                     options={{
-                         tabBarLabel: translate('navigation.search'),
+                         tabBarLabel: getTermFromDictionary(language, "nav_search"),
                          unmountOnBlur: true,
                     }}
                />
@@ -70,14 +72,14 @@ export default function TabNavigator() {
                     name="LibraryCardTab"
                     component={LibraryCardStackNavigator}
                     options={{
-                         tabBarLabel: translate('navigation.library_card'),
+                         tabBarLabel: getTermFromDictionary(language, "nav_card"),
                     }}
                />
                <Tab.Screen
                     name="AccountTab"
                     component={DrawerNavigator}
                     options={{
-                         tabBarLabel: translate('navigation.account'),
+                         tabBarLabel: getTermFromDictionary(language, "nav_account"),
                          //tabBarBadge: 3,
                     }}
                     listeners={({ navigation }) => ({
@@ -98,7 +100,7 @@ export default function TabNavigator() {
                     name="MoreTab"
                     component={MoreStackNavigator}
                     options={{
-                         tabBarLabel: translate('navigation.more'),
+                         tabBarLabel: getTermFromDictionary(language, "nav_more"),
                     }}
                />
           </Tab.Navigator>

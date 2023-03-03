@@ -12,7 +12,6 @@ import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
 import { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
 import Settings_Notifications from '../../screens/MyAccount/Settings/Notifications';
 import Preferences from '../../screens/MyAccount/Settings/Preferences';
-import { translate } from '../../translations/translations';
 import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
 import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckouts';
 import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
@@ -22,8 +21,11 @@ import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/N
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
 import {CreateVDXRequest} from '../../screens/GroupedWork/CreateVDXRequest';
+import {LanguageContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const AccountStackNavigator = () => {
+     const { language } = React.useContext(LanguageContext);
      const Stack = createNativeStackNavigator();
      return (
           <Stack.Navigator
@@ -33,31 +35,31 @@ const AccountStackNavigator = () => {
                     headerBackTitleVisible: false,
                }}>
                <Stack.Group>
-                    <Stack.Screen name="MyPreferences" component={Preferences} options={{ title: translate('user_profile.preferences') }} />
-                    <Stack.Screen name="SettingsHomeScreen" component={Settings_HomeScreen} options={{ title: translate('user_profile.home_screen_settings') }} />
-                    <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: translate('user_profile.home_screen_settings') }} />
-                    <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: translate('user_profile.notification_settings') }} />
-                    <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: translate('user_profile.notification_settings') }} />
+                    <Stack.Screen name="MyPreferences" component={Preferences} options={{ title: getTermFromDictionary(language, 'preferences') }} />
+                    <Stack.Screen name="SettingsHomeScreen" component={Settings_HomeScreen} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
+                    <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
+                    <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
+                    <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
                </Stack.Group>
                <Stack.Group>
-                    <Stack.Screen name="MyProfile" component={Profile} options={{ title: translate('user_profile.profile') }} />
+                    <Stack.Screen name="MyProfile" component={Profile} options={{ title: getTermFromDictionary(language, 'profile') }} />
                </Stack.Group>
                <Stack.Group>
-                    <Stack.Screen name="MyLinkedAccounts" component={MyLinkedAccounts} options={{ title: translate('linked_accounts.title') }} />
+                    <Stack.Screen name="MyLinkedAccounts" component={MyLinkedAccounts} options={{ title: getTermFromDictionary(language, 'linked_accounts') }} />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
                          name="MyHolds"
                          component={MyHolds}
                          options={{
-                              title: translate('holds.title'),
+                             title: getTermFromDictionary(language, 'titles_on_hold')
                          }}
                     />
                     <Stack.Screen
                          name="MyHold"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyHolds' }}
                     />
@@ -65,7 +67,7 @@ const AccountStackNavigator = () => {
                        name="MyHold221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -74,14 +76,14 @@ const AccountStackNavigator = () => {
                          name="MyCheckouts"
                          component={MyCheckouts}
                          options={{
-                              title: translate('checkouts.title'),
+                              title: getTermFromDictionary(language, 'checked_out_titles'),
                          }}
                     />
                     <Stack.Screen
                          name="MyCheckout"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyCheckouts' }}
                     />
@@ -89,7 +91,7 @@ const AccountStackNavigator = () => {
                        name="MyCheckout221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -98,7 +100,7 @@ const AccountStackNavigator = () => {
                          name="MyLists"
                          component={MyLists}
                          options={{
-                              title: translate('lists.title'),
+                              title: getTermFromDictionary(language, 'lists'),
                          }}
                     />
                     <Stack.Screen name="MyList" component={MyList} options={({ route }) => ({ title: route.params.title })} />
@@ -106,7 +108,7 @@ const AccountStackNavigator = () => {
                          name="ListItem"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyList' }}
                     />
@@ -114,7 +116,7 @@ const AccountStackNavigator = () => {
                        name="ListItem221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                    />
                </Stack.Group>
@@ -123,7 +125,7 @@ const AccountStackNavigator = () => {
                          name="MySavedSearches"
                          component={MySavedSearches}
                          options={{
-                              title: translate('saved_searches.title'),
+                              title: getTermFromDictionary(language, 'saved_searches'),
                          }}
                     />
                     <Stack.Screen
@@ -149,7 +151,7 @@ const AccountStackNavigator = () => {
                          name="SavedSearchItem"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MySavedSearch' }}
                     />
@@ -157,7 +159,7 @@ const AccountStackNavigator = () => {
                        name="SavedSearchItem221200"
                        component={GroupedWork221200}
                        options={({ route }) => ({
-                           title: route.params.title ?? translate('grouped_work.title'),
+                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                        })}
                        initialParams={{ prevRoute: 'MySavedSearch' }}
                    />
@@ -167,14 +169,14 @@ const AccountStackNavigator = () => {
                          name="MyReadingHistory"
                          component={MyReadingHistory}
                          options={{
-                              title: translate('reading_history.title'),
+                              title: getTermFromDictionary(language, 'reading_history'),
                          }}
                     />
                     <Stack.Screen
                          name="ItemDetails"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'MyReadingHistory' }}
                     />
@@ -184,7 +186,7 @@ const AccountStackNavigator = () => {
                     name="CopyDetails"
                     component={WhereIsIt}
                     options={({ navigation }) => ({
-                         title: translate('copy_details.where_is_it'),
+                         title: getTermFromDictionary(language, 'where_is_it'),
                          headerShown: true,
                          presentation: 'modal',
                          headerLeft: () => {
@@ -209,7 +211,7 @@ const AccountStackNavigator = () => {
                   name="CreateVDXRequest"
                   component={CreateVDXRequest}
                   options={({ navigation }) => ({
-                      title: translate('ill.request_title'),
+                      title: getTermFromDictionary(language, 'ill_request_title'),
                       presentation: 'modal',
                       headerLeft: () => {
                           return <></>;
