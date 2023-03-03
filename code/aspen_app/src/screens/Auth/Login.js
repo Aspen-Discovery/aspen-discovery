@@ -16,6 +16,8 @@ import { makeGreenhouseRequestAll, makeGreenhouseRequestNearby } from '../../uti
 import { GetLoginForm } from './LoginForm';
 import { SelectYourLibrary } from './SelectYourLibrary';
 import {LIBRARY} from '../../util/loadLibrary';
+import {getLibraryLoginLabels} from '../../util/api/library';
+import {getTranslation} from '../../translations/TranslationService';
 
 export default class Login extends Component {
      constructor(props) {
@@ -34,6 +36,8 @@ export default class Login extends Component {
                locationNum: 0,
                showModal: false,
                hasPendingChanges: false,
+               usernameLabel: 'Library Barcode',
+               passwordLabel: 'Password/PIN'
           };
           this._isMounted = false;
      }
@@ -204,6 +208,18 @@ export default class Login extends Component {
      setLibraryBranch = async (item) => {
           if (_.isObject(item) && !this.state.libraryName) {
                LIBRARY.url = item.baseUrl;
+
+               // get labels for login fields
+               const labels = await getLibraryLoginLabels(item.libraryId, item.baseUrl);
+               let username = this.state.usernameLabel;
+               let password = this.state.passwordLabel;
+               try {
+                    username = await getTranslation(labels.username ?? "Your Name", 'en', item.baseUrl);
+                    password = await getTranslation(labels.password ?? "Library Card Number", 'en', item.baseUrl);
+               } catch (e) {
+                    // couldn't fetch translated login terms for some reason, just use the default as backup
+               }
+
                this.setState({
                     libraryName: item.name,
                     libraryUrl: item.baseUrl,
@@ -213,6 +229,8 @@ export default class Login extends Component {
                     favicon: item.favicon,
                     logo: item.logo,
                     patronsLibrary: item,
+                    usernameLabel: username,
+                    passwordLabel: password,
                });
           }
      };
@@ -220,6 +238,18 @@ export default class Login extends Component {
      setNewLibraryBranch = async (item) => {
           if (_.isObject(item)) {
                LIBRARY.url = item.baseUrl;
+
+               // get labels for login fields
+               const labels = await getLibraryLoginLabels(item.libraryId, item.baseUrl);
+               let username = this.state.usernameLabel;
+               let password = this.state.passwordLabel;
+               try {
+                    username = await getTranslation(labels.username ?? "Your Name", 'en', item.baseUrl);
+                    password = await getTranslation(labels.password ?? "Library Card Number", 'en', item.baseUrl);
+               } catch (e) {
+                    // couldn't fetch translated login terms for some reason, just use the default as backup
+               }
+
                this.setState({
                     libraryName: item.name,
                     libraryUrl: item.baseUrl,
@@ -229,7 +259,10 @@ export default class Login extends Component {
                     favicon: item.favicon,
                     logo: item.logo,
                     patronsLibrary: item,
+                    usernameLabel: username,
+                    passwordLabel: password,
                });
+
           }
 
           this.handleModal(false);
@@ -253,7 +286,7 @@ export default class Login extends Component {
                     <Image source={{ uri: logo }} rounded={25} size="xl" alt={translate('app.name')} fallbackSource={require('../../themes/default/aspenLogo.png')} />
                     {LOGIN_DATA.showSelectLibrary || isCommunity ? <SelectYourLibrary libraryName={this.state.libraryName} uniqueLibraries={this.filterLibraries(LOGIN_DATA.nearbyLocations)} renderListItem={this.renderListItem} renderListHeader={this.renderListHeader} extraData={this.state.query} isRefreshing={this.state.isFetching} showModal={this.state.showModal} handleModal={this.handleModal} /> : null}
                     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} width="100%">
-                         {this.state.libraryName ? <GetLoginForm libraryName={this.state.libraryName} locationId={this.state.locationId} libraryId={this.state.libraryId} libraryUrl={this.state.libraryUrl} solrScope={this.state.solrScope} favicon={this.state.favicon} logo={this.state.logo} sessionId={this.state.sessionId} navigation={this.props.navigation} patronsLibrary={this.state.patronsLibrary} /> : null}
+                         {this.state.libraryName ? <GetLoginForm libraryName={this.state.libraryName} locationId={this.state.locationId} libraryId={this.state.libraryId} libraryUrl={this.state.libraryUrl} solrScope={this.state.solrScope} favicon={this.state.favicon} logo={this.state.logo} sessionId={this.state.sessionId} navigation={this.props.navigation} patronsLibrary={this.state.patronsLibrary} usernameLabel={this.state.usernameLabel} passwordLabel={this.state.passwordLabel}/> : null}
 
                          {isCommunity && Platform.OS !== 'android' ? (
                               <Button onPress={() => makeGreenhouseRequestNearby()} mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>

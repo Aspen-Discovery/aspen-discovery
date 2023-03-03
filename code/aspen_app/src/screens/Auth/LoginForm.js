@@ -47,6 +47,8 @@ export const GetLoginForm = (props) => {
      const { updateLanguage, updateLanguages } = React.useContext(LanguageContext);
      const patronsLibrary = props.patronsLibrary;
 
+     const {usernameLabel, passwordLabel} = props;
+
      const initialValidation = async () => {
          const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
          if(result.success) {
@@ -142,7 +144,7 @@ export const GetLoginForm = (props) => {
                               fontSize: 'sm',
                               fontWeight: 600,
                          }}>
-                         {translate('login.username')}
+                         {usernameLabel}
                     </FormControl.Label>
                     <Input
                          autoCapitalize="none"
@@ -166,7 +168,7 @@ export const GetLoginForm = (props) => {
                               fontSize: 'sm',
                               fontWeight: 600,
                          }}>
-                         {translate('login.password')}
+                         {passwordLabel}
                     </FormControl.Label>
                     <Input
                          variant="filled"
