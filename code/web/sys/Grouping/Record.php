@@ -555,7 +555,10 @@ class Grouping_Record {
 	/**
 	 * @param array $actions
 	 */
-	public function setActions(string $variationId, array $actions): void {
+	public function setActions(?string $variationId, array $actions): void {
+		if ($variationId == null) {
+			$variationId = 'any';
+		}
 		$this->_actions[$variationId] = $actions;
 	}
 
@@ -691,7 +694,7 @@ class Grouping_Record {
 		$result = 0;
 		global $indexingProfiles;
 
-		if (count($this->recordVariations) > 1){
+		if (!empty($this->recordVariations) && count($this->recordVariations) > 1){
 			foreach ($this->recordVariations as $variation) {
 				$formatValue = $variation->manifestation->format;
 				if (array_key_exists($this->source, $indexingProfiles)) {

@@ -84,7 +84,7 @@
 		                        {translate text="Reveal Password" isPublicFacing=true}
 		                    </label>
 
-		                    {if empty($inLibrary) && !$isOpac && !$isStandalonePage}
+		                    {if empty($inLibrary) && empty($isOpac) && empty($isStandalonePage)}
 		                        <label for="rememberMe" class="checkbox">
 		                            <input type="checkbox" id="rememberMe" name="rememberMe">
 		                            {translate text="Keep Me Signed In" isPublicFacing=true}
