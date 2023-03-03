@@ -1852,6 +1852,27 @@ class UserAPI extends Action {
 		}
 	}
 
+	function confirmHold(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$confirmationId = $_REQUEST['confirmationId'] ?? null;
+			$recordId = $_REQUEST['id'] ?? null;
+			if($confirmationId && $recordId) {
+				$result = $user->confirmHold($recordId, $confirmationId);
+			} else {
+				return [
+					'success' => false,
+					'message' => 'You must provide a record and confirmation id to confirm this hold.',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
 	function getValidPickupLocations(): array {
 		[
 			$username,
