@@ -14,7 +14,7 @@ import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { getStatusIndicator } from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
-import {decodeHTML} from '../../util/apiAuth';
+import {decodeHTML, stripHTML} from '../../util/apiAuth';
 
 export const Variations = (props) => {
      const route = useRoute();
@@ -61,7 +61,8 @@ export const Variations = (props) => {
      };
 
      const decodeMessage = (string) => {
-          return decodeHTML(string)
+          const withoutEntities = decodeHTML(string);
+          return stripHTML(withoutEntities)
      }
 
      return (

@@ -26,13 +26,22 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
 }
 
-//tar and gzip them
-exec("cd /tmp;tar -czf /data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz $serverName.$curDateTime.*");
+$backupFile = "/data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz";
 
-//TODO: optionally move the file to the Google backup bucket
+//tar and gzip them
+exec("cd /tmp;tar -czf $backupFile $serverName.$curDateTime.*");
+
+//Optionally move the file to the Google backup bucket
 // Load the system settings
-	// See if we have a bucket to backup to
-		//Perform the backup
+require_once ROOT_DIR . '/sys/SystemVariables.php';
+$systemVariables = new SystemVariables();
+
+// See if we have a bucket to backup to
+if ($systemVariables->find(true) && !empty($systemVariables->googleBucket)) {
+	//Perform the backup
+	$bucketName = $systemVariables->googleBucket;
+	exec("gsutil cp $backupFile gs://$bucketName/");
+}
 
 //Cleanup the files
 foreach ($allTables as $table) {
