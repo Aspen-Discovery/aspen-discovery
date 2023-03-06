@@ -132,7 +132,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		return null;
 	}
 
-	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
+	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, profile);
 
 		if (primaryIdentifier != null){
@@ -141,19 +141,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 			if (profile.isProcessRecordLinking()){
 				//Check to see if we have any 773 fields which identify the
-				List<DataField> analyticFields = marcRecord.getDataFields(773);
-				HashSet<String> parentRecords = new HashSet<>();
-				for (DataField analyticField : analyticFields){
-					Subfield linkingSubfield = analyticField.getSubfield('w');
-					if (linkingSubfield != null){
-						//Establish a link and suppress this record
-						String parentRecordId = linkingSubfield.getData();
-						//Remove anything in parentheses
-						parentRecordId = parentRecordId.replaceAll("\\(.*?\\)", "").trim();
-						parentRecords.add(parentRecordId);
-					}
-				}
+				HashSet<String> parentRecords = getParentRecordIds(marcRecord);
 				if (parentRecords.size() > 0){
+					String firstParentRecordId = null;
 					//Add the parent records to the database
 					try {
 						getExistingParentRecordsStmt.setString(1, primaryIdentifier.getIdentifier());
@@ -172,6 +162,9 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 
 						//Loop through the records to see if they need to be added
 						for (String parentRecordId : parentRecords){
+							if (firstParentRecordId == null) {
+								firstParentRecordId = parentRecordId;
+							}
 							if (existingParentRecords.containsKey(parentRecordId)){
 								try{
 									if (!existingParentRecords.get(parentRecordId).equals(title)){
@@ -210,6 +203,16 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 					//MDN 9/24/22 even if the record has parents, we want to group it so we have information about
 					//the record, and it's items in the database.
 					//return null;
+
+					//if the record does have a parent, we're going to cheat a bit and use the info for the parent record when grouping
+					if (firstParentRecordId != null) {
+						Record parentMarcRecord = indexer.loadMarcRecordFromDatabase(profile.getName(), firstParentRecordId, logEntry);
+						if (parentMarcRecord == null) {
+							indexer.forceRecordReindex(primaryIdentifier.getType(), primaryIdentifier.getIdentifier());
+						} else {
+							workForTitle = setupBasicWorkForIlsRecord(parentMarcRecord);
+						}
+					}
 				}
 			}
 
@@ -345,7 +348,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 			Record marcRecord = indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), recordIdentifier, logEntry);
 			if (marcRecord != null) {
 				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
-				String groupedWorkId = processMarcRecord(marcRecord, false, null);
+				String groupedWorkId = processMarcRecord(marcRecord, false, null, indexer);
 				if (originalGroupedWorkId == null || !originalGroupedWorkId.equals(groupedWorkId)) {
 					logEntry.incChangedAfterGrouping();
 					//process records to regroup after every 1000 changes so we keep up with the changes.
@@ -364,5 +367,21 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		indexingProfile.clearRegroupAllRecords(dbConn, logEntry);
 		logEntry.addNote("Finished regrouping all records");
 		logEntry.saveResults();
+	}
+
+	public HashSet<String> getParentRecordIds(Record record) {
+		List<DataField> analyticFields = record.getDataFields(773);
+		HashSet<String> parentRecords = new HashSet<>();
+		for (DataField analyticField : analyticFields){
+			Subfield linkingSubfield = analyticField.getSubfield('w');
+			if (linkingSubfield != null){
+				//Establish a link and suppress this record
+				String parentRecordId = linkingSubfield.getData();
+				//Remove anything in parentheses
+				parentRecordId = parentRecordId.replaceAll("\\(.*?\\)", "").trim();
+				parentRecords.add(parentRecordId);
+			}
+		}
+		return parentRecords;
 	}
 }

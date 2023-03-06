@@ -3,6 +3,7 @@ import _ from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { HStack, Box, Button, Center, Icon, Image, ScrollView, Text, FlatList, AlertDialog } from 'native-base';
 import React, {Component, useEffect} from 'react';
+import { useToken } from 'native-base';
 import { Rating } from 'react-native-elements';
 
 // custom components and helper files
@@ -25,11 +26,12 @@ import {SafeAreaView} from 'react-native';
 import {GetOverDriveSettings} from './OverDriveSettings';
 import {getProfile, PATRON} from '../../util/loadPatron';
 import Manifestation from './Manifestation';
+import {decodeHTML} from '../../util/apiAuth';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
      const id = route.params.id;
-     const { locations, accounts, updatePickupLocations, updateLinkedAccounts } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, updatePickupLocations, updateLinkedAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
@@ -43,9 +45,12 @@ export const GroupedWorkScreen = () => {
                     if (isSubscribed) {
                          updateGroupedWork(data);
                          updateFormat(data.format);
-                         await getLinkedAccounts(library.baseUrl).then((result) => {
-                              if (accounts !== result) {
-                                   updateLinkedAccounts(result);
+                         await getLinkedAccounts(user, cards, library).then((result) => {
+                              if (accounts !== result.accounts) {
+                                   updateLinkedAccounts(result.accounts);
+                              }
+                              if(cards !== result.cards) {
+                                  updateLibraryCards(result.cards);
                               }
                          });
                          await getPickupLocations(library.baseUrl).then((result) => {
@@ -86,13 +91,14 @@ export const GroupedWorkScreen = () => {
 };
 
 const DisplayGroupedWork = (payload) => {
+     const backgroundColor = useToken('colors', 'warmGray.200');
      const groupedWork = payload.data;
      const { format } = React.useContext(GroupedWorkContext);
 
      return (
           <Box safeArea={5} w="100%">
                <Center mt={5} width="100%">
-                    <Image resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} shadow={3} style={{ borderRadius: 4 }} />
+                    <Image resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} shadow={3} style={{ borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>
@@ -151,7 +157,7 @@ const getDescription = (description) => {
      if (description) {
           return (
                <Text mt={5} mb={5} fontSize={{ base: 'md', lg: 'lg' }} lineHeight={{ base: '22px', lg: '26px' }}>
-                    {description}
+                    {decodeHTML(description)}
                </Text>
           );
      } else {

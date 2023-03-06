@@ -4,6 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import _ from 'lodash';
 import React, { useEffect } from 'react';
 import base64 from 'react-native-base64';
+import {decode} from 'html-entities';
 
 import { GLOBALS } from './globals';
 
@@ -171,6 +172,13 @@ export function getResponseCode(payload) {
  **/
 export function stripHTML(string) {
      return string.replace(/(<([^>]+)>)/gi, '');
+}
+
+/**
+ * Decode HTML entities in a string
+ **/
+export function decodeHTML(string) {
+     return decode(string);
 }
 
 /**

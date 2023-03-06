@@ -84,6 +84,12 @@ class WebBuilder_PortalRows extends ObjectEditor {
 		]);
 	}
 
+	function canBulkEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Custom Pages',
+		]);
+	}
+
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}

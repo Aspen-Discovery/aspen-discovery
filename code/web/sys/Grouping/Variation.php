@@ -115,7 +115,7 @@ class Grouping_Variation {
 				$this->_actions = [];
 			} elseif ($this->getNumRelatedRecords() == 1) {
 				$firstRecord = $this->getFirstRecord();
-				$this->_actions = $firstRecord->getActions();
+				$this->_actions = $firstRecord->getActions($this->databaseId);
 			} else {
 				//Figure out what the preferred record is to place a hold on.  Since sorting has been done properly, this should always be the first
 				$bestRecord = $this->getFirstRecord();
@@ -132,17 +132,17 @@ class Grouping_Variation {
 					}
 					if ($promptForAlternateEdition) {
 						$alteredActions = [];
-						foreach ($bestRecord->getActions() as $action) {
+						foreach ($bestRecord->getActions($this->databaseId) as $action) {
 							$action['onclick'] = str_replace('Record.showPlaceHold(', 'Record.showPlaceHoldEditions(', $action['onclick']);
 							$alteredActions[] = $action;
 						}
 						$this->_actions = $alteredActions;
 					} else {
-						$this->_actions = $bestRecord->getActions();
+						$this->_actions = $bestRecord->getActions($this->databaseId);
 					}
 					$timer->logTime("Done checking for whether or not we should be prompting for an alternate edition");
 				} else {
-					$this->_actions = $bestRecord->getActions();
+					$this->_actions = $bestRecord->getActions($this->databaseId);
 				}
 
 				//Check to see if there are any downloadable files for the related records and if so make sure we have an action to download them.
@@ -151,7 +151,7 @@ class Grouping_Variation {
 				$numDownloadableSupplementalFiles = 0;
 				$downloadSupplementalFileAction = '';
 				foreach ($this->_records as $relatedRecord) {
-					$actions = $relatedRecord->getActions();
+					$actions = $relatedRecord->getActions($this->databaseId);
 					foreach ($actions as $action) {
 						if(isset($action['type'])) {
 							if ($action['type'] == 'download_pdf') {

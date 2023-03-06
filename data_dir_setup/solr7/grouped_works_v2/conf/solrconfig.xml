@@ -938,6 +938,8 @@
         era^50
         genre_facet^50
         geographic_facet^50
+        personal_name_facet^50
+        corporate_name_facet^50
         mpaa_rating
         accelerated_reader_interest_level
       </str>

@@ -15,15 +15,21 @@ class Grouping_Record {
 	public $publicationDate;
 	public $physical;
 	public $closedCaptioned;
+	public $variationFormat;
+	public $variationId;
+	/** @var Grouping_Variation[] */
+	public $recordVariations;
+	public $hasParentRecord;
+	public $hasChildRecord;
 
-	public $_driver;
-	public $_url;
-	public $_callNumber = '';
+	protected $_driver;
+	protected $_url;
+	protected $_callNumber = '';
 
 	/** @var Grouping_StatusInformation */
-	private $_statusInformation;
+	protected $_statusInformation;
 
-	public $_isEContent = false;
+	protected $_isEContent = false;
 	public $_eContentSource;
 	public $_volumeHolds;
 	public $_hasLocalItem = false;
@@ -57,7 +63,7 @@ class Grouping_Record {
 	 * @param string $source
 	 * @param bool $useAssociativeArray
 	 */
-	public function __construct($recordId, $recordDetails, $recordDriver, $volumeData, $source, $useAssociativeArray = false) {
+	public function __construct(string $recordId, array $recordDetails, GroupedWorkSubDriver $recordDriver, array $volumeData, string $source, bool $useAssociativeArray = false) {
 		$this->_driver = $recordDriver;
 		$this->_url = $recordDriver != null ? $recordDriver->getRecordUrl() : '';
 		$this->id = $recordId;
@@ -73,6 +79,8 @@ class Grouping_Record {
 			if (isset($recordDetails['isClosedCaptioned'])) {
 				$this->closedCaptioned = $recordDetails['isClosedCaptioned'];
 			}
+			$this->hasParentRecord = $recordDetails['hasParentRecord'];
+			$this->hasChildRecord = $recordDetails['hasChildRecord'];
 		} else {
 			$this->format = $recordDetails[1];
 			$this->formatCategory = $recordDetails[2];
@@ -456,13 +464,18 @@ class Grouping_Record {
 	public function getItemDetails(): array {
 		if (empty($this->_itemDetails)) {
 			foreach ($this->_items as $item) {
-				$key = $item->getSummaryKey();
-				$itemSummary = $item->getSummary();
-				$this->addItemDetails($key . $item->itemId, $itemSummary);
-				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+				if (!$item->isVirtual) {
+					$key = $item->getSummaryKey();
+					$itemSummary = $item->getSummary();
+					$this->addItemDetails($key . $item->itemId, $itemSummary);
+					$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+				}
 			}
 			$this->sortItemDetails();
 			$this->sortItemSummary();
+			if ($this->_itemsDisplayedByDefault == null) {
+				$this->_itemsDisplayedByDefault = [];
+			}
 		}
 		return $this->_itemDetails;
 	}
@@ -503,37 +516,50 @@ class Grouping_Record {
 		$this->_callNumber = $callNumber;
 	}
 
-	private $_allActions = null;
+	private $_allActions = [];
 
 	/**
 	 * @return array
 	 */
-	public function getActions(): array {
-		if ($this->_allActions == null) {
+	public function getActions($variationId = ''): array {
+		if (empty($variationId)) {
+			$variationId = 'any';
+		}
+		if (!array_key_exists($variationId, $this->_allActions)) {
+			$this->_allActions[$variationId] = [];
+
 			//TODO: Add volume information
-			if ($this->_driver != null) {
-				$this->setActions($this->_driver->getRecordActions($this, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
+			if ($this->getDriver() != null) {
+				$this->setActions($variationId, $this->getDriver()->getRecordActions($this, $variationId, $this->getStatusInformation()->isAvailableLocally() || $this->getStatusInformation()->isAvailableOnline(), $this->isHoldable(), []));
 			}
 
-			$actionsToReturn = $this->_actions;
-			if (empty($this->_actions) && $this->_driver != null) {
+			$actionsToReturn = $this->_actions[$variationId];
+			if (is_null($actionsToReturn)) {
+				$actionsToReturn = [];
+			}
+			if (empty($this->_allActions[$variationId]) && $this->getDriver() != null) {
 				foreach ($this->_items as $item) {
-					$item->setActions($this->_driver->getItemActions($item));
-					$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+					if ($item->variationId == $variationId || $variationId == 'any') {
+						$item->setActions($this->getDriver()->getItemActions($item));
+						$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+					}
 				}
 			}
 
-			$this->_allActions = $actionsToReturn;
+			$this->_allActions[$variationId] = $actionsToReturn;
 		}
 
-		return $this->_allActions;
+		return $this->_allActions[$variationId];
 	}
 
 	/**
 	 * @param array $actions
 	 */
-	public function setActions(array $actions): void {
-		$this->_actions = $actions;
+	public function setActions(?string $variationId, array $actions): void {
+		if ($variationId == null) {
+			$variationId = 'any';
+		}
+		$this->_actions[$variationId] = $actions;
 	}
 
 	/**
@@ -626,15 +652,25 @@ class Grouping_Record {
 	/**
 	 * @return null|GroupedWorkSubDriver
 	 */
-	function getDriver() {
+	function getDriver() : ?GroupedWorkSubDriver{
+		if (is_null($this->_driver)) {
+			require_once ROOT_DIR . '/RecordDrivers/RecordDriverFactory.php';
+			$this->_driver = RecordDriverFactory::initRecordDriverById($this->id);
+		}
 		return $this->_driver;
 	}
 
-	public function getItems() {
+	/**
+	 * @return Grouping_Item[]
+	 */
+	public function getItems() : array {
 		return $this->_items;
 	}
 
-	public function getVolumeData() {
+	/**
+	 * @return IlsVolumeInfo[]
+	 */
+	public function getVolumeData() : array{
 		return $this->_volumeData;
 	}
 
@@ -657,6 +693,28 @@ class Grouping_Record {
 	public function getHoldPickupSetting() {
 		$result = 0;
 		global $indexingProfiles;
+
+		if (!empty($this->recordVariations) && count($this->recordVariations) > 1){
+			foreach ($this->recordVariations as $variation) {
+				$formatValue = $variation->manifestation->format;
+				if (array_key_exists($this->source, $indexingProfiles)) {
+					$indexingProfile = $indexingProfiles[$this->source];
+					$formatMap = $indexingProfile->formatMap;
+					//Loop through the format map
+					/** @var FormatMapValue $formatMapValue */
+					//Check for a format with a hold type that is not 'none'
+					foreach ($formatMap as $formatMapValue) {
+						if (strcasecmp($formatMapValue->format, $formatValue) === 0) {
+							$holdType = $formatMapValue->holdType;
+							if ($holdType != 'none') {
+								return max($result, $formatMapValue->pickupAt);
+							}
+						}
+					}
+				}
+			}
+		}
+		//if only one variation or if all hold types are 'none'
 		if (array_key_exists($this->source, $indexingProfiles)) {
 			$indexingProfile = $indexingProfiles[$this->source];
 			$formatMap = $indexingProfile->formatMap;
@@ -671,5 +729,9 @@ class Grouping_Record {
 			}
 		}
 		return $result;
+	}
+
+	public function discardDriver() {
+		$this->_driver = null;
 	}
 }

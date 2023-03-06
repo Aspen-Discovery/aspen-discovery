@@ -59,7 +59,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 
 	//Full record display
 	public $show856LinksAsTab;
-	public $show856LinksAsAccessOnlineButtons;
+//	public $show856LinksAsAccessOnlineButtons;
 	public $showCheckInGrid;
 	public $showStaffView;
 	public $showLCSubjects; // Library of Congress Subjects
@@ -203,7 +203,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 									3 => 'Show Where Is It link only',
 								],
 								'label' => 'Copy Information to show',
-								'description' => 'What to show for copy summary and where is it link.',
+								'description' => 'What to show for copy summary and in the Where Is It link.',
 								'hideInLists' => true,
 							],
 							'showInSearchResultsMainDetails' => [
@@ -232,7 +232,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 								'property' => 'showRelatedRecordLabels',
 								'type' => 'checkbox',
 								'label' => 'Show Related Record Labels',
-								'description' => 'Turn on to show labels next to information about the records that make up information about a record in a format',
+								'description' => 'Turn on to show labels next to edition information in grouped works. Ex: Published, Physical Description, etc',
 								'default' => true,
 								'hideInLists' => true,
 							],
@@ -434,14 +434,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 						'hideInLists' => true,
 						'default' => 1,
 					],
-					'show856LinksAsAccessOnlineButtons' => [
-						'property' => 'show856LinksAsAccessOnlineButtons',
-						'type' => 'checkbox',
-						'label' => 'Show 856 Links as Access Online Buttons',
-						'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.',
-						'hideInLists' => true,
-						'default' => 0,
-					],
+//					'show856LinksAsAccessOnlineButtons' => [
+//						'property' => 'show856LinksAsAccessOnlineButtons',
+//						'type' => 'checkbox',
+//						'label' => 'Show 856 Links as Access Online Buttons',
+//						'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 will be shown as access online buttons.',
+//						'hideInLists' => true,
+//						'default' => 0,
+//					],
 					'showCheckInGrid' => [
 						'property' => 'showCheckInGrid',
 						'type' => 'checkbox',

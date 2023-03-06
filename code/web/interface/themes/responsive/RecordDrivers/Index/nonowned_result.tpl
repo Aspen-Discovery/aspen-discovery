@@ -13,7 +13,7 @@
 					<span class="result-title notranslate">
 					{if !$record.title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$record.title|removeTrailingPunctuation|truncate:180:"..."|highlight}{/if}
 					{if !empty($record.volume)}
-						, {$record.series}{if !empty($record.volume)}<strong> {translate text="volume %1%" 1=$record.volume isPublicFacing=true}</strong>{/if}&nbsp;
+						, {$record.series}{if !empty($record.volume)}<strong> {translate text="volume %1%" 1=$record.volume|format_float_with_min_decimals isPublicFacing=true}</strong>{/if}&nbsp;
 					{/if}
 					</span>
 				</div>

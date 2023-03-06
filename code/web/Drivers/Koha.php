@@ -193,6 +193,10 @@ class Koha extends AbstractIlsDriver {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'surname', 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 
+				if($this->getKohaVersion() >= 22.11) {
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+				}
+
 				// Patron extended attributes
 				if ($this->getKohaVersion() > 21.05) {
 					$extendedAttributes = $this->setExtendedAttributes();
@@ -271,10 +275,10 @@ class Koha extends AbstractIlsDriver {
 				}
 
 				$postVariables = [];
-				if (!isset($_REQUEST['library_id']) || $_REQUEST['library_id'] == -1) {
+				if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1) {
 					$postVariables['borrower_branchcode'] = $patron->getHomeLocation()->code;
 				} else {
-					$postVariables = $this->setPostField($postVariables, 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_branchcode');
 				}
 				$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 				$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
@@ -1159,7 +1163,22 @@ class Koha extends AbstractIlsDriver {
 
 			//Borrowed from C4:Members.pm
 			/** @noinspection SqlResolve */
-			$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
+			if($this->getKohaVersion() >= 22.11) {
+				$readingHistoryTitleSql = "SELECT issues.*,issues.renewals_count AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
+				FROM issues
+				LEFT JOIN items on items.itemnumber=issues.itemnumber
+				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "'
+				UNION ALL
+				SELECT old_issues.*,old_issues.renewals_count AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
+				FROM old_issues
+				LEFT JOIN items on items.itemnumber=old_issues.itemnumber
+				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
+				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
+				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+			} else {
+				$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM issues
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
@@ -1172,6 +1191,7 @@ class Koha extends AbstractIlsDriver {
 				LEFT JOIN biblio ON items.biblionumber=biblio.biblionumber
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
 				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+			}
 			$readingHistoryTitleRS = mysqli_query($this->dbConnection, $readingHistoryTitleSql);
 			if ($readingHistoryTitleRS) {
 				while ($readingHistoryTitleRow = $readingHistoryTitleRS->fetch_assoc()) {
@@ -1851,9 +1871,10 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
+		$allowUserToChangeBranch = $this->getKohaSystemPreference('OPACAllowUserToChangeBranch', 'none');
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
+		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron, items.itype, reserves.branchcode FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
 		while ($curRow = $results->fetch_assoc()) {
 			//Each row in the table represents a hold
@@ -1917,15 +1938,51 @@ class Koha extends AbstractIlsDriver {
 					$curHold->status .= ' until ' . date("m/d/Y", strtotime($curRow['suspend_until']));
 				}
 				$curHold->locationUpdateable = true;
+				if($this->getKohaVersion() >= 22.11) {
+					if(strpos($allowUserToChangeBranch, 'suspended') !== false) {
+						$curHold->locationUpdateable = true;
+					} else {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			} elseif ($curRow['found'] == 'W') {
-				$curHold->cancelable = false;
+				$canCancelWaitingHold = false;
+				if($this->getKohaVersion() >= 22.11) {
+					$patronType = $patron->patronType;
+					$itemType = $curRow['itype'];
+					$checkoutBranch = $curRow['branchcode'];
+					/** @noinspection SqlResolve */
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+					if ($issuingRulesRS !== false) {
+						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+							if($issuingRulesRow['rule_value'] == 1 || $issuingRulesRow['rule_value'] == '1') {
+								$canCancelWaitingHold = true;
+							}
+						}
+						$issuingRulesRS->close();
+					}
+				}
+				$curHold->cancelable = $canCancelWaitingHold;
 				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
+				if($this->getKohaVersion() >= 22.11) {
+					if(strpos($allowUserToChangeBranch, 'intransit') !== false) {
+						$curHold->locationUpdateable = true;
+					}
+				}
 			} else {
 				$curHold->status = "Pending";
 				$curHold->canFreeze = $patron->getHomeLibrary()->allowFreezeHolds;
 				$curHold->locationUpdateable = true;
+				if($this->getKohaVersion() >= 22.11) {
+					if(strpos($allowUserToChangeBranch, 'pending') !== false) {
+						$curHold->locationUpdateable = true;
+					} else {
+						$curHold->locationUpdateable = false;
+					}
+				}
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
 
@@ -1983,21 +2040,81 @@ class Koha extends AbstractIlsDriver {
 
 			//Post a request to koha
 			foreach ($holdKeys as $holdKey) {
-				$holdParams = [
-					'service' => 'CancelHold',
-					'patron_id' => $patron->username,
-					'item_id' => $holdKey,
-				];
+				if($this->getKohaVersion() >= 22.11) {
+					// Store result for API or app use
+					$result['api'] = [];
 
-				$cancelHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
-				$cancelHoldResponse = $this->getXMLWebServiceResponse($cancelHoldURL);
-				ExternalRequestLogEntry::logRequest('koha.cancelHold', 'GET', $cancelHoldURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $cancelHoldResponse, []);
+					$result = [
+						'success' => false,
+						'message' => 'Unknown error canceling hold.',
+					];
 
-				//Parse the result
-				if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
-					//We cancelled the hold
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Unable to cancel hold',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => 'Unknown error canceling hold.',
+						'isPublicFacing' => true,
+					]);
+					$oauthToken = $this->getOAuthToken();
+					if ($oauthToken == false) {
+						$result['message'] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+
+						// Result for API or app use
+						$result['api']['message'] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$this->apiCurlWrapper->addCustomHeaders([
+							'Authorization: Bearer ' . $oauthToken,
+							'User-Agent: Aspen Discovery',
+							'Accept: */*',
+							'Cache-Control: no-cache',
+							'Content-Type: application/json',
+							'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+							'Accept-Encoding: gzip, deflate',
+						], true);
+						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
+						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
+						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
+						if ($this->apiCurlWrapper->getResponseCode() !== 204) {
+							$cancel_response = json_decode($response, false);
+							$allCancelsSucceed = false;
+							if (isset($cancel_response->error)) {
+								$result['message'] = translate([
+									'text' => $cancel_response->error,
+									'isPublicFacing' => true,
+								]);
+								$result['success'] = false;
+								$result['api']['message'] = translate([
+									'text' => $cancel_response->error,
+									'isPublicFacing' => true,
+								]);
+							}
+						}
+					}
 				} else {
-					$allCancelsSucceed = false;
+					$holdParams = [
+						'service' => 'CancelHold',
+						'patron_id' => $patron->username,
+						'item_id' => $holdKey,
+					];
+					$cancelHoldURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($holdParams);
+					$cancelHoldResponse = $this->getXMLWebServiceResponse($cancelHoldURL);
+					ExternalRequestLogEntry::logRequest('koha.cancelHold', 'GET', $cancelHoldURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $cancelHoldResponse, []);
+
+					//Parse the result
+					if (isset($cancelHoldResponse->code) && ($cancelHoldResponse->code == 'Cancelled' || $cancelHoldResponse->code == 'Canceled')) {
+						//We cancelled the hold
+					} else {
+						$allCancelsSucceed = false;
+					}
 				}
 			}
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
@@ -2248,7 +2365,12 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$this->initDatabaseConnection();
 			/** @noinspection SqlResolve */
-			$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
+			if($this->getKohaVersion() >= 22.11) {
+				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals_count from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
+			} else {
+				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
+			}
+
 			$renewResults = mysqli_query($this->dbConnection, $renewSql);
 			$maxRenewals = 0;
 
@@ -2270,7 +2392,11 @@ class Koha extends AbstractIlsDriver {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
 					$checkoutBranch = $curRow['branchcode'];
-					$renewCount = $curRow['renewals'] + 1;
+					if ($this->getKohaVersion() >= 22.11) {
+						$renewCount = $curRow['renewals_count'] + 1;
+					} else {
+						$renewCount = $curRow['renewals'] + 1;
+					}
 					/** @noinspection SqlResolve */
 					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
@@ -2732,17 +2858,24 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 
-				$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
 				$postParams = [];
 
-				$postParams['pickup_library_id'] = $newPickupLocation;
-				$postParams['priority'] = $currentHold->priority;
-				if ($this->getKohaVersion() >= 21.05) {
-					$method = 'PATCH';
-				} else {
+				if($this->getKohaVersion() >= 22.11) {
+					$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId/pickup_location";
+					$postParams['pickup_library_id'] = $newPickupLocation;
 					$method = 'PUT';
-					$postParams['branchcode'] = $newPickupLocation;
+				} else {
+					$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$itemToUpdateId";
+					$postParams['pickup_library_id'] = $newPickupLocation;
+					$postParams['priority'] = $currentHold->priority;
+					if ($this->getKohaVersion() >= 21.05) {
+						$method = 'PATCH';
+					} else {
+						$method = 'PUT';
+						$postParams['branchcode'] = $newPickupLocation;
+					}
 				}
+
 				$postParams = json_encode($postParams);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, $method, $postParams);
 				ExternalRequestLogEntry::logRequest('koha.changeHoldPickupLocation', $method, $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
@@ -3125,6 +3258,18 @@ class Koha extends AbstractIlsDriver {
 
 			],
 		];
+
+		if($this->getKohaVersion() >= 22.11) {
+			$fields['identitySection']['properties']['borrower_pronouns'] = [
+				'property' => 'borrower_pronouns',
+				'type' => 'text',
+				'label' => 'Pronouns',
+				'description' => 'Pronouns',
+				'maxLength' => 128,
+				'required' => false,
+				'autocomplete' => false,
+			];
+		}
 
 		if (empty($library->validSelfRegistrationStates)) {
 			$borrowerStateField = [
@@ -3875,6 +4020,10 @@ class Koha extends AbstractIlsDriver {
 				$postVariables['category_id'] = $_REQUEST['category_id'];
 			}
 
+			if($this->getKohaVersion() >= 22.11) {
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+			}
+
 			// Patron extended attributes
 			if ($this->getKohaVersion() > 21.05) {
 				$extendedAttributes = $this->setExtendedAttributes();
@@ -4008,6 +4157,8 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$mandatoryFields = [];
 		}
+		//Make sure that title is always required
+		$mandatoryFields['title'] = true;
 
 
 		/** @noinspection SqlResolve */
@@ -5028,6 +5179,30 @@ class Koha extends AbstractIlsDriver {
 		return false;
 	}
 
+
+	public function findUserByField($field, $value) {
+		// Check the Koha database to see if the patron exists
+		//Use MySQL connection to load data
+		$this->initDatabaseConnection();
+
+		/** @noinspection SqlResolve */
+		$sql = "SELECT borrowernumber, cardnumber, " . mysqli_escape_string($this->dbConnection, $field) . " from borrowers where " . mysqli_escape_string($this->dbConnection, $field) . " = '" . mysqli_escape_string($this->dbConnection, $value) . "'";
+
+		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+		if ($lookupUserResult->num_rows == 1) {
+			$lookupUserRow = $lookupUserResult->fetch_assoc();
+			$patronId = $lookupUserRow['borrowernumber'];
+			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			if (!empty($newUser) && !($newUser instanceof AspenError)) {
+				return $newUser;
+			}
+		} else if ($lookupUserResult->num_rows > 1) {
+			return 'Found more than one user.';
+		}
+
+		return false;
+	}
+
 	/**
 	 * @return bool
 	 */
@@ -5171,6 +5346,39 @@ class Koha extends AbstractIlsDriver {
 			$validNoticeDays[$i] = $i;
 		}
 		$interface->assign('validNoticeDays', $validNoticeDays);
+
+		$canTranslateNotices = $this->getKohaSystemPreference('TranslateNotices', 0);
+		$noticeLanguages['default'] = 'Default';
+		$preferredNoticeLanguage = 'default';
+		if($canTranslateNotices) {
+			$languages = $this->getKohaSystemPreference('OPACLanguages', []);
+			$languages = explode(',', $languages);
+			foreach($languages as $language) {
+				$languageLocale = explode('-', $language);
+				/** @noinspection SqlResolve */
+				if(array_key_exists(1, $languageLocale)) {
+					$languageSql = "SELECT subtag, lang, description FROM language_descriptions where subtag = '$languageLocale[0]' AND lang = '$languageLocale[1]'";
+				} else {
+					$languageSql = "SELECT subtag, lang, description FROM language_descriptions where subtag = '$languageLocale[0]' AND lang = '$languageLocale[0]'";
+				}
+				$languageRS = mysqli_query($this->dbConnection, $languageSql);
+				if ($languageRow = $languageRS->fetch_assoc()) {
+					$noticeLanguages[$language] = $languageRow['description'] . " (" . $language . ")";
+				} else {
+					$noticeLanguages[$language] = $language;
+				}
+			}
+			/** @noinspection SqlResolve */
+			$borrowerLanguageSql = "SELECT lang FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
+			$borrowerLanguageRS = mysqli_query($this->dbConnection, $borrowerLanguageSql);
+			if ($borrowerLanguageRow = $borrowerLanguageRS->fetch_assoc()) {
+				$preferredNoticeLanguage = $borrowerLanguageRow['lang'];
+			}
+
+		}
+		$interface->assign('canTranslateNotices', $canTranslateNotices);
+		$interface->assign('noticeLanguages', $noticeLanguages);
+		$interface->assign('preferredNoticeLanguage', $preferredNoticeLanguage);
 
 		$library = $patron->getHomeLibrary();
 		if ($library != null && $library->allowProfileUpdates) {
@@ -6578,11 +6786,13 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	/*
-		Map from the property names required for self registration to
-		the IdP property names returned from SAML2Authentication
-	*/
-	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber): mixed {
+	/**
+	 * Map from the property names required for self registration to
+	 * the IdP property names returned from SAML2Authentication
+	 *
+	 * @return array|bool
+	 */
+	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
 		$categoryId = 'ssoCategoryIdAttr';
 		$categoryIdFallback = 'ssoCategoryIdFallback';
 		if($isStaffUser) {

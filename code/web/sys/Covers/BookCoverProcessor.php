@@ -1189,7 +1189,7 @@ class BookCoverProcessor {
 						return true;
 					}
 				}
-				$driver = $relatedRecord->_driver;
+				$driver = $relatedRecord->getDriver();
 				if ($driver != null) {
 					//First check to see if there is a specific record defined in an 856 etc.
 					if ($driver->hasMarcRecord() && $this->getCoverFromMarc($driver->getMarcRecord())) {
@@ -1552,14 +1552,16 @@ class BookCoverProcessor {
 	}
 
 	private function getUploadedGroupedWorkCover($permanentId) {
-		$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
-		if (file_exists($uploadedImage)) {
-			return $this->processImageURL('upload', $uploadedImage);
-		} elseif (strlen($permanentId) == 40) {
-			$permanentId = substr($permanentId, 0, 36);
+		if($this->bookCoverInfo->imageSource == 'upload') {
 			$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
 			if (file_exists($uploadedImage)) {
 				return $this->processImageURL('upload', $uploadedImage);
+			} elseif (strlen($permanentId) == 40) {
+				$permanentId = substr($permanentId, 0, 36);
+				$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
+				if (file_exists($uploadedImage)) {
+					return $this->processImageURL('upload', $uploadedImage);
+				}
 			}
 		}
 		return false;

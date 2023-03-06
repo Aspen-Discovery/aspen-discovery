@@ -9,7 +9,7 @@ import {reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount} f
 // custom components and helper files
 
 const AddLinkedAccount = () => {
-     const { user, accounts, viewers, updateUser, updateLinkedAccounts, updateLinkedViewerAccounts } = React.useContext(UserContext);
+     const { user, accounts, viewers, cards, updateUser, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [loading, setLoading] = useState(false);
      const [showModal, setShowModal] = useState(false);
@@ -27,9 +27,12 @@ const AddLinkedAccount = () => {
      };
 
      const refreshLinkedAccounts = async () => {
-          await getLinkedAccounts(library.baseUrl).then((result) => {
-               if (accounts !== result) {
-                    updateLinkedAccounts(result);
+          await getLinkedAccounts(user, cards, library).then((result) => {
+               if (accounts !== result.accounts) {
+                    updateLinkedAccounts(result.accounts);
+               }
+               if(cards !== result.cards) {
+                    updateLibraryCards(result.cards);
                }
           });
           await getViewerAccounts(library.baseUrl).then((result) => {

@@ -22,9 +22,9 @@ abstract class MarcRecordProcessor {
 	protected GroupedWorkIndexer indexer;
 	protected BaseIndexingSettings settings;
 	protected String profileType;
-	private static final Pattern mpaaRatingRegex1 = Pattern.compile("(?:.*?)Rated\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
-	private static final Pattern mpaaRatingRegex2 = Pattern.compile("(?:.*?)(G|PG-13|PG|R|NC-17|NR|X)\\sRated(?:.*)", Pattern.CANON_EQ);
-	private static final Pattern mpaaRatingRegex3 = Pattern.compile("(?:.*?)MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X)(?:.*)", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex1 = Pattern.compile(".*?Rated\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex2 = Pattern.compile(".*?(G|PG-13|PG|R|NC-17|NR|X)\\sRated.*", Pattern.CANON_EQ);
+	private static final Pattern mpaaRatingRegex3 = Pattern.compile(".*?MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
 	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
@@ -146,11 +146,14 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-
-							groupedWork.addTopic(curSubfield.getData());
+							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+								groupedWork.addTopic(curSubfield.getData());
+							}
 						}
 						if (curSubfield.getCode() == 'a' || curSubfield.getCode() == 'x') {
-							groupedWork.addTopicFacet(curSubfield.getData());
+							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+								groupedWork.addTopicFacet(curSubfield.getData());
+							}
 						} else if (curSubfield.getCode() == 'v') {
 							groupedWork.addGenreFacet(curSubfield.getData());
 						} else if (curSubfield.getCode() == 'z') {
@@ -170,8 +173,9 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-
-							groupedWork.addTopic(curSubfield.getData());
+							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+								groupedWork.addTopic(curSubfield.getData());
+							}
 						}
 						if (curSubfield.getCode() == 'x') {
 							groupedWork.addTopicFacet(curSubfield.getData());
@@ -386,16 +390,27 @@ abstract class MarcRecordProcessor {
 
 	}
 
-	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory) {
-		loadTitles(groupedWork, record, format, formatCategory);
+	void updateGroupedWorkSolrDataBasedOnStandardMarcData(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String format, String formatCategory, boolean hasParentRecord) {
+		loadTitles(groupedWork, record, format, formatCategory, hasParentRecord);
 		loadAuthors(groupedWork, record, identifier);
 		loadSubjects(groupedWork, record);
+
+		List<DataField> personalNameFields = MarcUtil.getDataFields(record, 600);
+		for (DataField nameField : personalNameFields) {
+			String name = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(nameField, "abd", "")).toString();
+			groupedWork.addPersonalNameSubject(name);
+		}
+		List<DataField> corporateNameFields = MarcUtil.getDataFields(record, 610);
+		for (DataField nameField : corporateNameFields) {
+			String name = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(nameField, "abd", "")).toString();
+			groupedWork.addCorporateNameSubject(name);
+		}
 
 		boolean foundSeriesIn800or830 = false;
 		List<DataField> seriesFields = MarcUtil.getDataFields(record, 830);
 		for (DataField seriesField : seriesFields){
 			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "anp"," ")).toString();
-			//Remove anything in parenthesis since it's normally just the format
+			//Remove anything in parentheses since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");
@@ -627,6 +642,7 @@ abstract class MarcRecordProcessor {
 		loadTargetAudiences(groupedWork, record, printItems, identifier, "Unknown");
 	}
 
+	@SuppressWarnings("unused")
 	protected void loadTargetAudiences(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier, String unknownAudienceLabel) {
 		Set<String> targetAudiences = new LinkedHashSet<>();
 		try {
@@ -872,6 +888,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.addLiteraryFormsFull(literaryFormsFull);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void addToMapWithCount(HashMap<String, Integer> map, HashSet<String> elementsToAdd, int numberToAdd){
 		for (String elementToAdd : elementsToAdd) {
 			addToMapWithCount(map, elementToAdd, numberToAdd);
@@ -890,7 +907,7 @@ abstract class MarcRecordProcessor {
 		}
 	}
 
-	void loadClosedCaptioning(AbstractGroupedWorkSolr groupedWork, Record record, HashSet<RecordInfo> ilsRecords){
+	void loadClosedCaptioning(Record record, HashSet<RecordInfo> ilsRecords){
 		//Based on the 546 fields determine if the record is closed captioned
 		Pattern closedCaptionPattern = Pattern.compile("\\b(closed?[- ]caption|hearing impaired)", Pattern.CASE_INSENSITIVE);
 		Set<String> languageNoteFields = MarcUtil.getFieldList(record, "546a");
@@ -1049,6 +1066,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setTranslations(translatedLanguages);
 	}
 
+	@SuppressWarnings("unused")
 	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
@@ -1093,7 +1111,7 @@ abstract class MarcRecordProcessor {
 		groupedWork.setAuthorDisplay(displayAuthor);
 	}
 
-	private void loadTitles(AbstractGroupedWorkSolr groupedWork, Record record, String format, String formatCategory) {
+	private void loadTitles(AbstractGroupedWorkSolr groupedWork, Record record, String format, String formatCategory, boolean hasParentRecord) {
 		//title (full title done by index process by concatenating short and subtitle
 
 		//title short
@@ -1101,17 +1119,19 @@ abstract class MarcRecordProcessor {
 		String authorInTitleField = null;
 		if (titleField != null) {
 			String subTitle = titleField.getSubfieldsAsString("bfgnp");
-			groupedWork.setTitle(titleField.getSubfieldsAsString("a"), subTitle, titleField.getSubfieldsAsString("abfgnp"), this.getSortableTitle(record), format, formatCategory);
+			if (!hasParentRecord) {
+				groupedWork.setTitle(titleField.getSubfieldsAsString("a"), subTitle, titleField.getSubfieldsAsString("abfgnp"), this.getSortableTitle(record), format, formatCategory);
+			}
 			//title full
 			authorInTitleField = titleField.getSubfieldsAsString("c");
 		}
 		String standardAuthorData = MarcUtil.getFirstFieldVal(record, "100abcdq:110ab");
 		if ((authorInTitleField != null && authorInTitleField.length() > 0) || (standardAuthorData == null || standardAuthorData.length() == 0)) {
 			groupedWork.addFullTitles(MarcUtil.getAllSubfields(record, "245", " "));
-		}else{
+		} else {
 			//We didn't get an author from the 245, combine with the 100
 			Set<String> titles = MarcUtil.getAllSubfields(record, "245", " ");
-			for (String title : titles){
+			for (String title : titles) {
 				groupedWork.addFullTitle(title + " " + standardAuthorData);
 			}
 		}
@@ -1141,14 +1161,16 @@ abstract class MarcRecordProcessor {
 		for (DataField urlField : urlFields){
 			//load url into the item
 			if (urlField.getSubfield('u') != null){
-				//Try to determine if this is a resource or not.
-				if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0'){
-					if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
-						itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
-						break;
+				String linkText = urlField.getSubfield('u').getData().trim();
+				if (linkText.length() > 0) {
+					//Try to determine if this is a resource or not.
+					if (urlField.getIndicator1() == '4' || urlField.getIndicator1() == ' ' || urlField.getIndicator1() == '0') {
+						if (urlField.getIndicator2() == ' ' || urlField.getIndicator2() == '0' || urlField.getIndicator2() == '1' || urlField.getIndicator2() == '4') {
+							itemInfo.seteContentUrl(urlField.getSubfield('u').getData().trim());
+							break;
+						}
 					}
 				}
-
 			}
 		}
 	}
@@ -1201,6 +1223,7 @@ abstract class MarcRecordProcessor {
 
 	LinkedHashSet<String> getFormatsFromBib(Record record, RecordInfo recordInfo){
 		LinkedHashSet<String> printFormats = new LinkedHashSet<>();
+
 		String leader = record.getLeader().toString();
 		char leaderBit = ' ';
 		ControlField fixedField = (ControlField) record.getVariableField(8);
@@ -1350,11 +1373,6 @@ abstract class MarcRecordProcessor {
 		if (printFormats.contains("PlayawayBookpack")){
 			printFormats.clear();
 			printFormats.add("PlayawayBookpack");
-			return;
-		}
-		if (printFormats.contains("PlayawayView")){
-			printFormats.clear();
-			printFormats.add("PlayawayView");
 			return;
 		}
 		if (printFormats.contains("Wonderbook")){
@@ -2212,4 +2230,21 @@ abstract class MarcRecordProcessor {
 			}
 		}
 	}
+
+	public HashSet<String> getParentRecordIds(Record record) {
+		List<DataField> analyticFields = record.getDataFields(773);
+		HashSet<String> parentRecords = new HashSet<>();
+		for (DataField analyticField : analyticFields){
+			Subfield linkingSubfield = analyticField.getSubfield('w');
+			if (linkingSubfield != null){
+				//Establish a link and suppress this record
+				String parentRecordId = linkingSubfield.getData();
+				//Remove anything in parentheses
+				parentRecordId = parentRecordId.replaceAll("\\(.*?\\)", "").trim();
+				parentRecords.add(parentRecordId);
+			}
+		}
+		return parentRecords;
+	}
+
 }

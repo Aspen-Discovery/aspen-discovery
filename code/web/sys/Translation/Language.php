@@ -108,6 +108,7 @@ class Language extends DataObject {
 	static $rtl_languages = [
 		'ar',
 		'he',
+        'ku',
 	];
 
 	public function isRTL() {

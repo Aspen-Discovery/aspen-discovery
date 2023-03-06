@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.grouping;
 import com.turning_leaf_technologies.indexing.RecordIdentifier;
 import com.turning_leaf_technologies.indexing.SideLoadSettings;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
+import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
 import org.apache.logging.log4j.Logger;
 import org.marc4j.marc.Record;
 
@@ -22,7 +23,7 @@ public class SideLoadedRecordGrouper extends BaseMarcRecordGrouper {
 		this.settings = settings;
 	}
 
-	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId) {
+	public String processMarcRecord(Record marcRecord, boolean primaryDataChanged, String originalGroupedWorkId, GroupedWorkIndexer indexer) {
 		RecordIdentifier primaryIdentifier = getPrimaryIdentifierFromMarcRecord(marcRecord, settings);
 
 		if (primaryIdentifier != null){

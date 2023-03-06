@@ -338,6 +338,7 @@ AspenDiscovery.Account = (function () {
 			var url = Globals.path + "/MyAccount/AJAX?method=getRatingsData&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 			$.getJSON(url, function (data) {
 				$(".ratings-placeholder").html(data.ratings);
+				$(".notInterested-placeholder").html(data.notInterested);
 			});
 			return false;
 		},
@@ -493,8 +494,14 @@ AspenDiscovery.Account = (function () {
 				var loginErrorElem = $('#loginError');
 				var loadingElem = $('#loading');
 				var multiStep = $('#multiStep').val();
+				var ldapLoginObj = $('#ldapLogin');
+				if (ldapLoginObj !== undefined) {
+					ldapLogin = ldapLoginObj.val()
+				} else {
+					ldapLogin = "";
+				}
 				var url = Globals.path + "/AJAX/JSON?method=loginUser";
-				var params = {username: username, password: password, rememberMe: rememberMe};
+				var params = {username: username, password: password, rememberMe: rememberMe, ldapLogin: ldapLogin};
 				if (!Globals.opac && AspenDiscovery.hasLocalStorage()) {
 					var showCovers = window.localStorage.getItem('showCovers') || false;
 					if (showCovers && showCovers.length > 0) { // if there is a set value, pass it back with the login info

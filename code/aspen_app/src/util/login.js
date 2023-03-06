@@ -275,3 +275,24 @@ export async function getBrowseCategories(data, user, pass) {
      }
      return [];
 }
+
+export async function getLanguages(data) {
+     const api = create({
+          baseURL: data.patronsLibrary['baseUrl'] + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await api.get('/SystemAPI?method=getLanguages');
+     if (response.ok) {
+          let languages = [];
+          if (response?.data?.result) {
+               console.log('Library languages saved at Login');
+               return _.sortBy(response.data.result.languages, 'id');
+          }
+          return languages;
+     } else {
+          console.log(response);
+     }
+     return [];
+}

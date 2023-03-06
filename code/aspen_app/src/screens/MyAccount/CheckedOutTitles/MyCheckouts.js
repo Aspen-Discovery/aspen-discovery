@@ -11,7 +11,7 @@ import { loadingSpinner } from '../../../components/loadingSpinner';
 import { translate } from '../../../translations/translations';
 import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
 import { CheckoutsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import {getPatronCheckedOutItems, refreshProfile} from '../../../util/api/user';
+import {getPatronCheckedOutItems, refreshProfile, reloadProfile} from '../../../util/api/user';
 import {getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew} from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
@@ -86,28 +86,22 @@ export const MyCheckouts = () => {
 
      const reloadCheckouts = async () => {
           setLoading(true);
-          await getPatronCheckedOutItems(source, library.baseUrl, true).then((result) => {
-               if (checkouts !== result) {
-                    updateCheckouts(result);
+          await reloadProfile(library.baseUrl).then((result) => {
+               if (user !== result) {
+                    updateUser(result);
                }
                setLoading(false);
-          });
-          refreshProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          })
      };
 
      const refreshCheckouts = async () => {
           setLoading(true);
-          await getPatronCheckedOutItems(source, library.baseUrl, false).then((result) => {
-               if (checkouts !== result) {
-                    updateCheckouts(result);
+          await reloadProfile(library.baseUrl).then((result) => {
+               if (user !== result) {
+                    updateUser(result);
                }
                setLoading(false);
-          });
-          refreshProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          })
      };
 
      const actionButtons = () => {

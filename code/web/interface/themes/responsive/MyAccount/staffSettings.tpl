@@ -52,10 +52,24 @@
 						</div>
 					{/if}
 
-					{if $profile->hasPermission('materials_request') && ($materialRequestType == 1)}
+					{if $profile->hasPermission('Manage Library Materials Requests') && ($materialRequestType == 1)}
 						<div class="row">
 							<div class="lead col-tn-12">{translate text="Materials Request Management" isPublicFacing=true}</div>
 						</div>
+						{if $sendEmailOnAssignmentForLibrary}
+							<div class="form-group row">
+								<div class="col-xs-4">
+									<label for="materialsRequestSendEmailOnAssign" class="control-label">{translate text="Receive email when a Materials Request is assigned to me" isPublicFacing=true}</label>
+								</div>
+								<div class="col-xs-8">
+									{if $edit == true}
+										<input type="checkbox" name="materialsRequestSendEmailOnAssign" id="materialsRequestSendEmailOnAssign" {if $user->materialsRequestSendEmailOnAssign==1}checked='checked'{/if} data-switch="">
+									{else}
+										{if $user->materialsRequestSendEmailOnAssign == 0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
+									{/if}
+								</div>
+							</div>
+						{/if}
 						<div class="form-group row">
 							<div class="col-xs-4">
 								<label for="materialsRequestReplyToAddress" class="control-label">{translate text="Reply-To Email Address" isPublicFacing=true}</label>

@@ -14,6 +14,9 @@ class AuthenticationFactory {
 			case "ILS":
 				require_once 'ILSAuthentication.php';
 				return new ILSAuthentication($additionalInfo);
+			case "SSO":
+				require_once 'SSOAuthentication.php';
+				return new SSOAuthentication($additionalInfo);
 			default:
 				throw new UnknownAuthenticationMethodException('Authentication handler ' + $authNHandler + 'does not exist!');
 		}

@@ -88,4 +88,8 @@ class Greenhouse_ExternalRequestLog extends ObjectEditor {
 	protected function getDefaultRecordsPerPage() {
 		return 100;
 	}
+
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
 }

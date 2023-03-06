@@ -58,45 +58,11 @@
 					{/foreach}
 					</tbody>
 				</table>
+				{if !empty($pageLinks.all)}
+                    <div class="text-center">{$pageLinks.all}</div>
+                {/if}
 			{else}
 			{translate text="You have not rated any titles yet." isPublicFacing=true}
-			{/if}
-
-			{if !empty($notInterested)}
-				<h1>{translate text="Titles You Don't Want Recommended" isPublicFacing=true}</h1>
-				<table class="myAccountTable table table-striped" id="notInterestedTable">
-					<thead>
-						<tr>
-							<th>{translate text="Date" isPublicFacing=true}</th>
-							<th>{translate text="Title" isPublicFacing=true}</th>
-							<th>{translate text="Author" isPublicFacing=true}</th>
-							<th>&nbsp;</th>
-						</tr>
-					</thead>
-					<tbody>
-						{foreach from=$notInterested item=notInterestedTitle}
-							<tr id="notInterested{$notInterestedTitle.id}">
-								<td>{$notInterestedTitle.dateMarked|date_format}</td>
-								<td><a href="{$notInterestedTitle.link}">{$notInterestedTitle.title}</a></td>
-								<td>{$notInterestedTitle.author}</td>
-								<td><span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.GroupedWork.clearNotInterested('{$notInterestedTitle.id}');">{translate text="Clear"}</span></td>
-							</tr>
-						{/foreach}
-					</tbody>
-				</table>
-				<script type="text/javascript">
-					$(document).ready(function () {literal} {
-						$("#notInterestedTable")
-							.tablesorter({
-								cssAsc: 'sortAscHeader',
-								cssDesc: 'sortDescHeader',
-								cssHeader: 'unsortedHeader',
-								headers: { 0: { sorter: 'date' }, 3: { sorter: false } },
-								sortList: [[0, 1]]
-							})
-					});
-					{/literal}
-				</script>
 			{/if}
 		</div>
 	</div>

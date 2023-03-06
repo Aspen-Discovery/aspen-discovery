@@ -30,7 +30,7 @@
 				<label for="seriesDisplayOrder">{translate text="Series Display Order" isAdminFacing=true}</label>
 			</div>
 			<div class="col-tn-9">
-				<input type="number" name="seriesDisplayOrder" id="seriesDisplayOrder" class="form-control" value="{$seriesDisplayOrder}" maxlength="255"/>
+				<input type="number" name="seriesDisplayOrder" id="seriesDisplayOrder" class="form-control" value="{$seriesDisplayOrder|format_float_with_min_decimals}" maxlength="255" step="0.01"/>
 			</div>
 		</div>
 	</div>

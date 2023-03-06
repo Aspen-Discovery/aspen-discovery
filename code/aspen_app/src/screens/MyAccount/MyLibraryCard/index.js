@@ -1,8 +1,9 @@
 import _ from 'lodash';
 import moment from 'moment';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Center, Flex, Image, Text, Box, Button } from 'native-base';
+import { Center, Flex, Image, Text, Box, Button, Icon, Modal } from 'native-base';
 import React, {Component} from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Barcode from 'react-native-barcode-expo';
 import Carousel from 'react-native-reanimated-carousel';
 import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
@@ -24,48 +25,36 @@ export const MyLibraryCard = () => {
      const [previousBrightness, setPreviousBrightness] = React.useState();
      const [isLandscape, setIsLandscape] = React.useState();
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
+     //const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
      const { library } = React.useContext(LibrarySystemContext);
 
-     const primaryCard = {
-          key: 0,
-          displayName: user.displayName,
-          cat_username: user.cat_username ?? user.barcode,
-          expired: user.expired,
-          expires: user.expires,
-          barcodeStyle: library.barcodeStyle,
-     };
+     let autoRotate = library.generalSettings?.autoRotateCard ?? 0;
 
-     useFocusEffect(
+/*     async function changeScreenOrientation(isLandscape) {
+        console.log("changeScreenOrientation > " + isLandscape);
+        await ScreenOrientation.unlockAsync().then(async result => {
+                if (isLandscape) {
+                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_LEFT);
+                } else {
+                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+                }
+            }
+        )
+    } */
+
+      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getLinkedAccounts(library.baseUrl).then(async (result) => {
-                         if (_.includes(cards, user.cat_username) === false) {
-                              updateLibraryCards([primaryCard]);
-                         }
-                         if (accounts !== result) {
-                              updateLinkedAccounts(result);
-                              if (_.size(result) >= 1) {
-                                   let count = 1;
-                                   let cardStack = [primaryCard];
-                                   result.forEach((account) => {
-                                        if (_.includes(cards, account.cat_username) === false) {
-                                             console.log(account);
-                                             count = count + 1;
-                                             const card = {
-                                                  key: count,
-                                                  displayName: account.displayName,
-                                                  cat_username: account.cat_username ?? account.barcode,
-                                                  expired: account.expired,
-                                                  expires: account.expires,
-                                                  barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
-                                             };
-                                             cardStack.push(card);
-                                             updateLibraryCards(cardStack);
-                                        }
-                                   });
-                              }
-                         }
-                         setLoading(false);
+                    await getLinkedAccounts(user, cards, library).then(async (result) => {
+                        if (accounts !== result.accounts) {
+                            updateLinkedAccounts(result.accounts);
+                        }
+                        if(cards !== result.cards) {
+                            updateLibraryCards(result.cards);
+                        }
+
+                        //setNumCards(_.size(result.cards));
+                        setLoading(false);
                     });
                };
                update().then(() => {
@@ -75,11 +64,17 @@ export const MyLibraryCard = () => {
      );
 
      React.useEffect(() => {
+         const updateAccounts = navigation.addListener('focus', async () => {
+             await getLinkedAccounts(user, cards, library).then(async (result) => {
+                 if (accounts !== result.accounts) {updateLinkedAccounts(result.accounts);}
+                 if(cards !== result.cards) {updateLibraryCards(result.cards);}
+             });
+         });
           const brightenScreen = navigation.addListener('focus', async () => {
                const { status } = await Brightness.requestPermissionsAsync();
                if (status === 'granted') {
                     await Brightness.getBrightnessAsync().then((level) => {
-                         console.log('Storing previous screen brightness');
+                         console.log('Storing previous screen brightness for later');
                          setPreviousBrightness(level);
                     });
                     console.log('Updating screen brightness');
@@ -89,27 +84,34 @@ export const MyLibraryCard = () => {
                }
           });
           const updateOrientation = navigation.addListener('focus', async () => {
-               const result = await ScreenOrientation.getOrientationAsync();
-               if (result === 3 || result === 4) {
-                    setIsLandscape(true);
-               } else {
-                    setIsLandscape(false);
-               }
+              if(autoRotate === "1" || autoRotate === 1) {
+                  await ScreenOrientation.unlockAsync();
+                  await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_LEFT);
+                  setIsLandscape(true);
+              } else {
+                  const result = await ScreenOrientation.getOrientationAsync();
+                  if (result === 5 || result === 6 || result === 7) {
+                      setIsLandscape(true);
+                  } else {
+                      setIsLandscape(false);
+                  }
+              }
           });
           const changeOrientation = ScreenOrientation.addOrientationChangeListener(({ orientationInfo, orientationLock }) => {
                switch (orientationInfo.orientation) {
                     case ScreenOrientation.Orientation.LANDSCAPE_LEFT:
                     case ScreenOrientation.Orientation.LANDSCAPE_RIGHT:
+                    case ScreenOrientation.Orientation.LANDSCAPE:
                          console.log('Screen orientation changed to landscape');
                          setIsLandscape(true);
                          break;
                     default:
-                         console.log('orientation changed to portrait');
+                         console.log('Screen orientation changed to portrait');
                          setIsLandscape(false);
                          break;
                }
           });
-          return { brightenScreen, updateOrientation, changeOrientation };
+          return { updateAccounts, brightenScreen, updateOrientation, changeOrientation };
      }, [navigation]);
 
      React.useEffect(() => {
@@ -120,21 +122,53 @@ export const MyLibraryCard = () => {
                          console.log('Restoring previous screen brightness');
                          Brightness.setSystemBrightnessAsync(previousBrightness);
                     }
+                    console.log("navigationListener isLandscape > " + isLandscape);
+                    if(isLandscape) {
+                        console.log('Restoring screen back to portrait mode');
+                        await ScreenOrientation.unlockAsync().then(async () => {
+                            await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+                        })
+                    }
                })();
           });
           return () => {};
      }, [navigation, previousBrightness]);
 
+     /* useFocusEffect(
+         React.useCallback(() => {
+             console.log("numCards listener > " + numCards);
+             console.log("isLandscape listener > " + isLandscape);
+             if(numCards <= 1 && !isLandscape) {
+                 toggleOrientation();
+             }
+
+             if(numCards > 1 && isLandscape) {
+                 toggleOrientation();
+             }
+             return () => {};
+         }, [numCards])
+     ) */
+
+/*     const toggleOrientation = () => {
+        setIsLandscape(!isLandscape)
+        changeScreenOrientation(!isLandscape)
+    } */
+
      if (isLoading) {
           return loadingSpinner();
      }
 
-     return <CardCarousel cards={cards} orientation={isLandscape} />;
+     //MaterialCommunityIcons = phone-rotate-landscape
+     return (
+         <>
+             <CardCarousel cards={cards} orientation={isLandscape} />
+         </>
+     );
 };
 
 const CreateLibraryCard = (data) => {
      const card = data.card;
-     console.log(card);
+     const {numCards} = data;
 
      const { library } = React.useContext(LibrarySystemContext);
 
@@ -156,27 +190,21 @@ const CreateLibraryCard = (data) => {
               expirationDate = moment(card.expires, 'MMM D, YYYY');
           }
      }
-     console.log(barcodeValue + " expirationDate: " + expirationDate);
 
      let cardHasExpired = 0;
      if (!_.isUndefined(card.expired) && !_.isNull(card.expired) && card.expired !== 0 && card.expired !== '0') {
           cardHasExpired = card.expired;
      }
-     console.log(barcodeValue + " cardHasExpired: " + cardHasExpired);
 
      let neverExpires = false;
      if (cardHasExpired === 0 && !_.isNull(expirationDate)) {
           const now = moment();
-          console.log(now);
           const expiration = moment(expirationDate);
-          console.log(expiration);
           const hasExpired = moment(expiration).isBefore(now);
-          console.log(hasExpired);
           if (hasExpired) {
                neverExpires = true;
           }
      }
-     console.log(barcodeValue + " neverExpires: " + neverExpires)
 
      let icon = library.favicon;
      if (library.logoApp) {
@@ -207,7 +235,7 @@ const CreateLibraryCard = (data) => {
                          </Text>
                          {expirationDate && !neverExpires ? (
                               <Text color="darkText" fontSize={10}>
-                                   Expires on {card.expires}
+                                  {translate('library_card.expires_on', {date: card.expires})}
                               </Text>
                          ) : null}
                     </Center>
@@ -217,26 +245,39 @@ const CreateLibraryCard = (data) => {
 
      return (
           <Flex direction="column" bg="white" px={8} py={5} borderRadius={20} shadow={1}>
+              {numCards > 1 ? (
+               <>
+                   <Center>
+                       <Flex direction="row">
+                           {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                           <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
+                               {library.displayName}
+                           </Text>
+                       </Flex>
+                   </Center>
+                   <Center pt={2}>
+                       <Text fontSize="md" color="darkText">
+                           {card.displayName}
+                       </Text>
+                   </Center>
+               </>
+                  ) : null}
                <Center>
-                    <Flex direction="row">
-                         {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
-                         <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
-                              {library.displayName}
-                         </Text>
-                    </Flex>
-               </Center>
-               <Center pt={2}>
-                    <Text fontSize="md" color="darkText">
-                         {card.displayName}
-                    </Text>
-               </Center>
-               <Center pt={8}>
-                    <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />
-                    {expirationDate && !neverExpires ? (
-                         <Text color="darkText" fontSize={10} pt={2}>
-                              Expires on {card.expires}
-                         </Text>
-                    ) : null}
+                   {expirationDate && !neverExpires && numCards > 1 ? (
+                       <Text color="darkText">
+                           {translate('library_card.expires_on', {date: card.expires})}
+                       </Text>
+                   ) : null}
+                   {numCards > 1 ? (
+                       <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError}/>
+                   ) : (
+                       <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />
+                   )}
+                   {expirationDate && !neverExpires && numCards === 1 ? (
+                       <Text color="darkText" fontSize={10} pt={2}>
+                           {translate('library_card.expires_on', {date: card.expires})}
+                       </Text>
+                   ) : null}
                </Center>
           </Flex>
      );
@@ -246,6 +287,7 @@ const CardCarousel = (data) => {
      const [currentIndex, setCurrentIndex] = React.useState(0);
      const cards = _.sortBy(data.cards, ['key']);
      const isVertical = data.orientation;
+     const toggleOrientation = data.toggleOrientation;
      const screenWidth = Dimensions.get('window').width;
      const progressValue = useSharedValue(0);
      const ref = React.useRef();
@@ -314,7 +356,7 @@ const CardCarousel = (data) => {
                     style={{
                          transform: [{ scale: 0.9 }],
                     }}>
-                    <CreateLibraryCard key={0} card={card} />
+                    <CreateLibraryCard key={0} card={card} numCards={_.size(cards)} />
                </Box>
           );
      }
@@ -335,7 +377,7 @@ const CardCarousel = (data) => {
                          parallaxScrollingOffset: 50,
                     }}
                     data={cards}
-                    renderItem={({ item, index }) => <CreateLibraryCard key={index} card={item} />}
+                    renderItem={({ item, index }) => <CreateLibraryCard key={index} card={item} numCards={_.size(cards)}/>}
                />
                {!!progressValue && (
                     <Box flexDirection="row" flexWrap="wrap" alignContent="center" alignSelf="center" maxWidth="100%" justifyContent="center">
@@ -347,6 +389,27 @@ const CardCarousel = (data) => {
           </Box>
      );
 };
+
+const OpenBarcode = (data) => {
+    const {barcodeValue, barcodeFormat, handleBarcodeError} = data;
+    const [showModal, setShowModal] = React.useState(false);
+
+    const toggleModal = () => {
+        setShowModal(!showModal);
+    };
+
+    return <Center>
+        <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{translate('library_card.open_barcode')}</Button>
+        <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{opacity: 95}}>
+            <Modal.Content bgColor="white">
+                <Modal.CloseButton />
+                <Modal.Body bgColor="white">
+                    <Barcode value={barcodeValue} format={barcodeFormat} text={barcodeValue} onError={handleBarcodeError} />
+                </Modal.Body>
+            </Modal.Content>
+        </Modal>
+    </Center>;
+}
 
 export class MyLibraryCard221200 extends Component {
  static contextType = userContext;

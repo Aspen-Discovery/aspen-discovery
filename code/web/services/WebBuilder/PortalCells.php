@@ -105,6 +105,12 @@ class WebBuilder_PortalCells extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Custom Pages',
+		]);
+	}
+
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}

@@ -131,6 +131,27 @@ export async function getAppSettings(url, timeout, slug) {
      }
 }
 
+export async function getLocationAppSettings(url, timeout, slug) {
+     const api = create({
+          baseURL: url + '/API',
+          timeout,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+     });
+     const response = await api.get('/SystemAPI?method=getLocationAppSettings', {
+          slug,
+     });
+     if (response.ok) {
+          const locationAppSettings = response.data.result.settings;
+          await AsyncStorage.setItem('@locationAppSettings', JSON.stringify(locationAppSettings));
+          LIBRARY.locationAppSettings = locationAppSettings;
+          console.log('Location app settings saved');
+          return response.data.result;
+     } else {
+          console.log(response);
+     }
+}
+
 /**
  * Fetch valid pickup locations for the patron
  **/
@@ -383,10 +404,12 @@ export async function getLanguages(libraryUrl) {
      });
      const response = await api.get('/SystemAPI?method=getLanguages');
      if (response.ok) {
+          let languages = [];
           if (typeof response.data.result !== 'undefined') {
-               LIBRARY.languages = _.sortBy(response.data.result.languages, 'id');
+               languages = _.sortBy(response.data.result.languages, 'id');
                console.log('Library languages saved');
           }
+          return languages;
      } else {
           console.log(response);
      }

@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 
 global $configArray;
 
@@ -69,7 +70,6 @@ class Record_AJAX extends Action {
 					$vdxForm = new VdxForm();
 					$vdxForm->id = $homeLocation->vdxFormId;
 					if ($vdxForm->find(true)) {
-						require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 						$marcRecord = new MarcRecordDriver($id);
 
 						$interface->assign('vdxForm', $vdxForm);
@@ -202,7 +202,6 @@ class Record_AJAX extends Action {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
 
 			require_once ROOT_DIR . '/sys/Account/User.php';
@@ -229,7 +228,32 @@ class Record_AJAX extends Action {
 
 			//Figure out what types of holds to allow
 			$items = $marcRecord->getCopies();
-			$format = $marcRecord->getPrimaryFormat();
+			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
+			if (!empty($relatedRecord->recordVariations) && count($relatedRecord->recordVariations) > 1){
+				foreach ($relatedRecord->recordVariations as $variation){
+					$formatValue = $variation->manifestation->format;
+					global $indexingProfiles;
+					$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+					$formatMap = $indexingProfile->formatMap;
+					//Loop through the format map
+					/** @var FormatMapValue $formatMapValue */
+					//Check for a format with a hold type that is not 'none'
+					foreach ($formatMap as $formatMapValue) {
+						if (strcasecmp($formatMapValue->format, $formatValue) === 0) {
+							$holdType = $formatMapValue->holdType;
+							if ($holdType != 'none') {
+								$format = $formatValue;
+							}
+						}
+					}
+				}
+				//if we get no result and all hold types are 'none' just return the marc primary format
+				if (empty($format)){
+					$format = $marcRecord->getPrimaryFormat();
+				}
+			}else{
+				$format = $marcRecord->getPrimaryFormat();
+			}
 
 			if (isset($_REQUEST['volume'])) {
 				//If we have a volume, we always place a volume hold
@@ -459,7 +483,6 @@ class Record_AJAX extends Action {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
 			$groupedWork = $marcRecord->getGroupedWorkDriver();
 			$relatedManifestations = $groupedWork->getRelatedManifestations();
@@ -498,7 +521,6 @@ class Record_AJAX extends Action {
 			$recordSource = $_REQUEST['recordSource'];
 			$interface->assign('recordSource', $recordSource);
 
-			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			$marcRecord = new MarcRecordDriver($id);
 			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			$interface->assign('id', $marcRecord->getId());
@@ -754,7 +776,6 @@ class Record_AJAX extends Action {
 										$vdxForm->id = $homeLocation->vdxFormId;
 										if ($vdxForm->find(true)) {
 											$interface->assign('fromHoldError', true);
-											require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 											$marcRecord = new MarcRecordDriver($recordId);
 
 											$interface->assign('vdxForm', $vdxForm);
@@ -1629,5 +1650,110 @@ class Record_AJAX extends Action {
 				'message' => 'Unable to mark the title for indexing. Could not find the title.',
 			];
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function showSelectItemToViewForm(): array {
+		global $interface;
+
+		$id = $_REQUEST['id'];
+		/** @var MarcRecordDriver $recordDriver */
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+			$interface->assign('id', $id);
+
+			$idWithSource = $recordDriver->getIdWithSource();
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$allItems = $relatedRecord->getItems();
+			foreach ($allItems as $index => $item) {
+				if (!$item->isEContent) {
+					unset ($allItems[$index]);
+				}
+			}
+
+			$interface->assign('items', $allItems);
+
+			$buttonTitle = translate([
+				'text' => 'Access Online',
+				'isPublicFacing' => true,
+			]);
+			return [
+				'title' => translate([
+					'text' => 'Select Link to View',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch("Record/select-view-item-link-form.tpl"),
+				'modalButtons' => "<button class='tool btn btn-primary' onclick='$(\"#viewItem\").submit()'><i class='fas fa-external-link-alt'></i> $buttonTitle</button>",
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => translate([
+					'text' => 'Could not find a record with that id',
+					'isPublicFacing' => true,
+				]),
+				'modalButtons' => "",
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function viewItem(): array {
+		$id = $_REQUEST['id'];
+		$itemId = $_REQUEST['selectedItem'];
+
+		/** @var MarcRecordDriver $recordDriver */
+		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
+		if ($recordDriver->isValid()) {
+			if (strpos($id, ':')) {
+				[
+					,
+					$id,
+				] = explode(':', $id);
+			}
+
+			$idWithSource = $recordDriver->getIdWithSource();
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$allItems = $relatedRecord->getItems();
+			foreach ($allItems as $index => $item) {
+				if (!$item->isEContent) {
+					unset ($allItems[$index]);
+				}
+			}
+
+			foreach ($allItems as $item) {
+				if ($item->itemId == $itemId) {
+					$relatedUrls = $item->getRelatedUrls();
+					foreach ($relatedUrls as $relatedUrl) {
+						return [
+							'success' => true,
+							'url' => $relatedUrl['url']
+						];
+					}
+				}
+			}
+		}
+		return [
+			'success' => false,
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => translate([
+				'text' => 'Could not find the url to direct to',
+				'isPublicFacing' => true,
+			]),
+			'modalButtons' => "",
+		];
 	}
 }

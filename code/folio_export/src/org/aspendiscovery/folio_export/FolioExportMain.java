@@ -252,7 +252,7 @@ public class FolioExportMain {
 	}
 
 	private synchronized static String groupFolioRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
 	private synchronized static MarcRecordGrouper getRecordGroupingProcessor() {

@@ -22,6 +22,7 @@ import {navigate, navigateStack} from '../../helpers/RootNavigator';
 
 export const SearchResults = () => {
      const [page, setPage] = React.useState(1);
+     const [storedTerm, setStoredTerm] = React.useState('');
      const { library } = React.useContext(LibrarySystemContext);
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
@@ -29,9 +30,21 @@ export const SearchResults = () => {
      let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
 
-     console.log(term);
+     let params = useRoute().params.pendingParams ?? [];
 
-     const params = useRoute().params.pendingParams ?? [];
+     if(term && (term !== storedTerm)) {
+          console.log("Search term changed. Clearing previous search options...");
+          setStoredTerm(term);
+          SEARCH.pendingFilters = [];
+          SEARCH.sortMethod = 'relevance';
+          SEARCH.appliedFilters = [];
+          SEARCH.sortList = [];
+          SEARCH.availableFacets = [];
+          SEARCH.defaultFacets = [];
+          SEARCH.pendingFilters = [];
+          SEARCH.appendedParams = '';
+          params = [];
+     }
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params], () => fetchSearchResults(term, page, scope, url), {
           keepPreviousData: true,
@@ -150,6 +163,16 @@ const DisplayResult = (data) => {
           }
      };
 
+     const formats = item?.itemList ?? [];
+
+     function getFormat(n) {
+          return (
+              <Badge key={n.key} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                   {n.name}
+              </Badge>
+          );
+     }
+
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
@@ -202,13 +225,7 @@ const DisplayResult = (data) => {
                               </Text>
                          ) : null}
                          <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                              {item.itemList.map((item, i) => {
-                                   return (
-                                        <Badge key={i} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                             {item.name}
-                                        </Badge>
-                                   );
-                              })}
+                              {_.map(formats, getFormat)}
                          </Stack>
                     </VStack>
                </HStack>

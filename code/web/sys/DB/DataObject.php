@@ -1021,9 +1021,18 @@ abstract class DataObject {
 
 	public function loadObjectPropertiesFromJSON($jsonData, $mappings) {
 		$encryptedFields = $this->getEncryptedFieldNames();
+		$uniquenessFields = $this->getUniquenessFields();
 		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
 		foreach ($jsonData as $property => $value) {
-			if ($property != $this->getPrimaryKey() && $property != 'links') {
+			$okToLoad = true;
+			if ($property == 'links') {
+				$okToLoad = false;
+			}else if ($property == $this->getPrimaryKey()) {
+				if (!in_array($property, $uniquenessFields)){
+					$okToLoad = false;
+				}
+			}
+			if ($okToLoad) {
 				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)) {
 					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
 				}

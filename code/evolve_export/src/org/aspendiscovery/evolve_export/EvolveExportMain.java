@@ -416,7 +416,7 @@ public class EvolveExportMain {
 									//Save the MARC record
 									getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibId, marcRecord);
 									//Regroup the record
-									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+									String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 									//Reindex the record
 									getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 								}
@@ -527,7 +527,7 @@ public class EvolveExportMain {
 										}
 
 										//Regroup the record
-										String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+										String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 										if (groupedWorkId != null) {
 											//Reindex the record
 											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
@@ -600,7 +600,7 @@ public class EvolveExportMain {
 	}
 
 	private synchronized static String groupEvolveRecord(Record marcRecord) {
-		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
 	}
 
 	private synchronized static MarcRecordGrouper getRecordGroupingProcessor() {
@@ -745,7 +745,7 @@ public class EvolveExportMain {
 					} else {
 						//Reactivate the id if it exists?
 						if (indexer.markIlsRecordAsRestored(indexingProfile.getName(), id) > 0) {
-							String groupedWorkId = recordGroupingProcessor.processMarcRecord(indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), id, logEntry), true, null);
+							String groupedWorkId = recordGroupingProcessor.processMarcRecord(indexer.loadMarcRecordFromDatabase(indexingProfile.getName(), id, logEntry), true, null, getGroupedWorkIndexer());
 							if (groupedWorkId != null) {
 								indexer.processGroupedWork(groupedWorkId);
 							}
@@ -926,7 +926,7 @@ public class EvolveExportMain {
 								marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 
 								if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+									String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null, getGroupedWorkIndexer());
 									if (permanentId == null) {
 										//Delete the record since it is suppressed
 										deleteRecord = true;

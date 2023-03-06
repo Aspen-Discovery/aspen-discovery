@@ -84,12 +84,14 @@
 				</div>
 			</a>
 			{else}
-				<div class="row text-center" style="padding-bottom:1em">
-					<div class="col-md-6 col-md-offset-3">
-						<p class="lead">{translate text='It looks like you\'ve hidden everything' isPublicFacing=true}</p>
-						<p>{translate text='<strong>Start by making a search.</strong> Or, if you want to see curated content from the library again, update your hidden browse categories.' isPublicFacing=true}</p>
+				{if $allBrowseCategoriesAreHidden}
+					<div class="row text-center" style="padding-bottom:1em">
+						<div class="col-md-6 col-md-offset-3">
+							<p class="lead">{translate text='It looks like you\'ve hidden everything' isPublicFacing=true}</p>
+							<p>{translate text='<strong>Start by making a search.</strong> Or, if you want to see curated content from the library again, update your hidden browse categories.' isPublicFacing=true}</p>
+						</div>
 					</div>
-				</div>
+				{/if}
 			{/if}
 
 			{* add link to restore hidden browse categories if user has any hidden *}

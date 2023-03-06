@@ -118,7 +118,7 @@ class AJAX extends Action {
 		$searchObject->init();
 		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
 
-		if (!empty($searchObject->id)) {
+		if (!empty($searchObject)) {
 			//Load results from Prospector
 			$prospector = new Prospector();
 
@@ -568,6 +568,208 @@ class AJAX extends Action {
 			]),
 			'modalBody' => $interface->fetch('Search/search-toolbar-popup.tpl'),
 		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getSearchFacetPopup() : array {
+		global $interface;
+		$searchId = $_REQUEST['searchId'];
+		$facetName = $_REQUEST['facetName'];
+		$interface->assign('searchId', $searchId);
+		$interface->assign('facetName', $facetName);
+		if (is_numeric($searchId)) {
+			require_once ROOT_DIR . '/services/API/SearchAPI.php';
+			$searchAPI = new SearchAPI();
+			$restoredSearch = $searchAPI->restoreSearch($searchId);
+			if (!empty($restoredSearch)) {
+				if (array_key_exists($facetName, $restoredSearch->getFacetConfig())) {
+					$facetConfig = $restoredSearch->getFacetConfig()[$facetName];
+					if (is_object($facetConfig)) {
+						$facetTitle = $facetConfig->displayName;
+						$facetTitlePlural = $facetConfig->displayNamePlural;
+						$isMultiSelect = $facetConfig->multiSelect;
+					} else {
+						$facetTitle = $facetName;
+						$facetTitlePlural = $facetName;
+						$isMultiSelect = false;
+					}
+					$interface->assign('facetTitle', $facetTitle);
+					$interface->assign('facetTitlePlural', $facetTitlePlural);
+					$interface->assign('isMultiSelect', $isMultiSelect);
+
+					$appliedFacets = $restoredSearch->getFilterList();
+					$appliedFacetValues = [];
+					if (array_key_exists($facetTitle, $appliedFacets)) {
+						$appliedFacetValues = $appliedFacets[$facetTitle];
+						asort($appliedFacetValues);
+					}
+					$interface->assign('appliedFacetValues', $appliedFacetValues);
+
+					$allFacets = $restoredSearch->getFacetList();
+					$topResults = $allFacets[$facetName];
+					asort($topResults['list']);
+					$interface->assign('topResults', $topResults['list']);
+					$buttons = '';
+					if ($isMultiSelect) {
+						$buttons = '<button class="btn btn-primary" type="submit" name="submit" onclick="$(\'#searchFacetPopup\').submit()">' . translate([
+								'text' => 'Apply',
+								'isPublicFacing' => true,
+							]) . '</button>';
+					}
+					return [
+						'success' => true,
+						'title' => translate([
+							'text' => 'More %1%',
+							'1' => $facetTitlePlural,
+							'isPublicFacing' => true,
+							'translateParameters' => true
+						]),
+						'modalBody' => $interface->fetch('Search/searchFacetPopup.tpl'),
+						'buttons' => $buttons,
+					];
+				} else {
+					return [
+						'success' => false,
+						'title' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]),
+						'message' =>  translate([
+							'text' => 'That facet could not be found, please try a new search',
+							'isPublicFacing' => true,
+						]),
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'message' =>  translate([
+						'text' => 'Your search could not be restored, please try a new search',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		}else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' =>  translate([
+					'text' => 'Invalid search id provided',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function searchFacetTerms() : array {
+		global $interface;
+		$searchId = $_REQUEST['searchId'];
+		$facetName = $_REQUEST['facetName'];
+		$searchTerm = $_REQUEST['searchTerm'];
+		$interface->assign('searchId', $searchId);
+		$interface->assign('facetName', $facetName);
+		if (is_numeric($searchId)) {
+			require_once ROOT_DIR . '/services/API/SearchAPI.php';
+			$searchAPI = new SearchAPI();
+			$restoredSearch = $searchAPI->restoreSearch($searchId, false);
+			if (!empty($restoredSearch)) {
+				if (array_key_exists($facetName, $restoredSearch->getFacetConfig())) {
+					/** @var SearchObject_SolrSearcher $newSearch */
+					$newSearch = clone $restoredSearch;
+					$newSearch->addFacetSearch($facetName, $searchTerm);
+					$newSearchResult = $newSearch->processSearch(false, true);
+
+					$facetConfig = $newSearch->getFacetConfig()[$facetName];
+					if (is_object($facetConfig)) {
+						$facetTitle = $facetConfig->displayName;
+						$facetTitlePlural = $facetConfig->displayNamePlural;
+						$isMultiSelect = $facetConfig->multiSelect;
+					} else {
+						$facetTitle = $facetName;
+						$facetTitlePlural = $facetName;
+						$isMultiSelect = false;
+					}
+					$interface->assign('facetTitle', $facetTitle);
+					$interface->assign('facetTitlePlural', $facetTitlePlural);
+					$interface->assign('isMultiSelect', $isMultiSelect);
+
+					$appliedFacets = $restoredSearch->getFilterList();
+					$appliedFacetValues = [];
+					if (array_key_exists($facetTitle, $appliedFacets)) {
+						$appliedFacetValues = $appliedFacets[$facetTitle];
+						asort($appliedFacetValues);
+					}
+					$interface->assign('appliedFacetValues', $appliedFacetValues);
+
+					$allFacets = $newSearch->getFacetList();
+					if (isset($allFacets[$facetName])) {
+						$facetSearchResults = $allFacets[$facetName];
+						asort($facetSearchResults['list']);
+						$interface->assign('facetSearchResults', $facetSearchResults['list']);
+						return [
+							'success' => true,
+							'facetResults' => $interface->fetch('Search/searchFacetResults.tpl'),
+						];
+					} else {
+						return [
+							'success' => false,
+							'title' => translate([
+								'text' => 'Error',
+								'isPublicFacing' => true,
+							]),
+							'message' =>  "<div class='alert alert-warning'>" . translate([
+								'text' => 'No results match your search',
+								'isPublicFacing' => true,
+							]) . '</div>',
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]),
+						'message' =>  "<div class='alert alert-warning'>" . translate([
+							'text' => 'That facet could not be found, please try a new search',
+							'isPublicFacing' => true,
+						]) . '</div>',
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'message' =>  "<div class='alert alert-warning'>" . translate([
+						'text' => 'Your search could not be restored, please try a new search',
+						'isPublicFacing' => true,
+					]) . '</div>',
+				];
+			}
+		}else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Error',
+					'isPublicFacing' => true,
+				]),
+				'message' =>  "<div class='alert alert-warning'>" . translate([
+					'text' => 'Invalid search id provided',
+					'isPublicFacing' => true,
+				]) . '</div>',
+			];
+		}
 	}
 
 	function getBreadcrumbs(): array {

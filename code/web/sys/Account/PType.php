@@ -16,6 +16,7 @@ class PType extends DataObject {
 	public $accountLinkingSetting;
 	public $accountLinkRemoveSetting;
 	public $enableReadingHistory;
+	public $canSuggestMaterials;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -26,6 +27,7 @@ class PType extends DataObject {
 			'accountLinkingSetting',
 			'accountLinkRemoveSetting',
 			'enableReadingHistory',
+			'canSuggestMaterials',
 		];
 	}
 
@@ -143,6 +145,12 @@ class PType extends DataObject {
 				'label' => 'Allow users to remove managing account links',
 				'description' => 'Linkees with this patron type will have access to a Remove button to delete managing account links. Linkees without this permission will require staff intervention to delete managing account links.',
 				'onchange' => "return AspenDiscovery.Admin.linkingRemoveSettingOptionChange();",
+			],
+			'canSuggestMaterials' => [
+				'property' => 'canSuggestMaterials',
+				'type' => 'checkbox',
+				'label' => 'Allow users to create materials requests',
+				'description' => 'Allow users of this patron type to create materials requests or purchase suggestions.',
 			],
 		];
 		if (!UserAccount::userHasPermission('Administer Permissions')) {

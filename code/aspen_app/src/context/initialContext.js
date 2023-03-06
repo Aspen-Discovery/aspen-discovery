@@ -100,6 +100,13 @@ export const GroupedWorkContext = React.createContext({
      resetGroupedWork: () => {
      },
 })
+export const LanguageContext = React.createContext({
+     updateLanguage: () => {},
+     language: '',
+     languages: [],
+     updateLanguages: () => {},
+     resetLanguage: () => {},
+})
 
 export const ThemeProvider = ({children}) => {
      const [theme, setTheme] = useState([]);
@@ -520,3 +527,31 @@ export const GroupedWorkProvider = ({children}) => {
          </GroupedWorkContext.Provider>
      )
 }
+
+export const LanguageProvider = ({children}) => {
+     const [language, setLanguage] = useState();
+     const [languages, setLanguages] = useState();
+
+     const updateLanguage = (data) => {
+          console.log("updated language to " + data + " in LanguageContext");
+          PATRON.language = data;
+          setLanguage(data);
+     };
+
+     const updateLanguages = (data) => {
+          console.log("updated available library languages in LanguageContext");
+          setLanguages(data);
+     };
+
+     return (
+         <LanguageContext.Provider
+             value={{
+                  language,
+                  updateLanguage,
+                  languages,
+                  updateLanguages
+             }}>
+              {children}
+         </LanguageContext.Provider>
+     );
+};

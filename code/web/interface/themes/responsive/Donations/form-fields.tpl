@@ -1,7 +1,7 @@
 {strip}
     <div class="donationFields" style="padding-top: 1em">
-        {foreach from=$donationFormFields key=category item=formFields}
-            <fieldset class="row" style="margin-top: .5em">
+        {foreach from=$donationFormFields key=category item=formFields name=categories}
+            <fieldset class="row" style="margin-top: .5em" id="{$smarty.foreach.categories.index}">
                 <legend>{translate text=$category isPublicFacing=true}</legend>
                 {foreach from=$formFields item=formField}
                     {* DONATION INFORMATION *}
@@ -96,6 +96,38 @@
                         </div>
                         {/if}
 
+					{elseif $formField->textId == 'shouldBeNotified'}
+                        {if $allowDonationDedication == 1}
+	                        <div class="col-xs-12">
+	                        <div class="checkbox">
+	                            <label id="{$formField->textId}Label" for="{$formField->textId}" class="control-label">
+	                                <input type="checkbox" name="{$formField->textId}" id="{$formField->textId}">
+	                                {translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}
+	                            </label>
+	                        </div>
+	                        </div>
+                        {/if}
+
+                    {elseif $formField->textId == 'notificationFirstName' || $formField->textId == 'notificationLastName'}
+                        {if $allowDonationDedication == 1}
+                        <div class="col-xs-6">
+                        <div class="form-group {$formField->textId}">
+                            <label id="{$formField->textId}Label" for="{$formField->textId}" class="control-label">{translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}</label>
+                            <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg">
+                        </div>
+                        </div>
+                        {/if}
+
+                    {elseif $formField->textId == 'notificationAddress' || $formField->textId == 'notificationCity' || $formField->textId == 'notificationState' || $formField->textId == 'notificationZip'}
+                        {if $allowDonationDedication == 1}
+                        <div class="{if $formField->textId == 'notificationAddress'}col-md-7{elseif $formField->textId == 'notificationState'}col-md-1{else}col-md-2{/if}">
+                        <div class="form-group {$formField->textId}">
+                            <label id="{$formField->textId}Label" for="{$formField->textId}" class="control-label">{translate text=$formField->label isPublicFacing=true isAdminEnteredData=true}</label>
+                            <input type="text" name="{$formField->textId}" id="{$formField->textId}" class="form-control input-lg">
+                        </div>
+                        </div>
+                        {/if}
+
                     {* USER INFORMATION *}
                     {elseif $formField->textId == 'firstName' || $formField->textId == 'lastName'}
                         <div class="col-xs-6">
@@ -162,16 +194,22 @@
 
     $("#shouldBeDedicated").change(function() {
         if ($(this).is(':checked')) {
-            $('#dedicationTypeRow').show();
-            $('#honoreeFirstNameRow').show();
-            $('#honoreeLastNameRow').show();
+            $('#1').show();
         } else {
-            $('#dedicationTypeRow').hide();
-            $('#honoreeFirstNameRow').hide();
-            $('#honoreeLastNameRow').hide();
+			$('#1').hide();
+            $('#2').hide();
         }
     });
     $("#shouldBeDedicated").trigger("change");
+
+    $("#shouldBeNotified").change(function() {
+        if ($(this).is(':checked')) {
+            $('#2').show();
+        } else {
+            $('#2').hide();
+        }
+    });
+    $("#shouldBeNotified").trigger("change");
 
     $('#customAmount').click(function () {
         $('.btn.btn-default.btn-lg.predefinedAmount').removeClass("active");

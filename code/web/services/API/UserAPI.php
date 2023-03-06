@@ -242,26 +242,6 @@ class UserAPI extends Action {
 
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = UserAccount::getAccountProfiles();
-/*		if (strlen($library->casHost) > 0 && $username == null && $password == null) {
-			//Check CAS first
-			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
-			$casAuthentication = new CASAuthentication(null);
-			$logger->log('Checking CAS Authentication from UserAccount::validateAccount', Logger::LOG_DEBUG);
-			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
-			if ($casUsername == false || $casUsername instanceof AspenError) {
-				//The user could not be authenticated in CAS
-				$logger->log('User could not be authenticated in CAS', Logger::LOG_DEBUG);
-				self::$validatedAccounts[$username . $password] = false;
-				return false;
-			} else {
-				$logger->log('User was authenticated in CAS', Logger::LOG_DEBUG);
-				//Set both username and password since authentication methods could use either.
-				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
-				$username = $casUsername;
-				$password = $casUsername;
-				$validatedViaSSO = true;
-			}
-		}*/
 
 		foreach ($driversToTest as $driverName => $additionalInfo) {
 			if ($accountSource == null || $accountSource == $additionalInfo['accountProfile']->name) {
@@ -270,24 +250,29 @@ class UserAPI extends Action {
 				} catch (UnknownAuthenticationMethodException $e) {
 					return [
 						'success' => false,
-						'message' => 'Unknown authentication method'
+						'message' => 'Unknown authentication method',
+						'session' => false,
 					];
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					return [
 						'success' => true,
-						'message' => 'User is valid'
+						'message' => 'User is valid',
+						'session' => session_id(),
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
-					return [
-						'success' => false,
-						'id' => $invalidUser['id'],
-						'message' => $invalidUser['message'],
-						'resetToken' => $invalidUser['resetToken'] ?? null,
-						'userId' => $invalidUser['userId']
- 					];
+					if(isset($invalidUser['message'])) {
+						return [
+							'success' => false,
+							'id' => $invalidUser['id'] ?? null,
+							'message' => $invalidUser['message'],
+							'resetToken' => $invalidUser['resetToken'] ?? null,
+							'userId' => $invalidUser['userId'] ?? null,
+							'session' => false,
+						];
+					}
 				}
 			}
 		}
@@ -582,11 +567,17 @@ class UserAPI extends Action {
 			}
 
 			$linkedUsers = $_REQUEST['linkedUsers'] ?? false;
+			$reload = $_REQUEST['reload'] ?? false;
 
 			$numCheckedOut = 0;
 			$numOverdue = 0;
 			$numHolds = 0;
 			$numHoldsAvailable = 0;
+			if(!$reload) {
+				// set reload parameter to get ILS account summary if it's not already set
+				$_REQUEST['reload'] = true;
+			}
+
 			$accountSummary = $user->getAccountSummary();
 			$userData->numCheckedOutIls = (int)$accountSummary->numCheckedOut;
 			$userData->numHoldsIls = (int)$accountSummary->getNumHolds();
@@ -643,6 +634,11 @@ class UserAPI extends Action {
 
 			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
+
+			if(!$reload) {
+				// clear forced reload parameter
+				$_REQUEST['reload'] = false;
+			}
 
 			//Add overdrive data
 			$userData->isValidForOverdrive = false;

@@ -16,6 +16,8 @@ class SavedRecordInfo {
 	public long formatCategoryId;
 	public long languageId;
 	public boolean isClosedCaptioned;
+	public boolean hasParentRecord;
+	public boolean hasChildRecord;
 
 	SavedRecordInfo(ResultSet getExistingRecordsForWorkRS) throws SQLException {
 		id = getExistingRecordsForWorkRS.getLong("id");
@@ -30,6 +32,8 @@ class SavedRecordInfo {
 		formatCategoryId = getExistingRecordsForWorkRS.getLong("formatCategoryId");
 		languageId = getExistingRecordsForWorkRS.getLong("languageId");
 		isClosedCaptioned = getExistingRecordsForWorkRS.getBoolean("isClosedCaptioned");
+		hasParentRecord = getExistingRecordsForWorkRS.getBoolean("hasParentRecord");
+		hasChildRecord = getExistingRecordsForWorkRS.getBoolean("hasChildRecord");
 	}
 
 }

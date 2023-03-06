@@ -165,7 +165,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          },
                          headerRight: () => (
                               <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                   <CloseIcon color="primary.baseContrast" />
+                                   <CloseIcon size={5} color="primary.baseContrast" />
                               </Pressable>
                          ),
                     })}
@@ -197,7 +197,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                       },
                       headerRight: () => (
                           <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon color="primary.baseContrast" />
+                              <CloseIcon size={5} color="primary.baseContrast" />
                           </Pressable>
                       ),
                   })}
@@ -218,8 +218,8 @@ const FilterModal = () => {
                     headerLeft: () => {
                          if (route.name !== 'Filters') {
                               return (
-                                   <Pressable onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                        <ChevronLeftIcon color="primary.baseContrast" />
+                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                        <ChevronLeftIcon size={5} color="primary.baseContrast" />
                                    </Pressable>
                               );
                          } else {
@@ -228,7 +228,7 @@ const FilterModal = () => {
                     },
                     headerRight: () => (
                          <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon color="primary.baseContrast" />
+                              <CloseIcon size={5} color="primary.baseContrast" />
                          </Pressable>
                     ),
                })}>

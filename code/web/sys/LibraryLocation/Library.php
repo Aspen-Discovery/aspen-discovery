@@ -33,6 +33,10 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 }
 
+if(file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+}
+
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class Library extends DataObject {
@@ -293,6 +297,9 @@ class Library extends DataObject {
 		$newMaterialsRequestSummary;  // (Text at the top of the Materials Request Form.)
 	public /** @noinspection PhpUnused */
 		$materialsRequestDaysToPreserve;
+	public $materialsRequestSendStaffEmailOnNew;
+	public $materialsRequestSendStaffEmailOnAssign;
+	public $materialsRequestNewEmail;
 	public $showGroupedHoldCopiesCount;
 	public $interLibraryLoanName;
 	public $interLibraryLoanUrl;
@@ -388,6 +395,9 @@ class Library extends DataObject {
 	//LiDA settings
 	public $lidaNotificationSettingId;
 	public $lidaQuickSearchId;
+	public $lidaGeneralSettingId;
+
+	public $accountProfileId;
 
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
@@ -438,6 +448,17 @@ class Library extends DataObject {
 		$combinedResultsStructure = LibraryCombinedResultSection::getObjectStructure($context);
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
+
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->orderBy('name');
+		$accountProfileOptions = [];
+		$accountProfile->find();
+		while ($accountProfile->fetch()) {
+			if($accountProfile->name !== 'admin') {
+				$accountProfileOptions[$accountProfile->id] = $accountProfile->name;
+			}
+		}
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();
@@ -635,6 +656,26 @@ class Library extends DataObject {
 			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
+		$appGeneralSetting = new GeneralSetting();
+		$appGeneralSetting->orderBy('name');
+		$appGeneralSettings = [];
+		$appGeneralSetting->find();
+		$appGeneralSettings[-1] = 'none';
+		while ($appGeneralSetting->fetch()) {
+			$appGeneralSettings[$appGeneralSetting->id] = $appGeneralSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+		$ssoSetting = new SSOSetting();
+		$ssoSetting->orderBy('name');
+		$ssoSettings = [];
+		$ssoSetting->find();
+		$ssoSettings[-1] = 'none';
+		while ($ssoSetting->fetch()) {
+			$ssoSettings[$ssoSetting->id] = $ssoSetting->name;
+		}
+
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['libraryId']);
 
@@ -712,6 +753,14 @@ class Library extends DataObject {
 				'required' => true,
 				'maxLength' => 80,
 				'editPermissions' => ['Library Domain Settings'],
+			],
+			'accountProfileId' => [
+				'property' => 'accountProfileId',
+				'type' => 'enum',
+				'values' => $accountProfileOptions,
+				'label' => 'Account Profile Id',
+				'description' => 'Account Profile to apply to this interface',
+				'permissions' => ['Administer Account Profiles'],
 			],
 			'showDisplayNameInHeader' => [
 				'property' => 'showDisplayNameInHeader',
@@ -924,7 +973,7 @@ class Library extends DataObject {
 					],
 				],
 			],
-			'ssoSection' => [
+			/*'ssoSection' => [
 				'property' => 'ssoSection',
 				'type' => 'section',
 				'label' => 'Single Sign-on',
@@ -1141,7 +1190,7 @@ class Library extends DataObject {
 						],
 					],
 				],
-			],
+			],*/
 
 			// ILS/Account Integration //
 			'ilsSection' => [
@@ -1486,7 +1535,7 @@ class Library extends DataObject {
 								'property' => 'setUsePreferredNameInIlsOnUpdate',
 								'type' => 'checkbox',
 								'label' => 'Set "Use Preferred Name" in the ILS when updating preferred name.',
-								'description' => 'Whether or not the "Use Preferred Name" checkbox is updated when setting preferred name.',
+								'description' => 'Whether or not the Use Preferred Name checkbox is updated when setting preferred name.',
 								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 1,
@@ -1499,7 +1548,7 @@ class Library extends DataObject {
 								'label' => 'Allow Patrons to Update Their Date of Birth (Setting applies to Koha only)',
 								'description' => 'Whether or not patrons should be able to update their date of birth in their profile.',
 								'hideInLists' => true,
-								'default' => 1,
+								'default' => 0,
 								'readOnly' => false,
 								'permissions' => ['Library ILS Connection'],
 							],
@@ -1915,7 +1964,7 @@ class Library extends DataObject {
 								'description' => 'The label to show for the username when logging in',
 								'size' => '100',
 								'hideInLists' => true,
-								'default' => 'Your Name',
+								'default' => 'Library Card Number',
 							],
 							'loginFormPasswordLabel' => [
 								'property' => 'loginFormPasswordLabel',
@@ -1924,7 +1973,7 @@ class Library extends DataObject {
 								'description' => 'The label to show for the password when logging in',
 								'size' => '100',
 								'hideInLists' => true,
-								'default' => 'Library Card Number',
+								'default' => 'PIN or Password',
 							],
 							'loginNotes' => [
 								'property' => 'loginNotes',
@@ -2665,6 +2714,27 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => 1,
 					],
+					'materialsRequestSendStaffEmailOnNew' => [
+						'property' => 'materialsRequestSendStaffEmailOnNew',
+						'type' => 'checkbox',
+						'label' => 'Send email to library when Materials Requests are created',
+						'description' => 'Whether or not an email should be sent out when a new Materials Request has been created.',
+						'hideInLists' => true,
+					],
+					'materialsRequestNewEmail' => [
+						'property' => 'materialsRequestNewEmail',
+						'type' => 'text',
+						'label' => 'Email to receive notifications for new Materials Requests',
+						'description' => 'The email address that will receive emails when a patron creates a new Materials Request.',
+						'hideInLists' => true,
+					],
+					'materialsRequestSendStaffEmailOnAssign' => [
+						'property' => 'materialsRequestSendStaffEmailOnAssign',
+						'type' => 'checkbox',
+						'label' => 'Send an email to staff when they are assigned a Materials Request',
+						'description' => 'Whether or not staff are notified when assigned a Materials Request',
+						'hideInLists' => true,
+					],
 					'allowDeletingILSRequests' => [
 						'property' => 'allowDeletingILSRequests',
 						'type' => 'checkbox',
@@ -2839,7 +2909,7 @@ class Library extends DataObject {
 						'label' => 'Interlibrary Loan URL',
 						'description' => 'The link for the ILL Service.',
 						'hideInLists' => true,
-						'size' => '80',
+						'size' => '200',
 					],
 
 					'prospectorSection' => [
@@ -3233,6 +3303,15 @@ class Library extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Administer Aspen LiDA Settings'],
 				'properties' => [
+					'lidaGeneralSettingId' => [
+						'property' => 'lidaGeneralSettingId',
+						'type' => 'enum',
+						'values' => $appGeneralSettings,
+						'label' => 'General Settings',
+						'description' => 'The General Settings to use for Aspen LiDA',
+						'hideInLists' => true,
+						'default' => -1,
+					],
 					'lidaNotificationSettingId' => [
 						'property' => 'lidaNotificationSettingId',
 						'type' => 'enum',
@@ -3252,6 +3331,26 @@ class Library extends DataObject {
 						'default' => -1,
 					],
 				],
+			],
+
+			'ssoSection' => [
+				'property' => 'ssoSection',
+				'type' => 'section',
+				'label' => 'Single Sign-on',
+				'renderAsHeading' => true,
+				'hideInLists' => true,
+				'permissions' => ['Administer Single Sign-on'],
+				'properties' => [
+					'ssoSettingId' => [
+						'property' => 'ssoSettingId',
+						'type' => 'enum',
+						'values' => $ssoSettings,
+						'label' => 'Single Sign-on (SSO) Settings',
+						'description' => 'The single sign-on settings to use for this library',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+				]
 			],
 		];
 
@@ -3311,6 +3410,12 @@ class Library extends DataObject {
 		}
 		if (!array_key_exists('Open Archives', $enabledModules)) {
 			unset($structure['oaiSection']);
+		}
+		if (!array_key_exists('Aspen LiDA', $enabledModules)) {
+			unset($structure['aspenLiDASection']);
+		}
+		if (!array_key_exists('Single sign-on', $enabledModules)) {
+			unset($structure['ssoSection']);
 		}
 		return $structure;
 	}
@@ -4023,6 +4128,22 @@ class Library extends DataObject {
 		return $lidaNotifications;
 	}
 
+	/**
+	 * @return array|null
+	 */
+	public function getLiDAGeneralSettings() {
+		$settings = [];
+
+		$setting = new GeneralSetting();
+		$setting->id = $this->lidaGeneralSettingId;
+		if ($setting->find(true)) {
+			$settings = clone $setting;
+		}
+
+		return $settings;
+	}
+
+
 // If the URL of the XML metadata has changed in any way, and is populated,
 // we need to use it to fetch the metadata and store the metadata's filename
 // in the DB, otherwise we delete the file
@@ -4170,6 +4291,10 @@ class Library extends DataObject {
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		$pinValidationRules = $catalog->getPasswordPinValidationRules();
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
+
+		$generalSettings = $this->getLiDAGeneralSettings();
+		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
+
 		return $apiInfo;
 	}
 

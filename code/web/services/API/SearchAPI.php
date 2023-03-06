@@ -105,7 +105,7 @@ class SearchAPI extends Action {
 			$backupFileFound = false;
 			$backupFileTooSmall = false;
 			foreach ($backupFiles as $backupFile) {
-				if (preg_match('/.*\.sql\.gz/', $backupFile)) {
+				if (preg_match('/.*\.tar\.gz/', $backupFile)) {
 					$fileCreationTime = filectime($backupDir . $backupFile);
 					if ((time() - $fileCreationTime) < (24.5 * 60 * 60)) {
 						$fileSize = filesize($backupDir . $backupFile);
@@ -2341,11 +2341,22 @@ class SearchAPI extends Action {
 				$items[$recordKey]['image'] = $configArray['Site']['url'] . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
 				$items[$recordKey]['language'] = $record['language'][0];
 				$items[$recordKey]['summary'] = $record['display_description'];
-				$i = 0;
-				foreach ($record['format'] as $format) {
-					$items[$recordKey]['itemList'][$i]['key'] = $i;
-					$items[$recordKey]['itemList'][$i]['name'] = $format;
-					$i++;
+				$items[$recordKey]['itemList'] = [];
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+				if ($groupedWorkDriver->isValid()) {
+					$i = 0;
+					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+					foreach ($relatedManifestations as $relatedManifestation) {
+						foreach ($relatedManifestation->getVariations() as $obj) {
+							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+								$format = $obj->manifestation->format;
+								$items[$recordKey]['itemList'][$format]['key'] = $i;
+								$items[$recordKey]['itemList'][$format]['name'] = $format;
+								$i++;
+							};
+						}
+					}
 				}
 			}
 			$results['items'] = $items;
@@ -2375,7 +2386,7 @@ class SearchAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	private function restoreSearch($id) {
+	public function restoreSearch($id, $processSearch = true) {
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
 		$search = new SearchEntry();
 		$search->id = $id;
@@ -2384,7 +2395,9 @@ class SearchAPI extends Action {
 			$storedSearch = SearchObjectFactory::deminify($minSO, $search);
 			$searchObj = $storedSearch->restoreSavedSearch($id, false, true);
 			if ($searchObj) {
-				$searchObj->processSearch(false, true);
+				if ($processSearch) {
+					$searchObj->processSearch(false, true);
+				}
 				return $searchObj;
 			}
 		}

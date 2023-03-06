@@ -47,11 +47,6 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				'className' => 'UserPayment',
 				'name' => 'User Payments',
 			],
-			'user_staff_settings' => [
-				'classFile' => ROOT_DIR . '/sys/Account/UserStaffSettings.php',
-				'className' => 'UserStaffSettings',
-				'name' => 'User Staff Settings',
-			],
 			'user_saved_searches' => [
 				'classFile' => ROOT_DIR . '/sys/SearchEntry.php',
 				'className' => 'SearchEntry',
@@ -301,6 +296,16 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 				'classFile' => ROOT_DIR . '/sys/WebBuilder/PortalPage.php',
 				'className' => 'PortalPage',
 				'name' => 'Web Builder Custom Pages',
+			],
+			'web_builder_custom_forms' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/CustomForm.php',
+				'className' => 'CustomForm',
+				'name' => 'Web Builder Custom Forms',
+			],
+			'web_builder_form_submissions' => [
+				'classFile' => ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php',
+				'className' => 'CustomFormSubmission',
+				'name' => 'Web Builder Custom Form Submissions',
 			],
 			'uploaded_images' => [
 				'name' => 'Uploaded Images',

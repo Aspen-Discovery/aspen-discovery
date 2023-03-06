@@ -11,21 +11,23 @@ import { translate } from '../../translations/translations';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import {getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds} from '../../util/api/user';
+import {getTranslatedTerm} from '../../translations/TranslationService';
 
 let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const [loading, setLoading] = React.useState(true);
      const navigation = useNavigation();
-     const { user, locations, accounts, lists, updatePickupLocations, updateLinkedAccounts, updateLists } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -70,9 +72,12 @@ export const DiscoverHomeScreen = () => {
                          }
                     });
 
-                    getLinkedAccounts(library.baseUrl).then((result) => {
-                         if (accounts !== result) {
-                              updateLinkedAccounts(result);
+                    getLinkedAccounts(user, cards, library).then((result) => {
+                         if (accounts !== result.accounts) {
+                              updateLinkedAccounts(result.accounts);
+                         }
+                         if (cards !== result.cards) {
+                              updateLibraryCards(result.cards);
                          }
                     });
                     console.log('updated patron things');

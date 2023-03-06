@@ -190,7 +190,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (preg_match("/^98/", $msg_result)) {
+			if (str_starts_with($msg_result, "98")) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
@@ -215,7 +215,7 @@ class CarlX extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('carlx.renewAll', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 				//print_r($msg_result);
 
-				if (preg_match("/^66/", $msg_result)) {
+				if (str_starts_with($msg_result, "66")) {
 					$result = $mySip->parseRenewAllResponse($msg_result);
 					//$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
 
@@ -444,10 +444,10 @@ class CarlX extends AbstractIlsDriver {
 						$curHold->status = 'Frozen';
 					}
 					// CarlX [9.6.4.3] will not allow update hold (suspend hold, change pickup location) on item level hold. UnavailableHoldItem ~ /^ITEM ID: / if the hold is an item level hold.
-					if (strpos($curHold->cancelId, 'ITEM ID: ') === 0) {
+					if (str_starts_with($curHold->cancelId, 'ITEM ID: ')) {
 						$curHold->canFreeze = false;
 						$curHold->locationUpdateable = false;
-					} elseif (strpos($curHold->cancelId, 'BID: ') === 0) {
+					} elseif (str_starts_with($curHold->cancelId, 'BID: ')) {
 						$curHold->canFreeze = true;
 						$curHold->locationUpdateable = true;
 					} else { // TO DO: Evaluate whether issue level holds are suspendable
@@ -553,12 +553,11 @@ class CarlX extends AbstractIlsDriver {
 		$queuePosition = $unavailableHoldViaSIP['queuePosition'];
 		$freeze = null;
 		$freezeReactivationDate = null;
-		if (!empty($unavailableHoldViaSIP['freezeReactivationDate']) && substr($unavailableHoldViaSIP['freezeReactivationDate'], -1) == 'B') {
+		if (!empty($unavailableHoldViaSIP['freezeReactivationDate']) && str_ends_with($unavailableHoldViaSIP['freezeReactivationDate'], 'B')) {
 			$freeze = true;
 			$freezeReactivationDate = $unavailableHoldViaSIP['freezeReactivationDate'];
 		}
-		$result = $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
-		return $result;
+        return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 	}
 
 	public function getCheckouts(User $patron): array {
@@ -740,8 +739,8 @@ class CarlX extends AbstractIlsDriver {
 			}
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
-				$patron->_zip = $_REQUEST['zip'];;
-			}
+				$patron->_zip = $_REQUEST['zip'];
+            }
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')) {
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
 				$request->Patron->EmailReceiptFlag = 1;
@@ -921,8 +920,8 @@ class CarlX extends AbstractIlsDriver {
 			if ($library && $library->promptForBirthDateInSelfReg) {
 				$birthDate = trim($_REQUEST['birthDate']);
 				$date = strtotime(str_replace('-', '/', $birthDate));
-			};
-			$address = trim(strtoupper($_REQUEST['address']));
+			}
+            $address = trim(strtoupper($_REQUEST['address']));
 			$city = trim(strtoupper($_REQUEST['city']));
 			$state = trim(strtoupper($_REQUEST['state']));
 			$zip = trim($_REQUEST['zip']);
@@ -946,7 +945,7 @@ class CarlX extends AbstractIlsDriver {
 			$request->Modifiers->InstitutionCode = 'NASH';
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
-				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'No matching records found');
+				$noEmailMatch = stripos($result->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'No matching records found');
 				if ($noEmailMatch === false) {
 					if ($result->PagingResult->NoOfRecords > 0) {
 						$patronIdsMatching = array_column($result->Patrons, 'PatronID');
@@ -994,7 +993,7 @@ class CarlX extends AbstractIlsDriver {
 			$request->Modifiers->InstitutionCode = 'NASH';
 			$result = $this->doSoapRequest('searchPatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 			if ($result) {
-				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'No matching records found');
+				$noNameBirthdateMatch = stripos($result->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'No matching records found');
 				if ($noNameBirthdateMatch === false) {
 					if ($result->PagingResult->NoOfRecords > 0) {
 						$patronIdsMatching = array_column($result->Patrons, 'PatronID');
@@ -1083,7 +1082,7 @@ class CarlX extends AbstractIlsDriver {
 					if (!empty($result->ResponseStatuses->ResponseStatus->LongMessage)) {
 						$errorMessage .= "... " . $result->ResponseStatuses->ResponseStatus->LongMessage;
 					}
-					if (strpos($errorMessage, 'A patron with that id already exists') !== false) {
+					if (str_contains($errorMessage, 'A patron with that id already exists')) {
 						global $logger;
 						$logger->log('While self-registering user for CarlX, temp id number was reported in use. Increasing internal counter', Logger::LOG_ERROR);
 						// Increment the temp patron id number.
@@ -1121,7 +1120,7 @@ class CarlX extends AbstractIlsDriver {
 					$result = $this->doSoapRequest('addPatronNote', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 
 					if ($result) {
-						$success = stripos($result->ResponseStatuses->ResponseStatus{0}->ShortMessage, 'Success') !== false;
+						$success = stripos($result->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
 						if (!$success) {
 							global $logger;
 							$logger->log('Unable to write IP address in Patron Note.', Logger::LOG_ERROR);
@@ -1333,7 +1332,7 @@ class CarlX extends AbstractIlsDriver {
 					$fine->FineAmountOutstanding = $fine->FineAmount;
 				}
 
-				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+				if (str_starts_with($fine->Identifier, 'ITEM ID: ')) {
 					$fine->Identifier = substr($fine->Identifier, 9);
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
@@ -1380,7 +1379,7 @@ class CarlX extends AbstractIlsDriver {
 						$fine->FeeAmountOutstanding = $fine->FeeAmount;
 					}
 
-					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
+					if (str_starts_with($fine->Identifier, 'ITEM ID: ')) {
 						$fine->Identifier = substr($fine->Identifier, 9);
 					}
 
@@ -1445,8 +1444,7 @@ class CarlX extends AbstractIlsDriver {
 	 */
 	private function getPatronTransactions(User $user) {
 		$request = $this->getSearchbyPatronIdRequest($user);
-		$result = $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
-		return $result;
+        return $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 	}
 
 	public function getPhoneTypeList() {
@@ -1578,7 +1576,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (preg_match("/^98/", $msg_result)) {
+			if (str_starts_with($msg_result, "98")) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 setings
@@ -1644,7 +1642,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null) {
-		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
+		if (str_starts_with($holdId, $this->accountProfile->recordSource . ':')) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
 		//Place the hold via SIP 2
@@ -1668,7 +1666,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (preg_match("/^98/", $msg_result)) {
+			if (str_starts_with($msg_result, "98")) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 setings
@@ -1704,13 +1702,13 @@ class CarlX extends AbstractIlsDriver {
 				//place the hold
 				$itemId = '';
 				$recordId = '';
-				if (strpos($holdId, 'ITEM ID: ') === 0) {
+				if (str_starts_with($holdId, 'ITEM ID: ')) {
 					$holdType = 3; // specific copy
 					$itemId = substr($holdId, 9);
-				} elseif (strpos($holdId, 'BID: ') === 0) {
+				} elseif (str_starts_with($holdId, 'BID: ')) {
 					$holdType = 2; // any copy of title
 					$recordId = substr($holdId, 5);
-				} elseif (strpos($holdId, 'CARL') === 0) {
+				} elseif (str_starts_with($holdId, 'CARL')) {
 					$holdType = 2; // any copy of title
 					$recordId = $this->BIDfromFullCarlID($holdId);
 				} else { // assume a short BID
@@ -1756,7 +1754,7 @@ class CarlX extends AbstractIlsDriver {
 				$msg_result = $mySip->get_message($in);
 				ExternalRequestLogEntry::logRequest('carlx.placeHold', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 
-				if (preg_match("/^16/", $msg_result)) {
+				if (str_starts_with($msg_result, "16")) {
 					$result = $mySip->parseHoldResponse($msg_result);
 					$success = ($result['fixed']['Ok'] == 1);
 					$message = $result['variable']['AF'][0];
@@ -1811,7 +1809,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (preg_match("/^98/", $msg_result)) {
+			if (str_starts_with($msg_result, "98")) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
@@ -1836,7 +1834,7 @@ class CarlX extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('carlx.renewCheckout', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 				//print_r($msg_result);
 
-				if (preg_match("/^30/", $msg_result)) {
+				if (str_starts_with($msg_result, "30")) {
 					$result = $mySip->parseRenewResponse($msg_result);
 
 //					$title = $result['variable']['AJ'][0];
@@ -2133,57 +2131,106 @@ EOT;
 		} elseif ($showOverdueOnly == 'overdue') {
 			$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
 		}
-		/** @noinspection SqlResolve */
-		$sql = <<<EOT
-				select
-				  patronbranch.branchcode AS Home_Lib_Code
-				  , patronbranch.branchname AS Home_Lib
-				  , bty_v.btynumber AS P_Type
-				  , bty_v.btyname AS Grd_Lvl
-				  , patron_v.sponsor AS Home_Room
-				  , patron_v.name AS Patron_Name
-				  , patron_v.patronid AS P_Barcode
-				  , itembranch.branchgroup AS SYSTEM
-				  , item_v.cn AS Call_Number
-				  , bbibmap_v.title AS Title
-				  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
-				  , item_v.price AS Owed
-				  , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
-				  , item_v.item AS Item
-				from 
-				  bbibmap_v
-				  , branch_v patronbranch
-				  , branch_v itembranch
-				  , branchgroup_v patronbranchgroup
-				  , branchgroup_v itembranchgroup
-				  , bty_v
-				  , item_v
-				  , location_v
-				  , patron_v
-				  , transitem_v
-				where
-				  patron_v.patronid = transitem_v.patronid
-				  and patron_v.bty = bty_v.btynumber
-				  and transitem_v.item = item_v.item
-				  and bbibmap_v.bid = item_v.bid
-				  and patronbranch.branchnumber = patron_v.defaultbranch
-				  and location_v.locnumber = item_v.location
-				  and itembranch.branchnumber = transitem_v.holdingbranch
-				  and itembranchgroup.branchgroup = itembranch.branchgroup
-				  and $statuses
-				  and patronbranch.branchgroup = '2'
-				  and patronbranchgroup.branchgroup = patronbranch.branchgroup
-				  and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
-				  and patronbranch.branchcode = '$location'
-				order by 
-				  patronbranch.branchcode
-				  , patron_v.bty
-				  , patron_v.sponsor
-				  , patron_v.name
-				  , itembranch.branchgroup
-				  , item_v.cn
-				  , bbibmap_v.title
+        if ($showOverdueOnly == 'checkedOut' || $showOverdueOnly == 'overdue') {
+            /** @noinspection SqlResolve */
+            $sql = <<<EOT
+                    select
+                      patronbranch.branchcode AS Home_Lib_Code
+                      , patronbranch.branchname AS Home_Lib
+                      , bty_v.btynumber AS P_Type
+                      , bty_v.btyname AS Grd_Lvl
+                      , patron_v.sponsor AS Home_Room
+                      , patron_v.name AS Patron_Name
+                      , patron_v.patronid AS P_Barcode
+                      , itembranch.branchgroup AS SYSTEM
+                      , item_v.cn AS Call_Number
+                      , bbibmap_v.title AS Title
+                      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
+                      , item_v.price AS Owed
+                      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
+                      , item_v.item AS Item
+                    from 
+                      bbibmap_v
+                      , branch_v patronbranch
+                      , branch_v itembranch
+                      , branchgroup_v patronbranchgroup
+                      , branchgroup_v itembranchgroup
+                      , bty_v
+                      , item_v
+                      , location_v
+                      , patron_v
+                      , transitem_v
+                    where
+                      patron_v.patronid = transitem_v.patronid
+                      and patron_v.bty = bty_v.btynumber
+                      and transitem_v.item = item_v.item
+                      and bbibmap_v.bid = item_v.bid
+                      and patronbranch.branchnumber = patron_v.defaultbranch
+                      and location_v.locnumber = item_v.location
+                      and itembranch.branchnumber = transitem_v.holdingbranch
+                      and itembranchgroup.branchgroup = itembranch.branchgroup
+                      and $statuses
+                      and patronbranch.branchgroup = '2'
+                      and patronbranchgroup.branchgroup = patronbranch.branchgroup
+                      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+                      and patronbranch.branchcode = '$location'
+                    order by 
+                      patronbranch.branchcode
+                      , patron_v.bty
+                      , patron_v.sponsor
+                      , patron_v.name
+                      , itembranch.branchgroup
+                      , item_v.cn
+                      , bbibmap_v.title
 EOT;
+        } elseif ($showOverdueOnly == 'fees') {
+            $sql = <<<EOT
+                -- school fees report CarlX sql
+                with p as ( -- first gather patrons of the requested branch
+                    select
+                        b.branchcode
+                        , b.branchname
+                        , p.bty
+                        , t.btyname
+                        , p.sponsor
+                        , p.name
+                        , p.patronid
+                    from patron_v p
+                    left join branch_v b on p.defaultbranch = b.branchnumber
+                    left join bty_v t on p.bty = t.btynumber
+                    where p.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+                    and b.branchcode = '$location'
+                )
+                select
+                     p.branchcode AS Home_Lib_Code
+                    , p.branchname AS Home_Lib
+                    , p.bty AS P_Type
+                    , p.btyname AS Grd_Lvl
+                    , p.sponsor AS Home_Room
+                    , p.name AS Patron_Name
+                    , p.patronid AS P_Barcode
+                    , itembranch.branchgroup AS SYSTEM
+                    , r.callnumber AS Call_Number
+                    , r.title AS Title
+                    , to_char(jts.todate(r.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
+                    , to_char(r.amountowed / 100, 'fm999D00') as Owed
+                    , to_char(jts.todate(r.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
+                    , r.item AS Item
+                from p 
+                left join report3fines_v r on p.patronid = r.patronid
+                left join branch_v itembranch on r.branch = itembranch.branchnumber
+                where r.patronid is not null
+                and r.amountowed > 0
+                order by 
+                    p.branchcode
+                    , p.bty
+                    , p.sponsor
+                    , p.name
+                    , itembranch.branchgroup
+                    , r.callnumber
+                    , r.title
+EOT;
+        }
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);

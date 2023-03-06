@@ -88,6 +88,12 @@ class WebBuilder_CustomForms extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Custom Forms',
+		]);
+	}
+
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}

@@ -112,7 +112,7 @@ class Location extends DataObject {
 	 */
 	public $ebscohostSearchSettingId;
 
-	public $lidaGeneralSettingId;
+	public $lidaLocationSettingId;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -264,14 +264,14 @@ class Location extends DataObject {
 			$ebscohostSettings[$ebscohostSetting->id] = $ebscohostSetting->name;
 		}
 
-		require_once ROOT_DIR . '/sys/AspenLiDA/AppSetting.php';
-		$appSetting = new AppSetting();
-		$appSetting->orderBy('name');
-		$appSettings = [];
-		$appSetting->find();
-		$appSettings[-2] = 'None';
-		while ($appSetting->fetch()) {
-			$appSettings[$appSetting->id] = $appSetting->name;
+		require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
+		$appLocationSetting = new LocationSetting();
+		$appLocationSetting->orderBy('name');
+		$appLocationSettings = [];
+		$appLocationSetting->find();
+		$appLocationSettings[-2] = 'None';
+		while ($appLocationSetting->fetch()) {
+			$appLocationSettings[$appLocationSetting->id] = $appLocationSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/VDX/VdxSetting.php';
@@ -1131,12 +1131,12 @@ class Location extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Administer Aspen LiDA Settings'],
 				'properties' => [
-					'lidaGeneralSettingId' => [
-						'property' => 'lidaGeneralSettingId',
+					'lidaLocationSettingId' => [
+						'property' => 'lidaLocationSettingId',
 						'type' => 'enum',
-						'values' => $appSettings,
-						'label' => 'App Settings',
-						'description' => 'The general app settings to use for Aspen LiDA',
+						'values' => $appLocationSettings,
+						'label' => 'Location Settings',
+						'description' => 'The location settings to use for Aspen LiDA',
 						'hideInLists' => true,
 						'default' => -1,
 					],

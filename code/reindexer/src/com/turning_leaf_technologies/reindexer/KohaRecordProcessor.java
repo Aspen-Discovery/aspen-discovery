@@ -409,7 +409,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		return suppressionNotes;
 	}
 
-	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes){
+	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
 		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
@@ -449,18 +449,19 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 				}
 				if (!isOverDrive && !isHoopla && !isOneClickDigital && !isCloudLibrary && isEContent){
-					RecordInfo eContentRecord = getEContentIlsRecord(groupedWork, record, identifier, itemField);
-					if (eContentRecord != null) {
-						unsuppressedEcontentRecords.add(eContentRecord);
-					}
+					getIlsEContentItems(groupedWork, record, mainRecordInfo, identifier, itemField);
 				}
 			}
+		}
+		List<RecordInfo> parentEContentRecords = super.loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, mainRecordInfo, hasParentRecord, hasChildRecords);
+		if (parentEContentRecords.size() > 0) {
+			unsuppressedEcontentRecords.addAll(parentEContentRecords);
 		}
 		return unsuppressedEcontentRecords;
 	}
 
 	@Override
-	protected void loadEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
+	protected void loadIlsEContentFormatInformation(Record record, RecordInfo econtentRecord, ItemInfo econtentItem) {
 		if (econtentItem.getITypeCode() != null) {
 			String iType = econtentItem.getITypeCode().toLowerCase();
 			String translatedFormat = translateValue("format", iType, econtentRecord.getRecordIdentifier());
@@ -529,18 +530,16 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 			//If the source type is still null, try the location of the item
 			if (sourceType == null){
-				DataField field037 = record.getDataField(37);
-				DataField field949 = record.getDataField(949);
-				if (field037 != null && field037.getSubfield('b') != null) {
-					sourceType = field037.getSubfield('b').getData();
-				}else if (field949 != null && field949.getSubfield('a') != null){
-					sourceType = field949.getSubfield('a').getData();
-				}else{
+//				DataField field037 = record.getDataField(37);
+//				if (field037 != null && field037.getSubfield('b') != null) {
+//					sourceType = field037.getSubfield('b').getData();
+//				}else{
 					//Try the location for the item
-					if (itemField.getSubfield('a') != null){
-						sourceType = itemField.getSubfield('a').getData();
+					if (itemField.getSubfield(locationSubfieldIndicator) != null){
+						sourceType = itemField.getSubfield(locationSubfieldIndicator).getData();
 					}
-				}
+//				}
+				sourceType = "Online Content";
 			}
 		}
 		return sourceType;

@@ -89,6 +89,15 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
+
+		if (isset($_REQUEST['reload'])) {
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistData.php';
+			$novelistData = new NovelistData();
+			$novelistData->groupedRecordPermanentId = $id;
+			if ($novelistData->find(true)) {
+				$novelistData->delete();
+			}
+		}
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('recordDriver', $recordDriver);
 
@@ -2057,7 +2066,7 @@ class GroupedWork_AJAX extends JSON_Action {
 				unlink($largeUploadedImage);
 			}
 
-			$bookcoverInfo->imageSource = 'default';
+			$bookcoverInfo->imageSource = '';
 			$bookcoverInfo->update();
 			return [
 				'success' => true,

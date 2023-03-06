@@ -23,6 +23,9 @@ public class RecordInfo {
 	private String physicalDescription;
 	private boolean isClosedCaptioned;
 
+	private boolean hasParentRecord;
+	private boolean hasChildRecord;
+
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 
 	public RecordInfo(String source, String recordIdentifier){
@@ -202,55 +205,12 @@ public class RecordInfo {
 		itemInfo.setRecordInfo(this);
 	}
 
-	private HashSet<String> allFormats = null;
-	private static final Pattern nonWordPattern = Pattern.compile("\\W");
-	HashSet<String> getAllSolrFieldEscapedFormats() {
-		if (allFormats == null){
-			allFormats = new HashSet<>();
-			for (String curFormat : formats){
-				allFormats.add(nonWordPattern.matcher(curFormat).replaceAll("_").toLowerCase());
-			}
-			for (ItemInfo curItem : relatedItems){
-				if (curItem.getFormat() != null) {
-					allFormats.add(nonWordPattern.matcher(curItem.getFormat()).replaceAll("_").toLowerCase());
-				}
-			}
-		}
-		return allFormats;
-	}
-
 	HashSet<String> getFormats() {
 		return formats;
 	}
 
-	private HashSet<String> allFormatCategories = null;
-	HashSet<String> getAllSolrFieldEscapedFormatCategories() {
-		if (allFormatCategories == null) {
-			allFormatCategories = new HashSet<>();
-			for (String curFormat : formatCategories){
-				allFormatCategories.add(nonWordPattern.matcher(curFormat).replaceAll("_").toLowerCase());
-			}
-			for (ItemInfo curItem : relatedItems) {
-				if (curItem.getFormatCategory() != null) {
-					allFormatCategories.add(nonWordPattern.matcher(curItem.getFormatCategory()).replaceAll("_").toLowerCase());
-				}
-			}
-		}
-		return allFormatCategories;
-	}
-
 	HashSet<String> getFormatCategories() {
 		return formatCategories;
-	}
-
-	private HashSet<ItemInfo> getRelatedItemsForScope(String scopeName) {
-		HashSet<ItemInfo> values = new HashSet<>();
-		for (ItemInfo curItem : relatedItems){
-			if (curItem.isValidForScope(scopeName)){
-				values.add(curItem);
-			}
-		}
-		return values;
 	}
 
 	int getNumCopiesOnOrder() {
@@ -403,5 +363,21 @@ public class RecordInfo {
 			}
 		}
 		return null;
+	}
+
+	public boolean hasParentRecord() {
+		return hasParentRecord;
+	}
+
+	public void setHasParentRecord(boolean hasParentRecord) {
+		this.hasParentRecord = hasParentRecord;
+	}
+
+	public boolean hasChildRecord() {
+		return hasChildRecord;
+	}
+
+	public void setHasChildRecord(boolean hasChildRecord) {
+		this.hasChildRecord = hasChildRecord;
 	}
 }

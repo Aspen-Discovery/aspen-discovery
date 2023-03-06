@@ -280,7 +280,7 @@ public class CarlXExportMain {
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
-					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
+					String groupedWorkId = getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer(dbConn));
 					//Reindex the record
 					getGroupedWorkIndexer(dbConn).processGroupedWork(groupedWorkId);
 				}
@@ -402,9 +402,11 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
+							//TODO: Remove all 949n (Item notes from the marc record). Will attempt to remove from the export, if that can't be done we will strip them out here.
+
 							GroupedWorkIndexer.MarcStatus marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+								String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null, getGroupedWorkIndexer(dbConn));
 								if (permanentId == null){
 									//Delete the record since it is suppressed
 									deleteRecord = true;
@@ -1393,9 +1395,9 @@ public class CarlXExportMain {
 			}
 		}
 
-		if (changeInfo.getNotes() != null && changeInfo.getNotes().length() > 0){
-			updateItemSubfield(itemField, 'n', changeInfo.getNotes());
-		}
+//		if (changeInfo.getNotes() != null && changeInfo.getNotes().length() > 0){
+//			updateItemSubfield(itemField, 'n', changeInfo.getNotes());
+//		}
 	}
 
 	private static void updateItemSubfield(DataField itemField, char subfield, String value) {
@@ -1525,7 +1527,7 @@ public class CarlXExportMain {
 	}
 
 	private static String groupRecord(Connection dbConn, Record marcRecord) {
-		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null);
+		return getRecordGroupingProcessor(dbConn).processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer(dbConn));
 	}
 
 	private static MarcRecordGrouper getRecordGroupingProcessor(Connection dbConn){

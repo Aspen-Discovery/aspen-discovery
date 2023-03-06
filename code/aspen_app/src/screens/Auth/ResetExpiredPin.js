@@ -158,7 +158,6 @@ export const ResetExpiredPin = (props) => {
 								</FormControl.Label>
 								<Input
 									keyboardType={pinValidationRules.onlyDigitsAllowed === '1' ? 'numeric' : 'default'}
-									maxLength={pinValidationRules.maxLength}
 									autoCapitalize="none"
 									size="xl"
 									autoCorrect={false}
@@ -166,6 +165,7 @@ export const ResetExpiredPin = (props) => {
 									variant="filled"
 									id="pin"
 									returnKeyType="next"
+									enterKeyHint="next"
 									textContentType="password"
 									required
 									onChangeText={(text) => setPin(text)}
@@ -187,19 +187,20 @@ export const ResetExpiredPin = (props) => {
 								</FormControl.Label>
 								<Input
 									keyboardType={pinValidationRules.onlyDigitsAllowed === '1' ? 'numeric' : 'default'}
-									maxLength={pinValidationRules.maxLength}
 									autoCapitalize="none"
 									size="xl"
 									autoCorrect={false}
 									type={showPinConfirmed ? 'text' : 'password'}
 									variant="filled"
 									id="pinConfirmed"
-									enterKeyHint="send"
+									enterKeyHint="done"
+									returnKeyType="done"
 									textContentType="password"
 									required
 									onChangeText={(text) => setPinConfirmed(text)}
 									InputRightElement={<Icon as={<Ionicons name={showPinConfirmed ? 'eye-outline' : 'eye-off-outline'} />} size="md" ml={1} mr={3} onPress={toggleShowPinConfirmed} roundedLeft={0} roundedRight="md" />}
-									blurOnSubmit={false}
+									onSubmitEditing={() => updatePIN()}
+									ref={pinConfirmedRef}
 								/>
 								{'pinConfirmed' in errors? <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
 									{errors.pinConfirmed}

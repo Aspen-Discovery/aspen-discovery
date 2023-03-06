@@ -27,7 +27,7 @@ class Axis360_Home extends GroupedWorkSubRecordHomeAction {
 			$interface->assign('holdingsSummary', $holdingsSummary);
 
 			//Get actions
-			$interface->assign('actions', $this->recordDriver->getRecordActions(null, $holdingsSummary['available'], true, null));
+			$interface->assign('actions', $this->recordDriver->getRecordActions(null, null, $holdingsSummary['available'], true, null));
 
 			//Load the citations
 			$this->loadCitations();

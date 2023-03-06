@@ -411,7 +411,7 @@ public class SymphonyExportMain {
 				if (marcRecord != null) {
 					logEntry.incRecordsRegrouped();
 					//Regroup the record
-					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true, null);
+					String permanentId = recordGroupingProcessor.processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer(dbConn));
 					//Reindex the record
 					indexer.processGroupedWork(permanentId);
 				}
@@ -912,7 +912,7 @@ public class SymphonyExportMain {
 								marc245 = curBib.getDataField(245);
 								if (marc245 != null) {
 									if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
-										String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null);
+										String permanentId = recordGroupingProcessor.processMarcRecord(curBib, marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED, null, getGroupedWorkIndexer(dbConn));
 										if (permanentId == null) {
 											//Delete the record since it is suppressed
 											deleteRecord = true;

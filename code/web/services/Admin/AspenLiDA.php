@@ -20,7 +20,7 @@ class AspenLiDA extends ObjectEditor {
 	function getAllObjects($page, $recordsPerPage): array {
 		$list = [];
 
-		$object = new AppSetting();
+		$object = new LocationSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);

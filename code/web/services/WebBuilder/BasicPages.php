@@ -88,6 +88,12 @@ class WebBuilder_BasicPages extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Basic Pages',
+		]);
+	}
+
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}

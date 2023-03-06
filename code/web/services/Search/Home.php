@@ -17,6 +17,7 @@ class Search_Home extends Action {
 		$interface->assign('showBreadcrumbs', 0);
 
 		$interface->assign('isLoggedIn', false);
+		$numHiddenCategory = 0;
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
 			$loggedInUser = $user->id;
@@ -44,14 +45,16 @@ class Search_Home extends Action {
 			$interface->assign('browseCategoryRatingsMode', $library->getBrowseCategoryGroup()->browseCategoryRatingsMode);
 		}
 
+		$numBrowseCategories = count($browseCategories);
 		$interface->assign('showBrowseContent', true);
 
 		// Get All Browse Categories if Location & Library had none set
 		if (empty($browseCategories)) {
-			$browseCategories = $this->getBrowseCategories();
+			$interface->assign('showBrowseContent', false);
+			$interface->assign('allBrowseCategoriesAreHidden', false);
 			if (UserAccount::isLoggedIn()) {
-				if ($numHiddenCategory != 0) {
-					$interface->assign('showBrowseContent', false);
+				if ($numHiddenCategory > 0 && ($numBrowseCategories == $numHiddenCategory)) {
+					$interface->assign('allBrowseCategoriesAreHidden', true);
 				}
 			}
 		}
@@ -102,7 +105,8 @@ class Search_Home extends Action {
 					}
 				}
 			}
-		} else { // get All BrowseCategories
+		} /*else {
+			// get All BrowseCategories
 			$browseCategory = new BrowseCategory();
 			$browseCategory->orderBy('numTitlesClickedOn');
 			$browseCategory->limit(0, 20);
@@ -126,7 +130,7 @@ class Search_Home extends Action {
 					$this->assignBrowseCategoryInformation($browseCategory, $specifiedSubCategory);
 				}
 			}
-		}
+		}*/
 		return $browseCategories;
 	}
 

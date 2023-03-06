@@ -118,6 +118,11 @@ class User extends DataObject {
 	public $_comingDueNotice;
 	public $_phoneType;
 
+	//Staff Settings
+	public $materialsRequestEmailSignature;
+	public $materialsRequestReplyToAddress;
+	public $materialsRequestSendEmailOnAssign;
+
 	function getNumericColumnNames(): array {
 		return [
 			'id',
@@ -126,6 +131,7 @@ class User extends DataObject {
 			'initialReadingHistoryLoaded',
 			'updateMessageIsError',
 			'rememberHoldPickupLocation',
+			'materialsRequestSendEmailOnAssign',
 		];
 	}
 
@@ -355,17 +361,6 @@ class User extends DataObject {
 			}
 		}
 		return $rolesAssignedByPType;
-	}
-
-	private $materialsRequestReplyToAddress;
-	private $materialsRequestEmailSignature;
-
-	function getStaffSettings() {
-		require_once ROOT_DIR . '/sys/Account/UserStaffSettings.php';
-		$staffSettings = new UserStaffSettings();
-		$staffSettings->get('userId', $this->id);
-		$this->materialsRequestReplyToAddress = $staffSettings->materialsRequestReplyToAddress;
-		$this->materialsRequestEmailSignature = $staffSettings->materialsRequestEmailSignature;
 	}
 
 	function getBarcode() {
@@ -1105,6 +1100,11 @@ class User extends DataObject {
 		if (isset($_REQUEST['materialsRequestReplyToAddress'])) {
 			$this->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
 		}
+		if (isset($_REQUEST['materialsRequestSendEmailOnAssign']) && ($_REQUEST['materialsRequestSendEmailOnAssign'] == 'yes' || $_REQUEST['materialsRequestSendEmailOnAssign'] == 'on')) {
+			$this->materialsRequestSendEmailOnAssign = 1;
+		} else {
+			$this->materialsRequestSendEmailOnAssign = 0;
+		}
 		$this->update();
 	}
 
@@ -1765,7 +1765,7 @@ class User extends DataObject {
 		if ($includeLinkedUsers) {
 			if ($this->getLinkedUsers() != null) {
 				foreach ($this->getLinkedUsers() as $user) {
-					$ilsFines += $user->getFines(false); // keep keys as userId
+					$ilsFines += $user->getFines(false, $APIRequest); // keep keys as userId
 				}
 			}
 		}
@@ -2320,7 +2320,7 @@ class User extends DataObject {
 				if (!empty($patronType)) {
 					return $patronType->enableReadingHistory;
 				} else {
-					return false;
+					return true;
 				}
 			} else {
 				return false;
@@ -2406,13 +2406,17 @@ class User extends DataObject {
 	private $_pTypeObj = false;
 	public function getPTypeObj() : ?PType {
 		if ($this->_pTypeObj === false) {
-			require_once ROOT_DIR . '/sys/Account/PType.php';
-			$patronType = new PType();
-			$patronType->pType = $this->patronType;
-			if ($patronType->find(true)) {
-				$this->_pTypeObj = $patronType;
-			} else {
+			if (empty($this->patronType)) {
 				$this->_pTypeObj = null;
+			}else {
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$patronType = new PType();
+				$patronType->pType = $this->patronType;
+				if ($patronType->find(true)) {
+					$this->_pTypeObj = $patronType;
+				} else {
+					$this->_pTypeObj = null;
+				}
 			}
 		}
 		return $this->_pTypeObj;
@@ -2542,6 +2546,13 @@ class User extends DataObject {
 		$rating->whereAdd("userId = {$this->id}");
 		$rating->whereAdd('rating > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		return $rating->count();
+	}
+
+	function getNumNotInterested() {
+		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
+		$obj = new NotInterested();
+		$obj->whereAdd("userId = {$this->id}");
+		return $obj->count();
 	}
 
 	function getReadingHistorySize() {
@@ -3348,7 +3359,8 @@ class User extends DataObject {
 
 		if(array_key_exists('Aspen LiDA', $enabledModules)) {
 			$sections['aspen_lida'] = new AdminSection('Aspen LiDA');
-			$sections['aspen_lida']->addAction(new AdminAction('App Settings', 'Define general app settings for Aspen LiDA.', '/AspenLiDA/AppSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('General Settings', 'Define general settings for Aspen LiDA.', '/AspenLiDA/GeneralSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('Location Settings', 'Define location settings for Aspen LiDA.', '/AspenLiDA/LocationSettings'), 'Administer Aspen LiDA Settings');
 			$sections['aspen_lida']->addAction(new AdminAction('Quick Search Settings', 'Define quick searches for Aspen LiDA.', '/AspenLiDA/QuickSearchSettings'), 'Administer Aspen LiDA Settings');
 			$notificationSettingsAction = new AdminAction('Notification Settings', 'Define settings for notifications in Aspen LiDA.', '/AspenLiDA/NotificationSettings');
 			$notificationReportAction = new AdminAction('Notifications Report', 'View all notifications initiated and completed within the system', '/AspenLiDA/NotificationsReport');
@@ -3893,8 +3905,13 @@ class User extends DataObject {
 		$sourceEncryptionKey = isset($mappings['passkey']) ? $mappings['passkey'] : '';
 		foreach ($jsonData as $property => $value) {
 			if ($property != $this->getPrimaryKey() && $property != 'links') {
-				if (in_array($property, $encryptedFields) && !empty($sourceEncryptionKey)) {
-					$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+				if (in_array($property, $encryptedFields)) {
+					if (!empty($sourceEncryptionKey)){
+						$value = EncryptionUtils::decryptFieldWithProvidedKey($value, $sourceEncryptionKey);
+					} else {
+						//Source key was not provided, decrypt using our encryption key (assuming the source and destination match.
+						$value = EncryptionUtils::decryptField($value);
+					}
 				}
 				if ($property == 'username') {
 					if (array_key_exists($value, $mappings['users'])) {
@@ -4022,6 +4039,16 @@ class User extends DataObject {
 		} else {
 			return $this->getAccountProfile()->ils;
 		}
+	}
+
+	public function canSuggestMaterials(): bool {
+		$patronType = $this->getPTypeObj();
+		if (!empty($patronType)) {
+			if($patronType->canSuggestMaterials) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
