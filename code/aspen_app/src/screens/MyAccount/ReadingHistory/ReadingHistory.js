@@ -6,7 +6,7 @@ import { Box, VStack, Button, Text, ScrollView, FlatList, Pressable, HStack, Ima
 import { ListItem } from '@rneui/themed';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { translate } from '../../../translations/translations';
 import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { SafeAreaView } from 'react-native';
@@ -14,6 +14,7 @@ import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/
 import { loadError } from '../../../components/loadError';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import AddToList from '../../Search/AddToList';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const MyReadingHistory = () => {
      const queryClient = useQueryClient();
@@ -21,6 +22,7 @@ export const MyReadingHistory = () => {
      const [page, setPage] = React.useState(1);
      const [sort, setSort] = React.useState('checkedOut');
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const { user, updateUser, readingHistory, updateReadingHistory } = React.useContext(UserContext);
      const url = library.baseUrl;
      const pageSize = 25;
@@ -94,7 +96,7 @@ export const MyReadingHistory = () => {
                                         <HStack flexShrink={1} space={2} alignItems="center">
                                              <Alert.Icon />
                                              <Text fontSize="xs" bold color="coolGray.800">
-                                                  {translate('reading_history.privacy_notice')}
+                                                  {getTermFromDictionary(language, 'reading_history_privacy_notice')}
                                              </Text>
                                         </HStack>
                                    </Alert>
@@ -114,7 +116,7 @@ export const MyReadingHistory = () => {
                          }}>
                          <ListItem.Content containerStyle={{ padding: 0 }}>
                               <Text fontSize="xs" color="coolGray.600">
-                                   {translate('reading_history.disclaimer')}
+                                   {getTermFromDictionary(language, 'reading_history_disclaimer')}
                               </Text>
                          </ListItem.Content>
                     </ListItem>
@@ -140,12 +142,13 @@ export const MyReadingHistory = () => {
                                    <Select
                                         name="sortBy"
                                         selectedValue={sort}
-                                        accessibilityLabel="Select a Sort Method"
+                                        accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                         _selectedItem={{
                                              bg: 'tertiary.300',
                                              endIcon: <CheckIcon size="5" />,
                                         }}
                                         onValueChange={(itemValue) => setSort(itemValue)}>
+                                        {/* TODO: Translate with variable */}
                                         <Select.Item label="Sort By Title" value="title" key={0} />
                                         <Select.Item label="Sort By Author" value="author" key={1} />
                                         <Select.Item label="Sort By Last Used" value="checkedOut" key={2} />
@@ -153,8 +156,8 @@ export const MyReadingHistory = () => {
                                    </Select>
                               </FormControl>
                               <Button.Group size="sm" variant="solid" colorScheme="danger">
-                                   <Button onPress={() => setDeleteAllIsOpen(true)}>{translate('general.delete_all')}</Button>
-                                   <Button onPress={() => setIsOpen(true)}>{translate('reading_history.opt_out')}</Button>
+                                   <Button onPress={() => setDeleteAllIsOpen(true)}>{getTermFromDictionary(language, 'reading_history_delete_all')}</Button>
+                                   <Button onPress={() => setIsOpen(true)}>{getTermFromDictionary(language, 'reading_history_opt_out')}</Button>
                               </Button.Group>
                          </HStack>
                     </ScrollView>
@@ -162,15 +165,15 @@ export const MyReadingHistory = () => {
                     <Center>
                          <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                               <AlertDialog.Content>
-                                   <AlertDialog.Header>{translate('reading_history.opt_out')}</AlertDialog.Header>
-                                   <AlertDialog.Body>{translate('reading_history.opt_out_warning')}</AlertDialog.Body>
+                                   <AlertDialog.Header>{getTermFromDictionary(language, 'reading_history_opt_out')}</AlertDialog.Header>
+                                   <AlertDialog.Body>{getTermFromDictionary(language, 'reading_history_opt_out_warning')}</AlertDialog.Body>
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
                                              <Button colorScheme="muted" variant="outline" onPress={onClose}>
-                                                  {translate('general.close_window')}
+                                                  {getTermFromDictionary(language, 'close')}
                                              </Button>
-                                             <Button isLoading={optingOut} isLoadingText="Updating..." colorScheme="danger" onPress={optOut} ref={cancelRef}>
-                                                  {translate('general.button_ok')}
+                                             <Button isLoading={optingOut} isLoadingText={getTermFromDictionary(language, 'updating', true)} colorScheme="danger" onPress={optOut} ref={cancelRef}>
+                                                  {getTermFromDictionary(language, 'button_ok')}
                                              </Button>
                                         </Button.Group>
                                    </AlertDialog.Footer>
@@ -181,15 +184,15 @@ export const MyReadingHistory = () => {
                     <Center>
                          <AlertDialog leastDestructiveRef={deleteAllCancelRef} isOpen={deleteAllIsOpen} onClose={onCloseDeleteAll}>
                               <AlertDialog.Content>
-                                   <AlertDialog.Header>{translate('reading_history.delete_all')}</AlertDialog.Header>
-                                   <AlertDialog.Body>{translate('reading_history.delete_all_warning')}</AlertDialog.Body>
+                                   <AlertDialog.Header>{getTermFromDictionary(language, 'reading_history_delete_all')}</AlertDialog.Header>
+                                   <AlertDialog.Body>{getTermFromDictionary(language, 'reading_history_delete_all_warning')}</AlertDialog.Body>
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
                                              <Button colorScheme="muted" variant="outline" onPress={onCloseDeleteAll}>
-                                                  {translate('general.close_window')}
+                                                  {getTermFromDictionary(language, 'close')}
                                              </Button>
-                                             <Button isLoading={deleting} isLoadingText="Deleting..." colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
-                                                  {translate('general.button_ok')}
+                                             <Button isLoading={deleting} isLoadingText={getTermFromDictionary(language, 'deleting', true)} colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
+                                                  {getTermFromDictionary(language, 'button_ok')}
                                              </Button>
                                         </Button.Group>
                                    </AlertDialog.Footer>
@@ -204,7 +207,7 @@ export const MyReadingHistory = () => {
           return (
                <Center mt={5} mb={5}>
                     <Text bold fontSize="lg">
-                         {translate('reading_history.empty')}
+                         {getTermFromDictionary(language, 'reading_history_empty')}
                     </Text>
                </Center>
           );
@@ -227,7 +230,7 @@ export const MyReadingHistory = () => {
                          <ScrollView horizontal>
                               <Button.Group size="sm">
                                    <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                                        {translate('general.previous')}
+                                        {getTermFromDictionary(language, 'previous')}
                                    </Button>
                                    <Button
                                         onPress={() => {
@@ -237,11 +240,12 @@ export const MyReadingHistory = () => {
                                              }
                                         }}
                                         isDisabled={isPreviousData || !data?.hasMore}>
-                                        {translate('general.next')}
+                                        {getTermFromDictionary(language, 'next')}
                                    </Button>
                               </Button.Group>
                          </ScrollView>
                          <Text mt={2} fontSize="sm">
+                              {/* TODO: Translate with variable */}
                               Page {page} of {data?.totalPages}
                          </Text>
                     </Box>
@@ -254,8 +258,8 @@ export const MyReadingHistory = () => {
           <SafeAreaView style={{ flex: 1 }}>
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
-                         <Button onPress={optIn} isLoading={optingIn} isLoadingText="Updating...">
-                              {translate('reading_history.opt_in')}
+                         <Button onPress={optIn} isLoading={optingIn} isLoadingText={getTermFromDictionary(language, 'updating', true)}>
+                              {getTermFromDictionary(language, 'reading_history_opt_in')}
                          </Button>
                          {getDisclaimer()}
                     </Box>
@@ -273,6 +277,7 @@ const Item = (data) => {
      const queryClient = useQueryClient();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const item = data.data;
 
      const [deleting, setDelete] = React.useState(false);
@@ -349,12 +354,12 @@ const Item = (data) => {
                                         toggle();
                                    }}
                                    startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
-                                   {translate('grouped_work.view_item_details')}
+                                   {getTermFromDictionary(language, 'view_item_details')}
                               </Actionsheet.Item>
                          ) : null}
                          <Actionsheet.Item
                               isLoading={deleting}
-                              isLoadingText={translate('general.removing')}
+                              isLoadingText={getTermFromDictionary(language, 'removing', true)}
                               onPress={async () => {
                                    setDelete(true);
                                    await deleteFromHistory(item.permanentId).then((r) => {
@@ -363,7 +368,7 @@ const Item = (data) => {
                                    toggle();
                               }}
                               startIcon={<Icon as={MaterialIcons} name="delete" color="trueGray.400" mr="1" size="6" />}>
-                              {translate('reading_history.delete')}
+                              {getTermFromDictionary(language, 'reading_history_delete')}
                          </Actionsheet.Item>
                     </Actionsheet.Content>
                </Actionsheet>
