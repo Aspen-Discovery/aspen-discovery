@@ -3,7 +3,7 @@ import { Button, Center, FlatList, Icon, Modal } from "native-base";
 import React from "react";
 
 // custom components and helper files
-import { translate } from "../../translations/translations";
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const SelectYourLibrary = (props) => {
   const libraryName = props.libraryName;
@@ -17,7 +17,7 @@ export const SelectYourLibrary = (props) => {
         size="md"
         startIcon={<Icon as={MaterialIcons} name="place" size={5} />}
       >
-        {libraryName ? libraryName : translate("login.select_your_library")}
+        {libraryName ? libraryName : getTermFromDictionary('en', 'select_your_library')}
       </Button>
       <Modal
         isOpen={props.showModal}
@@ -27,7 +27,7 @@ export const SelectYourLibrary = (props) => {
       >
         <Modal.Content bg="white" _dark={{ bg: "coolGray.800" }} maxH="350">
           <Modal.CloseButton />
-          <Modal.Header>{translate("login.find_your_library")}</Modal.Header>
+          <Modal.Header>{getTermFromDictionary('en', 'find_your_library')}</Modal.Header>
 
           <FlatList
             data={props.uniqueLibraries}

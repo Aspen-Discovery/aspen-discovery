@@ -17,6 +17,7 @@ import {createAuthTokens, getHeaders} from '../../util/apiAuth';
 import {formatDiscoveryVersion} from '../../util/loadLibrary';
 import {DisplayMessage} from '../../components/Notifications';
 import {loginToLiDA, validateUser} from '../../util/api/user';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const GetLoginForm = (props) => {
      const [loading, setLoading] = React.useState(false);
@@ -115,6 +116,7 @@ export const GetLoginForm = (props) => {
      }
 
      const setAsyncStorage = async () => {
+         const { language } = React.useContext(LanguageContext);
          await SecureStore.setItemAsync('userKey', valueUser);
          await SecureStore.setItemAsync('secretKey', valueSecret);
          await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
@@ -193,12 +195,12 @@ export const GetLoginForm = (props) => {
                          size="md"
                          color="#30373b"
                          isLoading={loading}
-                         isLoadingText="Logging in..."
+                         isLoadingText={getTermFromDictionary(language, 'logging_in', true)}
                          onPress={async () => {
                              setLoading(true);
                              await initialValidation();
                          }}>
-                         {translate('general.login')}
+                         {getTermFromDictionary(language, 'login')}
                     </Button>
                </Center>
           </>
