@@ -98,6 +98,12 @@ class Admin_Placards extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Placards',
+		]);
+	}
+
 	function canAddNew() {
 		return UserAccount::userHasPermission([
 			'Administer All Placards',

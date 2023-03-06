@@ -96,4 +96,10 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 			'Administer Library JavaScript Snippets',
 		]);
 	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All JavaScript Snippets',
+		]);
+	}
 }
