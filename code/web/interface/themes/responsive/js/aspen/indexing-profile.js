@@ -26,7 +26,7 @@ AspenDiscovery.IndexingClass = (function () {
 				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],
 				Polaris: [],
-				Evergreen: ['propertyRowevergreenOrgUnitSchema']
+				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection']
 			};
 
 			//Show rows for selected class
