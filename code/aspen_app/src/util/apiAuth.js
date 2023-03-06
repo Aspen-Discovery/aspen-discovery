@@ -70,13 +70,14 @@ export const UsePostData = () => {
  *     <li>isPost - if request is POST type, set to true. Required for Aspen to see POST parameters.</li>
  * </ul>
  **/
-export function getHeaders(isPost = false) {
+export function getHeaders(isPost = false, language = 'en') {
      const headers = {};
 
      headers['User-Agent'] = 'Aspen LiDA ' + Device.modelName + ' ' + Device.osName + '/' + Device.osVersion;
      headers['Version'] = 'v' + GLOBALS.appVersion + ' [b' + GLOBALS.appBuild + '] p' + GLOBALS.appPatch;
      headers['LiDA-SessionID'] = GLOBALS.appSessionId;
      headers['Cache-Control'] = 'no-cache';
+     headers['Preferred-Language'] = language;
 
      if (isPost) {
           headers['Content-Type'] = 'application/x-www-form-urlencoded';

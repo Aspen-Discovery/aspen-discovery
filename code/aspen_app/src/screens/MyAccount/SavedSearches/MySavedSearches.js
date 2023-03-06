@@ -16,7 +16,6 @@ export const MySavedSearches = () => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-     const [savedSearches, setSavedSearches] = React.useState([]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['savedSearches', library.baseUrl], () => fetchSavedSearches(library.baseUrl), {
           staleTime: 1000,
@@ -38,8 +37,7 @@ export const MySavedSearches = () => {
                    {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.searches} ListEmptyComponent={Empty} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
               </Box>
          </SafeAreaView>
-
-)
+     )
 }
 
 const Item = (data) => {

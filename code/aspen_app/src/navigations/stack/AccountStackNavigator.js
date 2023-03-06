@@ -2,10 +2,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
-import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
-import {MyProfile} from '../../screens/MyAccount/Profile';
+import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { MyProfile } from '../../screens/MyAccount/Profile';
 import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
-import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSearch';
+import { MySavedSearch } from '../../screens/MyAccount/SavedSearches/MySavedSearch';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
 import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
 import { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
@@ -130,7 +130,7 @@ const AccountStackNavigator = () => {
                     />
                     <Stack.Screen
                         name="MySavedSearch"
-                        component={SavedSearchScreen}
+                        component={MySavedSearch}
                         options={({ navigation, route }) => ({
                             title: route.params.title,
                             headerLeft: () => {
