@@ -3,7 +3,7 @@ import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
 import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
-import Profile from '../../screens/MyAccount/Profile';
+import Profile, {MyProfile} from '../../screens/MyAccount/Profile';
 import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSearch';
 import MySavedSearches from '../../screens/MyAccount/SavedSearches/MySavedSearches';
@@ -42,7 +42,7 @@ const AccountStackNavigator = () => {
                     <Stack.Screen name="SettingsNotifications" component={Settings_Notifications} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
                </Stack.Group>
                <Stack.Group>
-                    <Stack.Screen name="MyProfile" component={Profile} options={{ title: getTermFromDictionary(language, 'profile') }} />
+                    <Stack.Screen name="MyProfile" component={MyProfile} options={{ title: getTermFromDictionary(language, 'profile') }} />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen name="MyLinkedAccounts" component={MyLinkedAccounts} options={{ title: getTermFromDictionary(language, 'linked_accounts') }} />
