@@ -3,10 +3,9 @@ import React from 'react';
 import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
 import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
-import Profile, {MyProfile} from '../../screens/MyAccount/Profile';
+import {MyProfile} from '../../screens/MyAccount/Profile';
 import { LoadSavedSearch } from '../../screens/MyAccount/SavedSearches/LoadSavedSearch';
 import SavedSearchScreen from '../../screens/MyAccount/SavedSearches/MySavedSearch';
-import MySavedSearches from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
 import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
 import { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
@@ -23,6 +22,7 @@ import { EditionsModal } from './BrowseStackNavigator';
 import {CreateVDXRequest} from '../../screens/GroupedWork/CreateVDXRequest';
 import {LanguageContext} from '../../context/initialContext';
 import {getTermFromDictionary} from '../../translations/TranslationService';
+import {MySavedSearches} from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 
 const AccountStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
