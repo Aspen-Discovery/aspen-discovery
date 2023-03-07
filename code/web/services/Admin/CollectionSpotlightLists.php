@@ -78,4 +78,10 @@ class Admin_CollectionSpotlightLists extends ObjectEditor {
 			'Administer Library Collection Spotlights',
 		]);
 	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Collection Spotlights',
+		]);
+	}
 }

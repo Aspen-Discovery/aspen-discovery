@@ -114,7 +114,7 @@ class SearchAPI extends Action {
 			$backupFileFound = false;
 			$backupFileTooSmall = false;
 			foreach ($backupFiles as $backupFile) {
-				if (preg_match('/.*\.sql\.gz/', $backupFile)) {
+				if (preg_match('/.*\.tar\.gz/', $backupFile) || preg_match('/.*\.sql\.gz/', $backupFile)) {
 					$fileCreationTime = filectime($backupDir . $backupFile);
 					if ((time() - $fileCreationTime) < (24.5 * 60 * 60)) {
 						$fileSize = filesize($backupDir . $backupFile);

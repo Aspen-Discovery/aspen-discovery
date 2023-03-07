@@ -81,4 +81,10 @@ class Admin_LayoutSettings extends ObjectEditor {
 			'Administer Library Layout Settings',
 		]);
 	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Layout Settings',
+		]);
+	}
 }

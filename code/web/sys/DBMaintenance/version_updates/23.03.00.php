@@ -23,9 +23,17 @@ function getUpdates23_03_00(): array {
 
 		'allow_decimal_series_display_orders' => [
 			'title' => 'Allow Decimal Series Display Orders',
-			'description' => 'Increase the length of the  Interlibrary Loan URL',
+			'description' => 'Allow Decimal Series Display Orders',
 			'sql' => [
 				"ALTER TABLE grouped_work_display_info CHANGE COLUMN seriesDisplayOrder seriesDisplayOrder DECIMAL(6,2);",
+			],
+		],
+		'add_iiiLoginConfiguration' => [
+			'title' => 'Add III Login Configuration to Account Profile',
+			'description' => 'Add III Login Configuration to Account Profile',
+			'sql' => [
+				"ALTER TABLE account_profiles ADD COLUMN iiiLoginConfiguration enum('', 'barcode_pin','name_barcode', 'name_barcode_pin') COLLATE utf8mb4_general_ci NOT NULL DEFAULT '';",
+				"UPDATE account_profiles SET iiiLoginConfiguration = loginConfiguration WHERE ils IN ('millennium', 'sierra')"
 			],
 		],
 
@@ -222,6 +230,14 @@ function getUpdates23_03_00(): array {
 		//truncate_donation_form_fields
 
 		//kodi
+		'google_bucket' => [
+			'title' => 'Google Bucket',
+			'description' => 'Add variable for Google backup bucket in system variables',
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN googleBucket VARCHAR(128) DEFAULT NULL'
+			],
+		],
+		//google_bucket
 
 		//other
 	];
