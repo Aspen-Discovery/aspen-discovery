@@ -669,3 +669,62 @@ export async function deleteSelectedReadingHistory(item, url) {
      }
      return false;
 }
+
+/** *******************************************************************
+ * Saved Searches
+ ******************************************************************* **/
+/**
+ * Return a list of the user's saved searches
+ * @param {string} url
+ **/
+export async function fetchSavedSearches(url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               checkIfValid: false,
+          },
+     });
+
+     const response = await api.post('/ListAPI?method=getSavedSearchesForLiDA', postBody);
+
+     if(response.ok) {
+          return response.data.result
+     }
+
+     return {
+          success: false,
+          count: 0,
+          countNewResults: 0,
+          searches: []
+     }
+}
+
+/**
+ * Return a list of titles from a given saved search
+ * @param {string} id
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function getSavedSearch(id, language, url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               searchId: id,
+               numTitles: 30,
+               language: language
+          },
+     });
+     const response = await api.post('/ListAPI?method=getSavedSearchTitles', postBody);
+     if (response.ok) {
+         return response.data?.result ?? [];
+     } else {
+          return [];
+     }
+}
