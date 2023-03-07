@@ -228,6 +228,25 @@ function getUpdates23_03_00(): array {
 			],
 		],
 		//truncate_donation_form_fields
+		'drop_sso_mapping_constraints' => [
+			'title' => 'Remove table constraints on sso_mapping',
+			'description' => 'Remove table constraints on sso_mapping',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_mapping DROP INDEX aspenField'
+			]
+		],
+		//drop_sso_mapping_constraints
+		'add_sso_mapping_constraints' => [
+			'title' => 'Add table constraints on sso_mapping',
+			'description' => 'Add table constraints on sso_mapping',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE INDEX mapping ON sso_mapping (aspenField, ssoSettingId)',
+			]
+		],
+		//add_sso_mapping_constraints
+
 
 		//kodi
 		'google_bucket' => [
