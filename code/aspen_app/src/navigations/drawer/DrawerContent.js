@@ -38,7 +38,7 @@ export const DrawerContent = () => {
      const [notifications, setNotifications] = React.useState([]);
      const [messages, setILSMessages] = React.useState([]);
      const { language } = React.useContext(LanguageContext);
-     const [finesSummary, setFinesSummary] = React.useState('');
+     const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion) ?? "23.03.00";
 
      React.useEffect(() => {
           const subscription = Notifications.addNotificationReceivedListener((notification) => {
@@ -100,9 +100,12 @@ export const DrawerContent = () => {
      };
 
      const displayFinesAlert = () => {
-          if (user.fines) {
-               if (!_.includes(user.fines, '0.00') && (user.fines > 0.01)) {
-                    const message = 'Your accounts have ' + user.fines + ' in fines.';
+          if (user.finesVal) {
+               if (user.finesVal > 0.01) {
+                    let message = 'Your accounts have ' + user.fines + ' in fines.';
+                    if(discoveryVersion >= "23.04.00" && !_.isUndefined(user.summaryFines)) {
+                         message = user.summaryFines;
+                    }
                     return showILSMessage('warning', message);
                }
           }
