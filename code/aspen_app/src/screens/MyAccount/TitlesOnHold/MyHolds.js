@@ -8,17 +8,19 @@ import _ from 'lodash';
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { translate } from '../../../translations/translations';
-import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { getPickupLocations } from '../../../util/loadLibrary';
 import {getPatronHolds, refreshProfile, reloadProfile} from '../../../util/api/user';
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import {DisplayMessage} from '../../../components/Notifications';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const MyHolds = () => {
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
      const [holdSource, setHoldSource] = React.useState('all');
      const [readySort, setReadySort] = React.useState('expire');
      const [pendingSort, setPendingSort] = React.useState('sortTitle');
@@ -123,7 +125,7 @@ export const MyHolds = () => {
              return (
                  <Center mt={5} mb={5}>
                      <Text bold fontSize="lg">
-                         {translate('holds.pending_holds_none')}
+                         {getTermFromDictionary(language, 'pending_holds_none')}
                      </Text>
                  </Center>
              )
@@ -131,7 +133,7 @@ export const MyHolds = () => {
              return (
                  <Center mt={5} mb={5}>
                      <Text bold fontSize="lg">
-                         {translate('holds.holds_ready_for_pickup_none')}
+                         {getTermFromDictionary(language, 'holds_ready_for_pickup_none')}
                      </Text>
                  </Center>
              );
@@ -164,7 +166,7 @@ export const MyHolds = () => {
                                       <Select
                                           name="sortBy"
                                           selectedValue={pendingSort}
-                                          accessibilityLabel="Select a Sort Method"
+                                          accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                           _selectedItem={{
                                               bg: 'tertiary.300',
                                               endIcon: <CheckIcon size="5"/>,
@@ -198,7 +200,7 @@ export const MyHolds = () => {
                                   <Select
                                       name="sortBy"
                                       selectedValue={pendingSort}
-                                      accessibilityLabel="Select a Sort Method"
+                                      accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                       _selectedItem={{
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
@@ -230,7 +232,7 @@ export const MyHolds = () => {
                                   <Select
                                       name="sortBy"
                                       selectedValue={readySort}
-                                      accessibilityLabel="Select a Sort Method"
+                                      accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                       _selectedItem={{
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
@@ -270,7 +272,7 @@ export const MyHolds = () => {
                          onPress={() => {
                               refreshHolds();
                          }}>
-                         {translate('holds.reload_holds')}
+                         {getTermFromDictionary(language, 'holds_reload')}
                     </Button>
                    <FormControl w={175}>
                        <Select

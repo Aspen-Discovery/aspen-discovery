@@ -235,12 +235,12 @@ export const MyCheckouts = () => {
                                        endIcon: <CheckIcon size="5"/>,
                                   }}
                                   onValueChange={(itemValue) => toggleSource(itemValue)}>
-                                   <Select.Item label={checkoutFilters.all + ' (' + user.numCheckedOut ?? 0 + ')'} value="all" key={0}/>
-                                   <Select.Item label={checkoutFilters.ils + ' (' + user.numCheckedOutIls ?? 0 + ')'} value="ils" key={1}/>
-                                   <Select.Item label={checkoutFilters.overdrive + ' (' + user.numCheckedOutOverDrive ?? 0 + ')'} value="overdrive" key={2}/>
-                                   <Select.Item label={checkoutFilters.hoopla + ' (' + user.numCheckedOut_Hoopla ?? 0 + ')'} value="hoopla" key={3}/>
-                                   <Select.Item label={checkoutFilters.cloudlibrary + ' (' + user.numCheckedOut_cloudLibrary ?? 0 + ')'} value="cloud_library" key={4}/>
-                                   <Select.Item label={checkoutFilters.axis360 + ' (' + user.numCheckedOut_axis360 ?? 0 + ')'} value="axis360" key={5}/>
+                                   <Select.Item label={checkoutFilters.all + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0}/>
+                                   <Select.Item label={checkoutFilters.ils + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1}/>
+                                   <Select.Item label={checkoutFilters.overdrive + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2}/>
+                                   <Select.Item label={checkoutFilters.hoopla + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3}/>
+                                   <Select.Item label={checkoutFilters.cloudlibrary + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4}/>
+                                   <Select.Item label={checkoutFilters.axis360 + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5}/>
                               </Select>
                          </FormControl>
                     </HStack>
