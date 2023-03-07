@@ -805,6 +805,12 @@ class UserAPI extends Action {
 				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
 			}
 
+			$userData->summaryFines = translate([
+				'text' => 'Your accounts have %1% in fines',
+				1 => $userData->fines,
+				'isPublicFacing' => true,
+			]);
+
 			return [
 				'success' => true,
 				'profile' => $userData,
