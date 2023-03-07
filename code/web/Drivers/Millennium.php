@@ -1013,7 +1013,12 @@ class Millennium extends AbstractIlsDriver {
 
 	public function _getLoginFormValues(User $patron) {
 		$loginData = [];
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+
+		if ($this->accountProfile->iiiLoginConfiguration == 'name_barcode_pin') {
+			$loginData['name'] = $patron->lastname;
+			$loginData['code'] = $patron->cat_username;
+			$loginData['pin'] = $patron->cat_password;
+		} else if ($this->accountProfile->iiiLoginConfiguration == 'barcode_pin') {
 			$loginData['code'] = $patron->cat_username;
 			$loginData['pin'] = $patron->cat_password;
 		} else {
