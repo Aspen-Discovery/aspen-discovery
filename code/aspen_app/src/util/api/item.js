@@ -23,6 +23,7 @@ export async function getManifestation(itemId, format, language, url) {
           params: {
                id: itemId,
                format: format,
+               language,
           },
      });
 
@@ -37,9 +38,10 @@ export async function getManifestation(itemId, format, language, url) {
  * Returns variation data for the given grouped work id and format
  * @param {string} itemId
  * @param {string} format
+ * @param {string} language
  * @param {string} url
  **/
-export async function getVariations(itemId, format, url) {
+export async function getVariations(itemId, format, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getVariations', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -48,6 +50,7 @@ export async function getVariations(itemId, format, url) {
           params: {
                id: itemId,
                format: format,
+               language
           },
      });
 
@@ -70,9 +73,10 @@ export async function getVariations(itemId, format, url) {
  * @param {string} itemId
  * @param {string} format
  * @param {string} source
+ * @param {string} language
  * @param {string} url
  **/
-export async function getRecords(itemId, format, source, url) {
+export async function getRecords(itemId, format, source, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getRecords', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -82,6 +86,7 @@ export async function getRecords(itemId, format, source, url) {
                id: itemId,
                format: format,
                source: source,
+               language
           },
      });
 
@@ -114,7 +119,7 @@ export async function getItemAvailability(recordId, url) {
      };
 }
 
-export async function getFirstRecord(itemId, format, url) {
+export async function getFirstRecord(itemId, format, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getRecords', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -123,6 +128,7 @@ export async function getFirstRecord(itemId, format, url) {
           params: {
                id: itemId,
                format: format,
+               language
           },
      });
 

@@ -23,16 +23,17 @@ export const Variations = (props) => {
      const prevRoute = route.params.prevRoute;
      const format = props.format;
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const [isLoading, setLoading] = React.useState(false);
 
      const { data: record } = useQuery({
-          queryKey: ['recordId', id, format, library.baseUrl],
-          queryFn: () => getFirstRecord(id, format, library.baseUrl),
+          queryKey: ['recordId', id, format, language, library.baseUrl],
+          queryFn: () => getFirstRecord(id, format, language, library.baseUrl),
      });
      const recordId = record;
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['variation', id, format, library.baseUrl],
-          queryFn: () => getVariations(id, format, library.baseUrl),
+          queryKey: ['variation', id, format, language, library.baseUrl],
+          queryFn: () => getVariations(id, format, language, library.baseUrl),
           enabled: !!recordId,
      });
 
@@ -90,12 +91,12 @@ export const Variations = (props) => {
 };
 
 const Variation = (payload) => {
+     const { language } = React.useContext(LanguageContext);
      const {id, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, prevRoute, format, volumeInfo} = payload;
      const variation = payload.records;
      const actions = variation.actions;
      const source = variation.source;
-     const status = getStatusIndicator(variation.statusIndicator);
-     const { language } = React.useContext(LanguageContext);
+     const status = getStatusIndicator(variation.statusIndicator, language);
 
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
