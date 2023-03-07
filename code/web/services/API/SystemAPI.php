@@ -684,7 +684,7 @@ class SystemAPI extends Action {
 		}
 
 		if (isset($_REQUEST['values'])) {
-			if(is_array($_REQUEST['values'])) {
+			if (is_array($_REQUEST['values'])) {
 				$givenValues = $_REQUEST['values'];
 			} else {
 				$givenValues[] = $_REQUEST['values'];
@@ -715,11 +715,11 @@ class SystemAPI extends Action {
 			];
 		}
 
-		if(is_array($givenValues)) {
+		if (is_array($givenValues)) {
 			$num = 1;
 			$values = [];
 			foreach ($givenValues as $value) {
-				if(is_array($value)) {
+				if (is_array($value)) {
 					$values[$num] = $value[0];
 				} else {
 					$values[$num] = $value;
@@ -729,13 +729,14 @@ class SystemAPI extends Action {
 		} else {
 			$values = $givenValues;
 
-		/** @var Translator $translator */ global $translator;
-		return [
-			'success' => true,
-			'translation' => [
-				$term => $translator->translate($term, $term, $values, true, true)
-			],
-		];
+			/** @var Translator $translator */ global $translator;
+			return [
+				'success' => true,
+				'translation' => [
+					$term => $translator->translate($term, $term, $values, true, true)
+				],
+			];
+		}
 	}
 
 	function getBulkTranslations() {
