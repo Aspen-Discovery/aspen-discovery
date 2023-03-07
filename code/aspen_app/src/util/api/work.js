@@ -10,9 +10,10 @@ import { getManifestation } from './item';
 /**
  * Returns grouped work data for a given id
  * @param {string} itemId
+ * @param {string} language
  * @param {string} url
  **/
-export async function getGroupedWork(itemId, url) {
+export async function getGroupedWork(itemId, language, url) {
      const { data } = await axios.get('/WorkAPI?method=getGroupedWork', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -20,12 +21,13 @@ export async function getGroupedWork(itemId, url) {
           auth: createAuthTokens(),
           params: {
                id: itemId,
+               language
           },
      });
 
      const keys = _.keys(data.formats);
      const firstFormat = _.first(keys);
-     const manifestation = await getManifestation(itemId, firstFormat, url);
+     const manifestation = await getManifestation(itemId, firstFormat, language, url);
 
      return {
           results: data,

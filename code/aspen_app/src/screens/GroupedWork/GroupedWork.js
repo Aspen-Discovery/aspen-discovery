@@ -12,7 +12,7 @@ import { loadingSpinner } from '../../components/loadingSpinner';
 import { translate } from '../../translations/translations';
 import AddToList from '../Search/AddToList';
 import {navigateStack, startSearch} from '../../helpers/RootNavigator';
-import { GroupedWorkContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {GroupedWorkContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { useRoute } from '@react-navigation/native';
 import loading from '../Auth/Loading';
 import { getGroupedWork } from '../../util/api/work';
@@ -27,6 +27,7 @@ import {GetOverDriveSettings} from './OverDriveSettings';
 import {getProfile, PATRON} from '../../util/loadPatron';
 import Manifestation from './Manifestation';
 import {decodeHTML} from '../../util/apiAuth';
+import {getTermFromDictionary, getVariableTermFromDictionary} from '../../translations/TranslationService';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -34,9 +35,10 @@ export const GroupedWorkScreen = () => {
      const { user, locations, accounts, cards, updatePickupLocations, updateLinkedAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const {language: userLanguage} = React.useContext(LanguageContext)
      const [isLoading, setLoading] = React.useState(false);
 
-     const { status, data, error, isFetching } = useQuery(['groupedWork', id, library.baseUrl], () => getGroupedWork(route.params.id, library.baseUrl));
+     const { status, data, error, isFetching } = useQuery(['groupedWork', id, userLanguage, library.baseUrl], () => getGroupedWork(route.params.id, userLanguage, library.baseUrl));
 
      React.useEffect(() => {
           let isSubscribed = true;
@@ -138,6 +140,7 @@ const getAuthor = (author) => {
 };
 
 const Format = (data) => {
+     const { language } = React.useContext(LanguageContext);
      const isSelected = data.isSelected;
      const updateFormat = data.updateFormat;
      const btnStyle = isSelected === data.data ? 'solid' : 'outline';
@@ -166,11 +169,12 @@ const getDescription = (description) => {
 };
 
 const getLanguage = (language) => {
+    const {language: user_language} = React.useContext(LanguageContext);
      if (language) {
           return (
                <HStack mt={3} mb={1}>
                     <Text fontSize={{ base: 'xs', lg: 'md' }} bold>
-                         {translate('grouped_work.language')}:
+                         {getTermFromDictionary(user_language, 'language')}:
                     </Text>
                     <Text fontSize={{ base: 'xs', lg: 'md' }} ml={1}>
                          {language}
@@ -183,12 +187,13 @@ const getLanguage = (language) => {
 };
 
 const getFormats = (formats) => {
+     const { language } = React.useContext(LanguageContext);
      const { format, updateFormat } = React.useContext(GroupedWorkContext);
      if (formats) {
           return (
                <>
                     <Text fontSize={{ base: 'xs', lg: 'md' }} bold mt={3} mb={1}>
-                         {translate('grouped_work.format')}
+                        {getTermFromDictionary(language, 'format')}:
                     </Text>
                    <Button.Group flexDirection="row" flexWrap="wrap">
                        {_.map(_.keys(formats), function (item, index, array) {

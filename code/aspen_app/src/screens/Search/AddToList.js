@@ -9,8 +9,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { translate } from '../../translations/translations';
 import { PATRON } from '../../util/loadPatron';
 import { addTitlesToList, createListFromTitle, getLists } from '../../util/api/list';
-import { LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { refreshProfile } from '../../util/api/user';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const AddToList = (props) => {
      const item = props.itemId;
@@ -20,6 +21,7 @@ export const AddToList = (props) => {
      const [loading, setLoading] = React.useState(false);
      const { library } = React.useContext(LibrarySystemContext);
      const { updateUser } = React.useContext(UserContext);
+     const { language } = React.useContext(LanguageContext);
      const lists = PATRON.lists;
      const [listId, setListId] = useState();
      const [description, saveDescription] = useState();
@@ -68,7 +70,7 @@ export const AddToList = (props) => {
           return (
                <Center>
                     <Button mt={3} onPress={toggleModal} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="sm" />}>
-                         {translate('lists.add_to_list')}
+                         {getTermFromDictionary(language, 'add_to_list')}
                     </Button>
                </Center>
           );
@@ -77,7 +79,7 @@ export const AddToList = (props) => {
      const SmallButton = () => {
           return (
                <Button size="sm" variant="ghost" colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1" />} onPress={toggleModal}>
-                    {translate('lists.add_to_list')}
+                    {getTermFromDictionary(language, 'add_to_list')}
                </Button>
           );
      };

@@ -19,6 +19,15 @@ class UserAPI extends Action {
 		//header('Content-type: text/html');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [
@@ -795,6 +804,12 @@ class UserAPI extends Action {
 			if($promptForHoldNotifications) {
 				$userData->holdNotificationInfo = $user->getCatalogDriver()->loadHoldNotificationInfo($user);
 			}
+
+			$userData->summaryFines = translate([
+				'text' => 'Your accounts have %1% in fines',
+				1 => $userData->fines,
+				'isPublicFacing' => true,
+			]);
 
 			return [
 				'success' => true,

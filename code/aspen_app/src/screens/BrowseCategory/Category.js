@@ -6,9 +6,10 @@ import React from 'react';
 import { translate } from '../../translations/translations';
 import { LibrarySystemContext } from '../../context/initialContext';
 import { SafeAreaView } from 'react-native';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const DisplayBrowseCategory = (props) => {
-     const { id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden } = props;
+     const { language, id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden } = props;
 
      let key = categoryKey;
      if (id) {

@@ -2,6 +2,7 @@ import {GLOBALS} from '../globals';
 import {createAuthTokens, getHeaders} from '../apiAuth';
 import axios from 'axios';
 import _ from 'lodash';
+import {getVariableTermFromDictionary} from '../../translations/TranslationService';
 
 /** *******************************************************************
  * General
@@ -10,9 +11,10 @@ import _ from 'lodash';
  * Returns manifestation data for the given grouped work id and format
  * @param {string} itemId
  * @param {string} format
+ * @param {string} language
  * @param {string} url
  **/
-export async function getManifestation(itemId, format, url) {
+export async function getManifestation(itemId, format, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getManifestation', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,

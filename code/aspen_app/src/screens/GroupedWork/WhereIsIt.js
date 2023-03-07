@@ -1,4 +1,4 @@
-import { LibrarySystemContext } from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
 import React from 'react';
 import _ from 'lodash';
 import { Center, Text, HStack, FlatList, Box } from 'native-base';
@@ -12,15 +12,15 @@ import { translate } from '../../translations/translations';
 export const WhereIsIt = () => {
      const route = useRoute();
      const { id, format, prevRoute, type, recordId } = route.params;
-     console.log(route.params);
+     const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [isLoading, setLoading] = React.useState(false);
 
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['manifestations', id, format, recordId, type, library.baseUrl],
+          queryKey: ['manifestations', id, format, recordId, type, language, library.baseUrl],
           queryFn: async () => {
               if(!recordId) {
-                  return await getManifestation(id, format, library.baseUrl);
+                  return await getManifestation(id, format, language, library.baseUrl);
               } else {
                   return await getRelatedRecord(id, recordId, format, library.baseUrl);
               }

@@ -11,6 +11,15 @@ class SystemAPI extends Action {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+
 		if ($method === "getLogoFile") {
 			return $this->$method();
 		};
@@ -675,7 +684,7 @@ class SystemAPI extends Action {
 		}
 
 		if (isset($_REQUEST['values'])) {
-			if(is_array($_REQUEST['values'])) {
+			if (is_array($_REQUEST['values'])) {
 				$givenValues = $_REQUEST['values'];
 			} else {
 				$givenValues[] = $_REQUEST['values'];
@@ -706,28 +715,28 @@ class SystemAPI extends Action {
 			];
 		}
 
-		if(is_array($givenValues)) {
-		$num = 1;
-		$values = [];
-		foreach ($givenValues as $value) {
-				if(is_array($value)) {
-			$values[$num] = $value[0];
+		if (is_array($givenValues)) {
+			$num = 1;
+			$values = [];
+			foreach ($givenValues as $value) {
+				if (is_array($value)) {
+					$values[$num] = $value[0];
 				} else {
 					$values[$num] = $value;
 				}
-			$num++;
-		}
+				$num++;
+			}
 		} else {
 			$values = $givenValues;
-		}
 
-		/** @var Translator $translator */ global $translator;
-		return [
-			'success' => true,
-			'translation' => [
-				$term => $translator->translate($term, $term, $values, true, true)
-			],
-		];
+			/** @var Translator $translator */ global $translator;
+			return [
+				'success' => true,
+				'translation' => [
+					$term => $translator->translate($term, $term, $values, true, true)
+				],
+			];
+		}
 	}
 
 	function getBulkTranslations() {

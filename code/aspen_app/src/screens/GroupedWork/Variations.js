@@ -7,7 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
 import { translate } from '../../translations/translations';
-import { LibrarySystemContext } from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
@@ -15,6 +15,7 @@ import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { getStatusIndicator } from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
 import {decodeHTML, stripHTML} from '../../util/apiAuth';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const Variations = (props) => {
      const route = useRoute();
@@ -94,6 +95,7 @@ const Variation = (payload) => {
      const actions = variation.actions;
      const source = variation.source;
      const status = getStatusIndicator(variation.statusIndicator);
+     const { language } = React.useContext(LanguageContext);
 
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
@@ -137,7 +139,7 @@ const Variation = (payload) => {
                          ) : null}
                          {source === 'ils' ? (
                               <Button colorScheme="tertiary" variant="ghost" size="sm" leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1" />} onPress={handleOnPress}>
-                                   {translate('copy_details.where_is_it')}
+                                   {getTermFromDictionary(language, 'where_is_it')}
                               </Button>
                          ) : null}
                     </VStack>
@@ -147,7 +149,7 @@ const Variation = (payload) => {
                </HStack>
                <Center mt={2}>
                     <Button size="xs" colorScheme="tertiary" variant="outline" onPress={handleOpenEditions}>
-                         {translate('grouped_work.show_editions')}
+                         {getTermFromDictionary(language, 'show_editions')}
                     </Button>
                </Center>
           </Box>

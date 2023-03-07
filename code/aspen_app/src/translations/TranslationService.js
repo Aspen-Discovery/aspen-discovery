@@ -9,6 +9,7 @@ import {GLOBALS} from '../util/globals';
 import {LanguageContext, LibrarySystemContext} from '../context/initialContext';
 import {saveLanguage} from '../util/api/user';
 import defaults from './defaults.json';
+import {translate} from './translations';
 
 /** *******************************************************************
  * General
@@ -74,7 +75,12 @@ export async function getTranslation(term, language, url) {
   });
   const response = await api.get("/SystemAPI?method=getTranslation", {term, language});
   if (response.ok) {
-    return response?.data?.result?.translations[term] ?? term;
+      if(response.data?.success) {
+          if(response?.data?.result[language][term]) {
+              console.log(response?.data?.result[language][term])
+              return Object.values(response?.data?.result[language][term])
+          }
+      }
   }
   // return the original term as a fallback
   return term;
@@ -104,6 +110,41 @@ export async function getTranslations(terms, language, url) {
     console.log(response);
     // no data yet
   }
+}
+
+/**
+ * Returns translation of a term with interchangeable values in the given language
+ * getTranslationsWithValues('last_updated_on', $value, 'en', $url)
+ * getTranslationsWithValues('filter_by_source', [$value1, $value2], 'en', $url)
+ *
+ * @param {string} key
+ * @param {array || string} values
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function getTranslationsWithValues(key, values, language, url) {
+    let defaults = require('../translations/defaults.json');
+    const term = defaults[key];
+
+    const api = create({
+        baseURL: url + "/API",
+        timeout: GLOBALS.timeoutAverage,
+        headers: getHeaders(),
+        auth: createAuthTokens(),
+    });
+    const response = await api.get("/SystemAPI?method=getTranslationWithValues", {
+        term,
+        values: values,
+        language: language,
+    });
+
+    if (response.ok) {
+        if(response.data?.result?.translation) {
+            return Object.values(response.data?.result?.translation);
+        }
+    }
+    // it didn't work we should return the untranslated term back
+    return term;
 }
 
 /**
@@ -168,17 +209,23 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
     })
 }
 
-export const getTermFromDictionary = (language, key) => {
+export const getTermFromDictionary = (language = 'en', key, ellipsis = false) => {
     if(language && key) {
         const { dictionary } = React.useContext(LanguageContext);
         if(dictionary[language]) {
             const thisDictionary = dictionary[language];
             if(thisDictionary[key]) {
+                if(ellipsis) {
+                    return dictionary[language][key] + "...";
+                }
                 return dictionary[language][key]
             } else {
                 if(dictionary.en) {
                     const englishDictionary = dictionary.en;
                     if(englishDictionary[key]) {
+                        if(ellipsis) {
+                            return englishDictionary[key] + "...";
+                        }
                         return englishDictionary[key]
                     }
                 }
@@ -186,7 +233,37 @@ export const getTermFromDictionary = (language, key) => {
         }
     }
     let defaults = require('../translations/defaults.json');
+    if(ellipsis) {
+        return defaults[key] + "...";
+    }
     return defaults[key]
+}
+
+export const getVariableTermFromDictionary = async (language, key) => {
+    if (language && key) {
+        const {dictionary, updateDictionary} = React.useContext(LanguageContext);
+        if (dictionary[language]) {
+            const thisDictionary = dictionary[language];
+            if (thisDictionary[key]) {
+                console.log(Object.values(dictionary[language][key]))
+                return Object.values(dictionary[language][key])
+            } else {
+                // fetch translated term from Discovery and add to dictionary for later
+                const {library} = React.useContext(LibrarySystemContext);
+                let localDictionary = dictionary;
+                const term = await getTranslation(key, language, library.baseUrl);
+                const obj = {
+                    [language]: {
+                        [key]: term,
+                    }
+                }
+                localDictionary = _.merge(localDictionary, obj);
+                translationsLibrary = _.merge(translationsLibrary, obj);
+                updateDictionary(localDictionary);
+            }
+        }
+    }
+    return key;
 }
 
 /*

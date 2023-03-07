@@ -7,7 +7,7 @@ import _ from 'lodash';
 // custom components and helper files
 import {translate} from '../../translations/translations';
 import {Record} from './Record';
-import {GroupedWorkContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {GroupedWorkContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {LIBRARY} from '../../util/loadLibrary';
 import {SafeAreaView} from 'react-native';
 import {getGroupedWork} from '../../util/api/work';
@@ -28,6 +28,7 @@ export const Variation = (props) => {
      const {user} = React.useContext(UserContext);
      const {library} = React.useContext(LibrarySystemContext);
      const {location} = React.useContext(LibraryBranchContext);
+	 const {language} = React.useContext(LanguageContext);
      const [isLoading, setLoading] = React.useState(false);
 
      console.log('*******************************');
@@ -38,7 +39,7 @@ export const Variation = (props) => {
      console.log(cachedGroupedWork);
 
      const {status, data, error, isFetching} = useQuery(['variation', id, format, library.baseUrl], () => getVariation(id, format, library.baseUrl));
-     const relatedManifestation = useQuery(['manifestation', id, format, library.baseUrl], () => getManifestation(id, format, library.baseUrl));
+     const relatedManifestation = useQuery(['manifestation', id, format, language, library.baseUrl], () => getManifestation(id, format, language, library.baseUrl));
 
      if (!_.isUndefined(data)) {
           console.log(data.variation);

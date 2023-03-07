@@ -15,7 +15,7 @@ import {BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, 
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import {getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds} from '../../util/api/user';
-import {getTranslatedTerm} from '../../translations/TranslationService';
+import {getTermFromDictionary, getTranslatedTerm} from '../../translations/TranslationService';
 
 let maxCategories = 5;
 
@@ -103,7 +103,7 @@ export const DiscoverHomeScreen = () => {
                               {title}
                          </Text>
                          <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => onHideCategory(url, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                              {translate('general.hide')}
+                              {getTermFromDictionary(language, "hide")}
                          </Button>
                     </HStack>
                </Box>
@@ -274,9 +274,9 @@ export const DiscoverHomeScreen = () => {
           <ScrollView>
                <Box safeArea={5}>
                     {category.map((item, index) => {
-                         return <DisplayBrowseCategory key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
+                         return <DisplayBrowseCategory language={language} key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
                     })}
-                    <ButtonOptions libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
+                    <ButtonOptions language={language} libraryUrl={library.baseUrl} patronId={user.id} onPressSettings={onPressSettings} onRefreshCategories={onRefreshCategories} discoveryVersion={library.discoveryVersion} loadAll={unlimited} onLoadAllCategories={onLoadAllCategories} />
                </Box>
           </ScrollView>
      );
@@ -685,7 +685,7 @@ export const DiscoverHomeScreen = () => {
 const ButtonOptions = (props) => {
      const [loading, setLoading] = React.useState(false);
      const [refreshing, setRefreshing] = React.useState(false);
-     const { onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories } = props;
+     const { language, onPressSettings, onRefreshCategories, libraryUrl, patronId, discoveryVersion, loadAll, onLoadAllCategories } = props;
 
      const version = formatDiscoveryVersion(discoveryVersion);
 
@@ -705,7 +705,7 @@ const ButtonOptions = (props) => {
                                    }, 5000);
                               }}
                               startIcon={<Icon as={MaterialIcons} name="schedule" size="sm" />}>
-                              {translate('browse_category.load_all_categories')}
+                              {getTermFromDictionary(language, "browse_categories_load_all")}
                          </Button>
                     ) : null}
                     <Button
@@ -716,7 +716,7 @@ const ButtonOptions = (props) => {
                               onPressSettings(libraryUrl, patronId);
                          }}
                          startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                         {translate('browse_category.manage_categories')}
+                         {getTermFromDictionary(language, "browse_categories_manage")}
                     </Button>
                     <Button
                          isLoading={refreshing}
@@ -731,7 +731,7 @@ const ButtonOptions = (props) => {
                               });
                          }}
                          startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                         {translate('browse_category.refresh_categories')}
+                         {getTermFromDictionary(language, "browse_categories_refresh")}
                     </Button>
                </Box>
           );
@@ -746,7 +746,7 @@ const ButtonOptions = (props) => {
                          onPressSettings(libraryUrl, patronId);
                     }}
                     startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                    {translate('browse_category.manage_categories')}
+                    {getTermFromDictionary(language, "browse_categories_manage")}
                </Button>
                <Button
                     size="md"
@@ -756,7 +756,7 @@ const ButtonOptions = (props) => {
                          onRefreshCategories(libraryUrl);
                     }}
                     startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                    {translate('browse_category.refresh_categories')}
+                    {getTermFromDictionary(language, "browse_categories_refresh")}
                </Button>
           </Box>
      );

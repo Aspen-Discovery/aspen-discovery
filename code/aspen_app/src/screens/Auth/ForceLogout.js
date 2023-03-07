@@ -3,8 +3,11 @@ import React from 'react';
 
 import {AuthContext} from '../../components/navigation';
 import {translate} from '../../translations/translations';
+import {LanguageContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const ForceLogout = () => {
+	const { language } = React.useContext(LanguageContext);
 	const { signOut } = React.useContext(AuthContext);
 	const [isOpen, setIsOpen] = React.useState(true);
 	const onClose = () => setIsOpen(false);
@@ -14,12 +17,12 @@ export const ForceLogout = () => {
 		<Center>
 			<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 				<AlertDialog.Content>
-					<AlertDialog.Header>{translate('error.title')}</AlertDialog.Header>
-					<AlertDialog.Body>{translate('error.invalid_session')}</AlertDialog.Body>
+					<AlertDialog.Header>{getTermFromDictionary(language, 'error')}</AlertDialog.Header>
+					<AlertDialog.Body>{getTermFromDictionary(language, 'error_invalid_session')}</AlertDialog.Body>
 					<AlertDialog.Footer>
 						<Button.Group space={3}>
 							<Button colorScheme="primary" onPress={signOut} ref={cancelRef}>
-								{translate('general.button_ok')}
+								{getTermFromDictionary(language, 'button_ok')}
 							</Button>
 						</Button.Group>
 					</AlertDialog.Footer>
