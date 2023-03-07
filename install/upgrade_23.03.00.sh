@@ -8,4 +8,3 @@ replace="10 0 * * *    root    /usr/local/aspen-discovery/code/web/cron/backupAs
 
 sed -i "s/$search/$replace/g" "$file"
 
-
