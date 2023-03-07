@@ -71,6 +71,17 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
 		String location = translateValue("location", locationCode, identifier, true);
 
+		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
+		if (subLocationCode != null && subLocationCode.length() > 0){
+			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
+			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
+				if (location.length() > 0) {
+					location += " - ";
+				}
+				location += translateValue("sub_location", subLocationCode, identifier, true);
+			}
+		}
+
 		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
 		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
 			String shelvingLocation = itemInfo.getShelfLocationCode();
@@ -87,6 +98,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 				location += " - " + translateValue("shelf_location", status, identifier, true);
 			}
 		}
+
 		return location;
 	}
 

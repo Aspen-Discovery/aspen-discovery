@@ -80,6 +80,12 @@ class Admin_BrowseCategories extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit() {
+		return UserAccount::userHasPermission([
+			'Administer All Browse Categories',
+		]);
+	}
+
 	protected function getDefaultRecordsPerPage() {
 		return 100;
 	}

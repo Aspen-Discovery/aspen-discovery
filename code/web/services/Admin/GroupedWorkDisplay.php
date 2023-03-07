@@ -109,4 +109,10 @@ class Admin_GroupedWorkDisplay extends ObjectEditor {
 			'Administer Library Grouped Work Display Settings',
 		]);
 	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Grouped Work Display Settings',
+		]);
+	}
 }

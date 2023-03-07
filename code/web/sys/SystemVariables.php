@@ -63,6 +63,13 @@ class SystemVariables extends DataObject {
 				'description' => 'Email Address to send errors to',
 				'maxLength' => 128,
 			],
+			'googleBucket' => [
+				'property' => 'googleBucket',
+				'type' => 'text',
+				'label' => 'Google Bucket',
+				'description' => 'Google bucket to store backups',
+				'maxLength' => 128,
+			],
 			'currencyCode' => [
 				'property' => 'currencyCode',
 				'type' => 'enum',

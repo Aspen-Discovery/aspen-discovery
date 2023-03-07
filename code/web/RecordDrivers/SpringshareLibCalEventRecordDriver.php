@@ -216,7 +216,9 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getAudiences() {
-		return $this->fields['age_group'];
+		if (array_key_exists('age_group', $this->fields)){
+			return $this->fields['age_group'];
+		}
 	}
 
 	public function getCategories() {

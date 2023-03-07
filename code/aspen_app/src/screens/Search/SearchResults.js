@@ -163,6 +163,16 @@ const DisplayResult = (data) => {
           }
      };
 
+     const formats = item?.itemList ?? [];
+
+     function getFormat(n) {
+          return (
+              <Badge key={n.key} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                   {n.name}
+              </Badge>
+          );
+     }
+
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
@@ -215,13 +225,7 @@ const DisplayResult = (data) => {
                               </Text>
                          ) : null}
                          <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                              {item.itemList.map((item, i) => {
-                                   return (
-                                        <Badge key={i} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                             {item.name}
-                                        </Badge>
-                                   );
-                              })}
+                              {_.map(formats, getFormat)}
                          </Stack>
                     </VStack>
                </HStack>

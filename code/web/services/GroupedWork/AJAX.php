@@ -89,6 +89,15 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
+
+		if (isset($_REQUEST['reload'])) {
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistData.php';
+			$novelistData = new NovelistData();
+			$novelistData->groupedRecordPermanentId = $id;
+			if ($novelistData->find(true)) {
+				$novelistData->delete();
+			}
+		}
 		$recordDriver = new GroupedWorkDriver($id);
 		$interface->assign('recordDriver', $recordDriver);
 
@@ -991,7 +1000,6 @@ class GroupedWork_AJAX extends JSON_Action {
 		$bookCoverInfo->recordType = 'grouped_work';
 		$bookCoverInfo->recordId = $id;
 		if ($bookCoverInfo->find(true)) {
-			$bookCoverInfo->imageSource = '';
 			$bookCoverInfo->thumbnailLoaded = 0;
 			$bookCoverInfo->mediumLoaded = 0;
 			$bookCoverInfo->largeLoaded = 0;
@@ -1014,7 +1022,6 @@ class GroupedWork_AJAX extends JSON_Action {
 			}
 
 			if ($bookCoverInfo->find(true)) {
-				$bookCoverInfo->imageSource = '';
 				$bookCoverInfo->thumbnailLoaded = 0;
 				$bookCoverInfo->mediumLoaded = 0;
 				$bookCoverInfo->largeLoaded = 0;
@@ -1130,11 +1137,22 @@ class GroupedWork_AJAX extends JSON_Action {
 			}
 		}
 		if ($result['success']) {
-			$this->reloadCover();
-			$result['message'] = translate([
-				'text' => 'Your cover has been uploaded successfully',
-				'isAdminFacing' => true,
-			]);
+			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+			$bookCoverInfo = new BookCoverInfo();
+			$bookCoverInfo->recordType = 'grouped_work';
+			$bookCoverInfo->recordId = $_REQUEST['id'];
+			if($bookCoverInfo->find(true)) {
+				$bookCoverInfo->imageSource = "upload";
+				$bookCoverInfo->thumbnailLoaded = 0;
+				$bookCoverInfo->mediumLoaded = 0;
+				$bookCoverInfo->largeLoaded = 0;
+				if($bookCoverInfo->update()) {
+					$result['message'] = translate([
+						'text' => 'Your cover has been uploaded successfully',
+						'isAdminFacing' => true,
+					]);
+				}
+			}
 		}
 		return $result;
 	}
@@ -1212,11 +1230,22 @@ class GroupedWork_AJAX extends JSON_Action {
 			]);
 		}
 		if ($result['success']) {
-			$this->reloadCover();
-			$result['message'] = translate([
-				'text' => 'Your cover has been uploaded successfully',
-				'isAdminFacing' => true,
-			]);
+			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+			$bookCoverInfo = new BookCoverInfo();
+			$bookCoverInfo->recordType = 'grouped_work';
+			$bookCoverInfo->recordId = $_REQUEST['id'];
+			if ($bookCoverInfo->find(true)) {
+				$bookCoverInfo->imageSource = 'upload';
+				$bookCoverInfo->thumbnailLoaded = 0;
+				$bookCoverInfo->mediumLoaded = 0;
+				$bookCoverInfo->largeLoaded = 0;
+				if ($bookCoverInfo->update()) {
+					$result['message'] = translate([
+						'text' => 'Your cover has been uploaded successfully',
+						'isAdminFacing' => true,
+					]);
+				}
+			}
 		}
 		return $result;
 	}

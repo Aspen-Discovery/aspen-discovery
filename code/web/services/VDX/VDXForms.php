@@ -76,4 +76,10 @@ class VDX_VDXForms extends ObjectEditor {
 			'Administer Library VDX Forms',
 		]);
 	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All VDX Forms',
+		]);
+	}
 }
