@@ -51,8 +51,8 @@ class SAMLAuthentication extends Action {
 					$metadata = $metadataParser->parseRemoteXML($ssoSettings->ssoXmlUrl, $ssoSettings->ssoEntityId);
 				} elseif($ssoSettings->ssoMetadataFilename) {
 					global $serverName;
-					//$xmlPath = '/data/aspen-discovery/' . $serverName . '/sso_metadata/' . $ssoSettings->ssoMetadataFilename;
-					$xmlPath = '/usr/local/aspen-discovery-data/sso_metadata/' . $ssoSettings->ssoMetadataFilename;
+					$xmlPath = '/data/aspen-discovery/' . $serverName . '/sso_metadata/' . $ssoSettings->ssoMetadataFilename;
+					//$xmlPath = '/usr/local/aspen-discovery-data/sso_metadata/' . $ssoSettings->ssoMetadataFilename;
 					$metadata = $metadataParser->parseFileXML($xmlPath, $ssoSettings->ssoEntityId);
 				}
 			}
