@@ -87,6 +87,12 @@ class WebBuilder_Menus extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Menus',
+		]);
+	}
+
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}

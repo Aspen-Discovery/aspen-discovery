@@ -97,6 +97,12 @@ class Admin_Themes extends ObjectEditor {
 		]);
 	}
 
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All Themes',
+		]);
+	}
+
 	protected function getDefaultRecordsPerPage() {
 		return 100;
 	}
