@@ -11,6 +11,19 @@ $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
 $dbName = $configArray['Database']['database_aspen_dbname'];
 
+//Make sure our backup directory exists
+if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
+	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
+}
+
+//Remove any backups older than 3 days
+$backupDir = "/data/aspen-discovery/$serverName/sql_backup";
+exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql -type f -mtime +3 -delete");
+exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql.gz -type f -mtime +3 -delete");
+exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar -type f -mtime +3 -delete");
+exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 -delete");
+
+
 //Create the export files
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
@@ -21,9 +34,6 @@ foreach ($allTables as $table) {
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $exportFile";
 	exec($dumpCommand);
-}
-if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
-	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
 }
 
 $backupFile = "/data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz";
