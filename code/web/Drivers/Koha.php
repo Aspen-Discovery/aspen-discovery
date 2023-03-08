@@ -5103,6 +5103,7 @@ class Koha extends AbstractIlsDriver {
 			if ($stripNonNumericCharacters) {
 				$field = preg_replace('/[^0-9]/', '', $field);
 			}
+			$field = str_replace('’', "'", $field);
 			if ($convertToUpperCase) {
 				$postFields[$postFieldName] = strtoupper($field);
 			} else {
@@ -5126,6 +5127,7 @@ class Koha extends AbstractIlsDriver {
 			if ($stripNonNumericCharacters) {
 				$field = preg_replace('/[^0-9]/', '', $field);
 			}
+			$field = str_replace('’', "'", $field);
 			if ($convertToUpperCase) {
 				$postFields[$variableName] = strtoupper($field);
 			} else {
