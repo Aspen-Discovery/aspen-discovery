@@ -46,13 +46,13 @@ export const DiscoverHomeScreen = () => {
                          }
                     });
 
-                    getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true).then((result) => {
+                    getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
                          if (holds !== result) {
                               updateHolds(result);
                          }
                     });
 
-                    getPatronCheckedOutItems('all', library.baseUrl, true).then((result) => {
+                    getPatronCheckedOutItems('all', library.baseUrl, true, language).then((result) => {
                          if (checkouts !== result) {
                               updateCheckouts(result);
                          }

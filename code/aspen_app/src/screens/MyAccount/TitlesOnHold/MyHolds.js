@@ -13,7 +13,6 @@ import { getPickupLocations } from '../../../util/loadLibrary';
 import {getPatronHolds, refreshProfile, reloadProfile} from '../../../util/api/user';
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import {DisplayMessage} from '../../../components/Notifications';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const MyHolds = () => {
      const navigation = useNavigation();
@@ -32,7 +31,7 @@ export const MyHolds = () => {
     const toggleReadySort = async (value) => {
         setReadySort(value);
         setLoading(true);
-        await getPatronHolds(value, pendingSort, holdSource, library.baseUrl).then((result) => {
+        await getPatronHolds(value, pendingSort, holdSource, library.baseUrl, true, language).then((result) => {
             updateHolds(result);
             setLoading(false);
         });
@@ -41,7 +40,7 @@ export const MyHolds = () => {
     const togglePendingSort = async (value) => {
         setPendingSort(value);
         setLoading(true);
-        await getPatronHolds(readySort, value, holdSource, library.baseUrl).then((result) => {
+        await getPatronHolds(readySort, value, holdSource, library.baseUrl, true, language).then((result) => {
             updateHolds(result);
             setLoading(false);
         });
@@ -50,7 +49,7 @@ export const MyHolds = () => {
     const toggleHoldSource = async (value) => {
         setHoldSource(value);
         setLoading(true);
-        await getPatronHolds(readySort, pendingSort, value, library.baseUrl).then((result) => {
+        await getPatronHolds(readySort, pendingSort, value, library.baseUrl, true, language).then((result) => {
             updateHolds(result);
             if (!_.isNull(value)) {
                 if(value === 'ils') {
@@ -72,7 +71,7 @@ export const MyHolds = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl).then((result) => {
+                    await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl, true, language).then((result) => {
                         if (holds !== result) {
                               updateHolds(result);
                          }
@@ -105,7 +104,7 @@ export const MyHolds = () => {
      const resetGroup = async () => {
           setLoading(true);
           clearGroupValue();
-          await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl).then((result) => {
+          await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl, true, language).then((result) => {
              if (holds !== result) {
                  updateHolds(result);
              }
@@ -125,7 +124,7 @@ export const MyHolds = () => {
              return (
                  <Center mt={5} mb={5}>
                      <Text bold fontSize="lg">
-                         {getTermFromDictionary(language, 'pending_holds_none')}
+                         {translate('holds.pending_holds_none')}
                      </Text>
                  </Center>
              )
@@ -133,7 +132,7 @@ export const MyHolds = () => {
              return (
                  <Center mt={5} mb={5}>
                      <Text bold fontSize="lg">
-                         {getTermFromDictionary(language, 'holds_ready_for_pickup_none')}
+                         {translate('holds.holds_ready_for_pickup_none')}
                      </Text>
                  </Center>
              );
@@ -166,7 +165,7 @@ export const MyHolds = () => {
                                       <Select
                                           name="sortBy"
                                           selectedValue={pendingSort}
-                                          accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
+                                          accessibilityLabel="Select a Sort Method"
                                           _selectedItem={{
                                               bg: 'tertiary.300',
                                               endIcon: <CheckIcon size="5"/>,
@@ -200,7 +199,7 @@ export const MyHolds = () => {
                                   <Select
                                       name="sortBy"
                                       selectedValue={pendingSort}
-                                      accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
+                                      accessibilityLabel="Select a Sort Method"
                                       _selectedItem={{
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
@@ -232,13 +231,13 @@ export const MyHolds = () => {
                                   <Select
                                       name="sortBy"
                                       selectedValue={readySort}
-                                      accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
+                                      accessibilityLabel="Select a Sort Method"
                                       _selectedItem={{
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
                                       onValueChange={(itemValue) => toggleReadySort(itemValue)}>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
+                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
                                       <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
                                       <Select.Item label={translate('general.sort_by', { sort: 'Expiration Date'})} value="expire" key={3}/>
@@ -272,7 +271,7 @@ export const MyHolds = () => {
                          onPress={() => {
                               refreshHolds();
                          }}>
-                         {getTermFromDictionary(language, 'holds_reload')}
+                         {translate('holds.reload_holds')}
                     </Button>
                    <FormControl w={175}>
                        <Select

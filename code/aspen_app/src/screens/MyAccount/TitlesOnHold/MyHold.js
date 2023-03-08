@@ -1,4 +1,4 @@
-import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { translate } from '../../../translations/translations';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
@@ -22,6 +22,7 @@ export const MyHold = (props) => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
      const [cancelling, startCancelling] = React.useState(false);
      const [thawing, startThawing] = React.useState(false);
      let label, method, icon, canCancel;
