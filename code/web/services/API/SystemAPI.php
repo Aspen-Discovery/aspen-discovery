@@ -729,16 +729,16 @@ class SystemAPI extends Action {
 			}
 		} else {
 			$values = $givenValues;
-
-			/** @var Translator $translator */ global $translator;
-			$translatedTerm = $translator->translate($term, $term, $values, true, true);
-			return [
-				'success' => true,
-				'translation' => [
-					$term => strip_tags($translatedTerm)
-				],
-			];
 		}
+
+		/** @var Translator $translator */ global $translator;
+		$translatedTerm = $translator->translate($term, $term, $values, true, true);
+		return [
+			'success' => true,
+			'translation' => [
+				$term => strip_tags($translatedTerm)
+			],
+		];
 	}
 
 	function getBulkTranslations() {
