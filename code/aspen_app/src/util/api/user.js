@@ -161,8 +161,9 @@ export async function logoutUser(url) {
  * @param {string} holdSource
  * @param {string} url
  * @param {boolean} refresh
+ * @param {string} language
  **/
-export async function getPatronHolds(readySort='expire', pendingSort='sortTitle', holdSource = 'all', url, refresh = true) {
+export async function getPatronHolds(readySort='expire', pendingSort='sortTitle', holdSource = 'all', url, refresh = true, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -175,6 +176,7 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
                refreshHolds: refresh,
                unavailableSort: pendingSort,
                availableSort: readySort,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=getPatronHolds', postBody);
@@ -237,8 +239,9 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
  * @param {string} source
  * @param {string} url
  * @param {boolean} refresh
+ * @param {string} language
  **/
-export async function getPatronCheckedOutItems(source = 'all', url, refresh = true) {
+export async function getPatronCheckedOutItems(source = 'all', url, refresh = true, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -248,7 +251,8 @@ export async function getPatronCheckedOutItems(source = 'all', url, refresh = tr
           params: {
                source: source,
                linkedUsers: true,
-               refreshCheckouts: refresh
+               refreshCheckouts: refresh,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
