@@ -18,8 +18,6 @@ function getUpdates23_04_00(): array {
 
 		//kodi
 
-		//google_bucket
-
 		//other
 	];
 }
