@@ -151,6 +151,7 @@
   "hold_type": "Type",
   "hold_source": "Source",
   "on_hold_for": "On Hold For",
+  "checked_out_to": "Checked Out To",
   "multiple_holds": "Choose multiple holds to manage",
   "hold_manage_all": "Manage All",
   "holds_clear_selections": "Clear Selections",
