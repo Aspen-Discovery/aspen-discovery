@@ -15,7 +15,7 @@ import {getPatronCheckedOutItems, refreshProfile, reloadProfile} from '../../../
 import {getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew} from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
-import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const MyCheckouts = () => {
      const navigation = useNavigation();
@@ -27,114 +27,24 @@ export const MyCheckouts = () => {
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
 
-     const [checkoutFilters, setCheckoutFilters] = React.useState({});
-     const [checkoutSources, setCheckoutSources] = React.useState({});
-     React.useEffect(() => {
-          async function fetchTranslations() {
-               await getTranslationsWithValues('filter_by_source', 'All', language, library.baseUrl).then(result => {
-                    let tmp = checkoutFilters;
-                    const obj = {
-                         'all': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutFilters(tmp);
-               });
-               await getTranslationsWithValues('filter_by_source', 'Physical Materials', language, library.baseUrl).then(result => {
-                    let tmp = checkoutFilters;
-                    const obj = {
-                         'ils': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutFilters(tmp);
-               });
-               await getTranslationsWithValues('filter_by_source', 'OverDrive', language, library.baseUrl).then(result => {
-                    let tmp = checkoutFilters;
-                    const obj = {
-                         'overdrive': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutFilters(tmp);
-               });
-               await getTranslationsWithValues('filter_by_source', 'Hoopla', language, library.baseUrl).then(result => {
-                    let tmp = checkoutFilters;
-                    const obj = {
-                         'hoopla': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutFilters(tmp);
-               });
-               await getTranslationsWithValues('filter_by_source', 'CloudLibrary', language, library.baseUrl).then(result => {
-                    let tmp = checkoutFilters;
-                    const obj = {
-                         'cloudlibrary': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutFilters(tmp);
-               });
-               await getTranslationsWithValues('filter_by_source', 'Axis 360', language, library.baseUrl).then(result => {
-                    let tmp = checkoutFilters;
-                    const obj = {
-                         'axis360': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutFilters(tmp);
-               });
-               await getTranslationsWithValues('checkouts_for_source', 'Physical Materials', language, library.baseUrl).then(result => {
-                    let tmp = checkoutSources;
-                    const obj = {
-                         'ils': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutSources(tmp);
-               });
-               await getTranslationsWithValues('checkouts_for_source', 'OverDrive', language, library.baseUrl).then(result => {
-                    let tmp = checkoutSources;
-                    const obj = {
-                         'overdrive': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutSources(tmp);
-               });
-               await getTranslationsWithValues('checkouts_for_source', 'CloudLibrary', language, library.baseUrl).then(result => {
-                    let tmp = checkoutSources;
-                    const obj = {
-                         'cloudlibrary': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutSources(tmp);
-               });
-               await getTranslationsWithValues('checkouts_for_source', 'Axis 360', language, library.baseUrl).then(result => {
-                    let tmp = checkoutSources;
-                    const obj = {
-                         'axis360': Object.values(result)
-                    }
-                    tmp = _.merge(tmp, obj);
-                    setCheckoutSources(tmp);
-               });
-          }
-          fetchTranslations()
-     }, []);
-
-     console.log(checkoutFilters);
-
      const toggleSource = async (value) => {
           setSource(value);
           setLoading(true);
-          await getPatronCheckedOutItems(value, library.baseUrl).then((result) => {
+          await getPatronCheckedOutItems(value, library.baseUrl, true, language).then((result) => {
                if (checkouts !== result) {
                     updateCheckouts(result);
                }
                if (!_.isNull(value)) {
                     if(value === 'ils') {
-                         navigation.setOptions({ title: checkoutSources.ils});
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "Physical Materials"})});
                     } else if (value === 'overdrive') {
-                         navigation.setOptions({ title: checkoutSources.overdrive});
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "OverDrive"})});
                     } else if (value === 'cloud_library') {
-                         navigation.setOptions({ title: checkoutSources.cloudlibrary});
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "CloudLibrary"})});
                     } else if (value === 'axis360') {
-                         navigation.setOptions({ title: checkoutSources.axis360});
+                         navigation.setOptions({ title: translate('checkouts.checkouts_for_source', {source: "Axis 360"})});
                     } else {
-                         navigation.setOptions({ title: getTermFromDictionary(language, 'checked_out_titles')});
+                         navigation.setOptions({ title: translate('checkouts.title')});
                     }
                }
                setLoading(false);
@@ -144,7 +54,7 @@ export const MyCheckouts = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getPatronCheckedOutItems(source, library.baseUrl).then((result) => {
+                    await getPatronCheckedOutItems(source, library.baseUrl, true, language).then((result) => {
                          if (checkouts !== result) {
                               updateCheckouts(result);
                          }
@@ -170,7 +80,7 @@ export const MyCheckouts = () => {
           return (
                <Center mt={5} mb={5}>
                     <Text bold fontSize="lg">
-                         {getTermFromDictionary(language, 'no_checkouts')}
+                         {translate('checkouts.no_checkouts')}
                     </Text>
                </Center>
           );
@@ -202,7 +112,7 @@ export const MyCheckouts = () => {
                     <HStack space={2}>
                          <Button
                               isLoading={renewAll}
-                              isLoadingText={getTermFromDictionary(language, 'renewing_all', true)}
+                              isLoadingText="Renewing all..."
                               size="sm"
                               variant="solid"
                               colorScheme="primary"
@@ -214,7 +124,7 @@ export const MyCheckouts = () => {
                                    });
                               }}
                               startIcon={<Icon as={MaterialIcons} name="autorenew" size={5} />}>
-                              {getTermFromDictionary(language, 'checkouts_renew_all')}
+                              {translate('checkouts.renew_all')}
                          </Button>
                          <Button
                               size="sm"
@@ -223,7 +133,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {getTermFromDictionary(language, 'checkouts_reload')}
+                              {translate('checkouts.reload')}
                          </Button>
                          <FormControl w={175}>
                               <Select
@@ -235,12 +145,12 @@ export const MyCheckouts = () => {
                                        endIcon: <CheckIcon size="5"/>,
                                   }}
                                   onValueChange={(itemValue) => toggleSource(itemValue)}>
-                                   <Select.Item label={checkoutFilters.all + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0}/>
-                                   <Select.Item label={checkoutFilters.ils + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1}/>
-                                   <Select.Item label={checkoutFilters.overdrive + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2}/>
-                                   <Select.Item label={checkoutFilters.hoopla + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3}/>
-                                   <Select.Item label={checkoutFilters.cloudlibrary + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4}/>
-                                   <Select.Item label={checkoutFilters.axis360 + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5}/>
+                                   <Select.Item label={getTermFromDictionary(language, 'filter_by') + ' ' + getTermFromDictionary(language, 'all') + ' (' + user.numCheckedOut ?? 0 + ')'} value="all" key={0} />
+                                   <Select.Item label={translate('holds.filter_by', {source: 'Physical Materials', num: user.numCheckedOutIls ?? 0})} value="ils" key={1}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'OverDrive', num: user.numCheckedOutOverDrive ?? 0})} value="overdrive" key={2}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'Hoopla', num: user.numCheckedOut_Hoopla ?? 0})} value="hoopla" key={3}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'CloudLibrary', num: user.numCheckedOut_cloudLibrary ?? 0})} value="cloud_library" key={4}/>
+                                   <Select.Item label={translate('holds.filter_by', {source: 'Axis 360', num: user.numCheckedOut_axis360 ?? 0})} value="axis360" key={5}/>
                               </Select>
                          </FormControl>
                     </HStack>
@@ -255,7 +165,7 @@ export const MyCheckouts = () => {
                                    setLoading(true);
                                    reloadCheckouts();
                               }}>
-                              {getTermFromDictionary(language, 'checkouts_reload')}
+                              {translate('checkouts.reload')}
                          </Button>
                     </HStack>
                );

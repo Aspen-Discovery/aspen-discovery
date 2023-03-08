@@ -151,6 +151,7 @@
   "hold_type": "Type",
   "hold_source": "Source",
   "on_hold_for": "On Hold For",
+  "checked_out_to": "Checked Out To",
   "multiple_holds": "Choose multiple holds to manage",
   "hold_manage_all": "Manage All",
   "holds_clear_selections": "Clear Selections",
@@ -280,5 +281,17 @@
   "num_search_result": "%1% result",
   "num_search_results": "%1% results",
   "accounts_have_fines": "Your accounts have %1% in fines",
-  "page_of_page": "Page %1% of %2%"
+  "page_of_page": "Page %1% of %2%",
+  "status_available_online": "Available Online",
+  "status_on_order": "On Order",
+  "status_checked_out": "Checked Out",
+  "status_checked_out_available_elsewhere": "Checked Out / Available Elsewhere",
+  "status_checked_out_library_use_only": "Checked Out (library use only)",
+  "status_its_here": "It's Here",
+  "status_its_here_library_use_only": "It's Here (library use only)",
+  "status_on_shelf": "On Shelf",
+  "status_on_shelf_library_use_only": "On Shelf (library use only)",
+  "status_available_elsewhere": "Available from another library",
+  "status_library_use_only": "Library use only",
+  "status_withdrawn": "Withdrawn / Unavailable"
 }

@@ -668,7 +668,8 @@ class SystemAPI extends Action {
 		];
 		/** @var Translator $translator */ global $translator;
 		foreach ($terms as $term) {
-			$response[$_REQUEST['language']][$term] = $translator->translate($term, $term, [], true, true);
+			$translatedTerm = $translator->translate($term, $term, [], true, true);
+			$response[$_REQUEST['language']][$term] = strip_tags($translatedTerm);
 		}
 		return $response;
 	}
@@ -728,15 +729,16 @@ class SystemAPI extends Action {
 			}
 		} else {
 			$values = $givenValues;
-
-			/** @var Translator $translator */ global $translator;
-			return [
-				'success' => true,
-				'translation' => [
-					$term => $translator->translate($term, $term, $values, true, true)
-				],
-			];
 		}
+
+		/** @var Translator $translator */ global $translator;
+		$translatedTerm = $translator->translate($term, $term, $values, true, true);
+		return [
+			'success' => true,
+			'translation' => [
+				$term => strip_tags($translatedTerm)
+			],
+		];
 	}
 
 	function getBulkTranslations() {
@@ -758,7 +760,8 @@ class SystemAPI extends Action {
 				$translatedTerms = [];
 				/** @var Translator $translator */ global $translator;
 				foreach ($terms['terms'] as $key => $term) {
-					$translatedTerms[$key] = $translator->translate($term, $term, [], true, true);
+					$translatedTerm = $translator->translate($term, $term, [], true, true);
+					$translatedTerms[$key] = strip_tags($translatedTerm);
 				}
 				return [
 					'success' => true,

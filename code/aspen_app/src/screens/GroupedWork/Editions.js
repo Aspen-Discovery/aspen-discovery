@@ -13,7 +13,7 @@ import { translate } from '../../translations/translations';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import {getStatusIndicator} from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
-import { LibrarySystemContext } from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
 
 export const Editions = () => {
      const navigation = useNavigation();
@@ -22,11 +22,12 @@ export const Editions = () => {
      const params = route[0].params;
      const { id, recordId, format, source, volumeInfo, prevRoute } = params;
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const [isLoading, setLoading] = React.useState(false);
 
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['records', id, source, format, library.baseUrl],
-          queryFn: () => getRecords(id, format, source, library.baseUrl),
+          queryKey: ['records', id, source, format, language, library.baseUrl],
+          queryFn: () => getRecords(id, format, source, language, library.baseUrl),
      });
 
      const [responseIsOpen, setResponseIsOpen] = React.useState(false);
@@ -84,6 +85,7 @@ export const Editions = () => {
 };
 
 const Edition = (payload) => {
+     const { language } = React.useContext(LanguageContext);
      const {response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef} = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
@@ -100,7 +102,7 @@ const Edition = (payload) => {
           navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });
      };
 
-     const statusIndicator = getStatusIndicator(records.statusIndicator);
+     const statusIndicator = getStatusIndicator(records.statusIndicator, language);
 
      return (
           <Box

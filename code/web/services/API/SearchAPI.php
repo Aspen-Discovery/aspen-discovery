@@ -2361,7 +2361,7 @@ class SearchAPI extends Action {
 							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 								$format = $obj->manifestation->format;
 								$items[$recordKey]['itemList'][$format]['key'] = $i;
-								$items[$recordKey]['itemList'][$format]['name'] = $format;
+								$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
 								$i++;
 							};
 						}

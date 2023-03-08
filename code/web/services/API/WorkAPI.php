@@ -110,7 +110,7 @@ class WorkAPI extends Action {
 					if(!array_key_exists($obj->manifestation->format, $itemData['formats'])) {
 						$format = $obj->manifestation->format;
 						$itemData['formats'][$format] = [];
-						$itemData['formats'][$format]['label'] = $format;
+						$itemData['formats'][$format]['label'] = translate(['text' => $format, 'isPublicFacing' => true]);
 						$itemData['formats'][$format]['category'] = $relatedManifestation->formatCategory;
 						$itemData['formats'][$format]['actions'] = $relatedManifestation->getActions();
 						$itemData['formats'][$format]['isAvailable'] = $relatedManifestation->isAvailable();
