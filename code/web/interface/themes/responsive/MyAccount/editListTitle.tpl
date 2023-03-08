@@ -4,7 +4,7 @@
 	<form enctype="multipart/form-data" method="post" id="listEntryEditForm" action="/MyAccount/AJAX" class="form-horizontal">
 		<input type="hidden" name="listEntry" value="{$listEntry}">
 		<input type="hidden" name="listId" value="{$listId}">
-		{if $listId->defaultSort != 'custom'}<input type="hidden" name="position" value="{if !empty($listEntry->weight)}{$listEntry->weight}{else}0{/if}">{/if}
+		{if $list->defaultSort != 'custom'}<input type="hidden" name="position" value="{if !empty($listEntry->weight)}{$listEntry->weight}{else}0{/if}">{/if}
 		<div>
 			<div class="form-group">
 				<label for="listName" class="col-sm-3">{translate text='List' isPublicFacing=true} </label>
