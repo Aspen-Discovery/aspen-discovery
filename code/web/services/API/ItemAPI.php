@@ -280,12 +280,14 @@ class ItemAPI extends Action {
 		}
 
 		// Retrieve Full Marc Record
+		disableErrorHandler();
 		if (!($record = $this->db->getRecord($this->id))) {
 			return [
 				'error',
 				'Record does not exist',
 			];
 		}
+		enableErrorHandler();
 		$this->record = $record;
 
 		$this->recordDriver = RecordDriverFactory::initRecordDriver($record);
@@ -478,33 +480,33 @@ class ItemAPI extends Action {
 	/** @noinspection PhpUnused */
 	function getBookcoverById() {
 		$record = $this->loadSolrRecord($_GET['id']);
-		$isbn = isset($record['isbn']) ? ISBN::normalizeISBN($record['isbn'][0]) : null;
-		$upc = isset($record['upc']) ? $record['upc'][0] : null;
-		$id = isset($record['id']) ? $record['id'][0] : null;
-		$issn = isset($record['issn']) ? $record['issn'][0] : null;
-		$formatCategory = isset($record['format_category']) ? $record['format_category'][0] : null;
-		$this->getBookCover($isbn, $upc, $formatCategory, $id, $issn);
+		$isbn = !empty($record['isbn']) ? ISBN::normalizeISBN($record['isbn'][0]) : null;
+		$upc = !empty($record['upc']) ? $record['upc'][0] : null;
+		$id = !empty($record['id']) ? $record['id'][0] : null;
+		$issn = !empty($record['issn']) ? $record['issn'][0] : null;
+		$formatCategory = !empty($record['format_category']) ? $record['format_category'][0] : null;
+		$this->getBookCover($isbn, $upc, $formatCategory, null, $id, $issn);
 	}
 
 	function getBookCover($isbn = null, $upc = null, $formatCategory = null, $size = null, $id = null, $issn = null) {
 		if (is_null($isbn)) {
-			$isbn = $_GET['isbn'];
+			$isbn = !empty($_GET['isbn']) ? $_GET['isbn'] : '';
 		}
 		$_GET['isn'] = ISBN::normalizeISBN($isbn);
 		if (is_null($issn)) {
-			$issn = $_GET['issn'];
+			$issn = !empty($_GET['issn']) ? $_GET['issn'] : null;
 		}
 		$_GET['iss'] = $issn;
 		if (is_null($upc)) {
-			$upc = $_GET['upc'];
+			$upc = !empty($_GET['upc']) ? $_GET['upc'] : null;
 		}
 		$_GET['upc'] = $upc;
 		if (is_null($formatCategory)) {
-			$formatCategory = $_GET['formatCategory'];
+			$formatCategory = !empty($_GET['formatCategory']) ? $_GET['formatCategory'] : null;
 		}
 		$_GET['category'] = $formatCategory;
 		if (is_null($size)) {
-			$size = isset($_GET['size']) ? $_GET['size'] : 'small';
+			$size = !empty($_GET['size']) ? $_GET['size'] : 'small';
 		}
 		$_GET['size'] = $size;
 		if (is_null($id)) {
