@@ -2457,7 +2457,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return $recordsFromIndex;
 	}
 
-	private function loadRelatedRecords($forCovers = false, $forceLoadFromDB = false) {
+	private function loadRelatedRecords($forCovers = false, $forceLoadFromDB = true) {
 		global $timer;
 		global $memoryWatcher;
 		if ($this->relatedRecords == null || isset($_REQUEST['reload'])) {
