@@ -201,6 +201,9 @@ class Record_AJAX extends Action {
 			if (isset($_REQUEST['volume'])) {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
+			if (isset($_REQUEST['variationId'])) {
+				$interface->assign('variationId', $_REQUEST['variationId']);
+			}
 
 			$marcRecord = new MarcRecordDriver($id);
 

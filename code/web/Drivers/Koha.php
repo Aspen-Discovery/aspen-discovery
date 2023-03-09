@@ -1405,6 +1405,43 @@ class Koha extends AbstractIlsDriver {
 				$holdParams['expiration_date'] = $cancelDate;
 			}
 
+			//Check to see if we need to place holds on a specific variation.
+			/** @var Grouping_Record[] $recordVariations */
+			$recordVariations = $recordDriver->getRecordVariations();
+			$activeRecordVariation = null;
+			if (count($recordVariations) > 1 && !empty($_REQUEST['variationId'])) {
+				foreach ($recordVariations as $recordVariation) {
+					if ($recordVariation->variationId == $_REQUEST['variationId']) {
+						$activeRecordVariation = $recordVariation;
+						break;
+					}
+				}
+			}
+			if ($activeRecordVariation != null) {
+				$items = $activeRecordVariation->getItems();
+				$allItemTypes = [];
+
+				$marcRecord = $recordDriver->getMarcRecord();
+				$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+				foreach ($items as $recordItem) {
+					foreach ($marcItems as $marcItem) {
+						$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+						if ($itemSubField->getData() == $recordItem->itemId) {
+							$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
+							if ($iTypeSubfield != null) {
+								$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
+							}
+							break;
+						}
+					}
+				}
+				//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
+				//If there is just one, we can do an item type hold
+				if (count($allItemTypes) == 1) {
+					$holdParams['item_type'] = reset($allItemTypes);
+				}
+			}
+
 			$postParams = json_encode($holdParams);
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1873,6 +1910,13 @@ class Koha extends AbstractIlsDriver {
 		$showHoldPosition = $this->getKohaSystemPreference('OPACShowHoldQueueDetails', 'holds');
 		$allowUserToChangeBranch = $this->getKohaSystemPreference('OPACAllowUserToChangeBranch', 'none');
 
+		require_once ROOT_DIR . '/sys/Indexing/TranslationMap.php';
+		$iTypeTranslationMap = new TranslationMap();
+		$iTypeTranslationMap->name = 'itype';
+		if (!$iTypeTranslationMap->find(true)) {
+			$iTypeTranslationMap = null;
+		}
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron, items.itype, reserves.branchcode FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -1989,6 +2033,15 @@ class Koha extends AbstractIlsDriver {
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
 			if ($recordDriver->isValid()) {
 				$curHold->updateFromRecordDriver($recordDriver);
+				//See if we need to override the format based on the item type
+				$itemType = $curRow['itemtype'];
+				if (!is_null($itemType)) {
+					if ($iTypeTranslationMap != null) {
+						$curHold->format = $iTypeTranslationMap->translate($itemType);
+					} else {
+						$curHold->format = $itemType;
+					}
+				}
 			}
 
 			$isAvailable = isset($curHold->status) && preg_match('/^Ready to Pickup.*/i', $curHold->status);
@@ -5103,6 +5156,7 @@ class Koha extends AbstractIlsDriver {
 			if ($stripNonNumericCharacters) {
 				$field = preg_replace('/[^0-9]/', '', $field);
 			}
+			$field = str_replace('’', "'", $field);
 			if ($convertToUpperCase) {
 				$postFields[$postFieldName] = strtoupper($field);
 			} else {
@@ -5126,6 +5180,7 @@ class Koha extends AbstractIlsDriver {
 			if ($stripNonNumericCharacters) {
 				$field = preg_replace('/[^0-9]/', '', $field);
 			}
+			$field = str_replace('’', "'", $field);
 			if ($convertToUpperCase) {
 				$postFields[$variableName] = strtoupper($field);
 			} else {

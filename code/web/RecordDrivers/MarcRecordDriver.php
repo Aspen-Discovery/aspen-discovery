@@ -1177,7 +1177,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							]),
 							'url' => '',
 							'id' => "actionButton$id",
-							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '', '$variationId');",
 							'requireLogin' => false,
 							'type' => 'ils_hold',
 						];

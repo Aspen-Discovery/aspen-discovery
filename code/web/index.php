@@ -34,7 +34,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 33);
+$interface->assign('cssJsCacheCounter', 34);
 
 // Setup Translator
 global $language;
@@ -329,6 +329,15 @@ foreach ($_REQUEST as $parameter => $value) {
 		$module = 'Error';
 		$action = 'Handle404';
 		require_once ROOT_DIR . "/services/Error/Handle404.php";
+	}else if (strpos($parameter, 'bool') === 0) {
+		if (!in_array($value, ['AND', 'OR', 'NOT'])) {
+			global $interface;
+			$interface->assign('module', 'Error');
+			$interface->assign('action', 'Handle404');
+			$module = 'Error';
+			$action = 'Handle404';
+			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		}
 	}
 }
 
@@ -1230,6 +1239,14 @@ function isSpammySearchTerm($lookfor): bool {
 	} elseif (strpos($lookfor, 'window.top') !== false) {
 		return true;
 	} elseif (strpos($lookfor, 'nslookup') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'if(') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'now(') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'sysdate()') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'sleep(') !== false) {
 		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);

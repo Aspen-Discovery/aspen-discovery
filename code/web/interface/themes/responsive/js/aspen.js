@@ -12306,12 +12306,15 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 AspenDiscovery.Record = (function(){
 	// noinspection JSUnusedGlobalSymbols
 	return {
-		showPlaceHold: function(module, source, id, volume){
+		showPlaceHold: function(module, source, id, volume, variationId){
 			if (Globals.loggedIn){
 				document.body.style.cursor = "wait";
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
+				}
+				if (variationId !== undefined){
+					url += "&variationId=" + variationId;
 				}
 
 				var targetButton = $('#actionButton'+id);
@@ -12407,11 +12410,14 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		showPlaceHoldEditions: function (module, source, id, volume) {
+		showPlaceHoldEditions: function (module, source, id, volume, variationId) {
 			if (Globals.loggedIn){
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
+				}
+				if (variationId !== undefined){
+					url += "&variationId=" + variationId;
 				}
 				$.getJSON(url, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -12455,6 +12461,7 @@ AspenDiscovery.Record = (function(){
 			var selectedItem = $('#selectedItem');
 			var module = $('#module').val();
 			var volume = $('#volume');
+			var variationId = $('#variationId');
 			var params = {
 				'method': 'placeHold',
 				pickupBranch: $('#pickupBranch').val(),
@@ -12472,6 +12479,9 @@ AspenDiscovery.Record = (function(){
 			}
 			if (volume.length > 0){
 				params['volume'] = volume.val();
+			}
+			if (variationId.length > 0){
+				params['variationId'] = variationId.val();
 			}
 			if (params['pickupBranch'] === 'undefined'){
 				alert("Please select a location to pick up your hold when it is ready.");
