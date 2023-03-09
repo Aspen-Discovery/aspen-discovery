@@ -2297,7 +2297,7 @@ class SearchAPI extends Action {
 				'isPublicFacing' => true,
 			]),
 		];
-		
+
 		if($_REQUEST['type'] == 'user_list') {
 			if(!isset($_REQUEST['id'])) {
 				return [

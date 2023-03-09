@@ -260,7 +260,7 @@
   "sort_by_with_sort": "Sort By %1%",
   "no_matches_for_language_and_format": "No matches found for this title in %1% for %2% format",
   "num_saved_searches_with_updates": "%1% Updated",
-  "library_card_expires_on": "Expires on %1%",
+  "library_card_expires_on": "Expires %1%",
   "checkouts_overdue_summary": "%1% Overdue",
   "checkout_access_online": "Access Online at %1%",
   "checkout_read_online": "Read Online at %1%",
