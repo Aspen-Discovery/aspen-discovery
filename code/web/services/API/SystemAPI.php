@@ -669,7 +669,8 @@ class SystemAPI extends Action {
 		/** @var Translator $translator */ global $translator;
 		foreach ($terms as $term) {
 			$translatedTerm = $translator->translate($term, $term, [], true, true);
-			$response[$_REQUEST['language']][$term] = strip_tags($translatedTerm);
+			$translatedTerm = strip_tags($translatedTerm);
+			$response[$_REQUEST['language']][$term] = trim($translatedTerm);
 		}
 		return $response;
 	}
@@ -733,10 +734,11 @@ class SystemAPI extends Action {
 
 		/** @var Translator $translator */ global $translator;
 		$translatedTerm = $translator->translate($term, $term, $values, true, true);
+		$translatedTerm = strip_tags($translatedTerm);
 		return [
 			'success' => true,
 			'translation' => [
-				$term => strip_tags($translatedTerm)
+				$term => trim($translatedTerm)
 			],
 		];
 	}
@@ -761,7 +763,8 @@ class SystemAPI extends Action {
 				/** @var Translator $translator */ global $translator;
 				foreach ($terms['terms'] as $key => $term) {
 					$translatedTerm = $translator->translate($term, $term, [], true, true);
-					$translatedTerms[$key] = strip_tags($translatedTerm);
+					$translatedTerm = strip_tags($translatedTerm);
+					$translatedTerms[$key] = trim($translatedTerm);
 				}
 				return [
 					'success' => true,
