@@ -13,6 +13,7 @@ abstract class CircEntry extends DataObject {
 	public $author;
 	public $coverUrl;
 	public $linkUrl;
+	public $format;
 
 	public function getShortId() {
 		if (!empty($this->shortId)) {
@@ -226,7 +227,7 @@ abstract class CircEntry extends DataObject {
 		$this->title = $recordDriver->getTitle();
 		$this->author = $recordDriver->getPrimaryAuthor();
 		$this->groupedWorkId = $recordDriver->getPermanentId();
-		$this->format = $recordDriver->getPrimaryFormat();
+		$this->format = implode(',', $recordDriver->getFormats());
 		$this->coverUrl = $recordDriver->getBookcoverUrl('medium', true);
 		$this->linkUrl = $recordDriver->getLinkUrl();
 	}
