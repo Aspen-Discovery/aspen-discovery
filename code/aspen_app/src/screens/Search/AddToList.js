@@ -78,7 +78,7 @@ export const AddToList = (props) => {
 
      const SmallButton = () => {
           return (
-               <Button size="sm" variant="ghost" colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1" />} onPress={toggleModal}>
+               <Button size="sm" variant="ghost" colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1" />} onPress={toggleModal} style={{flex: 1, flexWrap: 'wrap'}}>
                     {getTermFromDictionary(language, 'add_to_list')}
                </Button>
           );
