@@ -159,4 +159,14 @@ class TranslationMap extends DataObject {
 		return '/ILS/TranslationMaps?objectAction=edit&id=' . $this->id;
 	}
 
+	public function translate($untranslatedValue) {
+		$mapValues = $this->getTranslationMapValues();
+		foreach ($mapValues as $mapValue) {
+			if ($mapValue->value == $untranslatedValue) {
+				return $mapValue->translation;
+			}
+		}
+		return $untranslatedValue;
+	}
+
 }
