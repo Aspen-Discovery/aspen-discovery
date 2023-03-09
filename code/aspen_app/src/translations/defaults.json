@@ -30,6 +30,7 @@
   "or": "or",
   "description": "Description",
   "remove": "Remove",
+  "remove_all": "Remove All",
   "none": "None",
   "hide": "Hide",
   "refresh_account": "Refresh Account",
@@ -173,7 +174,7 @@
   "hold_sms_format": "Hint: use the full 10 digits of your phone #, no spaces, no dashes",
   "lists": "Lists",
   "no_lists": "This list is empty. Why not add something to it?",
-  "add_to_list": "Add to List",
+  "add_to_list": "Add to list",
   "choose_a_list": "Choose a List",
   "create_list": "Create List",
   "create_new_list": "Create a new list",
@@ -293,5 +294,14 @@
   "status_on_shelf_library_use_only": "On Shelf (library use only)",
   "status_available_elsewhere": "Available from another library",
   "status_library_use_only": "Library use only",
-  "status_withdrawn": "Withdrawn / Unavailable"
+  "status_withdrawn": "Withdrawn / Unavailable",
+  "permissions_update_settings": "Update Settings",
+  "permissions_notifications_title": "Notifications Permissions",
+  "permissions_notifications_body": "Please visit Settings and turn on app notifications.",
+  "permissions_screen_brightness_title": "Screen Brightness Permissions",
+  "permissions_screen_brightness_body": "Enable access to modify your screen's brightness to automatically make barcodes easier to read by scanners.",
+  "permissions_location_title": "Geolocation Permissions",
+  "permissions_location_body": "We can use your location to find nearby libraries more quickly.",
+  "recent_searches": "Recent Searches",
+  "fetching_data": "Fetching data"
 }

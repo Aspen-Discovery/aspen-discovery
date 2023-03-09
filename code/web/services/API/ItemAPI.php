@@ -1004,7 +1004,7 @@ class ItemAPI extends Action {
 		return [
 			'success' => true,
 			'id' => $groupedWorkId,
-			'format' => $format,
+			'format' => translate(['text' => $format, 'isPublicFacing' => true]),
 			'manifestation' => $relatedManifestation->getItemSummary(),
 		];
 	}
@@ -1100,7 +1100,7 @@ class ItemAPI extends Action {
 		return [
 			'success' => true,
 			'id' => $groupedWorkId,
-			'format' => $format,
+			'format' => translate(['text' => $format, 'isPublicFacing' => true]),
 			'variations' => $variations,
 			'alwaysPlaceVolumeHoldWhenVolumesArePresent' => $alwaysPlaceVolumeHoldWhenVolumesArePresent,
 			'localSystemName' => $library->displayName,
@@ -1138,7 +1138,7 @@ class ItemAPI extends Action {
 				$records[$relatedRecord->id]['id'] = $relatedRecord->id;
 				$records[$relatedRecord->id]['source'] = $relatedRecord->source;
 				$records[$relatedRecord->id]['recordId'] = $recordId;
-				$records[$relatedRecord->id]['format'] = $relatedRecord->format;
+				$records[$relatedRecord->id]['format'] = translate(['text' => $relatedRecord->format, 'isPublicFacing' => true]);
 				$records[$relatedRecord->id]['edition'] = $relatedRecord->edition;
 				$records[$relatedRecord->id]['publisher'] = $relatedRecord->publisher;
 				$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
@@ -1396,7 +1396,7 @@ class ItemAPI extends Action {
 			'success' => true,
 			'id' => $_REQUEST['id'],
 			'recordId' => $_REQUEST['record'],
-			'format' => $_REQUEST['format'],
+			'format' => translate(['text' => $_REQUEST['format'], 'isPublicFacing' => true]),
 			'record' => $summary,
 		];
 	}
