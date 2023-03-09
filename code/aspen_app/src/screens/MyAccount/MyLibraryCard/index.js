@@ -18,7 +18,7 @@ import {LanguageContext, LibrarySystemContext, UserContext} from '../../../conte
 import { getLinkedAccounts } from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
 import {userContext} from '../../../context/user';
-import {getTranslationsWithValues} from '../../../translations/TranslationService';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const MyLibraryCard = () => {
      const navigation = useNavigation();
@@ -236,7 +236,7 @@ const CreateLibraryCard = (data) => {
                <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
                     <Center>
                          <Flex direction="row">
-                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                               <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
                                    {library.displayName}
                               </Text>
@@ -251,7 +251,7 @@ const CreateLibraryCard = (data) => {
                          </Text>
                          {expirationDate && !neverExpires ? (
                               <Text color="darkText" fontSize={10}>
-                                  {translate('library_card.expires_on', {date: card.expires})}
+                                  {expirationText}
                               </Text>
                          ) : null}
                     </Center>
