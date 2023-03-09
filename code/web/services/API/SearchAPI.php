@@ -2488,13 +2488,13 @@ class SearchAPI extends Action {
 			$items = [];
 			$i = 0;
 			$items['key'] = 0;
-			$items['label'] = $formatCategories['label'];
+			$items['label'] = translate(['text' => $formatCategories['label'], 'isPublicFacing' => true]);;
 			$items['field'] = $formatCategories['field_name'];
 			$items['hasApplied'] = $formatCategories['hasApplied'];
 			$items['multiSelect'] = (bool)$formatCategories['multiSelect'];
 			foreach ($formatCategories['list'] as $category) {
 				$items['facets'][$i]['value'] = $category['value'];
-				$items['facets'][$i]['display'] = $category['display'];
+				$items['facets'][$i]['display'] = translate(['text' => $category['display'], 'isPublicFacing' => true]);;
 				$items['facets'][$i]['field'] = $formatCategories['field_name'];
 				$items['facets'][$i]['count'] = $category['count'];
 				$items['facets'][$i]['isApplied'] = $category['isApplied'];
@@ -2563,7 +2563,7 @@ class SearchAPI extends Action {
 				$i = 0;
 				if ($facet['field_name'] == 'availability_toggle') {
 					$availabilityToggle = $topFacetSet['availability_toggle'];
-					$key = $availabilityToggle['label'];
+					$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
 					$items[$key]['key'] = $index;
 					$items[$key]['label'] = $key;
 					$items[$key]['field'] = $availabilityToggle['field_name'];
@@ -2571,7 +2571,7 @@ class SearchAPI extends Action {
 					$items[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
 					foreach ($availabilityToggle['list'] as $item) {
 						$items[$key]['facets'][$i]['value'] = $item['value'];
-						$items[$key]['facets'][$i]['display'] = $item['display'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
 						$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
 						$items[$key]['facets'][$i]['count'] = $item['count'];
 						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2583,7 +2583,7 @@ class SearchAPI extends Action {
 						$i++;
 					}
 				} else {
-					$key = $facet['label'];
+					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);;
 					$items[$key]['key'] = $index;
 					$items[$key]['label'] = $key;
 					$items[$key]['field'] = $facet['field_name'];
@@ -2592,7 +2592,7 @@ class SearchAPI extends Action {
 					if (isset($facet['sortedList'])) {
 						foreach ($facet['sortedList'] as $item) {
 							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 							$items[$key]['facets'][$i]['count'] = $item['count'];
 							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2606,7 +2606,7 @@ class SearchAPI extends Action {
 					} else {
 						foreach ($facet['list'] as $item) {
 							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 							$items[$key]['facets'][$i]['count'] = $item['count'];
 							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2702,7 +2702,7 @@ class SearchAPI extends Action {
 					'isPublicFacing' => true,
 				]);
 				$items[$key][$i]['value'] = $sort['value'];
-				$items[$key][$i]['display'] = $sort['desc'];
+				$items[$key][$i]['display'] = translate(['text' => $sort['desc'], 'isPublicFacing' => true]);
 				$items[$key][$i]['field'] = 'sort_by';
 				$items[$key][$i]['count'] = 0;
 				$items[$key][$i]['isApplied'] = true;
@@ -2712,7 +2712,7 @@ class SearchAPI extends Action {
 				$i = 0;
 				foreach ($filter as $item) {
 					$items[$key][$i]['value'] = $item['value'];
-					$items[$key][$i]['display'] = $item['display'];
+					$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 					$items[$key][$i]['field'] = $item['field'];
 					$items[$key][$i]['count'] = 0;
 					$items[$key][$i]['isApplied'] = true;
@@ -2741,7 +2741,7 @@ class SearchAPI extends Action {
 		$i = 0;
 		foreach ($obj as $facet) {
 			$facets[$i]['value'] = $facet->facetName;
-			$facets[$i]['display'] = $facet->displayName;
+			$facets[$i]['display'] = translate(['text' => $facet->displayName, 'isPublicFacing' => true]);
 			$facets[$i]['field'] = $facet->facetName;
 			$facets[$i]['count'] = 0;
 			$facets[$i]['isApplied'] = false;
@@ -2785,7 +2785,7 @@ class SearchAPI extends Action {
 				'id' => $id,
 				'time' => round($searchObj->getQuerySpeed(), 2),
 				'field' => $cluster['field_name'],
-				'display' => $cluster['label'],
+				'display' => translate(['text' => $cluster['label'], 'isPublicFacing' => true]),
 				'hasApplied' => $cluster['hasApplied'],
 				'multiSelect' => (bool)$cluster['multiSelect'],
 				'options' => $cluster['list'],
