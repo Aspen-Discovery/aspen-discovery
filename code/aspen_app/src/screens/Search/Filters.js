@@ -7,7 +7,8 @@ import { useNavigation, useNavigationState } from '@react-navigation/native';
 import { translate } from '../../translations/translations';
 import { buildParamsForUrl, SEARCH } from '../../util/search';
 import { UnsavedChangesExit } from './UnsavedChanges';
-import { LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const FiltersScreen = () => {
      const navigation = useNavigation();
@@ -15,6 +16,7 @@ export const FiltersScreen = () => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
+     const { language } = React.useContext(LanguageContext);
      const pendingFiltersFromParams = useNavigationState((state) => state.routes[0]['params']['pendingFilters']);
 
      let facets = SEARCH.availableFacets.data ? Object.keys(SEARCH.availableFacets.data) : [];
@@ -61,23 +63,23 @@ export const FiltersScreen = () => {
                const obj = pendingFacets[0]['facets'];
                _.forEach(obj, function (value, key) {
                     if (value === 'year desc,title asc') {
-                         value = 'Publication Year Desc';
+                         value = getTermFromDictionary(language, 'year_desc_title_asc');
                     } else if (value === 'relevance') {
-                         value = 'Best Match';
+                         value = getTermFromDictionary(language, 'relevance');
                     } else if (value === 'author asc,title asc') {
-                         value = 'Author';
+                         value = getTermFromDictionary(language, 'author');
                     } else if (value === 'title') {
-                         value = 'Title';
+                         value = getTermFromDictionary(language, 'title');
                     } else if (value === 'days_since_added asc') {
-                         value = 'Date Purchased Desc';
+                         value = getTermFromDictionary(language, 'date_purchased_desc');
                     } else if (value === 'callnumber_sort') {
-                         value = 'Call Number';
+                         value = getTermFromDictionary(language, 'callnumber_sort');
                     } else if (value === 'popularity desc') {
-                         value = 'Total Checkouts';
+                         value = getTermFromDictionary(language, 'total_checkouts');
                     } else if (value === 'rating desc') {
-                         value = 'User Rating';
+                         value = getTermFromDictionary(language, 'rating_desc');
                     } else if (value === 'total_holds desc') {
-                         value = 'Number of Holds';
+                         value = getTermFromDictionary(language, 'total_holds_desc');
                     } else {
                          // do nothing
                     }
@@ -108,16 +110,16 @@ export const FiltersScreen = () => {
                     <Center>
                          <Button.Group size="lg">
                               <Button variant="unstyled" onPress={() => clearSelections()}>
-                                   {translate('general.reset_all')}
+                                   {getTermFromDictionary(language, 'reset_all')}
                               </Button>
                               <Button
                                    isLoading={loading}
-                                   isLoadingText={translate('general.updating')}
+                                   isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                    onPress={() => {
                                         setLoading(true);
                                         updateSearch();
                                    }}>
-                                   {translate('general.update')}
+                                   {getTermFromDictionary(language, 'update')}
                               </Button>
                          </Button.Group>
                     </Center>
