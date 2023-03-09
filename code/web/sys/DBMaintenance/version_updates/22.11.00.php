@@ -15,6 +15,7 @@ function getUpdates22_11_00(): array {
 		'add_numInvalidRecords_to_indexing_logs' => [
 			'title' => 'Add Num Invalid Records To Indexing Logs',
 			'description' => 'Add Num Invalid Records To Indexing Logs',
+			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE axis360_export_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',
 				'ALTER TABLE cloud_library_export_log ADD COLUMN numInvalidRecords INT(11) DEFAULT 0',

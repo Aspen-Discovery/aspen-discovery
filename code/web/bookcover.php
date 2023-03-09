@@ -7,6 +7,10 @@ global $usageByIPAddress;
 $aspenUsage->coverViews++;
 require_once ROOT_DIR . '/sys/Covers/BookCoverProcessor.php';
 
+global $configArray;
+global $timer;
+global $logger;
+
 //Create class to handle processing of covers
 $processor = new BookCoverProcessor();
 $processor->loadCover($configArray, $timer, $logger);
