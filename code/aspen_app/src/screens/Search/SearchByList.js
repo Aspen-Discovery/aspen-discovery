@@ -13,7 +13,7 @@ import _ from 'lodash';
 import {navigateStack} from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
 import {formatDiscoveryVersion} from '../../util/loadLibrary';
-import {LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {GLOBALS} from '../../util/globals';
 import {createAuthTokens, getHeaders, postData} from '../../util/apiAuth';
 import {loadError} from '../../components/loadError';
@@ -22,9 +22,10 @@ export const SearchResultsForList = () => {
      const id = useRoute().params.id;
      const [page, setPage] = React.useState(1);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const url = library.baseUrl;
 
-     const { status, data, error, isFetching } = useQuery(['searchResultsForList', url, page, id], () => fetchSearchResults(id, page, url));
+     const { status, data, error, isFetching } = useQuery(['searchResultsForList', url, page, id, language], () => fetchSearchResults(id, page, url, language));
 
      const NoResults = () => {
           return null;
@@ -90,7 +91,7 @@ const DisplayResult = (data) => {
      return (
          <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
               <HStack space={3}>
-                   <VStack>
+                   <VStack maxW="30%">
                         <Image
                             source={{ uri: imageUrl }}
                             fallbackSource={{
@@ -157,7 +158,7 @@ const DisplayResult = (data) => {
      )
 }
 
-async function fetchSearchResults(id, page, url) {
+async function fetchSearchResults(id, page, url, language) {
      const myArray = id.split('_');
      const listId = myArray[myArray.length - 1];
 
@@ -171,6 +172,7 @@ async function fetchSearchResults(id, page, url) {
                id: listId,
                limit: 25,
                page: page,
+               language,
           },
      })
 
