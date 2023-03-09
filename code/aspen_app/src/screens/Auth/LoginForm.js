@@ -45,7 +45,7 @@ export const GetLoginForm = (props) => {
      const { updateLocation } = React.useContext(LibraryBranchContext);
      const { updateUser } = React.useContext(UserContext);
      const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
-     const { updateLanguage, updateLanguages } = React.useContext(LanguageContext);
+     const { language, updateLanguage, updateLanguages } = React.useContext(LanguageContext);
      const patronsLibrary = props.patronsLibrary;
 
      const {usernameLabel, passwordLabel} = props;
@@ -116,7 +116,6 @@ export const GetLoginForm = (props) => {
      }
 
      const setAsyncStorage = async () => {
-         const { language } = React.useContext(LanguageContext);
          await SecureStore.setItemAsync('userKey', valueUser);
          await SecureStore.setItemAsync('secretKey', valueSecret);
          await SecureStore.setItemAsync('library', patronsLibrary['libraryId']);
