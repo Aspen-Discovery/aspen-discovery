@@ -310,7 +310,7 @@ const Item = (data) => {
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%" justifyContent="flex-start" alignItems="flex-start">
-                    <VStack>
+                    <VStack maxW="30%">
                          <Image
                               source={{ uri: library.baseUrl + item.coverUrl }}
                               borderRadius="md"
