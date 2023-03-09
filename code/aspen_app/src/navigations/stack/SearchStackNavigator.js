@@ -8,7 +8,7 @@ import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/Gr
 import Facet from '../../screens/Search/Facet';
 import { FiltersScreen } from '../../screens/Search/Filters';
 import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import Search from '../../screens/Search/Search';
+import {SearchHome} from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
 import SearchByCategory from '../../screens/Search/SearchByCategory';
 import {SearchResultsForList} from '../../screens/Search/SearchByList';
@@ -35,14 +35,9 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                <Stack.Group>
                     <Stack.Screen
                          name="SearchScreen"
-                         component={Search}
+                         component={SearchHome}
                          options={{
                               title: getTermFromDictionary(language, 'search'),
-                         }}
-                         initialParams={{
-                              libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
-                              locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
-                              userContext: JSON.stringify(React.useContext(UserContext)),
                          }}
                     />
                     <Stack.Screen
