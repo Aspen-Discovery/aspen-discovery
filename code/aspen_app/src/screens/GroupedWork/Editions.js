@@ -14,6 +14,7 @@ import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import {getStatusIndicator} from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
 import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const Editions = () => {
      const navigation = useNavigation();
@@ -127,7 +128,7 @@ const Edition = (payload) => {
                               </Badge>
                               {records.source === 'ils' ? (
                                    <Button colorScheme="tertiary" variant="ghost" size="xs" leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1" />} onPress={handleOnPress}>
-                                        {translate('copy_details.where_is_it')}
+                                        {getTermFromDictionary(language, 'where_is_it')}
                                    </Button>
                               ) : null}
                          </VStack>

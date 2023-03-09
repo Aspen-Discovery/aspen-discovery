@@ -140,18 +140,19 @@ const getAuthor = (author) => {
 };
 
 const Format = (data) => {
-     const { language } = React.useContext(LanguageContext);
+     const format = data.data;
+     const key = data.format;
      const isSelected = data.isSelected;
      const updateFormat = data.updateFormat;
-     const btnStyle = isSelected === data.data ? 'solid' : 'outline';
+     const btnStyle = isSelected === key ? 'solid' : 'outline';
 
-     if (isSelected === data.data) {
-          updateFormat(data.data);
+     if (isSelected === key) {
+          updateFormat(key);
      }
 
      return (
-          <Button size="sm" colorScheme="secondary" mb={1} mr={1} variant={btnStyle} onPress={() => updateFormat(data.data)}>
-               {data.data}
+          <Button size="sm" colorScheme="secondary" mb={1} mr={1} variant={btnStyle} onPress={() => updateFormat(key)}>
+               {format.label}
           </Button>
      );
 };
@@ -197,7 +198,7 @@ const getFormats = (formats) => {
                     </Text>
                    <Button.Group flexDirection="row" flexWrap="wrap">
                        {_.map(_.keys(formats), function (item, index, array) {
-                           return <Format key={index} data={item} isSelected={format} updateFormat={updateFormat} />
+                           return <Format key={index} format={item} data={formats[item]} isSelected={format} updateFormat={updateFormat} />
                        })}
                    </Button.Group>
                </>
