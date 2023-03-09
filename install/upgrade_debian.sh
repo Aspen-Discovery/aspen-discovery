@@ -13,6 +13,7 @@ fi
 
 service cron stop
 
+git config --global --add safe.directory /usr/local/aspen-discovery
 cd /usr/local/aspen-discovery
 git pull origin $2
 
