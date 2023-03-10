@@ -2310,9 +2310,11 @@ class SearchAPI extends Action {
 					'listId' => null,
 				];
 			}
+			$label = explode('_', $_REQUEST['id']);
+			$id = $label[3];
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$sourceList = new UserList();
-			$sourceList->id = $_REQUEST['id'];
+			$sourceList->id = $id;
 			if($sourceList->find(true)) {
 				$results['listId'] = $sourceList->id;
 				$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
@@ -2511,7 +2513,9 @@ class SearchAPI extends Action {
 					'savedSearchId' => null,
 				];
 			}
-			$searchObject = $searchObject->restoreSavedSearch($_REQUEST['id'], false, true);
+			$label = explode('_', $_REQUEST['id']);
+			$id = $label[3];
+			$searchObject = $searchObject->restoreSavedSearch($id, false, true);
 		}
 
 		$searchResults = $searchObject->processSearch(false, true);
