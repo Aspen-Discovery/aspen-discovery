@@ -12,6 +12,9 @@
 			{if !empty($volume)}
 				<input type="hidden" name="volume" id="volume" value="{$volume}">
 			{/if}
+			{if !empty($variationId)}
+				<input type="hidden" name="variationId" id="variationId" value="{$variationId}">
+			{/if}
 			<fieldset>
 				<div class="holdsSummary">
 					<input type="hidden" name="holdCount" id="holdCount" value="1">

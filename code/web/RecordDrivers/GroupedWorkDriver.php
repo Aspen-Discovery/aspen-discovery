@@ -533,7 +533,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 		}
 
-		// Rating Settings
+		// Rating & Browse Mode Settings
 		global $library;
 		global $location;
 		if ($location) { // Try Location Setting
@@ -541,6 +541,13 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		} else {
 			$browseCategoryRatingsMode = $library->getBrowseCategoryGroup()->browseCategoryRatingsMode;
 		}
+
+		require_once ROOT_DIR . '/services/Browse/AJAX.php';
+		$browseAJAX = new Browse_AJAX();
+		$browseMode = $browseAJAX->setBrowseMode();
+
+		$interface->assign('browseMode', $browseMode); // sets the template switch that is created in GroupedWork object
+
 		$interface->assign('browseCategoryRatingsMode', $browseCategoryRatingsMode);
 
 		return 'RecordDrivers/GroupedWork/browse_result.tpl';

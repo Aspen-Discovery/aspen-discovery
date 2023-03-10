@@ -24,7 +24,6 @@ class Hold extends CircEntry {
 	public $frozen;
 	public $canFreeze;
 	public $reactivateDate;
-	public $format;
 	public $isIll;
 
 	//Try to get rid of
