@@ -2310,8 +2310,11 @@ class SearchAPI extends Action {
 					'listId' => null,
 				];
 			}
-			$label = explode('_', $_REQUEST['id']);
-			$id = $label[3];
+			$id = $_REQUEST['id'];
+			if(str_contains($_REQUEST['id'], '_')) {
+				$label = explode('_', $_REQUEST['id']);
+				$id = $label[3];
+			}
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 			$sourceList = new UserList();
 			$sourceList->id = $id;
@@ -2334,15 +2337,15 @@ class SearchAPI extends Action {
 					'endRecord' => $endRecord,
 					'perPage' => $recordsPerPage,
 				];
-				$records = $sourceList->getListRecords($startRecord, $recordsPerPage, false, 'summary');
+				$records = $sourceList->getBrowseRecordsRaw($startRecord, $recordsPerPage);
 				$items = [];
 				foreach($records as $recordKey => $record) {
 					$items[$recordKey]['key'] = $record['id'];
-					$items[$recordKey]['title'] = $record['title'];
-					$items[$recordKey]['author'] = $record['author'];
+					$items[$recordKey]['title'] = $record['title_display'] ?? null;
+					$items[$recordKey]['author'] = $record['author_display'] ?? null;
 					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
-					$items[$recordKey]['language'] = $record['language'][0];
-					$items[$recordKey]['summary'] = $record['description'];;
+					$items[$recordKey]['language'] = $record['language'][0] ?? null;
+					$items[$recordKey]['summary'] = null;
 					$items[$recordKey]['itemList'] = [];
 					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 					$groupedWorkDriver = new GroupedWorkDriver($record['id']);
