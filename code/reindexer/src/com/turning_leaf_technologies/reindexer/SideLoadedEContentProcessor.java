@@ -24,7 +24,6 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 		try{
 			settings = new SideLoadSettings(sideLoadSettingsRS);
 			sideLoadId = sideLoadSettingsRS.getLong("id");
-			profileType = sideLoadSettingsRS.getString("name");
 			numCharsToCreateFolderFrom = sideLoadSettingsRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters = sideLoadSettingsRS.getBoolean("createFolderFromLeadingCharacters");
 			individualMarcPath = sideLoadSettingsRS.getString("individualMarcPath");
@@ -35,6 +34,8 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 
 			treatUnknownLanguageAs = sideLoadSettingsRS.getString("treatUnknownLanguageAs");
 			treatUndeterminedLanguageAs = sideLoadSettingsRS.getString("treatUndeterminedLanguageAs");
+
+			includePersonalAndCorporateNamesInTopics = sideLoadSettingsRS.getBoolean("includePersonalAndCorporateNamesInTopics");
 
 			getDateAddedStmt = dbConn.prepareStatement("SELECT dateFirstDetected FROM ils_records WHERE source = ? and ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (Exception e){
@@ -49,7 +50,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 			RecordInfo recordInfo = loadEContentRecord(groupedWork, identifier, record);
 			allRelatedRecords.add(recordInfo);
 
-			//Do updates based on the overall bib (shared regardless of scoping)
+			//Updates based on the overall bib (shared regardless of scoping)
 			String primaryFormat = recordInfo.getPrimaryFormat();
 			if (primaryFormat == null) primaryFormat = "Unknown";
 			String primaryFormatCategory = recordInfo.getPrimaryFormatCategory();
@@ -68,7 +69,7 @@ class SideLoadedEContentProcessor extends MarcRecordProcessor{
 				groupedWork.addKeywords(record.getControlNumber());
 			}
 
-			//Do updates based on items
+			//Updates based on items
 			loadPopularity(groupedWork, identifier);
 
 			groupedWork.addHoldings(1);

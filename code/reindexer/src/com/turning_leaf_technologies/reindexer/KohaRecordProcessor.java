@@ -449,7 +449,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 					}
 				}
 				if (!isOverDrive && !isHoopla && !isOneClickDigital && !isCloudLibrary && isEContent){
-					getIlsEContentItems(groupedWork, record, mainRecordInfo, identifier, itemField);
+					getIlsEContentItems(record, mainRecordInfo, identifier, itemField);
 				}
 			}
 		}
