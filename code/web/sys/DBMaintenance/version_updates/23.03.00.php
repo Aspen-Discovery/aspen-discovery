@@ -267,7 +267,21 @@ function getUpdates23_03_00(): array {
 			]
 		],
 		//add_sso_mapping_constraints
-
+		'add_donation_notification_fields' => [
+			'title' => 'Add columns to store donation notification information',
+			'description' => 'Add columns to store donation notification information',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE donations ADD COLUMN shouldBeNotified TINYINT(1) DEFAULT 0',
+				'ALTER TABLE donations ADD COLUMN notificationFirstName VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationLastName VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationAddress VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationCity VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationState VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationZip VARCHAR(75) DEFAULT null',
+			],
+		],
+		//add_donation_notification_fields
 
 		//kodi
 		'google_bucket' => [
