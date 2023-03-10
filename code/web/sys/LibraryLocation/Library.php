@@ -174,8 +174,7 @@ class Library extends DataObject {
 	public $externalMaterialsRequestUrl;
 	public /** @noinspection PhpUnused */
 		$eContentLinkRules;
-	public /** @noinspection PhpUnused */
-		$includeNovelistEnrichment;
+	public $novelistSettingId;
 	public /** @noinspection PhpUnused */
 		$allowAutomaticSearchReplacements;
 
@@ -467,6 +466,17 @@ class Library extends DataObject {
 		$theme->find();
 		while ($theme->fetch()) {
 			$availableThemes[$theme->id] = $theme->themeName;
+		}
+
+		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
+		$novelist = new NovelistSetting();
+		$availableNovelistSettings = [
+			'-1' => 'None'
+		];
+		$novelist->orderBy('profile');
+		$novelist->find();
+		while ($novelist->fetch()) {
+			$availableNovelistSettings[$novelist->id] = $novelist->profile;
 		}
 
 		$materialsRequestOptions = [
@@ -2613,6 +2623,15 @@ class Library extends DataObject {
 						'label' => 'Show Citation Style Guides',
 						'description' => 'Whether or not citations style guides should be shown',
 						'default' => '1',
+						'hideInLists' => true,
+					],
+					'novelistSettingId' => [
+						'property' => 'novelistSettingId',
+						'type' => 'enum',
+						'values' => $availableNovelistSettings,
+						'label' => 'Novelist Select Profile',
+						'description' => 'The Novelist Select Profile to use',
+						'default' => '-1',
 						'hideInLists' => true,
 					],
 				],

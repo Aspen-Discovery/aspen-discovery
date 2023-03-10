@@ -404,7 +404,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadOnOrderItems(groupedWork, recordInfo, record, recordInfo.getNumPrintCopies() > 0);
 
 			//Now look for any eContent that is defined within the ils
-			loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, recordInfo, firstParentId != null, hasChildRecords);
+			List<RecordInfo> econtentRecords = loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, recordInfo, firstParentId != null, hasChildRecords);
+			if (econtentRecords.size() > 0) {
+				allRelatedRecords.addAll(econtentRecords);
+			}
 
 			if (hasChildRecords) {
 				//If we have child records, it's very likely that we don't have real items, so we need to create a virtual one for scoping.

@@ -24,6 +24,13 @@ class Donation extends DataObject {
 	public $honoreeLastName;
 	public $sendEmailToUser;
 	public $donationSettingId;
+	public $shouldBeNotified;
+	public $notificationFirstName;
+	public $notificationLastName;
+	public $notificationAddress;
+	public $notificationCity;
+	public $notificationState;
+	public $notificationZip;
 
 	public static function getObjectStructure($context = '') {
 		return [
@@ -320,7 +327,7 @@ class Donation extends DataObject {
 		foreach ($locations as $index => $donationLocation) {
 			$id = $donationLocation->locationId;
 			if (!isset($configArray['donationLocations'][$id]) || $configArray['donationLocations'][$id] != false) {
-				$availableLocations[$donationLocation->displayName] = $id;
+				$availableLocations[$donationLocation->displayName] = $donationLocation->displayName;
 			}
 		}
 

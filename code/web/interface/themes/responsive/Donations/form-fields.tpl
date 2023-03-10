@@ -50,7 +50,7 @@
                             <select name="toLocation" id="{$formField->textId}" class="form-control input-lg">
                                 <option value=0 selected></option>
                                 {foreach from=$donationLocations item=value key=locationKey}
-                                    <option value={$value}>{$locationKey}</option>
+                                    <option value="{$value}">{$locationKey}</option>
                                 {/foreach}
                             </select>
                         </div>
