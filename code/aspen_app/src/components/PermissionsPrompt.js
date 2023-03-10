@@ -23,7 +23,7 @@ export const PermissionsPrompt = (data) => {
 				<AlertDialog.Footer>
 					<Button.Group space={2}>
 						<Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
-							{getTermFromDictionary(language, 'cancel')}
+							{getTermFromDictionary(language, 'permissions_cancel')}
 						</Button>
 						<Button colorScheme="danger" onPress={() => {
 							onClose();
