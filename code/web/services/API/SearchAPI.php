@@ -2283,20 +2283,206 @@ class SearchAPI extends Action {
 
 		$results = [
 			'success' => false,
+			'type' => $_REQUEST['type'] ?? 'catalog',
 			'count' => 0,
 			'totalResults' => 0,
-			'lookfor' => $_REQUEST['lookfor'],
+			'lookfor' => $_REQUEST['lookfor'] ?? null,
 			'title' => translate([
 				'text' => 'No Results Found',
 				'isPublicFacing' => true,
 			]),
 			'items' => [],
 			'message' => translate([
-				'text' => "Your search '%1%' did not match any resources.",
-				1 => $_REQUEST['lookfor'],
+				'text' => "Your search did not match any resources.",
 				'isPublicFacing' => true,
 			]),
 		];
+
+		if($_REQUEST['type'] == 'user_list') {
+			if(!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'message' => 'The id of the list to load must be provided as the id parameter.',
+					'count' => 0,
+					'totalResults' => 0,
+					'items' => [],
+					'lookfor' => null,
+					'listId' => null,
+				];
+			}
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$sourceList = new UserList();
+			$sourceList->id = $_REQUEST['id'];
+			if($sourceList->find(true)) {
+				$results['listId'] = $sourceList->id;
+				$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
+				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+				$startRecord = ($page - 1) * $recordsPerPage;
+				if ($startRecord < 0) {
+					$startRecord = 0;
+				}
+				$totalRecords = $sourceList->numValidListItems();
+				$endRecord = $page * $recordsPerPage;
+				if ($endRecord > $totalRecords) {
+					$endRecord = $totalRecords;
+				}
+				$pageInfo = [
+					'resultTotal' => $totalRecords,
+					'startRecord' => $startRecord,
+					'endRecord' => $endRecord,
+					'perPage' => $recordsPerPage,
+				];
+				$records = $sourceList->getListRecords($startRecord, $recordsPerPage, false, 'summary');
+				$items = [];
+				foreach($records as $recordKey => $record) {
+					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['title'] = $record['title'];
+					$items[$recordKey]['author'] = $record['author'];
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+					$items[$recordKey]['language'] = $record['language'][0];
+					$items[$recordKey]['summary'] = $record['description'];;
+					$items[$recordKey]['itemList'] = [];
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+					if ($groupedWorkDriver->isValid()) {
+						$i = 0;
+						$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+						foreach ($relatedManifestations as $relatedManifestation) {
+							foreach ($relatedManifestation->getVariations() as $obj) {
+								if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+									$format = $obj->manifestation->format;
+									$items[$recordKey]['itemList'][$format]['key'] = $i;
+									$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
+									$i++;
+								};
+							}
+						}
+					}
+				}
+				$link = $_SERVER['REQUEST_URI'];
+				if (preg_match('/[&?]page=/', $link)) {
+					$link = preg_replace("/page=\\d+/", 'page=%d', $link);
+				} elseif (strpos($link, '?') > 0) {
+					$link .= '&page=%d';
+				} else {
+					$link .= '?page=%d';
+				}
+				$options = [
+					'totalItems' => $pageInfo['resultTotal'],
+					'perPage' => $pageInfo['perPage'],
+					'fileName' => $link,
+					'append' => false,
+				];
+				require_once ROOT_DIR . '/sys/Pager.php';
+				$pager = new Pager($options);
+				$results['totalResults'] = (int)$pager->getTotalItems();
+				$results['count'] = (int)$pageInfo['resultTotal'];
+				$results['page_current'] = (int)$pager->getCurrentPage();
+				$results['page_total'] = (int)$pager->getTotalPages();
+				$results['items'] = $items;
+				$results['title'] = translate([
+					'text' => 'List Results',
+					'isPublicFacing' => true,
+				]);
+				$results['message'] = translate([
+					'text' => 'Your list has %1% results',
+					1 => $pageInfo['resultTotal'],
+					'isPublicFacing' => true,
+				]);
+				$results['success'] = true;
+			}
+			return $results;
+		}
+
+		if($_REQUEST['type'] == 'browse_category') {
+			if(!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'message' => 'The textId of the browse category to load must be provided as the id parameter.',
+					'count' => 0,
+					'totalResults' => 0,
+					'items' => [],
+					'lookfor' => null,
+					'browseCategoryId' => null,
+				];
+			}
+			$records = $this->getAppBrowseCategoryResults($_REQUEST['id'], null, $_REQUEST['pageSize'] ?? 25);
+			$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
+			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$startRecord = ($page - 1) * $recordsPerPage;
+			if ($startRecord < 0) {
+				$startRecord = 0;
+			}
+			$totalRecords = count($records);
+			$endRecord = $page * $recordsPerPage;
+			if ($endRecord > $totalRecords) {
+				$endRecord = $totalRecords;
+			}
+			$pageInfo = [
+				'resultTotal' => $totalRecords,
+				'startRecord' => $startRecord,
+				'endRecord' => $endRecord,
+				'perPage' => $recordsPerPage,
+			];
+			$items = [];
+			foreach($records as $recordKey => $record) {
+				$items[$recordKey]['key'] = $record['id'];
+				$items[$recordKey]['title'] = $record['title_display'];
+				$items[$recordKey]['author'] = $record['author_display'];
+				$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+				$items[$recordKey]['language'] = $record['language'][0];
+				$items[$recordKey]['summary'] = '';
+				$items[$recordKey]['itemList'] = [];
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+				if ($groupedWorkDriver->isValid()) {
+					$i = 0;
+					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+					foreach ($relatedManifestations as $relatedManifestation) {
+						foreach ($relatedManifestation->getVariations() as $obj) {
+							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+								$format = $obj->manifestation->format;
+								$items[$recordKey]['itemList'][$format]['key'] = $i;
+								$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
+								$i++;
+							};
+						}
+					}
+				}
+			}
+			$link = $_SERVER['REQUEST_URI'];
+			if (preg_match('/[&?]page=/', $link)) {
+				$link = preg_replace("/page=\\d+/", 'page=%d', $link);
+			} elseif (strpos($link, '?') > 0) {
+				$link .= '&page=%d';
+			} else {
+				$link .= '?page=%d';
+			}
+			$options = [
+				'totalItems' => $pageInfo['resultTotal'],
+				'perPage' => $pageInfo['perPage'],
+				'fileName' => $link,
+				'append' => false,
+			];
+			require_once ROOT_DIR . '/sys/Pager.php';
+			$pager = new Pager($options);
+			$results['totalResults'] = (int)$pager->getTotalItems();
+			$results['count'] = (int)$pageInfo['resultTotal'];
+			$results['page_current'] = (int)$pager->getCurrentPage();
+			$results['page_total'] = (int)$pager->getTotalPages();
+			$results['items'] = $items;
+			$results['title'] = translate([
+				'text' => 'Browse Category Results',
+				'isPublicFacing' => true,
+			]);
+			$results['message'] = translate([
+				'text' => 'Browse category has %1% results',
+				1 => $pageInfo['resultTotal'],
+				'isPublicFacing' => true,
+			]);
+			$results['success'] = true;
+			return $results;
+		}
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
@@ -2313,6 +2499,21 @@ class SearchAPI extends Action {
 		$timer->logTime('Setup Search');
 
 		// Process Search
+		if($_REQUEST['type'] == 'saved_search') {
+			if(!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'message' => 'The id of the list to load must be provided as the id parameter.',
+					'count' => 0,
+					'totalResults' => 0,
+					'items' => [],
+					'lookfor' => null,
+					'savedSearchId' => null,
+				];
+			}
+			$searchObject = $searchObject->restoreSavedSearch($_REQUEST['id'], false, true);
+		}
+
 		$searchResults = $searchObject->processSearch(false, true);
 		$timer->logTime('Process Search');
 
@@ -2376,14 +2577,16 @@ class SearchAPI extends Action {
 				'isPublicFacing' => true,
 			]);
 			$results['message'] = translate([
-				'text' => "Your search '%1%' returned %2% results",
-				1 => $_REQUEST['lookfor'],
-				2 => $results['count'],
+				'text' => "Your search returned %1% results",
+				1 => $results['count'],
 				'isPublicFacing' => true,
 			]);
 			$timer->logTime('load result records');
 			if ($results['page_current'] == $results['page_total']) {
 				$results['message'] = "end of results";
+			}
+			if($_REQUEST['type'] == 'saved_search') {
+				$results['savedSearchId'] = $_REQUEST['searchId'];
 			}
 		}
 		if (empty($results['items'])) {

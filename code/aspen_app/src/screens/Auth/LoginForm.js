@@ -194,12 +194,12 @@ export const GetLoginForm = (props) => {
                          size="md"
                          color="#30373b"
                          isLoading={loading}
-                         isLoadingText={getTermFromDictionary(language, 'logging_in', true)}
+                         isLoadingText={getTermFromDictionary('en', 'logging_in', true)}
                          onPress={async () => {
                              setLoading(true);
                              await initialValidation();
                          }}>
-                         {getTermFromDictionary(language, 'login')}
+                         {getTermFromDictionary('en', 'login')}
                     </Button>
                </Center>
           </>

@@ -169,7 +169,7 @@ const AccountStackNavigator = () => {
                          name="MyReadingHistory"
                          component={MyReadingHistory}
                          options={{
-                              title: getTermFromDictionary(language, 'reading_history'),
+                              title: getTermFromDictionary(language, 'my_reading_history'),
                          }}
                     />
                     <Stack.Screen

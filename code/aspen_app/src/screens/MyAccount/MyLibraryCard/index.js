@@ -14,10 +14,11 @@ import * as Brightness from 'expo-brightness';
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { translate } from '../../../translations/translations';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { getLinkedAccounts } from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
 import {userContext} from '../../../context/user';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const MyLibraryCard = () => {
      const navigation = useNavigation();
@@ -27,6 +28,7 @@ export const MyLibraryCard = () => {
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
      //const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
 
      let autoRotate = library.generalSettings?.autoRotateCard ?? 0;
 
@@ -170,7 +172,10 @@ const CreateLibraryCard = (data) => {
      const card = data.card;
      const {numCards} = data;
 
+     const [expirationText, setExpirationText] = React.useState('');
+
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
 
      let barcodeStyle;
      if (!_.isUndefined(card.barcodeStyle) && !_.isNull(card.barcodeStyle)) {
@@ -189,6 +194,17 @@ const CreateLibraryCard = (data) => {
           if(_.isString(card.expires)) {
               expirationDate = moment(card.expires, 'MMM D, YYYY');
           }
+
+         React.useEffect(() => {
+             async function fetchTranslations() {
+                 console.log(card.expires);
+                 await getTranslationsWithValues('library_card_expires_on', card.expires, language, library.baseUrl).then(result => {
+                     setExpirationText(result);
+                 });
+             }
+             fetchTranslations()
+         }, []);
+
      }
 
      let cardHasExpired = 0;
@@ -220,7 +236,7 @@ const CreateLibraryCard = (data) => {
                <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
                     <Center>
                          <Flex direction="row">
-                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                               <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
                                    {library.displayName}
                               </Text>
@@ -235,7 +251,7 @@ const CreateLibraryCard = (data) => {
                          </Text>
                          {expirationDate && !neverExpires ? (
                               <Text color="darkText" fontSize={10}>
-                                  {translate('library_card.expires_on', {date: card.expires})}
+                                  {expirationText}
                               </Text>
                          ) : null}
                     </Center>
@@ -265,7 +281,7 @@ const CreateLibraryCard = (data) => {
                <Center>
                    {expirationDate && !neverExpires && numCards > 1 ? (
                        <Text color="darkText">
-                           {translate('library_card.expires_on', {date: card.expires})}
+                           {expirationText}
                        </Text>
                    ) : null}
                    {numCards > 1 ? (
@@ -275,7 +291,7 @@ const CreateLibraryCard = (data) => {
                    )}
                    {expirationDate && !neverExpires && numCards === 1 ? (
                        <Text color="darkText" fontSize={10} pt={2}>
-                           {translate('library_card.expires_on', {date: card.expires})}
+                           {expirationText}
                        </Text>
                    ) : null}
                </Center>
