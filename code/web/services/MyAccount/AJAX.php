@@ -3421,14 +3421,14 @@ class MyAccount_AJAX extends JSON_Action {
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
-		$toLocation = $_REQUEST['toLocation'] ?? $library->libraryId;
-		$donateToLibrary = 'Unknown';
-		if($toLocation) {
+		$donateToLibrary = $_REQUEST['toLocation'];
+		$toLocation = 'None';
+		if($donateToLibrary) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 			$location = new Location();
-			$location->locationId = $toLocation;
+			$location->displayName = $donateToLibrary;
 			if ($location->find(true)) {
-				$donateToLibrary = $location->displayName;
+				$toLocation = $location->locationId;
 			}
 		} else {
 			$donateToLibrary = 'None';
@@ -3487,6 +3487,27 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 			}
 
+			if (isset($_REQUEST['shouldBeNotified']) && ($_REQUEST['shouldBeNotified'] == "on")) {
+				if (empty($_REQUEST['notificationFirstName'])) {
+					$message .= "<li>A first name for the notification party</li>";
+				}
+				if (empty($_REQUEST['notificationLastName'])) {
+					$message .= '<li>A last name for the notification party</li>';
+				}
+				if (empty($_REQUEST['notificationAddress'])) {
+					$message .= '<li>Address to send notification to</li>';
+				}
+				if (empty($_REQUEST['notificationCity'])) {
+					$message .= '<li>City to send notification to</li>';
+				}
+				if (empty($_REQUEST['notificationState'])) {
+					$message .= '<li>State to send notification to</li>';
+				}
+				if (empty($_REQUEST['notificationZip'])) {
+					$message .= '<li>Zip Code to send notification to</li>';
+				}
+			}
+
 			$message .= "</ul></div>";
 			return [
 				'success' => false,
@@ -3528,6 +3549,7 @@ class MyAccount_AJAX extends JSON_Action {
 			'donateToLibraryId' => $toLocation,
 			'donateToLibrary' => $donateToLibrary,
 			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
+			'shouldBeNotified' => isset($_REQUEST['shouldBeNotified']) ? 1 : 0,
 			'comments' => $comments,
 			'donationSettingId' => $_REQUEST['settingId'],
 		];
@@ -3537,6 +3559,17 @@ class MyAccount_AJAX extends JSON_Action {
 				'type' => $_REQUEST['dedicationType'],
 				'honoreeFirstName' => $_REQUEST['honoreeFirstName'],
 				'honoreeLastName' => $_REQUEST['honoreeLastName'],
+			];
+		}
+
+		if($tempDonation['shouldBeNotified'] == 1) {
+			$tempDonation['notification'] = [
+				'notificationFirstName' => $_REQUEST['notificationFirstName'],
+				'notificationLastName' => $_REQUEST['notificationLastName'],
+				'notificationAddress' => $_REQUEST['notificationAddress'],
+				'notificationCity' => $_REQUEST['notificationCity'],
+				'notificationState' => $_REQUEST['notificationState'],
+				'notificationZip' => $_REQUEST['notificationZip'],
 			];
 		}
 
@@ -3587,7 +3620,17 @@ class MyAccount_AJAX extends JSON_Action {
 			$donation->honoreeFirstName = $tempDonation['dedication']['honoreeFirstName'];
 			$donation->honoreeLastName = $tempDonation['dedication']['honoreeLastName'];
 		}
+		$donation->shouldBeNotified = $tempDonation['shouldBeNotified'];
+		if($tempDonation['shouldBeNotified'] == 1) {
+			$donation->notificationFirstName = $tempDonation['notification']['notificationFirstName'];
+			$donation->notificationLastName = $tempDonation['notification']['notificationLastName'];
+			$donation->notificationAddress = $tempDonation['notification']['notificationAddress'];
+			$donation->notificationCity = $tempDonation['notification']['notificationCity'];
+			$donation->notificationState = $tempDonation['notification']['notificationState'];
+			$donation->notificationZip = $tempDonation['notification']['notificationZip'];
+		}
 		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
+		$donation->donateToLibrary = $tempDonation['donateToLibrary'];
 		$donation->comments = $tempDonation['comments'];
 		$donation->donationSettingId = $tempDonation['donationSettingId'];
 		$donation->sendEmailToUser = 1;
