@@ -298,6 +298,7 @@
   "status_library_use_only": "Library use only",
   "status_withdrawn": "Withdrawn / Unavailable",
   "permissions_update_settings": "Update Settings",
+  "permissions_cancel": "Not now",
   "permissions_notifications_title": "Permissions Requested",
   "permissions_notifications_body": "Please visit Settings and turn on app notifications.",
   "permissions_screen_brightness_title": "Permissions Requested",
