@@ -271,6 +271,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 			processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 
+			includePersonalAndCorporateNamesInTopics = indexingProfileRS.getBoolean("includePersonalAndCorporateNamesInTopics");
+
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
 			updateRecordSuppressionReasonStmt = dbConn.prepareStatement("UPDATE ils_records set suppressed=?, suppressionNotes=? where source=? and ilsId=?");
@@ -405,7 +407,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			loadUnsuppressedEContentItems(groupedWork, identifier, record, suppressionNotes, recordInfo, firstParentId != null, hasChildRecords);
 
 			if (hasChildRecords) {
-				//If we have child records, it's very likely that we don't have real items so we need to create a virtual one for scoping.
+				//If we have child records, it's very likely that we don't have real items, so we need to create a virtual one for scoping.
 				ItemInfo virtualItem = new ItemInfo();
 				virtualItem.setVirtual(true);
 				recordInfo.addItem(virtualItem);
@@ -796,7 +798,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return suppressionNotes;
 	}
 
-	boolean getIlsEContentItems(AbstractGroupedWorkSolr groupedWork, Record record, RecordInfo mainRecordInfo, String identifier, DataField itemField){
+	void getIlsEContentItems(Record record, RecordInfo mainRecordInfo, String identifier, DataField itemField){
 		ItemInfo itemInfo = new ItemInfo();
 		itemInfo.setIsEContent(true);
 
@@ -883,13 +885,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 		itemInfo.setDetailedStatus("Available Online");
 		itemInfo.setGroupedStatus("Available Online");
-
-		//If we don't get a URL, return null since it isn't valid
-		if (itemInfo.geteContentUrl() == null || itemInfo.geteContentUrl().length() == 0){
-			return false;
-		}else{
-			return true;
-		}
 	}
 
 	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {

@@ -36,6 +36,8 @@
       <w>bluray</w>
       <w>bookability</w>
       <w>bookcover</w>
+      <w>bookpack</w>
+      <w>bookpacks</w>
       <w>booksellerid</w>
       <w>branchaddress</w>
       <w>branchcity</w>
@@ -100,7 +102,9 @@
       <w>freading</w>
       <w>fullcheckin</w>
       <w>galegroup</w>
+      <w>gamecube</w>
       <w>gifs</w>
+      <w>goreader</w>
       <w>hmac</w>
       <w>holdingbranch</w>
       <w>homebranch</w>
@@ -242,7 +246,9 @@
       <w>videoreel</w>
       <w>videosisc</w>
       <w>wcpl</w>
+      <w>wiiu</w>
       <w>wkst</w>
+      <w>wonderbook</w>
       <w>xbox</w>
       <w>yourcloudlibrary</w>
       <w>zebraqueue</w>

@@ -26,6 +26,7 @@ class SystemVariables extends DataObject {
 	public $catalogStatus;
 	public $offlineMessage;
 	public $appScheme;
+	public $googleBucket;
 
 	static function getObjectStructure($context = ''): array {
 		return [
@@ -156,14 +157,6 @@ class SystemVariables extends DataObject {
 						'label' => 'Load covers from cancelled & invalid ISBNs (020$z)',
 						'description' => 'Whether or not covers can be loaded from the 020z',
 						'default' => false,
-					],
-					'includePersonalAndCorporateNamesInTopics' => [
-						'property' => 'includePersonalAndCorporateNamesInTopics',
-						'type' => 'checkbox',
-						'label' => 'Include Personal And Corporate Names In Topics Facet',
-						'description' => 'Whether or not personal and corporate names are included in the topics facet',
-						'default' => true,
-						'forcesReindex' => true,
 					],
 				],
 			],

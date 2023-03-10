@@ -64,6 +64,8 @@ class SideLoad extends DataObject {
 	public /** @noinspection PhpUnused */
 		$specifiedFormatBoost;
 
+	public /** @noinspection PhpUnused */ $includePersonalAndCorporateNamesInTopics;
+
 	public $runFullUpdate;
 	public $lastUpdateOfChangedRecords;
 	public $lastUpdateOfAllRecords;
@@ -279,6 +281,14 @@ class SideLoad extends DataObject {
 				'maxLength' => 50,
 				'description' => 'Records with an Undetermined Language will use this language instead.  Leave blank for Unknown',
 				'default' => 'English',
+				'forcesReindex' => true,
+			],
+			'includePersonalAndCorporateNamesInTopics' => [
+				'property' => 'includePersonalAndCorporateNamesInTopics',
+				'type' => 'checkbox',
+				'label' => 'Include Personal And Corporate Names In Topics Facet',
+				'description' => 'Whether or not personal and corporate names are included in the topics facet',
+				'default' => true,
 				'forcesReindex' => true,
 			],
 
