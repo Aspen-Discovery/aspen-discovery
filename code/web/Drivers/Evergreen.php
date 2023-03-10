@@ -796,7 +796,7 @@ class Evergreen extends AbstractIlsDriver {
 							$curHold->status = "Frozen";
 							$curHold->canFreeze = true;
 							if ($holdInfo['thaw_date'] != null) {
-								$curHold->status .= ' until ' . date("m/d/Y", strtotime($holdInfo['thaw_date']));
+								$curHold->status .= ' until ' . date("M d, Y", strtotime($holdInfo['thaw_date']));
 							}
 							$curHold->locationUpdateable = true;
 						} elseif (!empty($holdInfo['shelf_time'])) {
