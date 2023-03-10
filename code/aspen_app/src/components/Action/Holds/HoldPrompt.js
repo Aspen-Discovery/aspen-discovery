@@ -1,7 +1,6 @@
 import React from 'react';
-import {HoldsContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import { Button, Modal, Heading, Radio } from 'native-base';
-import {translate} from '../../../translations/translations';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import { Button, Modal, Heading } from 'native-base';
 import _ from 'lodash';
 import {completeAction} from '../../../screens/GroupedWork/Record';
 import {refreshProfile} from '../../../util/api/user';
@@ -9,6 +8,7 @@ import SelectPickupLocation from './SelectPickupLocation';
 import SelectLinkedAccount from './SelectLinkedAccount';
 import {SelectVolume} from './SelectVolume';
 import {HoldNotificationPreferences} from './HoldNotificationPreferences';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const HoldPrompt = (props) => {
 	const {id, title, action, volumeInfo, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef} = props;
@@ -18,6 +18,7 @@ export const HoldPrompt = (props) => {
 	const { user, updateUser, accounts, locations } = React.useContext(UserContext);
 	const { library } = React.useContext(LibrarySystemContext);
 	const { updateHolds } = React.useContext(HoldsContext);
+	const { language } = React.useContext(LanguageContext);
 
 	const isPlacingHold = action.includes('hold');
 	let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
@@ -39,7 +40,7 @@ export const HoldPrompt = (props) => {
 	const [smsCarrier, setSMSCarrier] = React.useState(holdNotificationInfo.preferences?.opac_default_sms_carrier?.value ?? -1);
 	const [smsNumber, setSMSNumber] = React.useState(holdNotificationInfo.preferences?.opac_default_sms_notify?.value ?? null);
 	const [phoneNumber, setPhoneNumber] = React.useState(holdNotificationInfo.preferences?.opac_default_phone?.value ?? null);
-
+	const [emailNotificationLabel, setEmailNotificationLabel] = React.useState('Yes, by email');
 	const holdNotificationPreferences = {
 		'emailNotification': emailNotification,
 		'phoneNotification': phoneNotification,
@@ -48,6 +49,17 @@ export const HoldPrompt = (props) => {
 		'smsNumber': smsNumber,
 		'smsCarrier': smsCarrier
 	}
+
+	React.useEffect(() => {
+		async function fetchTranslations() {
+			if(user.email) {
+				await getTranslationsWithValues('hold_email_notification', user.email, language, library.baseUrl).then(result => {
+					setEmailNotificationLabel(result);
+				});
+			}
+		}
+		fetchTranslations()
+	}, []);
 
 	let promptForHoldType = false;
 	let typeOfHold = 'default';
@@ -87,13 +99,15 @@ export const HoldPrompt = (props) => {
 			<Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
 				<Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
 					<Modal.CloseButton/>
-					<Modal.Header><Heading size="md">{isPlacingHold ? translate('grouped_work.hold_options') : translate('grouped_work.checkout_options')}</Heading></Modal.Header>
+					<Modal.Header><Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading></Modal.Header>
 					<Modal.Body>
 						{promptForHoldNotifications ? (
 							<HoldNotificationPreferences
 								user={user}
+								language={language}
 								emailNotification={emailNotification}
 								setEmailNotification={setEmailNotification}
+								emailNotificationLabel={emailNotificationLabel}
 								phoneNotification={phoneNotification}
 								setPhoneNotification={setPhoneNotification}
 								smsNotification={smsNotification}
@@ -109,6 +123,7 @@ export const HoldPrompt = (props) => {
 						{promptForHoldType || holdType === 'volume' ? (
 							<SelectVolume
 								id={id}
+								language={language}
 								volume={volume}
 								setVolume={setVolume}
 								promptForHoldType={promptForHoldType}
@@ -122,6 +137,7 @@ export const HoldPrompt = (props) => {
 								locations={locations}
 								location={location}
 								setLocation={setLocation}
+								language={language}
 							/>
 						) : null}
 						{_.size(accounts) > 0 ? (
@@ -131,6 +147,7 @@ export const HoldPrompt = (props) => {
 								setActiveAccount={setActiveAccount}
 								isPlacingHold={isPlacingHold}
 								user={user}
+								language={language}
 							/>
 						) : null}
 					</Modal.Body>
@@ -143,11 +160,11 @@ export const HoldPrompt = (props) => {
 									setShowModal(false);
 									setLoading(false);
 								}}>
-								{translate('general.close_window')}
+								{getTermFromDictionary(language, 'close_window')}
 							</Button>
 							<Button
 								isLoading={loading}
-								isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
+								isLoadingText={isPlacingHold ? getTermFromDictionary(language, 'placing_hold', true) : getTermFromDictionary(language, 'checking_out', true)}
 								onPress={async () => {
 									setLoading(true);
 									await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences).then(async (result) => {

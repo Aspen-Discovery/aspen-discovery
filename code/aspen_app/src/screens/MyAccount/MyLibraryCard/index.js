@@ -19,10 +19,12 @@ import { getLinkedAccounts } from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
 import {userContext} from '../../../context/user';
 import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
+import {PermissionsPrompt} from '../../../components/PermissionsPrompt';
 
 export const MyLibraryCard = () => {
      const navigation = useNavigation();
      const [isLoading, setLoading] = React.useState(true);
+     const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [previousBrightness, setPreviousBrightness] = React.useState();
      const [isLandscape, setIsLandscape] = React.useState();
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
@@ -73,16 +75,21 @@ export const MyLibraryCard = () => {
              });
          });
           const brightenScreen = navigation.addListener('focus', async () => {
-               const { status } = await Brightness.requestPermissionsAsync();
-               if (status === 'granted') {
-                    await Brightness.getBrightnessAsync().then((level) => {
-                         console.log('Storing previous screen brightness for later');
-                         setPreviousBrightness(level);
-                    });
-                    console.log('Updating screen brightness');
-                    Brightness.setSystemBrightnessAsync(1);
+               const { status } = await Brightness.getPermissionsAsync();
+               if(status === 'undetermined') {
+                   setShouldRequestPermissions(true);
                } else {
-                    console.log('Unable to update screen brightness');
+                   if (status === 'granted') {
+                       await Brightness.getBrightnessAsync().then((level) => {
+                           console.log('Storing previous screen brightness for later');
+                           setPreviousBrightness(level);
+                       });
+                       console.log('Updating screen brightness');
+                       Brightness.setSystemBrightnessAsync(1);
+                   } else {
+                       // we were denied permissions
+                       console.log('Unable to update screen brightness');
+                   }
                }
           });
           const updateOrientation = navigation.addListener('focus', async () => {
@@ -135,6 +142,10 @@ export const MyLibraryCard = () => {
           });
           return () => {};
      }, [navigation, previousBrightness]);
+
+     if(shouldRequestPermissions) {
+         return <PermissionsPrompt promptTitle='permissions_screen_brightness_title' promptBody='permissions_screen_brightness_body' setShouldRequestPermissions={setShouldRequestPermissions} />
+     }
 
      /* useFocusEffect(
          React.useCallback(() => {

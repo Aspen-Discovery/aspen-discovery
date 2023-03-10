@@ -33,6 +33,7 @@ import { Platform } from 'react-native';
 import { navigationRef } from '../helpers/RootNavigator';
 import {updateAspenLiDABuild} from '../util/greenhouse';
 import {ResetExpiredPin} from '../screens/Auth/ResetExpiredPin';
+import {PermissionsPrompt} from './PermissionsPrompt';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -92,6 +93,7 @@ export function App() {
                background: screenBackgroundColor,
           },
      };
+     const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
 
      const [state, dispatch] = React.useReducer(
           (prevState, action) => {
@@ -150,7 +152,11 @@ export function App() {
 
      React.useEffect(() => {
           const bootstrapAsync = async () => {
-               await getPermissions();
+               const geoPermissions = await getPermissions();
+               console.log(geoPermissions);
+               if(geoPermissions.success === false && geoPermissions.status === 'undetermined') {
+                    setShouldRequestPermissions(true);
+               }
 
                console.log('Checking updates...');
                if(Updates.manifest) {
@@ -239,6 +245,10 @@ export function App() {
      if (state.isLoading) {
           // We haven't finished checking for the token yet
           return <SplashScreen />;
+     }
+
+     if(shouldRequestPermissions) {
+          return <PermissionsPrompt promptTitle='permissions_location_title' promptBody='permissions_location_body' setShouldRequestPermissions={setShouldRequestPermissions}/>
      }
 
      return (
@@ -383,15 +393,21 @@ async function getPermissions() {
           await SecureStore.setItemAsync('longitude', '0');
           PATRON.coords.lat = 0;
           PATRON.coords.long = 0;
-          return false;
+          return {
+               success: false,
+               status: 'denied'
+          };
      } else {
-          const { status } = await Location.requestForegroundPermissionsAsync();
+          const { status } = await Location.getForegroundPermissionsAsync();
           if (status !== 'granted') {
                await SecureStore.setItemAsync('latitude', '0');
                await SecureStore.setItemAsync('longitude', '0');
                PATRON.coords.lat = 0;
                PATRON.coords.long = 0;
-               return false;
+               return {
+                    success: false,
+                    status: status
+               };
           }
 
           const location = await Location.getLastKnownPositionAsync({});
@@ -409,7 +425,10 @@ async function getPermissions() {
                PATRON.coords.lat = 0;
                PATRON.coords.long = 0;
           }
-          return true;
+          return {
+               success: true,
+               status: 'granted'
+          };
      }
 }
 

@@ -7,7 +7,7 @@ import { Center, Heading, Box, Spinner, VStack, Progress } from 'native-base';
 import _ from 'lodash';
 import { checkVersion } from "react-native-check-version";
 import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import { formatBrowseCategories, LIBRARY } from '../../util/loadLibrary';
+import {formatBrowseCategories, formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
 import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -44,7 +44,7 @@ export const LoadingScreen = () => {
      const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
-
+     const {discoveryVersion, setDiscoveryVersion} = React.useState('23.03.00');
 
      React.useEffect(() => {
           const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
@@ -89,18 +89,21 @@ export const LoadingScreen = () => {
                          await reloadLibrarySystem().then(async (result) => {
                               updateLibrary(result);
                               setProgress(40);
-                              await getLibraryLanguages().then((async languages => {
-                                   const languagesArray = [];
-                                   updateLanguages(languages);
-                                   _.forEach(languages, function(value) {
-                                        languagesArray.push(value.code);
-                                   })
-                                   setProgress(50)
-                                   await getTranslatedTermsForAllLanguages(languagesArray, result.baseUrl).then(async result => {
-                                        await AsyncStorage.setItem('@translations', JSON.stringify(translationsLibrary));
-                                        updateDictionary(translationsLibrary);
-                                   })
-                              }))
+                              const version = formatDiscoveryVersion(result.discoveryVersion);
+                              if(version >= '23.04.00') {
+                                   await getLibraryLanguages().then((async languages => {
+                                        const languagesArray = [];
+                                        updateLanguages(languages);
+                                        _.forEach(languages, function(value) {
+                                             languagesArray.push(value.code);
+                                        });
+                                        setProgress(50);
+                                        await getTranslatedTermsForAllLanguages(languagesArray, result.baseUrl).then(async result => {
+                                             //await AsyncStorage.setItem('@translations', JSON.stringify(translationsLibrary));
+                                             updateDictionary(translationsLibrary);
+                                        });
+                                   }));
+                              }
                          });
                          setProgress(60);
                          setLoadingText("One of the most overdue library books in the world was returned after 122 years.");

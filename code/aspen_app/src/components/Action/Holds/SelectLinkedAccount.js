@@ -1,19 +1,20 @@
 import { FormControl, Select, CheckIcon } from 'native-base';
 import React from 'react';
 import { translate } from '../../../translations/translations';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 const SelectLinkedAccount = (props) => {
-	const { user, isPlacingHold, activeAccount, setActiveAccount, accounts } = props;
+	const { user, isPlacingHold, activeAccount, setActiveAccount, accounts, language } = props;
 
 	return (
 		<>
 			<FormControl>
-				<FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
+				<FormControl.Label>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControl.Label>
 				<Select
 					name="linkedAccount"
 					selectedValue={activeAccount}
 					minWidth="200"
-					accessibilityLabel={isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}
+					accessibilityLabel={isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}
 					_selectedItem={{
 						bg: 'tertiary.300',
 						endIcon: <CheckIcon size="5" />,

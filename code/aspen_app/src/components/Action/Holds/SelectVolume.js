@@ -7,9 +7,10 @@ import {getVolumes} from '../../../util/api/item';
 import {loadingSpinner} from '../../loadingSpinner';
 import {loadError} from '../../loadError';
 import _ from 'lodash';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const SelectVolume = (props) => {
-	const { id, volume, setVolume, showModal, promptForHoldType, holdType, setHoldType } = props;
+	const { id, volume, setVolume, showModal, promptForHoldType, holdType, setHoldType, language } = props;
 	const { library } = React.useContext(LibrarySystemContext);
 
 	const { status, data, error, isFetching } = useQuery({
@@ -33,22 +34,22 @@ export const SelectVolume = (props) => {
 								}}
 								accessibilityLabel="">
 								<Radio value="item" my={1} size="sm">
-									{translate('grouped_work.first_available')}
+									{getTermFromDictionary(language, 'first_available')}
 								</Radio>
 								<Radio value="volume" my={1} size="sm">
-									{translate('grouped_work.specific_volume')}
+									{getTermFromDictionary(language, 'specific_volume')}
 								</Radio>
 							</Radio.Group>
 						</FormControl>
 					) : null}
 					{holdType === 'volume' ? (
 						<FormControl>
-							<FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
+							<FormControl.Label>{getTermFromDictionary(language, 'select_volume')}</FormControl.Label>
 							<Select
 								name="volumeForHold"
 								selectedValue={volume}
 								minWidth="200"
-								accessibilityLabel="Select a Volume"
+								accessibilityLabel={getTermFromDictionary(language, 'select_volume')}
 								_selectedItem={{
 									bg: 'tertiary.300',
 									endIcon: <CheckIcon size="5" />,

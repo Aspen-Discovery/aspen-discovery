@@ -17,10 +17,12 @@ import {
 import {loadingSpinner} from '../../../components/loadingSpinner';
 import {translate} from '../../../translations/translations';
 import {refreshProfile, reloadProfile} from '../../../util/api/user';
+import {PermissionsPrompt} from '../../../components/PermissionsPrompt';
 
 export const Settings_NotificationOptions = () => {
      const [isLoading, setLoading] = React.useState(true);
      const [error, showError] = React.useState(false);
+     const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [allowNotifications, setAllowNotifications] = React.useState(!Device.isDevice);
      const [notifySavedSearch, setNotifySavedSearch] = React.useState(false);
      const [notifyCustom, setNotifyCustom] = React.useState(false);
@@ -36,9 +38,6 @@ export const Settings_NotificationOptions = () => {
      const {library} = React.useContext(LibrarySystemContext);
      const [toggled, setToggle] = React.useState(aspenToken);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
-     const [isOpen, setIsOpen] = React.useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
 
      useFocusEffect(
          React.useCallback(() => {
@@ -67,7 +66,7 @@ export const Settings_NotificationOptions = () => {
                          setToggle(false);
                          console.log('unable to update preference');
                          setLoading(false);
-                         setIsOpen(true);
+                         setShouldRequestPermissions(true);
                          return false;
                     } else {
                          await reloadProfile(library.baseUrl).then(async (result) => {
@@ -129,6 +128,10 @@ export const Settings_NotificationOptions = () => {
           return loadingSpinner();
      }
 
+     if(shouldRequestPermissions) {
+          return <PermissionsPrompt promptTitle='permissions_notifications_title' promptBody='permissions_notifications_body' setShouldRequestPermissions={setShouldRequestPermissions}/>
+     }
+
      return (
          <SafeAreaView style={{flex: 1}}>
               <Box flex={1} safeArea={5}>
@@ -152,28 +155,6 @@ export const Settings_NotificationOptions = () => {
                                                                                    notifyAccount={notifyAccount}
                                                                                    setNotifyAccount={setNotifyAccount}/>}
                                         keyExtractor={(item, index) => index.toString()}/> : null}
-                   <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                        <AlertDialog.Content>
-                             <AlertDialog.CloseButton />
-                             <AlertDialog.Header>Notifications Disabled</AlertDialog.Header>
-                             <AlertDialog.Body>
-                                  Please visit Settings and turn on app notifications.
-                             </AlertDialog.Body>
-                             <AlertDialog.Footer>
-                                  <Button.Group space={2}>
-                                       <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
-                                            Cancel
-                                       </Button>
-                                       <Button colorScheme="danger" onPress={() => {
-                                            onClose();
-                                            Linking.openSettings();
-                                       }}>
-                                            Change Settings
-                                       </Button>
-                                  </Button.Group>
-                             </AlertDialog.Footer>
-                        </AlertDialog.Content>
-                   </AlertDialog>
               </Box>
          </SafeAreaView>
      );
