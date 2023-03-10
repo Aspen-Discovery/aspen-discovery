@@ -1701,20 +1701,24 @@ class UserAPI extends Action {
 						}
 						$result = $user->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate);
 						$action = $result['api']['action'] ?? null;
+						$responseMessage = strip_tags($result['api']['message']);
+						$responseMessage = trim($responseMessage);
 						return [
 							'success' => $result['success'],
 							'title' => $result['api']['title'],
-							'message' => $result['api']['message'],
+							'message' => $responseMessage,
 							'action' => $action,
 						];
 					} else {
 						if (isset($_REQUEST['volumeId']) && $holdType == 'volume') {
 							$result = $user->placeVolumeHold($bibId, $_REQUEST['volumeId'], $pickupBranch);
 							$action = $result['api']['action'] ?? null;
+							$responseMessage = strip_tags($result['api']['message']);
+							$responseMessage = trim($responseMessage);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
-								'message' => $result['api']['message'],
+								'message' => $responseMessage,
 								'action' => $action,
 							];
 						} else {
@@ -1734,10 +1738,12 @@ class UserAPI extends Action {
 							}
 							$result = $user->placeHold($bibId, $pickupBranch, $cancelDate);
 							$action = $result['api']['action'] ?? null;
+							$responseMessage = strip_tags($result['api']['message']);
+							$responseMessage = trim($responseMessage);
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
-								'message' => $result['api']['message'],
+								'message' => $responseMessage,
 								'action' => $action,
 							];
 						}
