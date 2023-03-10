@@ -36,6 +36,18 @@ function getUpdates23_03_00(): array {
 				"UPDATE account_profiles SET iiiLoginConfiguration = loginConfiguration WHERE ils IN ('millennium', 'sierra')"
 			],
 		],
+		'move_includePersonalAndCorporateNamesInTopics' => [
+			'title' => 'Move Include Personal And Corporate Names In Topics',
+			'description' => 'Add includePersonalAndCorporateNamesInTopics to System Variables',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
+				"ALTER TABLE sideloads ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
+				"UPDATE indexing_profiles set includePersonalAndCorporateNamesInTopics = (SELECT includePersonalAndCorporateNamesInTopics from system_variables)",
+				"UPDATE sideloads set includePersonalAndCorporateNamesInTopics = (SELECT includePersonalAndCorporateNamesInTopics from system_variables)",
+				"ALTER TABLE system_variables DROP COLUMN includePersonalAndCorporateNamesInTopics",
+			]
+		], //includePersonalAndCorporateNamesInTopics
 
 		//kirstien
 		'add_ldap_to_sso' => [

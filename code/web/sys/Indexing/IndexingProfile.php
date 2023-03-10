@@ -172,6 +172,7 @@ class IndexingProfile extends DataObject {
 
 	public $evergreenOrgUnitSchema;
 	public $index856Links;
+	public /** @noinspection PhpUnused */ $includePersonalAndCorporateNamesInTopics;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -535,7 +536,14 @@ class IndexingProfile extends DataObject {
 				'forcesReindex' => true,
 				'default' => true,
 			],
-
+			'includePersonalAndCorporateNamesInTopics' => [
+				'property' => 'includePersonalAndCorporateNamesInTopics',
+				'type' => 'checkbox',
+				'label' => 'Include Personal And Corporate Names In Topics Facet',
+				'description' => 'Whether or not personal and corporate names are included in the topics facet',
+				'default' => true,
+				'forcesReindex' => true,
+			],
 			'itemSection' => [
 				'property' => 'itemSection',
 				'hiddenByDefault' => true ,
