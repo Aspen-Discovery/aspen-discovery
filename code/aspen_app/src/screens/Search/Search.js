@@ -35,7 +35,7 @@ export const SearchHome = () => {
      }
 
      const search = async () => {
-          navigate('SearchResults', {term: searchTerm});
+          navigate('SearchResults', {term: searchTerm, type: 'catalog'});
           clearText();
      }
 

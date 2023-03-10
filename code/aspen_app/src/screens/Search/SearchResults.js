@@ -36,6 +36,7 @@ export const SearchResults = () => {
      let params = useRoute().params.pendingParams ?? [];
 
      const type = useRoute().params.type ?? 'catalog';
+     const id = useRoute().params.id ?? null;
 
      if(term && (term !== storedTerm)) {
           console.log("Search term changed. Clearing previous search options...");
@@ -51,7 +52,7 @@ export const SearchResults = () => {
           params = [];
      }
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params, type], () => fetchSearchResults(term, page, scope, url, type), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params, type, id], () => fetchSearchResults(term, page, scope, url, type, id), {
           keepPreviousData: true,
           staleTime: 1000,
      });
@@ -250,8 +251,9 @@ const FilterBar = () => {
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const type = useRoute().params.type ?? 'catalog';
 
-     if (version >= '22.11.00') {
+     if (version >= '22.11.00' && type === 'catalog') {
           return (
                <Box
                     safeArea={2}
@@ -372,7 +374,7 @@ const CreateFilterButton = () => {
      return <CreateFilterButtonDefaults />;
 };
 
-async function fetchSearchResults(term, page, scope, url, type) {
+async function fetchSearchResults(term, page, scope, url, type, id) {
      const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
@@ -383,7 +385,8 @@ async function fetchSearchResults(term, page, scope, url, type) {
                lookfor: term ?? null,
                pageSize: 25,
                page: page ?? 1,
-               type: type ?? 'catalog'
+               type: type ?? 'catalog',
+               id: id,
           },
      });
 
@@ -394,13 +397,15 @@ async function fetchSearchResults(term, page, scope, url, type) {
           morePages= false;
      }
 
-     SEARCH.id = data.result.id;
-     SEARCH.sortMethod = data.result.sort;
-     SEARCH.term = data.result.lookfor;
+     SEARCH.id = data?.result?.id ?? null;
+     SEARCH.sortMethod = data?.result?.sort ?? '';
+     SEARCH.term = data?.result?.lookfor ?? '';
 
-     await getSortList(url);
-     await getAvailableFacets(url);
-     await getAppliedFilters(url);
+     if(type === 'catalog') {
+          await getSortList(url);
+          await getAvailableFacets(url);
+          await getAppliedFilters(url);
+     }
 
      return {
           results: data.result?.items,
