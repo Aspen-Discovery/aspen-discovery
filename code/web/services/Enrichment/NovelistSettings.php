@@ -73,8 +73,4 @@ class Enrichment_NovelistSettings extends ObjectEditor {
 	function canView(): bool {
 		return UserAccount::userHasPermission('Administer Third Party Enrichment API Keys');
 	}
-
-	function canAddNew() {
-		return $this->getNumObjects() == 0;
-	}
 }

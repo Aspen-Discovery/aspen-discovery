@@ -723,7 +723,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 						$hold->status = "Frozen";
 						if ($curTitle->holdSuspension->numberOfDays > 0) {
 							$numDaysSuspended = $curTitle->holdSuspension->numberOfDays;
-							$hold->status .= ' until ' . DateUtils::addDays(date('m/d/Y'), $numDaysSuspended, "m/d/Y");
+							$hold->status .= ' until ' . DateUtils::addDays(date('m/d/Y'), $numDaysSuspended, "M d,Y");
 						}
 					}
 				}
