@@ -4,13 +4,18 @@ import {Button, AlertDialog} from 'native-base';
 import {LanguageContext} from '../context/initialContext';
 import {getTermFromDictionary} from '../translations/TranslationService';
 
-const PermissionsPrompt = (promptTitle, promptBody, dialogToggles) => {
-	const {cancelRef, isOpen, onClose} = dialogToggles;
+export const PermissionsPrompt = (data) => {
+	const {promptTitle, promptBody, setShouldRequestPermissions} = data;
 	const { language } = React.useContext(LanguageContext);
+	const [isOpen, setIsOpen] = React.useState(true);
+	const onClose = () => {
+		setShouldRequestPermissions(false);
+		setIsOpen(false);
+	};
+	const cancelRef = React.useRef(null);
 	return (
 		<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
 			<AlertDialog.Content>
-				<AlertDialog.CloseButton />
 				<AlertDialog.Header>{getTermFromDictionary(language, promptTitle)}</AlertDialog.Header>
 				<AlertDialog.Body>
 					{getTermFromDictionary(language, promptBody)}
