@@ -1000,6 +1000,10 @@ class GroupedWork_AJAX extends JSON_Action {
 		$bookCoverInfo->recordType = 'grouped_work';
 		$bookCoverInfo->recordId = $id;
 		if ($bookCoverInfo->find(true)) {
+			//Force the image source to be determined again unless the user uploaded a cover.
+			if ($bookCoverInfo->imageSource != "upload") {
+				$bookCoverInfo->imageSource = '';
+			}
 			$bookCoverInfo->thumbnailLoaded = 0;
 			$bookCoverInfo->mediumLoaded = 0;
 			$bookCoverInfo->largeLoaded = 0;
@@ -1022,6 +1026,10 @@ class GroupedWork_AJAX extends JSON_Action {
 			}
 
 			if ($bookCoverInfo->find(true)) {
+				//Force the image source to be determined again unless the user uploaded a cover.
+				if ($bookCoverInfo->imageSource != "upload") {
+					$bookCoverInfo->imageSource = '';
+				}
 				$bookCoverInfo->thumbnailLoaded = 0;
 				$bookCoverInfo->mediumLoaded = 0;
 				$bookCoverInfo->largeLoaded = 0;
