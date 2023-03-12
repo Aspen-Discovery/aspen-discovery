@@ -896,6 +896,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (dateAddedStr.equals("NEVER")) {
 				logger.info("Date Added was never");
 			}else {
+				dateAddedStr = dateAddedStr.trim();
 				try {
 					if (dateAddedFormatter == null) {
 						dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
@@ -912,10 +913,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 							Date dateAdded = dateAddedFormatter2.parse(dateAddedStr);
 							itemInfo.setDateAdded(dateAdded);
 						}catch (ParseException e2){
-							indexer.getLogEntry().addNote("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " and yyMMdd " + e2);
+							indexer.getLogEntry().addNote("Error processing date added (" + dateAddedStr + ") for record identifier " + recordIdentifier + " profile " + profileType + " using both format " + dateAddedFormat + " and yyMMdd " + e2);
 						}
 					}else {
-						indexer.getLogEntry().addNote("Error processing date added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " " + e);
+						indexer.getLogEntry().addNote("Error processing date (" + dateAddedStr + ") added for record identifier " + recordIdentifier + " profile " + profileType + " using format " + dateAddedFormat + " " + e);
 					}
 				}
 			}

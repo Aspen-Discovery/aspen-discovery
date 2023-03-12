@@ -22,6 +22,7 @@ import java.util.Date;
 public class RecordGroupingProcessor {
 	protected BaseIndexingLogEntry logEntry;
 	protected Logger logger;
+	protected String serverName;
 
 	private PreparedStatement insertGroupedWorkStmt;
 	private PreparedStatement groupedWorkForIdentifierStmt;
@@ -40,6 +41,7 @@ public class RecordGroupingProcessor {
 	private PreparedStatement updateUserListEntriesStmt;
 	private PreparedStatement updateNovelistStmt;
 	private PreparedStatement updateDisplayInfoStmt;
+	private PreparedStatement updateUploadedCoverInfoStmt;
 
 	private PreparedStatement getAuthoritativeAuthorStmt;
 	private PreparedStatement getTitleAuthorityStmt;
@@ -72,6 +74,7 @@ public class RecordGroupingProcessor {
 	public RecordGroupingProcessor(Connection dbConnection, String serverName, BaseIndexingLogEntry logEntry, Logger logger) {
 		this.logger = logger;
 		this.logEntry = logEntry;
+		this.serverName = serverName;
 
 		setupDatabaseStatements(dbConnection);
 
@@ -107,6 +110,7 @@ public class RecordGroupingProcessor {
 			updateUserListEntriesStmt.close();
 			updateNovelistStmt.close();
 			updateDisplayInfoStmt.close();
+			updateUploadedCoverInfoStmt.close();
 
 			markWorkAsNeedingReindexStmt.close();
 
@@ -223,6 +227,7 @@ public class RecordGroupingProcessor {
 			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET sourceId = ? where sourceId = ? and source = 'GroupedWork'");
 			updateNovelistStmt = dbConnection.prepareStatement("UPDATE novelist_data SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
+			updateUploadedCoverInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET recordId = ? where recordId = ? and imageSource = 'upload' AND recordType = 'grouped_work'");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 
@@ -468,7 +473,24 @@ public class RecordGroupingProcessor {
 						logEntry.incErrors("Error moving display info", e);
 					}
 
-					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries, " + numUpdatedDisplayInfo + " display info entries");
+					int uploadedCoverInfo = 0;
+					try{
+						updateUploadedCoverInfoStmt.setString(1, newPermanentId);
+						updateUploadedCoverInfoStmt.setString(2, oldPermanentId);
+						uploadedCoverInfo = updateUploadedCoverInfoStmt.executeUpdate();
+						if (uploadedCoverInfo > 0) {
+							File uploadedCover = new File("/data/aspen-discovery/" + serverName + "/covers/original/" + oldPermanentId + ".png");
+							if (uploadedCover.exists()) {
+								if (!uploadedCover.renameTo(new File("/data/aspen-discovery/" + serverName + "/covers/original/" + newPermanentId + ".png"))){
+									logEntry.addNote("Unable to rename uploaded cover from " + oldPermanentId + ".png to " + newPermanentId + ".png");
+								}
+							}
+						}
+					}catch (SQLException e){
+						logEntry.incErrors("Error moving uploaded covers", e);
+					}
+
+					logger.debug("Updated " + numUpdatedRatings + " ratings, " + numUpdatedListEntries + " list entries, " + numUpdatedReadingHistory + " reading history entries, " + numUpdatedNotInterested + " not interested entries, " + numUpdatedNovelist + " novelist entries, " + numUpdatedDisplayInfo + " display info entries, " + uploadedCoverInfo + " uploaded covers");
 				}
 			}else{
 				logEntry.incErrors("Could not find the id of the work when merging enrichment " + oldPermanentId);
