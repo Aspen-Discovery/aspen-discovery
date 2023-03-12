@@ -37,12 +37,17 @@ class Search_Home extends Action {
 		// Get Location's Browse Categories if Location is set
 		$activeLocation = $locationSingleton->getActiveLocation();
 		/** @var BrowseCategory[] $browseCategories */
+		$browseCategories = [];
 		if ($activeLocation != null) {
-			$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
-			$interface->assign('browseCategoryRatingsMode', $activeLocation->getBrowseCategoryGroup()->browseCategoryRatingsMode);
+			if($activeLocation->getBrowseCategoryGroup()) {
+				$browseCategories = $this->getBrowseCategories($activeLocation->getBrowseCategoryGroup()->getBrowseCategories());
+				$interface->assign('browseCategoryRatingsMode', $activeLocation->getBrowseCategoryGroup()->browseCategoryRatingsMode);
+			}
 		} else {
-			$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
-			$interface->assign('browseCategoryRatingsMode', $library->getBrowseCategoryGroup()->browseCategoryRatingsMode);
+			if($library->getBrowseCategoryGroup()) {
+				$browseCategories = $this->getBrowseCategories($library->getBrowseCategoryGroup()->getBrowseCategories());
+				$interface->assign('browseCategoryRatingsMode', $library->getBrowseCategoryGroup()->browseCategoryRatingsMode);
+			}
 		}
 
 		$numBrowseCategories = count($browseCategories);
