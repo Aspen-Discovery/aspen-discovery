@@ -499,19 +499,27 @@ class SearchAPI extends Action {
 			}
 		}
 
-		//Check to see if sitemaps have been created
-		$sitemapFiles = scandir(ROOT_DIR . '/sitemaps');
-		$groupedWorkSitemapFound = false;
-		foreach ($sitemapFiles as $sitemapFile) {
-			if (strpos($sitemapFile, 'grouped_work_site_map_') === 0) {
-				$groupedWorkSitemapFound = true;
-				break;
+		//Check to see if sitemaps have been created, but only if there is at least one record
+		$solrSearcher->init();
+		$solrSearcher->setFieldsToReturn('id');
+		$solrSearcher->setLimit(1);
+		$result = $solrSearcher->processSearch();
+		if ($result && empty($result['error'])) {
+			if ($result['response']['numFound'] > 0) {
+				$sitemapFiles = scandir(ROOT_DIR . '/sitemaps');
+				$groupedWorkSitemapFound = false;
+				foreach ($sitemapFiles as $sitemapFile) {
+					if (strpos($sitemapFile, 'grouped_work_site_map_') === 0) {
+						$groupedWorkSitemapFound = true;
+						break;
+					}
+				}
+				if (!$groupedWorkSitemapFound) {
+					$this->addCheck($checks, "Sitemap", self::STATUS_CRITICAL, "No sitemap found for grouped works");
+				} else {
+					$this->addCheck($checks, "Sitemap");
+				}
 			}
-		}
-		if (!$groupedWorkSitemapFound) {
-			$this->addCheck($checks, "Sitemap", self::STATUS_CRITICAL, "No sitemap found for grouped works");
-		} else {
-			$this->addCheck($checks, "Sitemap");
 		}
 
 		//Check third party enrichment to see if it is enabled

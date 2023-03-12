@@ -1325,6 +1325,13 @@ AspenDiscovery.Account = (function () {
 				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
 				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
 				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.shouldBeNotified = $(finesFormId + " input[name=shouldBeNotified]:checked").val();
+				params.notificationFirstName = $(finesFormId + " input[name=notificationFirstName]").val();
+				params.notificationLastName = $(finesFormId + " input[name=notificationLastName]").val();
+				params.notificationAddress = $(finesFormId + " input[name=notificationAddress]").val();
+				params.notificationCity = $(finesFormId + " input[name=notificationCity]").val();
+				params.notificationState = $(finesFormId + " input[name=notificationState]").val();
+				params.notificationZip = $(finesFormId + " input[name=notificationZip]").val();
 				params.firstName = $(finesFormId + " input[name=firstName]").val();
 				params.lastName = $(finesFormId + " input[name=lastName]").val();
 				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
