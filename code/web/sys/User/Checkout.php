@@ -48,9 +48,6 @@ class Checkout extends CircEntry {
 	public $accessOnlineUrl;
 	public $transactionId;
 
-	//For OverDrive magazine support
-	public $format;
-
 	//Calculate in realtime
 	public $_overdue = null;
 	public $_daysUntilDue = null;

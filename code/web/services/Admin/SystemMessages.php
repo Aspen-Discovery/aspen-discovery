@@ -96,4 +96,10 @@ class Admin_SystemMessages extends ObjectEditor {
 			'Administer Library System Messages',
 		]);
 	}
+
+	function canBatchEdit(): bool {
+		return UserAccount::userHasPermission([
+			'Administer All System Messages',
+		]);
+	}
 }

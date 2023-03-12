@@ -40,6 +40,7 @@ abstract class MarcRecordProcessor {
 	String treatUnknownLanguageAs = null;
 	String treatUndeterminedLanguageAs = null;
 	String customMarcFieldsToIndexAsKeyword = null;
+	boolean includePersonalAndCorporateNamesInTopics;
 
 	PreparedStatement addRecordToDBStmt;
 	PreparedStatement marcRecordAsSuppressedNoMarcStmt;
@@ -146,12 +147,12 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+							if (includePersonalAndCorporateNamesInTopics) {
 								groupedWork.addTopic(curSubfield.getData());
 							}
 						}
 						if (curSubfield.getCode() == 'a' || curSubfield.getCode() == 'x') {
-							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+							if (includePersonalAndCorporateNamesInTopics) {
 								groupedWork.addTopicFacet(curSubfield.getData());
 							}
 						} else if (curSubfield.getCode() == 'v') {
@@ -173,7 +174,7 @@ abstract class MarcRecordProcessor {
 								(curSubfield.getCode() >= 'x' && curSubfield.getCode() <= 'z')) {
 							if (curSubject.length() > 0) curSubject.append(" -- ");
 							curSubject.append(curSubfield.getData());
-							if (indexer.isIncludePersonalAndCorporateNamesInTopics()) {
+							if (includePersonalAndCorporateNamesInTopics) {
 								groupedWork.addTopic(curSubfield.getData());
 							}
 						}
@@ -425,7 +426,7 @@ abstract class MarcRecordProcessor {
 		seriesFields = MarcUtil.getDataFields(record, 800);
 		for (DataField seriesField : seriesFields){
 			String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "pqt","")).toString();
-			//Remove anything in parenthesis since it's normally just the format
+			//Remove anything in parentheses since it's normally just the format
 			series = series.replaceAll("\\s+\\(.*?\\)", "");
 			//Remove the word series at the end since this gets cataloged inconsistently
 			series = series.replaceAll("(?i)\\s+series$", "");
@@ -442,7 +443,7 @@ abstract class MarcRecordProcessor {
 			seriesFields = MarcUtil.getDataFields(record, 490);
 			for (DataField seriesField : seriesFields){
 				String series = AspenStringUtils.trimTrailingPunctuation(MarcUtil.getSpecifiedSubfieldsAsString(seriesField, "a","")).toString();
-				//Remove anything in parenthesis since it's normally just the format
+				//Remove anything in parentheses since it's normally just the format
 				series = series.replaceAll("\\s+\\(.*?\\)", "");
 				//Remove the word series at the end since this gets cataloged inconsistently
 				series = series.replaceAll("(?i)\\s+series$", "");
@@ -609,20 +610,14 @@ abstract class MarcRecordProcessor {
 			try {
 				Matcher mpaaMatcher1 = mpaaRatingRegex1.matcher(val);
 				if (mpaaMatcher1.find()) {
-					// System.out.println("Matched matcher 1, " + mpaaMatcher1.group(1) +
-					// " Rated " + getId());
 					return mpaaMatcher1.group(1) + " Rated";
 				} else {
 					Matcher mpaaMatcher2 = mpaaRatingRegex2.matcher(val);
 					if (mpaaMatcher2.find()) {
-						// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
-						// + " Rated " + getId());
 						return mpaaMatcher2.group(1) + " Rated";
 					} else {
 						Matcher mpaaMatcher3 = mpaaRatingRegex3.matcher(val);
 						if (mpaaMatcher3.find()) {
-							// System.out.println("Matched matcher 2, " + mpaaMatcher2.group(1)
-							// + " Rated " + getId());
 							return mpaaMatcher3.group(1) + " Rated";
 						} else {
 							return null;
@@ -1070,7 +1065,6 @@ abstract class MarcRecordProcessor {
 	private void loadAuthors(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
 		//auth_author = 100abcd, first
 		groupedWork.setAuthAuthor(MarcUtil.getFirstFieldVal(record, "100abcd"));
-		//author = a, first
 		//MDN 2/6/2016 - Do not use 710 because it is not truly the author.  This has the potential
 		//of showing some disconnects with how records are grouped, but improves the display of the author
 		//710 is still indexed as part of author 2 #ARL-146
@@ -1118,8 +1112,10 @@ abstract class MarcRecordProcessor {
 		DataField titleField = record.getDataField(245);
 		String authorInTitleField = null;
 		if (titleField != null) {
+			@SuppressWarnings("SpellCheckingInspection")
 			String subTitle = titleField.getSubfieldsAsString("bfgnp");
 			if (!hasParentRecord) {
+				//noinspection SpellCheckingInspection
 				groupedWork.setTitle(titleField.getSubfieldsAsString("a"), subTitle, titleField.getSubfieldsAsString("abfgnp"), this.getSortableTitle(record), format, formatCategory);
 			}
 			//title full
@@ -1137,6 +1133,7 @@ abstract class MarcRecordProcessor {
 		}
 
 		//title alt
+		//noinspection SpellCheckingInspection
 		groupedWork.addAlternateTitles(MarcUtil.getFieldList(record, "130adfgklnpst:240a:246abfgnp:700tnr:730adfgklnpst:740a"));
 		//title old
 		groupedWork.addOldTitles(MarcUtil.getFieldList(record, "780ast"));
@@ -1176,7 +1173,7 @@ abstract class MarcRecordProcessor {
 	}
 
 	/**
-	 * Get the title (245abfgnp) from a record, without non-filing chars as specified
+	 * Get the title from a record, without non-filing chars as specified
 	 * in 245 2nd indicator, and lower cased.
 	 *
 	 * @return 245a and 245b and 245n and 245p values concatenated, with trailing punctuation removed, and
@@ -1190,6 +1187,7 @@ abstract class MarcRecordProcessor {
 
 		int nonFilingInt = getInd2AsInt(titleField);
 
+		@SuppressWarnings("SpellCheckingInspection")
 		String title = titleField.getSubfieldsAsString("abfgnp");
 		if (title == null){
 			return "";
@@ -1228,9 +1226,9 @@ abstract class MarcRecordProcessor {
 		char leaderBit = ' ';
 		ControlField fixedField = (ControlField) record.getVariableField(8);
 
-		// check for music recordings quickly so we can figure out if it is music
+		// check for music recordings quickly, so we can figure out if it is music
 		// for category (need to do here since checking what is on the Compact
-		// Disc/Phonograph, etc is difficult).
+		// Disc/Phonograph, etc. is difficult).
 		if (leader.length() >= 6) {
 			leaderBit = leader.charAt(6);
 			if (Character.toUpperCase(leaderBit) == 'J') {

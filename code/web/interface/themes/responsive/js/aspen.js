@@ -12306,12 +12306,15 @@ AspenDiscovery.Account.ReadingHistory = (function(){
 AspenDiscovery.Record = (function(){
 	// noinspection JSUnusedGlobalSymbols
 	return {
-		showPlaceHold: function(module, source, id, volume){
+		showPlaceHold: function(module, source, id, volume, variationId){
 			if (Globals.loggedIn){
 				document.body.style.cursor = "wait";
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
+				}
+				if (variationId !== undefined){
+					url += "&variationId=" + variationId;
 				}
 
 				var targetButton = $('#actionButton'+id);
@@ -12407,11 +12410,14 @@ AspenDiscovery.Record = (function(){
 			return false;
 		},
 
-		showPlaceHoldEditions: function (module, source, id, volume) {
+		showPlaceHoldEditions: function (module, source, id, volume, variationId) {
 			if (Globals.loggedIn){
 				var url = Globals.path + "/" + module + "/" + id + "/AJAX?method=getPlaceHoldEditionsForm&recordSource=" + source;
 				if (volume !== undefined){
 					url += "&volume=" + volume;
+				}
+				if (variationId !== undefined){
+					url += "&variationId=" + variationId;
 				}
 				$.getJSON(url, function(data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
@@ -12455,6 +12461,7 @@ AspenDiscovery.Record = (function(){
 			var selectedItem = $('#selectedItem');
 			var module = $('#module').val();
 			var volume = $('#volume');
+			var variationId = $('#variationId');
 			var params = {
 				'method': 'placeHold',
 				pickupBranch: $('#pickupBranch').val(),
@@ -12472,6 +12479,9 @@ AspenDiscovery.Record = (function(){
 			}
 			if (volume.length > 0){
 				params['volume'] = volume.val();
+			}
+			if (variationId.length > 0){
+				params['variationId'] = variationId.val();
 			}
 			if (params['pickupBranch'] === 'undefined'){
 				alert("Please select a location to pick up your hold when it is ready.");
@@ -14067,7 +14077,7 @@ AspenDiscovery.IndexingClass = (function () {
 			//Config per Class
 			var ilsOptions = {
 				//Common for all classes
-				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude', 'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom', 'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver', 'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking', 'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix', 'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs', 'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching', 'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs', 'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm', 'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs', 'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers', 'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp', 'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations', 'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection', 'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode', 'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress', 'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts', 'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes', 'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated', 'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat', 'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield', 'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField', 'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost', 'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection', 'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle', 'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords', 'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords', 'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport', 'propertyRowtranslationMaps', 'FloatingSave', 'propertyRowindex856Links'],
+				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude', 'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom', 'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver', 'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking', 'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix', 'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs', 'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching', 'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs', 'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm', 'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs', 'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers', 'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp', 'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations', 'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection', 'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode', 'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress', 'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts', 'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes', 'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated', 'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat', 'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield', 'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField', 'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost', 'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection', 'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle', 'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords', 'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords', 'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport', 'propertyRowtranslationMaps', 'FloatingSave', 'propertyRowindex856Links', 'propertyRowincludePersonalAndCorporateNamesInTopics'],
 				//Specific per class
 				Koha: ['propertyRowlastUpdateOfAuthorities'],
 				Evolve: [],
@@ -14077,7 +14087,7 @@ AspenDiscovery.IndexingClass = (function () {
 				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],
 				Polaris: [],
-				Evergreen: ['propertyRowevergreenOrgUnitSchema']
+				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection']
 			};
 
 			//Show rows for selected class

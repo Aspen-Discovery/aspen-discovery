@@ -943,7 +943,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		} else {
 			$relatedRecord = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 			if ($relatedRecord != null) {
-				if ($relatedRecord->recordVariations != null && count($relatedRecord->recordVariations) > 1){
+				if (count($relatedRecord->recordVariations) > 1){
 					foreach ($relatedRecord->recordVariations as $variation){
 						$formats[] = $variation->manifestation->format;
 					}
@@ -982,7 +982,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 	function hasMultipleVariations() {
 		$relatedRecord = $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
-		if ($relatedRecord != null && $relatedRecord->recordVariations != null && count($relatedRecord->recordVariations) > 1) {
+		if ($relatedRecord != null && count($relatedRecord->recordVariations) > 1) {
 			return true;
 		} else {
 			return false;
@@ -1177,7 +1177,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							]),
 							'url' => '',
 							'id' => "actionButton$id",
-							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id');",
+							'onclick' => "return AspenDiscovery.Record.showPlaceHold('{$this->getModule()}', '$source', '$id', '', '$variationId');",
 							'requireLogin' => false,
 							'type' => 'ils_hold',
 						];

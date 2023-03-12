@@ -706,11 +706,19 @@ class SystemAPI extends Action {
 			];
 		}
 
+		if(is_array($givenValues)) {
 		$num = 1;
 		$values = [];
 		foreach ($givenValues as $value) {
+				if(is_array($value)) {
 			$values[$num] = $value[0];
+				} else {
+					$values[$num] = $value;
+				}
 			$num++;
+		}
+		} else {
+			$values = $givenValues;
 		}
 
 		/** @var Translator $translator */ global $translator;

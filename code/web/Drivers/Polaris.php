@@ -786,8 +786,14 @@ class Polaris extends AbstractIlsDriver {
 			$result['bid'] = $shortId;
 
 		} else {
-			$result['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
-			$result['api']['message'] = 'Could not find information about the hold to be confirmed, it may have been confirmed already';
+			$result['message'] = translate([
+				'text' => 'Could not find information about the hold to be confirmed, it may have been confirmed already',
+				'isPublicFacing' => true,
+			]);
+			$result['api']['message'] = translate([
+				'text' => 'Could not find information about the hold to be confirmed, it may have been confirmed already',
+				'isPublicFacing' => true,
+			]);
 		}
 		return $result;
 	}
@@ -1793,6 +1799,15 @@ class Polaris extends AbstractIlsDriver {
 						'text' => $jsonResult->Message,
 						'isPublicFacing' => true,
 					]);
+
+					// Result for API or app use
+					$hold_result['api']['title'] = translate([
+						'text' => 'Place Hold?',
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = $jsonResult->Message;
+					$hold_result['api']['confirmationNeeded'] = true;
+					$hold_result['api']['confirmationId'] = $holdRequestConfirmation->id;
 				}
 			}
 		} else {

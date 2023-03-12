@@ -1,7 +1,7 @@
 {strip}
 	<div id="tab-{$wrapperId}"{if $display == 'false'} style="display:none"{/if} class="textListScroller">
 		<div id="{$wrapperId}" class="titleScrollerWrapper">
-			{if $showCollectionSpotlightTitle || $showViewMoreLink}
+			{if (!empty($showCollectionSpotlightTitle) && $showCollectionSpotlightTitle) || $showViewMoreLink}
 				<div id="tab-{$wrapperId}Header" class="titleScrollerHeader">
 					{if !empty($showCollectionSpotlightTitle) && !empty($scrollerTitle)}
 						<span class="listTitle resultInformationLabel">{if !empty($scrollerTitle)}{translate text=$scrollerTitle isPublicFacing=true isAdminEnteredData=true}{/if}</span>

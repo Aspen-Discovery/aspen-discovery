@@ -703,13 +703,19 @@ class Novelist3 {
 	 * @return NovelistSetting | null
 	 */
 	private function getNovelistSettings() {
-		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
-		$novelistSettings = new NovelistSetting();
-		$novelistSettings->find(true);
-		if ($novelistSettings->getNumResults() == 0) {
+		global $library;
+		if ($library->novelistSettingId != -1) {
+			require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
+			$novelistSettings = new NovelistSetting();
+			$novelistSettings->id = $library->novelistSettingId;
+			$novelistSettings->find(true);
+			if ($novelistSettings->getNumResults() == 0) {
+				return null;
+			} else {
+				return $novelistSettings;
+			}
+		}else{
 			return null;
-		} else {
-			return $novelistSettings;
 		}
 	}
 

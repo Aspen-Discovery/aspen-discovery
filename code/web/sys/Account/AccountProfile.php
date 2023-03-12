@@ -8,6 +8,7 @@ class AccountProfile extends DataObject {
 	public $ils;
 	public $driver;
 	public $loginConfiguration;
+	public $iiiLoginConfiguration;
 	public $authenticationMethod;
 	public $vendorOpacUrl;
 	public $patronApiUrl;
@@ -136,6 +137,19 @@ class AccountProfile extends DataObject {
 						],
 						'description' => 'How to configure the prompts for this authentication profile',
 						'required' => true,
+					],
+					'iiiLoginConfiguration' => [
+						'property' => 'iiiLoginConfiguration',
+						'type' => 'enum',
+						'label' => 'Sierra/Millennium Login Configuration',
+						'values' => [
+							'' => 'N/A',
+							'barcode_pin' => 'Barcode and Pin',
+							'name_barcode' => 'Name and Barcode',
+							'name_barcode_pin' => 'Name and Barcode and Pin',
+						],
+						'description' => 'How to login to Sierra/Millennium WebPAC (for screen scraping)',
+						'required' => false,
 					],
 					'authenticationMethod' => [
 						'property' => 'authenticationMethod',

@@ -28,6 +28,35 @@ function getUpdates23_03_00(): array {
 				"ALTER TABLE grouped_work_display_info CHANGE COLUMN seriesDisplayOrder seriesDisplayOrder DECIMAL(6,2);",
 			],
 		],
+		'add_iiiLoginConfiguration' => [
+			'title' => 'Add III Login Configuration to Account Profile',
+			'description' => 'Add III Login Configuration to Account Profile',
+			'sql' => [
+				"ALTER TABLE account_profiles ADD COLUMN iiiLoginConfiguration enum('', 'barcode_pin','name_barcode', 'name_barcode_pin') COLLATE utf8mb4_general_ci NOT NULL DEFAULT '';",
+				"UPDATE account_profiles SET iiiLoginConfiguration = loginConfiguration WHERE ils IN ('millennium', 'sierra')"
+			],
+		],
+		'move_includePersonalAndCorporateNamesInTopics' => [
+			'title' => 'Move Include Personal And Corporate Names In Topics',
+			'description' => 'Add includePersonalAndCorporateNamesInTopics to System Variables',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
+				"ALTER TABLE sideloads ADD COLUMN includePersonalAndCorporateNamesInTopics TINYINT(1) NOT NULL DEFAULT 1;",
+				"UPDATE indexing_profiles set includePersonalAndCorporateNamesInTopics = (SELECT includePersonalAndCorporateNamesInTopics from system_variables)",
+				"UPDATE sideloads set includePersonalAndCorporateNamesInTopics = (SELECT includePersonalAndCorporateNamesInTopics from system_variables)",
+				"ALTER TABLE system_variables DROP COLUMN includePersonalAndCorporateNamesInTopics",
+			]
+		], //includePersonalAndCorporateNamesInTopics
+		'assign_novelist_settings_to_libraries' => [
+			'title' => 'Assign Novelist Settings to Libraries',
+			'description' => 'Assign Novelist Settings to Libraries',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN novelistSettingId INT(11) DEFAULT -1",
+				"UPDATE library set novelistSettingId = IFNULL((SELECT id from novelist_settings LIMIT 0, 1), -1)",
+			]
+		],
 
 		//kirstien
 		'add_ldap_to_sso' => [
@@ -220,6 +249,39 @@ function getUpdates23_03_00(): array {
 			],
 		],
 		//truncate_donation_form_fields
+		'drop_sso_mapping_constraints' => [
+			'title' => 'Remove table constraints on sso_mapping',
+			'description' => 'Remove table constraints on sso_mapping',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_mapping DROP INDEX aspenField'
+			]
+		],
+		//drop_sso_mapping_constraints
+		'add_sso_mapping_constraints' => [
+			'title' => 'Add table constraints on sso_mapping',
+			'description' => 'Add table constraints on sso_mapping',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE INDEX mapping ON sso_mapping (aspenField, ssoSettingId)',
+			]
+		],
+		//add_sso_mapping_constraints
+		'add_donation_notification_fields' => [
+			'title' => 'Add columns to store donation notification information',
+			'description' => 'Add columns to store donation notification information',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE donations ADD COLUMN shouldBeNotified TINYINT(1) DEFAULT 0',
+				'ALTER TABLE donations ADD COLUMN notificationFirstName VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationLastName VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationAddress VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationCity VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationState VARCHAR(75) DEFAULT null',
+				'ALTER TABLE donations ADD COLUMN notificationZip VARCHAR(75) DEFAULT null',
+			],
+		],
+		//add_donation_notification_fields
 
 		//kodi
 		'google_bucket' => [

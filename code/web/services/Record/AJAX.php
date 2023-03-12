@@ -201,6 +201,9 @@ class Record_AJAX extends Action {
 			if (isset($_REQUEST['volume'])) {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
+			if (isset($_REQUEST['variationId'])) {
+				$interface->assign('variationId', $_REQUEST['variationId']);
+			}
 
 			$marcRecord = new MarcRecordDriver($id);
 
@@ -229,7 +232,7 @@ class Record_AJAX extends Action {
 			//Figure out what types of holds to allow
 			$items = $marcRecord->getCopies();
 			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
-			if (!empty($relatedRecord->recordVariations) && count($relatedRecord->recordVariations) > 1){
+			if (count($relatedRecord->recordVariations) > 1){
 				foreach ($relatedRecord->recordVariations as $variation){
 					$formatValue = $variation->manifestation->format;
 					global $indexingProfiles;
