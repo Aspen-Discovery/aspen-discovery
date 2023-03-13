@@ -10,12 +10,11 @@ import _ from 'lodash';
 import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const SelectVolume = (props) => {
-	const { id, volume, setVolume, showModal, promptForHoldType, holdType, setHoldType, language } = props;
-	const { library } = React.useContext(LibrarySystemContext);
+	const { id, volume, setVolume, showModal, promptForHoldType, holdType, setHoldType, language, url } = props;
 
 	const { status, data, error, isFetching } = useQuery({
-		queryKey: ['volumes', id, library.baseUrl],
-		queryFn: () => getVolumes(id, library.baseUrl),
+		queryKey: ['volumes', id, url],
+		queryFn: () => getVolumes(id, url),
 		enabled: !!showModal,
 	});
 

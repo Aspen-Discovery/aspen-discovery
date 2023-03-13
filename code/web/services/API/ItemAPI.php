@@ -1339,15 +1339,18 @@ class ItemAPI extends Action {
 		}
 
 		$volumes = [];
+		$i = 0;
 		foreach($volumeData as $volume) {
 			$label = $volume->displayLabel;
 			if($alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()) {
 				$label .= ' (' . translate(['text' => 'Owned by %1%', 'isPublicFacing' => true, 1=>$library->displayName]) . ')';
 			}
+			$volumes[$volume->id]['key'] = $i;
 			$volumes[$volume->id]['id'] = $volume->id;
 			$volumes[$volume->id]['label'] = $label;
 			$volumes[$volume->id]['displayOrder'] = $volume->displayOrder;
 			$volumes[$volume->id]['volumeId'] = $volume->volumeId;
+			$i++;
 		}
 
 		return [

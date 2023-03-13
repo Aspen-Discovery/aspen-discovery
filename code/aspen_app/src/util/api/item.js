@@ -1,6 +1,7 @@
 import {GLOBALS} from '../globals';
 import {createAuthTokens, getHeaders} from '../apiAuth';
 import axios from 'axios';
+import { create } from 'apisauce';
 import _ from 'lodash';
 import {getVariableTermFromDictionary} from '../../translations/TranslationService';
 
@@ -153,17 +154,26 @@ export async function getFirstRecord(itemId, format, language, url) {
 }
 
 export async function getVolumes(id, url) {
-     const {data} = await axios.get('/ItemAPI?method=getVolumes', {
+     const api = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutSlow,
+          timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(),
           auth: createAuthTokens(),
           params: {
                id: id,
-          },
+          }
      });
+     const response = await api.get('/ItemAPI?method=getVolumes', {
+          id,
+     });
+     let volumes = [];
+     if(response.ok) {
+          if(response.data?.volumes) {
+               volumes = _.sortBy(response.data.volumes, 'key');
+          }
+     }
 
-     return data.volumes ?? [];
+     return volumes;
 }
 
 export async function getBasicItemInfo(id, url) {
