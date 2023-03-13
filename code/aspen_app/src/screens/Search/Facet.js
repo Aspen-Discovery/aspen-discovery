@@ -29,6 +29,7 @@ import Facet_Rating from "./Facets/Rating";
 import Facet_Slider from "./Facets/Slider";
 import Facet_Year from "./Facets/Year";
 import { UnsavedChangesExit } from "./UnsavedChanges";
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export default class Facet extends Component {
   static contextType = userContext;
@@ -54,6 +55,7 @@ export default class Facet extends Component {
       values: [],
       pending: [],
       valuesDefault: [],
+      language: this.props.route.params?.language ?? 'en',
     };
     this._isMounted = false;
   }
@@ -105,6 +107,7 @@ export default class Facet extends Component {
             discardChanges={this.discardChanges}
             updateGlobal={this.updateGlobal}
             prevRoute="Filters"
+            language={this.state.language}
           />
         ),
       });
@@ -116,6 +119,7 @@ export default class Facet extends Component {
             updateSearch={this.updateSearch}
             discardChanges={this.discardChanges}
             prevRoute="Filters"
+            language={this.state.language}
           />
         ),
       });
@@ -148,7 +152,7 @@ export default class Facet extends Component {
   searchBar = () => {
     //todo: add searchbar to >10 results when able to filter thru every facet properly
     if (this.state.numFacets > 105) {
-      const placeHolder = translate("search.title") + " " + this.state.title;
+      const placeHolder = getTermFromDictionary(this.state.language, 'search') + " " + this.state.title;
       return (
         <Box safeArea={5}>
           <Input
@@ -258,16 +262,16 @@ export default class Facet extends Component {
         <Center>
           <Button.Group size="lg">
             <Button variant="unstyled" onPress={() => this.resetCluster()}>
-              {translate("general.reset")}
+              {getTermFromDictionary(this.state.language, 'reset')}
             </Button>
             <Button
               isLoading={this.state.isUpdating}
-              isLoadingText={translate("general.updating")}
+              isLoadingText={getTermFromDictionary(this.state.language, 'updating', true)}
               onPress={() => {
                 this.updateSearch();
               }}
             >
-              {translate("general.update")}
+              {getTermFromDictionary(this.state.language, 'update')}
             </Button>
           </Button.Group>
         </Center>
@@ -296,6 +300,7 @@ export default class Facet extends Component {
                 category={category}
                 updater={this.updateLocalValues}
                 data={facets}
+                language={this.state.language}
               />
             </Box>
           </ScrollView>
@@ -330,6 +335,7 @@ export default class Facet extends Component {
                 category={category}
                 data={facets}
                 updater={this.updateLocalValues}
+                language={this.state.language}
               />
             </Box>
           </ScrollView>
@@ -349,7 +355,7 @@ export default class Facet extends Component {
                 onChange={(values) => this.updateLocalValues(category, values)}
               >
                 {this.filter(facets, true).map((item, index, array) => (
-                  <Facet_Checkbox key={index} data={item} />
+                  <Facet_Checkbox key={index} data={item} language={this.state.language}/>
                 ))}
               </Checkbox.Group>
             </Box>
@@ -369,6 +375,7 @@ export default class Facet extends Component {
                 title={this.state.title}
                 applied={this.state.values}
                 updater={this.updateLocalValues}
+                language={this.state.language}
               />
             </Box>
           </ScrollView>

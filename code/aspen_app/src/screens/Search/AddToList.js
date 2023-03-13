@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import Modal from 'react-native-modal';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { translate } from '../../translations/translations';
 import { PATRON } from '../../util/loadPatron';
 import { addTitlesToList, createListFromTitle, getLists } from '../../util/api/list';
 import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
@@ -126,7 +125,7 @@ export const AddToList = (props) => {
                                                   _dark={{
                                                        _text: { color: 'text.50' },
                                                   }}>
-                                                  {translate('lists.add_to_list')}
+                                                  {getTermFromDictionary(language, 'add_to_list')}
                                              </Box>
                                              <Pressable onPress={() => setOpen(false)}>
                                                   <CloseIcon
@@ -151,17 +150,17 @@ export const AddToList = (props) => {
                                              <FormControl>
                                                   <VStack space={4}>
                                                        <Box>
-                                                            <FormControl.Label>{translate('lists.choose_a_list')}</FormControl.Label>
+                                                            <FormControl.Label>{getTermFromDictionary(language, 'choose_a_list')}</FormControl.Label>
                                                             <SelectLists />
                                                        </Box>
                                                        <HStack space={2} alignItems="center">
-                                                            <Text>{translate('general.or')}</Text>
+                                                            <Text>{getTermFromDictionary(language, 'or')}</Text>
                                                             <Button
                                                                  size="sm"
                                                                  onPress={() => {
                                                                       setScreen('create-new');
                                                                  }}>
-                                                                 {translate('lists.create_new_list')}
+                                                                 {getTermFromDictionary(language, 'create_new_list')}
                                                             </Button>
                                                        </HStack>
                                                   </VStack>
@@ -186,7 +185,7 @@ export const AddToList = (props) => {
                                                        setOpen(false);
                                                        setScreen('add-new');
                                                   }}>
-                                                  {translate('general.cancel')}
+                                                  {getTermFromDictionary(language, 'cancel')}
                                              </Button>
                                              {!_.isEmpty(lists) ? (
                                                   <Button
@@ -199,10 +198,10 @@ export const AddToList = (props) => {
                                                                  setOpen(false);
                                                             });
                                                        }}>
-                                                       {translate('lists.save_to_list')}
+                                                       {getTermFromDictionary(language, 'save_to_list')}
                                                   </Button>
                                              ) : (
-                                                  <Button>{translate('lists.create_new_list')}</Button>
+                                                  <Button>{getTermFromDictionary(language, 'create_new_list')}</Button>
                                              )}
                                         </Button.Group>
                                    </>
@@ -229,7 +228,7 @@ export const AddToList = (props) => {
                                                   _dark={{
                                                        _text: { color: 'text.50' },
                                                   }}>
-                                                  {translate('lists.create_new_list_item')}
+                                                  {getTermFromDictionary(language, 'create_new_list_item')}
                                              </Box>
                                              <Pressable onPress={() => setOpen(false)}>
                                                   <CloseIcon
@@ -253,15 +252,15 @@ export const AddToList = (props) => {
                                         <Box p={4} _text={{ color: 'text.900' }} _dark={{ _text: { color: 'text.50' } }}>
                                              <VStack space={4}>
                                                   <FormControl>
-                                                       <FormControl.Label>{translate('general.title')}</FormControl.Label>
+                                                       <FormControl.Label>{getTermFromDictionary(language, 'title')}</FormControl.Label>
                                                        <Input id="title" onChangeText={(text) => saveTitle(text)} returnKeyType="next" />
                                                   </FormControl>
                                                   <FormControl>
-                                                       <FormControl.Label>{translate('general.description')}</FormControl.Label>
+                                                       <FormControl.Label>{getTermFromDictionary(language, 'description')}</FormControl.Label>
                                                        <TextArea id="description" onChangeText={(text) => saveDescription(text)} returnKeyType="next" />
                                                   </FormControl>
                                                   <FormControl>
-                                                       <FormControl.Label>{translate('general.access')}</FormControl.Label>
+                                                       <FormControl.Label>{getTermFromDictionary(language, 'access')}</FormControl.Label>
                                                        <Radio.Group
                                                             defaultValue="1"
                                                             onChange={(nextValue) => {
@@ -269,10 +268,10 @@ export const AddToList = (props) => {
                                                             }}>
                                                             <Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px">
                                                                  <Radio value="1" my={1}>
-                                                                      {translate('general.private')}
+                                                                      {getTermFromDictionary(language, 'private')}
                                                                  </Radio>
                                                                  <Radio value="0" my={1}>
-                                                                      {translate('general.public')}
+                                                                      {getTermFromDictionary(language, 'public')}
                                                                  </Radio>
                                                             </Stack>
                                                        </Radio.Group>
@@ -297,11 +296,11 @@ export const AddToList = (props) => {
                                                        setOpen(false);
                                                        setScreen('add-new');
                                                   }}>
-                                                  {translate('general.cancel')}
+                                                  {getTermFromDictionary(language, 'cancel')}
                                              </Button>
                                              <Button
                                                   isLoading={loading}
-                                                  isLoadingText="Saving..."
+                                                  isLoadingText={getTermFromDictionary(language, 'saving', true)}
                                                   onPress={() => {
                                                        setLoading(true);
                                                        createListFromTitle(title, description, isPublic, item, library.baseUrl).then((res) => {
@@ -311,7 +310,7 @@ export const AddToList = (props) => {
                                                             setScreen('add-new');
                                                        });
                                                   }}>
-                                                  {translate('lists.create_list')}
+                                                  {getTermFromDictionary(language, 'create_list')}
                                              </Button>
                                         </Button.Group>
                                    </>
@@ -321,167 +320,6 @@ export const AddToList = (props) => {
                </Modal>
                {btnStyle === 'lg' ? LargeButton() : SmallButton()}
           </>
-     );
-};
-
-/* export const AddToList = (props) => {
- const {library} = React.useContext(LibrarySystemContext);
- const {
- lists,
- updateLists
- } = React.useContext(UserContext);
- const {
- item,
- updateLastListUsed
- } = props;
- const [showUseExistingModal, setShowUseExistingModal] = useState(false);
- const [showCreateNewModal, setShowCreateNewModal] = useState(false);
- const [loading, setLoading] = useState(false);
-
- const [listId, setListId] = useState(PATRON.listLastUsed);
-
- const [title, setTitle] = React.useState('');
- const [description, setDescription] = React.useState('');
- const [access, setAccess] = React.useState(false);
-
- return (
- <Center>
- <Button onPress={() => setShowUseExistingModal(true)} colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1"/>} size="sm" variant="ghost">
- {translate('lists.add_to_list')}
- </Button>
- <Modal isOpen={showUseExistingModal} onClose={() => setShowUseExistingModal(false)} size="full" avoidKeyboard>
- <Modal.Content maxWidth="90%" bg="white" _dark={{bg: 'coolGray.800'}}>
- <Modal.CloseButton/>
- <Modal.Header>
- <Heading size="sm">{translate('lists.add_to_list')}</Heading>
- </Modal.Header>
- <Modal.Body>
- <FormControl pb={5}>
- {!_.isUndefined(lists) ? (
- <Box>
- <FormControl.Label>{translate('lists.choose_a_list')}</FormControl.Label>
- <Select
- selectedValue={listId}
- onValueChange={(itemValue) => {
- setListId(itemValue);
- }}>
- {lists.map((item, index) => {
- return <Select.Item key={index} value={item.id} label={item.title}/>;
- })}
- </Select>
- <HStack space={3} alignItems="center" pt={2}>
- <Text>{translate('general.or')}</Text>
- <Button
- size="sm"
- onPress={() => {
- setShowUseExistingModal(false);
- setShowCreateNewModal(true);
- }}>
- {translate('lists.create_new_list')}
- </Button>
- </HStack>
- </Box>
- ) : (
- <Text>{translate('lists.no_lists_yet')}</Text>
- )}
- </FormControl>
- </Modal.Body>
- <Modal.Footer>
- <Button.Group>
- <Button variant="outline" onPress={() => setShowUseExistingModal(false)}>
- {translate('general.cancel')}
- </Button>
- {!_.isEmpty(lists) ? (
- <Button
- isLoading={loading}
- onPress={() => {
- setLoading(true);
- addTitlesToList(listId, item, library.baseUrl).then((res) => {
- updateLastListUsed(listId);
- setLoading(false);
- setShowUseExistingModal(false);
- });
- }}>
- {translate('lists.save_to_list')}
- </Button>
- ) : (
- <Button
- onPress={() => {
- setShowUseExistingModal(false);
- setShowCreateNewModal(true);
- }}>
- {translate('lists.create_new_list')}
- </Button>
- )}
- </Button.Group>
- </Modal.Footer>
- </Modal.Content>
- </Modal>
- </Center>
- );
- }; */
-
-const CreateNewList = () => {
-     const [showModal, setShowModal] = React.useState();
-     return (
-          <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full" avoidKeyboard>
-               <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
-                    <Modal.CloseButton />
-                    <Modal.Header>
-                         <Heading size="sm">{translate('lists.create_new_list_item')}</Heading>
-                    </Modal.Header>
-                    <Modal.Body>
-                         <FormControl pb={5}>
-                              <FormControl.Label>{translate('general.title')}</FormControl.Label>
-                              <Input id="title" onChangeText={(text) => setTitle(text)} returnKeyType="next" />
-                         </FormControl>
-                         <FormControl pb={5}>
-                              <FormControl.Label>{translate('general.description')}</FormControl.Label>
-                              <TextArea id="description" onChangeText={(text) => setDescription(text)} returnKeyType="next" />
-                         </FormControl>
-                         <FormControl>
-                              <FormControl.Label>{translate('general.access')}</FormControl.Label>
-                              <Radio.Group defaultValue="1">
-                                   <Stack
-                                        direction="row"
-                                        alignItems="center"
-                                        space={4}
-                                        w="75%"
-                                        maxW="300px"
-                                        onChange={(nextValue) => {
-                                             setAccess(nextValue);
-                                        }}>
-                                        <Radio value="1" my={1}>
-                                             {translate('general.private')}
-                                        </Radio>
-                                        <Radio value="0" my={1}>
-                                             {translate('general.public')}
-                                        </Radio>
-                                   </Stack>
-                              </Radio.Group>
-                         </FormControl>
-                    </Modal.Body>
-                    <Modal.Footer>
-                         <Button.Group>
-                              <Button variant="outline" onPress={() => setShowCreateNewModal(false)}>
-                                   {translate('general.cancel')}
-                              </Button>
-                              <Button
-                                   isLoading={loading}
-                                   onPress={() => {
-                                        setLoading(true);
-                                        createListFromTitle(title, description, access, item, library.baseUrl).then((res) => {
-                                             updateLastListUsed(res.listId);
-                                             setLoading(false);
-                                             setShowCreateNewModal(false);
-                                        });
-                                   }}>
-                                   {translate('lists.create_list')}
-                              </Button>
-                         </Button.Group>
-                    </Modal.Footer>
-               </Modal.Content>
-          </Modal>
      );
 };
 

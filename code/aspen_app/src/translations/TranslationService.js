@@ -211,18 +211,26 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
 
 export const getTermFromDictionary = (language = 'en', key, ellipsis = false) => {
     if(language && key) {
-        const { dictionary } = React.useContext(LanguageContext);
-        if(!_.isUndefined(dictionary)) {
-            if (dictionary[language]) {
-                const thisDictionary = dictionary[language];
+        let tmpDictionary = translationsLibrary;
+        try {
+            const { dictionary } = React.useContext(LanguageContext);
+            if(!_.isUndefined(dictionary)) {
+                tmpDictionary = dictionary;
+            }
+        } catch (e) {
+            // can't use context in this scenario
+        }
+        if(!_.isUndefined(tmpDictionary)) {
+            if (tmpDictionary[language]) {
+                const thisDictionary = tmpDictionary[language];
                 if (thisDictionary[key]) {
                     if (ellipsis) {
-                        return dictionary[language][key] + '...';
+                        return tmpDictionary[language][key] + '...';
                     }
-                    return dictionary[language][key];
+                    return tmpDictionary[language][key];
                 } else {
-                    if (dictionary.en) {
-                        const englishDictionary = dictionary.en;
+                    if (tmpDictionary.en) {
+                        const englishDictionary = tmpDictionary.en;
                         if (englishDictionary[key]) {
                             if (ellipsis) {
                                 return englishDictionary[key] + '...';

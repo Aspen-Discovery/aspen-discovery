@@ -15,8 +15,8 @@ import { ScrollView } from "react-native";
 // custom components and helper files
 import { loadingSpinner } from "../../../components/loadingSpinner";
 import { userContext } from "../../../context/user";
-import { translate } from "../../../translations/translations";
 import { addAppliedFilter } from "../../../util/search";
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export default class Facet_Year extends Component {
   static contextType = userContext;
@@ -31,6 +31,7 @@ export default class Facet_Year extends Component {
       item: this.props.data,
       category: this.props.category,
       updater: this.props.updater,
+      language: this.props.language,
     };
     this._isMounted = false;
   }
@@ -101,8 +102,8 @@ export default class Facet_Year extends Component {
             <HStack space={3} justifyContent="center">
               <Input
                 size="lg"
-                placeholder={translate("filters.year_from")}
-                accessibilityLabel={translate("filters.year_from")}
+                placeholder={getTermFromDictionary(this.state.language, 'year_from')}
+                accessibilityLabel={getTermFromDictionary(this.state.language, 'year_from')}
                 value={this.state.yearFrom}
                 onChangeText={(value) => {
                   this.updateValue("yearFrom", value);
@@ -111,8 +112,8 @@ export default class Facet_Year extends Component {
               />
               <Input
                 size="lg"
-                placeholder={translate("filters.year_to")}
-                accessibilityLabel={translate("filters.year_to")}
+                placeholder={getTermFromDictionary(this.state.language, 'year_to')}
+                accessibilityLabel={getTermFromDictionary(this.state.language, 'year_to')}
                 onChangeText={(value) => {
                   this.updateValue("yearTo", value);
                 }}
@@ -122,16 +123,16 @@ export default class Facet_Year extends Component {
           </FormControl>
           {category === "publishDate" || category === "publishDateSort" ? (
             <Container>
-              <Text>{translate("filters.published_in_the_last")}</Text>
+              <Text>{getTermFromDictionary(this.state.language, 'published_in_the_last')}</Text>
               <Button.Group variant="subtle">
                 <Button onPress={() => this._updateYearTo(1)}>
-                  {translate("filters.year")}
+                  {getTermFromDictionary(this.state.language, 'year')}
                 </Button>
                 <Button onPress={() => this._updateYearTo(5)}>
-                  {translate("filters.years", { num: 5 })}
+                  5 {getTermFromDictionary(this.state.language, 'years')}
                 </Button>
                 <Button onPress={() => this._updateYearTo(10)}>
-                  {translate("filters.years", { num: 10 })}
+                  10 {getTermFromDictionary(this.state.language, 'years')}
                 </Button>
               </Button.Group>
             </Container>

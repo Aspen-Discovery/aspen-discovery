@@ -6,8 +6,8 @@ import { ScrollView } from "react-native";
 // custom components and helper files
 import { loadingSpinner } from "../../../components/loadingSpinner";
 import { userContext } from "../../../context/user";
-import { translate } from "../../../translations/translations";
 import { addAppliedFilter } from "../../../util/search";
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export default class Facet_Slider extends Component {
   static contextType = userContext;
@@ -21,6 +21,7 @@ export default class Facet_Slider extends Component {
       item: this.props.data,
       category: this.props.category,
       updater: this.props.updater,
+      language: this.props.language,
     };
     this._isMounted = false;
   }
@@ -109,8 +110,8 @@ export default class Facet_Slider extends Component {
             <HStack space={3} justifyContent="center">
               <Input
                 size="lg"
-                placeholder={translate("filters.from")}
-                accessibilityLabel={translate("filters.from")}
+                placeholder={getTermFromDictionary(this.state.language, 'from')}
+                accessibilityLabel={getTermFromDictionary(this.state.language, 'from')}
                 defaultValue={this.state.startValue}
                 value={this.state.startValue}
                 onChangeText={(value) => {
@@ -120,8 +121,8 @@ export default class Facet_Slider extends Component {
               />
               <Input
                 size="lg"
-                placeholder={translate("filters.to")}
-                accessibilityLabel={translate("filters.to")}
+                placeholder={getTermFromDictionary(this.state.language, 'to')}
+                accessibilityLabel={getTermFromDictionary(this.state.language, 'to')}
                 defaultValue={this.state.endValue}
                 value={this.state.endValue}
                 onChangeText={(value) => {
