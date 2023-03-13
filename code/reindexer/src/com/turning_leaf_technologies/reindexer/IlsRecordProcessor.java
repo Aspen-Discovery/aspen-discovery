@@ -1593,6 +1593,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						if (recordUrl.getIndicator2() != '0' && recordUrl.getIndicator2() != '1') {
 							continue;
 						}
+						if (recordUrl.getIndicator2() != '1') {
+							if (recordUrl.getSubfield('3') != null) {
+								continue;
+							}
+						}
 						//Get the econtent source
 						String urlLower = url.toLowerCase();
 						String econtentSource;
