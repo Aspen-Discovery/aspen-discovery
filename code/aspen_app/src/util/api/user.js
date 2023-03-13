@@ -274,8 +274,9 @@ export async function getPatronCheckedOutItems(source = 'all', url, refresh = tr
  * @param {string} categoryId
  * @param {string} patronId
  * @param {string} url
+ * @param {string} language
  **/
-export async function showBrowseCategory(categoryId, patronId, url) {
+export async function showBrowseCategory(categoryId, patronId, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url,
@@ -285,6 +286,7 @@ export async function showBrowseCategory(categoryId, patronId, url) {
           params: {
                browseCategoryId: categoryId,
                patronId: patronId,
+               language
           },
      });
      const response = await discovery.post(`${endpoint.url}showBrowseCategory`, postBody);
@@ -301,8 +303,9 @@ export async function showBrowseCategory(categoryId, patronId, url) {
  * @param {string} categoryId
  * @param {string} patronId
  * @param {string} url
+ * @param {string} language
  **/
-export async function hideBrowseCategory(categoryId, patronId, url) {
+export async function hideBrowseCategory(categoryId, patronId, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url,
@@ -312,6 +315,7 @@ export async function hideBrowseCategory(categoryId, patronId, url) {
           params: {
                browseCategoryId: categoryId,
                patronId: patronId,
+               language
           },
      });
      const response = await discovery.post(`${endpoint.url}dismissBrowseCategory`, postBody);

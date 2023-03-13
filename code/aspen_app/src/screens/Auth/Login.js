@@ -63,7 +63,7 @@ export const LoginScreen = () => {
                        <GetLoginForm />
                    ) : null}
                    {isCommunity && Platform.OS !== 'android' ? (
-                       <Button mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>{translate('login.reset_geolocation')}</Button>
+                       <Button mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>{getTermFromDictionary('en', 'reset_geolocation')}</Button>
                    ) : null}
                    <Center>
                         <Text mt={5} fontSize="xs" color="coolGray.600">
@@ -96,7 +96,7 @@ const SelectYourLibraryModal = (data) => {
      const Header = () => {
           return (
               <Box bg="white" _dark={{ bg: 'coolGray.800' }}>
-                   <Input variant="filled" size="lg" autoCorrect={false} status="info" placeholder={translate('search.title')} clearButtonMode="always" value={query} onChangeText={(text) => setQuery(text)}/>
+                   <Input variant="filled" size="lg" autoCorrect={false} status="info" placeholder={getTermFromDictionary('en', 'search')} clearButtonMode="always" value={query} onChangeText={(text) => setQuery(text)}/>
               </Box>
           )
      }
@@ -349,7 +349,7 @@ export default class Login extends Component {
      renderListHeader = () => {
           return (
                <Box bg="white" _dark={{ bg: 'coolGray.800' }}>
-                    <Input variant="filled" size="lg" autoCorrect={false} onChangeText={(text) => this.setState({ query: text })} status="info" placeholder={translate('search.title')} clearButtonMode="always" value={this.state.query} />
+                    <Input variant="filled" size="lg" autoCorrect={false} onChangeText={(text) => this.setState({ query: text })} status="info" placeholder={getTermFromDictionary('en', 'search')} clearButtonMode="always" value={this.state.query} />
                </Box>
           );
      };
@@ -448,23 +448,16 @@ export default class Login extends Component {
 
           return (
                <Box flex={1} alignItems="center" justifyContent="center" safeArea={5}>
-                    <Image source={{ uri: logo }} rounded={25} size="xl" alt={translate('app.name')} fallbackSource={require('../../themes/default/aspenLogo.png')} />
+                    <Image source={{ uri: logo }} rounded={25} size="xl" alt={getTermFromDictionary('en', 'app_name')} fallbackSource={require('../../themes/default/aspenLogo.png')} />
                     {LOGIN_DATA.showSelectLibrary || isCommunity ? <SelectYourLibrary libraryName={this.state.libraryName} uniqueLibraries={this.filterLibraries(LOGIN_DATA.nearbyLocations)} renderListItem={this.renderListItem} renderListHeader={this.renderListHeader} extraData={this.state.query} isRefreshing={this.state.isFetching} showModal={this.state.showModal} handleModal={this.handleModal} /> : null}
                     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} width="100%">
                          {this.state.libraryName ? <GetLoginForm libraryName={this.state.libraryName} locationId={this.state.locationId} libraryId={this.state.libraryId} libraryUrl={this.state.libraryUrl} solrScope={this.state.solrScope} favicon={this.state.favicon} logo={this.state.logo} sessionId={this.state.sessionId} navigation={this.props.navigation} patronsLibrary={this.state.patronsLibrary} usernameLabel={this.state.usernameLabel} passwordLabel={this.state.passwordLabel}/> : null}
 
                          {isCommunity && Platform.OS !== 'android' ? (
                               <Button onPress={() => makeGreenhouseRequestNearby()} mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
-                                   {translate('login.reset_geolocation')}
+                                   {getTermFromDictionary('en', 'reset_geolocation')}
                               </Button>
                          ) : null}
-                         <Center>
-                              {isBeta ? (
-                                   <Badge rounded={5} mt={5}>
-                                        {translate('app.beta')}
-                                   </Badge>
-                              ) : null}
-                         </Center>
                          <Center>
                               <Text mt={5} fontSize="xs" color="coolGray.600">
                                    {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel ?? 'Development'}]

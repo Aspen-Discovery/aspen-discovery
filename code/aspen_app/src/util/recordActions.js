@@ -9,6 +9,7 @@ import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAut
 import { GLOBALS } from './globals';
 import { getHolds } from './loadPatron';
 import { LIBRARY } from './loadLibrary';
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 /**
  * Fetch information for GroupedWork
@@ -32,7 +33,7 @@ export async function getGroupedWork221200(url, itemId) {
      if (response.ok) {
           return response.data;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -72,7 +73,7 @@ export async function checkoutItem(url, itemId, source, patronId) {
 
           return responseData.result;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -144,7 +145,7 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
      if (response.ok) {
           return response.data.result;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -193,7 +194,7 @@ export async function overDriveSample(url, formatId, itemId, sampleNumber) {
                     }
                });
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -248,7 +249,7 @@ export async function getItemDetails(url, id, format) {
      if (response.ok) {
           return response.data;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }

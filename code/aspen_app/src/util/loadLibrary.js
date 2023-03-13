@@ -11,6 +11,7 @@ import { GLOBALS } from './globals';
 import { PATRON } from './loadPatron';
 import { BrowseCategoryContext } from '../context/initialContext';
 import { RemoveData } from './logout';
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 export const LIBRARY = {
      url: '',
@@ -429,7 +430,7 @@ export async function getVdxForm(url, id) {
           LIBRARY.vdx = response.data.result;
           return response.data.result;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
