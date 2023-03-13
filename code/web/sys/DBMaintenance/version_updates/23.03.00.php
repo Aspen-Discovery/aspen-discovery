@@ -57,6 +57,15 @@ function getUpdates23_03_00(): array {
 				"UPDATE library set novelistSettingId = IFNULL((SELECT id from novelist_settings LIMIT 0, 1), -1)",
 			]
 		],
+		'update_indexes_for_grouped_works' => [
+			'title' => 'Update Indexes for Grouped Works for indexing performance',
+			'description' => 'Add indexAfter',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE grouped_work DROP INDEX permanent_id_2",
+				"ALTER TABLE grouped_work_scheduled_index ADD INDEX permanent_id_with_date(permanent_id, indexAfter)",
+			]
+		],
 
 		//kirstien
 		'add_ldap_to_sso' => [
