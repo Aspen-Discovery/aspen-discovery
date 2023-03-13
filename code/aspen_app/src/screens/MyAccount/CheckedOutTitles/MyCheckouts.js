@@ -145,7 +145,7 @@ export const MyCheckouts = () => {
                                        endIcon: <CheckIcon size="5"/>,
                                   }}
                                   onValueChange={(itemValue) => toggleSource(itemValue)}>
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by') + ' ' + getTermFromDictionary(language, 'all') + ' (' + user.numCheckedOut ?? 0 + ')'} value="all" key={0} />
+                                   <Select.Item label={getTermFromDictionary(language, 'filter_by') + ' ' + getTermFromDictionary(language, 'all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
                                    <Select.Item label={translate('holds.filter_by', {source: 'Physical Materials', num: user.numCheckedOutIls ?? 0})} value="ils" key={1}/>
                                    <Select.Item label={translate('holds.filter_by', {source: 'OverDrive', num: user.numCheckedOutOverDrive ?? 0})} value="overdrive" key={2}/>
                                    <Select.Item label={translate('holds.filter_by', {source: 'Hoopla', num: user.numCheckedOut_Hoopla ?? 0})} value="hoopla" key={3}/>

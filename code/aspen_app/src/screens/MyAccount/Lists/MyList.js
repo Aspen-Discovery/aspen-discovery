@@ -24,13 +24,14 @@ import {loadingSpinner} from '../../../components/loadingSpinner';
 import {translate} from '../../../translations/translations';
 import EditList from './EditList';
 import {useNavigation, useFocusEffect, useRoute} from '@react-navigation/native';
-import {LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {getListTitles, removeTitlesFromList} from '../../../util/api/list';
 import {navigate, navigateStack} from '../../../helpers/RootNavigator';
 import {getCleanTitle} from '../../../helpers/item';
 import {fetchReadingHistory} from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
 import {formatDiscoveryVersion} from '../../../util/loadLibrary';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const MyList = () => {
     const providedList = useRoute().params.details;
@@ -42,6 +43,7 @@ export const MyList = () => {
     const {library} = React.useContext(LibrarySystemContext);
     const [list] = React.useState(providedList);
     const version = formatDiscoveryVersion(library.discoveryVersion);
+    const { language } = React.useContext(LanguageContext);
 
     const {
         status,
@@ -52,6 +54,12 @@ export const MyList = () => {
     } = useQuery(['myList', id, library.baseUrl, page, pageSize, sort], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
         keepPreviousData: true,
         staleTime: 1000,
+    });
+
+    const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
+        queryKey: ['totalPages', library.baseUrl, page, id],
+        queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
+        enabled: !!data,
     });
 
     const handleOpenItem = (id, title) => {
@@ -137,7 +145,7 @@ export const MyList = () => {
                 <ScrollView horizontal>
                     <Button.Group size="sm">
                         <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                            {translate('general.previous')}
+                            {getTermFromDictionary(language, 'previous')}
                         </Button>
                         <Button
                             onPress={() => {
@@ -147,12 +155,12 @@ export const MyList = () => {
                                 }
                             }}
                             isDisabled={isPreviousData || !data?.hasMore}>
-                            {translate('general.next')}
+                            {getTermFromDictionary(language, 'next')}
                         </Button>
                     </Button.Group>
                 </ScrollView>
                 <Text mt={2} fontSize="sm">
-                    Page {page} of {data?.totalPages}
+                    {paginationLabel}
                 </Text>
             </Box>
         );
@@ -197,7 +205,7 @@ export const MyList = () => {
 
     return (
         <SafeAreaView style={{flex: 1}}>
-            {status === 'loading' || isFetching ? (
+            {status === 'loading' || isFetching || translationIsFetching ? (
                 loadingSpinner()
             ) : status === 'error' ? (
                 loadError('Error', '')

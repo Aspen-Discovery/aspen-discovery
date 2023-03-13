@@ -164,27 +164,7 @@ export const DiscoverHomeScreen = () => {
      };
 
      const onPressItem = (key, type, title, version) => {
-          if (version >= '23.04.00') {
-               if (type === 'List') {
-                    navigateStack('SearchTab', 'SearchResults', {
-                         id: key,
-                         title: title,
-                         type: 'user_list'
-                    });
-               } else if (type === 'SavedSearch') {
-                    navigateStack('SearchTab', 'SearchResults', {
-                         id: key,
-                         title: title,
-                         type: 'saved_search'
-                    });
-               } else {
-                    navigateStack('HomeTab', 'GroupedWorkScreen', {
-                         id: key,
-                         title: title,
-                         prevRoute: 'DiscoveryScreen',
-                    });
-               }
-          } else if (version >= '22.07.00') {
+          if (version >= '22.07.00') {
                if (type === 'List') {
                     navigateStack('SearchTab', 'SearchByList', {
                          id: key,
@@ -271,35 +251,20 @@ export const DiscoverHomeScreen = () => {
      };
 
      const handleOnPressCategory = (label, key, source) => {
-          if(version >= '23.04.00') {
-               let type = 'browse_category';
-               if (source === 'List') {
-                    type = 'user_list';
-               } else if (source === 'SavedSearch') {
-                    type = 'saved_search';
-               }
-
-               navigateStack('SearchTab', 'SearchResults', {
-                    title: label,
-                    id: key,
-                    type: type
-               });
-          } else {
-               let screen = 'SearchByCategory';
-               if (source === 'List') {
-                    screen = 'SearchByList';
-               } else if (source === 'SavedSearch') {
-                    screen = 'SearchBySavedSearch';
-               }
-
-               navigateStack('SearchTab', screen, {
-                    title: label,
-                    id: key,
-                    url: library.baseUrl,
-                    libraryContext: library,
-                    userContext: user,
-               });
+          let screen = 'SearchByCategory';
+          if (source === 'List') {
+               screen = 'SearchByList';
+          } else if (source === 'SavedSearch') {
+               screen = 'SearchBySavedSearch';
           }
+
+          navigateStack('SearchTab', screen, {
+               title: label,
+               id: key,
+               url: library.baseUrl,
+               libraryContext: library,
+               userContext: user,
+          });
      };
 
      if (loading === true) {

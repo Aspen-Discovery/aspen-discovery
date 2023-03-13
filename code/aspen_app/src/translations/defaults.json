@@ -316,5 +316,6 @@
   "rating_desc": "User Rating",
   "total_holds_desc": "Number of Holds",
   "placing_hold": "Placing hold",
-  "checking_out": "Checking out"
+  "checking_out": "Checking out",
+  "all": "All"
 }
