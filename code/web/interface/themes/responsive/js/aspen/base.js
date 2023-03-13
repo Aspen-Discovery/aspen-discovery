@@ -108,6 +108,9 @@ var AspenDiscovery = (function(){
 			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
+				$('.modal-body').html("Loading...");
+				$(".modal-title").text("Loading...");
+
 				if (callback !== undefined){
 					modalDialog.on('hidden.bs.modal', function (e) {
 						modalDialog.off('hidden.bs.modal');

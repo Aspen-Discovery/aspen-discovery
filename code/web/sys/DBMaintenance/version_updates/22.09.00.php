@@ -594,17 +594,22 @@ function cleanUpInvalidInstances(/** @noinspection PhpUnusedParameterInspection 
 	$numRemoved = $aspen_db->exec($cleanupSQL);
 	$update['status'] .= "Removed $numRemoved overdrive_stats<br/>";
 
-	$cleanupSQL = "DELETE from rbdigital_magazine_usage where instance not in ($serverNamesToPreserve)";
-	$numRemoved = $aspen_db->exec($cleanupSQL);
-	$update['status'] .= "Removed $numRemoved rbdigital_magazine_usage<br/>";
+	try {
+		$cleanupSQL = "DELETE from rbdigital_magazine_usage where instance not in ($serverNamesToPreserve)";
+		$numRemoved = $aspen_db->exec($cleanupSQL);
+		$update['status'] .= "Removed $numRemoved rbdigital_magazine_usage<br/>";
 
-	$cleanupSQL = "DELETE from rbdigital_record_usage where instance not in ($serverNamesToPreserve)";
-	$numRemoved = $aspen_db->exec($cleanupSQL);
-	$update['status'] .= "Removed $numRemoved rbdigital_record_usage<br/>";
+		$cleanupSQL = "DELETE from rbdigital_record_usage where instance not in ($serverNamesToPreserve)";
+		$numRemoved = $aspen_db->exec($cleanupSQL);
+		$update['status'] .= "Removed $numRemoved rbdigital_record_usage<br/>";
 
-	$cleanupSQL = "DELETE from user_rbdigital_usage where instance not in ($serverNamesToPreserve)";
-	$numRemoved = $aspen_db->exec($cleanupSQL);
-	$update['status'] .= "Removed $numRemoved user_rbdigital_usage<br/>";
+		$cleanupSQL = "DELETE from user_rbdigital_usage where instance not in ($serverNamesToPreserve)";
+		$numRemoved = $aspen_db->exec($cleanupSQL);
+		$update['status'] .= "Removed $numRemoved user_rbdigital_usage<br/>";
+
+	}catch (Exception $e) {
+		//Just ignore
+	}
 
 	$cleanupSQL = "DELETE from api_usage where instance not in ($serverNamesToPreserve)";
 	$numRemoved = $aspen_db->exec($cleanupSQL);
