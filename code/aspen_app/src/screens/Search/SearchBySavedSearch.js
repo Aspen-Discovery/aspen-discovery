@@ -75,9 +75,10 @@ export default class SearchBySavedSearch extends Component {
           const { page } = this.state;
           const { navigation, route } = this.props;
           const category = route.params?.id ?? '';
-          const libraryUrl = this.props.route.params.url;
+          const libraryUrl = route.params?.url;
+          const language = route.params?.language ?? 'en';
 
-          await savedSearchResults(category, 25, page, libraryUrl).then((response) => {
+          await savedSearchResults(category, 25, page, libraryUrl, language).then((response) => {
                if (response.ok) {
                     const records = Object.values(response.data.result.items);
 

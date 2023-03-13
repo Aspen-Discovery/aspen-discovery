@@ -13,7 +13,7 @@ import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
-import {formatDiscoveryVersion} from '../../util/loadLibrary';
+import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
 
 export default class SearchByCategory extends Component {
      constructor() {
@@ -72,9 +72,10 @@ export default class SearchByCategory extends Component {
           const { navigation, route } = this.props;
           //console.log(route);
           const category = route.params?.id ?? '';
-          const libraryUrl = this.props.route.params.url;
+          const language = route.params?.language ?? 'en';
+          const libraryUrl = route.params?.url ?? LIBRARY.url;
 
-          await categorySearchResults(category, 25, page, libraryUrl).then((response) => {
+          await categorySearchResults(category, 25, page, libraryUrl, language).then((response) => {
                if (response.ok) {
                     const records = response.data.result.records;
 

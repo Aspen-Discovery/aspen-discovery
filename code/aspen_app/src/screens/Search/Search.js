@@ -24,7 +24,7 @@ export const SearchHome = () => {
      React.useEffect(() => {
           async function preloadDefaultFacets() {
                if(discoveryVersion >= '22.11.00') {
-                    await getDefaultFacets();
+                    await getDefaultFacets(language);
                }
           }
           preloadDefaultFacets();

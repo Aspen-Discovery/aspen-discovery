@@ -264,6 +264,7 @@ export const DiscoverHomeScreen = () => {
                url: library.baseUrl,
                libraryContext: library,
                userContext: user,
+               language: language
           });
      };
 

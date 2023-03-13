@@ -25,7 +25,7 @@ export const SEARCH = {
 
 const endpoint = ENDPOINT.search;
 
-export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl, filters = '') {
+export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl, filters = '', language) {
      let solrScope = '';
      if (GLOBALS.solrScope !== 'unknown') {
           solrScope = GLOBALS.solrScope;
@@ -46,6 +46,7 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
                lookfor: searchTerm,
                pageSize,
                page,
+               language
           },
           auth: createAuthTokens(),
      });
@@ -61,12 +62,12 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
      }
 }
 
-export async function getDefaultFacets(url, limit = 5) {
+export async function getDefaultFacets(url, limit = 5, language) {
      const discovery = create({
           baseURL: LIBRARY.url,
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
-          params: { limit },
+          params: { limit, language },
           auth: createAuthTokens(),
      });
      const data = await discovery.get(endpoint.url + 'getDefaultFacets');
@@ -79,7 +80,7 @@ export async function getDefaultFacets(url, limit = 5) {
      }
 }
 
-export async function getSearchResults(searchTerm, pageSize = 25, page, url) {
+export async function getSearchResults(searchTerm, pageSize = 25, page, url, language) {
      let baseUrl = url ?? LIBRARY.url;
      const discovery = create({
           baseURL: baseUrl,
@@ -93,6 +94,7 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url) {
           lookfor: searchTerm,
           pageSize,
           page,
+          language
      });
      const response = getResponseCode(data);
      if (response.success) {
@@ -119,7 +121,7 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url) {
      }
 }
 
-export async function getAppliedFilters(url) {
+export async function getAppliedFilters(url, language) {
      SEARCH.appliedFilters = [];
      const discovery = create({
           baseURL: url,
@@ -129,6 +131,7 @@ export async function getAppliedFilters(url) {
      });
      const data = await discovery.get(endpoint.url + 'getAppliedFilters', {
           id: SEARCH.id,
+          language: language
      });
      const response = getResponseCode(data);
      if (response.success) {
@@ -146,7 +149,7 @@ export async function getAppliedFilters(url) {
      }
 }
 
-export async function getSortList(url) {
+export async function getSortList(url, language) {
      const discovery = create({
           baseURL: url,
           timeout: GLOBALS.timeoutFast,
@@ -154,6 +157,7 @@ export async function getSortList(url) {
           auth: createAuthTokens(),
           params: {
                id: SEARCH.id,
+               language: language
           },
      });
      const data = await discovery.get(endpoint.url + 'getSortList');
@@ -166,7 +170,7 @@ export async function getSortList(url) {
      }
 }
 
-export async function getAvailableFacets(url) {
+export async function getAvailableFacets(url, language) {
      const discovery = create({
           baseURL: url,
           timeout: GLOBALS.timeoutFast,
@@ -175,12 +179,13 @@ export async function getAvailableFacets(url) {
           params: {
                includeSortList: true,
                id: SEARCH.id,
+               language: language
           },
      });
      const data = await discovery.get(endpoint.url + 'getAvailableFacets');
      const response = getResponseCode(data);
      if (response.success) {
-          await getAvailableFacetsKeys(url);
+          await getAvailableFacetsKeys(url, language);
           SEARCH.availableFacets = response.data.result;
           const defaultOptions = response.data.result.data;
           let i = 1;
@@ -198,7 +203,7 @@ export async function getAvailableFacets(url) {
      }
 }
 
-export async function getAvailableFacetsKeys(url) {
+export async function getAvailableFacetsKeys(url, language) {
      const discovery = create({
           baseURL: url,
           timeout: GLOBALS.timeoutFast,
@@ -207,6 +212,7 @@ export async function getAvailableFacetsKeys(url) {
           params: {
                includeSortList: true,
                id: SEARCH.id,
+               language: language
           },
      });
      const data = await discovery.get(endpoint.url + 'getAvailableFacetsKeys');
@@ -235,16 +241,17 @@ export async function getFacetCluster() {
      return false;
 }
 
-export async function categorySearchResults(category, limit = 25, page, url) {
+export async function categorySearchResults(category, limit = 25, page, url, language) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(true),
           params: {
                limit,
                id: category,
                page,
+               language
           },
           auth: createAuthTokens(),
      });
@@ -257,19 +264,20 @@ export async function categorySearchResults(category, limit = 25, page, url) {
      }
 }
 
-export async function listofListSearchResults(searchId, limit = 25, page, libraryUrl) {
+export async function listofListSearchResults(searchId, limit = 25, page, url, language) {
      const myArray = searchId.split('_');
      const id = myArray[myArray.length - 1];
 
      const postBody = await postData();
      const api = create({
-          baseURL: libraryUrl + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(true),
           params: {
                limit,
                id,
                page,
+               language
           },
           auth: createAuthTokens(),
      });
@@ -282,19 +290,20 @@ export async function listofListSearchResults(searchId, limit = 25, page, librar
      }
 }
 
-export async function savedSearchResults(searchId, limit = 25, page, libraryUrl) {
+export async function savedSearchResults(searchId, limit = 25, page, url, language) {
      const myArray = searchId.split('_');
      const id = myArray[3];
 
      const postBody = await postData();
      const api = create({
-          baseURL: libraryUrl + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
           headers: getHeaders(true),
           params: {
                limit,
                id,
                page,
+               language
           },
           auth: createAuthTokens(),
      });
