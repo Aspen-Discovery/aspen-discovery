@@ -56,7 +56,7 @@
     "expo-updates": "~0.16.3",
     "expo-web-browser": "~12.1.1",
     "html-entities": "^2.3.3",
-    "i18n-js": "^4.2.3",
+    "i18n-js": "^3.8.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "native-base": "3.4.28",
@@ -109,5 +109,8 @@
       "react-hooks/exhaustive-deps": "warn"
     }
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.19",
+  "resolutions": {
+    "react-native-svg": "13.4.0"
+  }
 }
