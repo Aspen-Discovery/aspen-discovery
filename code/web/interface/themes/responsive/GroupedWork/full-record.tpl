@@ -125,7 +125,7 @@
 
 				{include file="GroupedWork/relatedLists.tpl" isSearchResults=false}
 
-				{include file="GroupedWork/readingHistoryIndicator.tpl"}
+				{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
 				{include file="GroupedWork/relatedManifestations.tpl" relatedManifestations=$recordDriver->getRelatedManifestations() workId=$recordDriver->getPermanentId() summTitle=$recordDriver->getTitle()}
 
