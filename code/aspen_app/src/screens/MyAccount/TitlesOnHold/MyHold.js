@@ -1,5 +1,4 @@
 import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import { translate } from '../../../translations/translations';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
 import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
@@ -11,6 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Actionsheet, Box, Button, Center, Icon, Pressable, Text, HStack, VStack, Image, Checkbox, useDisclose } from 'native-base';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { navigateStack } from '../../../helpers/RootNavigator';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const MyHold = (props) => {
      const hold = props.data;
@@ -30,15 +30,15 @@ export const MyHold = (props) => {
 
      if (hold.canFreeze === true) {
           if (hold.frozen === true) {
-               label = translate('holds.thaw_hold');
+               label = getTermFromDictionary(language, 'thaw_hold');
                method = 'thawHold';
                icon = 'play';
           } else {
-               label = translate('holds.freeze_hold');
+               label = getTermFromDictionary(language, 'freeze_hold');
                method = 'freezeHold';
                icon = 'pause';
                if (hold.available) {
-                    label = translate('overdrive.delay_checkout');
+                    label = getTermFromDictionary(language, 'overdrive_delay_checkout');
                     method = 'freezeHold';
                     icon = 'pause';
                }
@@ -125,7 +125,7 @@ export const MyHold = (props) => {
                               openGroupedWork(hold.groupedWorkId, hold.title);
                               onClose(onClose);
                          }}>
-                         {translate('grouped_work.view_item_details')}
+                         {getTermFromDictionary(language, 'view_item_details')}
                     </Actionsheet.Item>
                );
           } else {
@@ -135,16 +135,16 @@ export const MyHold = (props) => {
 
      const createCancelHoldAction = () => {
           if (canCancel && allowLinkedAccountAction) {
-               let label = translate('holds.cancel_hold');
+               let label = getTermFromDictionary(language, 'cancel_hold');
                if (hold.type === 'interlibrary_loan') {
-                    label = translate('holds.cancel_request');
+                    label = getTermFromDictionary(language, 'ill_cancel_request');
                }
 
                if (hold.source !== 'vdx') {
                     return (
                          <Actionsheet.Item
                               isLoading={cancelling}
-                              isLoadingText="Cancelling..."
+                              isLoadingText={getTermFromDictionary(language, 'canceling', true)}
                               startIcon={<Icon as={MaterialIcons} name="cancel" color="trueGray.400" mr="1" size="6" />}
                               onPress={() => {
                                    startCancelling(true);
@@ -186,7 +186,7 @@ export const MyHold = (props) => {
                     return (
                          <Actionsheet.Item
                               isLoading={thawing}
-                              isLoadingText="Thawing..."
+                              isLoadingText={getTermFromDictionary(language, 'thawing_hold', true)}
                               startIcon={<Icon as={MaterialCommunityIcons} name={icon} color="trueGray.400" mr="1" size="6" />}
                               onPress={() => {
                                    startThawing(true);
@@ -200,7 +200,7 @@ export const MyHold = (props) => {
                          </Actionsheet.Item>
                     );
                } else {
-                    return <SelectThawDate libraryContext={library} holdsContext={updateHolds} onClose={onClose} freezeId={hold.cancelId} recordId={hold.recordId} source={hold.source} libraryUrl={library.baseUrl} userId={hold.userId} resetGroup={resetGroup} />;
+                    return <SelectThawDate language={language} libraryContext={library} holdsContext={updateHolds} onClose={onClose} freezeId={hold.cancelId} recordId={hold.recordId} source={hold.source} libraryUrl={library.baseUrl} userId={hold.userId} resetGroup={resetGroup} />;
                }
           } else {
                return null;
@@ -209,7 +209,7 @@ export const MyHold = (props) => {
 
      const createUpdatePickupLocationAction = (canUpdate, available) => {
           if (canUpdate && !available) {
-               return <SelectPickupLocation libraryContext={library} holdsContext={updateHolds} locations={pickupLocations} onClose={onClose} userId={hold.userId} currentPickupId={hold.pickupLocationId} holdId={hold.cancelId} resetGroup={resetGroup} />;
+               return <SelectPickupLocation language={language} libraryContext={library} holdsContext={updateHolds} locations={pickupLocations} onClose={onClose} userId={hold.userId} currentPickupId={hold.pickupLocationId} holdId={hold.cancelId} resetGroup={resetGroup} />;
           } else {
                return null;
           }
@@ -259,6 +259,7 @@ export const MyHold = (props) => {
 export const ManageSelectedHolds = (props) => {
      const { selectedValues, onAllDateChange, selectedReactivationDate, resetGroup, context } = props;
      const navigation = useNavigation();
+     const { language } = React.useContext(LanguageContext);
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
@@ -327,12 +328,12 @@ export const ManageSelectedHolds = (props) => {
                               });
                          }}
                          isLoading={cancelling}
-                         isLoadingText={translate('general.canceling')}>
-                         {translate('holds.cancel_holds_count', { num: numToCancel })}
+                         isLoadingText={getTermFromDictionary(language, 'canceling', true)}>
+                         {getTermFromDictionary(language, 'cancel_all_holds')} ({numToCancel})
                     </Actionsheet.Item>
                );
           } else {
-               return <Actionsheet.Item isDisabled>{translate('holds.cancel_holds_count', { num: numToCancel })}</Actionsheet.Item>;
+               return <Actionsheet.Item isDisabled>{getTermFromDictionary(language, 'cancel_holds')}</Actionsheet.Item>;
           }
      };
 
@@ -349,24 +350,24 @@ export const ManageSelectedHolds = (props) => {
                               });
                          }}
                          isLoading={thawing}
-                         isLoadingText={translate('holds.thawing')}>
-                         {translate('holds.thaw_holds_count', { num: numToThaw })}
+                         isLoadingText={getTermFromDictionary(language, 'thawing_hold', true)}>
+                         {getTermFromDictionary(language, 'thaw_holds')} ({numToThaw})
                     </Actionsheet.Item>
                );
           } else {
-               return <Actionsheet.Item isDisabled>{translate('holds.thaw_holds')}</Actionsheet.Item>;
+               return <Actionsheet.Item isDisabled>{getTermFromDictionary(language, 'thaw_holds')}</Actionsheet.Item>;
           }
      };
 
      return (
           <Center>
                <Button onPress={onOpen} size="sm" variant="solid" mr={1}>
-                    {translate('holds.manage_selected', { num: numSelected })}
+                    {getTermFromDictionary(language, 'manage_selected')} ({numSelected})
                </Button>
                <Actionsheet isOpen={isOpen} onClose={onClose}>
                     <Actionsheet.Content>
                          {cancelActionItem()}
-                         <SelectThawDate holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
+                         <SelectThawDate language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
                          {thawActionItem()}
                     </Actionsheet.Content>
                </Actionsheet>
@@ -376,6 +377,7 @@ export const ManageSelectedHolds = (props) => {
 
 export const ManageAllHolds = (props) => {
      const { resetGroup } = props;
+     const { language } = React.useContext(LanguageContext);
      const { holds, updateHolds } = React.useContext(HoldsContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { isOpen, onOpen, onClose } = useDisclose();
@@ -433,13 +435,13 @@ export const ManageAllHolds = (props) => {
           return (
                <Center>
                     <Button size="sm" variant="solid" mr={1} onPress={onOpen}>
-                         {translate('holds.manage_all')}
+                         {getTermFromDictionary(language, 'hold_manage_all')}
                     </Button>
                     <Actionsheet isOpen={isOpen} onClose={onClose}>
                          <Actionsheet.Content>
                               <Actionsheet.Item
                                    isLoading={cancelling}
-                                   isLoadingText={translate('general.canceling')}
+                                   isLoadingText={getTermFromDictionary(language, 'canceling', true)}
                                    onPress={() => {
                                         startCancelling(true);
                                         cancelHolds(titlesToCancel, library.baseUrl).then((r) => {
@@ -448,12 +450,12 @@ export const ManageAllHolds = (props) => {
                                              startCancelling(false);
                                         });
                                    }}>
-                                   {translate('holds.cancel_all_holds_count', { num: numToCancel })}
+                                   {getTermFromDictionary(language, 'cancel_all_holds')} ({numToCancel})
                               </Actionsheet.Item>
-                              <SelectThawDate holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numToManage} data={titlesToFreeze} />
+                              <SelectThawDate language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numToManage} data={titlesToFreeze} />
                               <Actionsheet.Item
                                    isLoading={thawing}
-                                   isLoadingText={translate('holds.thawing')}
+                                   isLoadingText={getTermFromDictionary(language, 'thaw_hold', true)}
                                    onPress={() => {
                                         startThawing(true);
                                         thawHolds(titlesToThaw, library.baseUrl).then((r) => {
@@ -462,7 +464,7 @@ export const ManageAllHolds = (props) => {
                                              startThawing(false);
                                         });
                                    }}>
-                                   {translate('holds.thaw_all_holds_count', { num: numToThaw })}
+                                   {getTermFromDictionary(language, 'thaw_all_holds')} ({numToThaw})
                               </Actionsheet.Item>
                          </Actionsheet.Content>
                     </Actionsheet>

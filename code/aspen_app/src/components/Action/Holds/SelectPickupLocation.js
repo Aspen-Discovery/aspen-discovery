@@ -1,6 +1,5 @@
 import { FormControl, Select, CheckIcon } from 'native-base';
 import React from 'react';
-import { translate } from '../../../translations/translations';
 import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const SelectPickupLocation = (props) => {
