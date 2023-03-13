@@ -49,7 +49,7 @@ class NovelistSetting extends DataObject {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->axis360ScopeId = $this->id;
+				$obj->novelistSettingId = $this->id;
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
