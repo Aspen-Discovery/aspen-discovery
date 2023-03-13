@@ -35,7 +35,8 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 			0 => 'A specific screen in the app',
 			1 => 'An external website',
 		];
-		$ctaScreens = AppSetting::getDeepLinks();
+		require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
+		$ctaScreens = LocationSetting::getDeepLinks();
 		$messageLimits = "<p>Character limits before being truncated</p><ul><li>iOS: 178 characters (includes both title and message)</li><li>Android (if collapsed, default): 43 characters for message, 39 characters for title</li><li>Android (if expanded): 504 characters for message, 79 characters for title</li></ul>";
 
 		return [

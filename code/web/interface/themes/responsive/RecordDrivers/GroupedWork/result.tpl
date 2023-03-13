@@ -190,7 +190,7 @@
 
 				{include file="GroupedWork/relatedLists.tpl" isSearchResults=true}
 
-				{include file="GroupedWork/readingHistoryIndicator.tpl"}
+				{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=true}
 
 				{* Short Mobile Entry for Formats when there aren't hidden formats *}
 				<div class="visible-xs">
