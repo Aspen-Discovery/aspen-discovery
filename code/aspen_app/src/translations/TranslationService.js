@@ -249,19 +249,27 @@ export const getTermFromDictionary = (language = 'en', key, ellipsis = false) =>
     return defaults[key]
 }
 
-export const getVariableTermFromDictionary = async (language, key) => {
+export const getVariableTermFromDictionary = async (language, key, url) => {
     if (language && key) {
-        const {dictionary, updateDictionary} = React.useContext(LanguageContext);
-        if (dictionary[language]) {
-            const thisDictionary = dictionary[language];
+        let tmpDictionary = translationsLibrary;
+        try {
+            const { dictionary } = React.useContext(LanguageContext);
+            if(!_.isUndefined(dictionary)) {
+                tmpDictionary = dictionary;
+            }
+        } catch (e) {
+            // can't use context in this scenario
+        }
+        if (tmpDictionary[language]) {
+            const thisDictionary = tmpDictionary[language];
             if (thisDictionary[key]) {
-                console.log(Object.values(dictionary[language][key]))
-                return Object.values(dictionary[language][key])
+                console.log(Object.values(tmpDictionary[language][key]))
+                return Object.values(tmpDictionary[language][key])
             } else {
                 // fetch translated term from Discovery and add to dictionary for later
-                const {library} = React.useContext(LibrarySystemContext);
-                let localDictionary = dictionary;
-                const term = await getTranslation(key, language, library.baseUrl);
+                //const {library} = React.useContext(LibrarySystemContext);
+                let localDictionary = tmpDictionary;
+                const term = await getTranslation(key, language, url);
                 const obj = {
                     [language]: {
                         [key]: term,
@@ -269,7 +277,7 @@ export const getVariableTermFromDictionary = async (language, key) => {
                 }
                 localDictionary = _.merge(localDictionary, obj);
                 translationsLibrary = _.merge(translationsLibrary, obj);
-                updateDictionary(localDictionary);
+                //updateDictionary(localDictionary);
             }
         }
     }
