@@ -330,13 +330,34 @@ foreach ($_REQUEST as $parameter => $value) {
 		$action = 'Handle404';
 		require_once ROOT_DIR . "/services/Error/Handle404.php";
 	}else if (strpos($parameter, 'bool') === 0) {
-		if (!in_array($value, ['AND', 'OR', 'NOT'])) {
-			global $interface;
-			$interface->assign('module', 'Error');
-			$interface->assign('action', 'Handle404');
-			$module = 'Error';
-			$action = 'Handle404';
-			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		if (is_array($value)) {
+			foreach ($value as $tmpValue) {
+				if (!in_array($tmpValue, [
+					'AND',
+					'OR',
+					'NOT'
+				])) {
+					global $interface;
+					$interface->assign('module', 'Error');
+					$interface->assign('action', 'Handle404');
+					$module = 'Error';
+					$action = 'Handle404';
+					require_once ROOT_DIR . "/services/Error/Handle404.php";
+				}
+			}
+		} else {
+			if (!in_array($value, [
+				'AND',
+				'OR',
+				'NOT'
+			])) {
+				global $interface;
+				$interface->assign('module', 'Error');
+				$interface->assign('action', 'Handle404');
+				$module = 'Error';
+				$action = 'Handle404';
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+			}
 		}
 	}
 }
