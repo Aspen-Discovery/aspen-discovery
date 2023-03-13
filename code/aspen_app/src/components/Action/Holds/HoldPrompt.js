@@ -130,6 +130,7 @@ export const HoldPrompt = (props) => {
 								holdType={holdType}
 								setHoldType={setHoldType}
 								showModal={showModal}
+								url={library.baseUrl}
 							/>
 						) : null}
 						{_.size(locations) > 1 && !isEContent ? (
