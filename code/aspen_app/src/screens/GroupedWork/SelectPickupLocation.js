@@ -17,6 +17,7 @@ const SelectPickupLocation = (props) => {
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { updateHolds } = React.useContext(HoldsContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
 
      const isPlacingHold = action.includes('hold');
 
@@ -80,7 +81,7 @@ const SelectPickupLocation = (props) => {
                          </Modal.Header>
                          <Modal.Body>
                               {shouldDisplayVolumes ? (
-                                  <SelectVolume id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
+                                  <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
                               ) : null}
                               {_.size(accounts) > 1 ? (
                                    <FormControl>

@@ -190,7 +190,7 @@ export async function overDriveSample(url, formatId, itemId, sampleNumber) {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                     }
                });
      } else {
@@ -215,19 +215,19 @@ export async function openSideLoad(redirectUrl) {
                                    })
                                    .catch(async (error) => {
                                         console.log('Unable to close previous browser session.');
-                                        popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                                    });
                          } catch (error) {
                               console.log('Tried to open again but still unable');
-                              popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                          }
                     } else {
                          console.log('Unable to open browser window.');
-                         popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                     }
                });
      } else {
-          popToast(translate('error.no_open_resource'), translate('error.no_valid_url'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_no_valid_url'), 'warning');
           console.log(response);
      }
 }

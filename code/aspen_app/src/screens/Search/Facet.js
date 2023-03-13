@@ -351,7 +351,7 @@ export default class Facet extends Component {
               <Checkbox.Group
                 name={category}
                 value={this.state.values}
-                accessibilityLabel={translate("filters.filter_by")}
+                accessibilityLabel={getTermFromDictionary(this.state.language, 'filter_by')}
                 onChange={(values) => this.updateLocalValues(category, values)}
               >
                 {this.filter(facets, true).map((item, index, array) => (

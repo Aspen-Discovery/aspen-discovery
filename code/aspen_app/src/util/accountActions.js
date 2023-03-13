@@ -207,13 +207,13 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
                                              console.log(response);
                                         })
                                         .catch(async (error) => {
-                                             popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                                             popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                                         });
                               } catch (error) {
                                    console.log('Really borked.');
                               }
                          } else {
-                              popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                          }
                     });
           } else {
@@ -234,14 +234,14 @@ export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
                                    })
                                    .catch((error) => {
                                         console.log(error);
-                                        popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                                    });
                          } catch (error) {
                               console.log(error);
                               console.log('Unable to open.');
                          }
                     } else {
-                         popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                     }
                });
      }
@@ -287,7 +287,7 @@ export async function viewOverDriveItem(userId, formatId, overDriveId, url) {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                     }
                });
      } else {

@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { translate } from '../../translations/translations';
 import { completeAction } from './Record';
-import {HoldsContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {refreshProfile} from '../../util/api/user';
 import _ from 'lodash';
 import {reloadHolds} from '../../util/loadPatron';
@@ -20,6 +20,7 @@ const SelectLinkedAccount = (props) => {
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
 
      let shouldDisplayVolumes = false;
      let typeOfHold = 'default';
@@ -81,7 +82,7 @@ const SelectLinkedAccount = (props) => {
                          </Modal.Header>
                          <Modal.Body>
                               {shouldDisplayVolumes ? (
-                                  <SelectVolume id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
+                                  <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
                               ) : null}
                               {_.size(locations) > 1 && !isEContent ? (
                                   <FormControl>

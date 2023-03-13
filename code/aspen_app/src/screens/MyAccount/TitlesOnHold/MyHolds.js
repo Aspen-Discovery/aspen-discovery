@@ -7,12 +7,12 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { translate } from '../../../translations/translations';
 import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { getPickupLocations } from '../../../util/loadLibrary';
 import {getPatronHolds, refreshProfile, reloadProfile} from '../../../util/api/user';
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import {DisplayMessage} from '../../../components/Notifications';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const MyHolds = () => {
      const navigation = useNavigation();
@@ -27,6 +27,33 @@ export const MyHolds = () => {
      const [values, setGroupValues] = React.useState([]);
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
+    const [filterBy, setFilterBy] = React.useState({
+        ils: 'Filter by Physical Materials',
+        overdrive: 'Filter by OverDrive',
+        axis360: 'Filter by Axis 360',
+        cloudlibrary: 'Filter by cloudLibrary',
+        all: 'Filter by All'
+    });
+    const [holdsBy, setHoldsBy] = React.useState({
+        ils: 'Titles on Hold for Physical Materials',
+        hoopla: 'Titles on Hold for Hoopla',
+        overdrive: 'Titles on Hold for OverDrive',
+        axis360: 'Titles on Hold for Axis 360',
+        cloudlibrary: 'Titles on Hold for cloudLibrary',
+        all: 'Titles on Hold'
+    });
+
+    const [sortBy, setSortBy] = React.useState({
+        title: 'Sort by Title',
+        author: 'Sort by Author',
+        format: 'Sort by Format',
+        status: 'Sort by Status',
+        placed: 'Sort by Date Placed',
+        position: 'Sort by Position',
+        location: 'Sort by Pickup Location',
+        libraryAccount: 'Sort by Library Account',
+        expiration: 'Sort by Expiration Date'
+    });
 
     const toggleReadySort = async (value) => {
         setReadySort(value);
@@ -53,15 +80,15 @@ export const MyHolds = () => {
             updateHolds(result);
             if (!_.isNull(value)) {
                 if(value === 'ils') {
-                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "Physical Materials"})});
+                    navigation.setOptions({ title: holdsBy.ils });
                 } else if (value === 'overdrive') {
-                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "OverDrive"})});
+                    navigation.setOptions({ title: holdsBy.overdrive });
                 } else if (value === 'cloud_library') {
-                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "CloudLibrary"})});
+                    navigation.setOptions({ title: holdsBy.cloudlibrary });
                 } else if (value === 'axis360') {
-                    navigation.setOptions({ title: translate('holds.titles_on_hold_for_source', {source: "Axis 360"})});
+                    navigation.setOptions({ title: holdsBy.axis360 });
                 } else {
-                    navigation.setOptions({ title: translate('holds.title')});
+                    navigation.setOptions({ title: holdsBy.all });
                 }
             }
             setLoading(false);
@@ -71,11 +98,155 @@ export const MyHolds = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl, true, language).then((result) => {
+                    await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl, true, language).then(async (result) => {
                         if (holds !== result) {
-                              updateHolds(result);
-                         }
-                         setLoading(false);
+                            updateHolds(result);
+                        }
+                        await getTranslationsWithValues('filter_by_source', 'Physical Materials', language, library.baseUrl).then(term => {
+                            const obj = {
+                                ils: _.toString(term)
+                            }
+                            let tmp = filterBy;
+                            tmp = _.merge(obj, tmp);
+                            setFilterBy(tmp);
+                        })
+                        await getTranslationsWithValues('filter_by_source', 'OverDrive', language, library.baseUrl).then(term => {
+                            const obj = {
+                                overdrive: _.toString(term)
+                            }
+                            let tmp = filterBy;
+                            tmp = _.merge(obj, tmp);
+                            setFilterBy(tmp);
+                        })
+                        await getTranslationsWithValues('filter_by_source', 'cloudLibrary', language, library.baseUrl).then(term => {
+                            const obj = {
+                                cloudlibrary: _.toString(term)
+                            }
+                            let tmp = filterBy;
+                            tmp = _.merge(obj, tmp);
+                            setFilterBy(tmp);
+                        })
+                        await getTranslationsWithValues('filter_by_source', 'All', language, library.baseUrl).then(term => {
+                            const obj = {
+                                all: term
+                            }
+                            let tmp = filterBy;
+                            tmp = _.merge(obj, tmp);
+                            setFilterBy(tmp);
+                        })
+                        await getTranslationsWithValues('filter_by_source', 'Axis 360', language, library.baseUrl).then(term => {
+                            const obj = {
+                                axis360: _.toString(term)
+                            }
+                            let tmp = filterBy;
+                            tmp = _.merge(obj, tmp);
+                            setFilterBy(tmp);
+                        })
+                        await getTranslationsWithValues('titles_on_hold_by_source', 'OverDrive', language, library.baseUrl).then(term => {
+                            const obj = {
+                                overdrive: _.toString(term)
+                            }
+                            let tmp = holdsBy;
+                            tmp = _.merge(obj, tmp);
+                            setHoldsBy(tmp);
+                        })
+                        await getTranslationsWithValues('titles_on_hold_by_source', 'Hoopla', language, library.baseUrl).then(term => {
+                            const obj = {
+                                hoopla: _.toString(term)
+                            }
+                            let tmp = holdsBy;
+                            tmp = _.merge(obj, tmp);
+                            setHoldsBy(tmp);
+                        })
+                        await getTranslationsWithValues('titles_on_hold_by_source', 'cloudLibrary', language, library.baseUrl).then(term => {
+                            const obj = {
+                                cloudlibrary: _.toString(term)
+                            }
+                            let tmp = holdsBy;
+                            tmp = _.merge(obj, tmp);
+                            setHoldsBy(tmp);
+                        })
+                        await getTranslationsWithValues('titles_on_hold_by_source', 'Axis 360', language, library.baseUrl).then(term => {
+                            const obj = {
+                                axis360: _.toString(term)
+                            }
+                            let tmp = holdsBy;
+                            tmp = _.merge(obj, tmp);
+                            setHoldsBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Title', language, library.baseUrl).then(term => {
+                            const obj = {
+                                title: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Author', language, library.baseUrl).then(term => {
+                            const obj = {
+                                author: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Format', language, library.baseUrl).then(term => {
+                            const obj = {
+                                format: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Source', language, library.baseUrl).then(term => {
+                            const obj = {
+                                source: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Date Placed', language, library.baseUrl).then(term => {
+                            const obj = {
+                                placed: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Position', language, library.baseUrl).then(term => {
+                            const obj = {
+                                position: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Pickup Location', language, library.baseUrl).then(term => {
+                            const obj = {
+                                location: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Library Account', language, library.baseUrl).then(term => {
+                            const obj = {
+                                libraryAccount: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        await getTranslationsWithValues('sort_by_with_sort', 'Expiration Date', language, library.baseUrl).then(term => {
+                            const obj = {
+                                expiration: _.toString(term)
+                            }
+                            let tmp = sortBy;
+                            tmp = _.merge(obj, tmp);
+                            setSortBy(tmp);
+                        })
+                        setLoading(false);
                     });
                     await getPickupLocations(library.baseUrl).then((result) => {
                          if (pickupLocations !== result) {
@@ -124,7 +295,7 @@ export const MyHolds = () => {
              return (
                  <Center mt={5} mb={5}>
                      <Text bold fontSize="lg">
-                         {translate('holds.pending_holds_none')}
+                         {getTermFromDictionary(language, 'pending_holds_none')}
                      </Text>
                  </Center>
              )
@@ -132,7 +303,7 @@ export const MyHolds = () => {
              return (
                  <Center mt={5} mb={5}>
                      <Text bold fontSize="lg">
-                         {translate('holds.holds_ready_for_pickup_none')}
+                         {getTermFromDictionary(language, 'holds_ready_for_pickup_none')}
                      </Text>
                  </Center>
              );
@@ -165,25 +336,25 @@ export const MyHolds = () => {
                                       <Select
                                           name="sortBy"
                                           selectedValue={pendingSort}
-                                          accessibilityLabel="Select a Sort Method"
+                                          accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                           _selectedItem={{
                                               bg: 'tertiary.300',
                                               endIcon: <CheckIcon size="5"/>,
                                           }}
                                           onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                          <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: 'Status'})} value="status" key={3}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: 'Date Placed'})} value="placed" key={4}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: 'Position'})} value="position" key={5}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: 'Pickup Location'})} value="location" key={6}/>
-                                          <Select.Item label={translate('general.sort_by', { sort: 'Library Account'})} value="libraryAccount" key={7}/>
+                                          <Select.Item label={sortBy.title} value="sortTitle" key={0}/>
+                                          <Select.Item label={sortBy.author} value="author" key={1}/>
+                                          <Select.Item label={sortBy.format} value="format" key={2}/>
+                                          <Select.Item label={sortBy.status} value="status" key={3}/>
+                                          <Select.Item label={sortBy.placed} value="placed" key={4}/>
+                                          <Select.Item label={sortBy.position} value="position" key={5}/>
+                                          <Select.Item label={sortBy.location} value="location" key={6}/>
+                                          <Select.Item label={sortBy.libraryAccount} value="libraryAccount" key={7}/>
                                       </Select>
                                   </FormControl>
-                                  <ManageSelectedHolds selectedValues={values} onAllDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
+                                  <ManageSelectedHolds language={language} selectedValues={values} onAllDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
                                   <Button size="sm" variant="outline" mr={1} onPress={() => clearGroupValue()}>
-                                      {translate('holds.clear_selections')}
+                                      {getTermFromDictionary(language, 'holds_clear_selections')}
                                   </Button>
                               </HStack>
                           </ScrollView>
@@ -199,23 +370,23 @@ export const MyHolds = () => {
                                   <Select
                                       name="sortBy"
                                       selectedValue={pendingSort}
-                                      accessibilityLabel="Select a Sort Method"
+                                      accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                       _selectedItem={{
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
                                       onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="sortTitle" key={0}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Status'})} value="status" key={3}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Date Placed'})} value="placed" key={4}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Position'})} value="position" key={5}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Pickup Location'})} value="location" key={6}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Library Account'})} value="libraryAccount" key={7}/>
+                                      <Select.Item label={sortBy.title} value="sortTitle" key={0}/>
+                                      <Select.Item label={sortBy.author} value="author" key={1}/>
+                                      <Select.Item label={sortBy.format} value="format" key={2}/>
+                                      <Select.Item label={sortBy.status} value="status" key={3}/>
+                                      <Select.Item label={sortBy.placed} value="placed" key={4}/>
+                                      <Select.Item label={sortBy.position} value="position" key={5}/>
+                                      <Select.Item label={sortBy.location} value="location" key={6}/>
+                                      <Select.Item label={sortBy.libraryAccount} value="libraryAccount" key={7}/>
                                   </Select>
                               </FormControl>
-                              <ManageAllHolds data={holds} onDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
+                              <ManageAllHolds language={language} data={holds} onDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
                           </HStack>
                       </ScrollView>
                   </Box>
@@ -231,19 +402,19 @@ export const MyHolds = () => {
                                   <Select
                                       name="sortBy"
                                       selectedValue={readySort}
-                                      accessibilityLabel="Select a Sort Method"
+                                      accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                       _selectedItem={{
                                           bg: 'tertiary.300',
                                           endIcon: <CheckIcon size="5"/>,
                                       }}
                                       onValueChange={(itemValue) => toggleReadySort(itemValue)}>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('general.title') })} value="title" key={0}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.author') })} value="author" key={1}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: translate('grouped_work.format') })} value="format" key={2}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Expiration Date'})} value="expire" key={3}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Date Placed'})} value="placed" key={4}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Pickup Location'})} value="location" key={5}/>
-                                      <Select.Item label={translate('general.sort_by', { sort: 'Library Account'})} value="libraryAccount" key={6}/>
+                                      <Select.Item label={sortBy.title} value="sortTitle" key={0}/>
+                                      <Select.Item label={sortBy.author} value="author" key={1}/>
+                                      <Select.Item label={sortBy.format} value="format" key={2}/>
+                                      <Select.Item label={sortBy.expiration} value="expire" key={3}/>
+                                      <Select.Item label={sortBy.placed} value="placed" key={4}/>
+                                      <Select.Item label={sortBy.location} value="location" key={5}/>
+                                      <Select.Item label={sortBy.libraryAccount} value="libraryAccount" key={6}/>
                                   </Select>
                               </FormControl>
                           </HStack>
@@ -271,7 +442,7 @@ export const MyHolds = () => {
                          onPress={() => {
                               refreshHolds();
                          }}>
-                         {translate('holds.reload_holds')}
+                         {getTermFromDictionary(language, 'reload_holds')}
                     </Button>
                    <FormControl w={175}>
                        <Select
@@ -283,11 +454,11 @@ export const MyHolds = () => {
                                endIcon: <CheckIcon size="5"/>,
                            }}
                            onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
-                           <Select.Item label={translate('holds.filter_by', {source: 'All', num: user.numHolds ?? 0})} value="all" key={0}/>
-                           <Select.Item label={translate('holds.filter_by', {source: 'Physical Materials', num: user.numHoldsIls ?? 0})} value="ils" key={1}/>
-                           <Select.Item label={translate('holds.filter_by', {source: 'OverDrive', num: user.numHoldsOverDrive ?? 0})} value="overdrive" key={2}/>
-                           <Select.Item label={translate('holds.filter_by', {source: 'CloudLibrary', num: user.numHolds_cloudLibrary ?? 0})} value="cloud_library" key={3}/>
-                           <Select.Item label={translate('holds.filter_by', {source: 'Axis 360', num: user.numHolds_axis360 ?? 0})} value="axis360" key={3}/>
+                           <Select.Item label={filterBy.all + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
+                           <Select.Item label={filterBy.ils + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1}/>
+                           <Select.Item label={filterBy.overdrive + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2}/>
+                           <Select.Item label={filterBy.cloudlibrary + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3}/>
+                           <Select.Item label={filterBy.axis360 + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={4}/>
                        </Select>
                    </FormControl>
                </HStack>
@@ -300,16 +471,16 @@ export const MyHolds = () => {
          if(title === 'Pending') {
              return (
                  <Box bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
-                     <Heading pb={1} pt={3}>{translate('holds.pending_holds')}</Heading>
-                     <DisplayMessage type="info" message={translate('holds.pending_holds_message')}/>
+                     <Heading pb={1} pt={3}>{getTermFromDictionary(language, 'pending_holds')}</Heading>
+                     <DisplayMessage type="info" message={getTermFromDictionary(language, 'pending_holds_message')}/>
                      {actionButtons('pending')}
                  </Box>
              )
          } else {
              return (
                  <Box  bgColor="warmGray.50" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bgColor: 'coolGray.800' }} borderColor="coolGray.200" flexWrap="nowrap" maxWidth="100%" safeArea={2}>
-                     <Heading pb={1}>{translate('holds.holds_ready_for_pickup')}</Heading>
-                     <DisplayMessage type="info" message={translate('holds.holds_ready_for_pickup_message')}/>
+                     <Heading pb={1}>{getTermFromDictionary(language, 'holds_ready_for_pickup')}</Heading>
+                     <DisplayMessage type="info" message={getTermFromDictionary(language, 'holds_ready_for_pickup_message')}/>
                      {actionButtons('ready')}
                  </Box>
              )
@@ -351,11 +522,11 @@ export const MyHolds = () => {
                        }}
                        name="Holds"
                        value={values}
-                       accessibilityLabel={translate('holds.multiple_holds')}
+                       accessibilityLabel={getTermFromDictionary(language, 'multiple_holds')}
                        onChange={(newValues) => {
                            saveGroupValue(newValues);
                        }}>
-                       <SectionList sections={holds} renderItem={({ item, section:{title} }) => <MyHold data={item} resetGroup={resetGroup} pickupLocations={pickupLocations} section={title} key="ready"/>} stickySectionHeadersEnabled={true} renderSectionHeader={({ section: { title } }) => (displaySectionHeader(title))} renderSectionFooter={({ section: { title } }) => (displaySectionFooter(title))}  contentContainerStyle={{ paddingBottom: 30 }} />
+                       <SectionList sections={holds} renderItem={({ item, section:{title} }) => <MyHold data={item} resetGroup={resetGroup} language={language} pickupLocations={pickupLocations} section={title} key="ready"/>} stickySectionHeadersEnabled={true} renderSectionHeader={({ section: { title } }) => (displaySectionHeader(title))} renderSectionFooter={({ section: { title } }) => (displaySectionFooter(title))}  contentContainerStyle={{ paddingBottom: 30 }} />
                    </Checkbox.Group>
                </Box>
           </SafeAreaView>

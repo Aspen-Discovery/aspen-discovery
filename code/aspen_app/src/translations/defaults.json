@@ -179,7 +179,7 @@
   "create_list": "Create List",
   "create_new_list": "Create a New List",
   "create_new_list_item": "Create a new list from item",
-  "creating_list": "Creating List...",
+  "creating_list": "Creating list",
   "list_created": "List created",
   "no_lists_yet": "You have no lists yet",
   "save_to_list": "Save To List",
@@ -209,6 +209,7 @@
   "filters": "Filters",
   "filter": "Filter",
   "filter_by": "Filter by",
+  "filter_by_source_label": "Filter by Source",
   "sort_by": "Sort by",
   "discard_changes": "Discard changes?",
   "unsaved_changes_warning": "If you leave now, your changes won't be saved.",
@@ -256,7 +257,7 @@
   "patron_zip": "Zip Code",
   "select_sort_method": "Select a Sort Method",
   "new_pin_confirmed": "Re-enter New PIN/Password",
-  "last_updated_on": "Last updated on %1%",
+  "last_updated_on": "Last updated on",
   "sort_by_with_sort": "Sort By %1%",
   "no_matches_for_language_and_format": "No matches found for this title in %1% for %2% format",
   "num_saved_searches_with_updates": "%1% Updated",
@@ -274,7 +275,7 @@
   "titles_on_hold_by_source": "Titles On Hold for %1%",
   "manage_selected": "Managed Selected",
   "hold_email_notification": "Yes, by email to %1%",
-  "num_items_on_list": "%1% items",
+  "items": "items",
   "years": "years",
   "num_search_result": "%1% result",
   "num_search_results": "%1% results",
@@ -312,5 +313,7 @@
   "total_holds_desc": "Number of Holds",
   "placing_hold": "Placing hold",
   "checking_out": "Checking out",
-  "all": "All"
+  "all": "All",
+  "accessing": "Accessing",
+  "returning": "Returning"
 }

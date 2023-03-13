@@ -78,7 +78,7 @@ export const Variations = (props) => {
                                  <AlertDialog.Footer>
                                  <Button.Group space={3}>
                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                      <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{translate('general.button_ok')}</Button>
+                                      <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{getTermFromDictionary(language, 'button_ok')}</Button>
                                  </Button.Group>
                             </AlertDialog.Footer>
                             </AlertDialog.Content>

@@ -15,6 +15,7 @@ import {AddToList} from './AddToList';
 import {getLists} from '../../util/api/list';
 import {PATRON} from '../../util/loadPatron';
 import {LibrarySystemContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export default class Results extends React.Component {
      constructor(props) {
@@ -178,7 +179,7 @@ export default class Results extends React.Component {
                                    totalResults: data['totalResults'],
                                    curPage: data['page_current'],
                                    totalPages: data['page_total'],
-                                   dataMessage: data['message'] ?? translate('error.message'),
+                                   dataMessage: data['message'] ?? getTermFromDictionary('en', 'error_loading_results'),
                                    endOfResults: true,
                                    resetSearch: false,
                               }));
@@ -187,7 +188,7 @@ export default class Results extends React.Component {
                                    isLoading: false,
                                    isLoadingMore: false,
                                    refreshing: false,
-                                   dataMessage: data['message'] ?? translate('error.message'),
+                                   dataMessage: data['message'] ?? getTermFromDictionary('en', 'error_loading_results'),
                                    endOfResults: true,
                                    resetSearch: false,
                               });
@@ -217,7 +218,7 @@ export default class Results extends React.Component {
                               isLoading: false,
                               isLoadingMore: false,
                               refreshing: false,
-                              dataMessage: data.message ?? translate('error.message'),
+                              dataMessage: data.message ?? getTermFromDictionary('en', 'error_loading_results'),
                               endOfResults: true,
                               resetSearch: false,
                          });
