@@ -13288,6 +13288,16 @@ AspenDiscovery.Searches = (function(){
 			return false;
 		},
 
+		searchFacetValuesKeyDown: function (e) {
+			if (e.keyCode === 9) {
+				AspenDiscovery.Searches.searchFacetValues();
+			}else if (e.keyCode === 10 || e.keyCode === 13) {
+				e.preventDefault();
+				AspenDiscovery.Searches.searchFacetValues();
+			}
+			return false;
+		},
+
 		searchFacetValues: function () {
 			$("#facetSearchResultsPopularHelp").hide();
 			$("#facetSearchResultsLoading").show();

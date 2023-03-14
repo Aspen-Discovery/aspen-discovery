@@ -11,7 +11,7 @@
 				<label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
 				<div class="input-group">
 					<input  type="text" name="settingsSearch" id="settingsSearch"
-							onkeyup="return AspenDiscovery.Admin.searchSettings();" onkeydown="AspenDiscovery.preventEnterKey(e);" class="form-control" />
+							onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
 					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
 					<script type="text/javascript">
                         {literal}
