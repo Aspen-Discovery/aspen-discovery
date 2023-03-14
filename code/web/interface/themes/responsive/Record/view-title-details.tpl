@@ -149,7 +149,7 @@
 
 	{include file="GroupedWork/relatedLists.tpl" isSearchResults=false}
 
-	{include file="GroupedWork/readingHistoryIndicator.tpl"}
+	{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
 	{if !($recordDriver->hasMultipleVariations())}
 	{* Detailed status information *}

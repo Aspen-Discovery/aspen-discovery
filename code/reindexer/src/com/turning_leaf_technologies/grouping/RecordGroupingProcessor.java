@@ -227,7 +227,7 @@ public class RecordGroupingProcessor {
 			updateUserListEntriesStmt = dbConnection.prepareStatement("UPDATE user_list_entry SET sourceId = ? where sourceId = ? and source = 'GroupedWork'");
 			updateNovelistStmt = dbConnection.prepareStatement("UPDATE novelist_data SET groupedRecordPermanentId = ? where groupedRecordPermanentId = ?");
 			updateDisplayInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET permanent_id = ? where permanent_id = ?");
-			updateUploadedCoverInfoStmt = dbConnection.prepareStatement("UPDATE grouped_work_display_info SET recordId = ? where recordId = ? and imageSource = 'upload' AND recordType = 'grouped_work'");
+			updateUploadedCoverInfoStmt = dbConnection.prepareStatement("UPDATE bookcover_info SET recordId = ? where recordId = ? and imageSource = 'upload' AND recordType = 'grouped_work'");
 
 			markWorkAsNeedingReindexStmt = dbConnection.prepareStatement("INSERT into grouped_work_scheduled_index (permanent_id, indexAfter) VALUES (?, ?)");
 

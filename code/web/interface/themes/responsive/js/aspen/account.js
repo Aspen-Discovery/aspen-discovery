@@ -545,6 +545,9 @@ AspenDiscovery.Account = (function () {
 						}
 						if (multiStep !== 'true') {
 							window.location.replace(referer);
+						} else {
+							$('.modal-body').html("Loading...");
+							$(".modal-title").text("Loading...");
 						}
 					} else if (response.result.success === false && response.result.passwordExpired === true) {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);

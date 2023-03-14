@@ -24,6 +24,6 @@
 				</div>
 			{/if}
 		</div>
-    {if empty($isSearchResults)}</div>{/if}
+	{if empty($isSearchResults)}</div>{/if}
 {/if}
 {/strip}
