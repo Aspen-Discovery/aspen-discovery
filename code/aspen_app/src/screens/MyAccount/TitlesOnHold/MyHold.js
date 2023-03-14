@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Actionsheet, Box, Button, Center, Icon, Pressable, Text, HStack, VStack, Image, Checkbox, useDisclose } from 'native-base';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { navigateStack } from '../../../helpers/RootNavigator';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const MyHold = (props) => {
      const hold = props.data;
@@ -27,6 +27,18 @@ export const MyHold = (props) => {
      const [thawing, startThawing] = React.useState(false);
      let label, method, icon, canCancel;
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const [holdPosition, setHoldPosition] = React.useState('');
+
+     React.useEffect(() => {
+          async function fetchTranslations() {
+               if(user.email) {
+                    await getTranslationsWithValues('hold_position_with_queue', [hold.position, hold.holdQueueLength], language, library.baseUrl).then(result => {
+                         setHoldPosition(result);
+                    });
+               }
+          }
+          fetchTranslations()
+     }, []);
 
      if (hold.canFreeze === true) {
           if (hold.frozen === true) {
@@ -229,7 +241,7 @@ export const MyHold = (props) => {
                               {getOnHoldFor(hold.user)}
                               {getPickupLocation(hold.currentPickupName, hold.source)}
                               {getExpirationDate(hold.expirationDate, hold.available)}
-                              {getPosition(hold.position, hold.available, hold.holdQueueLength)}
+                              {getPosition(hold.position, hold.available, hold.holdQueueLength, holdPosition)}
                               {getStatus(hold.status, hold.source)}
                          </VStack>
                     </HStack>

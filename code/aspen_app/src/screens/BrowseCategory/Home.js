@@ -7,7 +7,6 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { translate } from '../../translations/translations';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
@@ -15,7 +14,7 @@ import {BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, 
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import {getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds} from '../../util/api/user';
-import {getTermFromDictionary, getTranslatedTerm} from '../../translations/TranslationService';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 let maxCategories = 5;
 
@@ -141,7 +140,7 @@ export const DiscoverHomeScreen = () => {
                     {version >= '22.08.00' && isNew ? (
                          <Container zIndex={1}>
                               <Badge colorScheme="warning" shadow={1} mb={-2} ml={-1} _text={{ fontSize: 9 }}>
-                                   {translate('general.new')}
+                                   {getTermFromDictionary(language, 'flag_new')}
                               </Badge>
                          </Container>
                     ) : null}

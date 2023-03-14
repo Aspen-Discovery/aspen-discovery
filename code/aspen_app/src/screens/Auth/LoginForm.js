@@ -8,7 +8,6 @@ import { create } from 'apisauce';
 
 // custom components and helper files
 import { AuthContext } from '../../components/navigation';
-import { translate } from '../../translations/translations';
 import {getBrowseCategories, getLanguages, getLibraryBranch, getLibrarySystem, getUserProfile} from '../../util/login';
 import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {ResetExpiredPin} from './ResetExpiredPin';
@@ -87,9 +86,8 @@ export const GetLoginForm = (props) => {
                          signIn();
                          setLoading(false);
                      } else {
-                         console.log('Unable to validate user with provided information.');
                          setLoginError(true);
-                         setLoginErrorMessage(translate('login.invalid_user'));
+                         setLoginErrorMessage(getTermFromDictionary('en', 'invalid_user'));
                          setLoading(false);
                      }
                  }
@@ -97,7 +95,7 @@ export const GetLoginForm = (props) => {
          } else {
              setLoading(false);
              setLoginError(true);
-             setLoginErrorMessage("Unable to establish connection with library. Please try again later.")
+             setLoginErrorMessage(getTermFromDictionary('en', 'error_no_library_connection'))
          }
      }
 
