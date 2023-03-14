@@ -7,7 +7,6 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { popAlert, popToast } from '../components/loadError';
-import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
 import { getBrowseCategories, LIBRARY } from './loadLibrary';

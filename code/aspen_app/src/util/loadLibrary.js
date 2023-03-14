@@ -5,11 +5,9 @@ import React from 'react';
 
 // custom components and helper files
 import { popToast } from '../components/loadError';
-import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { PATRON } from './loadPatron';
-import { BrowseCategoryContext } from '../context/initialContext';
 import { RemoveData } from './logout';
 import {getTermFromDictionary} from '../translations/TranslationService';
 

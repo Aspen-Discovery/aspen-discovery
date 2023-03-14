@@ -4,7 +4,6 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { popToast } from '../components/loadError';
-import { translate } from '../translations/translations';
 import { createAuthTokens, ENDPOINT, getHeaders, getResponseCode, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';

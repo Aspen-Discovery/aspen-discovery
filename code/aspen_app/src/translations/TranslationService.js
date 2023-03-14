@@ -8,8 +8,6 @@ import {createAuthTokens, getHeaders} from '../util/apiAuth';
 import {GLOBALS} from '../util/globals';
 import {LanguageContext, LibrarySystemContext} from '../context/initialContext';
 import {saveLanguage} from '../util/api/user';
-import defaults from './defaults.json';
-import {translate} from './translations';
 
 /** *******************************************************************
  * General
