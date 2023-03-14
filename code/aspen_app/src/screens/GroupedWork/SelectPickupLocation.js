@@ -1,13 +1,11 @@
 import _ from 'lodash';
-import { Button, FormControl, Modal, Select, CheckIcon, Heading, AlertDialog, Center } from 'native-base';
+import { Button, FormControl, Modal, Select, CheckIcon, Heading } from 'native-base';
 import React, { useState } from 'react';
-import { translate } from '../../translations/translations';
 import { completeAction } from './Record';
-import {HoldsContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {refreshProfile} from '../../util/api/user';
-import {reloadHolds} from '../../util/loadPatron';
-import {navigate, navigateStack} from '../../helpers/RootNavigator';
 import {SelectVolume} from './SelectVolume';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const SelectPickupLocation = (props) => {
      const { id, action, title, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
@@ -77,7 +75,7 @@ const SelectPickupLocation = (props) => {
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
-                              <Heading size="md">{isPlacingHold ? translate('grouped_work.hold_options') : translate('grouped_work.checkout_options')}</Heading>
+                              <Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
                               {shouldDisplayVolumes ? (
@@ -85,12 +83,12 @@ const SelectPickupLocation = (props) => {
                               ) : null}
                               {_.size(accounts) > 1 ? (
                                    <FormControl>
-                                        <FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
+                                        <FormControl.Label>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControl.Label>
                                         <Select
                                              name="linkedAccount"
                                              selectedValue={activeAccount}
                                              minWidth="200"
-                                             accessibilityLabel={isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}
+                                             accessibilityLabel={isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}
                                              _selectedItem={{
                                                   bg: 'tertiary.300',
                                                   endIcon: <CheckIcon size="5" />,
@@ -106,12 +104,12 @@ const SelectPickupLocation = (props) => {
                                    </FormControl>
                               ) : null}
                               <FormControl>
-                                   <FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, "select_pickup_location")}</FormControl.Label>
                                    <Select
                                         name="pickupLocations"
                                         selectedValue={location}
                                         minWidth="200"
-                                        accessibilityLabel="Select a Pickup Location"
+                                        accessibilityLabel={getTermFromDictionary(language, "select_pickup_location")}
                                         _selectedItem={{
                                              bg: 'tertiary.300',
                                              endIcon: <CheckIcon size="5" />,
@@ -128,11 +126,11 @@ const SelectPickupLocation = (props) => {
                          <Modal.Footer>
                               <Button.Group space={2} size="md">
                                    <Button variant="outline" onPress={() => setShowModal(false)}>
-                                        {translate('general.cancel')}
+                                        {getTermFromDictionary(language, 'close_button')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
+                                        isLoadingText={isPlacingHold ? getTermFromDictionary(language, 'placing_hold', true) : getTermFromDictionary(language, 'checking_out', true)}
                                         onPress={async () => {
                                              setLoading(true);
                                              await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (result) => {
