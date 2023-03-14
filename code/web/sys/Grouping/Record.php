@@ -394,11 +394,13 @@ class Grouping_Record {
 	 */
 	public function getItemSummary(): array {
 		if (empty($this->_itemSummary)) {
-			foreach ($this->_items as $item) {
-				$key = $item->getSummaryKey();
-				$itemSummary = $item->getSummary();
-				$this->addItemDetails($key, $itemSummary);
-				$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+			if ($this->_items != null) {
+				foreach ($this->_items as $item) {
+					$key = $item->getSummaryKey();
+					$itemSummary = $item->getSummary();
+					$this->addItemDetails($key, $itemSummary);
+					$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+				}
 			}
 			$this->sortItemDetails();
 			$this->sortItemSummary();
@@ -463,12 +465,14 @@ class Grouping_Record {
 	 */
 	public function getItemDetails(): array {
 		if (empty($this->_itemDetails)) {
-			foreach ($this->_items as $item) {
-				if (!$item->isVirtual) {
-					$key = $item->getSummaryKey();
-					$itemSummary = $item->getSummary();
-					$this->addItemDetails($key . $item->itemId, $itemSummary);
-					$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+			if ($this->_items != null) {
+				foreach ($this->_items as $item) {
+					if (!$item->isVirtual) {
+						$key = $item->getSummaryKey();
+						$itemSummary = $item->getSummary();
+						$this->addItemDetails($key . $item->itemId, $itemSummary);
+						$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+					}
 				}
 			}
 			$this->sortItemDetails();
@@ -537,11 +541,13 @@ class Grouping_Record {
 			if (is_null($actionsToReturn)) {
 				$actionsToReturn = [];
 			}
-			if (empty($this->_allActions[$variationId]) && $this->getDriver() != null) {
-				foreach ($this->_items as $item) {
-					if ($item->variationId == $variationId || $variationId == 'any') {
-						$item->setActions($this->getDriver()->getItemActions($item));
-						$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+			if (empty($actionsToReturn) && $this->getDriver() != null) {
+				if ($this->_items != null) {
+					foreach ($this->_items as $item) {
+						if ($item->variationId == $variationId || $variationId == 'any') {
+							$item->setActions($this->getDriver()->getItemActions($item));
+							$actionsToReturn = array_merge($actionsToReturn, $item->getActions());
+						}
 					}
 				}
 			}
