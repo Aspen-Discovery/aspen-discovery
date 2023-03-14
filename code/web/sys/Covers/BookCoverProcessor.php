@@ -69,6 +69,10 @@ class BookCoverProcessor {
 			if ($this->getSpringshareLibCalCover($this->id)) {
 				return true;
 			}
+		} elseif ($this->type == 'communico_event') {
+			if ($this->getCommunicoCover($this->id)){
+				return true;
+			}
 		} elseif ($this->type == 'webpage' || $this->type == 'WebPage' || $this->type == 'BasicPage' || $this->type == 'WebResource' || $this->type == 'PortalPage') {
 			if ($this->getWebPageCover($this->id)) {
 				return true;
@@ -1510,6 +1514,27 @@ class BookCoverProcessor {
 //			}else{
 //				return $this->processImageURL('springshare_libcal_event', $coverUrl, true);
 //			}
+		}
+		return false;
+	}
+
+	private function getCommunicoCover($id) {
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(":", $id);
+		}
+		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+		$driver = new CommunicoEventRecordDriver($id);
+		if ($driver) {
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$props = [
+				'eventDate' => $driver->getStartDate(),
+			];
+			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
 		}
 		return false;
 	}

@@ -42,7 +42,7 @@
 						<div class="btn-toolbar">
 							<div class="btn-group btn-group-vertical btn-block">
 								<a class="btn btn-sm btn-action btn-wrap" href="{$recordDriver->getExternalUrl()}" target="_blank">
-									{translate text="Register on LibCal" isPublicFacing=true}
+									{translate text="Register on Communico" isPublicFacing=true}
 								</a>
 							</div>
 						</div>
