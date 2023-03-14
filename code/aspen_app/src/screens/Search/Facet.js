@@ -16,7 +16,6 @@ import { ScrollView } from "react-native";
 
 import { loadingSpinner } from "../../components/loadingSpinner";
 import { userContext } from "../../context/user";
-import { translate } from "../../translations/translations";
 import {
   addAppliedFilter,
   buildParamsForUrl,

@@ -4,7 +4,6 @@ import React, { Component } from 'react';
 import { useNavigation, useNavigationState } from '@react-navigation/native';
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
 import { buildParamsForUrl, SEARCH } from '../../util/search';
 import { UnsavedChangesExit } from './UnsavedChanges';
 import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';

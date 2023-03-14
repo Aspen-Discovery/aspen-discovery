@@ -5,10 +5,7 @@ import { Box, Button, Center, FlatList, FormControl, HStack, Icon, Input, Text }
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native';
 
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { userContext } from '../../context/user';
-import { translate } from '../../translations/translations';
-import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
+import {formatDiscoveryVersion} from '../../util/loadLibrary';
 import { getDefaultFacets } from '../../util/search';
 import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
 import {navigate} from '../../helpers/RootNavigator';

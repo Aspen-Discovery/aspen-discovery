@@ -66,9 +66,9 @@ export const SearchResults = () => {
      const Header = () => {
           const num = _.toInteger(data?.totalResults);
           if (num > 0) {
-               let label = translate('filters.results', { num: num });
+               let label = num + ' ' + getTermFromDictionary(language, 'results');
                if (num === 1) {
-                    label = translate('filters.result', { num: num });
+                    label = num + ' ' + getTermFromDictionary(language, 'result');
                }
                return (
                     <Box

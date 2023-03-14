@@ -7,7 +7,6 @@ import { useRoute } from '@react-navigation/native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { translate } from '../../translations/translations';
 import AddToList from './AddToList';
 import _ from 'lodash';
 import {navigateStack} from '../../helpers/RootNavigator';
