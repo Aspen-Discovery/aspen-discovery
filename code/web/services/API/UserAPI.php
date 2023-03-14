@@ -1886,6 +1886,11 @@ class UserAPI extends Action {
 			$recordId = $_REQUEST['id'] ?? null;
 			if($confirmationId && $recordId) {
 				$result = $user->confirmHold($recordId, $confirmationId);
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+				];
 			} else {
 				return [
 					'success' => false,
