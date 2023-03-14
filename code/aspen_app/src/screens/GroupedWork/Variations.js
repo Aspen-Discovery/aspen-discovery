@@ -6,7 +6,6 @@ import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
 import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
@@ -78,7 +77,7 @@ export const Variations = (props) => {
                                  <AlertDialog.Footer>
                                  <Button.Group space={3}>
                                       {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                      <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{translate('general.button_ok')}</Button>
+                                      <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{getTermFromDictionary(language, 'button_ok')}</Button>
                                  </Button.Group>
                             </AlertDialog.Footer>
                             </AlertDialog.Content>

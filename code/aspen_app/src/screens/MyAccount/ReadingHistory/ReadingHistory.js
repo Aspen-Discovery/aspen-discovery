@@ -7,7 +7,6 @@ import { ListItem } from '@rneui/themed';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import { translate } from '../../../translations/translations';
 import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { SafeAreaView } from 'react-native';
 import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';

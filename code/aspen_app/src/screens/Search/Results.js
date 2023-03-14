@@ -8,13 +8,13 @@ import {SafeAreaView, ScrollView} from 'react-native';
 // custom components and helper files
 import {loadError} from '../../components/loadError';
 import {loadingSpinner} from '../../components/loadingSpinner';
-import {translate} from '../../translations/translations';
 import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
 import {getSearchResults, resetSearchGlobals, SEARCH, searchResults} from '../../util/search';
 import {AddToList} from './AddToList';
 import {getLists} from '../../util/api/list';
 import {PATRON} from '../../util/loadPatron';
 import {LibrarySystemContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export default class Results extends React.Component {
      constructor(props) {
@@ -46,6 +46,7 @@ export default class Results extends React.Component {
                resetSearch: false,
                curPage: 0,
                totalPages: 0,
+               language: this.props.route.params?.language ?? 'en'
           };
           this._isMounted = false;
           this.lastListUsed = 0;
@@ -178,7 +179,7 @@ export default class Results extends React.Component {
                                    totalResults: data['totalResults'],
                                    curPage: data['page_current'],
                                    totalPages: data['page_total'],
-                                   dataMessage: data['message'] ?? translate('error.message'),
+                                   dataMessage: data['message'] ?? getTermFromDictionary('en', 'error_loading_results'),
                                    endOfResults: true,
                                    resetSearch: false,
                               }));
@@ -187,7 +188,7 @@ export default class Results extends React.Component {
                                    isLoading: false,
                                    isLoadingMore: false,
                                    refreshing: false,
-                                   dataMessage: data['message'] ?? translate('error.message'),
+                                   dataMessage: data['message'] ?? getTermFromDictionary('en', 'error_loading_results'),
                                    endOfResults: true,
                                    resetSearch: false,
                               });
@@ -217,7 +218,7 @@ export default class Results extends React.Component {
                               isLoading: false,
                               isLoadingMore: false,
                               refreshing: false,
-                              dataMessage: data.message ?? translate('error.message'),
+                              dataMessage: data.message ?? getTermFromDictionary('en', 'error_loading_results'),
                               endOfResults: true,
                               resetSearch: false,
                          });
@@ -337,7 +338,7 @@ export default class Results extends React.Component {
                              </Text>
                              {item.author ? (
                                  <Text _dark={{color: 'warmGray.50'}} color="coolGray.800">
-                                      {translate('grouped_work.by')} {item.author}
+                                      {getTermFromDictionary(this.state.language, 'by')} {item.author}
                                  </Text>
                              ) : null}
                              <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
@@ -377,12 +378,12 @@ export default class Results extends React.Component {
           const {navigation, route} = this.props;
           return (
               <Center flex={1}>
-                   <Heading pt={5}>{translate('search.no_results')}</Heading>
+                   <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
                    <Text bold w="75%" textAlign="center">
                         {route.params?.term}
                    </Text>
                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                        {translate('search.new_search_button')}
+                        {getTermFromDictionary(this.state.language, 'new_search_button')}
                    </Button>
               </Center>
           );
@@ -390,9 +391,9 @@ export default class Results extends React.Component {
 
      _listHeaderComponent = () => {
           const numResults = _.toInteger(this.state.totalResults);
-          let resultsLabel = translate('filters.results', {num: numResults});
+          let resultsLabel = numResults + ' ' + getTermFromDictionary(this.state.language, 'results');
           if (numResults === 1) {
-               resultsLabel = translate('filters.result', {num: numResults});
+               resultsLabel = numResults + ' ' + getTermFromDictionary(this.state.language, 'result');
           }
           if (numResults > 0) {
                return (
@@ -443,7 +444,7 @@ export default class Results extends React.Component {
                             },
                        });
                   }}>
-                   {translate('filters.title')}
+                   {getTermFromDictionary(this.state.language, 'filters')}
               </Button>
           );
      };
@@ -563,9 +564,9 @@ export default class Results extends React.Component {
           searchTerm = searchTerm.replace(/" "/g, '%20');
 
           const numResults = _.toInteger(this.state.totalResults);
-          let resultsLabel = translate('filters.results', {num: numResults});
+          let resultsLabel = numResults + ' ' + getTermFromDictionary(this.state.language, 'results');
           if (numResults === 1) {
-               resultsLabel = translate('filters.result', {num: numResults});
+               resultsLabel = numResults + ' ' + getTermFromDictionary(this.state.language, 'result');
           }
 
           if (this.state.isLoading) {
@@ -579,12 +580,12 @@ export default class Results extends React.Component {
           if (this.state.hasError && this.state.dataMessage) {
                return (
                    <Center flex={1}>
-                        <Heading pt={5}>{translate('search.no_results')}</Heading>
+                        <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
                         <Text bold w="75%" textAlign="center">
                              {route.params?.term}
                         </Text>
                         <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                             {translate('search.new_search_button')}
+                             {getTermFromDictionary(this.state.language, 'new_search_button')}
                         </Button>
                    </Center>
                );

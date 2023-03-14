@@ -1,13 +1,13 @@
-import { translate } from '../../../translations/translations';
 import { freezeHold, freezeHolds } from '../../../util/accountActions';
 import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Actionsheet, Box, Button, CloseIcon, Icon, Pressable, HStack, VStack } from 'native-base';
 import Modal from 'react-native-modal';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const SelectThawDate = (props) => {
-     const { libraryContext, onClose, freezeId, recordId, source, userId, resetGroup } = props;
+     const { libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, language } = props;
      let data = props.data;
      let count = props.count;
      const [loading, setLoading] = React.useState(false);
@@ -31,7 +31,7 @@ export const SelectThawDate = (props) => {
                          onPress={() => {
                               setShowModal(true);
                          }}>
-                         {translate('holds.freeze_all_holds_count', { num: count })}
+                        {getTermFromDictionary(language, 'freeze_all_holds')} ({count})
                     </Actionsheet.Item>
                );
           } else {
@@ -42,7 +42,7 @@ export const SelectThawDate = (props) => {
                               onClose();
                               setShowModal(true);
                          }}>
-                         {translate('holds.freeze_hold')}
+                         {getTermFromDictionary(language, 'freeze_hold')}
                     </Actionsheet.Item>
                );
           }
@@ -88,7 +88,7 @@ export const SelectThawDate = (props) => {
                                         _dark={{
                                              _text: { color: 'text.50' },
                                         }}>
-                                        {data ? translate('holds.freeze_all_holds') : translate('holds.freeze_hold')}
+                                        {data ? getTermFromDictionary(language, 'freeze_all_holds') : getTermFromDictionary(language, 'freeze_hold')}
                                    </Box>
                                    <Pressable onPress={() => setShowModal(false)}>
                                         <CloseIcon
@@ -129,13 +129,13 @@ export const SelectThawDate = (props) => {
                                         onPress={() => {
                                              setShowModal(false);
                                         }}>
-                                        {translate('general.cancel')}
+                                        {getTermFromDictionary(language, 'cancel')}
                                    </Button>
 
                                    {data ? (
                                         <Button
                                              isLoading={loading}
-                                             isLoadingText={translate('holds.freezing')}
+                                             isLoadingText={getTermFromDictionary(language, 'freezing', true)}
                                              onPress={() => {
                                                   setLoading(true);
                                                   freezeHolds(data, libraryContext.baseUrl, date).then((result) => {
@@ -145,12 +145,12 @@ export const SelectThawDate = (props) => {
                                                        setShowModal(false);
                                                   });
                                              }}>
-                                             {translate('holds.freeze_holds')}
+                                             {getTermFromDictionary(language, 'freeze_holds')}
                                         </Button>
                                    ) : (
                                         <Button
                                              isLoading={loading}
-                                             isLoadingText={translate('holds.freezing')}
+                                             isLoadingText={getTermFromDictionary(language, 'freezing', true)}
                                              onPress={() => {
                                                   setLoading(true);
                                                   freezeHold(freezeId, recordId, source, libraryContext.baseUrl, userId, date).then((result) => {
@@ -160,7 +160,7 @@ export const SelectThawDate = (props) => {
                                                        setShowModal(false);
                                                   });
                                              }}>
-                                             {translate('holds.freeze_hold')}
+                                            {getTermFromDictionary(language, 'freeze_hold')}
                                         </Button>
                                    )}
                               </Button.Group>

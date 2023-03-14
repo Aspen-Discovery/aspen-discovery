@@ -2,15 +2,16 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Center, Modal, FormControl, Input, Icon } from 'native-base';
 import React, { useState, useRef } from 'react';
 
-import { translate } from '../../../../translations/translations';
-import { LibrarySystemContext, UserContext } from '../../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../../context/initialContext';
 import {reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount} from '../../../../util/api/user';
+import {getTermFromDictionary} from '../../../../translations/TranslationService';
 
 // custom components and helper files
 
 const AddLinkedAccount = () => {
      const { user, accounts, viewers, cards, updateUser, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const [loading, setLoading] = useState(false);
      const [showModal, setShowModal] = useState(false);
      const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +28,7 @@ const AddLinkedAccount = () => {
      };
 
      const refreshLinkedAccounts = async () => {
-          await getLinkedAccounts(user, cards, library).then((result) => {
+          await getLinkedAccounts(user, cards, library, language).then((result) => {
                if (accounts !== result.accounts) {
                     updateLinkedAccounts(result.accounts);
                }
@@ -35,7 +36,7 @@ const AddLinkedAccount = () => {
                     updateLibraryCards(result.cards);
                }
           });
-          await getViewerAccounts(library.baseUrl).then((result) => {
+          await getViewerAccounts(library.baseUrl, language).then((result) => {
                if (viewers !== result) {
                     updateLinkedViewerAccounts(result);
                }
@@ -47,14 +48,14 @@ const AddLinkedAccount = () => {
 
      return (
           <Center>
-               <Button onPress={toggle}>{translate('linked_accounts.add_an_account')}</Button>
+               <Button onPress={toggle}>{getTermFromDictionary(language, 'linked_add_an_account')}</Button>
                <Modal isOpen={showModal} onClose={toggle} size="full" avoidKeyboard>
                     <Modal.Content maxWidth="95%">
                          <Modal.CloseButton />
-                         <Modal.Header>{translate('linked_accounts.account_to_manage')}</Modal.Header>
+                         <Modal.Header>{getTermFromDictionary(language, 'linked_account_to_manage')}</Modal.Header>
                          <Modal.Body>
                               <FormControl>
-                                   <FormControl.Label>{translate('linked_accounts.username')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'username')}</FormControl.Label>
                                    <Input
                                         onChangeText={(text) => setNewUser(text)}
                                         autoCorrect={false}
@@ -72,18 +73,18 @@ const AddLinkedAccount = () => {
                                    />
                               </FormControl>
                               <FormControl mt={3}>
-                                   <FormControl.Label>{translate('linked_accounts.password')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'password')}</FormControl.Label>
                                    <Input onChangeText={(text) => setPassword(text)} value={password} autoCorrect={false} autoCapitalize="none" id="password" returnKeyType="next" textContentType="password" required size="lg" type={showPassword ? 'text' : 'password'} ref={passwordRef} InputRightElement={<Icon as={<MaterialCommunityIcons name={showPassword ? 'eye' : 'eye-off'} />} size="sm" w="1/6" h="full" mr={1} onPress={() => setShowPassword(!showPassword)} />} />
                               </FormControl>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group>
                                    <Button variant="ghost" onPress={toggle}>
-                                        {translate('general.close_window')}
+                                        {getTermFromDictionary(language, 'close_window')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText={translate('general.adding')}
+                                        isLoadingText={getTermFromDictionary(language, 'adding', true)}
                                         onPress={async () => {
                                              setLoading(true);
                                              await addLinkedAccount(newUser, password, library.baseUrl).then(async (r) => {
@@ -91,7 +92,7 @@ const AddLinkedAccount = () => {
                                                   toggle();
                                              });
                                         }}>
-                                        {translate('linked_accounts.add')}
+                                        {getTermFromDictionary(language, 'linked_add_account')}
                                    </Button>
                               </Button.Group>
                          </Modal.Footer>

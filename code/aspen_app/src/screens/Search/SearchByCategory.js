@@ -7,13 +7,13 @@ import { SafeAreaView } from 'react-native';
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { userContext } from '../../context/user';
-import { translate } from '../../translations/translations';
 import { categorySearchResults } from '../../util/search';
 import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
-import {formatDiscoveryVersion} from '../../util/loadLibrary';
+import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export default class SearchByCategory extends Component {
      constructor() {
@@ -42,6 +42,11 @@ export default class SearchByCategory extends Component {
           //const searchType = this.props.navigation.state.params.searchType;
           const { navigation, route } = this.props;
           const libraryUrl = this.context.library.baseUrl;
+          const language = route.params?.language ?? 'en';
+
+          this.setState({
+               language: language
+          })
 
           await getLists(libraryUrl);
           this._getLastListUsed();
@@ -72,9 +77,10 @@ export default class SearchByCategory extends Component {
           const { navigation, route } = this.props;
           //console.log(route);
           const category = route.params?.id ?? '';
-          const libraryUrl = this.props.route.params.url;
+          const language = route.params?.language ?? 'en';
+          const libraryUrl = route.params?.url ?? LIBRARY.url;
 
-          await categorySearchResults(category, 25, page, libraryUrl).then((response) => {
+          await categorySearchResults(category, 25, page, libraryUrl, language).then((response) => {
                if (response.ok) {
                     const records = response.data.result.records;
 
@@ -167,7 +173,7 @@ export default class SearchByCategory extends Component {
                               </Text>
                               {item.author_display ? (
                                    <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                        {translate('grouped_work.by')} {item.author_display}
+                                        {getTermFromDictionary(this.state.language, 'by')} {item.author_display}
                                    </Text>
                               ) : null}
                               <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
@@ -210,12 +216,12 @@ export default class SearchByCategory extends Component {
           const { navigation, route } = this.props;
           return (
                <Center flex={1}>
-                    <Heading pt={5}>{translate('search.no_results')}</Heading>
+                    <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
                     <Text bold w="75%" textAlign="center">
                          {route.params?.title}
                     </Text>
                     <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                         {translate('search.new_search_button')}
+                         {getTermFromDictionary(this.state.language, 'new_search_button')}
                     </Button>
                </Center>
           );
@@ -247,12 +253,12 @@ export default class SearchByCategory extends Component {
           if (this.state.hasError && this.state.dataMessage) {
                return (
                     <Center flex={1}>
-                         <Heading pt={5}>{translate('search.no_results')}</Heading>
+                         <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
                          <Text bold w="75%" textAlign="center">
                               {route.params?.title}
                          </Text>
                          <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              {translate('search.new_search_button')}
+                              {getTermFromDictionary(this.state.language, 'new_search_button')}
                          </Button>
                     </Center>
                );

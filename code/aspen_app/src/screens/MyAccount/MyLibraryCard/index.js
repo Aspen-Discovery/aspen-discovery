@@ -13,7 +13,6 @@ import * as Brightness from 'expo-brightness';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { translate } from '../../../translations/translations';
 import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { getLinkedAccounts } from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
@@ -276,7 +275,7 @@ const CreateLibraryCard = (data) => {
                <>
                    <Center>
                        <Flex direction="row">
-                           {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                           {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                            <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
                                {library.displayName}
                            </Text>
@@ -296,7 +295,7 @@ const CreateLibraryCard = (data) => {
                        </Text>
                    ) : null}
                    {numCards > 1 ? (
-                       <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError}/>
+                       <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError} language={language}/>
                    ) : (
                        <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />
                    )}
@@ -418,7 +417,7 @@ const CardCarousel = (data) => {
 };
 
 const OpenBarcode = (data) => {
-    const {barcodeValue, barcodeFormat, handleBarcodeError} = data;
+    const {barcodeValue, barcodeFormat, handleBarcodeError, language} = data;
     const [showModal, setShowModal] = React.useState(false);
 
     const toggleModal = () => {
@@ -426,7 +425,7 @@ const OpenBarcode = (data) => {
     };
 
     return <Center>
-        <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{translate('library_card.open_barcode')}</Button>
+        <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{getTermFromDictionary(language, 'open_barcode')}</Button>
         <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{opacity: 95}}>
             <Modal.Content bgColor="white">
                 <Modal.CloseButton />
@@ -528,7 +527,7 @@ export class MyLibraryCard221200 extends Component {
  <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
  <Center>
  <Flex direction="row">
- <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} />
+ <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary('en', 'library_card')} />
  <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
  {library.displayName}
  </Text>
@@ -557,7 +556,7 @@ export class MyLibraryCard221200 extends Component {
  <Flex direction="column" bg="white" maxW="95%" px={8} py={5} borderRadius={20}>
  <Center>
  <Flex direction="row">
- <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} />
+ <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary('en', 'library_card')} />
  <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
  {library.displayName}
  </Text>

@@ -52,7 +52,7 @@ export const SearchResults = () => {
           params = [];
      }
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params, type, id], () => fetchSearchResults(term, page, scope, url, type, id), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params, type, id, language], () => fetchSearchResults(term, page, scope, url, type, id, language), {
           keepPreviousData: true,
           staleTime: 1000,
      });
@@ -66,9 +66,9 @@ export const SearchResults = () => {
      const Header = () => {
           const num = _.toInteger(data?.totalResults);
           if (num > 0) {
-               let label = translate('filters.results', { num: num });
+               let label = num + ' ' + getTermFromDictionary(language, 'results');
                if (num === 1) {
-                    label = translate('filters.result', { num: num });
+                    label = num + ' ' + getTermFromDictionary(language, 'result');
                }
                return (
                     <Box
@@ -374,7 +374,7 @@ const CreateFilterButton = () => {
      return <CreateFilterButtonDefaults />;
 };
 
-async function fetchSearchResults(term, page, scope, url, type, id) {
+async function fetchSearchResults(term, page, scope, url, type, id, language) {
      const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
@@ -387,6 +387,7 @@ async function fetchSearchResults(term, page, scope, url, type, id) {
                page: page ?? 1,
                type: type ?? 'catalog',
                id: id,
+               language: language,
           },
      });
 
@@ -401,11 +402,9 @@ async function fetchSearchResults(term, page, scope, url, type, id) {
      SEARCH.sortMethod = data?.result?.sort ?? '';
      SEARCH.term = data?.result?.lookfor ?? '';
 
-     if(type === 'catalog') {
-          await getSortList(url);
-          await getAvailableFacets(url);
-          await getAppliedFilters(url);
-     }
+     await getSortList(url, language);
+     await getAvailableFacets(url, language);
+     await getAppliedFilters(url, language);
 
      return {
           results: data.result?.items,

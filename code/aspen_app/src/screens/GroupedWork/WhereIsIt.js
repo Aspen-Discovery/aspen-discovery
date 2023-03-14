@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import {getManifestation, getRelatedRecord} from '../../util/api/item';
 import { loadError } from '../../components/loadError';
-import { translate } from '../../translations/translations';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const WhereIsIt = () => {
      const route = useRoute();
@@ -37,13 +37,13 @@ export const WhereIsIt = () => {
                     <Center>
                          <HStack space={4} justifyContent="space-between" pb={2}>
                               <Text bold w="30%" fontSize="xs">
-                                   {translate('copy_details.available_copies')}
+                                   {getTermFromDictionary(language, 'available_copies')}
                               </Text>
                               <Text bold w="30%" fontSize="xs">
-                                   {translate('copy_details.location')}
+                                   {getTermFromDictionary(language, 'location')}
                               </Text>
                               <Text bold w="30%" fontSize="xs">
-                                   {translate('copy_details.call_num')}
+                                   {getTermFromDictionary(language, 'call_num')}
                               </Text>
                          </HStack>
                          <FlatList data={Object.keys(data.manifestation)} renderItem={({ item }) => <Details manifestation={data.manifestation[item]} />} />

@@ -85,7 +85,7 @@ const app_config = {
      privacy: 'public',
      platforms: ['ios', 'android'],
      version: version['version'],
-     sdkVersion: '46.0.0',
+     sdkVersion: '48.0.0',
      orientation: 'default',
      icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
      updates: {
@@ -159,7 +159,7 @@ const app_config = {
                },
           ],
      },
-     plugins: ['sentry-expo']
+     plugins: ['sentry-expo', 'expo-localization']
 };
 
 fs.readFile('app.config.js', 'utf8', function (err, data) {

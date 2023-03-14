@@ -4,11 +4,10 @@ import * as WebBrowser from 'expo-web-browser';
 
 // custom components and helper files
 import { popAlert, popToast } from '../components/loadError';
-import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
-import { getHolds } from './loadPatron';
 import { LIBRARY } from './loadLibrary';
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 /**
  * Fetch information for GroupedWork
@@ -32,7 +31,7 @@ export async function getGroupedWork221200(url, itemId) {
      if (response.ok) {
           return response.data;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -72,7 +71,7 @@ export async function checkoutItem(url, itemId, source, patronId) {
 
           return responseData.result;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -144,7 +143,7 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
      if (response.ok) {
           return response.data.result;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -189,11 +188,11 @@ export async function overDriveSample(url, formatId, itemId, sampleNumber) {
                               console.log('Really borked.');
                          }
                     } else {
-                         popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                     }
                });
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }
@@ -214,19 +213,19 @@ export async function openSideLoad(redirectUrl) {
                                    })
                                    .catch(async (error) => {
                                         console.log('Unable to close previous browser session.');
-                                        popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                                        popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                                    });
                          } catch (error) {
                               console.log('Tried to open again but still unable');
-                              popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                          }
                     } else {
                          console.log('Unable to open browser window.');
-                         popToast(translate('error.no_open_resource'), translate('error.device_block_browser'), 'warning');
+                         popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
                     }
                });
      } else {
-          popToast(translate('error.no_open_resource'), translate('error.no_valid_url'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_no_valid_url'), 'warning');
           console.log(response);
      }
 }
@@ -248,7 +247,7 @@ export async function getItemDetails(url, id, format) {
      if (response.ok) {
           return response.data;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }

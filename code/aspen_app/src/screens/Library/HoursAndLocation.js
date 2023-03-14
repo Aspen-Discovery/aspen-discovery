@@ -3,7 +3,6 @@ import { Box, Center, Divider, HStack, Icon, Text } from 'native-base';
 import React from 'react';
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
 import { stripHTML } from '../../util/apiAuth';
 import {LanguageContext} from '../../context/initialContext';
 import {getTermFromDictionary} from '../../translations/TranslationService';

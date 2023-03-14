@@ -6,7 +6,6 @@ import { Button, FlatList, HStack, Icon, Text, View } from 'native-base';
 import React, { useCallback, useEffect } from 'react';
 
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
-import {translate} from '../../translations/translations';
 import {LanguageContext} from '../../context/initialContext';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 

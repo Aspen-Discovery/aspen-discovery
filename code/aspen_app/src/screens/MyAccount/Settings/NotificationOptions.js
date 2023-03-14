@@ -7,7 +7,7 @@ import * as Linking from 'expo-linking';
 import {Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog} from 'native-base';
 import React from 'react';
 import {SafeAreaView} from 'react-native';
-import {LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {
      deletePushToken, DisplayMessage,
      getNotificationPreference,
@@ -15,9 +15,9 @@ import {
      setNotificationPreference,
 } from '../../../components/Notifications';
 import {loadingSpinner} from '../../../components/loadingSpinner';
-import {translate} from '../../../translations/translations';
-import {refreshProfile, reloadProfile} from '../../../util/api/user';
+import {reloadProfile} from '../../../util/api/user';
 import {PermissionsPrompt} from '../../../components/PermissionsPrompt';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const Settings_NotificationOptions = () => {
      const [isLoading, setLoading] = React.useState(true);
@@ -38,6 +38,7 @@ export const Settings_NotificationOptions = () => {
      const {library} = React.useContext(LibrarySystemContext);
      const [toggled, setToggle] = React.useState(aspenToken);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
+     const {language} = React.useContext(LanguageContext);
 
      useFocusEffect(
          React.useCallback(() => {
@@ -136,7 +137,7 @@ export const Settings_NotificationOptions = () => {
          <SafeAreaView style={{flex: 1}}>
               <Box flex={1} safeArea={5}>
                    <HStack space={3} pb={5} alignItems="center" justifyContent="space-between">
-                        <Text bold>{translate('user_profile.allow_notifications')}</Text>
+                        <Text bold>{getTermFromDictionary(language, 'notifications_allow')}</Text>
                         <Switch
                             onToggle={() => {
                                  toggleSwitch();

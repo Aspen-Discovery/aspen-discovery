@@ -2,11 +2,11 @@ import { CommonActions, useNavigation } from '@react-navigation/native';
 import { AlertDialog, Button, Center, ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
 
-import { translate } from '../../translations/translations';
 import { SEARCH } from '../../util/search';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const UnsavedChangesBack = (props) => {
-     const { updateSearch, discardChanges } = props;
+     const { updateSearch, discardChanges, language } = props;
      const navigation = useNavigation();
      const [isOpen, setIsOpen] = React.useState(false);
      const onClose = () => setIsOpen(false);
@@ -44,15 +44,15 @@ export const UnsavedChangesBack = (props) => {
                </Pressable>
                <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                     <AlertDialog.Content>
-                         <AlertDialog.Header>{translate('filters.unsaved_changes')}</AlertDialog.Header>
-                         <AlertDialog.Body>{translate('filters.unsaved_changes_body_back')}</AlertDialog.Body>
+                         <AlertDialog.Header>{getTermFromDictionary(language, 'discard_changes')}</AlertDialog.Header>
+                         <AlertDialog.Body>{getTermFromDictionary(language, 'unsaved_changes_warning')}</AlertDialog.Body>
                          <AlertDialog.Footer>
                               <Button.Group space={3}>
                                    <Button colorScheme="primary" onPress={updateClose} ref={cancelRef}>
-                                        {translate('filters.update_filters')}
+                                        {getTermFromDictionary(language, 'save')}
                                    </Button>
                                    <Button colorScheme="danger" variant="ghost" onPress={forceClose}>
-                                        {translate('filters.continue_anyway')}
+                                        {getTermFromDictionary(language, 'discard')}
                                    </Button>
                               </Button.Group>
                          </AlertDialog.Footer>
@@ -63,7 +63,7 @@ export const UnsavedChangesBack = (props) => {
 };
 
 export const UnsavedChangesExit = (props) => {
-     const { updateSearch, discardChanges, prevRoute } = props;
+     const { updateSearch, discardChanges, prevRoute, language } = props;
      const navigation = useNavigation();
      const [isOpen, setIsOpen] = React.useState(false);
      const onClose = () => setIsOpen(false);
@@ -110,15 +110,15 @@ export const UnsavedChangesExit = (props) => {
                </Pressable>
                <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
                     <AlertDialog.Content>
-                         <AlertDialog.Header>{translate('filters.unsaved_changes')}</AlertDialog.Header>
-                         <AlertDialog.Body>{translate('filters.unsaved_changes_body_exit')}</AlertDialog.Body>
+                         <AlertDialog.Header>{getTermFromDictionary(language, 'discard_changes')}</AlertDialog.Header>
+                         <AlertDialog.Body>{getTermFromDictionary(language, 'unsaved_changes_warning')}</AlertDialog.Body>
                          <AlertDialog.Footer>
                               <Button.Group space={3}>
                                    <Button colorScheme="primary" onPress={updateClose} ref={cancelRef}>
-                                        {translate('filters.update_filters')}
+                                        {getTermFromDictionary(language, 'save')}
                                    </Button>
                                    <Button colorScheme="danger" variant="ghost" onPress={forceClose}>
-                                        {translate('filters.continue_anyway')}
+                                        {getTermFromDictionary(language, 'discard')}
                                    </Button>
                               </Button.Group>
                          </AlertDialog.Footer>

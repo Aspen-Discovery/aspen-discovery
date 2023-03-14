@@ -1,9 +1,7 @@
 import moment from 'moment';
-import _, {get} from 'lodash';
-import { Badge, Box, Button, Center, Icon, Pressable, Text, HStack, VStack, IconButton, Image } from 'native-base';
+import { Badge, Box, Text } from 'native-base';
 import React from 'react';
 
-import { translate } from '../translations/translations';
 import {LanguageContext, UserContext} from '../context/initialContext';
 import {getTermFromDictionary} from '../translations/TranslationService';
 
@@ -131,7 +129,7 @@ export const getBadge = (status, frozen, available, source) => {
                </Text>
           );
      } else if (available) {
-          let message = translate('overdrive.hold_ready');
+          let message = getTermFromDictionary(language, 'overdrive_hold_ready');
           if (source === 'ils') {
                message = status;
           }
@@ -178,15 +176,15 @@ export const getType = (type) => {
     const { language } = React.useContext(LanguageContext);
      if (type && type !== 'ils') {
          if(type === 'interlibrary_loan') {
-             type = 'Interlibrary Loan';
+             type = getTermFromDictionary(language, 'interlibrary_loan');
          } else if (type === 'axis360') {
-             type = 'Axis 360';
+             type = getTermFromDictionary(language, 'axis360');
          } else if (type === 'cloudlibrary') {
-             type = 'CloudLibrary';
+             type = getTermFromDictionary(language, 'cloud_library');
          } else if (type === 'hoopla') {
-             type = 'Hoopla';
+             type = getTermFromDictionary(language, 'hoopla');
          } else if (type === 'overdrive') {
-             type = 'OverDrive'
+             type = getTermFromDictionary(language, 'overdrive')
          }
 
           return (
@@ -289,7 +287,7 @@ export const getPickupLocation = (location, source) => {
      }
 };
 
-export const getPosition = (position, available, length) => {
+export const getPosition = (position, available, length, holdPosition) => {
     const { language } = React.useContext(LanguageContext);
      if (position && !available && position !== 0 && position !== '0') {
          if(length) {
@@ -299,7 +297,7 @@ export const getPosition = (position, available, length) => {
                          base: 'xs',
                          lg: 'sm',
                      }}>
-                     <Text bold>{getTermFromDictionary(language, 'hold_position')}:</Text> {translate('holds.positionWithHoldQueueLength', { position: position, queueLength: length })}
+                     <Text bold>{getTermFromDictionary(language, 'hold_position')}:</Text> {holdPosition}
                  </Text>
              );
          }

@@ -4,8 +4,7 @@ import {MaterialIcons} from "@expo/vector-icons";
 import _ from "lodash";
 
 // custom components and helper files
-import {translate} from "../translations/translations";
-import navigation from "./navigation";
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 /**
  * Catch an error and display it to the user
@@ -21,9 +20,9 @@ export function loadError(error, reloadAction) {
 		<Center flex={1}>
 			<HStack>
 				<Icon as={MaterialIcons} name="error" size="md" mt={.5} mr={1} color="error.500"/>
-				<Heading color="error.500" mb={2}>{translate('error.title')}</Heading>
+				<Heading color="error.500" mb={2}>{getTermFromDictionary('en', 'error')}</Heading>
 			</HStack>
-			<Text bold w="75%" textAlign="center">{translate('error.message')}</Text>
+			<Text bold w="75%" textAlign="center">{getTermFromDictionary('en', 'error_loading_results')}</Text>
 			{reloadAction ?
 				<Button
 					mt={5}
@@ -31,7 +30,7 @@ export function loadError(error, reloadAction) {
 					onPress={reloadAction}
 					startIcon={<Icon as={MaterialIcons} name="refresh" size={5}/>}
 				>
-					{translate('error.reload_button')}
+					{getTermFromDictionary('en', 'button_reload')}
 				</Button>
 				: null}
 			<Text fontSize="xs" w="75%" mt={5} color="muted.500" textAlign="center">ERROR: {error}</Text>
@@ -45,12 +44,12 @@ export function loadError(error, reloadAction) {
 export function badServerConnectionToast() {
 	return (
 		Toast.show({
-			title: translate('error.no_server_connection'),
-			description: translate('error.no_library_connection'),
+			title: getTermFromDictionary('en', 'error_no_server_connection'),
+			description: getTermFromDictionary('en', 'error_no_library_connection'),
 			status: "error",
 			isClosable: true,
 			duration: 5000,
-			accessibilityAnnouncement: translate('error.no_library_connection'),
+			accessibilityAnnouncement: getTermFromDictionary('en', 'error_no_library_connection'),
 			zIndex: 9999,
 			placement: "top"
 		})

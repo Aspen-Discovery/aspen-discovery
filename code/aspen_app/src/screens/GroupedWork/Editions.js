@@ -9,7 +9,6 @@ import { useQuery } from '@tanstack/react-query';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { getRecords } from '../../util/api/item';
 import { loadError } from '../../components/loadError';
-import { translate } from '../../translations/translations';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import {getStatusIndicator} from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
@@ -73,7 +72,7 @@ export const Editions = () => {
                                       <AlertDialog.Footer>
                                            <Button.Group space={3}>
                                             {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                            <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{translate('general.button_ok')}</Button>
+                                            <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{getTermFromDictionary(language, 'button_ok')}</Button>
                                        </Button.Group>
                                       </AlertDialog.Footer>
                                  </AlertDialog.Content>

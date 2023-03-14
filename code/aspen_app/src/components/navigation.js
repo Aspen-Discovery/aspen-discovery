@@ -18,13 +18,10 @@ import { enableScreens } from 'react-native-screens';
 import * as Sentry from 'sentry-expo';
 
 import Login from '../screens/Auth/Login';
-import { translate } from '../translations/translations';
-import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
-import { formatDiscoveryVersion, LIBRARY } from '../util/loadLibrary';
+import { LIBRARY } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import { checkCachedUrl } from '../util/login';
-import { popAlert, popToast } from './loadError';
 import LaunchStackNavigator from '../navigations/LaunchStackNavigator';
 import {BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider} from '../context/initialContext';
 import { SplashScreen } from '../screens/Auth/Splash';
@@ -388,7 +385,7 @@ export function App() {
 
 async function getPermissions() {
      /* temporarily disabling geolocation on Android due to a fatal bug */
-     if(Platform.OS === 'android') {
+/*      if(Platform.OS === 'android') {
           await SecureStore.setItemAsync('latitude', '0');
           await SecureStore.setItemAsync('longitude', '0');
           PATRON.coords.lat = 0;
@@ -397,39 +394,39 @@ async function getPermissions() {
                success: false,
                status: 'denied'
           };
-     } else {
-          const { status } = await Location.getForegroundPermissionsAsync();
-          if (status !== 'granted') {
-               await SecureStore.setItemAsync('latitude', '0');
-               await SecureStore.setItemAsync('longitude', '0');
-               PATRON.coords.lat = 0;
-               PATRON.coords.long = 0;
-               return {
-                    success: false,
-                    status: status
-               };
-          }
-
-          const location = await Location.getLastKnownPositionAsync({});
-
-          if (location != null) {
-               const latitude = JSON.stringify(location.coords.latitude);
-               const longitude = JSON.stringify(location.coords.longitude);
-               await SecureStore.setItemAsync('latitude', latitude);
-               await SecureStore.setItemAsync('longitude', longitude);
-               PATRON.coords.lat = latitude;
-               PATRON.coords.long = longitude;
-          } else {
-               await SecureStore.setItemAsync('latitude', '0');
-               await SecureStore.setItemAsync('longitude', '0');
-               PATRON.coords.lat = 0;
-               PATRON.coords.long = 0;
-          }
+     }  */
+     const { status } = await Location.getForegroundPermissionsAsync();
+     if (status !== 'granted') {
+          await SecureStore.setItemAsync('latitude', '0');
+          await SecureStore.setItemAsync('longitude', '0');
+          PATRON.coords.lat = 0;
+          PATRON.coords.long = 0;
           return {
-               success: true,
-               status: 'granted'
+               success: false,
+               status: status
           };
      }
+
+     const location = await Location.getLastKnownPositionAsync({});
+
+     if (location != null) {
+          const latitude = JSON.stringify(location.coords.latitude);
+          const longitude = JSON.stringify(location.coords.longitude);
+          await SecureStore.setItemAsync('latitude', latitude);
+          await SecureStore.setItemAsync('longitude', longitude);
+          PATRON.coords.lat = latitude;
+          PATRON.coords.long = longitude;
+     } else {
+          await SecureStore.setItemAsync('latitude', '0');
+          await SecureStore.setItemAsync('longitude', '0');
+          PATRON.coords.lat = 0;
+          PATRON.coords.long = 0;
+     }
+     return {
+          success: true,
+          status: 'granted'
+     };
+
 }
 
 export default Sentry.Native.wrap(App);

@@ -4,13 +4,14 @@ import React, { useState } from 'react';
 
 import { popAlert } from '../../../components/loadError';
 import { createList, getLists } from '../../../util/api/list';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { translate } from '../../../translations/translations';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { reloadProfile } from '../../../util/api/user';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 const CreateList = () => {
      const { updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const { updateLists } = React.useContext(UserContext);
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
@@ -30,25 +31,25 @@ const CreateList = () => {
      return (
           <Center>
                <Button onPress={toggle} size="sm" leftIcon={<Icon as={MaterialIcons} name="add" size="xs" mr="-1" />}>
-                    {translate('lists.create_new_list')}
+                    {getTermFromDictionary(language, 'create_new_list')}
                </Button>
                <Modal isOpen={showModal} onClose={toggle} size="full" avoidKeyboard>
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
-                              <Heading size="md">{translate('lists.create_new_list')}</Heading>
+                              <Heading size="md">{getTermFromDictionary(language, 'create_new_list')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
                               <FormControl pb={5}>
-                                   <FormControl.Label>{translate('general.title')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'title')}</FormControl.Label>
                                    <Input id="title" onChangeText={(text) => setTitle(text)} returnKeyType="next" defaultValue={title} />
                               </FormControl>
                               <FormControl pb={5}>
-                                   <FormControl.Label>{translate('general.description')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'description')}</FormControl.Label>
                                    <TextArea id="description" onChangeText={(text) => setDescription(text)} defaultValue={description} returnKeyType="next" />
                               </FormControl>
                               <FormControl>
-                                   <FormControl.Label>{translate('general.access')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'access')}</FormControl.Label>
                                    <Radio.Group
                                         name="access"
                                         value={isPublic}
@@ -57,10 +58,10 @@ const CreateList = () => {
                                         }}>
                                         <Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px">
                                              <Radio value={false} my={1}>
-                                                  {translate('general.private')}
+                                                  {getTermFromDictionary(language, 'private')}
                                              </Radio>
                                              <Radio value={true} my={1}>
-                                                  {translate('general.public')}
+                                                  {getTermFromDictionary(language, 'public')}
                                              </Radio>
                                         </Stack>
                                    </Radio.Group>
@@ -69,11 +70,11 @@ const CreateList = () => {
                          <Modal.Footer>
                               <Button.Group>
                                    <Button variant="outline" onPress={toggle}>
-                                        {translate('general.cancel')}
+                                        {getTermFromDictionary(language, 'close_window')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText={translate('lists.creating_list')}
+                                        isLoadingText={getTermFromDictionary(language, 'creating_list', true)}
                                         onPress={async () => {
                                              setLoading(true);
                                              await createList(title, description, isPublic, library.baseUrl).then(async (res) => {
@@ -88,10 +89,10 @@ const CreateList = () => {
                                                        updateLists(result);
                                                   });
                                                   toggle();
-                                                  popAlert(translate('lists.list_created'), res.message, status);
+                                                  popAlert(getTermFromDictionary(language, 'list_created'), res.message, status);
                                              });
                                         }}>
-                                        {translate('lists.create_list')}
+                                        {getTermFromDictionary(language, 'create_list')}
                                    </Button>
                               </Button.Group>
                          </Modal.Footer>
