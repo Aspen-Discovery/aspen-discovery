@@ -79,7 +79,8 @@ class UserAPI extends Action {
 					'optOutOfReadingHistory',
 					'deleteAllFromReadingHistory',
 					'deleteSelectedFromReadingHistory',
-					'getReadingHistorySortOptions'
+					'getReadingHistorySortOptions',
+					'confirmHold'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
