@@ -8,14 +8,13 @@ import {SelectVolume} from './SelectVolume';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const SelectPickupLocation = (props) => {
-     const { id, action, title, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
+     const { id, action, title, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, language } = props;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
      const [volume, setVolume] = React.useState(null);
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { updateHolds } = React.useContext(HoldsContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { language } = React.useContext(LanguageContext);
 
      const isPlacingHold = action.includes('hold');
 

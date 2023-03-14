@@ -9,7 +9,6 @@ import { Rating } from 'react-native-elements';
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { translate } from '../../translations/translations';
 import AddToList from '../Search/AddToList';
 import {navigateStack, startSearch} from '../../helpers/RootNavigator';
 import {GroupedWorkContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
@@ -27,7 +26,7 @@ import {GetOverDriveSettings} from './OverDriveSettings';
 import {getProfile, PATRON} from '../../util/loadPatron';
 import Manifestation from './Manifestation';
 import {decodeHTML} from '../../util/apiAuth';
-import {getTermFromDictionary, getVariableTermFromDictionary} from '../../translations/TranslationService';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -236,6 +235,7 @@ const getFormats = (formats) => {
  showOverDriveSettings: false,
  user: this.props.route.params?.userContext ?? [],
  library: this.props.route.params?.libraryContext ?? [],
+     userLanguage: this.props.route.params?.language ?? 'en'
  };
  this.locations = [];
  this._isMounted = false;
@@ -303,12 +303,13 @@ const getFormats = (formats) => {
  const { navigation, route } = this.props;
  const givenItem = route.params?.id ?? 'null';
  const libraryUrl = route.params?.url ?? 'unknown';
+ const language = route.params?.language ?? 'en';
 
  await getGroupedWork221200(libraryUrl, givenItem).then((response) => {
  if (response === 'TIMEOUT_ERROR') {
  this.setState({
  hasError: true,
- error: translate('error.timeout'),
+ error: getTermFromDictionary(language, 'error_timeout'),
  });
  } else {
  try {
@@ -328,7 +329,7 @@ const getFormats = (formats) => {
  } catch (error) {
  this.setState({
  hasError: true,
- error: translate('error.no_data'),
+ error: getTermFromDictionary(language, 'error_no_data'),
  });
  }
  }
@@ -437,7 +438,7 @@ const getFormats = (formats) => {
  promptItemId: response.itemId,
  promptSource: response.source,
  promptPatronId: response.patronId,
- promptTitle: translate('holds.hold_options'),
+ promptTitle: getTermFromDictionary(this.state.userLanguage, 'hold_options'),
  });
  }
  };
@@ -604,7 +605,7 @@ const getFormats = (formats) => {
  bold
  mt={3}
  mb={1}>
- {translate('grouped_work.format')}
+ {getTermFromDictionary(this.state.userLanguage, 'format')}
  </Text>
  {this.state.formats ? (
  <Button.Group
@@ -624,7 +625,7 @@ const getFormats = (formats) => {
  bold
  mt={3}
  mb={1}>
- {translate('grouped_work.language')}
+ {getTermFromDictionary(this.state.userLanguage, 'language')}
  </Text>
  {this.state.languages && discoveryVersion <= '22.05.00' ? <Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
 
@@ -662,6 +663,7 @@ const getFormats = (formats) => {
  updateProfile={this.updateProfile}
  openHolds={this.openHolds}
  openCheckouts={this.openCheckouts}
+ userLanguage='en'
  />
  ) : null}
 
@@ -702,7 +704,7 @@ const getFormats = (formats) => {
  </Button>
  ) : null}
  <Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
- {translate('general.button_ok')}
+ {getTermFromDictionary(this.state.userLanguage, 'button_ok')}
  </Button>
  </AlertDialog.Footer>
  </AlertDialog.Content>
@@ -721,6 +723,7 @@ const getFormats = (formats) => {
  showOverDriveSettings={this.state.showOverDriveSettings}
  handleOverDriveSettings={this.handleOverDriveSettings}
  libraryUrl={library.baseUrl}
+ language='en'
  />
  </ScrollView>
  </SafeAreaView>

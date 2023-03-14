@@ -2,12 +2,11 @@ import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native';
 import {Button, Center, Modal, HStack, Text, Icon, FlatList, Heading} from 'native-base';
 import {MaterialIcons} from '@expo/vector-icons';
-import {translate} from '../../translations/translations';
 import {getItemDetails} from '../../util/recordActions';
 import _ from 'lodash';
-import {LibrarySystemContext} from '../../context/initialContext';
-import {getManifestation, getRecords} from '../../util/api/item';
-import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
+import {useQueryClient} from '@tanstack/react-query';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 /*const CopyDetails = (props) => {
  const { library } = React.useContext(LibrarySystemContext);
@@ -20,6 +19,7 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 
 const ShowItemDetails = (props) => {
      const {library} = React.useContext(LibrarySystemContext);
+     const {language} = React.useContext(LanguageContext);
      const queryClient = useQueryClient();
      const {
           data,
@@ -84,7 +84,7 @@ const ShowItemDetails = (props) => {
                             variant="ghost"
                             size="sm"
                             leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1"/>}>
-                             {translate('copy_details.where_is_it')}
+                             {getTermFromDictionary(language, 'where_is_it')}
                         </Button>
 
                         <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full">
@@ -93,7 +93,7 @@ const ShowItemDetails = (props) => {
                                   <Modal.Header>
                                        <HStack>
                                             <Icon as={MaterialIcons} name="location-pin" size="xs" mt=".5" pr={5}/>
-                                            <Heading size="sm">{translate('copy_details.where_is_it')}</Heading>
+                                            <Heading size="sm">{getTermFromDictionary(language, 'where_is_it')}</Heading>
                                        </HStack>
                                   </Modal.Header>
                                   <Modal.Body>
@@ -109,7 +109,7 @@ const ShowItemDetails = (props) => {
               <SafeAreaView>
                    <Center>
                         <Button onPress={() => setShowModal(true)} colorScheme="tertiary" variant="ghost" size="sm" leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1"/>}>
-                             {translate('copy_details.where_is_it')}
+                            {getTermFromDictionary(language, 'where_is_it')}
                         </Button>
 
                         <Modal isOpen={showModal} onClose={() => setShowModal(false)} size="full">
@@ -118,7 +118,7 @@ const ShowItemDetails = (props) => {
                                   <Modal.Header>
                                        <HStack>
                                             <Icon as={MaterialIcons} name="location-pin" size="xs" mt=".5" pr={5}/>
-                                            <Heading size="sm">{translate('copy_details.where_is_it')}</Heading>
+                                            <Heading size="sm">{getTermFromDictionary(language, 'where_is_it')}</Heading>
                                        </HStack>
                                   </Modal.Header>
                                   <Modal.Body>
@@ -133,16 +133,17 @@ const ShowItemDetails = (props) => {
 };
 
 const renderHeader = () => {
+    const {language} = React.useContext(LanguageContext);
      return (
          <HStack space={4} justifyContent="space-between" pb={2}>
               <Text bold w="30%" fontSize="xs">
-                   {translate('copy_details.available_copies')}
+                  {getTermFromDictionary(language, 'available_copies')}
               </Text>
               <Text bold w="30%" fontSize="xs">
-                   {translate('copy_details.location')}
+                  {getTermFromDictionary(language, 'location')}
               </Text>
               <Text bold w="30%" fontSize="xs">
-                   {translate('copy_details.call_num')}
+                  {getTermFromDictionary(language, 'call_num')}
               </Text>
          </HStack>
      );

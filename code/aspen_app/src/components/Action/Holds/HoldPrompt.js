@@ -93,6 +93,8 @@ export const HoldPrompt = (props) => {
 
 	const [location, setLocation] = React.useState(pickupLocation);
 
+	const selectPickupLocation = getTermFromDictionary(language ?? 'en', 'select_pickup_location');
+
 	return (
 		<>
 			<Button onPress={() => setShowModal(true)}>{title}</Button>
@@ -138,7 +140,7 @@ export const HoldPrompt = (props) => {
 								locations={locations}
 								location={location}
 								setLocation={setLocation}
-								language={language}
+								text={selectPickupLocation}
 							/>
 						) : null}
 						{_.size(accounts) > 0 ? (
