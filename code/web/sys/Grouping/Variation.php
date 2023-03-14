@@ -276,8 +276,10 @@ class Grouping_Variation {
 		if ($this->_itemsDisplayedByDefault == null) {
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemsDisplayedByDefault = [];
-			foreach ($this->_records as $record) {
-				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $record->getItemsDisplayedByDefault());
+			if ($this->_records != null) {
+				foreach ($this->_records as $record) {
+					$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $record->getItemsDisplayedByDefault());
+				}
 			}
 			ksort($itemsDisplayedByDefault);
 			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;

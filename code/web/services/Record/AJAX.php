@@ -258,7 +258,7 @@ class Record_AJAX extends Action {
 				$format = $marcRecord->getPrimaryFormat();
 			}
 
-			if (isset($_REQUEST['volume'])) {
+			if (!empty($_REQUEST['volume'])) {
 				//If we have a volume, we always place a volume hold
 				$holdType = 'volume';
 			} else {
