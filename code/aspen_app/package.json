@@ -34,7 +34,7 @@
     "chroma-js": "~2.3.0",
     "compare-versions": "^6.0.0-rc.1",
     "depcheck": "^1.4.3",
-    "expo": "^48.0.0",
+    "expo": "~48.0.6",
     "expo-application": "~5.1.1",
     "expo-brightness": "~11.2.1",
     "expo-cached-image": "47.0.0",
