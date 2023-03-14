@@ -79,7 +79,7 @@
 
 	{include file="GroupedWork/relatedLists.tpl" isSearchResults=false}
 
-	{include file="GroupedWork/readingHistoryIndicator.tpl"}
+	{include file="GroupedWork/readingHistoryIndicator.tpl" isSearchResults=false}
 
 	<div class="row">
 		<div class="result-label col-sm-4 col-xs-12">{translate text='Status' isPublicFacing=true}</div>

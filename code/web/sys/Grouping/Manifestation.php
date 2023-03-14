@@ -339,8 +339,10 @@ class Grouping_Manifestation {
 		if ($this->_itemsDisplayedByDefault == null) {
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemsDisplayedByDefault = [];
-			foreach ($this->_variations as $variation) {
-				$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault());
+			if ($this->_variations != null) {
+				foreach ($this->_variations as $variation) {
+					$itemsDisplayedByDefault = mergeItemSummary($itemsDisplayedByDefault, $variation->getItemsDisplayedByDefault());
+				}
 			}
 			ksort($itemsDisplayedByDefault);
 			$this->_itemsDisplayedByDefault = $itemsDisplayedByDefault;
