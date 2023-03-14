@@ -4,6 +4,7 @@
   "app_version": "Version",
   "app_build": "Build",
   "app_name": "Aspen LiDA",
+  "aspen_discovery": "Aspen Discovery",
   "nav_discover": "Discover",
   "nav_search": "Search",
   "nav_card": "Card",
@@ -260,6 +261,7 @@
   "last_updated_on": "Last updated on",
   "sort_by_with_sort": "Sort By %1%",
   "no_matches_for_language_and_format": "No matches found for this title in %1% for %2% format",
+  "no_matches_grouped_work": "No matches found for this title in that format and language",
   "num_saved_searches_with_updates": "%1% Updated",
   "library_card_expires_on": "Expires %1%",
   "checkouts_overdue_summary": "%1% Overdue",
@@ -277,8 +279,8 @@
   "hold_email_notification": "Yes, by email to %1%",
   "items": "items",
   "years": "years",
-  "num_search_result": "%1% result",
-  "num_search_results": "%1% results",
+  "result": "result",
+  "results": "results",
   "accounts_have_fines": "Your accounts have %1% in fines",
   "page_of_page": "Page %1% of %2%",
   "status_available_online": "Available Online",
@@ -315,5 +317,10 @@
   "checking_out": "Checking out",
   "all": "All",
   "accessing": "Accessing",
-  "returning": "Returning"
+  "returning": "Returning",
+  "interlibrary_loan": "Interlibrary Loan",
+  "axis360": "Axis 360",
+  "cloud_library": "cloudLibrary",
+  "hoopla": "Hoopla",
+  "overdrive": "OverDrive"
 }
