@@ -663,7 +663,7 @@ class Grouping_Record {
 	/**
 	 * @return Grouping_Item[]
 	 */
-	public function getItems() : array {
+	public function getItems() : ?array {
 		return $this->_items;
 	}
 
