@@ -1723,6 +1723,8 @@ class UserAPI extends Action {
 							'title' => $result['api']['title'],
 							'message' => $responseMessage,
 							'action' => $action,
+							'confirmationNeeded' => isset($result['api']['confirmationNeeded']) ?? false,
+							'confirmationId' => isset($result['api']['confirmationId']) ?? null,
 						];
 					} else {
 						if (isset($_REQUEST['volumeId']) && $holdType == 'volume') {
@@ -1735,6 +1737,8 @@ class UserAPI extends Action {
 								'title' => $result['api']['title'],
 								'message' => $responseMessage,
 								'action' => $action,
+								'confirmationNeeded' => isset($result['api']['confirmationNeeded']) ?? false,
+								'confirmationId' => isset($result['api']['confirmationId']) ?? null,
 							];
 						} else {
 							//Make sure that there are not volumes available
@@ -1760,6 +1764,8 @@ class UserAPI extends Action {
 								'title' => $result['api']['title'],
 								'message' => $responseMessage,
 								'action' => $action,
+								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+								'confirmationId' => $result['api']['confirmationId'] ?? null,
 							];
 						}
 					}
