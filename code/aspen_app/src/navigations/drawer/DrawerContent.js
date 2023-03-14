@@ -14,7 +14,6 @@ import { showILSMessage } from '../../components/Notifications';
 import { AuthContext } from '../../components/navigation';
 import { UseColorMode } from '../../themes/theme';
 import {getTermFromDictionary, getTranslationsWithValues, LanguageSwitcher} from '../../translations/TranslationService';
-import { translate } from '../../translations/translations';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { reloadProfile } from '../../util/api/user';
 import { getILSMessages } from '../../util/loadPatron';
@@ -181,13 +180,13 @@ const UserProfileOverview = () => {
      } else if (!_.isUndefined(library.favicon)) {
           icon = library.favicon;
      } else {
-          icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Contants.manifest.ios.icon;
+          icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Constants.manifest.ios.icon;
      }
 
      return (
           <Box px="4">
                <HStack space={3} alignItems="center">
-                    <Image source={{ uri: icon }} fallbackSource={require('../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} rounded="8" />
+                    <Image source={{ uri: icon }} fallbackSource={require('../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} rounded="8" />
                     <Box>
                          {user && user.displayName ? (
                               <Text bold fontSize="14">
