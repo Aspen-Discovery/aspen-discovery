@@ -233,16 +233,6 @@ class User extends DataObject {
 			return $this->getRoles();
 		} elseif ($name == 'linkedUsers') {
 			return $this->getLinkedUsers();
-		} elseif ($name == 'materialsRequestReplyToAddress') {
-			if (!isset($this->materialsRequestReplyToAddress)) {
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestReplyToAddress;
-		} elseif ($name == 'materialsRequestEmailSignature') {
-			if (!isset($this->materialsRequestEmailSignature)) {
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestEmailSignature;
 		} else {
 			return $this->_data[$name] ?? null;
 		}
