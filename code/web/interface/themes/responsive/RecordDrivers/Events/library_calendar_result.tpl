@@ -27,12 +27,26 @@
 			</div>
 
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
-				<div class="result-value col-tn-8 notranslate">
+				<div class="result-label col-tn-2">{translate text="Date" isPublicFacing=true} </div>
+				<div class="result-value col-tn-6 notranslate">
 					{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
-                    {if !empty($isCancelled)}
+					{if !empty($isCancelled)}
 						&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
-                    {/if}
+					{/if}
+				</div>
+
+				{* Register Button *}
+				<div class="result-value col-tn-4">
+
+					{if $recordDriver->isRegistrationRequired()}
+						<div class="btn-toolbar">
+							<div class="btn-group btn-group-vertical btn-block">
+								<a class="btn btn-sm btn-action btn-wrap" href="{$recordDriver->getExternalUrl()}" target="_blank">
+									{translate text="Register on LibCal" isPublicFacing=true}
+								</a>
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
 
