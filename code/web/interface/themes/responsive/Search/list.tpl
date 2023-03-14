@@ -101,22 +101,22 @@
 		<div id='dplaSearchResultsPlaceholder'></div>
 	{/if}
 
-	{if $loggedIn && $user->canSuggestMaterials()}
-		{if $materialRequestType == 1 && $displayMaterialsRequest}
+	{if $displayMaterialsRequest}
+		{if $materialRequestType == 1}
 			<div class="materialsRequestLink">
 				<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
 				<p>
 					{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="/MaterialsRequest/NewRequest" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Submit Request' isPublicFacing=true}</a>
 				</p>
 			</div>
-		{elseif $materialRequestType == 2 && $displayMaterialsRequest}
+		{elseif $materialRequestType == 2}
 			<div class="materialsRequestLink">
 				<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
 				<p>
 					{translate text="Can't find what you are looking for? Try our Materials Request Service." isPublicFacing=true} <a href="/MaterialsRequest/NewRequestIls" class="btn btn-sm btn-info" onclick="return AspenDiscovery.Account.followLinkIfLoggedIn(this);">{translate text='Submit Request' isPublicFacing=true}</a>
 				</p>
 			</div>
-		{elseif $materialRequestType == 3 && $displayMaterialsRequest}
+		{elseif $materialRequestType == 3}
 			<div class="materialsRequestLink">
 				<h2>{translate text="Didn't find it?" isPublicFacing=true}</h2>
 				<p>
