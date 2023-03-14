@@ -70,7 +70,8 @@ class UserAPI extends Action {
 					'optOutOfReadingHistory',
 					'deleteAllFromReadingHistory',
 					'deleteSelectedFromReadingHistory',
-					'getReadingHistorySortOptions'
+					'getReadingHistorySortOptions',
+					'confirmHold'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -1887,6 +1888,32 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'message' => 'Patron is not connected to an ILS.',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	function confirmHold(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$confirmationId = $_REQUEST['confirmationId'] ?? null;
+			$recordId = $_REQUEST['id'] ?? null;
+			if($confirmationId && $recordId) {
+				$result = $user->confirmHold($recordId, $confirmationId);
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'You must provide a record and confirmation id to confirm this hold.',
 				];
 			}
 		} else {
