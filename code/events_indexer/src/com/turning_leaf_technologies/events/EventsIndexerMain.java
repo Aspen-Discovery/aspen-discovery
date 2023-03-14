@@ -81,6 +81,20 @@ public class EventsIndexerMain {
 					indexer.indexEvents();
 				}
 
+				// Communico
+				getEventsSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from communico_settings");
+				eventsSitesRS = getEventsSitesToIndexStmt.executeQuery();
+				while (eventsSitesRS.next()) {
+					CommunicoIndexer indexer = new CommunicoIndexer(
+							eventsSitesRS.getLong("id"),
+							eventsSitesRS.getString("name"),
+							eventsSitesRS.getString("baseUrl"),
+							eventsSitesRS.getString("clientId"),
+							eventsSitesRS.getString("clientSecret"),
+							solrUpdateServer, aspenConn, logger);
+					indexer.indexEvents();
+				}
+
 					//Index events from other source here
 			} catch (SQLException e) {
 				logger.error("Error indexing events", e);
