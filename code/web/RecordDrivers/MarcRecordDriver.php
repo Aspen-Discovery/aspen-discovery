@@ -1035,9 +1035,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			if (isset($interface)) {
 				$allItems = $relatedRecord->getItems();
 				$relatedUrls = [];
-				foreach ($allItems as $item) {
-					if ($item->variationId == $variationId || $variationId == 'any') {
-						$relatedUrls = array_merge($relatedUrls, $item->getRelatedUrls());
+				if ($allItems != null) {
+					foreach ($allItems as $item) {
+						if ($item->variationId == $variationId || $variationId == 'any') {
+							$relatedUrls = array_merge($relatedUrls, $item->getRelatedUrls());
+						}
 					}
 				}
 
@@ -1093,25 +1095,27 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 							//Check to see if we have any items that are owned by any of the records in any of the groups.
 							//If we do, we don't need to use VDX
-							foreach ($relatedRecord->getItems() as $itemDetail) {
-								if ($itemDetail->variationId == $variationId || $variationId == 'any') {
-									//Only check holdable items
-									if ($itemDetail->holdable) {
-										//The patron's home location is always valid!
-										if ($itemDetail->locationCode == $homeLocation->code) {
-											$useVdxForRecord = false;
-											break;
-										}
-
-										foreach ($vdxGroups as $vdxGroup) {
-											if (in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+							if ($relatedRecord->getItems() != null) {
+								foreach ($relatedRecord->getItems() as $itemDetail) {
+									if ($itemDetail->variationId == $variationId || $variationId == 'any') {
+										//Only check holdable items
+										if ($itemDetail->holdable) {
+											//The patron's home location is always valid!
+											if ($itemDetail->locationCode == $homeLocation->code) {
 												$useVdxForRecord = false;
 												break;
 											}
+
+											foreach ($vdxGroups as $vdxGroup) {
+												if (in_array($itemDetail->locationCode, $vdxGroup->getLocationCodes())) {
+													$useVdxForRecord = false;
+													break;
+												}
+											}
 										}
-									}
-									if (!$useVdxForRecord) {
-										break;
+										if (!$useVdxForRecord) {
+											break;
+										}
 									}
 								}
 							}
@@ -1125,16 +1129,18 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						//Check the items to see which volumes are holdable
 						$hasItemsWithoutVolumes = false;
 						$holdableVolumes = [];
-						foreach ($relatedRecord->getItems() as $itemDetail) {
-							if ($itemDetail->variationId == $variationId || $variationId == 'any') {
-								if ($itemDetail->holdable) {
-									if (!empty($itemDetail->volumeId)) {
-										$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = [
-											'volumeName' => $itemDetail->volume,
-											'volumeId' => $itemDetail->volumeId,
-										];
-									} else {
-										$hasItemsWithoutVolumes = true;
+						if ($relatedRecord->getItems() != null) {
+							foreach ($relatedRecord->getItems() as $itemDetail) {
+								if ($itemDetail->variationId == $variationId || $variationId == 'any') {
+									if ($itemDetail->holdable) {
+										if (!empty($itemDetail->volumeId)) {
+											$holdableVolumes[str_pad($itemDetail->volumeOrder, 10, '0', STR_PAD_LEFT) . $itemDetail->volumeId] = [
+												'volumeName' => $itemDetail->volume,
+												'volumeId' => $itemDetail->volumeId,
+											];
+										} else {
+											$hasItemsWithoutVolumes = true;
+										}
 									}
 								}
 							}

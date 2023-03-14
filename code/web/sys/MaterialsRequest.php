@@ -229,11 +229,13 @@ class MaterialsRequest extends DataObject {
 					require_once ROOT_DIR . '/sys/Account/User.php';
 					$staffSettings = new User();
 					$staffSettings->id = $this->assignedTo;
-					if (!empty($staffSettings->materialsRequestReplyToAddress)) {
-						$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
-					}
-					if (!empty($staffSettings->materialsRequestEmailSignature)) {
-						$emailSignature = $staffSettings->materialsRequestEmailSignature;
+					if ($staffSettings->find(true)) {
+						if (!empty($staffSettings->materialsRequestReplyToAddress)) {
+							$replyToAddress = $staffSettings->materialsRequestReplyToAddress;
+						}
+						if (!empty($staffSettings->materialsRequestEmailSignature)) {
+							$emailSignature = $staffSettings->materialsRequestEmailSignature;
+						}
 					}
 				}
 
