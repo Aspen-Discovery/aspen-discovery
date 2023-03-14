@@ -15,8 +15,7 @@ import {
      setNotificationPreference,
 } from '../../../components/Notifications';
 import {loadingSpinner} from '../../../components/loadingSpinner';
-import {translate} from '../../../translations/translations';
-import {refreshProfile, reloadProfile} from '../../../util/api/user';
+import {reloadProfile} from '../../../util/api/user';
 import {PermissionsPrompt} from '../../../components/PermissionsPrompt';
 import {getTermFromDictionary} from '../../../translations/TranslationService';
 

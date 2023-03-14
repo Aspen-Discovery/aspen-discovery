@@ -1,7 +1,6 @@
 import { FormControl, Select, CheckIcon, Radio } from 'native-base';
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { translate } from '../../translations/translations';
 import {LibrarySystemContext} from '../../context/initialContext';
 import {getVolumes} from '../../util/api/item';
 import {loadingSpinner} from '../../components/loadingSpinner';

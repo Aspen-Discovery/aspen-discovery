@@ -10,7 +10,6 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
 import { getHeaders } from '../../util/apiAuth';
 import { GLOBALS, LOGIN_DATA } from '../../util/globals';
 import { makeGreenhouseRequestAll, makeGreenhouseRequestNearby } from '../../util/login';

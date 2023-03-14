@@ -1,5 +1,4 @@
 import Constants from 'expo-constants';
-import { translate } from '../../translations/translations';
 import {Image, View} from 'react-native';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 

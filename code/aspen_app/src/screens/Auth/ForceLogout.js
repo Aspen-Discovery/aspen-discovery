@@ -2,7 +2,6 @@ import { AlertDialog, Button, Center } from 'native-base';
 import React from 'react';
 
 import {AuthContext} from '../../components/navigation';
-import {translate} from '../../translations/translations';
 import {LanguageContext} from '../../context/initialContext';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 

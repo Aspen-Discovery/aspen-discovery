@@ -8,9 +8,6 @@ import { showLocation } from 'react-native-map-link';
 import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { userContext } from '../../context/user';
-import { translate } from '../../translations/translations';
 import HoursAndLocation from './HoursAndLocation';
 import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { PATRON } from '../../util/loadPatron';

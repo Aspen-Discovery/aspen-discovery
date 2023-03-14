@@ -18,13 +18,10 @@ import { enableScreens } from 'react-native-screens';
 import * as Sentry from 'sentry-expo';
 
 import Login from '../screens/Auth/Login';
-import { translate } from '../translations/translations';
-import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
-import { formatDiscoveryVersion, LIBRARY } from '../util/loadLibrary';
+import { LIBRARY } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import { checkCachedUrl } from '../util/login';
-import { popAlert, popToast } from './loadError';
 import LaunchStackNavigator from '../navigations/LaunchStackNavigator';
 import {BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider} from '../context/initialContext';
 import { SplashScreen } from '../screens/Auth/Splash';

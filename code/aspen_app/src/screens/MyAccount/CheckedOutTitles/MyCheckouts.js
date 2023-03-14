@@ -8,7 +8,6 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { translate } from '../../../translations/translations';
 import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
 import {CheckoutsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {getPatronCheckedOutItems, refreshProfile, reloadProfile} from '../../../util/api/user';

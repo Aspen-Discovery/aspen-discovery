@@ -7,9 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { userContext } from '../../../context/user';
-import { translate } from '../../../translations/translations';
-import { getSavedSearchTitles } from '../../../util/loadPatron';
 import AddToList from '../../Search/AddToList';
 import {LanguageContext, LibrarySystemContext} from '../../../context/initialContext';
 import { navigateStack } from '../../../helpers/RootNavigator';

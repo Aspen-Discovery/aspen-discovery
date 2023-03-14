@@ -1,6 +1,5 @@
 import { VStack, Image, Center, Spinner } from 'native-base';
 import Constants from 'expo-constants';
-import { translate } from '../../translations/translations';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const splashImage = Constants.manifest2?.extra?.expoClient?.extra?.loginLogo ?? Constants.manifest.extra.loginLogo;

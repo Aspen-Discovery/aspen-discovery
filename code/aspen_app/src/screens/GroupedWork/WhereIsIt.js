@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import {getManifestation, getRelatedRecord} from '../../util/api/item';
 import { loadError } from '../../components/loadError';
-import { translate } from '../../translations/translations';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const WhereIsIt = () => {

@@ -10,7 +10,6 @@ import { SafeAreaView } from 'react-native';
 import { deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { userContext } from '../../../context/user';
-import { translate } from '../../../translations/translations';
 import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export default class Settings_Notifications extends Component {

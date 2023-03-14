@@ -3,7 +3,6 @@ import _ from 'lodash';
 import { Button, HStack, Icon, Text, View, Pressable, FlatList } from 'native-base';
 import React from 'react';
 
-import { translate } from '../../translations/translations';
 import { LibrarySystemContext } from '../../context/initialContext';
 import { SafeAreaView } from 'react-native';
 import {getTermFromDictionary} from '../../translations/TranslationService';

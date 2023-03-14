@@ -6,7 +6,6 @@ import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
 import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
