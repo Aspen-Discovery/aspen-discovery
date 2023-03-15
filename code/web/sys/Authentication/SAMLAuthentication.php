@@ -85,7 +85,7 @@ class SAMLAuthentication extends Action {
 					'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 					'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
 				],
-				'contactPerson' => [
+				/*'contactPerson' => [
 					'technical' => [
 						'givenName' => 'Aspen Discovery',
 						'emailAddress' => $technicalContactEmail
@@ -101,7 +101,7 @@ class SAMLAuthentication extends Action {
 						'displayname' => $library->displayName,
 						'url' => $configArray['Site']['url']
 					],
-				]
+				]*/
 			];
 
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
