@@ -79,7 +79,8 @@ class UserAPI extends Action {
 					'optOutOfReadingHistory',
 					'deleteAllFromReadingHistory',
 					'deleteSelectedFromReadingHistory',
-					'getReadingHistorySortOptions'
+					'getReadingHistorySortOptions',
+					'confirmHold'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -1723,6 +1724,8 @@ class UserAPI extends Action {
 							'title' => $result['api']['title'],
 							'message' => $responseMessage,
 							'action' => $action,
+							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+							'confirmationId' => $result['api']['confirmationId'] ?? null,
 						];
 					} else {
 						if (isset($_REQUEST['volumeId']) && $holdType == 'volume') {
@@ -1735,6 +1738,8 @@ class UserAPI extends Action {
 								'title' => $result['api']['title'],
 								'message' => $responseMessage,
 								'action' => $action,
+								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+								'confirmationId' => $result['api']['confirmationId'] ?? null,
 							];
 						} else {
 							//Make sure that there are not volumes available
@@ -1760,6 +1765,8 @@ class UserAPI extends Action {
 								'title' => $result['api']['title'],
 								'message' => $responseMessage,
 								'action' => $action,
+								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+								'confirmationId' => $result['api']['confirmationId'] ?? null,
 							];
 						}
 					}
@@ -1917,6 +1924,32 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'message' => 'Patron is not connected to an ILS.',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	function confirmHold(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$confirmationId = $_REQUEST['confirmationId'] ?? null;
+			$recordId = $_REQUEST['id'] ?? null;
+			if($confirmationId && $recordId) {
+				$result = $user->confirmHold($recordId, $confirmationId);
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+				];
+			} else {
+				return [
+					'success' => false,
+					'message' => 'You must provide a record and confirmation id to confirm this hold.',
 				];
 			}
 		} else {
@@ -4117,6 +4150,7 @@ class UserAPI extends Action {
 	 * @return bool|User
 	 */
 	protected function getUserForApiCall() {
+		$user = false;
 		if ($this->getLiDAVersion() === "v22.04.00") {
 			[
 				$username,
@@ -4137,18 +4171,22 @@ class UserAPI extends Action {
 			if (!$user->find(true)) {
 				$user = false;
 			}
-		} elseif (isset($_REQUEST['id'])) {
+		} elseif (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) && $_REQUEST['id'] != 0) {
 			$user = new User();
 			$user->id = $_REQUEST['id'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
-		} else {
+		}
+		if ($user === false) {
 			[
 				$username,
 				$password,
 			] = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
+		}
+		if ($user !== false && $user->source == 'admin') {
+			return false;
 		}
 		return $user;
 	}
