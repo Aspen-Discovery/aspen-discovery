@@ -109,6 +109,11 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getFullDescription() {
+		$description = $this->getEventObject()->getDecodedData();
+		return $description->description;
+	}
+
 	/**
 	 * Return the unique identifier of this record within the Solr index;
 	 * useful for retrieving additional information (like tags and user

@@ -203,9 +203,13 @@ class CommunicoIndexer {
 						solrDocument.addField("event_month", eventMonths);
 						solrDocument.addField("event_year", eventYears);
 
-						//Important info is kept in subtitle, concat main title and subtitle to keep the important info
-						String fullTitle = curEvent.getString("title") + ": " + curEvent.getString("subTitle");
-						solrDocument.addField("title", fullTitle);
+						if (curEvent.getString("subTitle").isEmpty() || curEvent.isNull("subTitle")){
+							solrDocument.addField("title", curEvent.getString("title"));
+						}else {
+							//Important info is kept in subtitle, concat main title and subtitle to keep the important info
+							String fullTitle = curEvent.getString("title") + ": " + curEvent.getString("subTitle");
+							solrDocument.addField("title", fullTitle);
+						}
 
 						solrDocument.addField("branch", curEvent.getString("locationName"));
 
@@ -224,7 +228,7 @@ class CommunicoIndexer {
 
 						solrDocument.addField("age_group", getNameStringsForKeyCommunico(curEvent, "ages"));
 						solrDocument.addField("program_type", getNameStringsForKeyCommunico(curEvent, "types"));
-						//may need this down the road: solrDocument.addField("internal_category", getNameStringsForKeyCommunico(curEvent, "searchTags"));
+						solrDocument.addField("internal_category", getNameStringsForKeyCommunico(curEvent, "searchTags"));
 
 						solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
 
