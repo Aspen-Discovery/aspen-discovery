@@ -10,12 +10,12 @@ class Authentication_SAML2 extends Action {
 		$returnTo = $configArray['Site']['url'] . '/MyAccount/Home';
 		if(isset($_GET['init'])) {
 			global $logger;
-			$logger->log('Starting SAML Authentication', Logger::LOG_ERROR);
+			$logger->log('Starting SAML Authentication', Logger::LOG_ERROR, true);
 			$auth = new SAMLAuthentication();
 			$auth->login($returnTo);
 		} elseif(isset($_GET['acs'])) {
 			global $logger;
-			$logger->log('Completing SAML Authentication', Logger::LOG_ERROR);
+			$logger->log('Completing SAML Authentication', Logger::LOG_ERROR, true);
 			try {
 				$auth = new SAMLAuthentication();
 				if (isset($_SESSION) && isset($_SESSION['AuthNRequestID'])) {
@@ -53,7 +53,7 @@ class Authentication_SAML2 extends Action {
 			}
 		} elseif(isset($_GET['metadata'])) {
 			global $logger;
-			$logger->log('Fetching SAML SP metadata', Logger::LOG_ERROR);
+			$logger->log('Fetching SAML SP metadata', Logger::LOG_ERROR, true);
 			try {
 				$auth = new SAMLAuthentication();
 				try {
