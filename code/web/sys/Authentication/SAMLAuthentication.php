@@ -1,14 +1,12 @@
 <?php /** @noinspection SpellCheckingInspection */
 
-require_once 'bootstrap.php';
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 
 require_once ROOT_DIR . '/services/Authentication/SAML/_toolkit_loader.php';
 
-class SAMLAuthentication extends Action {
+class SAMLAuthentication{
 
 	protected OneLogin_Saml2_Auth $_auth;
 	protected OneLogin_Saml2_Settings $_settings;
@@ -16,7 +14,7 @@ class SAMLAuthentication extends Action {
 	protected array $matchpoints;
 	protected SSOSetting $config;
 	protected bool $uidAsEmail = false;
-	protected bool $ilsUniqueAttribute = false;
+	protected string $ilsUniqueAttribute = '';
 	protected string $uid;
 	protected bool $isStaffUser = false;
 
@@ -26,7 +24,6 @@ class SAMLAuthentication extends Action {
 	 * @throws Exception
 	 */
 	public function __construct() {
-		parent::__construct();
 		global $configArray;
 		global $library;
 		global $logger;
@@ -38,7 +35,7 @@ class SAMLAuthentication extends Action {
 			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system
 			$this->config = clone $ssoSettings;
 
-			if($ssoSettings->ssoILSUniqueAttribute) {
+			if(!empty($ssoSettings->ssoILSUniqueAttribute)) {
 				$this->ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
 			} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
 				$this->uidAsEmail = true;
@@ -85,7 +82,7 @@ class SAMLAuthentication extends Action {
 					'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 					'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
 				],
-				'contactPerson' => [
+				/*'contactPerson' => [
 					'technical' => [
 						'givenName' => 'Aspen Discovery',
 						'emailAddress' => $technicalContactEmail
@@ -101,7 +98,7 @@ class SAMLAuthentication extends Action {
 						'displayname' => $library->displayName,
 						'url' => $configArray['Site']['url']
 					],
-				]
+				]*/
 			];
 
 			require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
@@ -119,7 +116,7 @@ class SAMLAuthentication extends Action {
 				$this->_auth = new OneLogin_Saml2_Auth($settings);
 				$this->_settings = new OneLogin_Saml2_Settings($settings, true);
 			} catch(Exception $e) {
-				$logger->log($e, Logger::LOG_ERROR);
+				$logger->log($e, Logger::LOG_ERROR, true);
 				echo($e);
 				die();
 			}
@@ -188,7 +185,7 @@ class SAMLAuthentication extends Action {
 		global $logger;
 		$attributes = $this->getAttributes();
 		if(count($attributes) == 0) {
-			$logger->log("No SAML attributes found for user", Logger::LOG_ERROR);
+			$logger->log("No SAML attributes found for user", Logger::LOG_ERROR, true);
 			return false;
 		}
 		$user = $this->setupUser($attributes);
@@ -213,9 +210,11 @@ class SAMLAuthentication extends Action {
 	}
 
 	private function validateWithILS($attributes): bool {
+		global $logger;
 		$this->setupILSUser($attributes);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		if($this->ilsUniqueAttribute) {
+		if(!empty($this->ilsUniqueAttribute)) {
+			$logger->log("Finding user by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -223,6 +222,7 @@ class SAMLAuthentication extends Action {
 				return false;
 			}
 		} elseif($this->uidAsEmail) {
+			$logger->log("Finding user by email ($this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -230,6 +230,7 @@ class SAMLAuthentication extends Action {
 				return false;
 			}
 		} else {
+			$logger->log("Finding user by barcode ($this->uid)", Logger::LOG_ERROR);
 			$_REQUEST['username'] = $this->uid;
 			$user = $catalogConnection->findNewUser($this->uid);
 		}
@@ -240,7 +241,7 @@ class SAMLAuthentication extends Action {
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		if($this->ilsUniqueAttribute) {
+		if(!empty($this->ilsUniqueAttribute)) {
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -307,7 +308,7 @@ class SAMLAuthentication extends Action {
 				}
 			}
 			$attrName = $this->config->$prop;
-			$attrArray = strlen($attrName) > 0 ? $user[$attrName] : [];
+			$attrArray = (strlen($attrName) > 0 && array_key_exists($attrName, $user)) ? $user[$attrName] : [];
 			if(isset($attrArray) && count($attrArray) == 1) {
 				if(strlen($attrArray[0]) > 0) {
 					$tmpUser[$prop] = $attrArray[0];
@@ -318,6 +319,9 @@ class SAMLAuthentication extends Action {
 				$tmpUser[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($user, $this->config) : $this->config->$propertyName;
 			}
 		}
+
+		global $logger;
+		$logger->log("Mapped User attributes: " . print_r($tmpUser, true), Logger::LOG_ERROR, true);
 
 		if($this->uidAsEmail) {
 			$this->uid = $tmpUser['ssoEmailAttr'];
@@ -368,10 +372,9 @@ class SAMLAuthentication extends Action {
 		}
 	}
 
-	private function selfRegister($attributes): bool {
+	private function selfRegister($user): bool {
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		$userAttributes = $this->setupUser($attributes);
-		$selfReg = $catalogConnection->selfRegister(true, $userAttributes);
+		$selfReg = $catalogConnection->selfRegister(true, $user);
 		if($selfReg['success'] != '1') {
 			return false;
 		}
@@ -453,11 +456,5 @@ class SAMLAuthentication extends Action {
 
 	private function getUsername() {
 		return $this->searchArray($this->_attributes, $this->matchpoints['username']);
-	}
-
-	function launch() {}
-
-	function getBreadcrumbs(): array {
-		return [];
 	}
 }

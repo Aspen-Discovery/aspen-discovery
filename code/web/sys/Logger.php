@@ -25,25 +25,27 @@ class Logger {
 		$this->logFilePath = '/var/log/' . $configArray['System']['applicationName'] . '/' . $serverName . '/messages.log';
 	}
 
-	public function log($msg, $level) {
-		try {
-			if ($level == self::LOG_DEBUG && !IPAddress::showDebuggingInformation()) {
+	public function log($msg, $level, $forceLog = false) {
+		if (!$forceLog) {
+			try {
+				if ($level == self::LOG_DEBUG && !IPAddress::showDebuggingInformation()) {
+					return;
+				}
+				if ($level == self::LOG_NOTICE && !IPAddress::showDebuggingInformation()) {
+					return;
+				}
+				if ($level == self::LOG_WARNING && !IPAddress::showDebuggingInformation()) {
+					return;
+				}
+			} catch (PDOException $e) {
+				//Logging is too early, ignore at least for now.
+			}
+			if ($level == self::LOG_ERROR && !$this->logErrors) {
 				return;
 			}
-			if ($level == self::LOG_NOTICE && !IPAddress::showDebuggingInformation()) {
+			if ($level == self::LOG_ALERT && !$this->logAlerts) {
 				return;
 			}
-			if ($level == self::LOG_WARNING && !IPAddress::showDebuggingInformation()) {
-				return;
-			}
-		} catch (PDOException $e) {
-			//Logging is too early, ignore at least for now.
-		}
-		if ($level == self::LOG_ERROR && !$this->logErrors) {
-			return;
-		}
-		if ($level == self::LOG_ALERT && !$this->logAlerts) {
-			return;
 		}
 
 		// Write the message to the log:
