@@ -9,7 +9,7 @@ import {refreshProfile} from '../../../util/api/user';
 import {HoldPrompt} from './HoldPrompt';
 
 export const PlaceHold = (props) => {
-	const { id, type, volumeInfo, title, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
+	const { id, type, volumeInfo, title, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, language } = props;
 	const { user, updateUser, accounts, locations } = React.useContext(UserContext);
 	const { library } = React.useContext(LibrarySystemContext);
 	const { location } = React.useContext(LibraryBranchContext);
@@ -32,7 +32,7 @@ export const PlaceHold = (props) => {
 	}
 
 	if(loadHoldPrompt) {
-		return <HoldPrompt id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />
+		return <HoldPrompt language={language} id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={false} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse} />
 	} else {
 		return (
 			<>
@@ -54,15 +54,27 @@ export const PlaceHold = (props) => {
 						setLoading(true);
 						await completeAction(record, type, user.id, null, null, pickupLocation, library.baseUrl, null, 'default').then(async (ilsResponse) => {
 							setResponse(ilsResponse);
-							if (ilsResponse?.success) {
-								await refreshProfile(library.baseUrl).then((result) => {
-									updateUser(result);
-								});
-							} else {
-								console.log(ilsResponse);
+							await refreshProfile(library.baseUrl).then((result) => {
+								updateUser(result);
+							});
+							if(ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded === true) {
+								let tmp = holdConfirmationResponse;
+								const obj = {
+									message: ilsResponse.message,
+									confirmationNeeded: ilsResponse.confirmationNeeded ?? false,
+									confirmationId: ilsResponse.confirmationId ?? null,
+									recordId: record ?? null
+								}
+								tmp = _.merge(obj, tmp);
+								setHoldConfirmationResponse(tmp);
 							}
+
 							setLoading(false);
-							setResponseIsOpen(true);
+							if(ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
+								setHoldConfirmationIsOpen(true)
+							} else {
+								setResponseIsOpen(true);
+							}
 						});
 					}}>
 					{title}

@@ -1,7 +1,5 @@
 import { FormControl, Select, CheckIcon } from 'native-base';
 import React from 'react';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
-import {LanguageContext} from '../../../context/initialContext';
 
 export const SelectPickupLocation = (props) => {
 	const { locations, location, setLocation } = props;
@@ -28,5 +26,3 @@ export const SelectPickupLocation = (props) => {
 		</>
 	);
 };
-
-export default SelectPickupLocation;
