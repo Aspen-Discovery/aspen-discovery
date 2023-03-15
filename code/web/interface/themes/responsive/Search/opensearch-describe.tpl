@@ -3,7 +3,7 @@
   <ShortName>{$site.title}</ShortName>
   <Description>Library Catalog Search</Description>
   <Image height="16" width="16" type="image/png">{$url}{$favicon}</Image>
-  <Contact>{$site.email}</Contact>
+  {if !empty($site.email)}<Contact>{$site.email}</Contact>{/if}
   <Url type="text/html" method="get" template="{$site.url}/Search/Results?lookfor={literal}{searchTerms}&amp;page={startPage?}{/literal}"/>
   <Url type="application/rss+xml" method="get" template="{$site.url}/Search/Results?lookfor={literal}{searchTerms}{/literal}&amp;view=rss"/>
   <Url type="application/x-suggestions+json" method="get" template="{$site.url}/Search/Suggest?lookfor={literal}{searchTerms}{/literal}&amp;format=JSON"/>
