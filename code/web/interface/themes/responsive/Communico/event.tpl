@@ -35,6 +35,7 @@
 						{translate text="View on Communico" isPublicFacing=true}
 					{/if}
 				</a>
+			<br></br>
 		</div>
 		<div class="col-sm-8">
 			{$recordDriver->getDescription()}

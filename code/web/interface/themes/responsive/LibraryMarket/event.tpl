@@ -35,6 +35,7 @@
 						{translate text="View on Library Market" isPublicFacing=true}
 					{/if}
 				</a>
+			<br></br>
 		</div>
 		<div class="col-sm-8">
 				{$recordDriver->getDescription()}
