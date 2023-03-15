@@ -210,9 +210,11 @@ class SAMLAuthentication{
 	}
 
 	private function validateWithILS($attributes): bool {
+		global $logger;
 		$this->setupILSUser($attributes);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		if($this->ilsUniqueAttribute) {
+			$logger->log("Finding user by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -220,6 +222,7 @@ class SAMLAuthentication{
 				return false;
 			}
 		} elseif($this->uidAsEmail) {
+			$logger->log("Finding user by email ($this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -227,6 +230,7 @@ class SAMLAuthentication{
 				return false;
 			}
 		} else {
+			$logger->log("Finding user by barcode ($this->uid)", Logger::LOG_ERROR);
 			$_REQUEST['username'] = $this->uid;
 			$user = $catalogConnection->findNewUser($this->uid);
 		}
