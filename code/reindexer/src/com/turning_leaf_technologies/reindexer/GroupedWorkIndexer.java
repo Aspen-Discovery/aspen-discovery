@@ -125,6 +125,7 @@ public class GroupedWorkIndexer {
 	private PreparedStatement addEContentSourceStmt;
 	private PreparedStatement getShelfLocationStmt;
 	private PreparedStatement addShelfLocationStmt;
+	private PreparedStatement getCallNumberStmt;
 	private PreparedStatement addCallNumberStmt;
 	private PreparedStatement getStatusStmt;
 	private PreparedStatement addStatusStmt;
@@ -259,7 +260,8 @@ public class GroupedWorkIndexer {
 			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_eContentSource (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelfLocation where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addShelfLocationStmt = dbConn.prepareStatement("INSERT INTO indexed_shelfLocation (shelfLocation) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_callNumber (callNumber) VALUES (?) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)", Statement.RETURN_GENERATED_KEYS);
+			getCallNumberStmt = dbConn.prepareStatement("SELECT id from indexed_callNumber where callNumber = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_callNumber (callNumber) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getStatusStmt = dbConn.prepareStatement("SELECT id from indexed_status where status = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addStatusStmt = dbConn.prepareStatement("INSERT INTO indexed_status (status) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_locationCode where locationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -1861,16 +1863,21 @@ public class GroupedWorkIndexer {
 		Long id = callNumberIds.get(callNumber);
 		if (id == null){
 			try {
-				addCallNumberStmt.setString(1, callNumber);
-				addCallNumberStmt.executeUpdate();
-				ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys();
-				if (addCallNumberRS.next()) {
-					id = addCallNumberRS.getLong(1);
-				} else {
-					logEntry.incErrors("Could not add callNumber");
-					id = -1L;
+				getCallNumberStmt.setString(1, callNumber);
+				ResultSet getCallNumberRS = getCallNumberStmt.executeQuery();
+				if (getCallNumberRS.next()){
+					id = getCallNumberRS.getLong("id");
+				}else {
+					addCallNumberStmt.setString(1, callNumber);
+					addCallNumberStmt.executeUpdate();
+					ResultSet addCallNumberRS = addCallNumberStmt.getGeneratedKeys();
+					if (addCallNumberRS.next()) {
+						id = addCallNumberRS.getLong(1);
+					} else {
+						logEntry.incErrors("Could not add callNumber");
+						id = -1L;
+					}
 				}
-				addCallNumberRS.close();
 			} catch (SQLException e) {
 				logEntry.incErrors("Error getting callNumber id", e);
 				id = -1L;
