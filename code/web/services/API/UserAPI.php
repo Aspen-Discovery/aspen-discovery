@@ -4114,6 +4114,7 @@ class UserAPI extends Action {
 	 * @return bool|User
 	 */
 	protected function getUserForApiCall() {
+		$user = false;
 		if ($this->getLiDAVersion() === "v22.04.00") {
 			[
 				$username,
@@ -4134,18 +4135,22 @@ class UserAPI extends Action {
 			if (!$user->find(true)) {
 				$user = false;
 			}
-		} elseif (isset($_REQUEST['id'])) {
+		} elseif (isset($_REQUEST['id']) && is_numeric($_REQUEST['id']) && $_REQUEST['id'] != 0) {
 			$user = new User();
 			$user->id = $_REQUEST['id'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
-		} else {
+		}
+		if ($user === false) {
 			[
 				$username,
 				$password,
 			] = $this->loadUsernameAndPassword();
 			$user = UserAccount::validateAccount($username, $password);
+		}
+		if ($user !== false && $user->source == 'admin') {
+			return false;
 		}
 		return $user;
 	}
