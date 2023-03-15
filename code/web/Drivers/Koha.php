@@ -3795,7 +3795,6 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function selfRegisterViaSSO($ssoUser): array {
-		global $locationSingleton;
 		global $library;
 
 		$result = ['success' => false,];
