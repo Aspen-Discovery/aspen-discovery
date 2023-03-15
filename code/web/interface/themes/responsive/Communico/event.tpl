@@ -37,7 +37,9 @@
 				</a>
 		</div>
 		<div class="col-sm-8">
-				{$recordDriver->getDescription()}
+			{$recordDriver->getDescription()}
+			<br></br>
+			{$recordDriver->getFullDescription()}
 		</div>
 		{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
 			<div id="more-details-accordion" class="panel-group">

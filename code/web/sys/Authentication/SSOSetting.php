@@ -1056,9 +1056,11 @@ class SSOSetting extends DataObject {
 					'fallback' => [
 						'propertyName' => 'ssoDisplayNameFallback',
 						'func' => function ($attributes) {
+							$firstName = array_key_exists($this->ssoFirstnameAttr, $attributes) ? $attributes[$this->ssoFirstnameAttr][0] : '';
+							$lastName = array_key_exists($this->ssoLastnameAttr, $attributes) ? $attributes[$this->ssoLastnameAttr][0] : '';
 							$comp = [
-								$attributes[$this->ssoFirstnameAttr][0],
-								$attributes[$this->ssoLastnameAttr][0],
+								$firstName,
+								$lastName,
 							];
 							return implode(' ', $comp);
 						},
