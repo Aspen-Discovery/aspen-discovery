@@ -1,14 +1,12 @@
 <?php /** @noinspection SpellCheckingInspection */
 
-require_once 'bootstrap.php';
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/CatalogConnection.php';
 require_once ROOT_DIR . '/CatalogFactory.php';
 require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 
 require_once ROOT_DIR . '/services/Authentication/SAML/_toolkit_loader.php';
 
-class SAMLAuthentication extends Action {
+class SAMLAuthentication{
 
 	protected OneLogin_Saml2_Auth $_auth;
 	protected OneLogin_Saml2_Settings $_settings;
@@ -26,7 +24,6 @@ class SAMLAuthentication extends Action {
 	 * @throws Exception
 	 */
 	public function __construct() {
-		parent::__construct();
 		global $configArray;
 		global $library;
 		global $logger;
@@ -456,11 +453,5 @@ class SAMLAuthentication extends Action {
 
 	private function getUsername() {
 		return $this->searchArray($this->_attributes, $this->matchpoints['username']);
-	}
-
-	function launch() {}
-
-	function getBreadcrumbs(): array {
-		return [];
 	}
 }
