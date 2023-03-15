@@ -116,13 +116,13 @@ class SAMLAuthentication{
 				$this->_auth = new OneLogin_Saml2_Auth($settings);
 				$this->_settings = new OneLogin_Saml2_Settings($settings, true);
 			} catch(Exception $e) {
-				$logger->log($e, Logger::LOG_ERROR, true);
+				$logger->log($e, Logger::LOG_ERROR);
 				echo($e);
 				die();
 			}
 
 		} else {
-			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT, true);
+			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT);
 			echo('Single sign-on settings must be configured to use SAML for user authentication.');
 			die();
 		}
@@ -185,7 +185,7 @@ class SAMLAuthentication{
 		global $logger;
 		$attributes = $this->getAttributes();
 		if(count($attributes) == 0) {
-			$logger->log("No SAML attributes found for user", Logger::LOG_ERROR, true);
+			$logger->log("No SAML attributes found for user", Logger::LOG_ERROR);
 			return false;
 		}
 		$user = $this->setupUser($attributes);
@@ -316,8 +316,8 @@ class SAMLAuthentication{
 			}
 		}
 
-		global $logger;
-		$logger->log("Mapped User attributes: " . print_r($tmpUser, true), Logger::LOG_ERROR, true);
+//		global $logger;
+//		$logger->log("Mapped User attributes: " . print_r($tmpUser, true), Logger::LOG_ERROR, true);
 
 		if($this->uidAsEmail) {
 			$this->uid = $tmpUser['ssoEmailAttr'];
