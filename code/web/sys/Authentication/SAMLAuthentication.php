@@ -14,7 +14,7 @@ class SAMLAuthentication{
 	protected array $matchpoints;
 	protected SSOSetting $config;
 	protected bool $uidAsEmail = false;
-	protected bool $ilsUniqueAttribute = false;
+	protected string $ilsUniqueAttribute = '';
 	protected string $uid;
 	protected bool $isStaffUser = false;
 
@@ -35,7 +35,7 @@ class SAMLAuthentication{
 			$this->matchpoints = $ssoSettings->getMatchpoints(); //we will use the previous matchpoint system
 			$this->config = clone $ssoSettings;
 
-			if($ssoSettings->ssoILSUniqueAttribute) {
+			if(!empty($ssoSettings->ssoILSUniqueAttribute)) {
 				$this->ilsUniqueAttribute = $ssoSettings->ssoILSUniqueAttribute;
 			} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
 				$this->uidAsEmail = true;
@@ -213,7 +213,7 @@ class SAMLAuthentication{
 		global $logger;
 		$this->setupILSUser($attributes);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		if($this->ilsUniqueAttribute) {
+		if(!empty($this->ilsUniqueAttribute)) {
 			$logger->log("Finding user by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
@@ -241,7 +241,7 @@ class SAMLAuthentication{
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		if($this->ilsUniqueAttribute) {
+		if(!empty($this->ilsUniqueAttribute)) {
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
 				global $logger;
