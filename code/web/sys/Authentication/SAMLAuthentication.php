@@ -368,10 +368,9 @@ class SAMLAuthentication{
 		}
 	}
 
-	private function selfRegister($attributes): bool {
+	private function selfRegister($user): bool {
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		$userAttributes = $this->setupUser($attributes);
-		$selfReg = $catalogConnection->selfRegister(true, $userAttributes);
+		$selfReg = $catalogConnection->selfRegister(true, $user);
 		if($selfReg['success'] != '1') {
 			return false;
 		}
