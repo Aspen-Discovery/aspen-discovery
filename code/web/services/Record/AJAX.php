@@ -335,7 +335,7 @@ class Record_AJAX extends Action {
 				if ($holdType == 'item' && isset($_REQUEST['selectedItem'])) {
 					$results = $user->placeItemHold($id, $_REQUEST['selectedItem'], $user->getPickupLocationCode());
 				} else {
-					if (isset($_REQUEST['volume'])) {
+					if (!empty($_REQUEST['volume'])) {
 						$results = $user->placeVolumeHold($shortId, $_REQUEST['volume'], $user->getPickupLocationCode());
 					} else {
 						$results = $user->placeHold($id, $user->getPickupLocationCode());
