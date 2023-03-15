@@ -307,7 +307,7 @@ class SAMLAuthentication extends Action {
 				}
 			}
 			$attrName = $this->config->$prop;
-			$attrArray = strlen($attrName) > 0 ? $user[$attrName] : [];
+			$attrArray = (strlen($attrName) > 0 && array_key_exists($attrName, $user)) ? $user[$attrName] : [];
 			if(isset($attrArray) && count($attrArray) == 1) {
 				if(strlen($attrArray[0]) > 0) {
 					$tmpUser[$prop] = $attrArray[0];
@@ -318,6 +318,9 @@ class SAMLAuthentication extends Action {
 				$tmpUser[$propertyName] = (array_key_exists('func', $fallback)) ? $fallback['func']($user, $this->config) : $this->config->$propertyName;
 			}
 		}
+
+		global $logger;
+		$logger->log("Mapped User attributes: " . print_r($tmpUser, true), Logger::LOG_ERROR);
 
 		if($this->uidAsEmail) {
 			$this->uid = $tmpUser['ssoEmailAttr'];
