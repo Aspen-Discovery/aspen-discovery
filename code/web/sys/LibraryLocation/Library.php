@@ -63,6 +63,7 @@ class Library extends DataObject {
 
 	//More general display configurations
 	public $theme;
+	public $_themes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
 
@@ -835,12 +836,16 @@ class Library extends DataObject {
 				'label' => 'Basic Display',
 				'hideInLists' => true,
 				'properties' => [
-					'theme' => [
-						'property' => 'theme',
-						'type' => 'enum',
-						'label' => 'Theme',
+					'themes' => [
+						'property' => 'themes',
+						'type' => 'oneToMany',
+						'label' => 'Themes',
 						'values' => $availableThemes,
-						'description' => 'The theme which should be used for the library',
+						'description' => 'The themes which can be used for the library',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'LibraryTheme',
+						'structure' => $combinedResultsStructure,
 						'hideInLists' => true,
 						'default' => 'default',
 						'permissions' => ['Library Theme Configuration'],

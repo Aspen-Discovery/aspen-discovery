@@ -13,6 +13,27 @@ function getUpdates23_04_00(): array {
 		], //sample*/
 
 		//mark
+		'allow_multiple_themes_for_libraries' => [
+			'title' => 'Allow Multiple Themes for Libraries',
+			'description' => 'Allow Multiple Themes for Libraries',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS library_themes (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					themeId  INT(11) NOT NULL,
+					weight INT(11) DEFAULT 0,
+					INDEX libraryToTheme(libraryId, themeId)
+				) ENGINE INNODB",
+				'INSERT INTO library_themes (libraryId, themeId) (SELECT libraryId, theme from library)'
+			],
+		],
+		'allow_users_to_change_themes' => [
+			'title' => 'Allow Users to change themes',
+			'description' => 'Allow Users to change themes',
+			'sql' => [
+				"ALTER TABLE user add column preferredTheme int(11) default -1",
+			],
+		],
 
 		//kirstien
 

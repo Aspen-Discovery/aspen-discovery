@@ -3,9 +3,6 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class User extends DataObject {
-	###START_AUTOCODE
-	/* the code below is auto generated do not remove the above tag */
-
 	public $__table = 'user';                            // table name
 	public $id;                              // int(11)  not_null primary_key auto_increment
 	public $source;
@@ -35,6 +32,7 @@ class User extends DataObject {
 	public $promptForAxis360Email;
 	public $axis360Email;
 	public $preferredLibraryInterface;
+	public $preferredTheme;
 	public $noPromptForUserReviews; //tinyint(1)
 	public $lockedFacets;
 	public $alternateLibraryCard;
