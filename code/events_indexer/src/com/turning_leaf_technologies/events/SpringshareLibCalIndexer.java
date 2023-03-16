@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.events;
 
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
@@ -240,8 +241,8 @@ class SpringshareLibCalIndexer {
 						solrDocument.addField("event_month", eventMonths);
 						solrDocument.addField("event_year", eventYears);
 						solrDocument.addField("title", curEvent.getString("title"));
-						solrDocument.addField("branch", getNameStringForKeyLibCal(curEvent, "campus"));
-						solrDocument.addField("room", getNameStringForKeyLibCal(curEvent, "location"));
+						solrDocument.addField("branch", AspenStringUtils.trimTrailingPunctuation(getNameStringForKeyLibCal(curEvent, "campus")));
+						solrDocument.addField("room", AspenStringUtils.trimTrailingPunctuation(getNameStringForKeyLibCal(curEvent, "location")));
 						/* // LibCal events do not have a field for offsite_address
 						solrDocument.addField("offsite_address", getStringForKeyLibCal(curEvent, "offsite_address"));
 						*/

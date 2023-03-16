@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.events;
 
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
@@ -211,7 +212,7 @@ class CommunicoIndexer {
 							solrDocument.addField("title", fullTitle);
 						}
 
-						solrDocument.addField("branch", curEvent.getString("locationName"));
+						solrDocument.addField("branch", AspenStringUtils.trimTrailingPunctuation(curEvent.getString("locationName")));
 
 						if (curEvent.isNull("eventType")) {
 							solrDocument.addField("event_type", "Undefined");
@@ -223,7 +224,7 @@ class CommunicoIndexer {
 						if (curEvent.isNull("roomName")){
 							solrDocument.addField("room", "");
 						}else{
-							solrDocument.addField("room", curEvent.getString("roomName"));
+							solrDocument.addField("room", AspenStringUtils.trimTrailingPunctuation(curEvent.getString("roomName")));
 						}
 
 						solrDocument.addField("age_group", getNameStringsForKeyCommunico(curEvent, "ages"));
