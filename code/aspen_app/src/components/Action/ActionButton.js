@@ -9,7 +9,7 @@ import {CheckOut} from './CheckOut/CheckOut';
 
 export const ActionButton = (data) => {
 	const action = data.actions;
-	const { volumeInfo, groupedWorkId, fullRecordId, recordSource, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = data;
+	const { volumeInfo, groupedWorkId, fullRecordId, recordSource, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, language } = data;
 	if (_.isObject(action)) {
 		if (action.type === 'overdrive_sample') {
 			return <LoadOverDriveSample title={action.title} prevRoute={prevRoute} id={fullRecordId} type={action.type} sampleNumber={action.sampleNumber} formatId={action.formatId} />;
@@ -18,13 +18,13 @@ export const ActionButton = (data) => {
 		} else if (action.url === '/MyAccount/Holds') {
 			return <OnHoldForYou title={action.title} prevRoute={prevRoute} />;
 		} else if (action.type === 'ils_hold') {
-			return <PlaceHold title={action.title} id={groupedWorkId} type={action.type} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>;
+			return <PlaceHold language={language} title={action.title} id={groupedWorkId} type={action.type} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>;
 		} else if (action.type === 'vdx_request') {
-			return <StartVDXRequest title={action.title} record={fullRecordId} id={groupedWorkId} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />;
+			return <StartVDXRequest title={action.title} record={fullRecordId} id={groupedWorkId} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>;
 		} else if (!_.isUndefined(action.redirectUrl)) {
 			return <OpenSideLoad title={action.title} url={action.redirectUrl} prevRoute={prevRoute} />;
 		} else {
-			return <CheckOut title={action.title} type={action.type} id={groupedWorkId} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute}  setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>;
+			return <CheckOut title={action.title} type={action.type} id={groupedWorkId} record={fullRecordId} volumeInfo={volumeInfo} prevRoute={prevRoute}  setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>;
 		}
 	}
 

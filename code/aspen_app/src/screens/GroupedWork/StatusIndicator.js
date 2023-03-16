@@ -2,7 +2,6 @@ import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export function getStatusIndicator(status, language) {
      let label = null;
-     let key = null;
      let message = '';
      let indicator = 'success';
      if (status) {

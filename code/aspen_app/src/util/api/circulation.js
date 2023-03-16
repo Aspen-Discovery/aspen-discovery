@@ -1,7 +1,6 @@
 import {create} from 'apisauce';
 import {GLOBALS} from '../globals';
 import {createAuthTokens, ENDPOINT, getHeaders, postData} from '../apiAuth';
-import {LIBRARY} from '../loadLibrary';
 
 const endpoint = ENDPOINT.user;
 //const endpoint = ENDPOINT.work;
@@ -79,5 +78,37 @@ export async function placeVolumeHold(recordId, volumeId, pickupBranch, userId, 
 		return true;
 	} else {
 		return false;
+	}
+}
+
+/**
+ * Confirm the provided hold with the ILS
+ * @param {string} recordId
+ * @param {string} confirmationId
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function confirmHold(recordId, confirmationId, language = 'en', url) {
+	const postBody = await postData();
+	const discovery = create({
+		baseURL: url + '/API',
+		timeout: GLOBALS.timeoutAverage,
+		headers: getHeaders(true),
+		auth: createAuthTokens(),
+		params: {
+			id: recordId,
+			confirmationId,
+			language
+		},
+	});
+	const response = await discovery.post('/UserAPI?method=confirmHold', postBody);
+	if (response.ok) {
+		return response.data.result;
+	} else {
+		console.log(response);
+		return {
+			success: false,
+			message: 'Unable to confirm hold. Please contact your library.'
+		};
 	}
 }
