@@ -46,6 +46,7 @@
 								</a>
 							</div>
 						</div>
+						<br>
 					{/if}
 				</div>
 			</div>

@@ -49,6 +49,7 @@
 						{translate text="View on LibCal" isPublicFacing=true}
 					{/if}
 				</a>
+			<br></br>
 		</div>
 		<div class="col-sm-8">
 				{$recordDriver->getDescription()}
