@@ -1123,6 +1123,9 @@ class User extends DataObject {
 		if (isset($_REQUEST['searchPreferenceLanguage'])) {
 			$this->searchPreferenceLanguage = $_REQUEST['searchPreferenceLanguage'];
 		}
+		if (isset($_REQUEST['preferredTheme'])) {
+			$this->preferredTheme = $_REQUEST['preferredTheme'];
+		}
 
 		//Make sure the selected location codes are in the database.
 		if (isset($_POST['pickupLocation'])) {

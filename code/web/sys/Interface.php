@@ -59,8 +59,7 @@ class UInterface extends Smarty {
 		//Make sure we always fall back to the default (responsive) theme so a template does not have to be overridden.
 		//TODO: This is a bad hack.  ConfigArray appends the library theme to the Site theme array.  We can streamline
 		//to just set the themes in use globally someplace rather than passing through the INI
-		$themeArray = explode(',', $configArray['Site']['theme']);
-		$this->themes = $themeArray;
+		$themeArray = ['responsive'];
 		$this->template_dir = "$local/interface/themes/responsive/";
 		if (isset($timer)) {
 			$timer->logTime('Set theme');
@@ -240,15 +239,6 @@ class UInterface extends Smarty {
 		return $this->url;
 	}
 
-	/*
-	 * Get a list of themes that are active in the interface
-	 *
-	 * @return array
-	 */
-	public function getThemes() {
-		return $this->themes;
-	}
-
 	function setTemplate($tpl) {
 		$this->assign('pageTemplate', $tpl);
 	}
@@ -340,13 +330,44 @@ class UInterface extends Smarty {
 
 		try {
 			$theme = new Theme();
-			//Check to see if we are at a location and if we are if there is a theme applied to it
+			//Check to see if we are at a location and if we are, check if there is a theme applied to it
 			$location = $locationSingleton->getActiveLocation();
-			if (isset($location) && $location->theme != -1) {
-				$theme->id = $location->theme;
+
+			$allActiveThemes = [];
+
+			$activeThemeId = -1;
+			if (isset($location) && !empty($location->getThemes())) {
+				$theme->id = $location->getPrimaryTheme()->themeId;
+				$allIds = [];
+				foreach ($location->getThemes() as $tmpTheme) {
+					$allIds[$tmpTheme->themeId] = $tmpTheme->themeId;
+				}
+				$tmpTheme = new Theme();
+				$tmpTheme->whereAddIn('id', $allIds, false);
+				$themeNames = $tmpTheme->fetchAll('id', 'displayName');
+				foreach ($allIds as $id) {
+					$allActiveThemes[$id] = $themeNames[$id];
+				}
 			} else {
-				$theme->id = $library->theme;
+				$theme->id = $library->getPrimaryTheme()->themeId;
+				$allIds = [];
+				foreach ($library->getThemes() as $tmpTheme) {
+					$allIds[$tmpTheme->themeId] = $tmpTheme->themeId;
+				}
+				$tmpTheme = new Theme();
+				$tmpTheme->whereAddIn('id', $allIds, false);
+				$themeNames = $tmpTheme->fetchAll('id', 'displayName');
+				foreach ($allIds as $id) {
+					$allActiveThemes[$id] = $themeNames[$id];
+				}
 			}
+			if (UserAccount::isLoggedIn()) {
+				$userObject = UserAccount::getActiveUserObj();
+				if ($userObject->preferredTheme != -1 && array_key_exists($userObject->preferredTheme, $allActiveThemes)) {
+					$theme->id = $userObject->preferredTheme;
+				}
+			}
+			$this->assign('allActiveThemes', $allActiveThemes);
 			if ($theme->find(true)) {
 				$allAppliedThemes = $theme->getAllAppliedThemes();
 				$primaryTheme = $theme;

@@ -5,6 +5,7 @@ class Theme extends DataObject {
 	public $__table = 'themes';
 	public $id;
 	public $themeName;
+	public $displayName;
 	public $extendsTheme;
 	public $logoName;
 	public $favicon;
@@ -497,6 +498,15 @@ class Theme extends DataObject {
 				'maxLength' => 50,
 				'required' => true,
 				'uniqueProperty' => true,
+			],
+			'displayName' => [
+				'property' => 'displayName',
+				'type' => 'text',
+				'label' => 'Display Name',
+				'description' => 'The Display Name of the Theme',
+				'maxLength' => 50,
+				'required' => true,
+				'uniqueProperty' => false,
 			],
 			'extendsTheme' => [
 				'property' => 'extendsTheme',

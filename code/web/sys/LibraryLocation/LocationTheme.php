@@ -1,15 +1,15 @@
 <?php
 
-class LibraryTheme extends DataObject {
-	public $__table = 'library_themes';
+class LocationTheme extends DataObject {
+	public $__table = 'location_themes';
 	public $id;
-	public $libraryId;
+	public $locationId;
 	public $themeId;
 	public $weight;
 
 	public function getNumericColumnNames(): array {
 		return [
-			'libraryId',
+			'locationId',
 			'themeId',
 			'weight',
 		];
@@ -17,16 +17,16 @@ class LibraryTheme extends DataObject {
 
 	static function getObjectStructure($context = ''): array {
 		//Load Libraries for lookup values
-		$library = new Library();
-		$library->orderBy('displayName');
-		if (!UserAccount::userHasPermission('Administer All Libraries')) {
+		$location = new Location();
+		$location->orderBy('displayName');
+		if (!UserAccount::userHasPermission('Administer All Locations')) {
 			$homeLibrary = Library::getPatronHomeLibrary();
-			$library->libraryId = $homeLibrary->libraryId;
+			$location->libraryId = $homeLibrary->libraryId;
 		}
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
+		$location->find();
+		$locationList = [];
+		while ($location->fetch()) {
+			$locationList[$location->locationId] = $location->displayName;
 		}
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
@@ -45,12 +45,12 @@ class LibraryTheme extends DataObject {
 				'label' => 'Id',
 				'description' => 'The unique id of the hours within the database',
 			],
-			'libraryId' => [
-				'property' => 'libraryId',
+			'locationId' => [
+				'property' => 'locationId',
 				'type' => 'enum',
-				'values' => $libraryList,
-				'label' => 'Library',
-				'description' => 'A link to the library which the theme belongs to',
+				'values' => $locationList,
+				'label' => 'Location',
+				'description' => 'A link to the location which the theme belongs to',
 			],
 			'theme' => [
 				'property' => 'themeId',
