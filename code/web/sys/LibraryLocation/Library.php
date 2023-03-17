@@ -2745,6 +2745,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Email to receive notifications for new Materials Requests',
 						'description' => 'The email address that will receive emails when a patron creates a new Materials Request.',
+						'maxLength' => 125,
 						'hideInLists' => true,
 					],
 					'materialsRequestSendStaffEmailOnAssign' => [
