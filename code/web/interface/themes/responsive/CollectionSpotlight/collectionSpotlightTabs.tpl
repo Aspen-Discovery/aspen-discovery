@@ -146,7 +146,7 @@
 			function showList(listIndex){ldelim}
 				{assign var=index value=0}
 				{foreach from=$collectionSpotlight->lists item=list name=listLoop}
-					{assign var="listName" value=$list->name|regex_replace:'/\W/':''|escape:url}
+					{assign var="listId" value=$list->id}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
 						{if $index == 0}
 							if (listIndex === {$index}){ldelim}
