@@ -3,10 +3,12 @@ import { Box, Center, Divider, HStack, Icon, Text } from 'native-base';
 import React from 'react';
 
 // custom components and helper files
-import { translate } from '../../translations/translations';
 import { stripHTML } from '../../util/apiAuth';
+import {LanguageContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const HoursAndLocation = (props) => {
+     const { language } = React.useContext(LanguageContext);
      const { hoursMessage, description } = props;
 
      return (
@@ -16,7 +18,7 @@ const HoursAndLocation = (props) => {
                          <HStack space={2} alignItems="center">
                               <Icon as={MaterialIcons} name="schedule" size="sm" mt={0.3} mr={-1} />
                               <Text fontSize="md" bold>
-                                   {translate('library_contact.today_hours')}
+                                   {getTermFromDictionary(language, 'today_hours')}
                               </Text>
                          </HStack>
                          <Text>{stripHTML(description)}</Text>

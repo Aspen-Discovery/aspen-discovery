@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native';
 import { deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { userContext } from '../../../context/user';
-import { translate } from '../../../translations/translations';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export default class Settings_Notifications extends Component {
      static contextType = userContext;
@@ -47,6 +47,7 @@ export default class Settings_Notifications extends Component {
                },
                unableToNotify: false,
                allowNotifications: !!this.props.route.params?.aspenToken,
+               language: this.props.route.params?.language ?? 'en'
           };
           this._isMounted = false;
           this.getSavedPreferences = this.getSavedPreferences.bind(this);
@@ -214,7 +215,7 @@ export default class Settings_Notifications extends Component {
                <SafeAreaView style={{ flex: 1 }}>
                     <Box flex={1} safeArea={5}>
                          <HStack space={3} pb={5} alignItems="center" justifyContent="space-between">
-                              <Text bold>{translate('user_profile.allow_notifications')}</Text>
+                              <Text bold>{getTermFromDictionary(this.state.language, 'notifications_allow')}</Text>
                               <Switch onToggle={() => this.handleToggle()} isChecked={this.state.allowNotifications} isDisabled={this.state.unableToNotify} />
                          </HStack>
                          {this.state.allowNotifications ? <FlatList data={Object.keys(this.state.categories)} renderItem={({ item }) => this.renderItem(this.state.categories[item])} keyExtractor={(item, index) => index.toString()} /> : null}

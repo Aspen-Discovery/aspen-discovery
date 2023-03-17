@@ -3,20 +3,18 @@ import { create } from 'apisauce';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import { useNavigation, useFocusEffect, useLinkTo } from '@react-navigation/native';
-import { Center, Heading, Spinner, VStack } from 'native-base';
+import { Center, Heading, Box, Spinner, VStack, Progress } from 'native-base';
 import _ from 'lodash';
 import { checkVersion } from "react-native-check-version";
 import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import { formatBrowseCategories, LIBRARY } from '../../util/loadLibrary';
+import {formatBrowseCategories, formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
 import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getBrowseCategoryListForUser, PATRON} from '../../util/loadPatron';
 import { ForceLogout } from './ForceLogout';
 import {UpdateAvailable} from './UpdateAvailable';
-import {getTranslatedTerm, getTranslations, translations} from '../../translations/TranslationService';
-
-const defaultTranslation = require('../../translations/defaults.json');
+import {getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary} from '../../translations/TranslationService';
 
 const prefix = Linking.createURL('/');
 
@@ -29,6 +27,8 @@ Notifications.setNotificationHandler({
 });
 
 export const LoadingScreen = () => {
+     const [progress, setProgress] = React.useState(0);
+     const [loadingText, setLoadingText] = React.useState("The oldest library in the world dates from the seventh century BC.");
      const linkingUrl = Linking.useURL();
      const linkTo = useLinkTo();
      const navigation = useNavigation();
@@ -43,8 +43,8 @@ export const LoadingScreen = () => {
      const { library, updateLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
-     const { language, updateLanguage, updateLanguages } = React.useContext(LanguageContext);
-
+     const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
+     const {discoveryVersion, setDiscoveryVersion} = React.useState('23.03.00');
 
      React.useEffect(() => {
           const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
@@ -67,14 +67,16 @@ export const LoadingScreen = () => {
 
      useFocusEffect(
           React.useCallback(() => {
-               if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category) && !_.isEmpty(language)) {
+               if (!_.isEmpty(user) && !_.isEmpty(library) && !_.isEmpty(location) && !_.isEmpty(category) && !_.isEmpty(language) && !_.isEmpty(dictionary)) {
                     setLoading(false);
                } else {
                     const unsubscribe = async () => {
                          updateMaxCategories(5);
+                         setProgress(10);
                          await reloadPatronBrowseCategories(5).then((result) => {
                               updateBrowseCategories(result);
                          });
+                         setProgress(20);
                          await reloadUserProfile().then((result) => {
                               if (_.isUndefined(result) || _.isEmpty(result)) {
                                    setHasError(true);
@@ -83,27 +85,42 @@ export const LoadingScreen = () => {
                               updateLanguage(result.interfaceLanguage ?? 'en');
                               PATRON.language = result.interfaceLanguage ?? 'en';
                          });
+                         setProgress(30);
                          await reloadLibrarySystem().then(async (result) => {
                               updateLibrary(result);
-                              /*await getTranslatedTerm(language ?? 'en', result.baseUrl).then((async result => {
-                                   await AsyncStorage.setItem('@translations', JSON.stringify(translations));
-                                   console.log("Stored translations to AsyncStorage");
-                              }));*/
+                              setProgress(40);
+                              const version = formatDiscoveryVersion(result.discoveryVersion);
+                              if(version >= '23.04.00') {
+                                   await getLibraryLanguages().then((async languages => {
+                                        const languagesArray = [];
+                                        updateLanguages(languages);
+                                        _.forEach(languages, function(value) {
+                                             languagesArray.push(value.code);
+                                        });
+                                        setProgress(50);
+                                        await getTranslatedTermsForAllLanguages(languagesArray, result.baseUrl).then(async result => {
+                                             //await AsyncStorage.setItem('@translations', JSON.stringify(translationsLibrary));
+                                             updateDictionary(translationsLibrary);
+                                        });
+                                   }));
+                              }
                          });
+                         setProgress(60);
+                         setLoadingText("One of the most overdue library books in the world was returned after 122 years.");
                          await reloadLibraryBranch().then((result) => {
                               updateLocation(result);
                          });
+                         setProgress(70);
                          await getBrowseCategoryListForUser().then((result) => {
                               updateBrowseCategoryList(result);
                          });
-                         await getLibraryLanguages().then((result => {
-                              updateLanguages(result);
-                         }))
 
+                         setProgress(80);
                          await AsyncStorage.getItem('@solrScope').then((result) => {
                               updateScope(result);
                          });
 
+                         setProgress(90);
                          await checkStoreVersion().then((result) => {
                               setLatestVersion(result.latest);
                               setHasUpdate(result.needsUpdate);
@@ -111,6 +128,7 @@ export const LoadingScreen = () => {
                                    setAppStoreUrl(result.url);
                               }
                          });
+                         setProgress(100);
                          setLoading(false);
                     };
                     unsubscribe().then(() => {
@@ -185,13 +203,13 @@ export const LoadingScreen = () => {
      }
 
      return (
-          <Center flex={1} px="3">
-               <VStack space={5} alignItems="center">
-                    <Spinner size="lg" />
-                    <Heading color="primary.500" fontSize="md">
-                         Dusting the shelves...
-                    </Heading>
-               </VStack>
+          <Center flex={1} px="3" w="100%">
+               <Box w="90%" maxW="400">
+                    <VStack>
+                         <Heading pb={5} color="primary.500" fontSize="md">{loadingText}</Heading>
+                         <Progress size="lg" value={progress} colorScheme="primary" />
+                    </VStack>
+               </Box>
           </Center>
      );
 };

@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import { translate } from '../../../translations/translations';
 import { Platform } from 'react-native';
 import { Actionsheet, Box, Button, FormControl, Select, CheckIcon, CloseIcon, Icon, Pressable, HStack, VStack } from 'native-base';
 import Modal from 'react-native-modal';
@@ -7,9 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { changeHoldPickUpLocation } from '../../../util/accountActions';
 import React from 'react';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const SelectPickupLocation = (props) => {
-     const { locations, onClose, currentPickupId, holdId, userId, libraryContext, holdsContext, resetGroup } = props;
+     const { locations, onClose, currentPickupId, holdId, userId, libraryContext, holdsContext, resetGroup, language } = props;
      let pickupLocation = _.findIndex(locations, function (o) {
           return o.locationId === currentPickupId;
      });
@@ -28,7 +28,7 @@ export const SelectPickupLocation = (props) => {
                     onPress={() => {
                          setShowModal(true);
                     }}>
-                    {translate('pickup_locations.change_location')}
+                    {getTermFromDictionary(language, 'change_location')}
                </Actionsheet.Item>
                <Modal
                     isVisible={showModal}
@@ -67,7 +67,7 @@ export const SelectPickupLocation = (props) => {
                                         _dark={{
                                              _text: { color: 'text.50' },
                                         }}>
-                                        {translate('pickup_locations.change_hold_location')}
+                                        {getTermFromDictionary(language, 'change_hold_location')}
                                    </Box>
                                    <Pressable onPress={() => setShowModal(false)}>
                                         <CloseIcon
@@ -90,12 +90,12 @@ export const SelectPickupLocation = (props) => {
                               </HStack>
                               <Box p={4} _text={{ color: 'text.900' }} _hover={{ bg: 'muted.200' }} _pressed={{ bg: 'muted.300' }} _dark={{ _text: { color: 'text.50' } }}>
                                    <FormControl>
-                                        <FormControl.Label>{translate('pickup_locations.select_new_pickup')}</FormControl.Label>
+                                        <FormControl.Label>{getTermFromDictionary(language, 'select_new_pickup')}</FormControl.Label>
                                         <Select
                                              name="pickupLocations"
                                              selectedValue={location}
                                              minWidth="200"
-                                             accessibilityLabel="Select a new pickup location"
+                                             accessibilityLabel={getTermFromDictionary(language, 'select_new_pickup')}
                                              _selectedItem={{
                                                   bg: 'tertiary.300',
                                                   endIcon: <CheckIcon size="5" />,
@@ -132,11 +132,11 @@ export const SelectPickupLocation = (props) => {
                                         onPress={() => {
                                              setShowModal(false);
                                         }}>
-                                        {translate('general.cancel')}
+                                        {getTermFromDictionary(language, 'cancel')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText="Updating..."
+                                        isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                         onPress={() => {
                                              setLoading(true);
                                              changeHoldPickUpLocation(holdId, location, libraryContext.baseUrl, userId).then((r) => {
@@ -146,7 +146,7 @@ export const SelectPickupLocation = (props) => {
                                                   setLoading(false);
                                              });
                                         }}>
-                                        {translate('pickup_locations.change_location')}
+                                        {getTermFromDictionary(language, 'change_location')}
                                    </Button>
                               </Button.Group>
                          </VStack>

@@ -6,8 +6,11 @@ import { Button, FlatList, HStack, Icon, Text, View } from 'native-base';
 import React, { useCallback, useEffect } from 'react';
 
 import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
+import {LanguageContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const BrowseCategory = (props) => {
+     const { language } = React.useContext(LanguageContext);
      const { categoryLabel, categoryKey, renderItem, hideCategory, user, libraryUrl, isHidden } = props;
      const [items, setItems] = React.useState([]);
      const [shouldFetch, setShouldFetch] = React.useState(true);
@@ -45,7 +48,7 @@ const BrowseCategory = (props) => {
                                    {categoryLabel}
                               </Text>
                               <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(libraryUrl, categoryKey, user.id)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                                   Hide
+                                   {getTermFromDictionary(language, 'hide')}
                               </Button>
                          </HStack>
                          <FlatList horizontal data={items} renderItem={({ item }) => renderItem(item, libraryUrl)} keyExtractor={(item, index) => index.toString()} initialNumToRender={5} />

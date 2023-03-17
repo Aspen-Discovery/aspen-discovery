@@ -46,6 +46,7 @@ class Translation_ImportBulkTranslations extends Admin_Admin {
 				} else {
 					$fileToLoad = $_FILES['importFile']['tmp_name'];
 					$fHnd = fopen($fileToLoad, 'r');
+					set_time_limit(-1);
 
 					global $memCache;
 					while ($translationLine = fgets($fHnd)) {

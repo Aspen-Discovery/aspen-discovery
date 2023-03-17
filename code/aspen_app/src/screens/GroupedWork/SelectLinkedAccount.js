@@ -1,14 +1,11 @@
-import { Button, Center, Modal, FormControl, Select, Radio, Heading, CheckIcon, AlertDialog } from 'native-base';
+import { Button, Center, Modal, FormControl, Select, Heading, CheckIcon } from 'native-base';
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { translate } from '../../translations/translations';
 import { completeAction } from './Record';
-import {HoldsContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {refreshProfile} from '../../util/api/user';
 import _ from 'lodash';
-import {reloadHolds} from '../../util/loadPatron';
-import {navigate, navigateStack} from '../../helpers/RootNavigator';
 import {SelectVolume} from './SelectVolume';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const SelectLinkedAccount = (props) => {
      const { id, action, title, volumeInfo, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
@@ -20,6 +17,7 @@ const SelectLinkedAccount = (props) => {
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
 
      let shouldDisplayVolumes = false;
      let typeOfHold = 'default';
@@ -77,20 +75,20 @@ const SelectLinkedAccount = (props) => {
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
                          <Modal.Header>
-                              <Heading size="md">{isPlacingHold ? translate('grouped_work.hold_options') : translate('grouped_work.checkout_options')}</Heading>
+                              <Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
                               {shouldDisplayVolumes ? (
-                                  <SelectVolume id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
+                                  <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
                               ) : null}
                               {_.size(locations) > 1 && !isEContent ? (
                                   <FormControl>
-                                       <FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
+                                       <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
                                        <Select
                                            name="pickupLocations"
                                            selectedValue={location}
                                            minWidth="200"
-                                           accessibilityLabel="Select a Pickup Location"
+                                           accessibilityLabel={getTermFromDictionary(language, 'select_pickup_location')}
                                            _selectedItem={{
                                                 bg: 'tertiary.300',
                                                 endIcon: <CheckIcon size="5" />,
@@ -105,12 +103,12 @@ const SelectLinkedAccount = (props) => {
                                   </FormControl>
                               ) : null}
                               <FormControl pb={5}>
-                                   <FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
+                                   <FormControl.Label>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControl.Label>
                                    <Select
                                        name="linkedAccount"
                                        selectedValue={activeAccount}
                                        minWidth="200"
-                                       accessibilityLabel={isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}
+                                       accessibilityLabel={isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}
                                        _selectedItem={{
                                             bg: 'tertiary.300',
                                             endIcon: <CheckIcon size="5" />,
@@ -133,11 +131,11 @@ const SelectLinkedAccount = (props) => {
                                              setShowPrompt(false);
                                              setResponseLoading(false);
                                         }}>
-                                        {translate('general.cancel')}
+                                        {getTermFromDictionary(language, 'close_button')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
+                                        isLoadingText={isPlacingHold ? getTermFromDictionary(language, 'placing_hold', true) : getTermFromDictionary(language, 'checking_out', true)}
                                         onPress={async () => {
                                              setResponseLoading(true);
                                              await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (result) => {

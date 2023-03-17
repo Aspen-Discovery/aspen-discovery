@@ -1,16 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
-import _, { max } from 'lodash';
+import _ from 'lodash';
 import React from 'react';
 
 // custom components and helper files
 import { popToast } from '../components/loadError';
-import { translate } from '../translations/translations';
 import { createAuthTokens, getHeaders, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { PATRON } from './loadPatron';
-import { BrowseCategoryContext } from '../context/initialContext';
 import { RemoveData } from './logout';
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 export const LIBRARY = {
      url: '',
@@ -429,7 +428,7 @@ export async function getVdxForm(url, id) {
           LIBRARY.vdx = response.data.result;
           return response.data.result;
      } else {
-          popToast(translate('error.no_server_connection'), translate('error.no_library_connection'), 'warning');
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
           console.log(response);
      }
 }

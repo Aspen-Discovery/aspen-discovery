@@ -3,15 +3,17 @@ import React from 'react';
 import _ from 'lodash';
 
 // custom components and helper files
-import {LibraryBranchContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {completeAction} from '../../../screens/GroupedWork/Record';
 import {refreshProfile} from '../../../util/api/user';
 import {HoldPrompt} from '../Holds/HoldPrompt';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const CheckOut = (props) => {
 	const { id, title, type, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
 	const { user, updateUser, accounts } = React.useContext(UserContext);
 	const { library } = React.useContext(LibrarySystemContext);
+	const { language } = React.useContext(LanguageContext);
 	const [loading, setLoading] = React.useState(false);
 
 	const volumeInfo = {
@@ -35,7 +37,7 @@ export const CheckOut = (props) => {
 						textAlign: 'center',
 					}}
 					isLoading={loading}
-					isLoadingText="Checking out..."
+					isLoadingText={getTermFromDictionary(language, 'checking_out', true)}
 					style={{
 						flex: 1,
 						flexWrap: 'wrap',

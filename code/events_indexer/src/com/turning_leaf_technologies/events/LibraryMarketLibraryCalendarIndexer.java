@@ -1,5 +1,6 @@
 package com.turning_leaf_technologies.events;
 
+import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
@@ -355,12 +356,13 @@ class LibraryMarketLibraryCalendarIndexer {
 			if (curEvent.get(keyName) instanceof JSONObject) {
 				JSONObject keyObj = curEvent.getJSONObject(keyName);
 				for (String keyValue : keyObj.keySet()) {
-					values.add(keyObj.getString(keyValue));
+					values.add(AspenStringUtils.trimTrailingPunctuation(keyObj.getString(keyValue)));
 				}
 			}else{
 				JSONArray keyArray = curEvent.getJSONArray(keyName);
 				for (int i = 0; i < keyArray.length(); i++){
-					values.add(keyArray.getString(i));
+					String value = AspenStringUtils.trimTrailingPunctuation(keyArray.getString(i));
+					values.add(value);
 				}
 			}
 		}

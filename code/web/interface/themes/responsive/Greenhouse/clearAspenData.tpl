@@ -34,27 +34,27 @@
 						</div>
 						<div class="checkbox">
 							<label for="dataElement_userData">
-								<input class="dataElement" id="dataElement_userData" name='dataElement[]' type="checkbox" value='userData'> {translate text="User Data" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<input class="dataElement" id="dataElement_userData" name='dataElement[]' type="checkbox" value='userData'> {translate text="User Data" isAdminFacing=true}<br>
 							</label>
 						</div>
 						<div class="checkbox">
 							<label for="dataElement_userLists">
-								<input class="dataElement" id="dataElement_userLists" name='dataElement[]' type="checkbox" value='userLists'> {translate text="User Lists" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<input class="dataElement" id="dataElement_userLists" name='dataElement[]' type="checkbox" value='userLists'> {translate text="User Lists" isAdminFacing=true}<br>
 							</label>
 						</div>
 						<div class="checkbox">
 							<label for="dataElement_bibData">
-								<input class="dataElement" id="dataElement_bibData" name='dataElement[]' type="checkbox" value='bibData'> {translate text="Bib Data" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<input class="dataElement" id="dataElement_bibData" name='dataElement[]' type="checkbox" value='bibData'> {translate text="Bib Data" isAdminFacing=true}<br>
 							</label>
 						</div>
 						<div class="checkbox">
 							<label for="dataElement_statistics">
-								<input class="dataElement" id="dataElement_statistics" name='dataElement[]' type="checkbox" value='statistics'> {translate text="Statistics" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<input class="dataElement" id="dataElement_statistics" name='dataElement[]' type="checkbox" value='statistics'> {translate text="Statistics" isAdminFacing=true}<br>
 							</label>
 						</div>
 						<div class="checkbox">
 							<label for="dataElement_webBuilderContent">
-								<input class="dataElement" id="dataElement_webBuilderContent" name='dataElement[]' type="checkbox" value='webBuilderContent'> {translate text="Web Builder Content" isPublicFacing=$property.isPublicFacing isAdminFacing=true}<br>
+								<input class="dataElement" id="dataElement_webBuilderContent" name='dataElement[]' type="checkbox" value='webBuilderContent'> {translate text="Web Builder Content" isAdminFacing=true}<br>
 							</label>
 						</div>
 					</div>

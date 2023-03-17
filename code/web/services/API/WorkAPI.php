@@ -28,6 +28,15 @@ class WorkAPI extends Action {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [
@@ -101,8 +110,8 @@ class WorkAPI extends Action {
 					if(!array_key_exists($obj->manifestation->format, $itemData['formats'])) {
 						$format = $obj->manifestation->format;
 						$itemData['formats'][$format] = [];
-						$itemData['formats'][$format]['label'] = $format;
-						$itemData['formats'][$format]['category'] = $relatedManifestation->formatCategory;
+						$itemData['formats'][$format]['label'] = translate(['text' => $format, 'isPublicFacing' => true]);
+						$itemData['formats'][$format]['category'] = translate(['text' => $relatedManifestation->formatCategory, 'isPublicFacing' => true]);
 						$itemData['formats'][$format]['actions'] = $relatedManifestation->getActions();
 						$itemData['formats'][$format]['isAvailable'] = $relatedManifestation->isAvailable();
 					};

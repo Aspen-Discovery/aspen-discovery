@@ -4,7 +4,7 @@
 		{if !empty($showCovers)}
 			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 				{if $disableCoverArt != 1}
-					<a href="{$eventUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Events.trackUsage('{$id}')" target="_blank" aria-hidden="true">
+					<a href="{$eventUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Events.trackUsage('{$id}')" aria-hidden="true">
 						<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 					</a>
 				{/if}
@@ -17,7 +17,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
-					<a href="{$eventUrl}" class="result-title notranslate" onclick="AspenDiscovery.Events.trackUsage('{$id}')" target="_blank">
+					<a href="{$eventUrl}" class="result-title notranslate" onclick="AspenDiscovery.Events.trackUsage('{$id}')">
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
@@ -27,12 +27,27 @@
 			</div>
 
 			<div class="row">
-				<div class="result-label col-tn-3">{translate text="Date" isPublicFacing=true} </div>
-				<div class="result-value col-tn-8 notranslate">
+				<div class="result-label col-tn-2">{translate text="Date" isPublicFacing=true} </div>
+				<div class="result-value col-tn-6 notranslate">
 					{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
-                    {if !empty($isCancelled)}
+					{if !empty($isCancelled)}
 						&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
-                    {/if}
+					{/if}
+				</div>
+
+				{* Register Button *}
+				<div class="result-value col-tn-4">
+
+					{if $recordDriver->isRegistrationRequired()}
+						<div class="btn-toolbar">
+							<div class="btn-group btn-group-vertical btn-block">
+								<a class="btn btn-sm btn-action btn-wrap" href="{$recordDriver->getExternalUrl()}" target="_blank">
+									{translate text="Register on LibCal" isPublicFacing=true}
+								</a>
+							</div>
+						</div>
+						<br>
+					{/if}
 				</div>
 			</div>
 

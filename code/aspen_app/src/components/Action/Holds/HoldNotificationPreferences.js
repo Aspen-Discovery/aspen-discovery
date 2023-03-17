@@ -1,26 +1,26 @@
 import React from 'react';
 import { FormControl, Select, Input, Checkbox, Text, CheckIcon } from 'native-base';
-import {translate} from '../../../translations/translations';
 import _ from 'lodash';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const HoldNotificationPreferences = (props) => {
-	const {user, emailNotification, setEmailNotification, phoneNotification, setPhoneNotification, smsNotification, setSMSNotification, smsCarrier, setSMSCarrier, smsNumber, setSMSNumber, phoneNumber, setPhoneNumber} = props;
+	const {user,language, emailNotification, setEmailNotification, emailNotificationLabel, phoneNotification, setPhoneNotification, smsNotification, setSMSNotification, smsCarrier, setSMSCarrier, smsNumber, setSMSNumber, phoneNumber, setPhoneNumber} = props;
 
 	const holdNotificationInfo = user.holdNotificationInfo;
 	const smsCarriers = holdNotificationInfo.smsCarriers;
 
 	return (
 		<>
-			<Text>{translate('holds.notify_for_pickup')}</Text>
+			<Text>{getTermFromDictionary(language, 'hold_notify_for_pickup')}</Text>
 			{user.email ? (
 				<FormControl pb={2}>
 					<Checkbox
 						name="emailNotification"
 						defaultIsChecked={emailNotification}
-						accessibilityLabel={translate('holds.email_notification')}
+						accessibilityLabel={emailNotificationLabel}
 						onChange={(value) => {setEmailNotification(value)}}
 					>
-						<Text>{translate('holds.email_notification', {email: user.email})}</Text>
+						<Text>{emailNotificationLabel}</Text>
 					</Checkbox>
 				</FormControl>
 			) : null}
@@ -28,20 +28,20 @@ export const HoldNotificationPreferences = (props) => {
 				<Checkbox
 					name="phoneNotification"
 					defaultIsChecked={phoneNotification}
-					accessibilityLabel={translate('holds.phone_notification')}
+					accessibilityLabel={getTermFromDictionary(language, 'hold_phone_notification')}
 					onChange={(value) => {setPhoneNotification(value)}}
 				>
-					<Text>{translate('holds.phone_notification')}</Text>
+					<Text>{getTermFromDictionary(language, 'hold_phone_notification')}</Text>
 				</Checkbox>
 			</FormControl>
 			{phoneNotification ? (
 			<>
 				<FormControl>
-					<FormControl.Label>{translate('holds.phone_number')}</FormControl.Label>
+					<FormControl.Label>{getTermFromDictionary(language, 'hold_phone_number')}</FormControl.Label>
 					<Input
 						name="phoneNumber"
 						defaultValue={phoneNumber}
-						accessibilityLabel={translate('holds.phone_number')}
+						accessibilityLabel={getTermFromDictionary(language, 'hold_phone_number')}
 						onChangeText={(value) => setPhoneNumber(value)}
 					/>
 				</FormControl>
@@ -53,20 +53,20 @@ export const HoldNotificationPreferences = (props) => {
 						<Checkbox
 							name="smsNotification"
 							defaultIsChecked={smsNotification}
-							accessibilityLabel={translate('holds.sms_notification')}
+							accessibilityLabel={getTermFromDictionary(language, 'hold_sms_notification')}
 							onChange={(value) => {setSMSNotification(value)}}
 						>
-							<Text>{translate('holds.sms_notification')}</Text>
+							<Text>{getTermFromDictionary(language, 'hold_sms_notification')}</Text>
 						</Checkbox>
 					</FormControl>
 					{smsNotification ? (
 						<>
 							<FormControl>
-								<FormControl.Label>{translate('holds.sms_carrier')}</FormControl.Label>
+								<FormControl.Label>{getTermFromDictionary(language, 'hold_sms_carrier')}</FormControl.Label>
 								<Select
 									name="smsCarrier"
 									selectedValue={smsCarrier}
-									accessibilityLabel={translate('holds.sms_select_carrier')}
+									accessibilityLabel={getTermFromDictionary(language, 'hold_sms_select_carrier')}
 									_selectedItem={{
 										bg: 'tertiary.300',
 										endIcon: <CheckIcon size="5" />,
@@ -77,19 +77,19 @@ export const HoldNotificationPreferences = (props) => {
 									})}
 								</Select>
 								<FormControl.HelperText>
-									{translate('holds.sms_charges')}
+									{getTermFromDictionary(language, 'hold_sms_charges')}
 								</FormControl.HelperText>
 							</FormControl>
 							<FormControl>
-								<FormControl.Label>{translate('holds.sms_number')}</FormControl.Label>
+								<FormControl.Label>{getTermFromDictionary(language, 'hold_sms_number')}</FormControl.Label>
 								<Input
 									name="smsNumber"
 									defaultValue={smsNumber}
-									accessibilityLabel={translate('holds.sms_number')}
+									accessibilityLabel={getTermFromDictionary(language, 'hold_sms_number')}
 									onChangeText={(value) => setSMSNumber(value)}
 								/>
 								<FormControl.HelperText>
-									{translate('holds.sms_format')}
+									{getTermFromDictionary(language, 'hold_sms_format')}
 								</FormControl.HelperText>
 							</FormControl>
 						</>

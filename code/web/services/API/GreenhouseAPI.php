@@ -7,6 +7,16 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 class GreenhouseAPI extends Action {
 	function launch() {
 		$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
+
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+
 		//Make sure the user can access the API based on the IP address
 		if (!in_array($method, [
 				'getLibraries',

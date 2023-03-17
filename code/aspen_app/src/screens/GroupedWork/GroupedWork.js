@@ -9,10 +9,9 @@ import { Rating } from 'react-native-elements';
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { translate } from '../../translations/translations';
 import AddToList from '../Search/AddToList';
 import {navigateStack, startSearch} from '../../helpers/RootNavigator';
-import { GroupedWorkContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {GroupedWorkContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { useRoute } from '@react-navigation/native';
 import loading from '../Auth/Loading';
 import { getGroupedWork } from '../../util/api/work';
@@ -27,6 +26,7 @@ import {GetOverDriveSettings} from './OverDriveSettings';
 import {getProfile, PATRON} from '../../util/loadPatron';
 import Manifestation from './Manifestation';
 import {decodeHTML} from '../../util/apiAuth';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -34,9 +34,10 @@ export const GroupedWorkScreen = () => {
      const { user, locations, accounts, cards, updatePickupLocations, updateLinkedAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const {language: userLanguage} = React.useContext(LanguageContext)
      const [isLoading, setLoading] = React.useState(false);
 
-     const { status, data, error, isFetching } = useQuery(['groupedWork', id, library.baseUrl], () => getGroupedWork(route.params.id, library.baseUrl));
+     const { status, data, error, isFetching } = useQuery(['groupedWork', id, userLanguage, library.baseUrl], () => getGroupedWork(route.params.id, userLanguage, library.baseUrl));
 
      React.useEffect(() => {
           let isSubscribed = true;
@@ -138,17 +139,19 @@ const getAuthor = (author) => {
 };
 
 const Format = (data) => {
+     const format = data.data;
+     const key = data.format;
      const isSelected = data.isSelected;
      const updateFormat = data.updateFormat;
-     const btnStyle = isSelected === data.data ? 'solid' : 'outline';
+     const btnStyle = isSelected === key ? 'solid' : 'outline';
 
-     if (isSelected === data.data) {
-          updateFormat(data.data);
+     if (isSelected === key) {
+          updateFormat(key);
      }
 
      return (
-          <Button size="sm" colorScheme="secondary" mb={1} mr={1} variant={btnStyle} onPress={() => updateFormat(data.data)}>
-               {data.data}
+          <Button size="sm" colorScheme="secondary" mb={1} mr={1} variant={btnStyle} onPress={() => updateFormat(key)}>
+               {format.label}
           </Button>
      );
 };
@@ -166,11 +169,12 @@ const getDescription = (description) => {
 };
 
 const getLanguage = (language) => {
+    const {language: user_language} = React.useContext(LanguageContext);
      if (language) {
           return (
                <HStack mt={3} mb={1}>
                     <Text fontSize={{ base: 'xs', lg: 'md' }} bold>
-                         {translate('grouped_work.language')}:
+                         {getTermFromDictionary(user_language, 'language')}:
                     </Text>
                     <Text fontSize={{ base: 'xs', lg: 'md' }} ml={1}>
                          {language}
@@ -183,16 +187,17 @@ const getLanguage = (language) => {
 };
 
 const getFormats = (formats) => {
+     const { language } = React.useContext(LanguageContext);
      const { format, updateFormat } = React.useContext(GroupedWorkContext);
      if (formats) {
           return (
                <>
                     <Text fontSize={{ base: 'xs', lg: 'md' }} bold mt={3} mb={1}>
-                         {translate('grouped_work.format')}
+                        {getTermFromDictionary(language, 'format')}:
                     </Text>
                    <Button.Group flexDirection="row" flexWrap="wrap">
                        {_.map(_.keys(formats), function (item, index, array) {
-                           return <Format key={index} data={item} isSelected={format} updateFormat={updateFormat} />
+                           return <Format key={index} format={item} data={formats[item]} isSelected={format} updateFormat={updateFormat} />
                        })}
                    </Button.Group>
                </>
@@ -230,6 +235,7 @@ const getFormats = (formats) => {
  showOverDriveSettings: false,
  user: this.props.route.params?.userContext ?? [],
  library: this.props.route.params?.libraryContext ?? [],
+     userLanguage: this.props.route.params?.language ?? 'en'
  };
  this.locations = [];
  this._isMounted = false;
@@ -297,12 +303,13 @@ const getFormats = (formats) => {
  const { navigation, route } = this.props;
  const givenItem = route.params?.id ?? 'null';
  const libraryUrl = route.params?.url ?? 'unknown';
+ const language = route.params?.language ?? 'en';
 
  await getGroupedWork221200(libraryUrl, givenItem).then((response) => {
  if (response === 'TIMEOUT_ERROR') {
  this.setState({
  hasError: true,
- error: translate('error.timeout'),
+ error: getTermFromDictionary(language, 'error_timeout'),
  });
  } else {
  try {
@@ -322,7 +329,7 @@ const getFormats = (formats) => {
  } catch (error) {
  this.setState({
  hasError: true,
- error: translate('error.no_data'),
+ error: getTermFromDictionary(language, 'error_no_data'),
  });
  }
  }
@@ -431,7 +438,7 @@ const getFormats = (formats) => {
  promptItemId: response.itemId,
  promptSource: response.source,
  promptPatronId: response.patronId,
- promptTitle: translate('holds.hold_options'),
+ promptTitle: getTermFromDictionary(this.state.userLanguage, 'hold_options'),
  });
  }
  };
@@ -598,7 +605,7 @@ const getFormats = (formats) => {
  bold
  mt={3}
  mb={1}>
- {translate('grouped_work.format')}
+ {getTermFromDictionary(this.state.userLanguage, 'format')}
  </Text>
  {this.state.formats ? (
  <Button.Group
@@ -618,7 +625,7 @@ const getFormats = (formats) => {
  bold
  mt={3}
  mb={1}>
- {translate('grouped_work.language')}
+ {getTermFromDictionary(this.state.userLanguage, 'language')}
  </Text>
  {this.state.languages && discoveryVersion <= '22.05.00' ? <Button.Group colorScheme="secondary">{this.languageOptions()}</Button.Group> : null}
 
@@ -656,6 +663,7 @@ const getFormats = (formats) => {
  updateProfile={this.updateProfile}
  openHolds={this.openHolds}
  openCheckouts={this.openCheckouts}
+ userLanguage='en'
  />
  ) : null}
 
@@ -696,7 +704,7 @@ const getFormats = (formats) => {
  </Button>
  ) : null}
  <Button onPress={this.hideAlert} ml={3} variant="outline" colorScheme="primary">
- {translate('general.button_ok')}
+ {getTermFromDictionary(this.state.userLanguage, 'button_ok')}
  </Button>
  </AlertDialog.Footer>
  </AlertDialog.Content>
@@ -715,6 +723,7 @@ const getFormats = (formats) => {
  showOverDriveSettings={this.state.showOverDriveSettings}
  handleOverDriveSettings={this.handleOverDriveSettings}
  libraryUrl={library.baseUrl}
+ language='en'
  />
  </ScrollView>
  </SafeAreaView>

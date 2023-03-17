@@ -33,6 +33,15 @@ class ItemAPI extends Action {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [
@@ -995,7 +1004,7 @@ class ItemAPI extends Action {
 		return [
 			'success' => true,
 			'id' => $groupedWorkId,
-			'format' => $format,
+			'format' => translate(['text' => $format, 'isPublicFacing' => true]),
 			'manifestation' => $relatedManifestation->getItemSummary(),
 		];
 	}
@@ -1091,7 +1100,7 @@ class ItemAPI extends Action {
 		return [
 			'success' => true,
 			'id' => $groupedWorkId,
-			'format' => $format,
+			'format' => translate(['text' => $format, 'isPublicFacing' => true]),
 			'variations' => $variations,
 			'alwaysPlaceVolumeHoldWhenVolumesArePresent' => $alwaysPlaceVolumeHoldWhenVolumesArePresent,
 			'localSystemName' => $library->displayName,
@@ -1129,7 +1138,7 @@ class ItemAPI extends Action {
 				$records[$relatedRecord->id]['id'] = $relatedRecord->id;
 				$records[$relatedRecord->id]['source'] = $relatedRecord->source;
 				$records[$relatedRecord->id]['recordId'] = $recordId;
-				$records[$relatedRecord->id]['format'] = $relatedRecord->format;
+				$records[$relatedRecord->id]['format'] = translate(['text' => $relatedRecord->format, 'isPublicFacing' => true]);
 				$records[$relatedRecord->id]['edition'] = $relatedRecord->edition;
 				$records[$relatedRecord->id]['publisher'] = $relatedRecord->publisher;
 				$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
@@ -1330,15 +1339,18 @@ class ItemAPI extends Action {
 		}
 
 		$volumes = [];
+		$i = 0;
 		foreach($volumeData as $volume) {
 			$label = $volume->displayLabel;
 			if($alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()) {
 				$label .= ' (' . translate(['text' => 'Owned by %1%', 'isPublicFacing' => true, 1=>$library->displayName]) . ')';
 			}
+			$volumes[$volume->id]['key'] = $i;
 			$volumes[$volume->id]['id'] = $volume->id;
 			$volumes[$volume->id]['label'] = $label;
 			$volumes[$volume->id]['displayOrder'] = $volume->displayOrder;
 			$volumes[$volume->id]['volumeId'] = $volume->volumeId;
+			$i++;
 		}
 
 		return [
@@ -1387,7 +1399,7 @@ class ItemAPI extends Action {
 			'success' => true,
 			'id' => $_REQUEST['id'],
 			'recordId' => $_REQUEST['record'],
-			'format' => $_REQUEST['format'],
+			'format' => translate(['text' => $_REQUEST['format'], 'isPublicFacing' => true]),
 			'record' => $summary,
 		];
 	}

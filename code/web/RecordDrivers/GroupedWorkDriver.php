@@ -3177,20 +3177,22 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$relatedRecords = $this->getRelatedRecords();
 		foreach ($relatedRecords as $record) {
 			$items = $record->getItems();
-			foreach ($items as $item) {
-				if ($pickupAtRule == 2) {
-					if (!isset($locations[$item->locationCode])) {
-						$location = new Location();
-						$location->code = $item->locationCode;
-						if ($location->find(true)) {
-							$library = $location->getParentLibrary();
-							foreach ($library->getLocations() as $libraryBranch) {
-								$locations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
+			if ($items != null) {
+				foreach ($items as $item) {
+					if ($pickupAtRule == 2) {
+						if (!isset($locations[$item->locationCode])) {
+							$location = new Location();
+							$location->code = $item->locationCode;
+							if ($location->find(true)) {
+								$library = $location->getParentLibrary();
+								foreach ($library->getLocations() as $libraryBranch) {
+									$locations[strtolower($libraryBranch->code)] = strtolower($libraryBranch->code);
+								}
 							}
 						}
+					} else {
+						$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
 					}
-				} else {
-					$locations[strtolower($item->locationCode)] = strtolower($item->locationCode);
 				}
 			}
 		}

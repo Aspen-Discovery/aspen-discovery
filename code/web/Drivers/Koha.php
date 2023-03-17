@@ -3795,7 +3795,6 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	function selfRegisterViaSSO($ssoUser): array {
-		global $locationSingleton;
 		global $library;
 
 		$result = ['success' => false,];
@@ -4384,12 +4383,6 @@ class Koha extends AbstractIlsDriver {
 	 * @return string[]
 	 */
 	function processMaterialsRequestForm($user) {
-		if (empty($user->cat_password)) {
-			return [
-				'success' => false,
-				'message' => 'Unable to place materials request in masquerade mode',
-			];
-		}
 		if ($this->getKohaVersion() > 21.05) {
 			$result = [
 				'success' => false,
@@ -4478,6 +4471,12 @@ class Koha extends AbstractIlsDriver {
 			}
 			return $result;
 		} else {
+			if (empty($user->cat_password)) {
+				return [
+					'success' => false,
+					'message' => 'Unable to place materials request in masquerade mode',
+				];
+			}
 			$loginResult = $this->loginToKohaOpac($user);
 			if (!$loginResult['success']) {
 				return [

@@ -1,7 +1,9 @@
 import {GLOBALS} from '../globals';
 import {createAuthTokens, getHeaders} from '../apiAuth';
 import axios from 'axios';
+import { create } from 'apisauce';
 import _ from 'lodash';
+import {getVariableTermFromDictionary} from '../../translations/TranslationService';
 
 /** *******************************************************************
  * General
@@ -10,9 +12,10 @@ import _ from 'lodash';
  * Returns manifestation data for the given grouped work id and format
  * @param {string} itemId
  * @param {string} format
+ * @param {string} language
  * @param {string} url
  **/
-export async function getManifestation(itemId, format, url) {
+export async function getManifestation(itemId, format, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getManifestation', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -21,6 +24,7 @@ export async function getManifestation(itemId, format, url) {
           params: {
                id: itemId,
                format: format,
+               language,
           },
      });
 
@@ -35,9 +39,10 @@ export async function getManifestation(itemId, format, url) {
  * Returns variation data for the given grouped work id and format
  * @param {string} itemId
  * @param {string} format
+ * @param {string} language
  * @param {string} url
  **/
-export async function getVariations(itemId, format, url) {
+export async function getVariations(itemId, format, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getVariations', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -46,6 +51,7 @@ export async function getVariations(itemId, format, url) {
           params: {
                id: itemId,
                format: format,
+               language
           },
      });
 
@@ -68,9 +74,10 @@ export async function getVariations(itemId, format, url) {
  * @param {string} itemId
  * @param {string} format
  * @param {string} source
+ * @param {string} language
  * @param {string} url
  **/
-export async function getRecords(itemId, format, source, url) {
+export async function getRecords(itemId, format, source, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getRecords', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -80,6 +87,7 @@ export async function getRecords(itemId, format, source, url) {
                id: itemId,
                format: format,
                source: source,
+               language
           },
      });
 
@@ -112,7 +120,7 @@ export async function getItemAvailability(recordId, url) {
      };
 }
 
-export async function getFirstRecord(itemId, format, url) {
+export async function getFirstRecord(itemId, format, language, url) {
      const {data} = await axios.get('/ItemAPI?method=getRecords', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,
@@ -121,6 +129,7 @@ export async function getFirstRecord(itemId, format, url) {
           params: {
                id: itemId,
                format: format,
+               language
           },
      });
 
@@ -145,17 +154,26 @@ export async function getFirstRecord(itemId, format, url) {
 }
 
 export async function getVolumes(id, url) {
-     const {data} = await axios.get('/ItemAPI?method=getVolumes', {
+     const api = create({
           baseURL: url + '/API',
-          timeout: GLOBALS.timeoutSlow,
+          timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(),
           auth: createAuthTokens(),
           params: {
                id: id,
-          },
+          }
      });
+     const response = await api.get('/ItemAPI?method=getVolumes', {
+          id,
+     });
+     let volumes = [];
+     if(response.ok) {
+          if(response.data?.volumes) {
+               volumes = _.sortBy(response.data.volumes, 'key');
+          }
+     }
 
-     return data.volumes ?? [];
+     return volumes;
 }
 
 export async function getBasicItemInfo(id, url) {

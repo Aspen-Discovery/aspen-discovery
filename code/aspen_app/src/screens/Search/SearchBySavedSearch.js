@@ -6,15 +6,14 @@ import React, { Component } from 'react';
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { userContext } from '../../context/user';
-import { translate } from '../../translations/translations';
 import { getFormats, savedSearchResults } from '../../util/search';
 import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
 import { LibrarySystemContext, UserContext } from '../../context/initialContext';
-import DrawerContent from '../../navigations/drawer/DrawerContent';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
 import {formatDiscoveryVersion} from '../../util/loadLibrary';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export default class SearchBySavedSearch extends Component {
      constructor() {
@@ -32,6 +31,7 @@ export default class SearchBySavedSearch extends Component {
                endOfResults: false,
                dataMessage: null,
                lastListUsed: 0,
+               language: 'en',
           };
           this.lastListUsed = 0;
           this.updateLastListUsed = this.updateLastListUsed.bind(this);
@@ -45,7 +45,10 @@ export default class SearchBySavedSearch extends Component {
           const libraryUrl = this.props.route.params.url;
 
           const params = this.props.route.params.url;
-          console.log(params);
+          const language = route.params?.language ?? 'en';
+          this.setState({
+               language: language
+          })
 
           await getLists(libraryUrl);
           await this._fetchResults();
@@ -75,9 +78,10 @@ export default class SearchBySavedSearch extends Component {
           const { page } = this.state;
           const { navigation, route } = this.props;
           const category = route.params?.id ?? '';
-          const libraryUrl = this.props.route.params.url;
+          const libraryUrl = route.params?.url;
+          const language = route.params?.language ?? 'en';
 
-          await savedSearchResults(category, 25, page, libraryUrl).then((response) => {
+          await savedSearchResults(category, 25, page, libraryUrl, language).then((response) => {
                if (response.ok) {
                     const records = Object.values(response.data.result.items);
 
@@ -143,11 +147,11 @@ export default class SearchBySavedSearch extends Component {
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library, item.title)}>
                     <HStack space={3}>
-                         <VStack>
+                         <VStack maxW="30%">
                               {isNew ? (
                                    <Container zIndex={1}>
                                         <Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{ fontSize: 9 }}>
-                                             {translate('general.new')}
+                                             {getTermFromDictionary(this.state.language, 'flag_new')}
                                         </Badge>
                                    </Container>
                               ) : null}
@@ -188,7 +192,7 @@ export default class SearchBySavedSearch extends Component {
                               </Text>
                               {item.author ? (
                                    <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                        {translate('grouped_work.by')} {item.author}
+                                        {getTermFromDictionary(this.state.language, 'by')} {item.author}
                                    </Text>
                               ) : null}
                               {item.format ? (
@@ -247,12 +251,12 @@ export default class SearchBySavedSearch extends Component {
           const { navigation, route } = this.props;
           return (
                <Center flex={1}>
-                    <Heading pt={5}>{translate('search.no_results')}</Heading>
+                    <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
                     <Text bold w="75%" textAlign="center">
                          {route.params?.title}
                     </Text>
                     <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                         {translate('search.new_search_button')}
+                         {getTermFromDictionary(this.state.language, 'new_search_button')}
                     </Button>
                </Center>
           );
@@ -284,12 +288,12 @@ export default class SearchBySavedSearch extends Component {
           if (this.state.hasError && this.state.dataMessage) {
                return (
                     <Center flex={1}>
-                         <Heading pt={5}>{translate('search.no_results')}</Heading>
+                         <Heading pt={5}>{getTermFromDictionary(this.state.language, 'no_results')}</Heading>
                          <Text bold w="75%" textAlign="center">
                               {route.params?.title}
                          </Text>
                          <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                              {translate('search.new_search_button')}
+                              {getTermFromDictionary(this.state.language, 'new_search_button')}
                          </Button>
                     </Center>
                );

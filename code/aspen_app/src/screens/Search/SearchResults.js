@@ -2,28 +2,31 @@ import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
+import { create } from 'apisauce';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container } from 'native-base';
 
-import {LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getAppliedFilters, getAvailableFacets, getSortList, SEARCH } from '../../util/search';
 import { translate } from '../../translations/translations';
 import AddToList from './AddToList';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
 import { SafeAreaView, ScrollView } from 'react-native';
-import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import {createAuthTokens, getHeaders, postData} from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import axios from 'axios';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getCleanTitle } from '../../helpers/item';
-import {navigate, navigateStack} from '../../helpers/RootNavigator';
+import {navigate} from '../../helpers/RootNavigator';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../translations/TranslationService';
 
 export const SearchResults = () => {
      const [page, setPage] = React.useState(1);
      const [storedTerm, setStoredTerm] = React.useState('');
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
 
@@ -31,6 +34,9 @@ export const SearchResults = () => {
      term = term.replace(/" "/g, '%20');
 
      let params = useRoute().params.pendingParams ?? [];
+
+     const type = useRoute().params.type ?? 'catalog';
+     const id = useRoute().params.id ?? null;
 
      if(term && (term !== storedTerm)) {
           console.log("Search term changed. Clearing previous search options...");
@@ -46,17 +52,23 @@ export const SearchResults = () => {
           params = [];
      }
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params], () => fetchSearchResults(term, page, scope, url), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params, type, id, language], () => fetchSearchResults(term, page, scope, url, type, id, language), {
           keepPreviousData: true,
           staleTime: 1000,
+     });
+
+     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
+          queryKey: ['totalPages', url, page, term, scope, params],
+          queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
+          enabled: !!data,
      });
 
      const Header = () => {
           const num = _.toInteger(data?.totalResults);
           if (num > 0) {
-               let label = translate('filters.results', { num: num });
+               let label = num + ' ' + getTermFromDictionary(language, 'results');
                if (num === 1) {
-                    label = translate('filters.result', { num: num });
+                    label = num + ' ' + getTermFromDictionary(language, 'result');
                }
                return (
                     <Box
@@ -94,7 +106,7 @@ export const SearchResults = () => {
                         <ScrollView horizontal>
                              <Button.Group size="sm">
                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                                       {translate('general.previous')}
+                                       {getTermFromDictionary(language, 'previous')}
                                   </Button>
                                   <Button
                                       onPress={() => {
@@ -104,12 +116,12 @@ export const SearchResults = () => {
                                            }
                                       }}
                                       isDisabled={isPreviousData || !data.hasMore}>
-                                       {translate('general.next')}
+                                       {getTermFromDictionary(language, 'next')}
                                   </Button>
                              </Button.Group>
                         </ScrollView>
                         <Text mt={2} fontSize="sm">
-                             Page {page} of {data?.totalPages}
+                             {paginationLabel}
                         </Text>
                    </Box>
                );
@@ -124,7 +136,7 @@ export const SearchResults = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               {status === 'loading' || isFetching ? (
+               {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
                     loadError('Error', '')
@@ -143,6 +155,7 @@ const DisplayResult = (data) => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const { language } = React.useContext(LanguageContext);
 
      const handlePressItem = () => {
           if(version >= '23.01.00') {
@@ -176,7 +189,7 @@ const DisplayResult = (data) => {
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
-                    <VStack>
+                    <VStack maxW="30%">
                          <Image
                               source={{ uri: item.image }}
                               fallbackSource={{
@@ -221,7 +234,7 @@ const DisplayResult = (data) => {
                          </Text>
                          {item.author ? (
                               <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800">
-                                   {translate('grouped_work.by')} {item.author}
+                                   {getTermFromDictionary(language, 'by')} {item.author}
                               </Text>
                          ) : null}
                          <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
@@ -235,10 +248,12 @@ const DisplayResult = (data) => {
 
 const FilterBar = () => {
      const navigation = useNavigation();
+     const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const type = useRoute().params.type ?? 'catalog';
 
-     if (version >= '22.11.00') {
+     if (version >= '22.11.00' && type === 'catalog') {
           return (
                <Box
                     safeArea={2}
@@ -264,7 +279,7 @@ const FilterBar = () => {
                                         },
                                    });
                               }}>
-                              {translate('filters.title')}
+                              {getTermFromDictionary(language, 'filters')}
                          </Button>
                          <CreateFilterButton />
                     </ScrollView>
@@ -359,17 +374,20 @@ const CreateFilterButton = () => {
      return <CreateFilterButtonDefaults />;
 };
 
-async function fetchSearchResults(term, page, scope, url) {
+async function fetchSearchResults(term, page, scope, url, type, id, language) {
      const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(false),
           auth: createAuthTokens(),
           params: {
-               library: scope,
-               lookfor: term,
+               library: scope ?? null,
+               lookfor: term ?? null,
                pageSize: 25,
-               page: page,
+               page: page ?? 1,
+               type: type ?? 'catalog',
+               id: id,
+               language: language,
           },
      });
 
@@ -380,13 +398,13 @@ async function fetchSearchResults(term, page, scope, url) {
           morePages= false;
      }
 
-     SEARCH.id = data.result.id;
-     SEARCH.sortMethod = data.result.sort;
-     SEARCH.term = data.result.lookfor;
+     SEARCH.id = data?.result?.id ?? null;
+     SEARCH.sortMethod = data?.result?.sort ?? '';
+     SEARCH.term = data?.result?.lookfor ?? '';
 
-     await getSortList(url);
-     await getAvailableFacets(url);
-     await getAppliedFilters(url);
+     await getSortList(url, language);
+     await getAvailableFacets(url, language);
+     await getAppliedFilters(url, language);
 
      return {
           results: data.result?.items,

@@ -1,16 +1,14 @@
 import { Button, FormControl, Modal, Select, CheckIcon, Radio, Heading, AlertDialog, Center } from 'native-base';
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { translate } from '../../translations/translations';
 import { completeAction } from './Record';
 import { refreshProfile } from '../../util/api/user';
-import {HoldsContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {navigate, navigateStack} from '../../helpers/RootNavigator';
-import {reloadHolds} from '../../util/loadPatron';
+import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import _ from 'lodash';
 import {getVolumes} from '../../util/api/item';
 import {loadingSpinner} from '../../components/loadingSpinner';
 import {loadError} from '../../components/loadError';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const SelectVolumeHold = (props) => {
      const { id, title, action, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
@@ -21,6 +19,7 @@ const SelectVolumeHold = (props) => {
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { updateHolds } = React.useContext(HoldsContext);
+     const { language } = React.useContext(LanguageContext);
 
      const isPlacingHold = action.includes('hold');
 
@@ -66,7 +65,7 @@ const SelectVolumeHold = (props) => {
                <Modal isOpen={showModal} onClose={() => setShowModal(false)} closeOnOverlayClick={false} size="lg">
                     <Modal.Content maxWidth="90%" bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton />
-                         <Modal.Header><Heading size="md">{isPlacingHold ? translate('grouped_work.hold_options') : translate('grouped_work.checkout_options')}</Heading></Modal.Header>
+                         <Modal.Header><Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading></Modal.Header>
                          <Modal.Body>
                               {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : (
                               <>
@@ -81,22 +80,22 @@ const SelectVolumeHold = (props) => {
 										}}
 										accessibilityLabel="">
                                         <Radio value="item" my={1} size="sm">
-                                             {translate('grouped_work.first_available')}
+                                             {getTermFromDictionary(language, 'first_available')}
                                         </Radio>
                                         <Radio value="volume" my={1} size="sm">
-                                             {translate('grouped_work.specific_volume')}
+                                             {getTermFromDictionary(language, 'specific_volume')}
                                         </Radio>
                                    </Radio.Group>
                               </FormControl>
                               ) : null}
                               {holdType === 'volume' ? (
                                   <FormControl>
-                                       <FormControl.Label>{translate('grouped_work.select_volume')}</FormControl.Label>
+                                       <FormControl.Label>{getTermFromDictionary(language, 'select_volume')}</FormControl.Label>
                                        <Select
                                            name="volumeForHold"
                                            selectedValue={volume}
                                            minWidth="200"
-                                           accessibilityLabel="Select a Volume"
+                                           accessibilityLabel={getTermFromDictionary(language, 'select_volume')}
                                            _selectedItem={{
                                                 bg: 'tertiary.300',
                                                 endIcon: <CheckIcon size="5" />,
@@ -112,12 +111,12 @@ const SelectVolumeHold = (props) => {
                               ) : null}
                               {_.size(locations) > 1 ? (
                                   <FormControl>
-                                       <FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
+                                       <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
                                        <Select
                                            name="pickupLocations"
                                            selectedValue={location}
                                            minWidth="200"
-                                           accessibilityLabel="Select a Pickup Location"
+                                           accessibilityLabel={getTermFromDictionary(language, 'select_pickup_location')}
                                            _selectedItem={{
                                                 bg: 'tertiary.300',
                                                 endIcon: <CheckIcon size="5" />,
@@ -133,12 +132,12 @@ const SelectVolumeHold = (props) => {
                               ) : null}
                               {_.size(accounts) > 0 ? (
                                   <FormControl>
-                                       <FormControl.Label>{isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}</FormControl.Label>
+                                       <FormControl.Label>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControl.Label>
                                        <Select
                                            name="linkedAccount"
                                            selectedValue={activeAccount}
                                            minWidth="200"
-                                           accessibilityLabel={isPlacingHold ? translate('linked_accounts.place_hold_for_account') : translate('linked_accounts.checkout_to_account')}
+                                           accessibilityLabel={isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}
                                            _selectedItem={{
                                                 bg: 'tertiary.300',
                                                 endIcon: <CheckIcon size="5" />,
@@ -165,11 +164,11 @@ const SelectVolumeHold = (props) => {
                                              setShowModal(false);
                                              setLoading(false);
                                         }}>
-                                        {translate('general.close_window')}
+                                        {getTermFromDictionary(language, 'close_window')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText={isPlacingHold ? "Placing hold..." : "Checking out..."}
+                                        isLoadingText={isPlacingHold ? getTermFromDictionary(language, 'placing_hold', true) : getTermFromDictionary(language, 'checking_out', true)}
                                         onPress={async () => {
                                              setLoading(true);
                                              await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType).then(async (result) => {

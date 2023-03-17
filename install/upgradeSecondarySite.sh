@@ -15,7 +15,7 @@ service crond stop
 
 cd /usr/local/aspen-discovery/install
 if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
-  /usr/local/aspen-discovery/install/upgrade_$2.sh
+  /usr/local/aspen-discovery/install/upgrade_$2.sh $1
 fi
 
 echo "Run database maintenance, and then press return when done"

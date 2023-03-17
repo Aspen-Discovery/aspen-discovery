@@ -9,8 +9,8 @@ import {
 import React from "react";
 
 // custom components and helper files
-import { translate } from "../../translations/translations";
 import { updateOverDriveEmail } from "../../util/accountActions";
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const GetOverDriveSettings = (props) => {
   const {
@@ -26,6 +26,7 @@ export const GetOverDriveSettings = (props) => {
     setEmail,
     setRememberPrompt,
     overdriveEmail,
+      language
   } = props;
 
   return (
@@ -42,7 +43,7 @@ export const GetOverDriveSettings = (props) => {
           <FormControl>
             <Stack>
               <FormControl.Label>
-                {translate("overdrive.email_field")}
+                {getTermFromDictionary(language, 'overdrive_email_field')}
               </FormControl.Label>
               <Input
                 autoCapitalize="none"
@@ -56,7 +57,7 @@ export const GetOverDriveSettings = (props) => {
                 id="promptForOverdriveEmail"
                 onChange={(isSelected) => setRememberPrompt(isSelected)}
               >
-                {translate("user_profile.remember_settings")}
+                {getTermFromDictionary(language, 'remember_settings')}
               </Checkbox>
             </Stack>
           </FormControl>
@@ -68,7 +69,7 @@ export const GetOverDriveSettings = (props) => {
               variant="ghost"
               onPress={() => handleOverDriveSettings(false)}
             >
-              {translate("general.close_window")}
+              {getTermFromDictionary(language, 'close_window')}
             </Button>
             <Button
               onPress={async () => {
@@ -84,7 +85,7 @@ export const GetOverDriveSettings = (props) => {
                 });
               }}
             >
-              {translate("holds.place_hold")}
+              {getTermFromDictionary(language, 'place_hold')}
             </Button>
           </Button.Group>
         </Modal.Footer>

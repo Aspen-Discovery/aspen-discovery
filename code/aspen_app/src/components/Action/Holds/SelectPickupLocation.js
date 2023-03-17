@@ -1,18 +1,16 @@
 import { FormControl, Select, CheckIcon } from 'native-base';
 import React from 'react';
-import { translate } from '../../../translations/translations';
 
 export const SelectPickupLocation = (props) => {
 	const { locations, location, setLocation } = props;
 	return (
 		<>
 			<FormControl>
-				<FormControl.Label>{translate('pickup_locations.text')}</FormControl.Label>
+				<FormControl.Label>Select a Pickup Location</FormControl.Label>
 				<Select
 					name="pickupLocations"
 					selectedValue={location}
 					minWidth="200"
-					accessibilityLabel="Select a Pickup Location"
 					_selectedItem={{
 						bg: 'tertiary.300',
 						endIcon: <CheckIcon size="5" />,
@@ -28,5 +26,3 @@ export const SelectPickupLocation = (props) => {
 		</>
 	);
 };
-
-export default SelectPickupLocation;

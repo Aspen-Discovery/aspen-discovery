@@ -11,7 +11,8 @@ import {createAuthTokens, getHeaders} from '../../util/apiAuth';
 import {popAlert} from '../../components/loadError';
 import { AuthContext } from '../../components/navigation';
 import {getBrowseCategories, getLibraryBranch, getLibrarySystem, getUserProfile} from '../../util/login';
-import {BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const ResetExpiredPin = (props) => {
 	const [resetSuccessful, setResetSuccessful] = React.useState(false);
@@ -21,6 +22,7 @@ export const ResetExpiredPin = (props) => {
 	const { updateLocation } = React.useContext(LibraryBranchContext);
 	const { updateUser } = React.useContext(UserContext);
 	const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
+	const { language } = React.useContext(LanguageContext);
 	const { username, resetToken, url, pinValidationRules, setExpiredPin, patronsLibrary } = props;
 	const [isOpen, setIsOpen] = React.useState(true);
 	const onClose = () => {
@@ -132,7 +134,7 @@ export const ResetExpiredPin = (props) => {
 		<Center>
 			<AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose} avoidKeyboard>
 				<AlertDialog.Content>
-					<AlertDialog.Header>{resetSuccessful ? 'PIN Updated' : 'Reset My PIN'}</AlertDialog.Header>
+					<AlertDialog.Header>{resetSuccessful ? getTermFromDictionary(language, 'pin_updated') : getTermFromDictionary(language, 'reset_my_pin')}</AlertDialog.Header>
 					{resetSuccessful ? (
 						<>
 						<AlertDialog.Body>
@@ -147,14 +149,14 @@ export const ResetExpiredPin = (props) => {
 					) : (
 						<>
 						<AlertDialog.CloseButton/>
-						<AlertDialog.Body>Your PIN has expired, enter a new PIN below.
+						<AlertDialog.Body>{getTermFromDictionary(language, 'pin_has_expired')}
 							<FormControl isRequired isInvalid={'pin' in errors}>
 								<FormControl.Label
 									_text={{
 										fontSize: 'sm',
 										fontWeight: 600,
 									}}>
-									New PIN/Password
+									{getTermFromDictionary(language, 'new_pin')}
 								</FormControl.Label>
 								<Input
 									keyboardType={pinValidationRules.onlyDigitsAllowed === '1' ? 'numeric' : 'default'}
@@ -183,7 +185,7 @@ export const ResetExpiredPin = (props) => {
 										fontSize: 'sm',
 										fontWeight: 600,
 									}}>
-									Re-enter New PIN/Password
+									{getTermFromDictionary(language, 'new_pin_confirmed')}
 								</FormControl.Label>
 								<Input
 									keyboardType={pinValidationRules.onlyDigitsAllowed === '1' ? 'numeric' : 'default'}
@@ -210,9 +212,9 @@ export const ResetExpiredPin = (props) => {
 
 						<AlertDialog.Footer>
 							<Button.Group space={3}>
-								<Button onPress={onClose}>Cancel</Button>
+								<Button onPress={onClose}>{getTermFromDictionary(language, 'cancel')}</Button>
 								<Button colorScheme="primary" onPress={() => updatePIN()}>
-									Update
+									{getTermFromDictionary(language, 'update')}
 								</Button>
 							</Button.Group>
 						</AlertDialog.Footer>

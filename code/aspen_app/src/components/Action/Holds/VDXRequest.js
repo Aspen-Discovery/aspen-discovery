@@ -15,7 +15,6 @@ import {reloadHolds} from '../../../util/loadPatron';
 import {navigate} from '../../../helpers/RootNavigator';
 
 export const StartVDXRequest = (props) => {
-	const { user } = React.useContext(UserContext);
 	const openVDXRequest = () => {
 		navigate('CreateVDXRequest', {
 			id: props.id

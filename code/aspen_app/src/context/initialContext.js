@@ -1,7 +1,6 @@
 import React, {useState} from 'react';
 import _ from 'lodash';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import {BRANCH, formatDiscoveryVersion} from '../util/loadLibrary';
 import {PATRON} from '../util/loadPatron';
@@ -104,7 +103,9 @@ export const LanguageContext = React.createContext({
      updateLanguage: () => {},
      language: '',
      languages: [],
+     dictionary: [],
      updateLanguages: () => {},
+     updateDictionary: () => {},
      resetLanguage: () => {},
 })
 
@@ -531,6 +532,7 @@ export const GroupedWorkProvider = ({children}) => {
 export const LanguageProvider = ({children}) => {
      const [language, setLanguage] = useState();
      const [languages, setLanguages] = useState();
+     const [dictionary, setDictionary] = useState();
 
      const updateLanguage = (data) => {
           console.log("updated language to " + data + " in LanguageContext");
@@ -543,13 +545,20 @@ export const LanguageProvider = ({children}) => {
           setLanguages(data);
      };
 
+     const updateDictionary = (data) => {
+          console.log("updated dictionary in LanguageContext");
+          setDictionary(data);
+     }
+
      return (
          <LanguageContext.Provider
              value={{
                   language,
                   updateLanguage,
                   languages,
-                  updateLanguages
+                  updateLanguages,
+                  dictionary,
+                  updateDictionary
              }}>
               {children}
          </LanguageContext.Provider>

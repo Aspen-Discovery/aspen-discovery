@@ -1,12 +1,69 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { create } from "apisauce";
-import _ from "lodash";
+import React from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
+import {create} from 'apisauce';
+import _ from 'lodash';
+import { Box, Button, Icon, Menu, Pressable } from 'native-base';
 
-import { createAuthTokens, getHeaders } from "../util/apiAuth";
-import { GLOBALS } from "../util/globals";
-import { LIBRARY } from "../util/loadLibrary";
-import defaults from './defaults.json';
+import {createAuthTokens, getHeaders} from '../util/apiAuth';
+import {GLOBALS} from '../util/globals';
+import {LanguageContext, LibrarySystemContext} from '../context/initialContext';
+import {saveLanguage} from '../util/api/user';
 
+/** *******************************************************************
+ * General
+ ******************************************************************* **/
+export const LanguageSwitcher = () => {
+  const { library } = React.useContext(LibrarySystemContext);
+  const { language, updateLanguage, languages, updateDictionary } = React.useContext(LanguageContext);
+  const [label, setLabel] = React.useState(getLanguageDisplayName(language, languages));
+
+  const changeLanguage = async (val) => {
+    await saveLanguage(val, library.baseUrl).then(async result => {
+      if(result) {
+        updateLanguage(val);
+        setLabel(getLanguageDisplayName(val, languages));
+      } else {
+        console.log("there was an error updating the language...");
+      }
+    });
+  };
+
+  if(_.isArray(languages) && _.size(languages) > 1) {
+    return (
+        <Box>
+          <Menu
+              closeOnSelect
+              w="190"
+              trigger={(triggerProps) => {
+                return (
+                    <Pressable {...triggerProps}>
+                      <Button size="sm" variant="ghost" colorScheme="secondary" leftIcon={<Icon as={MaterialIcons} name="language" size="xs" />} {...triggerProps}>
+                        {label}
+                      </Button>
+                    </Pressable>
+                );
+              }}>
+            {_.isArray(languages) ? (
+                <Menu.OptionGroup defaultValue={language} title="Select a Language" type="radio" onChange={(val) => changeLanguage(val)}>
+                  {languages.map((language, index) => {
+                    return <Menu.ItemOption key={index} value={language.code}>{language.displayName}</Menu.ItemOption>;
+                  })}
+                </Menu.OptionGroup>
+            ) : null}
+          </Menu>
+        </Box>
+    );
+  }
+
+  return null;
+};
+
+/**
+ * Returns translation of a single term for the given language
+ * @param {string} term
+ * @param {string} language
+ * @param {string} url
+ **/
 export async function getTranslation(term, language, url) {
   const api = create({
     baseURL: url + "/API",
@@ -14,31 +71,35 @@ export async function getTranslation(term, language, url) {
     headers: getHeaders(),
     auth: createAuthTokens(),
   });
-  const response = await api.get("/SystemAPI?method=getTranslation", {
-    term,
-    language,
-  });
-
+  const response = await api.get("/SystemAPI?method=getTranslation", {term, language});
   if (response.ok) {
-    const translation = response?.data?.result?.translations[term] ?? term;
-    console.log(translation);
-    return translation;
+      if(response.data?.success) {
+          if(response?.data?.result[language][term]) {
+              console.log(response?.data?.result[language][term])
+              return Object.values(response?.data?.result[language][term])
+          }
+      }
   }
-  // just return the original term back if we don't get a good translation
+  // return the original term as a fallback
   return term;
 }
 
-const defaultTranslation = require('../translations/defaults.json');
-export async function getTranslations(language, libraryUrl) {
+/**
+ * Returns translation of an array of terms for the given language
+ * @param {array} terms
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function getTranslations(terms, language, url) {
   const api = create({
-    baseURL: libraryUrl + "/API",
+    baseURL: url + "/API",
     timeout: GLOBALS.timeoutAverage,
     headers: getHeaders(),
     auth: createAuthTokens(),
   });
   const response = await api.get("/SystemAPI?method=getTranslation", {
-    terms: _.toArray(defaultTranslation.user_profile),
-    language: 'es',
+    terms: terms,
+    language: language,
   });
 
   if (response.ok) {
@@ -49,163 +110,208 @@ export async function getTranslations(language, libraryUrl) {
   }
 }
 
-export async function getDefaultTranslations(libraryUrl) {
-  const api = create({
-    baseURL: libraryUrl + "/API",
-    timeout: GLOBALS.timeoutAverage,
-    headers: getHeaders(),
-    auth: createAuthTokens(),
-  });
-  const terms = [
-    "Version",
-    "Build",
-    "Patch",
-    "Beta",
-    "Login",
-    "Logout",
-    "OK",
-    "Save",
-    "Privacy Policy",
-    "Contact",
-    "Close",
-    "Hide",
-    "Updating",
-    "Loading",
-    "Library Barcode",
-    "Password/PIN",
-    "Discover",
-    "Search",
-    "Search Results",
-    "Card",
-    "Library Card",
-    "Account",
-    "More",
-    "Note",
-    "Select Your Library",
-    "Find Your Library",
-    "Reset Geolocation",
-    "By",
-    "Item Details",
-    "Language",
-    "No matches found",
-    "View Item Details",
-    "Where is it?",
-    "Holds",
-    "Place Hold",
-    "Titles on Hold",
-    "Ready for Pickup",
-    "Author",
-    "Format",
-    "On Hold For",
-    "Pickup Location",
-    "Pickup By",
-    "Position",
-    "View Item Details",
-    "Cancelling",
-    "Cancel Hold",
-    "Cancel All",
-    "Freezing",
-    "Freeze Hold",
-    "Freeze All",
-    "Thawing",
-    "Thaw Hold",
-    "Thaw All",
-    "You have no items on hold",
-    "Change Pickup Location",
-    "Renew",
-    "Renew All",
-    "Due",
-    "Overdue",
-    "Return Now",
-    "Access Online",
-    "Read Online",
-    "Listen Online",
-    "Watch Online",
-    "Settings",
-    "Account Summary",
-  ];
-  const tmp = await AsyncStorage.getItem("@libraryLanguages");
-  let languages = JSON.parse(tmp);
-  languages = _.values(languages);
-  languages.map(async (language) => {
-    //language.code
-    //map through the languages with term list, and save to their unique array named by language code?
+/**
+ * Returns translation of a term with interchangeable values in the given language
+ * getTranslationsWithValues('last_updated_on', $value, 'en', $url)
+ * getTranslationsWithValues('filter_by_source', [$value1, $value2], 'en', $url)
+ *
+ * @param {string} key
+ * @param {array || string} values
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function getTranslationsWithValues(key, values, language, url) {
+    let defaults = require('../translations/defaults.json');
+    const term = defaults[key];
 
-    const response = await api.get("/SystemAPI?method=getTranslation", {
-      terms,
-      language: language.code,
+    const api = create({
+        baseURL: url + "/API",
+        timeout: GLOBALS.timeoutAverage,
+        headers: getHeaders(),
+        auth: createAuthTokens(),
+    });
+    const response = await api.get("/SystemAPI?method=getTranslationWithValues", {
+        term,
+        values: values,
+        language: language,
     });
 
     if (response.ok) {
-      if (response.data.result.success) {
-        const translations = response.data.result.translations;
-        await AsyncStorage.setItem(language.code, JSON.stringify(translations));
-        console.log(language.displayNameEnglish + " translations saved");
-      } else {
-        // error
-        console.log(response);
-      }
-    } else {
-      console.log(response);
-      // no data yet
+        if(response.data?.result?.translation) {
+            return Object.values(response.data?.result?.translation);
+        }
     }
-  });
+    // it didn't work we should return the untranslated term back
+    return term;
 }
 
-export async function getDefaultTranslation(term, language, libraryUrl) {
-  const api = create({
-    baseURL: libraryUrl + "/API",
-    timeout: GLOBALS.timeoutAverage,
-    headers: getHeaders(),
-    auth: createAuthTokens(),
-  });
-  const response = await api.get("/SystemAPI?method=getDefaultTranslation", {
-    term,
-    languageCode: language,
-  });
-
-  if (response.ok) {
-  } else {
-    console.log(response);
-    // no data yet
-  }
-}
-
+/**
+ * Returns the display name for the given language code
+ * @param {string} code
+ * @param {string} languages
+ **/
 export function getLanguageDisplayName(code, languages) {
   let language = _.filter(languages, ["code", code]);
   language = _.values(language[0]);
   return language[2];
 }
 
-export async function getAvailableTranslations() {}
+/**
+ * Local storage for translated terms
+ */
+export let translationsLibrary = {};
 
-export let translations = {};
-
+/**
+ * Returns translation of terms used in Aspen LiDA for the given language
+ * @param {string} language
+ * @param {string} url
+ **/
 export async function getTranslatedTerm(language, url) {
+  // Load in the terms used for Aspen LiDA
   let defaults = require('../translations/defaults.json');
-  _.map(defaults, async function (terms, index, array) {
     const api = create({
-      baseURL: url + "/API",
-      timeout: GLOBALS.timeoutFast,
-      headers: getHeaders(true),
-      auth: createAuthTokens(),
+        baseURL: url + "/API",
+        timeout: GLOBALS.timeoutFast,
+        headers: getHeaders(true),
+        auth: createAuthTokens(),
+        params: {
+            language
+        },
     });
-    const response = await api.get("/SystemAPI?method=getTranslation", {
-      terms: _.toArray(terms),
-      language
-    });
-    if(response.ok) {
-      const translation = response?.data?.result?.translations ?? terms;
-      if(_.isObject(translation)) {
-        const obj = {
-          [language]: {
-            [index]: translation,
-          }
-        }
-        _.merge(translations, obj);
-      }
-      return true;
+    const response = await api.post("/SystemAPI?method=getBulkTranslations",
+        {terms: defaults},
+        {headers: {'Content-Type': 'application/json'}
     }
-    return false;
-  })
+    );
+    if(response.ok) {
+        const translation = response?.data?.result[language] ?? defaults;
+        if(_.isObject(translation)) {
+            const obj = {
+                [language]: translation
+            }
+            translationsLibrary = _.merge(translationsLibrary, obj);
+        }
+    } else {
+        // error, just plug in defaults for given language
+        const obj = {
+            [language]: defaults
+        }
+        translationsLibrary = _.merge(translationsLibrary, obj);
+    }
 }
+
+export async function getTranslatedTermsForAllLanguages(languages, url) {
+    _.map(languages, async function (language) {
+        console.log("Getting translations for " + language + "...");
+        await getTranslatedTerm(language, url);
+    })
+}
+
+export const getTermFromDictionary = (language = 'en', key, ellipsis = false) => {
+    if(language && key) {
+        let tmpDictionary = translationsLibrary;
+        try {
+            const { dictionary } = React.useContext(LanguageContext);
+            if(!_.isUndefined(dictionary)) {
+                tmpDictionary = dictionary;
+            }
+        } catch (e) {
+            // can't use context in this scenario
+        }
+        if(!_.isUndefined(tmpDictionary)) {
+            if (tmpDictionary[language]) {
+                const thisDictionary = tmpDictionary[language];
+                if (thisDictionary[key]) {
+                    if (ellipsis) {
+                        return tmpDictionary[language][key] + '...';
+                    }
+                    return tmpDictionary[language][key];
+                } else {
+                    if (tmpDictionary.en) {
+                        const englishDictionary = tmpDictionary.en;
+                        if (englishDictionary[key]) {
+                            if (ellipsis) {
+                                return englishDictionary[key] + '...';
+                            }
+                            return englishDictionary[key];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let defaults = require('../translations/defaults.json');
+    if(ellipsis) {
+        return defaults[key] + "...";
+    }
+    return defaults[key]
+}
+
+export const getVariableTermFromDictionary = async (language, key, url) => {
+    if (language && key) {
+        let tmpDictionary = translationsLibrary;
+        try {
+            const { dictionary } = React.useContext(LanguageContext);
+            if(!_.isUndefined(dictionary)) {
+                tmpDictionary = dictionary;
+            }
+        } catch (e) {
+            // can't use context in this scenario
+        }
+        if (tmpDictionary[language]) {
+            const thisDictionary = tmpDictionary[language];
+            if (thisDictionary[key]) {
+                console.log(Object.values(tmpDictionary[language][key]))
+                return Object.values(tmpDictionary[language][key])
+            } else {
+                // fetch translated term from Discovery and add to dictionary for later
+                //const {library} = React.useContext(LibrarySystemContext);
+                let localDictionary = tmpDictionary;
+                const term = await getTranslation(key, language, url);
+                const obj = {
+                    [language]: {
+                        [key]: term,
+                    }
+                }
+                localDictionary = _.merge(localDictionary, obj);
+                translationsLibrary = _.merge(translationsLibrary, obj);
+                //updateDictionary(localDictionary);
+            }
+        }
+    }
+    return key;
+}
+
+/*
+ export async function getTranslatedTerm_Original(language, url) {
+ // Load in the terms used for Aspen LiDA
+ let defaults = require('../translations/defaults.json');
+ return Promise.all (
+ _.map(defaults, async function (terms, index, array) {
+ const api = create({
+ baseURL: url + "/API",
+ timeout: GLOBALS.timeoutFast,
+ headers: getHeaders(true),
+ auth: createAuthTokens(),
+ });
+ const response = await api.get("/SystemAPI?method=getTranslation", {
+ terms: _.toArray(terms),
+ language
+ });
+ if(response.ok) {
+ const translation = response?.data?.result?.translations ?? terms;
+ if(_.isObject(translation)) {
+ const obj = {
+ [language]: {
+ [index]: translation,
+ }
+ }
+ translationsLibrary = _.merge(translationsLibrary, obj);
+ }
+ } else {
+ console.log(response);
+ }
+ })
+ )
+ }
+ */

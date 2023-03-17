@@ -1,4 +1,6 @@
-export function getStatusIndicator(status) {
+import {getTermFromDictionary} from '../../translations/TranslationService';
+
+export function getStatusIndicator(status, language) {
      let label = null;
      let message = '';
      let indicator = 'success';
@@ -6,13 +8,13 @@ export function getStatusIndicator(status) {
           if (status['isEContent']) {
                if (status['isShowStatus']) {
                     if (status['isAvailableOnline']) {
-                         label = 'Available Online';
+                         label = getTermFromDictionary(language, 'status_available_online');
                     } else {
                          if (status['groupedStatus'] === 'On Order') {
-                              label = 'On Order';
+                              label = getTermFromDictionary(language, 'status_on_order');
                               indicator = 'danger';
                          } else {
-                              label = 'Checked Out';
+                              label = getTermFromDictionary(language, 'status_checked_out');
                               indicator = 'danger';
                          }
                     }
@@ -20,50 +22,50 @@ export function getStatusIndicator(status) {
           } else {
                if (status['isAvailableHere']) {
                     if (status['isAllLibraryUseOnly']) {
-                         label = "It's Here (library use only)";
+                         label = getTermFromDictionary(language, 'status_its_here_library_use_only');
                     } else {
                          if (status['showItsHere']) {
-                              label = "It's Here";
+                              label = getTermFromDictionary(language, 'status_its_here');
                          } else {
-                              label = 'On Shelf';
+                              label = getTermFromDictionary(language, 'status_on_shelf');
                          }
                     }
                } else if (status['isAvailableLocally']) {
                     if (status['isAllLibraryUseOnly']) {
-                         label = 'Library use only';
+                         label = getTermFromDictionary(language, 'status_library_use_only');
                     } else {
-                         label = 'On Shelf';
+                         label = getTermFromDictionary(language, 'status_on_shelf');
                     }
                } else if (status['isAllLibraryUseOnly']) {
                     if(status['isGlobalScope']) {
-                         label = 'On Shelf (library use only)'
+                         label = getTermFromDictionary(language, 'status_on_shelf_library_use_only')
                     } else {
                          if (status['isAvailable'] === false && status['hasLocalItem']) {
-                              label = 'Checked Out / Available Elsewhere';
+                              label = getTermFromDictionary(language, 'status_checked_out_available_elsewhere');
                               indicator = 'warning';
                          } else if (status['isAvailable']) {
                               if (status['hasLocalItem']) {
-                                   label = 'Library use only';
+                                   label = getTermFromDictionary(language, 'status_library_use_only');
                               } else {
-                                   label = 'Available from another library';
+                                   label = getTermFromDictionary(language, 'status_available_elsewhere');
                                    indicator = 'warning';
                               }
                          } else {
-                              label = 'Checked Out (library use only)';
+                              label = getTermFromDictionary(language, 'status_checked_out_library_use_only');
                               indicator = 'danger';
                          }
                     }
                } else if (status['isAvailable'] && status['isAvailableLocally'] === false && status['hasLocalItem']) {
-                    label = 'Checked Out / Available Elsewhere';
+                    label = getTermFromDictionary(language, 'status_checked_out_available_elsewhere');
                     indicator = 'warning';
                } else if (status['isAvailable']) {
                     if(status['isGlobalScope']) {
-                         label = 'On Shelf';
+                         label = getTermFromDictionary(language, 'status_on_shelf');
                     } else {
                          if (status['hasLocalItem']) {
-                              label = 'On Shelf';
+                              label = getTermFromDictionary(language, 'status_on_shelf');
                          } else {
-                              label = 'Available from another library';
+                              label = getTermFromDictionary(language, 'status_available_elsewhere');
                               indicator = 'warning';
                          }
                     }
@@ -72,7 +74,7 @@ export function getStatusIndicator(status) {
                     if (status['groupedStatus']) {
                          label = status['groupedStatus'];
                     } else {
-                         label = 'Withdrawn / Unavailable';
+                         label = getTermFromDictionary(language, 'status_withdrawn');
                     }
                }
           }

@@ -3,13 +3,14 @@ import _ from 'lodash';
 import { Button, HStack, Icon, Text, View, Pressable, FlatList } from 'native-base';
 import React from 'react';
 
-import { translate } from '../../translations/translations';
 import { LibrarySystemContext } from '../../context/initialContext';
 import { SafeAreaView } from 'react-native';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const DisplayBrowseCategory = (props) => {
-     const { id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden } = props;
+     const { language, id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden } = props;
 
+     const hide = getTermFromDictionary(language, "hide");
      let key = categoryKey;
      if (id) {
           key = id;
@@ -56,7 +57,7 @@ const DisplayBrowseCategory = (props) => {
                                              )}
 
                                              <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => hideCategory(libraryUrl, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                                                  {translate('general.hide')}
+                                                  {hide}
                                              </Button>
                                         </HStack>
                                         <FlatList horizontal data={newArr} keyExtractor={(item, index) => index.toString()} renderItem={(item, index) => renderRecords(item, library.baseUrl, library.version, index)} initialNumToRender={5} ListFooterComponent={loadMore(categoryLabel, categoryKey, libraryUrl, categorySource, recordCount, discoveryVersion)} extra={categoryList} />

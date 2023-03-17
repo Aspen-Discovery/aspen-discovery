@@ -233,16 +233,6 @@ class User extends DataObject {
 			return $this->getRoles();
 		} elseif ($name == 'linkedUsers') {
 			return $this->getLinkedUsers();
-		} elseif ($name == 'materialsRequestReplyToAddress') {
-			if (!isset($this->materialsRequestReplyToAddress)) {
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestReplyToAddress;
-		} elseif ($name == 'materialsRequestEmailSignature') {
-			if (!isset($this->materialsRequestEmailSignature)) {
-				$this->getStaffSettings();
-			}
-			return $this->materialsRequestEmailSignature;
 		} else {
 			return $this->_data[$name] ?? null;
 		}
@@ -3314,6 +3304,7 @@ class User extends DataObject {
 			$sections['events'] = new AdminSection('Events');
 			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer LibraryMarket LibraryCalendar Settings');
 			$sections['events']->addAction(new AdminAction('Springshare - LibCal Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/SpringshareLibCalSettings'), 'Administer Springshare LibCal Settings');
+			$sections['events']->addAction(new AdminAction('Communico Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/CommunicoSettings'), 'Administer Communico Settings');
 			$sections['events']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Events.', '/Events/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',

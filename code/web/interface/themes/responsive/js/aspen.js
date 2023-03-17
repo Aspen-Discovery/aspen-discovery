@@ -4620,6 +4620,9 @@ var AspenDiscovery = (function(){
 			var modalDialog = $("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
+				$('.modal-body').html("Loading...");
+				$(".modal-title").text("Loading...");
+
 				if (callback !== undefined){
 					modalDialog.on('hidden.bs.modal', function (e) {
 						modalDialog.off('hidden.bs.modal');
@@ -5810,6 +5813,9 @@ AspenDiscovery.Account = (function () {
 						}
 						if (multiStep !== 'true') {
 							window.location.replace(referer);
+						} else {
+							$('.modal-body').html("Loading...");
+							$(".modal-title").text("Loading...");
 						}
 					} else if (response.result.success === false && response.result.passwordExpired === true) {
 						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
@@ -6590,6 +6596,13 @@ AspenDiscovery.Account = (function () {
 				params.dedicationType = $(finesFormId + " input[name=dedicationType]:checked").val();
 				params.honoreeFirstName = $(finesFormId + " input[name=honoreeFirstName]").val();
 				params.honoreeLastName = $(finesFormId + " input[name=honoreeLastName]").val();
+				params.shouldBeNotified = $(finesFormId + " input[name=shouldBeNotified]:checked").val();
+				params.notificationFirstName = $(finesFormId + " input[name=notificationFirstName]").val();
+				params.notificationLastName = $(finesFormId + " input[name=notificationLastName]").val();
+				params.notificationAddress = $(finesFormId + " input[name=notificationAddress]").val();
+				params.notificationCity = $(finesFormId + " input[name=notificationCity]").val();
+				params.notificationState = $(finesFormId + " input[name=notificationState]").val();
+				params.notificationZip = $(finesFormId + " input[name=notificationZip]").val();
 				params.firstName = $(finesFormId + " input[name=firstName]").val();
 				params.lastName = $(finesFormId + " input[name=lastName]").val();
 				params.isAnonymous = $(finesFormId + " input[name=makeAnonymous]:checked").val();
@@ -13272,6 +13285,16 @@ AspenDiscovery.Searches = (function(){
 					AspenDiscovery.showMessage(data.title, data.message);
 				}
 			});
+			return false;
+		},
+
+		searchFacetValuesKeyDown: function (e) {
+			if (e.keyCode === 9) {
+				AspenDiscovery.Searches.searchFacetValues();
+			}else if (e.keyCode === 10 || e.keyCode === 13) {
+				e.preventDefault();
+				AspenDiscovery.Searches.searchFacetValues();
+			}
 			return false;
 		},
 

@@ -13,20 +13,23 @@ import * as Brightness from 'expo-brightness';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { translate } from '../../../translations/translations';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { getLinkedAccounts } from '../../../util/api/user';
 import {loadError} from '../../../components/loadError';
 import {userContext} from '../../../context/user';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
+import {PermissionsPrompt} from '../../../components/PermissionsPrompt';
 
 export const MyLibraryCard = () => {
      const navigation = useNavigation();
      const [isLoading, setLoading] = React.useState(true);
+     const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [previousBrightness, setPreviousBrightness] = React.useState();
      const [isLandscape, setIsLandscape] = React.useState();
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
      //const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
 
      let autoRotate = library.generalSettings?.autoRotateCard ?? 0;
 
@@ -71,16 +74,21 @@ export const MyLibraryCard = () => {
              });
          });
           const brightenScreen = navigation.addListener('focus', async () => {
-               const { status } = await Brightness.requestPermissionsAsync();
-               if (status === 'granted') {
-                    await Brightness.getBrightnessAsync().then((level) => {
-                         console.log('Storing previous screen brightness for later');
-                         setPreviousBrightness(level);
-                    });
-                    console.log('Updating screen brightness');
-                    Brightness.setSystemBrightnessAsync(1);
+               const { status } = await Brightness.getPermissionsAsync();
+               if(status === 'undetermined') {
+                   setShouldRequestPermissions(true);
                } else {
-                    console.log('Unable to update screen brightness');
+                   if (status === 'granted') {
+                       await Brightness.getBrightnessAsync().then((level) => {
+                           console.log('Storing previous screen brightness for later');
+                           setPreviousBrightness(level);
+                       });
+                       console.log('Updating screen brightness');
+                       Brightness.setSystemBrightnessAsync(1);
+                   } else {
+                       // we were denied permissions
+                       console.log('Unable to update screen brightness');
+                   }
                }
           });
           const updateOrientation = navigation.addListener('focus', async () => {
@@ -134,6 +142,10 @@ export const MyLibraryCard = () => {
           return () => {};
      }, [navigation, previousBrightness]);
 
+     if(shouldRequestPermissions) {
+         return <PermissionsPrompt promptTitle='permissions_screen_brightness_title' promptBody='permissions_screen_brightness_body' setShouldRequestPermissions={setShouldRequestPermissions} />
+     }
+
      /* useFocusEffect(
          React.useCallback(() => {
              console.log("numCards listener > " + numCards);
@@ -170,7 +182,10 @@ const CreateLibraryCard = (data) => {
      const card = data.card;
      const {numCards} = data;
 
+     const [expirationText, setExpirationText] = React.useState('');
+
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
 
      let barcodeStyle;
      if (!_.isUndefined(card.barcodeStyle) && !_.isNull(card.barcodeStyle)) {
@@ -189,6 +204,17 @@ const CreateLibraryCard = (data) => {
           if(_.isString(card.expires)) {
               expirationDate = moment(card.expires, 'MMM D, YYYY');
           }
+
+         React.useEffect(() => {
+             async function fetchTranslations() {
+                 console.log(card.expires);
+                 await getTranslationsWithValues('library_card_expires_on', card.expires, language, library.baseUrl).then(result => {
+                     setExpirationText(result);
+                 });
+             }
+             fetchTranslations()
+         }, []);
+
      }
 
      let cardHasExpired = 0;
@@ -220,7 +246,7 @@ const CreateLibraryCard = (data) => {
                <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
                     <Center>
                          <Flex direction="row">
-                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                              {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                               <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
                                    {library.displayName}
                               </Text>
@@ -235,7 +261,7 @@ const CreateLibraryCard = (data) => {
                          </Text>
                          {expirationDate && !neverExpires ? (
                               <Text color="darkText" fontSize={10}>
-                                  {translate('library_card.expires_on', {date: card.expires})}
+                                  {expirationText}
                               </Text>
                          ) : null}
                     </Center>
@@ -249,7 +275,7 @@ const CreateLibraryCard = (data) => {
                <>
                    <Center>
                        <Flex direction="row">
-                           {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} /> : null}
+                           {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
                            <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
                                {library.displayName}
                            </Text>
@@ -265,17 +291,17 @@ const CreateLibraryCard = (data) => {
                <Center>
                    {expirationDate && !neverExpires && numCards > 1 ? (
                        <Text color="darkText">
-                           {translate('library_card.expires_on', {date: card.expires})}
+                           {expirationText}
                        </Text>
                    ) : null}
                    {numCards > 1 ? (
-                       <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError}/>
+                       <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError} language={language}/>
                    ) : (
                        <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />
                    )}
                    {expirationDate && !neverExpires && numCards === 1 ? (
                        <Text color="darkText" fontSize={10} pt={2}>
-                           {translate('library_card.expires_on', {date: card.expires})}
+                           {expirationText}
                        </Text>
                    ) : null}
                </Center>
@@ -391,7 +417,7 @@ const CardCarousel = (data) => {
 };
 
 const OpenBarcode = (data) => {
-    const {barcodeValue, barcodeFormat, handleBarcodeError} = data;
+    const {barcodeValue, barcodeFormat, handleBarcodeError, language} = data;
     const [showModal, setShowModal] = React.useState(false);
 
     const toggleModal = () => {
@@ -399,7 +425,7 @@ const OpenBarcode = (data) => {
     };
 
     return <Center>
-        <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{translate('library_card.open_barcode')}</Button>
+        <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10}/>}>{getTermFromDictionary(language, 'open_barcode')}</Button>
         <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{opacity: 95}}>
             <Modal.Content bgColor="white">
                 <Modal.CloseButton />
@@ -501,7 +527,7 @@ export class MyLibraryCard221200 extends Component {
  <Flex direction="column" bg="white" maxW="90%" px={8} py={5} borderRadius={20}>
  <Center>
  <Flex direction="row">
- <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} />
+ <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary('en', 'library_card')} />
  <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
  {library.displayName}
  </Text>
@@ -530,7 +556,7 @@ export class MyLibraryCard221200 extends Component {
  <Flex direction="column" bg="white" maxW="95%" px={8} py={5} borderRadius={20}>
  <Center>
  <Flex direction="row">
- <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={translate('user_profile.library_card')} />
+ <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary('en', 'library_card')} />
  <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
  {library.displayName}
  </Text>

@@ -4,15 +4,16 @@ import React, { useState } from 'react';
 import _ from 'lodash';
 import { popAlert } from '../../../components/loadError';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import { clearListTitles, deleteList, editList, getListDetails, getLists } from '../../../util/api/list';
 import { reloadProfile } from '../../../util/api/user';
-import { translate } from '../../../translations/translations';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 const EditList = (props) => {
      const { data, listId } = props;
      const navigation = useNavigation();
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const { lists, updateLists } = React.useContext(UserContext);
      const [showModal, setShowModal] = React.useState(false);
      const [loading, setLoading] = React.useState(false);
@@ -41,7 +42,7 @@ const EditList = (props) => {
           <>
                <Button.Group size="sm" justifyContent="center">
                     <Button onPress={() => setShowModal(true)} leftIcon={<Icon as={MaterialIcons} name="edit" size="xs" />}>
-                         {translate('general.edit')}
+                         {getTermFromDictionary(language, 'edit')}
                     </Button>
                     <DeleteList listId={listId} />
                </Button.Group>
@@ -50,20 +51,20 @@ const EditList = (props) => {
                          <Modal.CloseButton />
                          <Modal.Header>
                               <Heading size="sm">
-                                   {translate('general.edit')} {data.title}
+                                   {getTermFromDictionary(language, 'edit')} {data.title}
                               </Heading>
                          </Modal.Header>
                          <Modal.Body>
                               <FormControl pb={5}>
-                                   <FormControl.Label>{translate('general.title')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'title')}</FormControl.Label>
                                    <Input id="title" defaultValue={data.title} autoComplete="off" onChangeText={(text) => setTitle(text)} />
                               </FormControl>
                               <FormControl pb={5}>
-                                   <FormControl.Label>{translate('general.description')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'description')}</FormControl.Label>
                                    <TextArea id="description" defaultValue={data.description} autoComplete="off" onChangeText={(text) => setDescription(text)} />
                               </FormControl>
                               <FormControl>
-                                   <FormControl.Label>{translate('general.access')}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'access')}</FormControl.Label>
                                    <Radio.Group
                                         value={isPublic}
                                         onChange={(nextValue) => {
@@ -71,10 +72,10 @@ const EditList = (props) => {
                                         }}>
                                         <Stack direction="row" alignItems="center" space={4} w="75%" maxW="300px">
                                              <Radio value={false} my={1}>
-                                                  {translate('general.private')}
+                                                  {getTermFromDictionary(language, 'private')}
                                              </Radio>
                                              <Radio value={true} my={1}>
-                                                  {translate('general.public')}
+                                                  {getTermFromDictionary(language, 'public')}
                                              </Radio>
                                         </Stack>
                                    </Radio.Group>
@@ -83,11 +84,11 @@ const EditList = (props) => {
                          <Modal.Footer>
                               <Button.Group>
                                    <Button variant="outline" onPress={() => setShowModal(false)}>
-                                        {translate('general.cancel')}
+                                        {getTermFromDictionary(language, 'close_window')}
                                    </Button>
                                    <Button
                                         isLoading={loading}
-                                        isLoadingText={translate('general.saving')}
+                                        isLoadingText={getTermFromDictionary(language, 'saving', true)}
                                         onPress={() => {
                                              setLoading(true);
                                              editList(data.id, title, description, isPublic, library.baseUrl).then((r) => {
@@ -98,7 +99,7 @@ const EditList = (props) => {
                                                   setShowModal(false);
                                              });
                                         }}>
-                                        {translate('general.save')}
+                                        {getTermFromDictionary(language, 'save')}
                                    </Button>
                               </Button.Group>
                          </Modal.Footer>

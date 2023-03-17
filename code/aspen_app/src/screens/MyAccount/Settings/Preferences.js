@@ -8,9 +8,9 @@ import React, { Component } from 'react';
 
 // custom components and helper files
 import { userContext } from '../../../context/user';
-import { translate } from '../../../translations/translations';
-import { LIBRARY } from '../../../util/loadLibrary';
 import { LibrarySystemContext } from '../../../context/initialContext';
+import { LanguageContext } from '../../../context/initialContext';
+import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export default class Preferences extends Component {
      static contextType = userContext;
@@ -28,7 +28,7 @@ export default class Preferences extends Component {
                defaultMenuItems: [
                     {
                          key: '1',
-                         title: translate('user_profile.home_screen_settings'),
+                         title: 'manage_browse_categories',
                          path: 'SettingsHomeScreen',
                          external: false,
                          icon: 'chevron-right',
@@ -36,7 +36,7 @@ export default class Preferences extends Component {
                     },
                     {
                          key: '3',
-                         title: translate('user_profile.manage_notifications'),
+                         title: 'notifications_manage',
                          path: 'SettingsNotifications',
                          external: false,
                          icon: 'chevron-right',
@@ -66,7 +66,7 @@ export default class Preferences extends Component {
           });
      };
 
-     renderItem = (item, patronId, library) => {
+     renderItem = (item, patronId, library, language) => {
           if (item.external && library.version >= item.version) {
                return (
                     <Pressable
@@ -87,7 +87,7 @@ export default class Preferences extends Component {
                                         base: 'md',
                                         lg: 'lg',
                                    }}>
-                                   {item.title}
+                                   {getTermFromDictionary(language, item.title)}
                               </Text>
                          </HStack>
                     </Pressable>
@@ -117,7 +117,7 @@ export default class Preferences extends Component {
                                              base: 'md',
                                              lg: 'lg',
                                         }}>
-                                        {item.title}
+                                        {getTermFromDictionary(language, item.title)}
                                    </Text>
                               </HStack>
                          </Pressable>
@@ -147,7 +147,7 @@ export default class Preferences extends Component {
                                              base: 'md',
                                              lg: 'lg',
                                         }}>
-                                        {item.title}
+                                        {getTermFromDictionary(language, item.title)}
                                    </Text>
                               </HStack>
                          </Pressable>
@@ -202,9 +202,12 @@ export default class Preferences extends Component {
                <>
                     <LibrarySystemContext.Consumer>
                          {(library) => (
-                              <Box flex={1} safeArea={3}>
-                                   <FlatList data={this.state.defaultMenuItems} renderItem={({ item }) => this.renderItem(item, user.id, library)} keyExtractor={(item, index) => index.toString()} />
-                              </Box>
+                             <LanguageContext.Consumer>
+                                  {(language) => (
+                                       <Box flex={1} safeArea={3}>
+                                            <FlatList data={this.state.defaultMenuItems} renderItem={({item}) => this.renderItem(item, user.id, library, language.language)} keyExtractor={(item, index) => index.toString()}/>
+                                       </Box>)}
+                             </LanguageContext.Consumer>
                          )}
                     </LibrarySystemContext.Consumer>
                </>

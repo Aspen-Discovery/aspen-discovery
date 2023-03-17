@@ -13,6 +13,15 @@ class SearchAPI extends Action {
 		header('Content-type: application/json');
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
+		global $activeLanguage;
+		if (isset($_GET['language'])) {
+			$language = new Language();
+			$language->code = $_GET['language'];
+			if ($language->find(true)) {
+				$activeLanguage = $language;
+			}
+		}
+
 		//Check if user can access API with keys sent from LiDA
 		if (isset($_SERVER['PHP_AUTH_USER'])) {
 			if ($this->grantTokenAccess()) {
@@ -490,19 +499,27 @@ class SearchAPI extends Action {
 			}
 		}
 
-		//Check to see if sitemaps have been created
-		$sitemapFiles = scandir(ROOT_DIR . '/sitemaps');
-		$groupedWorkSitemapFound = false;
-		foreach ($sitemapFiles as $sitemapFile) {
-			if (strpos($sitemapFile, 'grouped_work_site_map_') === 0) {
-				$groupedWorkSitemapFound = true;
-				break;
+		//Check to see if sitemaps have been created, but only if there is at least one record
+		$solrSearcher->init();
+		$solrSearcher->setFieldsToReturn('id');
+		$solrSearcher->setLimit(1);
+		$result = $solrSearcher->processSearch();
+		if ($result && empty($result['error'])) {
+			if ($result['response']['numFound'] > 0) {
+				$sitemapFiles = scandir(ROOT_DIR . '/sitemaps');
+				$groupedWorkSitemapFound = false;
+				foreach ($sitemapFiles as $sitemapFile) {
+					if (strpos($sitemapFile, 'grouped_work_site_map_') === 0) {
+						$groupedWorkSitemapFound = true;
+						break;
+					}
+				}
+				if (!$groupedWorkSitemapFound) {
+					$this->addCheck($checks, "Sitemap", self::STATUS_CRITICAL, "No sitemap found for grouped works");
+				} else {
+					$this->addCheck($checks, "Sitemap");
+				}
 			}
-		}
-		if (!$groupedWorkSitemapFound) {
-			$this->addCheck($checks, "Sitemap", self::STATUS_CRITICAL, "No sitemap found for grouped works");
-		} else {
-			$this->addCheck($checks, "Sitemap");
 		}
 
 		//Check third party enrichment to see if it is enabled
@@ -2274,20 +2291,211 @@ class SearchAPI extends Action {
 
 		$results = [
 			'success' => false,
+			'type' => $_REQUEST['type'] ?? 'catalog',
 			'count' => 0,
 			'totalResults' => 0,
-			'lookfor' => $_REQUEST['lookfor'],
+			'lookfor' => $_REQUEST['lookfor'] ?? null,
 			'title' => translate([
 				'text' => 'No Results Found',
 				'isPublicFacing' => true,
 			]),
 			'items' => [],
 			'message' => translate([
-				'text' => "Your search '%1%' did not match any resources.",
-				1 => $_REQUEST['lookfor'],
+				'text' => "Your search did not match any resources.",
 				'isPublicFacing' => true,
 			]),
 		];
+
+		if($_REQUEST['type'] == 'user_list') {
+			if(!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'message' => 'The id of the list to load must be provided as the id parameter.',
+					'count' => 0,
+					'totalResults' => 0,
+					'items' => [],
+					'lookfor' => null,
+					'listId' => null,
+				];
+			}
+			$id = $_REQUEST['id'];
+			if(str_contains($_REQUEST['id'], '_')) {
+				$label = explode('_', $_REQUEST['id']);
+				$id = $label[3];
+			}
+			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+			$sourceList = new UserList();
+			$sourceList->id = $id;
+			if($sourceList->find(true)) {
+				$results['listId'] = $sourceList->id;
+				$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
+				$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+				$startRecord = ($page - 1) * $recordsPerPage;
+				if ($startRecord < 0) {
+					$startRecord = 0;
+				}
+				$totalRecords = $sourceList->numValidListItems();
+				$endRecord = $page * $recordsPerPage;
+				if ($endRecord > $totalRecords) {
+					$endRecord = $totalRecords;
+				}
+				$pageInfo = [
+					'resultTotal' => $totalRecords,
+					'startRecord' => $startRecord,
+					'endRecord' => $endRecord,
+					'perPage' => $recordsPerPage,
+				];
+				$records = $sourceList->getBrowseRecordsRaw($startRecord, $recordsPerPage);
+				$items = [];
+				foreach($records as $recordKey => $record) {
+					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['title'] = $record['title_display'] ?? null;
+					$items[$recordKey]['author'] = $record['author_display'] ?? null;
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+					$items[$recordKey]['language'] = $record['language'][0] ?? null;
+					$items[$recordKey]['summary'] = null;
+					$items[$recordKey]['itemList'] = [];
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+					if ($groupedWorkDriver->isValid()) {
+						$i = 0;
+						$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+						foreach ($relatedManifestations as $relatedManifestation) {
+							foreach ($relatedManifestation->getVariations() as $obj) {
+								if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+									$format = $obj->manifestation->format;
+									$items[$recordKey]['itemList'][$format]['key'] = $i;
+									$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
+									$i++;
+								};
+							}
+						}
+					}
+				}
+				$link = $_SERVER['REQUEST_URI'];
+				if (preg_match('/[&?]page=/', $link)) {
+					$link = preg_replace("/page=\\d+/", 'page=%d', $link);
+				} elseif (strpos($link, '?') > 0) {
+					$link .= '&page=%d';
+				} else {
+					$link .= '?page=%d';
+				}
+				$options = [
+					'totalItems' => $pageInfo['resultTotal'],
+					'perPage' => $pageInfo['perPage'],
+					'fileName' => $link,
+					'append' => false,
+				];
+				require_once ROOT_DIR . '/sys/Pager.php';
+				$pager = new Pager($options);
+				$results['totalResults'] = (int)$pager->getTotalItems();
+				$results['count'] = (int)$pageInfo['resultTotal'];
+				$results['page_current'] = (int)$pager->getCurrentPage();
+				$results['page_total'] = (int)$pager->getTotalPages();
+				$results['items'] = $items;
+				$results['title'] = translate([
+					'text' => 'List Results',
+					'isPublicFacing' => true,
+				]);
+				$results['message'] = translate([
+					'text' => 'Your list has %1% results',
+					1 => $pageInfo['resultTotal'],
+					'isPublicFacing' => true,
+				]);
+				$results['success'] = true;
+			}
+			return $results;
+		}
+
+		if($_REQUEST['type'] == 'browse_category') {
+			if(!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'message' => 'The textId of the browse category to load must be provided as the id parameter.',
+					'count' => 0,
+					'totalResults' => 0,
+					'items' => [],
+					'lookfor' => null,
+					'browseCategoryId' => null,
+				];
+			}
+			$records = $this->getAppBrowseCategoryResults($_REQUEST['id'], null, $_REQUEST['pageSize'] ?? 25);
+			$recordsPerPage = isset($_REQUEST['pageSize']) && (is_numeric($_REQUEST['pageSize'])) ? $_REQUEST['pageSize'] : 20;
+			$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
+			$startRecord = ($page - 1) * $recordsPerPage;
+			if ($startRecord < 0) {
+				$startRecord = 0;
+			}
+			$totalRecords = count($records);
+			$endRecord = $page * $recordsPerPage;
+			if ($endRecord > $totalRecords) {
+				$endRecord = $totalRecords;
+			}
+			$pageInfo = [
+				'resultTotal' => $totalRecords,
+				'startRecord' => $startRecord,
+				'endRecord' => $endRecord,
+				'perPage' => $recordsPerPage,
+			];
+			$items = [];
+			foreach($records as $recordKey => $record) {
+				$items[$recordKey]['key'] = $record['id'];
+				$items[$recordKey]['title'] = $record['title_display'];
+				$items[$recordKey]['author'] = $record['author_display'];
+				$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+				$items[$recordKey]['language'] = $record['language'][0];
+				$items[$recordKey]['summary'] = '';
+				$items[$recordKey]['itemList'] = [];
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+				if ($groupedWorkDriver->isValid()) {
+					$i = 0;
+					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+					foreach ($relatedManifestations as $relatedManifestation) {
+						foreach ($relatedManifestation->getVariations() as $obj) {
+							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+								$format = $obj->manifestation->format;
+								$items[$recordKey]['itemList'][$format]['key'] = $i;
+								$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
+								$i++;
+							};
+						}
+					}
+				}
+			}
+			$link = $_SERVER['REQUEST_URI'];
+			if (preg_match('/[&?]page=/', $link)) {
+				$link = preg_replace("/page=\\d+/", 'page=%d', $link);
+			} elseif (strpos($link, '?') > 0) {
+				$link .= '&page=%d';
+			} else {
+				$link .= '?page=%d';
+			}
+			$options = [
+				'totalItems' => $pageInfo['resultTotal'],
+				'perPage' => $pageInfo['perPage'],
+				'fileName' => $link,
+				'append' => false,
+			];
+			require_once ROOT_DIR . '/sys/Pager.php';
+			$pager = new Pager($options);
+			$results['totalResults'] = (int)$pager->getTotalItems();
+			$results['count'] = (int)$pageInfo['resultTotal'];
+			$results['page_current'] = (int)$pager->getCurrentPage();
+			$results['page_total'] = (int)$pager->getTotalPages();
+			$results['items'] = $items;
+			$results['title'] = translate([
+				'text' => 'Browse Category Results',
+				'isPublicFacing' => true,
+			]);
+			$results['message'] = translate([
+				'text' => 'Browse category has %1% results',
+				1 => $pageInfo['resultTotal'],
+				'isPublicFacing' => true,
+			]);
+			$results['success'] = true;
+			return $results;
+		}
 
 		// Include Search Engine Class
 		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
@@ -2304,6 +2512,23 @@ class SearchAPI extends Action {
 		$timer->logTime('Setup Search');
 
 		// Process Search
+		if($_REQUEST['type'] == 'saved_search') {
+			if(!isset($_REQUEST['id'])) {
+				return [
+					'success' => false,
+					'message' => 'The id of the list to load must be provided as the id parameter.',
+					'count' => 0,
+					'totalResults' => 0,
+					'items' => [],
+					'lookfor' => null,
+					'savedSearchId' => null,
+				];
+			}
+			$label = explode('_', $_REQUEST['id']);
+			$id = $label[3];
+			$searchObject = $searchObject->restoreSavedSearch($id, false, true);
+		}
+
 		$searchResults = $searchObject->processSearch(false, true);
 		$timer->logTime('Process Search');
 
@@ -2352,7 +2577,7 @@ class SearchAPI extends Action {
 							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 								$format = $obj->manifestation->format;
 								$items[$recordKey]['itemList'][$format]['key'] = $i;
-								$items[$recordKey]['itemList'][$format]['name'] = $format;
+								$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
 								$i++;
 							};
 						}
@@ -2367,14 +2592,16 @@ class SearchAPI extends Action {
 				'isPublicFacing' => true,
 			]);
 			$results['message'] = translate([
-				'text' => "Your search '%1%' returned %2% results",
-				1 => $_REQUEST['lookfor'],
-				2 => $results['count'],
+				'text' => "Your search returned %1% results",
+				1 => $results['count'],
 				'isPublicFacing' => true,
 			]);
 			$timer->logTime('load result records');
 			if ($results['page_current'] == $results['page_total']) {
 				$results['message'] = "end of results";
+			}
+			if($_REQUEST['type'] == 'saved_search') {
+				$results['savedSearchId'] = $_REQUEST['searchId'];
 			}
 		}
 		if (empty($results['items'])) {
@@ -2479,13 +2706,13 @@ class SearchAPI extends Action {
 			$items = [];
 			$i = 0;
 			$items['key'] = 0;
-			$items['label'] = $formatCategories['label'];
+			$items['label'] = translate(['text' => $formatCategories['label'], 'isPublicFacing' => true]);;
 			$items['field'] = $formatCategories['field_name'];
 			$items['hasApplied'] = $formatCategories['hasApplied'];
 			$items['multiSelect'] = (bool)$formatCategories['multiSelect'];
 			foreach ($formatCategories['list'] as $category) {
 				$items['facets'][$i]['value'] = $category['value'];
-				$items['facets'][$i]['display'] = $category['display'];
+				$items['facets'][$i]['display'] = translate(['text' => $category['display'], 'isPublicFacing' => true]);;
 				$items['facets'][$i]['field'] = $formatCategories['field_name'];
 				$items['facets'][$i]['count'] = $category['count'];
 				$items['facets'][$i]['isApplied'] = $category['isApplied'];
@@ -2554,7 +2781,7 @@ class SearchAPI extends Action {
 				$i = 0;
 				if ($facet['field_name'] == 'availability_toggle') {
 					$availabilityToggle = $topFacetSet['availability_toggle'];
-					$key = $availabilityToggle['label'];
+					$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
 					$items[$key]['key'] = $index;
 					$items[$key]['label'] = $key;
 					$items[$key]['field'] = $availabilityToggle['field_name'];
@@ -2562,7 +2789,7 @@ class SearchAPI extends Action {
 					$items[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
 					foreach ($availabilityToggle['list'] as $item) {
 						$items[$key]['facets'][$i]['value'] = $item['value'];
-						$items[$key]['facets'][$i]['display'] = $item['display'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
 						$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
 						$items[$key]['facets'][$i]['count'] = $item['count'];
 						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2574,7 +2801,7 @@ class SearchAPI extends Action {
 						$i++;
 					}
 				} else {
-					$key = $facet['label'];
+					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);;
 					$items[$key]['key'] = $index;
 					$items[$key]['label'] = $key;
 					$items[$key]['field'] = $facet['field_name'];
@@ -2583,7 +2810,7 @@ class SearchAPI extends Action {
 					if (isset($facet['sortedList'])) {
 						foreach ($facet['sortedList'] as $item) {
 							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 							$items[$key]['facets'][$i]['count'] = $item['count'];
 							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2597,7 +2824,7 @@ class SearchAPI extends Action {
 					} else {
 						foreach ($facet['list'] as $item) {
 							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = $item['display'];
+							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 							$items[$key]['facets'][$i]['count'] = $item['count'];
 							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2693,7 +2920,7 @@ class SearchAPI extends Action {
 					'isPublicFacing' => true,
 				]);
 				$items[$key][$i]['value'] = $sort['value'];
-				$items[$key][$i]['display'] = $sort['desc'];
+				$items[$key][$i]['display'] = translate(['text' => $sort['desc'], 'isPublicFacing' => true]);
 				$items[$key][$i]['field'] = 'sort_by';
 				$items[$key][$i]['count'] = 0;
 				$items[$key][$i]['isApplied'] = true;
@@ -2703,7 +2930,7 @@ class SearchAPI extends Action {
 				$i = 0;
 				foreach ($filter as $item) {
 					$items[$key][$i]['value'] = $item['value'];
-					$items[$key][$i]['display'] = $item['display'];
+					$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 					$items[$key][$i]['field'] = $item['field'];
 					$items[$key][$i]['count'] = 0;
 					$items[$key][$i]['isApplied'] = true;
@@ -2732,7 +2959,7 @@ class SearchAPI extends Action {
 		$i = 0;
 		foreach ($obj as $facet) {
 			$facets[$i]['value'] = $facet->facetName;
-			$facets[$i]['display'] = $facet->displayName;
+			$facets[$i]['display'] = translate(['text' => $facet->displayName, 'isPublicFacing' => true]);
 			$facets[$i]['field'] = $facet->facetName;
 			$facets[$i]['count'] = 0;
 			$facets[$i]['isApplied'] = false;
@@ -2776,7 +3003,7 @@ class SearchAPI extends Action {
 				'id' => $id,
 				'time' => round($searchObj->getQuerySpeed(), 2),
 				'field' => $cluster['field_name'],
-				'display' => $cluster['label'],
+				'display' => translate(['text' => $cluster['label'], 'isPublicFacing' => true]),
 				'hasApplied' => $cluster['hasApplied'],
 				'multiSelect' => (bool)$cluster['multiSelect'],
 				'options' => $cluster['list'],

@@ -11,7 +11,7 @@ import ShowItemDetails from './CopyDetails';
 import SelectLinkedAccount from './SelectLinkedAccount';
 import SelectPickupLocation from './SelectPickupLocation';
 import SelectVolumeHold from './SelectVolumeHold';
-import {CheckoutsContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import {CheckoutsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {reloadProfile} from '../../util/api/user';
 import {SafeAreaView} from 'react-native';
 
@@ -408,6 +408,7 @@ const ILS = (props) => {
      const {user, updateUser} = React.useContext(UserContext);
      const {library} = React.useContext(LibrarySystemContext);
      const {location} = React.useContext(LibraryBranchContext);
+     const {language} = React.useContext(LanguageContext);
      const [loading, setLoading] = React.useState(false);
 
     const volumeInfo = {
@@ -439,6 +440,7 @@ const ILS = (props) => {
                   updateProfile={props.updateProfile}
                   hasItemsWithoutVolumes={props.hasItemsWithoutVolumes}
                   volumeCount={props.volumeCount}
+                  language={language}
               />
           );
      } else {
@@ -462,6 +464,7 @@ const ILS = (props) => {
                        hasItemsWithoutVolumes={props.hasItemsWithoutVolumes}
                        majorityOfItemsHaveVolumes={props.majorityOfItemsHaveVolumes}
                        volumeCount={props.volumeCount}
+                       language={language}
                    />
                );
           } else {

@@ -34,7 +34,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 34);
+$interface->assign('cssJsCacheCounter', 36);
 
 // Setup Translator
 global $language;
@@ -330,13 +330,34 @@ foreach ($_REQUEST as $parameter => $value) {
 		$action = 'Handle404';
 		require_once ROOT_DIR . "/services/Error/Handle404.php";
 	}else if (strpos($parameter, 'bool') === 0) {
-		if (!in_array($value, ['AND', 'OR', 'NOT'])) {
-			global $interface;
-			$interface->assign('module', 'Error');
-			$interface->assign('action', 'Handle404');
-			$module = 'Error';
-			$action = 'Handle404';
-			require_once ROOT_DIR . "/services/Error/Handle404.php";
+		if (is_array($value)) {
+			foreach ($value as $tmpValue) {
+				if (!in_array($tmpValue, [
+					'AND',
+					'OR',
+					'NOT'
+				])) {
+					global $interface;
+					$interface->assign('module', 'Error');
+					$interface->assign('action', 'Handle404');
+					$module = 'Error';
+					$action = 'Handle404';
+					require_once ROOT_DIR . "/services/Error/Handle404.php";
+				}
+			}
+		} else {
+			if (!in_array($value, [
+				'AND',
+				'OR',
+				'NOT'
+			])) {
+				global $interface;
+				$interface->assign('module', 'Error');
+				$interface->assign('action', 'Handle404');
+				$module = 'Error';
+				$action = 'Handle404';
+				require_once ROOT_DIR . "/services/Error/Handle404.php";
+			}
 		}
 	}
 }
@@ -1009,7 +1030,7 @@ function loadModuleActionId() {
 	}
 	/** IndexingProfile[] $indexingProfiles */ global $indexingProfiles;
 	/** SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
-	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare";
+	$allRecordModules = "OverDrive|GroupedWork|Record|ExternalEContent|Person|Library|RBdigital|Hoopla|RBdigitalMagazine|CloudLibrary|Files|Axis360|WebBuilder|ProPay|CourseReserves|Springshare|LibraryMarket|Communico";
 	foreach ($indexingProfiles as $profile) {
 		$allRecordModules .= '|' . $profile->recordUrlComponent;
 	}

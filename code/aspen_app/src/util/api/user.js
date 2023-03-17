@@ -7,9 +7,6 @@ import i18n from 'i18n-js';
 import { create } from 'apisauce';
 import { PATRON } from '../loadPatron';
 import { popAlert } from '../../components/loadError';
-import { LIBRARY } from '../loadLibrary';
-import { SEARCH } from '../search';
-import axios from 'axios';
 
 const endpoint = ENDPOINT.user;
 
@@ -164,8 +161,9 @@ export async function logoutUser(url) {
  * @param {string} holdSource
  * @param {string} url
  * @param {boolean} refresh
+ * @param {string} language
  **/
-export async function getPatronHolds(readySort='expire', pendingSort='sortTitle', holdSource = 'all', url, refresh = true) {
+export async function getPatronHolds(readySort='expire', pendingSort='sortTitle', holdSource = 'all', url, refresh = true, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -178,6 +176,7 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
                refreshHolds: refresh,
                unavailableSort: pendingSort,
                availableSort: readySort,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=getPatronHolds', postBody);
@@ -240,8 +239,9 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
  * @param {string} source
  * @param {string} url
  * @param {boolean} refresh
+ * @param {string} language
  **/
-export async function getPatronCheckedOutItems(source = 'all', url, refresh = true) {
+export async function getPatronCheckedOutItems(source = 'all', url, refresh = true, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -251,7 +251,8 @@ export async function getPatronCheckedOutItems(source = 'all', url, refresh = tr
           params: {
                source: source,
                linkedUsers: true,
-               refreshCheckouts: refresh
+               refreshCheckouts: refresh,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
@@ -273,8 +274,9 @@ export async function getPatronCheckedOutItems(source = 'all', url, refresh = tr
  * @param {string} categoryId
  * @param {string} patronId
  * @param {string} url
+ * @param {string} language
  **/
-export async function showBrowseCategory(categoryId, patronId, url) {
+export async function showBrowseCategory(categoryId, patronId, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url,
@@ -284,6 +286,7 @@ export async function showBrowseCategory(categoryId, patronId, url) {
           params: {
                browseCategoryId: categoryId,
                patronId: patronId,
+               language
           },
      });
      const response = await discovery.post(`${endpoint.url}showBrowseCategory`, postBody);
@@ -300,8 +303,9 @@ export async function showBrowseCategory(categoryId, patronId, url) {
  * @param {string} categoryId
  * @param {string} patronId
  * @param {string} url
+ * @param {string} language
  **/
-export async function hideBrowseCategory(categoryId, patronId, url) {
+export async function hideBrowseCategory(categoryId, patronId, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url,
@@ -311,6 +315,7 @@ export async function hideBrowseCategory(categoryId, patronId, url) {
           params: {
                browseCategoryId: categoryId,
                patronId: patronId,
+               language
           },
      });
      const response = await discovery.post(`${endpoint.url}dismissBrowseCategory`, postBody);
@@ -330,15 +335,19 @@ export async function hideBrowseCategory(categoryId, patronId, url) {
  * @param {array} primaryUser
  * @param {array} cards
  * @param {array} library
+ * @param {string} language
  * @return array
  **/
-export async function getLinkedAccounts(primaryUser, cards, library) {
+export async function getLinkedAccounts(primaryUser, cards, library, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: library.baseUrl + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               language
+          }
      });
      const response = await discovery.post('/UserAPI?method=getLinkedAccounts', postBody);
      if (response.ok) {
@@ -387,14 +396,18 @@ export async function getLinkedAccounts(primaryUser, cards, library) {
 /**
  * Return a list of accounts that the user has been linked to by another user
  * @param {string} url
+ * @param {string} language
  **/
-export async function getViewerAccounts(url) {
+export async function getViewerAccounts(url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               language
+          }
      });
      const response = await discovery.post('/UserAPI?method=getViewers', postBody);
      if (response.ok) {
@@ -415,8 +428,9 @@ export async function getViewerAccounts(url) {
  * @param {string} username
  * @param {string} password
  * @param {string} url
+ * @param {string} language
  **/
-export async function addLinkedAccount(username='', password='', url) {
+export async function addLinkedAccount(username='', password='', url, language = 'en') {
      const postBody = await postData();
      postBody.append('accountToLinkUsername', username);
      postBody.append('accountToLinkPassword', password);
@@ -425,6 +439,9 @@ export async function addLinkedAccount(username='', password='', url) {
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               language
+          }
      });
      const response = await discovery.post('/UserAPI?method=addAccountLink', postBody);
      if (response.ok) {
@@ -482,8 +499,9 @@ export async function removeLinkedAccount(patronToRemove, url) {
  * Remove an account that another user has created a link to
  * @param {string} patronToRemove
  * @param {string} url
+ * @param {string} language
  **/
-export async function removeViewerAccount(patronToRemove, url) {
+export async function removeViewerAccount(patronToRemove, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -492,6 +510,7 @@ export async function removeViewerAccount(patronToRemove, url) {
           auth: createAuthTokens(),
           params: {
                idToRemove: patronToRemove,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=removeViewerLink', postBody);
@@ -519,8 +538,9 @@ export async function removeViewerAccount(patronToRemove, url) {
  * Update the user's language preference
  * @param {string} code
  * @param {string} url
+ * @param {string} language
  **/
-export async function saveLanguage(code, url) {
+export async function saveLanguage(code, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -529,13 +549,14 @@ export async function saveLanguage(code, url) {
           auth: createAuthTokens(),
           params: {
                languageCode: code,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=saveLanguage', postBody);
      if (response.ok) {
           i18n.locale = code;
           PATRON.language = code;
-          return code;
+          return true;
      } else {
           console.log(response);
           return false;
@@ -551,8 +572,9 @@ export async function saveLanguage(code, url) {
  * @param {number} pageSize
  * @param {string} sort
  * @param {string} url
+ * @param {string} language
  **/
-export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url) {
+export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'checkedOut', url, language = 'en') {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -562,6 +584,7 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
                page: page,
                pageSize: pageSize,
                sort_by: sort,
+               language
           },
      });
 
@@ -590,14 +613,18 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
 /**
  * Enable reading history for the user
  * @param {string} url
+ * @param {string} language
  **/
-export async function optIntoReadingHistory(url) {
+export async function optIntoReadingHistory(url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
+          params: {
+               language
+          }
      });
      const response = await discovery.post("/UserAPI?method=optIntoReadingHistory", postBody);
      if (response.ok) {
@@ -609,14 +636,18 @@ export async function optIntoReadingHistory(url) {
 /**
  * Disable reading history for the user
  * @param {string} url
+ * @param {string} language
  **/
-export async function optOutOfReadingHistory(url) {
+export async function optOutOfReadingHistory(url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               language
+          }
      });
      const response = await discovery.post('/UserAPI?method=optOutOfReadingHistory', postBody);
      if (response.ok) {
@@ -629,14 +660,18 @@ export async function optOutOfReadingHistory(url) {
 /**
  * Delete all reading history for the user
  * @param {string} url
+ * @param {string} language
  **/
-export async function deleteAllReadingHistory(url) {
+export async function deleteAllReadingHistory(url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
           headers: getHeaders(true),
           auth: createAuthTokens(),
+          params: {
+               language
+          }
      });
      const response = await discovery.post('/UserAPI?method=deleteAllFromReadingHistory', postBody);
      if (response.ok) {
@@ -652,8 +687,9 @@ export async function deleteAllReadingHistory(url) {
  * Delete selected reading history for the user
  * @param {string} item
  * @param {string} url
+ * @param {string} language
  **/
-export async function deleteSelectedReadingHistory(item, url) {
+export async function deleteSelectedReadingHistory(item, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -662,6 +698,7 @@ export async function deleteSelectedReadingHistory(item, url) {
           auth: createAuthTokens(),
           params: {
                selected: item,
+               language
           },
      });
      const response = await discovery.post('/UserAPI?method=deleteSelectedFromReadingHistory', postBody);
@@ -671,4 +708,65 @@ export async function deleteSelectedReadingHistory(item, url) {
           }
      }
      return false;
+}
+
+/** *******************************************************************
+ * Saved Searches
+ ******************************************************************* **/
+/**
+ * Return a list of the user's saved searches
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function fetchSavedSearches(url, language = 'en') {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               checkIfValid: false,
+               language
+          },
+     });
+
+     const response = await api.post('/ListAPI?method=getSavedSearchesForLiDA', postBody);
+
+     if(response.ok) {
+          return response.data.result
+     }
+
+     return {
+          success: false,
+          count: 0,
+          countNewResults: 0,
+          searches: []
+     }
+}
+
+/**
+ * Return a list of titles from a given saved search
+ * @param {string} id
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function getSavedSearch(id, language = 'en', url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               searchId: id,
+               numTitles: 30,
+               language: language
+          },
+     });
+     const response = await api.post('/ListAPI?method=getSavedSearchTitles', postBody);
+     if (response.ok) {
+         return response.data?.result ?? [];
+     } else {
+          return [];
+     }
 }

@@ -5,12 +5,13 @@ import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
 import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
-import { translate } from '../../translations/translations';
-import { BrowseCategoryContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { Editions } from '../../screens/GroupedWork/Editions';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 const BrowseStackNavigator = () => {
+     const { language } = React.useContext(LanguageContext);
      const Stack = createStackNavigator();
      return (
           <Stack.Navigator
@@ -36,7 +37,7 @@ const BrowseStackNavigator = () => {
                          name="HomeScreen"
                          component={DiscoverHomeScreen}
                          options={{
-                              title: translate('navigation.home'),
+                              title: getTermFromDictionary(language, 'nav_discover'),
                          }}
                          initialParams={{
                               libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
@@ -49,7 +50,7 @@ const BrowseStackNavigator = () => {
                          name="GroupedWorkScreen"
                          component={GroupedWorkScreen}
                          options={({ route }) => ({
-                              title: route.params.title ?? translate('grouped_work.title'),
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
                          initialParams={{ prevRoute: 'DiscoveryScreen' }}
                     />
@@ -57,7 +58,7 @@ const BrowseStackNavigator = () => {
                          name="CopyDetails"
                          component={WhereIsIt}
                          options={({ navigation }) => ({
-                              title: translate('copy_details.where_is_it'),
+                              title: getTermFromDictionary(language, 'where_is_it'),
                               headerShown: true,
                               presentation: 'modal',
                               headerLeft: () => {
@@ -74,7 +75,7 @@ const BrowseStackNavigator = () => {
                        name="CreateVDXRequest"
                        component={CreateVDXRequest}
                        options={({ navigation }) => ({
-                           title: translate('ill.request_title'),
+                           title: getTermFromDictionary(language, 'ill_request_title'),
                            presentation: 'modal',
                            headerLeft: () => {
                                return <></>;
@@ -100,7 +101,7 @@ const BrowseStackNavigator = () => {
                       name="GroupedWorkScreen221200"
                       component={GroupedWork221200}
                       options={({ route }) => ({
-                          title: route.params.title ?? translate('grouped_work.title'),
+                          title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                       })}
                   />
               </Stack.Group>
@@ -110,6 +111,7 @@ const BrowseStackNavigator = () => {
 
 const EditionsStack = createStackNavigator();
 export const EditionsModal = () => {
+    const { language } = React.useContext(LanguageContext);
      return (
           <EditionsStack.Navigator
                id="EditionsStack"
@@ -138,7 +140,7 @@ export const EditionsModal = () => {
                     name="Editions"
                     component={Editions}
                     options={{
-                         title: translate('grouped_work.editions'),
+                         title: getTermFromDictionary(language, 'editions'),
                          headerShown: true,
                          presentation: 'card',
                     }}
@@ -147,7 +149,7 @@ export const EditionsModal = () => {
                     name="WhereIsIt"
                     component={WhereIsIt}
                     options={{
-                         title: translate('copy_details.where_is_it'),
+                         title: getTermFromDictionary(language, 'where_is_it'),
                          headerShown: true,
                          presentation: 'card',
                     }}

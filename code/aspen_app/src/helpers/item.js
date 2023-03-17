@@ -1,17 +1,17 @@
 import moment from 'moment';
-import _ from 'lodash';
-import { Badge, Box, Button, Center, Icon, Pressable, Text, HStack, VStack, IconButton, Image } from 'native-base';
+import { Badge, Box, Text } from 'native-base';
 import React from 'react';
 
-import { translate } from '../translations/translations';
-import { UserContext } from '../context/initialContext';
+import {LanguageContext, UserContext} from '../context/initialContext';
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 export const isOverdue = (overdue) => {
+    const { language } = React.useContext(LanguageContext);
      if (overdue) {
           return (
                <Text>
                     <Badge colorScheme="danger" rounded="4px" mt={-0.5}>
-                         {translate('checkouts.overdue')}
+                         {getTermFromDictionary(language, 'checkout_overdue')}
                     </Badge>
                </Text>
           );
@@ -56,6 +56,7 @@ export function getCleanTitle(title) {
 }
 
 export const getAuthor = (author) => {
+    const { language } = React.useContext(LanguageContext);
      if (author) {
           let displayAuthor = author;
           const countComma = displayAuthor.split(',').length - 1;
@@ -69,7 +70,7 @@ export const getAuthor = (author) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('grouped_work.author')}:</Text> {displayAuthor}
+                    <Text bold>{getTermFromDictionary(language, 'author')}:</Text> {displayAuthor}
                </Text>
           );
      }
@@ -77,6 +78,7 @@ export const getAuthor = (author) => {
 };
 
 export const getFormat = (format, source = null) => {
+    const { language } = React.useContext(LanguageContext);
      if (format !== 'Unknown') {
          if(source) {
              if(source !== 'ils') {
@@ -97,7 +99,7 @@ export const getFormat = (format, source = null) => {
                              base: 'xs',
                              lg: 'sm',
                          }}>
-                         <Text bold>{translate('grouped_work.format')}:</Text> {format} - {source}
+                         <Text bold>{getTermFromDictionary(language, 'format')}:</Text> {format} - {source}
                      </Text>
                  );
              }
@@ -108,7 +110,7 @@ export const getFormat = (format, source = null) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('grouped_work.format')}:</Text> {format}
+                    <Text bold>{getTermFromDictionary(language, 'format')}:</Text> {format}
                </Text>
           );
      } else {
@@ -117,6 +119,7 @@ export const getFormat = (format, source = null) => {
 };
 
 export const getBadge = (status, frozen, available, source) => {
+    const { language } = React.useContext(LanguageContext);
      if (frozen) {
           return (
                <Text>
@@ -126,7 +129,7 @@ export const getBadge = (status, frozen, available, source) => {
                </Text>
           );
      } else if (available) {
-          let message = translate('overdrive.hold_ready');
+          let message = getTermFromDictionary(language, 'overdrive_hold_ready');
           if (source === 'ils') {
                message = status;
           }
@@ -151,6 +154,7 @@ export const getBadge = (status, frozen, available, source) => {
 };
 
 export const getStatus = (status, source) => {
+    const { language } = React.useContext(LanguageContext);
      if (status) {
           if (source === 'vdx') {
                return (
@@ -159,7 +163,7 @@ export const getStatus = (status, source) => {
                               base: 'xs',
                               lg: 'sm',
                          }}>
-                         <Text bold>{translate('holds.status')}:</Text> {status}
+                         <Text bold>{getTermFromDictionary(language, 'hold_status')}:</Text> {status}
                     </Text>
                );
           }
@@ -169,17 +173,18 @@ export const getStatus = (status, source) => {
 };
 
 export const getType = (type) => {
+    const { language } = React.useContext(LanguageContext);
      if (type && type !== 'ils') {
          if(type === 'interlibrary_loan') {
-             type = 'Interlibrary Loan';
+             type = getTermFromDictionary(language, 'interlibrary_loan');
          } else if (type === 'axis360') {
-             type = 'Axis 360';
+             type = getTermFromDictionary(language, 'axis360');
          } else if (type === 'cloudlibrary') {
-             type = 'CloudLibrary';
+             type = getTermFromDictionary(language, 'cloud_library');
          } else if (type === 'hoopla') {
-             type = 'Hoopla';
+             type = getTermFromDictionary(language, 'hoopla');
          } else if (type === 'overdrive') {
-             type = 'OverDrive'
+             type = getTermFromDictionary(language, 'overdrive')
          }
 
           return (
@@ -188,7 +193,7 @@ export const getType = (type) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('holds.source')}:</Text> {type}
+                    <Text bold>{getTermFromDictionary(language, 'hold_source')}:</Text> {type}
                </Text>
           );
      } else {
@@ -197,6 +202,7 @@ export const getType = (type) => {
 };
 
 export const getOnHoldFor = (user) => {
+    const { language } = React.useContext(LanguageContext);
      if (user) {
           return (
                <Text
@@ -204,7 +210,7 @@ export const getOnHoldFor = (user) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('holds.on_hold_for')}:</Text> {user}
+                    <Text bold>{getTermFromDictionary(language, 'on_hold_for')}:</Text> {user}
                </Text>
           );
      }
@@ -212,6 +218,7 @@ export const getOnHoldFor = (user) => {
 };
 
 export const getCheckedOutTo = (props) => {
+    const { language } = React.useContext(LanguageContext);
      const { user } = React.useContext(UserContext);
      const [checkedOutTo, setCheckedOutTo] = React.useState();
      if (user.id !== checkedOutTo) {
@@ -221,7 +228,7 @@ export const getCheckedOutTo = (props) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>Checked Out To:</Text> {props}
+                    <Text bold>{getTermFromDictionary(language, 'checked_out_to')}:</Text> {props}
                </Text>
           );
      } else {
@@ -230,6 +237,7 @@ export const getCheckedOutTo = (props) => {
 };
 
 export const getDueDate = (date) => {
+    const { language } = React.useContext(LanguageContext);
      const dueDate = moment.unix(date);
      const itemDueOn = moment(dueDate).format('MMM D, YYYY');
      return (
@@ -238,12 +246,13 @@ export const getDueDate = (date) => {
                     base: 'xs',
                     lg: 'sm',
                }}>
-               <Text bold>{translate('checkouts.due')}:</Text> {itemDueOn}
+               <Text bold>{getTermFromDictionary(language, 'checkout_due')}:</Text> {itemDueOn}
           </Text>
      );
 };
 
 export const willAutoRenew = (props) => {
+    const { language } = React.useContext(LanguageContext);
      if (props.autoRenew === 1) {
           return (
                <Box mt={1} p={0.5} bgColor="muted.100">
@@ -252,7 +261,7 @@ export const willAutoRenew = (props) => {
                               base: 'xs',
                               lg: 'sm',
                          }}>
-                         <Text bold>{translate('checkouts.auto_renew')}:</Text> {props.renewalDate}
+                         <Text bold>{getTermFromDictionary(language, 'if_eligible_auto_renew')}:</Text> {props.renewalDate}
                     </Text>
                </Box>
           );
@@ -262,6 +271,7 @@ export const willAutoRenew = (props) => {
 };
 
 export const getPickupLocation = (location, source) => {
+    const { language } = React.useContext(LanguageContext);
      if (location && source === 'ils') {
           return (
                <Text
@@ -269,7 +279,7 @@ export const getPickupLocation = (location, source) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('holds.pickup_at')}:</Text> {location}
+                    <Text bold>{getTermFromDictionary(language, 'hold_pickup_at')}:</Text> {location}
                </Text>
           );
      } else {
@@ -277,7 +287,8 @@ export const getPickupLocation = (location, source) => {
      }
 };
 
-export const getPosition = (position, available, length) => {
+export const getPosition = (position, available, length, holdPosition) => {
+    const { language } = React.useContext(LanguageContext);
      if (position && !available && position !== 0 && position !== '0') {
          if(length) {
              return (
@@ -286,7 +297,7 @@ export const getPosition = (position, available, length) => {
                          base: 'xs',
                          lg: 'sm',
                      }}>
-                     <Text bold>{translate('holds.position')}:</Text> {translate('holds.positionWithHoldQueueLength', { position: position, queueLength: length })}
+                     <Text bold>{getTermFromDictionary(language, 'hold_position')}:</Text> {holdPosition}
                  </Text>
              );
          }
@@ -296,7 +307,7 @@ export const getPosition = (position, available, length) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('holds.position')}:</Text> {position}
+                    <Text bold>{getTermFromDictionary(language, 'hold_position')}:</Text> {position}
                </Text>
           );
      } else {
@@ -305,6 +316,7 @@ export const getPosition = (position, available, length) => {
 };
 
 export const getExpirationDate = (expiration, available) => {
+    const { language } = React.useContext(LanguageContext);
      if (expiration && available) {
           const expirationDateUnix = moment.unix(expiration);
           let expirationDate = moment(expirationDateUnix).format('MMM D, YYYY');
@@ -314,7 +326,7 @@ export const getExpirationDate = (expiration, available) => {
                          base: 'xs',
                          lg: 'sm',
                     }}>
-                    <Text bold>{translate('holds.pickup_by')}:</Text> {expirationDate}
+                    <Text bold>{getTermFromDictionary(language, 'hold_pickup_by')}:</Text> {expirationDate}
                </Text>
           );
      } else {
@@ -323,6 +335,7 @@ export const getExpirationDate = (expiration, available) => {
 };
 
 export const getRenewalCount = (count, available = null) => {
+    const { language } = React.useContext(LanguageContext);
     if(available) {
         return (
             <Text
@@ -330,7 +343,7 @@ export const getRenewalCount = (count, available = null) => {
                     base: 'xs',
                     lg: 'sm',
                 }}>
-                <Text bold>{translate('checkouts.renewed')}:</Text> {count} of {available} times
+                <Text bold>{getTermFromDictionary(language, 'checkout_renewed')}:</Text> {count} of {available} times
             </Text>
         );
     } else {

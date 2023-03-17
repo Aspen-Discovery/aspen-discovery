@@ -9,11 +9,11 @@ import { useQuery } from '@tanstack/react-query';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { getRecords } from '../../util/api/item';
 import { loadError } from '../../components/loadError';
-import { translate } from '../../translations/translations';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import {getStatusIndicator} from './StatusIndicator';
 import {ActionButton} from '../../components/Action/ActionButton';
-import { LibrarySystemContext } from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const Editions = () => {
      const navigation = useNavigation();
@@ -22,11 +22,12 @@ export const Editions = () => {
      const params = route[0].params;
      const { id, recordId, format, source, volumeInfo, prevRoute } = params;
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const [isLoading, setLoading] = React.useState(false);
 
      const { status, data, error, isFetching } = useQuery({
-          queryKey: ['records', id, source, format, library.baseUrl],
-          queryFn: () => getRecords(id, format, source, library.baseUrl),
+          queryKey: ['records', id, source, format, language, library.baseUrl],
+          queryFn: () => getRecords(id, format, source, language, library.baseUrl),
      });
 
      const [responseIsOpen, setResponseIsOpen] = React.useState(false);
@@ -71,7 +72,7 @@ export const Editions = () => {
                                       <AlertDialog.Footer>
                                            <Button.Group space={3}>
                                             {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                            <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{translate('general.button_ok')}</Button>
+                                            <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{getTermFromDictionary(language, 'button_ok')}</Button>
                                        </Button.Group>
                                       </AlertDialog.Footer>
                                  </AlertDialog.Content>
@@ -84,6 +85,7 @@ export const Editions = () => {
 };
 
 const Edition = (payload) => {
+     const { language } = React.useContext(LanguageContext);
      const {response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef} = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
@@ -100,7 +102,7 @@ const Edition = (payload) => {
           navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });
      };
 
-     const statusIndicator = getStatusIndicator(records.statusIndicator);
+     const statusIndicator = getStatusIndicator(records.statusIndicator, language);
 
      return (
           <Box
@@ -125,7 +127,7 @@ const Edition = (payload) => {
                               </Badge>
                               {records.source === 'ils' ? (
                                    <Button colorScheme="tertiary" variant="ghost" size="xs" leftIcon={<Icon as={MaterialIcons} name="location-pin" size="xs" mr="-1" />} onPress={handleOnPress}>
-                                        {translate('copy_details.where_is_it')}
+                                        {getTermFromDictionary(language, 'where_is_it')}
                                    </Button>
                               ) : null}
                          </VStack>

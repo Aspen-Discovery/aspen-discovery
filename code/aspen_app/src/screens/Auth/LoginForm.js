@@ -8,7 +8,6 @@ import { create } from 'apisauce';
 
 // custom components and helper files
 import { AuthContext } from '../../components/navigation';
-import { translate } from '../../translations/translations';
 import {getBrowseCategories, getLanguages, getLibraryBranch, getLibrarySystem, getUserProfile} from '../../util/login';
 import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import {ResetExpiredPin} from './ResetExpiredPin';
@@ -17,6 +16,7 @@ import {createAuthTokens, getHeaders} from '../../util/apiAuth';
 import {formatDiscoveryVersion} from '../../util/loadLibrary';
 import {DisplayMessage} from '../../components/Notifications';
 import {loginToLiDA, validateUser} from '../../util/api/user';
+import {getTermFromDictionary} from '../../translations/TranslationService';
 
 export const GetLoginForm = (props) => {
      const [loading, setLoading] = React.useState(false);
@@ -44,8 +44,10 @@ export const GetLoginForm = (props) => {
      const { updateLocation } = React.useContext(LibraryBranchContext);
      const { updateUser } = React.useContext(UserContext);
      const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
-     const { updateLanguage, updateLanguages } = React.useContext(LanguageContext);
+     const { language, updateLanguage, updateLanguages } = React.useContext(LanguageContext);
      const patronsLibrary = props.patronsLibrary;
+
+     const {usernameLabel, passwordLabel} = props;
 
      const initialValidation = async () => {
          const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
@@ -84,9 +86,8 @@ export const GetLoginForm = (props) => {
                          signIn();
                          setLoading(false);
                      } else {
-                         console.log('Unable to validate user with provided information.');
                          setLoginError(true);
-                         setLoginErrorMessage(translate('login.invalid_user'));
+                         setLoginErrorMessage(getTermFromDictionary('en', 'invalid_user'));
                          setLoading(false);
                      }
                  }
@@ -94,7 +95,7 @@ export const GetLoginForm = (props) => {
          } else {
              setLoading(false);
              setLoginError(true);
-             setLoginErrorMessage("Unable to establish connection with library. Please try again later.")
+             setLoginErrorMessage(getTermFromDictionary('en', 'error_no_library_connection'))
          }
      }
 
@@ -142,7 +143,7 @@ export const GetLoginForm = (props) => {
                               fontSize: 'sm',
                               fontWeight: 600,
                          }}>
-                         {translate('login.username')}
+                         {usernameLabel}
                     </FormControl.Label>
                     <Input
                          autoCapitalize="none"
@@ -166,7 +167,7 @@ export const GetLoginForm = (props) => {
                               fontSize: 'sm',
                               fontWeight: 600,
                          }}>
-                         {translate('login.password')}
+                         {passwordLabel}
                     </FormControl.Label>
                     <Input
                          variant="filled"
@@ -191,12 +192,12 @@ export const GetLoginForm = (props) => {
                          size="md"
                          color="#30373b"
                          isLoading={loading}
-                         isLoadingText="Logging in..."
+                         isLoadingText={getTermFromDictionary('en', 'logging_in', true)}
                          onPress={async () => {
                              setLoading(true);
                              await initialValidation();
                          }}>
-                         {translate('general.login')}
+                         {getTermFromDictionary('en', 'login')}
                     </Button>
                </Center>
           </>
