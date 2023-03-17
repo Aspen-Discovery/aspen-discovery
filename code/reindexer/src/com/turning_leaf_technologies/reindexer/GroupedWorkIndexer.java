@@ -828,7 +828,7 @@ public class GroupedWorkIndexer {
 	}
 
 	protected void processEmptyGroupedWorks() throws SQLException {
-		PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id as grouped_work_id, permanent_id, grouping_category, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+		PreparedStatement getEmptyGroupedWorksStmt = dbConn.prepareStatement("SELECT grouped_work.id as grouped_work_id, permanent_id, grouping_category, count(grouped_work_records.id) as numRecords FROM grouped_work LEFT JOIN grouped_work_records on grouped_work.id = groupedWorkId where length(permanent_id) > 36 GROUP BY permanent_id having numRecords = 0;", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement getPrimaryIdentifiersForGroupedWorkStmt = dbConn.prepareStatement("SELECT count(*) as numIdentifiers from grouped_work_primary_identifiers where grouped_work_id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		logEntry.addNote("Starting to process grouped works with no records attached to them.");
 
@@ -837,6 +837,9 @@ public class GroupedWorkIndexer {
 		boolean localRegroupAll = this.regroupAllRecords;
 		setRegroupAllRecords(true);
 		logEntry.addNote("Preparing to process empty grouped works");
+		logEntry.saveResults();
+
+		int numProcessed = 0;
 		while (emptyGroupedWorksRS.next()) {
 			long groupedWorkId = emptyGroupedWorksRS.getLong("grouped_work_id");
 			String permanentId = emptyGroupedWorksRS.getString("permanent_id");
@@ -863,9 +866,14 @@ public class GroupedWorkIndexer {
 					}
 				}
 			}
+			numProcessed++;
+			if (numProcessed % 1000 == 0) {
+				logEntry.addNote("Processed " + numProcessed);
+			}
 		}
 		setRegroupAllRecords(localRegroupAll);
-		logEntry.addNote("Finished processing empty grouped works.");
+		logEntry.addNote("Finished processing empty grouped works, processed " + numProcessed + ".");
+		logEntry.saveResults();
 	}
 
 	public synchronized void processGroupedWork(String permanentId) {
