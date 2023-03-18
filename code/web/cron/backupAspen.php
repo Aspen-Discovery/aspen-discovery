@@ -26,17 +26,16 @@ exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 
 //Create the tar file
 $curDateTime = date('ymdHis');
 $exportDir = "/data/aspen-discovery/$serverName/sql_backup";
-$exportTmpDir = "/data/aspen-discovery/$serverName/sql_backup";
 $backupFile = "$exportDir/aspen.$curDateTime.tar";
 //exec("tar -cf $backupFile");
-exec("cd $exportTmpDir");
+exec("cd $exportDir");
 
 //Create the export files
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportFile = "$serverName.$curDateTime.$table.sql";
-	$fullExportFilePath = "$exportTmpDir/$exportFile";
+	$fullExportFilePath = "$exportFile/$exportFile";
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
