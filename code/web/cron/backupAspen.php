@@ -7,7 +7,7 @@ global $serverName;
 
 global $aspen_db;
 
-$debug = true;
+$debug = false;
 
 $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
@@ -35,9 +35,19 @@ exec_advanced("cd $backupDir", $debug);
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
+	$exportData = true;
+	//Ignore
+	if ($table == 'session') {
+		$exportData = false;
+	}
+
 	$exportFile = "$serverName.$curDateTime.$table.sql";
 	$fullExportFilePath = "$backupDir/$exportFile";
-	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
+	if ($exportData) {
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
+	}else{
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --no-data $dbName $table > $fullExportFilePath";
+	}
 	exec_advanced($dumpCommand, $debug);
 
 	//remove the exported file
@@ -47,6 +57,7 @@ foreach ($allTables as $table) {
 
 		unlink($fullExportFilePath);
 	}
+
 }
 
 //zip up the archive
