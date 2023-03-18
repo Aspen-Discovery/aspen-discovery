@@ -7,6 +7,8 @@ global $serverName;
 
 global $aspen_db;
 
+$debug = true;
+
 $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
 $dbName = $configArray['Database']['database_aspen_dbname'];
@@ -18,17 +20,16 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 
 //Remove any backups older than 3 days
 $backupDir = "/data/aspen-discovery/$serverName/sql_backup";
-exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql -type f -mtime +3 -delete");
-exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql.gz -type f -mtime +3 -delete");
-exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar -type f -mtime +3 -delete");
-exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 -delete");
+exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql -type f -mtime +3 -delete", $debug);
+exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.sql.gz -type f -mtime +3 -delete", $debug);
+exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar -type f -mtime +3 -delete", $debug);
+exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 -delete", $debug);
 
 //Create the tar file
 $curDateTime = date('ymdHis');
 $backupFile = "$backupDir/aspen.$curDateTime.tar";
 //exec("tar -cf $backupFile");
-echo("cd $backupDir");
-exec("cd $backupDir");
+exec_advanced("cd $backupDir", $debug);
 
 //Create the export files
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
@@ -39,22 +40,19 @@ foreach ($allTables as $table) {
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
-	echo("cd $dumpCommand");
-	exec($dumpCommand);
+	exec($dumpCommand, $debug);
 
 	//remove the exported file
 	if (file_exists($fullExportFilePath)) {
 		//Add the file to the archive
-		echo("tar -rf $backupFile $exportFile");
-		exec("tar -rf $backupFile $exportFile");
+		exec_advanced("tar -rf $backupFile $exportFile", $debug);
 
 		unlink($fullExportFilePath);
 	}
 }
 
 //zip up the archive
-echo("gzip $backupFile");
-exec("gzip $backupFile");
+exec_advanced("gzip $backupFile", $debug);
 
 //Optionally move the file to the Google backup bucket
 // Load the system settings
@@ -65,6 +63,17 @@ $systemVariables = new SystemVariables();
 if ($systemVariables->find(true) && !empty($systemVariables->googleBucket)) {
 	//Perform the backup
 	$bucketName = $systemVariables->googleBucket;
-	echo("gsutil cp $backupFile gs://$bucketName/");
-	exec("gsutil cp $backupFile gs://$bucketName/");
+	exec_advanced("gsutil cp $backupFile gs://$bucketName/", $debug);
+}
+
+function exec_advanced($command, $log) {
+	if ($log) {
+		console_log($command);
+	}
+	exec($command);
+}
+function console_log($message) {
+	$STDERR = fopen("php://stderr", "w");
+	fwrite($STDERR, "\n".$message."\n\n");
+	fclose($STDERR);
 }
