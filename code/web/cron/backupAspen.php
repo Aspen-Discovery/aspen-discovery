@@ -25,25 +25,27 @@ exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 
 
 //Create the tar file
 $curDateTime = date('ymdHis');
-$exportDir = "/data/aspen-discovery/$serverName/sql_backup";
-$backupFile = "$exportDir/aspen.$curDateTime.tar";
+$backupFile = "$backupDir/aspen.$curDateTime.tar";
 //exec("tar -cf $backupFile");
-exec("cd $exportDir");
+echo("cd $backupDir");
+exec("cd $backupDir");
 
 //Create the export files
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportFile = "$serverName.$curDateTime.$table.sql";
-	$fullExportFilePath = "$exportDir/$exportFile";
+	$fullExportFilePath = "$backupDir/$exportFile";
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
+	echo("cd $dumpCommand");
 	exec($dumpCommand);
 
 	//remove the exported file
 	if (file_exists($fullExportFilePath)) {
 		//Add the file to the archive
+		echo("tar -rf $backupFile $exportFile");
 		exec("tar -rf $backupFile $exportFile");
 
 		unlink($fullExportFilePath);
@@ -51,7 +53,8 @@ foreach ($allTables as $table) {
 }
 
 //zip up the archive
-exec("cd $exportDir;gzip $backupFile");
+echo("gzip $backupFile");
+exec("gzip $backupFile");
 
 //Optionally move the file to the Google backup bucket
 // Load the system settings
@@ -62,5 +65,6 @@ $systemVariables = new SystemVariables();
 if ($systemVariables->find(true) && !empty($systemVariables->googleBucket)) {
 	//Perform the backup
 	$bucketName = $systemVariables->googleBucket;
+	echo("gsutil cp $backupFile gs://$bucketName/");
 	exec("gsutil cp $backupFile gs://$bucketName/");
 }
