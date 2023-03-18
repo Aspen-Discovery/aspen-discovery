@@ -16,7 +16,7 @@ if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
 }
 if (!file_exists("/data/aspen-discovery/$serverName/sql_backup/backup_temp")) {
-	mkdir("/data/aspen-discovery/$serverName/sql_backup/backup_temp", 700, true);
+	mkdir("/data/aspen-discovery/$serverName/sql_backup/backup_temp", 750, false);
 }
 
 //Remove any backups older than 3 days
