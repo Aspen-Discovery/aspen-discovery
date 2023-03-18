@@ -35,7 +35,7 @@ $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportFile = "$serverName.$curDateTime.$table.sql";
-	$fullExportFilePath = "$exportFile/$exportFile";
+	$fullExportFilePath = "$exportDir/$exportFile";
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
