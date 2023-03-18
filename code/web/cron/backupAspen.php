@@ -25,8 +25,8 @@ exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 
 
 //Create the tar file
 $curDateTime = date('ymdHis');
-$backupFile = "/data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar.gz";
-exec("cd /tmp;tar -czf $backupFile");
+$backupFile = "/data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar";
+//exec("tar -cf $backupFile");
 
 //Create the export files
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
@@ -41,7 +41,7 @@ foreach ($allTables as $table) {
 	//remove the exported file
 	if (file_exists($exportFile)) {
 		//Add the file to the archive
-		exec("cd /tmp;tar -rf $backupFile $exportFile");
+		exec("cd /tmp;tar -crf $backupFile $exportFile");
 
 		unlink($exportFile);
 	}
