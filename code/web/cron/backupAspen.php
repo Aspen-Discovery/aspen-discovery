@@ -45,7 +45,7 @@ foreach ($allTables as $table) {
 	//remove the exported file
 	if (file_exists($fullExportFilePath)) {
 		//Add the file to the archive
-		exec("cd /tmp;tar -rf $backupFile $exportFile");
+		exec("tar -rf $backupFile $exportFile");
 
 		unlink($fullExportFilePath);
 	}
