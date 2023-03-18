@@ -15,8 +15,8 @@ $dbName = $configArray['Database']['database_aspen_dbname'];
 if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
 }
-if (!file_exists("/data/aspen-discovery/$serverName/sql_backup/tmp")) {
-	mkdir("/data/aspen-discovery/$serverName/sql_backup/tmp", 700, true);
+if (!file_exists("/data/aspen-discovery/$serverName/sql_backup/backup_temp")) {
+	mkdir("/data/aspen-discovery/$serverName/sql_backup/backup_temp", 700, true);
 }
 
 //Remove any backups older than 3 days
@@ -29,7 +29,7 @@ exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 
 //Create the tar file
 $curDateTime = date('ymdHis');
 $exportDir = "/data/aspen-discovery/$serverName/sql_backup";
-$exportTmpDir = "/data/aspen-discovery/$serverName/sql_backup/tmp";
+$exportTmpDir = "/data/aspen-discovery/$serverName/sql_backup/backup_temp";
 $backupFile = "$exportDir/aspen.$curDateTime.tar";
 //exec("tar -cf $backupFile");
 exec("cd $exportTmpDir");
