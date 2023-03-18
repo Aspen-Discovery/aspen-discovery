@@ -68,12 +68,15 @@ if ($systemVariables->find(true) && !empty($systemVariables->googleBucket)) {
 
 function exec_advanced($command, $log) {
 	if ($log) {
-		console_log($command);
+		console_log($command, 'RUNNING: ');
 	}
-	exec($command);
+	$result = exec($command);
+	if ($log) {
+		console_log($result, 'RESULT: ');
+	}
 }
-function console_log($message) {
+function console_log($message, $prefix = '') {
 	$STDERR = fopen("php://stderr", "w");
-	fwrite($STDERR, "\n".$message."\n\n");
+	fwrite($STDERR, "\n".$prefix.$message."\n\n");
 	fclose($STDERR);
 }
