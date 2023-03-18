@@ -37,15 +37,13 @@ $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportFile = "$serverName.$curDateTime.$table.sql";
 	$fullExportFilePath = "$backupDir/$exportFile";
-	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
-	$createTableString = $createTableStmt->fetch();
 	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
-	exec($dumpCommand, $debug);
+	exec_advanced($dumpCommand, $debug);
 
 	//remove the exported file
 	if (file_exists($fullExportFilePath)) {
 		//Add the file to the archive
-		exec_advanced("tar -rf $backupFile $exportFile", $debug);
+		exec_advanced("cd $backupDir; tar -rf $backupFile $exportFile", $debug);
 
 		unlink($fullExportFilePath);
 	}
@@ -77,6 +75,6 @@ function exec_advanced($command, $log) {
 }
 function console_log($message, $prefix = '') {
 	$STDERR = fopen("php://stderr", "w");
-	fwrite($STDERR, "\n".$prefix.$message."\n\n");
+	fwrite($STDERR, $prefix.$message."\n");
 	fclose($STDERR);
 }
