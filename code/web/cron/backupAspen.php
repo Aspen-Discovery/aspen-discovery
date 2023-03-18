@@ -15,6 +15,9 @@ $dbName = $configArray['Database']['database_aspen_dbname'];
 if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
 	mkdir("/data/aspen-discovery/$serverName/sql_backup", 700, true);
 }
+if (!file_exists("/data/aspen-discovery/$serverName/sql_backup/tmp")) {
+	mkdir("/data/aspen-discovery/$serverName/sql_backup/tmp", 700, true);
+}
 
 //Remove any backups older than 3 days
 $backupDir = "/data/aspen-discovery/$serverName/sql_backup";
@@ -25,30 +28,34 @@ exec("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -mtime +3 
 
 //Create the tar file
 $curDateTime = date('ymdHis');
-$backupFile = "/data/aspen-discovery/$serverName/sql_backup/aspen.$curDateTime.tar";
+$exportDir = "/data/aspen-discovery/$serverName/sql_backup";
+$exportTmpDir = "/data/aspen-discovery/$serverName/sql_backup/tmp";
+$backupFile = "$exportDir/aspen.$curDateTime.tar";
 //exec("tar -cf $backupFile");
+exec("cd $exportTmpDir");
 
 //Create the export files
 $listTablesStmt = $aspen_db->query("SHOW TABLES");
 $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
-	$exportFile = "/tmp/$serverName.$curDateTime.$table.sql";
+	$exportFile = "$serverName.$curDateTime.$table.sql";
+	$fullExportFilePath = "$exportTmpDir/$exportFile";
 	$createTableStmt = $aspen_db->query("SHOW CREATE TABLE $table");
 	$createTableString = $createTableStmt->fetch();
-	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $exportFile";
+	$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
 	exec($dumpCommand);
 
 	//remove the exported file
-	if (file_exists($exportFile)) {
+	if (file_exists($fullExportFilePath)) {
 		//Add the file to the archive
 		exec("cd /tmp;tar -rf $backupFile $exportFile");
 
-		unlink($exportFile);
+		unlink($fullExportFilePath);
 	}
 }
 
 //zip up the archive
-exec("cd /data/aspen-discovery/$serverName/sql_backup;gzip $backupFile");
+exec("cd $exportDir;gzip $backupFile");
 
 //Optionally move the file to the Google backup bucket
 // Load the system settings
