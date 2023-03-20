@@ -413,14 +413,10 @@ class BookCoverProcessor {
 		$this->bookCoverInfo = new BookCoverInfo();
 		//First check to see if this has a custom cover due to being an e-book
 		if (!empty($this->id)) {
-			if ($this->isEContent) {
-				$this->cacheName = 'econtent' . $this->id;
+			if ($this->type == 'grouped_work') {
+				$this->cacheName = $this->id;
 			} else {
-				if ($this->type == 'grouped_work') {
-					$this->cacheName = $this->id;
-				} else {
-					$this->cacheName = $this->type . '_' . $this->id;
-				}
+				$this->cacheName = $this->type . '_' . $this->id;
 			}
 			$this->bookCoverInfo->recordId = $this->id;
 			$this->bookCoverInfo->recordType = $this->type;
@@ -1552,7 +1548,31 @@ class BookCoverProcessor {
 	}
 
 	private function getUploadedGroupedWorkCover($permanentId) {
-		if($this->bookCoverInfo->imageSource == 'upload') {
+		$okToLoad = false;
+		if($this->type == 'grouped_work' && $this->bookCoverInfo->imageSource == 'upload') {
+			$okToLoad = true;
+		}else{
+			$bookCoverInfo = new BookCoverInfo();
+			$bookCoverInfo->recordType = 'grouped_work';
+			$bookCoverInfo->recordId = $permanentId;
+			if ($bookCoverInfo->find(true)) {
+				if ($bookCoverInfo->imageSource == 'upload') {
+					$okToLoad = true;
+				}
+			}
+			if (!$okToLoad && strlen($permanentId) == 40) {
+				$bookCoverInfo = new BookCoverInfo();
+				$bookCoverInfo->recordType = 'grouped_work';
+				$bookCoverInfo->recordId = substr($permanentId, 0, 36);
+				if ($bookCoverInfo->find(true)) {
+					if ($bookCoverInfo->imageSource == 'upload') {
+						$okToLoad = true;
+					}
+				}
+			}
+		}
+
+		if ($okToLoad) {
 			$uploadedImage = $this->bookCoverPath . '/original/' . $permanentId . '.png';
 			if (file_exists($uploadedImage)) {
 				return $this->processImageURL('upload', $uploadedImage);
