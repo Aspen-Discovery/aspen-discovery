@@ -96,11 +96,7 @@ class Grouping_Record {
 		}
 		$this->source = $source;
 		$this->_statusInformation = new Grouping_StatusInformation();
-		if ($this->isHoldable()) {
-			$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
-		}else{
-			$this->_statusInformation->setNumHolds( 0);
-		}
+		$this->_statusInformation->setNumHolds($recordDriver != null ? $recordDriver->getNumHolds() : 0);
 		if ($recordDriver != null && $recordDriver instanceof OverDriveRecordDriver) {
 			$availability = $recordDriver->getAvailability();
 			if ($availability != null) {
