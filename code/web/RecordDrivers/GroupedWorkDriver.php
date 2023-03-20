@@ -1937,7 +1937,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$existingDisplayInfo = new GroupedWorkDisplayInfo();
 			$existingDisplayInfo->permanent_id = $this->getPermanentId();
 			//prefer use of grouped work series display info if any
-			if ($existingDisplayInfo->find(true) && (!empty($existingDisplayInfo->seriesDisplayOrder) || !empty($existingDisplayInfo->seriesName)) ) {
+			if ($existingDisplayInfo->find(true) && ((!empty($existingDisplayInfo->seriesDisplayOrder) && $existingDisplayInfo->seriesDisplayOrder != 0)|| !empty($existingDisplayInfo->seriesName)) ) {
 				if ($novelistData != null && !empty($novelistData->seriesTitle)){
 					if (strtolower($novelistData->seriesTitle) == strtolower($existingDisplayInfo->seriesName)){
 						$this->seriesData = [
@@ -1945,16 +1945,14 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							'volume' => $existingDisplayInfo->seriesDisplayOrder,
 							'fromNovelist' => true,
 						];
-					}
-					else{
+					} else{
 						$this->seriesData = [
 							'seriesTitle' => $existingDisplayInfo->seriesName,
 							'volume' => $existingDisplayInfo->seriesDisplayOrder,
 							'fromNovelist' => false,
 						];
 					}
-				}
-				else{
+				} else{
 					$this->seriesData = [
 						'seriesTitle' => $existingDisplayInfo->seriesName,
 						'volume' => $existingDisplayInfo->seriesDisplayOrder,

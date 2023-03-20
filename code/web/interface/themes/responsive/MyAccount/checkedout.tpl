@@ -39,7 +39,7 @@
 				{/if}
 			</ul>
 			<div class="refresh-indicator small pull-right">
-				{translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedCheckoutInfoLastLoaded() isPublicFacing=true} <a onclick="return AspenDiscovery.Account.reloadCheckouts();" title="{translate text="Refresh" isPublicFacing=true inAttribute=true}"><i class="fas fa-sync-alt"></i></a>
+				{translate text="Last Loaded <span id='accountLoadTime'>%1%</span>" 1=$profile->getFormattedCheckoutInfoLastLoaded() isPublicFacing=true} <a onclick="return AspenDiscovery.Account.reloadCheckouts();" title="{translate text="Refresh" isPublicFacing=true inAttribute=true}" class="btn btn-default btn-sm">{translate text="Refresh" isPublicFacing=true inAttribute=true} <i class="fas fa-sync-alt"></i></a>
 			</div>
 
 			<!-- Tab panes -->
