@@ -156,6 +156,7 @@ class Grouping_Record {
 			if ($item->locallyOwned || $item->libraryOwned) {
 				$this->_locallyHoldable = true;
 			}
+			$this->_statusInformation->addHoldableCopies($item->numCopies);
 		}
 
 		if ($this->_isOverDrive == false) {
