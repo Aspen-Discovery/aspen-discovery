@@ -553,7 +553,13 @@ public class GroupedWorkIndexer {
 		logger.info("Clearing existing work " + permanentId + " from index");
 		//noinspection CommentedOutCode
 		try {
+			if (permanentId.length() < 40) {
+				//Delete both the original id (if less than 40 characters)
+				updateServer.deleteByQuery("id:\"" + permanentId + "\"");
+			}
+
 			if (permanentId.length() >= 37 && permanentId.length() < 40){
+				//Also try padding with spaces if less than 40 characters
 				StringBuilder permanentIdBuilder = new StringBuilder(permanentId);
 				while (permanentIdBuilder.length() < 40){
 					permanentIdBuilder.append(" ");
