@@ -56,20 +56,20 @@ function getUpdates23_04_00(): array {
 				"ALTER TABLE user add column preferredTheme int(11) default -1",
 			],
 		],
-		'add_shared_objects' => [
-			'title' => 'Add shared objects',
-			'description' => 'Allow libraries to share content within the community',
-			'sql' => [
-				"CREATE TABLE IF NOT EXISTS shared_content (
-					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					sharedFrom VARCHAR(50) NOT NULL,
-					sharedFrom VARCHAR(50) NOT NULL,
-					themeId  INT(11) NOT NULL,
-					weight INT(11) DEFAULT 0,
-					INDEX libraryToTheme(locationId, themeId)
-				) ENGINE INNODB",
-			],
-		],
+//		'add_shared_objects' => [
+//			'title' => 'Add shared objects',
+//			'description' => 'Allow libraries to share content within the community',
+//			'sql' => [
+//				"CREATE TABLE IF NOT EXISTS shared_content (
+//					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					sharedFrom VARCHAR(50) NOT NULL,
+//					sharedFrom VARCHAR(50) NOT NULL,
+//					themeId  INT(11) NOT NULL,
+//					weight INT(11) DEFAULT 0,
+//					INDEX libraryToTheme(locationId, themeId)
+//				) ENGINE INNODB",
+//			],
+//		],
 
 		//kirstien
 
