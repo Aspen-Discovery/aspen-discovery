@@ -366,12 +366,17 @@ class UInterface extends Smarty {
 				if ($userObject->preferredTheme != -1 && array_key_exists($userObject->preferredTheme, $allActiveThemes)) {
 					$theme->id = $userObject->preferredTheme;
 				}
+			}else{
+				if (isset($_SESSION['preferredTheme']) && array_key_exists($_SESSION['preferredTheme'], $allActiveThemes)) {
+					$theme->id = $_SESSION['preferredTheme'];
+				}
 			}
 			$this->assign('allActiveThemes', $allActiveThemes);
 			if ($theme->find(true)) {
 				$allAppliedThemes = $theme->getAllAppliedThemes();
 				$primaryTheme = $theme;
 				$this->appliedTheme = $primaryTheme;
+				$this->assign('activeThemeId', $primaryTheme->id);
 			}
 
 			//Get extended theme info
