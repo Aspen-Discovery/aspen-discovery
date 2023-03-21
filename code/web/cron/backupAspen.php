@@ -27,7 +27,7 @@ exec_advanced("find $backupDir/ -mindepth 1 -maxdepth 1 -name *.tar.gz -type f -
 
 //Create the tar file
 $curDateTime = date('ymdHis');
-$backupFile = "$backupDir/aspen.$curDateTime.tar";
+$backupFile = "$backupDir/aspen.$serverName.$curDateTime.tar";
 //exec("tar -cf $backupFile");
 exec_advanced("cd $backupDir", $debug);
 
