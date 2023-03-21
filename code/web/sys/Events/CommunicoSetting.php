@@ -38,14 +38,14 @@ class CommunicoSetting extends DataObject {
 			'baseUrl' => [
 				'property' => 'baseUrl',
 				'type' => 'url',
-				'label' => 'Base URL (i.e. https://yoursite.libcal.com)',
+				'label' => 'Base URL (i.e. https://attend.yoursite.com/events)',
 				'description' => 'The URL for the site',
 			],
 			'clientId' => [
 				'property' => 'clientId',
 				'type' => 'text',
-				'label' => 'Client ID',
-				'description' => 'Client ID',
+				'label' => 'Client Key',
+				'description' => 'Client Key',
 			],
 			'clientSecret' => [
 				'property' => 'clientSecret',

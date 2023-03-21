@@ -2,9 +2,11 @@
 	<div class="row">
 		<div class="col-sm-4">
 			<div class="panel active">
+				{if (!empty($recordDriver->getEventCoverUrl()))}
 				<div class="panel-body">
 					<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}"></a>
 				</div>
+				{/if}
 			</div>
 			{if !empty($recordDriver->getAudiences())}
 				<div class="panel active">
@@ -37,7 +39,15 @@
 				</a>
 			<br></br>
 		</div>
-		<div class="col-sm-8">
+		{*If there is no image we need to make a new row to display properly*}
+		{*A new row causes incorrect displays if there is an image*}
+		{if (empty($recordDriver->getEventCoverUrl()))}
+	</div>
+	<div class="row">
+		<div class="col-sm-offset-4 col-sm-8">
+			{else}
+			<div class="col-sm-8">
+			{/if}
 			{$recordDriver->getDescription()}
 			<br></br>
 			{$recordDriver->getFullDescription()}

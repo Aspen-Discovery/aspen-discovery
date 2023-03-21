@@ -3,7 +3,7 @@
 	<div class="share-tools">
 		<span class="share-tools-label hidden-inline-xs">{translate text="SHARE" isPublicFacing=true}</span>
 		{if !empty($showShareOnExternalSites)}
-			<a href="http://www.facebook.com/sharer/sharer.php?u={$eventUrl|escape:'url'}" target="_blank" title="{translate text="Share on Facebook" inAttribute=true isPublicFacing=true}">
+		<a href="http://www.facebook.com/sharer/sharer.php?u={$url}/{$eventUrl|escape:'url'}" target="_blank" title="{translate text="Share on Facebook" inAttribute=true}" aria-label="Share on Facebook">
 				<i class="fab fa-facebook-square fa-2x fa-fw"></i>
 			</a>
 
