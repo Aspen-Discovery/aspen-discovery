@@ -71,16 +71,12 @@ export const GroupedWorkScreen = () => {
           <ScrollView>
                {isLoading || status === 'loading' || isFetching ? (
                     <Box>
-                         <Center>
-                              {loadingSpinner('Fetching data...')}
-                         </Center>
+                        {loadingSpinner('Fetching data...')}
                     </Box>
                ) : status === 'error' ? (
-                       <Box>
-                            <Center>
-                                 {loadError(error, '')}
-                            </Center>
-                       </Box>
+                   <Box>
+                       {loadError(error, '')}
+                   </Box>
                ) : (
                     <>
                          <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} />

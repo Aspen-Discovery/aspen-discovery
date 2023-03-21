@@ -10,7 +10,7 @@ import {HoldPrompt} from '../Holds/HoldPrompt';
 import {getTermFromDictionary} from '../../../translations/TranslationService';
 
 export const CheckOut = (props) => {
-	const { id, title, type, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
+	const { id, title, type, record, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef } = props;
 	const { user, updateUser, accounts } = React.useContext(UserContext);
 	const { library } = React.useContext(LibrarySystemContext);
 	const { language } = React.useContext(LanguageContext);
@@ -24,7 +24,7 @@ export const CheckOut = (props) => {
 	}
 
 	if(_.size(accounts) > 0) {
-		return <HoldPrompt id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={true} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}/>
+		return <HoldPrompt id={record} title={title} action={type} volumeInfo={volumeInfo} prevRoute={prevRoute} isEContent={true} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>
 	} else {
 		return (
 			<>
