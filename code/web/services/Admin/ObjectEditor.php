@@ -39,16 +39,19 @@ abstract class ObjectEditor extends Admin_Admin {
 		//Define the structure of the object.
 		$interface->assign('structure', $structure);
 		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$interface->assign('objectAction', $objectAction);
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list') {
 			$this->viewExistingObjects($structure);
-		} elseif (($objectAction == 'save' || $objectAction == 'delete')) {
+		} elseif ($objectAction == 'save' || $objectAction == 'delete') {
 			$this->editObject($objectAction, $structure);
 		} elseif ($objectAction == 'compare') {
 			$this->compareObjects($structure);
 		} elseif ($objectAction == 'history') {
 			$this->showHistory();
+		} elseif ($objectAction == 'copy') {
+			$this->copyObject($structure);
 		} else {
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)) {
@@ -233,6 +236,46 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
 
+	function copyObject($structure) {
+		global $interface;
+		//Viewing an individual record, get the id to show
+		if (isset($_SERVER['HTTP_REFERER'])) {
+			$_SESSION['redirect_location'] = $_SERVER['HTTP_REFERER'];
+		} else {
+			unset($_SESSION['redirect_location']);
+		}
+		if (isset($_REQUEST['sourceId'])) {
+			$id = $_REQUEST['sourceId'];
+			$existingObject = $this->getExistingObjectById($id);
+			if ($existingObject != null) {
+				if ($existingObject->canActiveUserEdit()) {
+					$interface->assign('objectName', $existingObject->__toString());
+					$existingObject->unsetUniquenessFields();
+					if (method_exists($existingObject, 'label')) {
+						$interface->assign('objectName', $existingObject->label());
+					}
+					$this->activeObject = $existingObject;
+				} else {
+					$interface->setTemplate('../Admin/noPermission.tpl');
+					return;
+				}
+			} else {
+				$interface->setTemplate('../Admin/invalidObject.tpl');
+				return;
+			}
+		} else {
+			$existingObject = null;
+			//TODO: Display an error message
+		}
+		$interface->assign('object', $existingObject);
+		//Check to see if the request should be multipart/form-data
+		$contentType = DataObjectUtil::getFormContentType($structure);
+		$interface->assign('contentType', $contentType);
+
+		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
+		$interface->setTemplate('../Admin/objectEditor.tpl');
+	}
+
 	function viewIndividualObject($structure) {
 		global $interface;
 		//Viewing an individual record, get the id to show
@@ -402,7 +445,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function canCopy() {
-		return $this->canAddNew();
+		return false;
 	}
 
 	public function canEdit(DataObject $object) {
