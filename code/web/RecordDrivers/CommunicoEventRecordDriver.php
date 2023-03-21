@@ -154,8 +154,8 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 
 	function getEventCoverUrl() {
 		$decodedData = $this->getEventObject()->getDecodedData();
-		if (!empty($decodedData->image)) {
-			return $decodedData->image;
+		if (!empty($decodedData->eventImage)) {
+			return $decodedData->eventImage;
 		}
 		return null;
 	}
