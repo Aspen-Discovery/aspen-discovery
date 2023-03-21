@@ -328,6 +328,8 @@ class UInterface extends Smarty {
 		}
 		$this->assign('shouldShowAdminAlert', $adminUser);
 
+		$this->assign('allActiveThemes', []);
+
 		try {
 			$theme = new Theme();
 			//Check to see if we are at a location and if we are, check if there is a theme applied to it
