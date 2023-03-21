@@ -72,7 +72,7 @@ $systemVariables = new SystemVariables();
 if ($systemVariables->find(true) && !empty($systemVariables->googleBucket)) {
 	//Perform the backup
 	$bucketName = $systemVariables->googleBucket;
-	exec_advanced("gsutil cp $backupFile gs://$bucketName/", $debug);
+	exec_advanced("gsutil cp $backupFile.gz gs://$bucketName/", $debug);
 }
 
 function exec_advanced($command, $log) {
