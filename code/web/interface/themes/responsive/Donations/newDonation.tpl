@@ -22,6 +22,16 @@
                     {include file="Donations/comprisePayments.tpl"}
                 {elseif $paymentType == 5}
                     {include file="Donations/proPayPayments.tpl"}
+                {elseif $paymentType == 6}
+                    {include file="Donations/xpressPayPayments.tpl"}
+                {elseif $paymentType == 7}
+                    {include file="Donations/worldPayPayments.tpl"}
+                {elseif $paymentType == 8}
+                    {include file="Donations/ACISpeedpayPayments.tpl"}
+                {elseif $paymentType == 9}
+                    {include file="Donations/invoiceCloudPayments.tpl"}
+                {elseif $paymentType == 10}
+                    {include file="Donations/deluxCertifiedPaymentsPayments.tpl"}
                 {/if}
             </form>
         {/if}
