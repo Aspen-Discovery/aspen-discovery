@@ -69,6 +69,9 @@ class CommunicoIndexer {
 		if (this.baseUrl.endsWith("/")) {
 			this.baseUrl = this.baseUrl.substring(0, this.baseUrl.length() - 1);
 		}
+		if (this.baseUrl.endsWith("events")) {
+			this.baseUrl = this.baseUrl.substring(0, this.baseUrl.length() - 1);
+		}
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 		this.aspenConn = aspenConn;

@@ -5,6 +5,7 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LocationHours.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LocationCombinedResultSection.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LocationTheme.php';
 if (file_exists(ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php')) {
 	require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
 }
@@ -35,6 +36,7 @@ class Location extends DataObject {
 	public $enableAppAccess;
 	public $appReleaseChannel;
 	public $theme;
+	public $_themes;
 	public $showDisplayNameInHeader;
 	public $headerText;
 	public $address;
@@ -201,15 +203,9 @@ class Location extends DataObject {
 		unset($combinedResultsStructure['locationId']);
 		unset($combinedResultsStructure['weight']);
 
-		require_once ROOT_DIR . '/sys/Theming/Theme.php';
-		$theme = new Theme();
-		$availableThemes = [];
-		$theme->orderBy('themeName');
-		$theme->find();
-		$availableThemes[-1] = 'Use Library Setting';
-		while ($theme->fetch()) {
-			$availableThemes[$theme->id] = $theme->themeName;
-		}
+		$locationThemeStructure = LocationTheme::getObjectStructure($context);
+		unset($locationThemeStructure['locationId']);
+		unset($locationThemeStructure['weight']);
 
 		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
 		$groupedWorkDisplaySetting = new GroupedWorkDisplaySetting();
@@ -374,14 +370,22 @@ class Location extends DataObject {
 				'editPermissions' => ['Location Domain Settings'],
 				'default' => true,
 			],
-			'theme' => [
-				'property' => 'theme',
-				'type' => 'enum',
-				'label' => 'Theme',
-				'values' => $availableThemes,
-				'description' => 'The theme which should be used for the library',
-				'hideInLists' => true,
+			'themes' => [
+				'property' => 'themes',
+				'type' => 'oneToMany',
+				'label' => 'Themes',
+				'description' => 'The themes which can be used for the location',
+				'keyThis' => 'locationId',
+				'keyOther' => 'locationId',
+				'subObjectType' => 'LocationTheme',
+				'structure' => $locationThemeStructure,
 				'default' => 'default',
+				'sortable' => true,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
 				'editPermissions' => ['Location Theme Configuration'],
 			],
 			'showDisplayNameInHeader' => [
@@ -1710,6 +1714,8 @@ class Location extends DataObject {
 				}
 				return $this->_cloudLibraryScopes;
 			}
+		} elseif ($name == 'themes') {
+			return $this->getThemes();
 		} else {
 			return $this->_data[$name] ?? null;
 		}
@@ -1729,6 +1735,8 @@ class Location extends DataObject {
 			$this->_combinedResultSections = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
+		} elseif ($name == 'themes') {
+			$this->_themes = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
@@ -1749,6 +1757,7 @@ class Location extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveCoordinates();
+			$this->saveThemes();
 		}
 		return $ret;
 	}
@@ -1768,6 +1777,7 @@ class Location extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveCoordinates();
+			$this->saveThemes();
 		}
 		return $ret;
 	}
@@ -2234,6 +2244,36 @@ class Location extends DataObject {
 		return $this->_browseCategoryGroup;
 	}
 
+	public function getPrimaryTheme() {
+		$allThemes = $this->getThemes();
+		return reset($allThemes);
+	}
+
+	/**
+	 * @return LibraryTheme[]|null
+	 */
+	public function getThemes(): ?array {
+		if (!isset($this->_themes) && $this->libraryId) {
+			$this->_themes = [];
+			$locationTheme = new LocationTheme();
+			$locationTheme->locationId = $this->locationId;
+			$locationTheme->orderBy('weight');
+			if ($locationTheme->find()) {
+				while ($locationTheme->fetch()) {
+					$this->_themes[$locationTheme->id] = clone $locationTheme;
+				}
+			}
+		}
+		return $this->_themes;
+	}
+
+	public function saveThemes() {
+		if (isset ($this->_themes) && is_array($this->_themes)) {
+			$this->saveOneToManyOptions($this->_themes, 'locationId');
+			unset($this->_themes);
+		}
+	}
+
 	public function getApiInfo(): array {
 		$parentLibrary = $this->getParentLibrary();
 		$apiInfo = [
@@ -2253,9 +2293,9 @@ class Location extends DataObject {
 			'hours' => [],
 		];
 		if ($this->theme == "-1") {
-			$apiInfo['theme'] = $parentLibrary->theme;
+			$apiInfo['theme'] = $parentLibrary->getPrimaryTheme();
 		} else {
-			$apiInfo['theme'] = $this->theme;
+			$apiInfo['theme'] = $this->getPrimaryTheme();
 		}
 		if ((empty($this->homeLink) || $this->homeLink == "default" || $this->homeLink == "/")) {
 			if ($parentLibrary == null) {

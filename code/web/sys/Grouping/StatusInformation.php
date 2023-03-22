@@ -16,6 +16,7 @@ class Grouping_StatusInformation {
 	private $_availableCopies = 0;
 	private $_localCopies = 0;
 	private $_localAvailableCopies = 0;
+	private $_holdableCopies = 0;
 	private $_isEcontent = false;
 	private $_isShowStatus = false;
 	private $_isLocallyOwned = false;
@@ -64,6 +65,7 @@ class Grouping_StatusInformation {
 
 		$this->_copies += $statusInformation->getCopies();
 		$this->_availableCopies += $statusInformation->getAvailableCopies();
+		$this->_holdableCopies += $statusInformation->getHoldableCopies();
 		if ($statusInformation->getLocalCopies() > 0) {
 			$this->_localCopies += $statusInformation->getLocalCopies();
 			$this->_localAvailableCopies += $statusInformation->getLocalAvailableCopies();
@@ -161,6 +163,13 @@ class Grouping_StatusInformation {
 	/**
 	 * @return int
 	 */
+	public function getHoldableCopies() {
+		return $this->_holdableCopies;
+	}
+
+	/**
+	 * @return int
+	 */
 	public function getLocalCopies(): int {
 		return $this->_localCopies;
 	}
@@ -195,6 +204,10 @@ class Grouping_StatusInformation {
 
 	function addAvailableCopies(int $numCopies): void {
 		$this->_availableCopies += $numCopies;
+	}
+
+	function addHoldableCopies(int $numCopies): void {
+		$this->_holdableCopies += $numCopies;
 	}
 
 	/**
@@ -251,20 +264,20 @@ class Grouping_StatusInformation {
 		$numberOfCopiesMessage = '';
 		global $library;
 		//If we don't have holds or on order copies, we don't need to show anything.
-		if ($this->getNumHolds() == 0 && $this->getOnOrderCopies() == 0) {
+		if (($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) && $this->getOnOrderCopies() == 0) {
 			$numberOfCopiesMessage = '';
 		} else {
 			if ($this->getAvailableCopies() > 9999) {
 				$numberOfCopiesMessage .= 'Always Available';
 			} else {
-				if ($this->getNumHolds() == 0) {
+				if ($this->getNumHolds() == 0 || $this->getHoldableCopies() == 0) {
 					if ($this->getAvailableCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy available';
 					} elseif ($this->getAvailableCopies() > 1) {
 						$numberOfCopiesMessage .= '%1% copies available';
 					}
 				}
-				if ($this->getNumHolds() > 0 && ($this->getAvailableCopies() == 0 && !$this->isAvailableOnline())) {
+				if (($this->getNumHolds() > 0 && $this->getHoldableCopies() > 0) && ($this->getAvailableCopies() == 0 && !$this->isAvailableOnline())) {
 					if ($this->getCopies() == 1) {
 						$numberOfCopiesMessage .= '1 copy';
 					} elseif ($this->getCopies() > 1) {

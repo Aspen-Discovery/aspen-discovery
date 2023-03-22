@@ -47,10 +47,25 @@
 						<div class="form-group">
 							<div class="col-xs-4"><label for="profileLanguage" class="control-label">{translate text='Language to display catalog in' isPublicFacing=true}</label></div>
 							<div class="col-xs-8">
-								<select id="profileLanguage" name="profileLanguage" class="form-control" onchange="{literal}if ($('#profileLanguage option:selected').val() === 'en') { $('#searchPreferenceLanguageGroup').hide() }else{ $('#searchPreferenceLanguageGroup').show()} {/literal}">
+								<select id="profileLanguage" name="profileLanguage" class="form-control">
 									{foreach from=$validLanguages key=languageCode item=language}
 										<option value="{$languageCode}"{if $profile->interfaceLanguage==$languageCode} selected="selected"{/if}>
 											{$language->displayName}
+										</option>
+									{/foreach}
+								</select>
+							</div>
+						</div>
+					{/if}
+
+					{if count($allActiveThemes) > 1}
+						<div class="form-group">
+							<div class="col-xs-4"><label for="preferredTheme" class="control-label">{translate text='Display Mode' isPublicFacing=true}</label></div>
+							<div class="col-xs-8">
+								<select id="preferredTheme" name="preferredTheme" class="form-control">
+									{foreach from=$allActiveThemes key=themeId item=themeName}
+										<option value="{$themeId}"{if $profile->preferredTheme==$themeId} selected="selected"{/if}>
+											{$themeName}
 										</option>
 									{/foreach}
 								</select>
@@ -227,11 +242,3 @@
 		{/if}
 	</div>
 {/strip}
-
-<script type="text/javascript">
-{literal}
-document.getElementById('profileLanguage').addEventListener('change', function() {
-  return AspenDiscovery.setLanguage(this.value)
-});
-{/literal}
-</script>

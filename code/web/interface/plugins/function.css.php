@@ -18,29 +18,22 @@ function smarty_function_css($params, &$smarty) {
 	global $configArray;
 	global $interface;
 	$local = $configArray['Site']['local'];
-	$themes = $interface->getThemes();
 	$filename = $params['filename'];
 
 	// Loop through the available themes looking for the requested CSS file:
 	$css = false;
-	foreach ($themes as $theme) {
-		$theme = trim($theme);
+	global $activeLanguage;
 
-		global $activeLanguage;
-
-		if ($activeLanguage->isRTL()){
-			if (file_exists("{$local}/interface/themes/{$theme}/css-rtl/{$filename}")) {
-				$css = "/interface/themes/{$theme}/css-rtl/{$filename}";
-				break;
-			}
+	if ($activeLanguage->isRTL()){
+		if (file_exists("{$local}/interface/themes/responsive/css-rtl/{$filename}")) {
+			$css = "/interface/themes/responsive/css-rtl/{$filename}";
 		}
+	}
 
-		// If the file exists on the local file system, set $css to the relative
-		// path needed to link to it from the web interface.
-		if (file_exists("{$local}/interface/themes/{$theme}/css/{$filename}")) {
-			$css = "/interface/themes/{$theme}/css/{$filename}";
-			break;
-		}
+	// If the file exists on the local file system, set $css to the relative
+	// path needed to link to it from the web interface.
+	if (file_exists("{$local}/interface/themes/responsive/css/{$filename}")) {
+		$css = "/interface/themes/responsive/css/{$filename}";
 	}
 
 	// If we couldn't find the file, we shouldn't try to link to it:

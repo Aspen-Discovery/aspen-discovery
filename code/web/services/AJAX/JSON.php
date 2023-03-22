@@ -21,9 +21,10 @@ class AJAX_JSON extends Action {
 				'getPayFinesAfterAction',
 				'getTranslationForm',
 				'saveTranslation',
-				'getLanguagePreferencesForm',
 				'saveLanguagePreference',
 				'deleteTranslationTerm',
+				'getDisplaySettingsForm',
+				'updateDisplaySettings'
 			])) {
 				$output = json_encode($this->$method());
 				// Browser-side handler ajaxLightbox() doesn't use the input format in else block below
@@ -138,7 +139,6 @@ class AJAX_JSON extends Action {
 				'message' => 'You do not have permissions for this functionality',
 			];
 		}
-
 
 		return $result;
 	}
@@ -513,6 +513,59 @@ class AJAX_JSON extends Action {
 		return [
 			'success' => true,
 			'formattedValue' => $formattedCurrency,
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getDisplaySettingsForm() {
+		global $interface;
+
+		return [
+			'title' => translate([
+				'text' => 'Display Settings',
+				'isPublicFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('AJAX/displaySettings.tpl'),
+			'modalButtons' => "<a id='updateDisplaySettings' class='btn btn-primary' onclick='AspenDiscovery.updateDisplaySettings();'>" . translate([
+					'text' => 'Update Settings',
+					'isPublicFacing' => true,
+				]) . "</a>",
+		];
+	}
+
+	function updateDisplaySettings() {
+		global $interface;
+		$userLanguage = UserAccount::getUserInterfaceLanguage();
+		if ($userLanguage == '') {
+			$language = strip_tags((isset($_SESSION['language'])) ? $_SESSION['language'] : 'en');
+		} else {
+			$language = $userLanguage;
+		}
+
+		$preferredLanguage = strip_tags($_REQUEST['preferredLanguage']);
+		if ($language != $preferredLanguage) {
+			$language = $preferredLanguage;
+			$_SESSION['language'] = $language;
+			//Clear the preference cookie
+			if (isset($_COOKIE['searchPreferenceLanguage'])) {
+				//Clear the cookie when we change languages
+				setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
+				unset($_COOKIE['searchPreferenceLanguage']);
+			}
+		}
+
+		$activeThemeId = $interface->getVariable('activeThemeId');
+		$preferredTheme = strip_tags($_REQUEST['preferredTheme']);
+		if ($activeThemeId != $preferredTheme) {
+			$_SESSION['preferredTheme'] = $preferredTheme;
+		}
+
+		return [
+			'success' => true,
+			'message' => translate([
+				'text' => 'Your settings have been updated',
+				'isPublicFacing' => true,
+			]),
 		];
 	}
 

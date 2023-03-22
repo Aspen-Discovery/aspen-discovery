@@ -4,6 +4,7 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryFacetSetting.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/LibraryCombinedResultSection.php';
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryTheme.php';
 if (file_exists(ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LibraryRecordToInclude.php';
 }
@@ -63,6 +64,7 @@ class Library extends DataObject {
 
 	//More general display configurations
 	public $theme;
+	public $_themes;
 	public $layoutSettingId;  //Link to LayoutSetting
 	public $groupedWorkDisplaySettingId; //Link to GroupedWorkDisplaySettings
 
@@ -448,6 +450,10 @@ class Library extends DataObject {
 		unset($combinedResultsStructure['libraryId']);
 		unset($combinedResultsStructure['weight']);
 
+		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
+		unset($libraryThemeStructure['libraryId']);
+		unset($libraryThemeStructure['weight']);
+
 		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 		$accountProfile = new AccountProfile();
 		$accountProfile->orderBy('name');
@@ -457,15 +463,6 @@ class Library extends DataObject {
 			if($accountProfile->name !== 'admin') {
 				$accountProfileOptions[$accountProfile->id] = $accountProfile->name;
 			}
-		}
-
-		require_once ROOT_DIR . '/sys/Theming/Theme.php';
-		$theme = new Theme();
-		$availableThemes = [];
-		$theme->orderBy('themeName');
-		$theme->find();
-		while ($theme->fetch()) {
-			$availableThemes[$theme->id] = $theme->themeName;
 		}
 
 		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
@@ -835,14 +832,22 @@ class Library extends DataObject {
 				'label' => 'Basic Display',
 				'hideInLists' => true,
 				'properties' => [
-					'theme' => [
-						'property' => 'theme',
-						'type' => 'enum',
-						'label' => 'Theme',
-						'values' => $availableThemes,
-						'description' => 'The theme which should be used for the library',
-						'hideInLists' => true,
+					'themes' => [
+						'property' => 'themes',
+						'type' => 'oneToMany',
+						'label' => 'Themes',
+						'description' => 'The themes which can be used for the library',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'LibraryTheme',
+						'structure' => $libraryThemeStructure,
 						'default' => 'default',
+						'sortable' => true,
+						'storeDb' => true,
+						'allowEdit' => true,
+						'canEdit' => false,
+						'canAddNew' => true,
+						'canDelete' => true,
 						'permissions' => ['Library Theme Configuration'],
 					],
 					'layoutSettingId' => [
@@ -2745,6 +2750,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Email to receive notifications for new Materials Requests',
 						'description' => 'The email address that will receive emails when a patron creates a new Materials Request.',
+						'maxLength' => 125,
 						'hideInLists' => true,
 					],
 					'materialsRequestSendStaffEmailOnAssign' => [
@@ -3666,6 +3672,8 @@ class Library extends DataObject {
 				}
 				return $this->combinedResultSections;
 			}
+		} elseif ($name == 'themes') {
+			return $this->getThemes();
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
 		} elseif ($name == 'quickSearches') {
@@ -3698,6 +3706,8 @@ class Library extends DataObject {
 		} elseif ($name == 'combinedResultSections') {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->combinedResultSections = $value;
+		} elseif ($name == 'themes') {
+			$this->_themes = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
 		} elseif ($name == 'quickSearches') {
@@ -3745,6 +3755,7 @@ class Library extends DataObject {
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
+			$this->saveThemes();
 			//$this->saveQuickSearches();
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
@@ -3800,6 +3811,7 @@ class Library extends DataObject {
 			$this->saveLibraryLinks();
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
+			$this->saveThemes();
 			//$this->saveQuickSearches();
 			$this->processSso();
 		}
@@ -3866,7 +3878,7 @@ class Library extends DataObject {
 	}
 
 	/**
-	 * @return LibraryCloudLibraryScope[]
+	 * @return LibraryCloudLibraryScope[]|null
 	 */
 	public function getCloudLibraryScopes(): ?array {
 		if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
@@ -3886,6 +3898,35 @@ class Library extends DataObject {
 		if (isset ($this->_cloudLibraryScopes) && is_array($this->_cloudLibraryScopes)) {
 			$this->saveOneToManyOptions($this->_cloudLibraryScopes, 'libraryId');
 			unset($this->_cloudLibraryScopes);
+		}
+	}
+
+	public function getPrimaryTheme() {
+		$allThemes = $this->getThemes();
+		return reset($allThemes);
+	}
+	/**
+	 * @return LibraryTheme[]|null
+	 */
+	public function getThemes(): ?array {
+		if (!isset($this->_themes) && $this->libraryId) {
+			$this->_themes = [];
+			$libraryTheme = new LibraryTheme();
+			$libraryTheme->libraryId = $this->libraryId;
+			$libraryTheme->orderBy('weight');
+			if ($libraryTheme->find()) {
+				while ($libraryTheme->fetch()) {
+					$this->_themes[$libraryTheme->id] = clone $libraryTheme;
+				}
+			}
+		}
+		return $this->_themes;
+	}
+
+	public function saveThemes() {
+		if (isset ($this->_themes) && is_array($this->_themes)) {
+			$this->saveOneToManyOptions($this->_themes, 'libraryId');
+			unset($this->_themes);
 		}
 	}
 
@@ -4278,9 +4319,9 @@ class Library extends DataObject {
 			];
 		}
 		$apiInfo['notifications'] = $this->getLiDANotifications();
-		$activeTheme = new Theme();
-		$activeTheme->id = $this->theme;
-		if ($activeTheme->find(true)) {
+		$allThemes = $this->getThemes();
+		if (count($allThemes) > 0) {
+			$activeTheme = reset($allThemes);
 			$activeTheme->applyDefaults();
 			if ($activeTheme->logoName) {
 				$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoName;

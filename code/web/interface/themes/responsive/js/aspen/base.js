@@ -720,6 +720,42 @@ var AspenDiscovery = (function(){
 				// Increase the '10' value to get a smoother/slower scroll!
 				window.scrollTo(0, c - c / 10);
 			}
+		},
+
+		showDisplaySettings: function () {
+			var url = Globals.path + "/AJAX/JSON?method=getDisplaySettingsForm";
+			$.getJSON(url, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
+		updateDisplaySettings: function () {
+			var preferredLanguage = $("#preferredLanguage option:selected").val();
+			var preferredTheme = $("#preferredTheme option:selected").val();
+			var url = Globals.path + "/AJAX/JSON";
+			var params =  {
+				method : 'updateDisplaySettings',
+				preferredLanguage : preferredLanguage,
+				preferredTheme: preferredTheme
+			};
+			$.getJSON(url, params,
+				function(data) {
+					if (data.success) {
+						if (data.message.length > 0){
+							//User was logged in, show a message about how to update
+							AspenDiscovery.showMessage('Success', data.message, true, true);
+						}else{
+							//Refresh the page
+							// noinspection SillyAssignmentJS
+							window.location.href = window.location.href;
+						}
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	}
 

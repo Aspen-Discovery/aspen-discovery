@@ -140,12 +140,22 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getProgramTypes() {
+		if (array_key_exists('program_type', $this->fields)){
+			return $this->fields['program_type'];
+		}
+	}
+
 	public function getBranch() {
 		return implode(", ", $this->fields['branch']);
 	}
 
-	private function getType() {
-		return $this->fields['type'];
+	public function getRoom() {
+		return implode(", ", $this->fields['room']);
+	}
+
+	public function getType() {
+		return $this->fields['event_type'];
 	}
 
 	private function getSource() {
@@ -154,8 +164,8 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 
 	function getEventCoverUrl() {
 		$decodedData = $this->getEventObject()->getDecodedData();
-		if (!empty($decodedData->image)) {
-			return $decodedData->image;
+		if (!empty($decodedData->eventImage)) {
+			return $decodedData->eventImage;
 		}
 		return null;
 	}

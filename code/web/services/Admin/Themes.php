@@ -110,4 +110,9 @@ class Admin_Themes extends ObjectEditor {
 	protected function showQuickFilterOnPropertiesList() {
 		return true;
 	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
+
 }

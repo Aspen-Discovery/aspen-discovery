@@ -71,6 +71,14 @@ abstract class DataObject {
 		return [];
 	}
 
+	public function unsetUniquenessFields() {
+		foreach ($this->getUniquenessFields() as $index => $field) {
+			unset($this->$field);
+		}
+		$primaryKey = $this->getPrimaryKey();
+		unset($this->$primaryKey);
+	}
+
 	function __toString() {
 		$stringProperty = $this->__primaryKey;
 		if ($this->__displayNameColumn != null) {

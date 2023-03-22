@@ -50,21 +50,14 @@ function smarty_function_js($params, &$smarty) {
 	global $configArray;
 
 	$local = $configArray['Site']['local'];
-	$themes = explode(',', $smarty->getThemes());
-	$themes[] = 'default';
 	$filename = $params['filename'];
 
 	// Loop through the available themes looking for the requested JS file:
 	$js = false;
-	foreach ($themes as $theme) {
-		$theme = trim($theme);
-
-		// If the file exists on the local file system, set $js to the relative
-		// path needed to link to it from the web interface.
-		if (file_exists("{$local}/interface/themes/{$theme}/js/{$filename}")) {
-			$js = "/interface/themes/{$theme}/js/{$filename}";
-			break;
-		}
+	// If the file exists on the local file system, set $js to the relative
+	// path needed to link to it from the web interface.
+	if (file_exists("{$local}/interface/themes/responsive/js/{$filename}")) {
+		$js = "/interface/themes/responsive/js/{$filename}";
 	}
 
 	// If we couldn't find the file, check the global Javascript area; if that

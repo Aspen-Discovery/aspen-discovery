@@ -13,6 +13,63 @@ function getUpdates23_04_00(): array {
 		], //sample*/
 
 		//mark
+		'allow_multiple_themes_for_libraries' => [
+			'title' => 'Allow Multiple Themes for Libraries',
+			'description' => 'Allow Multiple Themes for Libraries',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS library_themes (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					themeId  INT(11) NOT NULL,
+					weight INT(11) DEFAULT 0,
+					INDEX libraryToTheme(libraryId, themeId)
+				) ENGINE INNODB",
+				'INSERT INTO library_themes (libraryId, themeId) (SELECT libraryId, theme from library)'
+			],
+		],
+		'allow_multiple_themes_for_locations' => [
+			'title' => 'Allow Multiple Themes for Locations',
+			'description' => 'Allow Multiple Themes for Locations',
+			'sql' => [
+				"CREATE TABLE IF NOT EXISTS location_themes (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					locationId INT(11) NOT NULL,
+					themeId  INT(11) NOT NULL,
+					weight INT(11) DEFAULT 0,
+					INDEX libraryToTheme(locationId, themeId)
+				) ENGINE INNODB",
+				'INSERT INTO location_themes (locationId, themeId) (SELECT locationId, theme from location)'
+			],
+		],
+		'add_display_name_to_themes' => [
+			'title' => 'Add Display name to themes',
+			'description' => 'Add Display name to themes',
+			'sql' => [
+				"ALTER TABLE themes add column displayName VARCHAR(60) NOT NULL",
+				"UPDATE themes set displayName = themeName",
+			],
+		],
+		'allow_users_to_change_themes' => [
+			'title' => 'Allow Users to change themes',
+			'description' => 'Allow Users to change themes',
+			'sql' => [
+				"ALTER TABLE user add column preferredTheme int(11) default -1",
+			],
+		],
+//		'add_shared_objects' => [
+//			'title' => 'Add shared objects',
+//			'description' => 'Allow libraries to share content within the community',
+//			'sql' => [
+//				"CREATE TABLE IF NOT EXISTS shared_content (
+//					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+//					sharedFrom VARCHAR(50) NOT NULL,
+//					sharedFrom VARCHAR(50) NOT NULL,
+//					themeId  INT(11) NOT NULL,
+//					weight INT(11) DEFAULT 0,
+//					INDEX libraryToTheme(locationId, themeId)
+//				) ENGINE INNODB",
+//			],
+//		],
 
 		//kirstien
 

@@ -51,7 +51,7 @@ class MySQLSession extends SessionInterface {
 			//Don't update sessions on AJAX and JSON calls
 			if (isset($_REQUEST['method'])) {
 				$method = $_REQUEST['method'];
-				if ($method != 'loginUser' && $method != 'login' && $method != 'initiateMasquerade' && $method != 'endMasquerade' && $method != 'lockFacet' && $method != 'unlockFacet' && !isset($_REQUEST['showCovers']) && !isset($_REQUEST['sort']) && !isset($_REQUEST['availableHoldSort']) && !isset($_REQUEST['unavailableHoldSort']) && !isset($_REQUEST['autologout'])) {
+				if ($method != 'loginUser' && $method != 'login' && $method != 'initiateMasquerade' && $method != 'endMasquerade' && $method != 'lockFacet' && $method != 'unlockFacet' && $method != 'updateDisplaySettings' && !isset($_REQUEST['showCovers']) && !isset($_REQUEST['sort']) && !isset($_REQUEST['availableHoldSort']) && !isset($_REQUEST['unavailableHoldSort']) && !isset($_REQUEST['autologout'])) {
 					//$logger->log("Not updating session $sess_id $module $action $method", Logger::LOG_DEBUG);
 					return true;
 				}
