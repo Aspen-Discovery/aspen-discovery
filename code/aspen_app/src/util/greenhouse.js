@@ -6,7 +6,9 @@ import * as SecureStore from 'expo-secure-store';
 
 import { popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, problemCodeMap } from './apiAuth';
-import { GLOBALS } from './globals';
+import {GLOBALS, LOGIN_DATA} from './globals';
+import _ from 'lodash';
+import {PATRON} from './loadPatron';
 
 /**
  * Fetch libraries to log into
@@ -78,4 +80,100 @@ export async function updateAspenLiDABuild(updateId, updateChannel, updateDate) 
      const response = await api.post('/GreenhouseAPI?method=updateAspenLiDABuild');
      console.log(response);
      return response;
+}
+
+export async function fetchNearbyLibrariesFromGreenhouse() {
+     let channel = GLOBALS.releaseChannel;
+     if(channel === 'DEV' || 'alpha' || 'beta' || 'internal') {
+          channel = 'any'
+     }
+     let method = 'getLibraries';
+     let url = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
+     let latitude,
+         longitude = 0;
+     if (!_.includes(GLOBALS.slug, 'aspen-lida')) {
+          method = 'getLibrary';
+          url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
+     }
+     if (_.isNull(PATRON.coords.lat) && _.isNull(PATRON.coords.long)) {
+          try {
+               latitude = await SecureStore.getItemAsync('latitude');
+               longitude = await SecureStore.getItemAsync('longitude');
+               PATRON.coords.lat = latitude;
+               PATRON.coords.long = longitude;
+          } catch (e) {
+               console.log(e);
+          }
+     }
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutSlow,
+          headers: getHeaders(),
+     });
+     const response = await api.get('/GreenhouseAPI?method=' + method, {
+          latitude: PATRON.coords.lat,
+          longitude: PATRON.coords.long,
+          release_channel: channel,
+     });
+     if (response.ok) {
+          const data = response.data;
+          let libraries;
+          if (_.includes(GLOBALS.slug, 'aspen-lida')) {
+               libraries = data.libraries;
+          } else {
+               libraries = _.values(data.library);
+          }
+
+          libraries = _.sortBy(libraries, ['distance', 'name', 'librarySystem']);
+
+          let showSelectLibrary = true;
+          if(data.count <= 1) {
+               showSelectLibrary = false;
+          }
+          return {
+               success: true,
+               libraries: libraries ?? [],
+               shouldShowSelectLibrary: showSelectLibrary,
+          }
+     } else {
+          const problem = problemCodeMap(response.problem);
+          popToast(problem.title, problem.message, 'warning');
+     }
+
+     return {
+          success: false,
+          shouldShowSelectLibrary: false,
+          libraries: []
+     }
+}
+
+export async function fetchAllLibrariesFromGreenhouse() {
+     let channel = GLOBALS.releaseChannel;
+     if(channel === 'DEV' || 'alpha' || 'beta' || 'internal') {
+          channel = 'any'
+     }
+     let url = Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl;
+     if (!_.includes(GLOBALS.slug, 'aspen-lida')) {
+          url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
+     }
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutSlow,
+          headers: getHeaders(),
+     });
+     const response = await api.get('/GreenhouseAPI?method=getLibraries', {
+          release_channel: channel,
+     });
+     if(response.ok) {
+          const data = response.data;
+          const libraries = _.sortBy(data.libraries, ['name', 'librarySystem']);
+          return {
+               success: true,
+               libraries: libraries ?? [],
+          }
+     }
+     return {
+          success: false,
+          libraries: []
+     }
 }

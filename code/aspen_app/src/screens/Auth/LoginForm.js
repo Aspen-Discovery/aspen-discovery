@@ -45,7 +45,7 @@ export const GetLoginForm = (props) => {
      const { updateUser } = React.useContext(UserContext);
      const { updateBrowseCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages } = React.useContext(LanguageContext);
-     const patronsLibrary = props.patronsLibrary;
+     const patronsLibrary = props.selectedLibrary;
 
      const {usernameLabel, passwordLabel} = props;
 
