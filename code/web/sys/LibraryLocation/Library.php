@@ -588,6 +588,16 @@ class Library extends DataObject {
 			$invoiceCloudSettings[$invoiceCloudSetting->id] = $invoiceCloudSetting->name;
 		}
 
+		require_once ROOT_DIR . '/sys/ECommerce/DeluxCertifiedPaymentsSetting.php';
+		$deluxCertifiedPaymentsSetting = new DeluxCertifiedPaymentsSetting();
+		$deluxCertifiedPaymentsSetting->orderBy('name');
+		$deluxCertifiedPaymentsSettings = [];
+		$deluxCertifiedPaymentsSetting->find();
+		$deluxCertifiedPaymentsSettings[-1] = 'none';
+		while ($deluxCertifiedPaymentsSetting->fetch()) {
+			$deluxCertifiedPaymentsSettings[$deluxCertifiedPaymentsSetting->id] = $deluxCertifiedPaymentsSetting->name;
+		}
+
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
 		$hooplaScope = new HooplaScope();
 		$hooplaScope->orderBy('name');
@@ -2233,7 +2243,8 @@ class Library extends DataObject {
 							6 => 'Xpress-pay',
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
-							9 => 'InvoiceCloud'
+							9 => 'InvoiceCloud',
+							10 => 'Delux Certified Payments'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2354,6 +2365,15 @@ class Library extends DataObject {
 						'values' => $invoiceCloudSettings,
 						'label' => 'InvoiceCloud Settings',
 						'description' => 'The InvoiceCloud settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'deluxCertifiedPaymentsSettingId' => [
+						'property' => 'deluxCertifiedPaymentsSettingId',
+						'type' => 'enum',
+						'values' => $deluxCertifiedPaymentsSettings,
+						'label' => 'Delux Certified Payments Settings',
+						'description' => 'The Delux Certified Payments settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
