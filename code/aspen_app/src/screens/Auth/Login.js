@@ -63,11 +63,7 @@ export const LoginScreen = () => {
                    if(_.includes(GLOBALS.slug, 'aspen-lida')) {
                         await fetchAllLibrariesFromGreenhouse().then(result => {
                              if (result.success) {
-                                  let tmp = result.libraries;
-                                  if (libraries) {
-                                       tmp = _.merge(libraries);
-                                  }
-                                  setAllLibraries(tmp);
+                                  setAllLibraries(result.libraries);
                              }
                         });
                    }
@@ -135,7 +131,7 @@ const SelectYourLibraryModal = (payload) => {
      function FilteredLibraries() {
           let haystack = libraries;
           if(!_.isEmpty(query)) {
-               haystack = _.merge(allLibraries, haystack);
+               haystack = allLibraries;
           }
 
           if(!isCommunity) {

@@ -190,6 +190,7 @@ export const HoldPrompt = (props) => {
 												let tmp = holdConfirmationResponse;
 												const obj = {
 													message: result.message,
+													title: result.title,
 													confirmationNeeded: result.confirmationNeeded ?? false,
 													confirmationId: result.confirmationId ?? null,
 													recordId: id ?? null,

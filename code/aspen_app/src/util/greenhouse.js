@@ -95,6 +95,9 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
           method = 'getLibrary';
           url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
      }
+     if(GLOBALS.slug === 'aspen-lida-alpha' || GLOBALS.slug === 'aspen-lida-beta' || GLOBALS.slug === 'aspen-lida-zeta') {
+          channel = 'any';
+     }
      if (_.isNull(PATRON.coords.lat) && _.isNull(PATRON.coords.long)) {
           try {
                latitude = await SecureStore.getItemAsync('latitude');
