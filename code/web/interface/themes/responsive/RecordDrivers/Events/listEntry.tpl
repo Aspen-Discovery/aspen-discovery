@@ -9,7 +9,7 @@
 		{if !empty($showCovers)}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
 				{if $disableCoverArt != 1}
-					<a href="/MyAccount/MyList/{$id}" class="alignleft listResultImage">
+					<a href="{$eventUrl}" class="alignleft listResultImage">
 						<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 					</a>
 				{/if}
@@ -22,7 +22,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
-					<a href="/MyAccount/MyList/{$id}" class="result-title notranslate">
+					<a href="{$eventUrl}" class="result-title notranslate">
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 				</div>
