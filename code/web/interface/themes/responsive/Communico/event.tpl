@@ -22,6 +22,20 @@
 					</div>
 				</div>
 			{/if}
+			{if !empty($recordDriver->getProgramTypes())}
+				<div class="panel active">
+					<div class="panel-heading">
+						{translate text="Program Type" isPublicFacing=true}
+					</div>
+					<div class="panel-body">
+						{foreach from=$recordDriver->getProgramTypes() item=type}
+							<div class="col-xs-12">
+								<a href='/Events/Results?filter[]=age_group_facet%3A"{$type|escape:'url'}"'>{$type}</a>
+							</div>
+						{/foreach}
+					</div>
+				</div>
+			{/if}
 		</div>
 		<div class="col-sm-8">
 				<h1>{$recordDriver->getTitle()}</h1>
@@ -29,6 +43,12 @@
 					<li>Date: {$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
 					<li>Time: {$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
 					<li>Branch: {$recordDriver->getBranch()}</li>
+					{if !empty($recordDriver->getRoom())}
+						<li>Room: {$recordDriver->getRoom()}</li>
+					{/if}
+					{if !empty($recordDriver->getType())}
+						<li>Event Type: {$recordDriver->getType()}</li>
+					{/if}
 				</ul>
 				<a class="btn btn-primary" href="{$recordDriver->getExternalUrl()}" target="_blank">
 					{if $recordDriver->isRegistrationRequired()}
@@ -39,19 +59,22 @@
 				</a>
 			<br></br>
 		</div>
-		{*If there is no image we need to make a new row to display properly*}
-		{*A new row causes incorrect displays if there is an image*}
-		{if (empty($recordDriver->getEventCoverUrl()))}
+		{*If there is no image or program types we need to make a new row to display properly*}
+		{*A new row causes incorrect displays if there is an image or a panel for program type*}
+		{if (empty($recordDriver->getEventCoverUrl()) && empty($recordDriver->getProgramTypes()))}
 	</div>
 	<div class="row">
 		<div class="col-sm-offset-4 col-sm-8">
-			{else}
-			<div class="col-sm-8">
-			{/if}
+		{else}
+		<div class="col-sm-8">
+		{/if}
 			{$recordDriver->getDescription()}
 			<br></br>
 			{$recordDriver->getFullDescription()}
 		</div>
+	</div>
+
+	<div class="row">
 		{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
 			<div id="more-details-accordion" class="panel-group">
 				<div class="panel" id="staffPanel">
@@ -71,5 +94,6 @@
 				</div>
 			</div> {* End of tabs*}
 		{/if}
+		</div>
 	</div>
 </div>

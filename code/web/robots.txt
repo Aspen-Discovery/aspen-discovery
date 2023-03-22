@@ -21,3 +21,21 @@ Disallow: /
 
 User-Agent: YandexBot
 Disallow: /
+
+User-Agent: barkrowler
+Disallow: /
+
+User-agent: BLEXBot
+Disallow: /
+
+User-agent: dotbot
+Disallow: /
+
+User-Agent: MJ12bot
+Disallow: /
+
+User-agent: 360Spider
+Disallow: /
+
+User-agent: psbot
+Disallow: /

@@ -4760,6 +4760,21 @@ class UserAPI extends Action {
 									]),
 								];
 							}
+						} else {
+							//Call find new user just to be sure that all patron information is up to date.
+							$tmpUser = UserAccount::findNewUser($libraryCard);
+							if (!$tmpUser) {
+								//This user no longer exists? return an error?
+								return [
+									'success' => false,
+									'error' => translate([
+										'text' => 'User no longer exists in the ILS',
+										'isAdminFacing' => true,
+									]),
+								];
+							} else {
+								$masqueradedUser = $tmpUser;
+							}
 						}
 
 						// Now that we have found the masqueraded User, check Masquerade Levels

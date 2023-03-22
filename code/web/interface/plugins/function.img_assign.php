@@ -17,19 +17,13 @@ function smarty_function_img_assign($params, &$smarty) {
 	global $interface;
 	$local = $configArray['Site']['local'];
 
-	$themes = $interface->getThemes();
 	$filename = $params['filename'];
 
-	// Loop through the available themes looking for the requested CSS file:
-	foreach ($themes as $theme) {
-		$theme = trim($theme);
-
-		// If the file exists on the local file system, set $css to the relative
-		// path needed to link to it from the web interface.
-		if (file_exists("{$local}/interface/themes/{$theme}/images/{$filename}")) {
-			$smarty->assign($params['var'], "/interface/themes/{$theme}/images/{$filename}");
-			return;
-		}
+	// If the file exists on the local file system, set $css to the relative
+	// path needed to link to it from the web interface.
+	if (file_exists("{$local}/interface/themes/responsive/images/{$filename}")) {
+		$smarty->assign($params['var'], "/interface/themes/responsive/images/{$filename}");
+		return;
 	}
 
 	//Didn't find a theme specific image, try the images directory

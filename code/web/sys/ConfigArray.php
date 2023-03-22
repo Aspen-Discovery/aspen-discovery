@@ -383,7 +383,6 @@ function updateConfigForScoping($configArray) {
 		die();
 	} else {
 		//Update the title
-		$configArray['Site']['theme'] = 'responsive';
 		$configArray['Site']['title'] = $library->displayName;
 
 		$locationSingleton->getActiveLocation();
