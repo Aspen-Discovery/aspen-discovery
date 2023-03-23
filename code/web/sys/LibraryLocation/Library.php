@@ -122,6 +122,7 @@ class Library extends DataObject {
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
 	public $invoiceCloudSettingId;
+	public $deluxeCertifiedPaymentsSettingId;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -410,7 +411,8 @@ class Library extends DataObject {
 			'worldPaySettingId',
 			'payPalSettingId',
 			'ebscohostSearchSettingId',
-			'invoiceCloudSettingId'
+			'invoiceCloudSettingId',
+			'deluxeCertifiedPaymentsSettingId'
 		];
 	}
 
@@ -588,14 +590,14 @@ class Library extends DataObject {
 			$invoiceCloudSettings[$invoiceCloudSetting->id] = $invoiceCloudSetting->name;
 		}
 
-		require_once ROOT_DIR . '/sys/ECommerce/DeluxCertifiedPaymentsSetting.php';
-		$deluxCertifiedPaymentsSetting = new DeluxCertifiedPaymentsSetting();
-		$deluxCertifiedPaymentsSetting->orderBy('name');
-		$deluxCertifiedPaymentsSettings = [];
-		$deluxCertifiedPaymentsSetting->find();
-		$deluxCertifiedPaymentsSettings[-1] = 'none';
-		while ($deluxCertifiedPaymentsSetting->fetch()) {
-			$deluxCertifiedPaymentsSettings[$deluxCertifiedPaymentsSetting->id] = $deluxCertifiedPaymentsSetting->name;
+		require_once ROOT_DIR . '/sys/ECommerce/DeluxeCertifiedPaymentsSetting.php';
+		$deluxeCertifiedPaymentsSetting = new DeluxeCertifiedPaymentsSetting();
+		$deluxeCertifiedPaymentsSetting->orderBy('name');
+		$deluxeCertifiedPaymentsSettings = [];
+		$deluxeCertifiedPaymentsSetting->find();
+		$deluxeCertifiedPaymentsSettings[-1] = 'none';
+		while ($deluxeCertifiedPaymentsSetting->fetch()) {
+			$deluxeCertifiedPaymentsSettings[$deluxeCertifiedPaymentsSetting->id] = $deluxeCertifiedPaymentsSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2244,7 +2246,7 @@ class Library extends DataObject {
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
 							9 => 'InvoiceCloud',
-							10 => 'Delux Certified Payments'
+							10 => 'Deluxe Certified Payments'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2368,12 +2370,12 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-					'deluxCertifiedPaymentsSettingId' => [
-						'property' => 'deluxCertifiedPaymentsSettingId',
+					'deluxeCertifiedPaymentsSettingId' => [
+						'property' => 'deluxeCertifiedPaymentsSettingId',
 						'type' => 'enum',
-						'values' => $deluxCertifiedPaymentsSettings,
-						'label' => 'Delux Certified Payments Settings',
-						'description' => 'The Delux Certified Payments settings to use',
+						'values' => $deluxeCertifiedPaymentsSettings,
+						'label' => 'Deluxe Certified Payments Settings',
+						'description' => 'The Deluxe Certified Payments settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],

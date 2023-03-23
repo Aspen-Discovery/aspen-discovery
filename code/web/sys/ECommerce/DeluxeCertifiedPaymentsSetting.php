@@ -1,8 +1,8 @@
 <?php
 
 
-class DeluxCertifiedPaymentsSetting extends DataObject {
-	public $__table = 'delux_certified_payments_settings';
+class DeluxeCertifiedPaymentsSetting extends DataObject {
+	public $__table = 'deluxe_certified_payments_settings';
 	public $id;
 	public $name;
 	public $sandboxMode;
@@ -70,7 +70,7 @@ class DeluxCertifiedPaymentsSetting extends DataObject {
 	}
 
 	function getNumericColumnNames(): array {
-		return ['customerId'];
+		return ['sandboxMode'];
 	}
 
 	public function __get($name) {
@@ -78,7 +78,7 @@ class DeluxCertifiedPaymentsSetting extends DataObject {
 			if (!isset($this->_libraries) && $this->id) {
 				$this->_libraries = [];
 				$obj = new Library();
-				$obj->payPalSettingId = $this->id;
+				$obj->deluxeCertifiedPaymentsSettingId = $this->id;
 				$obj->find();
 				while ($obj->fetch()) {
 					$this->_libraries[$obj->libraryId] = $obj->libraryId;
@@ -123,18 +123,18 @@ class DeluxCertifiedPaymentsSetting extends DataObject {
 				$library->find(true);
 				if (in_array($libraryId, $this->_libraries)) {
 					//We want to apply the scope to this library
-					if ($library->payPalSettingId != $this->id) {
-						$library->finePaymentType = 2;
-						$library->payPalSettingId = $this->id;
+					if ($library->deluxeCertifiedPaymentsSettingId != $this->id) {
+						$library->finePaymentType = 10;
+						$library->deluxeCertifiedPaymentsSettingId = $this->id;
 						$library->update();
 					}
 				} else {
 					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->payPalSettingId == $this->id) {
-						if ($library->finePaymentType == 2) {
+					if ($library->deluxeCertifiedPaymentsSettingId == $this->id) {
+						if ($library->finePaymentType == 10) {
 							$library->finePaymentType = 0;
 						}
-						$library->payPalSettingId = -1;
+						$library->deluxeCertifiedPaymentsSettingId = -1;
 						$library->update();
 					}
 				}

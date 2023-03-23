@@ -31,7 +31,7 @@
                 {elseif $paymentType == 9}
                     {include file="Donations/invoiceCloudPayments.tpl"}
                 {elseif $paymentType == 10}
-                    {include file="Donations/deluxCertifiedPaymentsPayments.tpl"}
+                    {include file="Donations/deluxeCertifiedPaymentsPayments.tpl"}
                 {/if}
             </form>
         {/if}

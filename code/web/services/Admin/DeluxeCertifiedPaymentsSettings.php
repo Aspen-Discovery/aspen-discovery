@@ -3,25 +3,25 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ECommerce/DeluxCertifiedPaymentsSetting.php';
+require_once ROOT_DIR . '/sys/ECommerce/DeluxeCertifiedPaymentsSetting.php';
 
-class Admin_DeluxCertifiedPaymentsSettings extends ObjectEditor {
+class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
 	function getObjectType(): string {
-		return 'DeluxCertifiedPaymentsSetting';
+		return 'DeluxeCertifiedPaymentsSetting';
 	}
 
 	function getToolName(): string {
-		return 'DeluxCertifiedPaymentsSettings';
+		return 'DeluxeCertifiedPaymentsSettings';
 	}
 
 	function getPageTitle(): string {
-		return 'Delux Certified Payments Settings';
+		return 'Deluxe Certified Payments Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$list = [];
 
-		$object = new DeluxCertifiedPaymentsSetting();
+		$object = new DeluxeCertifiedPaymentsSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -38,7 +38,7 @@ class Admin_DeluxCertifiedPaymentsSettings extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return DeluxCertifiedPaymentsSetting::getObjectStructure($context);
+		return DeluxeCertifiedPaymentsSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -53,7 +53,7 @@ class Admin_DeluxCertifiedPaymentsSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ecommerce', 'eCommerce');
-		$breadcrumbs[] = new Breadcrumb('', 'Delux Certified Payments Settings');
+		$breadcrumbs[] = new Breadcrumb('', 'Deluxe Certified Payments Settings');
 		return $breadcrumbs;
 	}
 
@@ -62,6 +62,6 @@ class Admin_DeluxCertifiedPaymentsSettings extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Delux Certified Payments');
+		return UserAccount::userHasPermission('Administer Deluxe Certified Payments');
 	}
 }
