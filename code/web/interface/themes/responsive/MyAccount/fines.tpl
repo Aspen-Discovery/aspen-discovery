@@ -27,7 +27,7 @@
 			{/if}
 
 			{foreach from=$userFines item=fines key=userId name=fineTable}
-				<form id="fines{$userId}" method="post">
+				<form id="fines{$userId}" method="post" {if $finesPaymentType == 10}action="{$deluxeAPIConnectionUrl}"{/if}>
 					{if count($userFines) > 1}<h2>{$userAccountLabel.$userId}</h2>{/if}{* Only show account name if there is more than one account. *}
 					{if !empty($fines)}
 						<table id="finesTable{$smarty.foreach.fineTable.index}" class="fines-table table table-striped">
