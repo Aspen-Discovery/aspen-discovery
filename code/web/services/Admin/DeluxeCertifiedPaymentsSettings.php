@@ -15,7 +15,7 @@ class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Deluxe Certified Payments Settings';
+		return 'Certified Payments by Deluxe Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -53,7 +53,7 @@ class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#ecommerce', 'eCommerce');
-		$breadcrumbs[] = new Breadcrumb('', 'Deluxe Certified Payments Settings');
+		$breadcrumbs[] = new Breadcrumb('', 'Certified Payments by Deluxe Settings');
 		return $breadcrumbs;
 	}
 
