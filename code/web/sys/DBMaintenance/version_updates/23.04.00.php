@@ -73,8 +73,8 @@ function getUpdates23_04_00(): array {
 
 		//kirstien
 		'add_ecommerce_deluxe' => [
-			'title' => 'Add eCommerce vendor Deluxe Certified Payments',
-			'description' => 'Create Deluxe Certified Payments settings table',
+			'title' => 'Add eCommerce vendor Certified Payments by Deluxe',
+			'description' => 'Create Certified Payments by Deluxe settings table',
 			'continueOnError' => true,
 			'sql' => [
 				'CREATE TABLE IF NOT EXISTS deluxe_certified_payments_settings (
@@ -89,12 +89,12 @@ function getUpdates23_04_00(): array {
 		],
 		//add_ecommerce_deluxe
 		'permissions_ecommerce_deluxe' => [
-			'title' => 'Add permissions for Deluxe Certified Payments',
-			'description' => 'Create permissions for administration of Deluxe Certified Payments',
+			'title' => 'Add permissions for Certified Payments by Deluxe',
+			'description' => 'Create permissions for administration of Certified Payments by Deluxe',
 			'continueOnError' => true,
 			'sql' => [
-				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Deluxe Certified Payments', '', 10, 'Controls if the user can change Deluxe Certified Payments settings. <em>This has potential security and cost implications.</em>')",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Deluxe Certified Payments'))",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Certified Payments by Deluxe', '', 10, 'Controls if the user can change Certified Payments by Deluxe settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Certified Payments by Deluxe'))",
 			],
 		],
 		// permissions_ecommerce_deluxe

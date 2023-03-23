@@ -62,6 +62,6 @@ class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Deluxe Certified Payments');
+		return UserAccount::userHasPermission('Administer Certified Payments by Deluxe');
 	}
 }
