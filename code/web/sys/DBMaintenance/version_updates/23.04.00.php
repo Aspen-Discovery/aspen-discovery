@@ -72,6 +72,32 @@ function getUpdates23_04_00(): array {
 //		],
 
 		//kirstien
+		'add_ecommerce_deluxe' => [
+			'title' => 'Add eCommerce vendor Certified Payments by Deluxe',
+			'description' => 'Create Certified Payments by Deluxe settings table',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS deluxe_certified_payments_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					sandboxMode TINYINT(1) DEFAULT 0,
+					applicationId VARCHAR(500) NOT NULL,
+					securityId VARCHAR(500) NOT NULL
+				) ENGINE INNODB',
+				'ALTER TABLE library ADD COLUMN deluxeCertifiedPaymentsSettingId INT(11) DEFAULT -1',
+			],
+		],
+		//add_ecommerce_deluxe
+		'permissions_ecommerce_deluxe' => [
+			'title' => 'Add permissions for Certified Payments by Deluxe',
+			'description' => 'Create permissions for administration of Certified Payments by Deluxe',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Certified Payments by Deluxe', '', 10, 'Controls if the user can change Certified Payments by Deluxe settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Certified Payments by Deluxe'))",
+			],
+		],
+		// permissions_ecommerce_deluxe
 
 		//kodi
 		'permissions_create_events_communico' => [

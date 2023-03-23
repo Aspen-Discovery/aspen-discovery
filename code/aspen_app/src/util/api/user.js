@@ -32,7 +32,7 @@ export async function refreshProfile(url) {
      });
      const response = await discovery.post(`${endpoint.url}getPatronProfile`, postBody);
      if (response.ok) {
-          if (response.data.result) {
+          if (response.data?.result) {
                //console.log(response.data.result.profile);
                return response.data.result.profile;
           }

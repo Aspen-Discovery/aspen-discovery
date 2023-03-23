@@ -1,15 +1,12 @@
 import _ from 'lodash';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
 import {useFocusEffect} from '@react-navigation/native';
-import {MaterialIcons} from "@expo/vector-icons";
-import * as Linking from 'expo-linking';
 import {Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog} from 'native-base';
 import React from 'react';
 import {SafeAreaView} from 'react-native';
 import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
 import {
-     deletePushToken, DisplayMessage,
+     deletePushToken,
      getNotificationPreference,
      registerForPushNotificationsAsync,
      setNotificationPreference,
