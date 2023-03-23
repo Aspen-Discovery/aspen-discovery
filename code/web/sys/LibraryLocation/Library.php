@@ -2246,7 +2246,7 @@ class Library extends DataObject {
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
 							9 => 'InvoiceCloud',
-							10 => 'Deluxe Certified Payments'
+							10 => 'Certified Payments by Deluxe'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2374,8 +2374,8 @@ class Library extends DataObject {
 						'property' => 'deluxeCertifiedPaymentsSettingId',
 						'type' => 'enum',
 						'values' => $deluxeCertifiedPaymentsSettings,
-						'label' => 'Deluxe Certified Payments Settings',
-						'description' => 'The Deluxe Certified Payments settings to use',
+						'label' => 'Certified Payments by Deluxe Settings',
+						'description' => 'The Certified Payments by Deluxe settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
