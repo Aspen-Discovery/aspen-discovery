@@ -1,7 +1,7 @@
 <?php
 
 
-class DeluxeCertifiedPaymentsSetting extends DataObject {
+class CertifiedPaymentsByDeluxeSetting extends DataObject {
 	public $__table = 'deluxe_certified_payments_settings';
 	public $id;
 	public $name;

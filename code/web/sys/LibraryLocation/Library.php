@@ -590,8 +590,8 @@ class Library extends DataObject {
 			$invoiceCloudSettings[$invoiceCloudSetting->id] = $invoiceCloudSetting->name;
 		}
 
-		require_once ROOT_DIR . '/sys/ECommerce/DeluxeCertifiedPaymentsSetting.php';
-		$deluxeCertifiedPaymentsSetting = new DeluxeCertifiedPaymentsSetting();
+		require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
+		$deluxeCertifiedPaymentsSetting = new CertifiedPaymentsByDeluxeSetting();
 		$deluxeCertifiedPaymentsSetting->orderBy('name');
 		$deluxeCertifiedPaymentsSettings = [];
 		$deluxeCertifiedPaymentsSetting->find();

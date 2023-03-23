@@ -3,15 +3,15 @@
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/ECommerce/DeluxeCertifiedPaymentsSetting.php';
+require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
 
-class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
+class Admin_CertifiedPaymentsByDeluxeSettings extends ObjectEditor {
 	function getObjectType(): string {
-		return 'DeluxeCertifiedPaymentsSetting';
+		return 'CertifiedPaymentsByDeluxeSetting';
 	}
 
 	function getToolName(): string {
-		return 'DeluxeCertifiedPaymentsSettings';
+		return 'CertifiedPaymentsByDeluxeSettings';
 	}
 
 	function getPageTitle(): string {
@@ -21,7 +21,7 @@ class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
 	function getAllObjects($page, $recordsPerPage): array {
 		$list = [];
 
-		$object = new DeluxeCertifiedPaymentsSetting();
+		$object = new CertifiedPaymentsByDeluxeSetting();
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
@@ -38,7 +38,7 @@ class Admin_DeluxeCertifiedPaymentsSettings extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return DeluxeCertifiedPaymentsSetting::getObjectStructure($context);
+		return CertifiedPaymentsByDeluxeSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
