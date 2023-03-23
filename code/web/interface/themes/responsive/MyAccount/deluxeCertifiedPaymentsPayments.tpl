@@ -9,4 +9,9 @@
             </div>
         </div>
     </div>
+    <script>
+    $(document).ready(function () {ldelim}
+        $('#fines{$userId}').attr('action', '{$deluxeAPIConnectionUrl}');
+    {rdelim});
+    </script>
 {/strip}
