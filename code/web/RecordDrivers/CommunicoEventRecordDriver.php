@@ -36,7 +36,19 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getListEntry($listId = null, $allowEdit = true) {
-		return $this->getSearchResult('list');
+		//Use getSearchResult to do the bulk of the assignments
+		$this->getSearchResult('list', false);
+
+		//Switch template
+		return 'RecordDrivers/Events/listEntry.tpl';
+	}
+
+	public function getTitle(){
+		$title = isset($this->fields['title']) ? $this->fields['title'] : (isset($this->fields['title_display']) ? $this->fields['title_display'] : '');
+		if (strpos($title, '|') > 0) {
+			$title = substr($title, 0, strpos($title, '|'));
+		}
+		return trim($title);
 	}
 
 	public function getSearchResult($view = 'list') {

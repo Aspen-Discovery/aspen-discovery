@@ -67,6 +67,17 @@ class UserListEntry extends DataObject {
 		} elseif ($this->source == 'OpenArchives') {
 			require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 			return new OpenArchivesRecordDriver($this->sourceId);
+		}elseif ($this->source == 'Events') {
+			if (preg_match('`^communico`', $this->sourceId)){
+				require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+				return new CommunicoEventRecordDriver($this->sourceId);
+			} elseif (preg_match('`^libcal`', $this->sourceId)){
+				require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+				return new SpringshareLibCalEventRecordDriver($this->sourceId);
+			} elseif (preg_match('`^lc_`', $this->sourceId)){
+				require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+				return new LibraryCalendarEventRecordDriver($this->sourceId);
+			}
 		} elseif ($this->source == 'Lists') {
 			require_once ROOT_DIR . '/RecordDrivers/ListsRecordDriver.php';
 			$recordDriver = new ListsRecordDriver($this->sourceId);

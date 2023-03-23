@@ -115,6 +115,14 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		// communico_events
+		'user_list_entry_length' => [
+			'title' => 'User List Entry sourceId Length',
+			'description' => 'Increase allowed length for sourceId in user list entries.',
+			'sql' => [
+				"ALTER TABLE user_list_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
+			],
+		],
+		// user_list_entry_length
 
 		//other
 	];
