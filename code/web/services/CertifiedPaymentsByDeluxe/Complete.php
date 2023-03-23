@@ -1,12 +1,12 @@
 <?php
 
-class DeluxeCertifiedPayments_Complete extends Action {
+class CertifiedPaymentsByDeluxe_Complete extends Action {
 	public function launch() {
 		global $logger;
 		$success = false;
 		$message = '';
 		$error = '';
-		$logger->log('Completing Deluxe Certified Payments Session Notification Request...', Logger::LOG_ERROR);
+		$logger->log('Completing Session Notification Request for Certified Payments by Deluxe...', Logger::LOG_ERROR);
 		$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
 
 		$result = [

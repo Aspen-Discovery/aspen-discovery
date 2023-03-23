@@ -1,12 +1,12 @@
 <?php
 
-class DeluxeCertifiedPayments_VerifySession extends Action {
+class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 	public function launch() {
 		global $logger;
 		$success = false;
 		$message = '';
 		$error = '';
-		$logger->log('Completing Deluxe Certified Payments Session Verification Request...', Logger::LOG_ERROR);
+		$logger->log('Completing Session Verification Request for Certified Payments by Deluxe...', Logger::LOG_ERROR);
 		$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
 
 		$result = [
