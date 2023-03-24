@@ -53,7 +53,8 @@ class ItemAPI extends Action {
 					'getVariations',
 					'getRecords',
 					'getVolumes',
-					'getRelatedRecord'
+					'getRelatedRecord',
+					'getCopies'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -329,6 +330,42 @@ class ItemAPI extends Action {
 		$itemData['ratingData'] = $ratingData;
 
 		return $itemData;
+	}
+
+	/** @noinspection PhpUnused */
+	function getCopies() {
+		global $library;
+		global $interface;
+		if (!isset($_REQUEST['recordId'])) {
+			return [
+				'success' => false,
+				'message' => 'Record id not provided'
+			];
+		}
+
+		$id = $_REQUEST['recordId'];
+		$recordId = explode(':', $id);
+		$id = $recordId[1];
+		$source = $recordId[0];
+
+		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		$marcRecord = new MarcRecordDriver($id);
+
+		$copies = $marcRecord->getCopies();
+		$items = [];
+		foreach($copies as $copy) {
+			$items[$copy['description']]['id'] = $copy['itemId'];
+			$items[$copy['description']]['shelfLocation'] = $copy['description'];
+			$items[$copy['description']]['library'] = $copy['section'];
+			$items[$copy['description']]['volume'] = $copy['volume'];
+			$items[$copy['description']]['volumeId'] = $copy['volumeId'];
+			$items[$copy['description']]['variationId'] = $copy['variationId'];
+		}
+		return [
+			'success' => true,
+			'id' => $id,
+			'items' => $items,
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -1090,6 +1127,7 @@ class ItemAPI extends Action {
 			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
 			$variations[$relatedVariation->label]['closedCaptioned'] = (int) $relatedRecord->closedCaptioned;
 			$variations[$relatedVariation->label]['actions'] = $relatedVariation->getActions();
+			$variations[$relatedVariation->label]['variationId'] = $relatedVariation->databaseId;
 			$variations[$relatedVariation->label]['holdType'] = $holdType;
 			$variations[$relatedVariation->label]['statusIndicator'] = [
 				'isAvailable' => $relatedVariation->getStatusInformation()->isAvailable(),
