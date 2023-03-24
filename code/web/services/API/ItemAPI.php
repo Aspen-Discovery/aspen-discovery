@@ -334,8 +334,6 @@ class ItemAPI extends Action {
 
 	/** @noinspection PhpUnused */
 	function getCopies() {
-		global $library;
-		global $interface;
 		if (!isset($_REQUEST['recordId'])) {
 			return [
 				'success' => false,
@@ -363,8 +361,8 @@ class ItemAPI extends Action {
 		}
 		return [
 			'success' => true,
-			'id' => $id,
-			'items' => $items,
+			'recordId' => $_REQUEST['recordId'],
+			'copies' => $items,
 		];
 	}
 
