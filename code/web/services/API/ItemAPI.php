@@ -1074,10 +1074,23 @@ class ItemAPI extends Action {
 		$variations = [];
 		foreach($relatedManifestation->getVariations() as $relatedVariation) {
 			$relatedRecord = $relatedVariation->getFirstRecord();
+
+			$holdType = 'item';
+			global $indexingProfiles;
+			$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+			$formatMap = $indexingProfile->formatMap;
+			/** @var FormatMapValue $formatMapValue */
+			foreach ($formatMap as $formatMapValue) {
+				if($formatMapValue->format === $format) {
+					$holdType = $formatMapValue->holdType;
+				}
+			}
+
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
 			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
 			$variations[$relatedVariation->label]['closedCaptioned'] = (int) $relatedRecord->closedCaptioned;
 			$variations[$relatedVariation->label]['actions'] = $relatedVariation->getActions();
+			$variations[$relatedVariation->label]['holdType'] = $holdType;
 			$variations[$relatedVariation->label]['statusIndicator'] = [
 				'isAvailable' => $relatedVariation->getStatusInformation()->isAvailable(),
 				'isEContent' => $relatedVariation->getStatusInformation()->isEContent(),
