@@ -257,6 +257,7 @@ class Grouping_Item {
 			'locationCode' => $this->locationCode,
 			'subLocation' => $this->subLocation,
 			'itemId' => $this->itemId,
+			'variationId' => $this->variationId,
 			'actions' => $this->getActions(),
 		];
 		return $itemSummaryInfo;
