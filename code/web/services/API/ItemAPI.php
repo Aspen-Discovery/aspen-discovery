@@ -355,7 +355,7 @@ class ItemAPI extends Action {
 		$items = [];
 		foreach($copies as $copy) {
 			$items[$copy['description']]['id'] = $copy['itemId'];
-			$items[$copy['description']]['shelfLocation'] = $copy['description'];
+			$items[$copy['description']]['location'] = $copy['description'];
 			$items[$copy['description']]['library'] = $copy['section'];
 			$items[$copy['description']]['volume'] = $copy['volume'];
 			$items[$copy['description']]['volumeId'] = $copy['volumeId'];
