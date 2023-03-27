@@ -76,8 +76,8 @@ class SharedContent extends DataObject {
 				'label' => 'Approval Date',
 				'description' => 'When the content was approved for use',
 			],
-			'approvedBy' => [
-				'property' => 'approvedBy',
+			'approvedByName' => [
+				'property' => 'approvedByName',
 				'type' => 'label',
 				'readOnly' => true,
 				'label' => 'Approved By',
@@ -100,5 +100,40 @@ class SharedContent extends DataObject {
 			$this->approvedBy = UserAccount::getActiveUserId();
 		}
 		return parent::update($context);
+	}
+
+	/** @var User[] */
+	private static $usersById = [];
+
+	function __get($name) {
+		if ($name == 'approvedByName') {
+			if (empty($this->approvedBy)) {
+				return '';
+			}
+			if (empty($this->_data['approvedBy'])) {
+				if (!array_key_exists($this->approvedBy, SharedContent::$usersById)) {
+					$user = new User();
+					$user->id = $this->approvedBy;
+					if ($user->find(true)) {
+						SharedContent::$usersById[$this->approvedBy] = $user;
+					}
+				}
+				if (array_key_exists($this->approvedBy, SharedContent::$usersById)) {
+					$user = SharedContent::$usersById[$this->approvedBy];
+					if (!empty($user->displayName)) {
+						$this->_data['approvedByName'] = $user->displayName;
+					} else {
+						$this->_data['approvedByName'] = $user->firstname . ' ' . $user->lastname;
+					}
+				} else {
+					$this->_data['approvedByName'] = translate([
+						'text' => 'Unknown',
+						'isPublicFacing' => true,
+					]);
+				}
+
+			}
+		}
+		return $this->_data[$name] ?? null;
 	}
 }
