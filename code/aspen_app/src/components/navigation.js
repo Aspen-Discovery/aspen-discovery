@@ -17,7 +17,7 @@ import { enableScreens } from 'react-native-screens';
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
 
-import Login from '../screens/Auth/Login';
+import Login, {LoginScreen} from '../screens/Auth/Login';
 import { GLOBALS } from '../util/globals';
 import { LIBRARY } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
@@ -90,8 +90,6 @@ export function App() {
                background: screenBackgroundColor,
           },
      };
-     const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
-
      const [state, dispatch] = React.useReducer(
           (prevState, action) => {
                switch (action.type) {
@@ -149,12 +147,6 @@ export function App() {
 
      React.useEffect(() => {
           const bootstrapAsync = async () => {
-               const geoPermissions = await getPermissions();
-               console.log(geoPermissions);
-               if(geoPermissions.success === false && geoPermissions.status === 'undetermined') {
-                    setShouldRequestPermissions(true);
-               }
-
                console.log('Checking updates...');
                if(Updates.manifest) {
                     await updateAspenLiDABuild(Updates.updateId, Updates.channel, Updates.createdAt);
@@ -242,10 +234,6 @@ export function App() {
      if (state.isLoading) {
           // We haven't finished checking for the token yet
           return <SplashScreen />;
-     }
-
-     if(shouldRequestPermissions) {
-          return <PermissionsPrompt promptTitle='permissions_location_title' promptBody='permissions_location_body' setShouldRequestPermissions={setShouldRequestPermissions}/>
      }
 
      return (
@@ -352,7 +340,7 @@ export function App() {
                                                                      // No token found, user isn't signed in
                                                                      <Stack.Screen
                                                                          name="Login"
-                                                                         component={Login}
+                                                                         component={LoginScreen}
                                                                          options={{
                                                                               headerShown: false,
                                                                               animationTypeForReplace: state.isSignout ? 'pop' : 'push',
@@ -381,52 +369,6 @@ export function App() {
                </LanguageProvider>
           </AuthContext.Provider>
      );
-}
-
-async function getPermissions() {
-     /* temporarily disabling geolocation on Android due to a fatal bug */
-/*      if(Platform.OS === 'android') {
-          await SecureStore.setItemAsync('latitude', '0');
-          await SecureStore.setItemAsync('longitude', '0');
-          PATRON.coords.lat = 0;
-          PATRON.coords.long = 0;
-          return {
-               success: false,
-               status: 'denied'
-          };
-     }  */
-     const { status } = await Location.getForegroundPermissionsAsync();
-     if (status !== 'granted') {
-          await SecureStore.setItemAsync('latitude', '0');
-          await SecureStore.setItemAsync('longitude', '0');
-          PATRON.coords.lat = 0;
-          PATRON.coords.long = 0;
-          return {
-               success: false,
-               status: status
-          };
-     }
-
-     const location = await Location.getLastKnownPositionAsync({});
-
-     if (location != null) {
-          const latitude = JSON.stringify(location.coords.latitude);
-          const longitude = JSON.stringify(location.coords.longitude);
-          await SecureStore.setItemAsync('latitude', latitude);
-          await SecureStore.setItemAsync('longitude', longitude);
-          PATRON.coords.lat = latitude;
-          PATRON.coords.long = longitude;
-     } else {
-          await SecureStore.setItemAsync('latitude', '0');
-          await SecureStore.setItemAsync('longitude', '0');
-          PATRON.coords.lat = 0;
-          PATRON.coords.long = 0;
-     }
-     return {
-          success: true,
-          status: 'granted'
-     };
-
 }
 
 export default Sentry.Native.wrap(App);

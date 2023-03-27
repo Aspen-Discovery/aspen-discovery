@@ -1276,6 +1276,29 @@ class MyAccount_AJAX extends JSON_Action {
 							if ($list->find(true)) {
 								$userListEntry->title = substr($list->title, 0, 50);
 							}
+						} elseif ($userListEntry->source == 'Events') {
+							if (preg_match('`^communico`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+								$recordDriver = new CommunicoEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} elseif (preg_match('`^libcal`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+								$recordDriver = new SpringshareLibCalEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} else {
+								require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+								$recordDriver = new LibraryCalendarEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							}
 						} elseif ($userListEntry->source == 'OpenArchives') {
 							require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
 							$recordDriver = new OpenArchivesRecordDriver($userListEntry->sourceId);
@@ -5414,6 +5437,29 @@ class MyAccount_AJAX extends JSON_Action {
 							$list->id = $userListEntry->sourceId;
 							if ($list->find(true)) {
 								$userListEntry->title = substr($list->title, 0, 50);
+							}
+						} elseif ($userListEntry->source == 'Events') {
+							if (preg_match('`^communico`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+								$recordDriver = new CommunicoEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} elseif (preg_match('`^libcal`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+								$recordDriver = new SpringshareLibCalEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
+							} elseif (preg_match('`^lc_`', $userListEntry->sourceId)){
+								require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+								$recordDriver = new LibraryCalendarEventRecordDriver($userListEntry->sourceId);
+								if ($recordDriver->isValid()) {
+									$title = $recordDriver->getTitle();
+									$userListEntry->title = substr($title, 0, 50);
+								}
 							}
 						} elseif ($userListEntry->source == 'OpenArchives') {
 							require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';

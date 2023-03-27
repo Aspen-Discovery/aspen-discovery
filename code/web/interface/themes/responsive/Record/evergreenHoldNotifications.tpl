@@ -28,8 +28,8 @@
 				<select name="smsCarrier" id="smsCarrier" class="form-control">
 					<option value="-1">{translate text="Please select a carrier" isPublicFacing=true}</option>
 					{foreach from=$smsCarriers item=smsCarrier key=smsCarrierId}
-						<option value="{$smsCarrierId}" {if !empty($opac_default_sms_carrier)}{if $ == $smsCarrierId}selected{/if}{/if}>{$smsCarrier}</option>
-					{/foreach}opac_default_sms_carrier
+						<option value="{$smsCarrierId}" {if !empty($opac_default_sms_carrier)}{if $opac_default_sms_carrier == $smsCarrierId}selected{/if}{/if}>{$smsCarrier}</option>
+					{/foreach}
 				</select>
 				<span id="smsCarrierHelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Note: carrier charges may apply " isAdminFacing=true}</small></span>
 			</div>
