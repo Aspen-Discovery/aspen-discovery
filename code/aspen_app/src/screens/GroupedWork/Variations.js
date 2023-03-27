@@ -122,6 +122,8 @@ const Variation = (payload) => {
      const actions = variation.actions;
      const source = variation.source;
      const status = getStatusIndicator(variation.statusIndicator, language);
+     const holdTypeForFormat = variation.holdType ?? 'default';
+     const variationId = variation.variationId ?? null;
 
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
@@ -170,7 +172,7 @@ const Variation = (payload) => {
                          ) : null}
                     </VStack>
                     <Button.Group width="50%" justifyContent="center" alignItems="stretch" direction={_.size(variation.actions) > 1 ? 'column' : 'row'}>
-                         <FlatList data={actions} renderItem={({ item }) => <ActionButton language={language} groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>} />
+                         <FlatList data={actions} renderItem={({ item }) => <ActionButton language={language} groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} variationId={variationId} holdTypeForFormat={holdTypeForFormat} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>} />
                     </Button.Group>
                </HStack>
                <Center mt={2}>
