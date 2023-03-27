@@ -42,7 +42,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `library_records_to_include` WRITE;
 /*!40000 ALTER TABLE `library_records_to_include` DISABLE KEYS */;
-INSERT INTO `library_records_to_include` VALUES (1,1,1,'.*','.*',0,1,1,1,'','','','','',1,'','','','');
+INSERT INTO `library_records_to_include` (id, libraryId, indexingProfileId, location, subLocation, includeHoldableOnly, includeItemsOnOrder, includeEContent, weight, iType, audience, format, marcTagToMatch, marcValueToMatch, includeExcludeMatches, urlToMatch, urlReplacement, locationsToExclude, subLocationsToExclude, marcRecordsAsOwned) VALUES (1,1,1,'.*','.*',0,1,1,1,'','','','','',1,'','','','', 1);
 /*!40000 ALTER TABLE `library_records_to_include` ENABLE KEYS */;
 UNLOCK TABLES;
 
