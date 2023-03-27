@@ -3,7 +3,7 @@
 		<h1 id="pageTitle">{$pageTitleShort}</h1>
 	</div>
 	<div class="col-xs-12 col-md-3 help-link">
-        {if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
+		{if !empty($instructions)}<a href="{$instructions}"><i class="fas fa-question-circle"></i>&nbsp;{translate text="Documentation" isAdminFacing=true}</a>{/if}
 	</div>
 </div>
 
@@ -13,7 +13,7 @@
 	</div>
 {/if}
 
-{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete}
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete || $canFetchFromGreenhouse}
 <form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
 	{if !empty($canSort) && count($sortableFields) > 0}
@@ -23,7 +23,7 @@
 				<select name="sort" id="sort" onchange="return AspenDiscovery.changeSort();" class="form-control form-control-sm">
 					{foreach from=$sortableFields item=field}
 						{capture assign=fieldValueAsc}{$field.property} asc{/capture}
-                        {capture assign=fieldValueDesc}{$field.property} desc{/capture}
+						{capture assign=fieldValueDesc}{$field.property} desc{/capture}
 						<option value="{$fieldValueAsc}" {if $fieldValueAsc == $sort}selected="selected"{/if}>{translate text="%1% Ascending" 1=$field.label translateParameters=true isAdminFacing=true}</option>
 						<option value="{$fieldValueDesc}" {if $fieldValueDesc == $sort}selected="selected"{/if}>{translate text="%1% Descending" 1=$field.label translateParameters=true  isAdminFacing=true}</option>
 					{/foreach}
@@ -172,8 +172,8 @@
 								{/if}
 								{if $dataItem->getAdditionalListJavascriptActions()}
 									{foreach from=$dataItem->getAdditionalListJavascriptActions() item=action}
-                                        <a class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" onclick="{$action.onClick}">{if !empty($action.icon)}<i class="fas {$action.icon}"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
-                                    {/foreach}
+										<a class="btn btn-default btn-sm" aria-label="{$action.text} for Item {$id}" onclick="{$action.onClick}">{if !empty($action.icon)}<i class="fas {$action.icon}"></i> {/if} {translate text=$action.text isAdminFacing=true}</a>
+									{/foreach}
 								{/if}
 								{if $dataItem->canActiveUserEdit() && $showHistoryLinks}
 									<a href='/{$module}/{$toolName}?objectAction=history&amp;id={$id}' class="btn btn-default btn-sm" aria-label="History for Item {$id}"><i class="fas fa-history"></i> {translate text="History" isAdminFacing=true}</a>
@@ -207,6 +207,11 @@
 			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')"><i class="fas fa-plus"></i> {translate text='Add New' isAdminFacing=true}</button>
 		</div>
 	{/if}
+	{if !empty($canFetchFromGreenhouse)}
+		<div class="btn-group">
+			<button type='submit' value='findGreenhouseContent' class="btn btn-default" onclick="return AspenDiscovery.Admin.showFindGreenhouseForm('{$module}', '{$toolName}', '{$objectType}')"><i class="fas fa-file-download"></i> {translate text='Import Community Content' isAdminFacing=true}</button>
+		</div>
+	{/if}
 	<div class="btn-group">
 		{foreach from=$customListActions item=customAction}
 			<button type='submit' value='{$customAction.action}' class="btn btn-default" onclick="$('#objectAction').val('{$customAction.action}')">{translate text=$customAction.label isAdminFacing=true}</button>
@@ -215,13 +220,13 @@
 
 	{if !empty($canDelete) && $canBatchDelete}
 	<div class="row" style="padding-top: 1em">
-        <div class="btn-group btn-group-sm col-sm-12">
-            <button type='submit' value='batchDelete' class="btn btn-danger" onclick="return AspenDiscovery.Admin.showBatchDeleteForm('{$module}', '{$toolName}', 'selected')"><i class="fas fa-trash"></i> {translate text='Batch Delete Selected' isAdminFacing=true}</button>
-            <button type='submit' value='batchDelete' class="btn btn-danger" onclick="return AspenDiscovery.Admin.showBatchDeleteForm('{$module}', '{$toolName}', 'all')"><i class="fas fa-trash"></i> {translate text='Delete All' isAdminFacing=true}</button>
-        </div>
-    </div>
-    {/if}
-{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions) || $canBatchDelete}
+		<div class="btn-group btn-group-sm col-sm-12">
+			<button type='submit' value='batchDelete' class="btn btn-danger" onclick="return AspenDiscovery.Admin.showBatchDeleteForm('{$module}', '{$toolName}', 'selected')"><i class="fas fa-trash"></i> {translate text='Batch Delete Selected' isAdminFacing=true}</button>
+			<button type='submit' value='batchDelete' class="btn btn-danger" onclick="return AspenDiscovery.Admin.showBatchDeleteForm('{$module}', '{$toolName}', 'all')"><i class="fas fa-trash"></i> {translate text='Delete All' isAdminFacing=true}</button>
+		</div>
+	</div>
+	{/if}
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions) || $canBatchDelete || $canFetchFromGreenhouse}
 </form>
 {/if}
 

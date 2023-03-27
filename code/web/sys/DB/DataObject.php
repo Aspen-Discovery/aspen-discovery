@@ -1154,4 +1154,9 @@ abstract class DataObject {
 	public function getAdditionalListJavascriptActions(): array {
 		return [];
 	}
+
+	public function prepareForSharingToGreenhouse() {
+		$this->unsetUniquenessFields();
+	}
+
 }
