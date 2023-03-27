@@ -494,7 +494,10 @@ class Koha extends AbstractIlsDriver {
 				if ($allowRenewals['success'] == true) {
 					$curCheckout->canRenew = 0;
 					$curCheckout->autoRenew = 0;
-					$curCheckout->renewError = $allowRenewals['error'];
+					$curCheckout->renewError = translate([
+						'text' => $allowRenewals['error'],
+						'isPublicFacing' => true,
+					]);
 				}
 			}
 

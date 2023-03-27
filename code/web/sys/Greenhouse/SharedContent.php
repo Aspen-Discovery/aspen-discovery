@@ -93,4 +93,12 @@ class SharedContent extends DataObject {
 			],
 		];
 	}
+
+	public function update($context = '') {
+		if ($this->approved && empty($this->approvalDate)) {
+			$this->approvalDate = time();
+			$this->approvedBy = UserAccount::getActiveUserId();
+		}
+		return parent::update($context);
+	}
 }
