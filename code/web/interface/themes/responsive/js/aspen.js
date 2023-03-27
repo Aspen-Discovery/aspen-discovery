@@ -6785,6 +6785,11 @@ AspenDiscovery.Account = (function () {
 				window.location.href = url;
 			}
 		},
+
+		createCertifiedPaymentsByDeluxeOrder: function (finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'CertifiedPaymentsByDeluxe', transactionType, null);
+		},
+
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -9199,6 +9204,20 @@ AspenDiscovery.Admin = (function () {
 				});
 
 			}
+		},
+
+		showFindGreenhouseForm: function(toolModule, toolName, objectType) {
+			var params = {
+				method: 'getSearchGreenhouseContentForm',
+				toolModule: toolModule,
+				toolName: toolName,
+				objectType: objectType
+			}
+			var url = Globals.path + "/Admin/AJAX";
+			$.getJSON(url, params, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	};
 }(AspenDiscovery.Admin || {}));

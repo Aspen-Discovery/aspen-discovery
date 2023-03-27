@@ -122,6 +122,7 @@ class Library extends DataObject {
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
 	public $invoiceCloudSettingId;
+	public $deluxeCertifiedPaymentsSettingId;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -410,7 +411,8 @@ class Library extends DataObject {
 			'worldPaySettingId',
 			'payPalSettingId',
 			'ebscohostSearchSettingId',
-			'invoiceCloudSettingId'
+			'invoiceCloudSettingId',
+			'deluxeCertifiedPaymentsSettingId'
 		];
 	}
 
@@ -586,6 +588,16 @@ class Library extends DataObject {
 		$invoiceCloudSettings[-1] = 'none';
 		while ($invoiceCloudSetting->fetch()) {
 			$invoiceCloudSettings[$invoiceCloudSetting->id] = $invoiceCloudSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
+		$deluxeCertifiedPaymentsSetting = new CertifiedPaymentsByDeluxeSetting();
+		$deluxeCertifiedPaymentsSetting->orderBy('name');
+		$deluxeCertifiedPaymentsSettings = [];
+		$deluxeCertifiedPaymentsSetting->find();
+		$deluxeCertifiedPaymentsSettings[-1] = 'none';
+		while ($deluxeCertifiedPaymentsSetting->fetch()) {
+			$deluxeCertifiedPaymentsSettings[$deluxeCertifiedPaymentsSetting->id] = $deluxeCertifiedPaymentsSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2233,7 +2245,8 @@ class Library extends DataObject {
 							6 => 'Xpress-pay',
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
-							9 => 'InvoiceCloud'
+							9 => 'InvoiceCloud',
+							10 => 'Certified Payments by Deluxe'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2354,6 +2367,15 @@ class Library extends DataObject {
 						'values' => $invoiceCloudSettings,
 						'label' => 'InvoiceCloud Settings',
 						'description' => 'The InvoiceCloud settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'deluxeCertifiedPaymentsSettingId' => [
+						'property' => 'deluxeCertifiedPaymentsSettingId',
+						'type' => 'enum',
+						'values' => $deluxeCertifiedPaymentsSettings,
+						'label' => 'Certified Payments by Deluxe Settings',
+						'description' => 'The Certified Payments by Deluxe settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],

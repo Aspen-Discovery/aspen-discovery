@@ -54,21 +54,18 @@ export const PlaceHold = (props) => {
 						setLoading(true);
 						await completeAction(record, type, user.id, null, null, pickupLocation, library.baseUrl, null, 'default').then(async (ilsResponse) => {
 							setResponse(ilsResponse);
-							await refreshProfile(library.baseUrl).then((result) => {
-								updateUser(result);
-							});
-							if(ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded === true) {
-								let tmp = holdConfirmationResponse;
-								const obj = {
+							if(ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
+								setHoldConfirmationResponse({
 									message: ilsResponse.message,
+									title: ilsResponse.title,
 									confirmationNeeded: ilsResponse.confirmationNeeded ?? false,
 									confirmationId: ilsResponse.confirmationId ?? null,
 									recordId: record ?? null
-								}
-								tmp = _.merge(obj, tmp);
-								setHoldConfirmationResponse(tmp);
+								});
 							}
-
+							await refreshProfile(library.baseUrl).then((result) => {
+								updateUser(result);
+							});
 							setLoading(false);
 							if(ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
 								setHoldConfirmationIsOpen(true)

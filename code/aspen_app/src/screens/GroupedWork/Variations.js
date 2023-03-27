@@ -88,7 +88,7 @@ export const Variations = (props) => {
                        </AlertDialog>
                        <AlertDialog leastDestructiveRef={cancelHoldConfirmationRef} isOpen={holdConfirmationIsOpen} onClose={onHoldConfirmationClose}>
                             <AlertDialog.Content>
-                                 <AlertDialog.Header>Place Hold?</AlertDialog.Header>
+                                 <AlertDialog.Header>{holdConfirmationResponse?.title ? holdConfirmationResponse.title : 'Unknown Error'}</AlertDialog.Header>
                                  <AlertDialog.Body>{holdConfirmationResponse?.message ? decodeMessage(holdConfirmationResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</AlertDialog.Body>
                                  <AlertDialog.Footer>
                                       <Button.Group space={3}>

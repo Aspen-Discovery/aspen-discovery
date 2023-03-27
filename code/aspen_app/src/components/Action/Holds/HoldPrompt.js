@@ -27,9 +27,9 @@ export const HoldPrompt = (props) => {
 	let defaultSMSNotification = false;
 	if(promptForHoldNotifications && holdNotificationInfo?.preferences?.opac_hold_notify?.value) {
 		const preferences = holdNotificationInfo.preferences.opac_hold_notify.value;
-		defaultEmailNotification = getNotificationPreference(preferences, 'email');
-		defaultPhoneNotification = getNotificationPreference(preferences, 'phone');
-		defaultSMSNotification = getNotificationPreference(preferences, 'sms');
+		defaultEmailNotification = _.includes(preferences, 'email');
+		defaultPhoneNotification = _.includes(preferences, 'phone');
+		defaultSMSNotification = _.includes(preferences, 'sms');
 	}
 
 	const [emailNotification, setEmailNotification] = React.useState(defaultEmailNotification);
@@ -66,7 +66,7 @@ export const HoldPrompt = (props) => {
 	const [holdType, setHoldType] = React.useState(typeOfHold);
 	const [volume, setVolume] = React.useState('');
 
-	const [activeAccount, setActiveAccount] = React.useState(user.id);
+	const [activeAccount, setActiveAccount] = React.useState(user.id ?? '');
 
 	const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
 	let pickupLocation = '';
@@ -118,7 +118,7 @@ export const HoldPrompt = (props) => {
 								url={library.baseUrl}
 							/>
 						) : null}
-						{_.size(locations) > 1 && !isEContent ? (
+						{_.isArray(locations) && _.size(locations) > 1 && !isEContent ? (
 							<FormControl>
 								<FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
 								<Select
@@ -138,14 +138,13 @@ export const HoldPrompt = (props) => {
 								</Select>
 							</FormControl>
 						) : null}
-						{_.size(accounts) > 0 ? (
+						{_.isArray(accounts) && _.size(accounts) > 0 ? (
 							<FormControl>
 								<FormControl.Label>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControl.Label>
 								<Select
 									name="linkedAccount"
 									selectedValue={activeAccount}
 									minWidth="200"
-									accessibilityLabel={isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}
 									_selectedItem={{
 										bg: 'tertiary.300',
 										endIcon: <CheckIcon size="5" />,
@@ -191,6 +190,7 @@ export const HoldPrompt = (props) => {
 												let tmp = holdConfirmationResponse;
 												const obj = {
 													message: result.message,
+													title: result.title,
 													confirmationNeeded: result.confirmationNeeded ?? false,
 													confirmationId: result.confirmationId ?? null,
 													recordId: id ?? null,
@@ -217,11 +217,4 @@ export const HoldPrompt = (props) => {
 			</Modal>
 		</>
 	)
-}
-
-function getNotificationPreference(haystack, needle) {
-	if(_.includes(haystack, needle)) {
-		return true;
-	}
-	return false;
 }

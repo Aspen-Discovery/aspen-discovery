@@ -77,10 +77,10 @@ class InclusionRule {
 		matchAllSubLocations = subLocationCode.equals(".*");
 		this.subLocationCodePattern = Pattern.compile(subLocationCode, Pattern.CASE_INSENSITIVE);
 
-		if (locationsToExclude.length() > 0){
+		if (locationsToExclude != null && locationsToExclude.length() > 0){
 			this.locationsToExcludePattern = Pattern.compile(locationsToExclude, Pattern.CASE_INSENSITIVE);
 		}
-		if (subLocationsToExclude.length() > 0){
+		if (subLocationsToExclude != null && subLocationsToExclude.length() > 0){
 			this.subLocationsToExcludePattern = Pattern.compile(subLocationsToExclude, Pattern.CASE_INSENSITIVE);
 		}
 
@@ -104,7 +104,7 @@ class InclusionRule {
 			matchAllAudiences = true;
 		}
 		this.audiencePattern = Pattern.compile(audience, Pattern.CASE_INSENSITIVE);
-		if (audiencesToExclude.length() > 0){
+		if (audiencesToExclude != null && audiencesToExclude.length() > 0){
 			this.audiencesToExcludePattern = Pattern.compile(audiencesToExclude, Pattern.CASE_INSENSITIVE);
 		}
 
@@ -124,11 +124,11 @@ class InclusionRule {
 		if (shelfLocation == null || shelfLocation.length() == 0) {
 			shelfLocation = ".*";
 		}
-		if (shelfLocation.equals(".*") && shelfLocationsToExclude.length() == 0){
+		if (shelfLocation.equals(".*") && (shelfLocationsToExclude == null || shelfLocationsToExclude.length() == 0)){
 			matchAllShelfLocations = true;
 		}
 		this.shelfLocationPattern = Pattern.compile(shelfLocation, Pattern.CASE_INSENSITIVE);
-		if (shelfLocationsToExclude.length() > 0){
+		if (shelfLocationsToExclude != null && shelfLocationsToExclude.length() > 0){
 			this.shelfLocationsToExcludePattern = Pattern.compile(shelfLocationsToExclude, Pattern.CASE_INSENSITIVE);
 		}
 

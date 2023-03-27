@@ -6,26 +6,26 @@
 	</div>
 
 	<form role="form">
-        <div class="form-group">
-            <label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
-            <div class="input-group">
-                <input  type="text" name="settingsSearch" id="settingsSearch"
-                        onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
-                <span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
-                <script type="text/javascript">
-                    {literal}
-                    $(document).ready(function() {
-                        $("#settingsSearch").keydown("keydown", function (e) {
-                            if (e.which === 13) {
-                                e.preventDefault();
-                            }
-                        });
-                    });
-                    {/literal}
-                </script>
-            </div>
-        </div>
-    </form>
+		<div class="form-group">
+			<label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
+			<div class="input-group">
+				<input  type="text" name="settingsSearch" id="settingsSearch"
+						onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
+				<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
+				<script type="text/javascript">
+					{literal}
+					$(document).ready(function() {
+						$("#settingsSearch").keydown("keydown", function (e) {
+							if (e.which === 13) {
+								e.preventDefault();
+							}
+						});
+					});
+					{/literal}
+				</script>
+			</div>
+		</div>
+	</form>
 
 	<div id="adminSections" class="grid" data-colcade="columns: .grid-col, items: .grid-item">
 		<!-- columns -->
@@ -34,7 +34,7 @@
 		<!-- items -->
 		<div class="adminSection grid-item" id="greenhouse-main">
 			<div class="adminPanel">
-				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text=Greenhouse isAdminFacing=true}</div></div>
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Settings" isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
 					<div class="col-tn-12">
 						<div class="adminAction row">
@@ -47,20 +47,22 @@
 						</div>
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
-								<a href="/Greenhouse/UpdateCenter" title="{translate text="Update Center" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
-							</div>
-							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
-								<div class="adminActionLabel"><a href="/Greenhouse/UpdateCenter">{translate text="Update Center"  isAdminFacing=true}</a></div>
-							</div>
-						</div>
-						<div class="adminAction row">
-							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/Settings" title="{translate text="Settings" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
 							</div>
 							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
 								<div class="adminActionLabel"><a href="/Greenhouse/Settings">{translate text="Settings"  isAdminFacing=true}</a></div>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="adminSection grid-item" id="greenhouse-logging">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Logging" isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/ExternalRequestLog" title="{translate text="External Request Log" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
@@ -87,6 +89,14 @@
 				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Stats/Reports" isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
 					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/UpdateCenter" title="{translate text="Update Center" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/UpdateCenter">{translate text="Update Center"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/SiteStatus" title="{translate text="Site Status" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
@@ -133,6 +143,24 @@
 							</div>
 							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
 								<div class="adminActionLabel"><a href="/Greenhouse/SitesByLocation">{translate text="Sites By Location"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="adminSection grid-item" id="greenhouse-stats-reports">
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Community" isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/SharedContent" title="{translate text="Shared Content" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/SharedContent">{translate text="Shared Content" isAdminFacing=true}</a></div>
 							</div>
 						</div>
 					</div>
@@ -407,29 +435,29 @@
 		</div>
 
 		<div class="adminSection grid-item" id="greenhouse-development-tools">
-            <div class="adminPanel">
-                <div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Aspen LiDA" isAdminFacing=true}</div></div>
-                <div class="adminSectionActions row">
-                    <div class="col-tn-12">
-                        <div class="adminAction row">
-                            <div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
-                                <a href="/Greenhouse/AspenLiDABuildTracker" title="{translate text="Aspen LiDA Build Tracker" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
-                            </div>
-                            <div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
-                                <div class="adminActionLabel"><a href="/Greenhouse/AspenLiDABuildTracker">{translate text="Aspen LiDA Build Tracker"  isAdminFacing=true}</a></div>
-                            </div>
-                        </div>
+			<div class="adminPanel">
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Aspen LiDA" isAdminFacing=true}</div></div>
+				<div class="adminSectionActions row">
+					<div class="col-tn-12">
 						<div class="adminAction row">
-                            <div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
-                                <a href="/Greenhouse/AspenLiDASiteListingCache" title="{translate text="Aspen LiDA Site Listing Cache" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
-                            </div>
-                            <div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
-                                <div class="adminActionLabel"><a href="/Greenhouse/AspenLiDASiteListingCache">{translate text="Aspen LiDA Site Listing Cache"  isAdminFacing=true}</a></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/AspenLiDABuildTracker" title="{translate text="Aspen LiDA Build Tracker" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/AspenLiDABuildTracker">{translate text="Aspen LiDA Build Tracker"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/AspenLiDASiteListingCache" title="{translate text="Aspen LiDA Site Listing Cache" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/AspenLiDASiteListingCache">{translate text="Aspen LiDA Site Listing Cache"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 {/strip}

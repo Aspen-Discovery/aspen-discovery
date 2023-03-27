@@ -23,7 +23,8 @@ class GreenhouseAPI extends Action {
 				'getLibrary',
 				'authenticateTokens',
 				'getNotificationAccessToken',
-				'updateAspenLiDABuild'
+				'updateAspenLiDABuild',
+				'addSharedContent'
 			]) && !IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
 		}
@@ -776,6 +777,82 @@ class GreenhouseAPI extends Action {
 		}
 
 		$logger->log(print_r($result, true), Logger::LOG_ERROR);
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function addSharedContent(): array {
+		$result = [
+			'success' => false,
+		];
+
+		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
+		$sharedContent = new SharedContent();
+		$sharedContent->name = $_REQUEST['name'];
+		$sharedContent->type = $_REQUEST['type'];
+		$sharedContent->description = $_REQUEST['description'];
+		$sharedContent->shareDate = time();
+		$sharedContent->sharedFrom = $_REQUEST['sharedFrom'];
+		$sharedContent->sharedByUserName = $_REQUEST['sharedByUserName'];
+		$sharedContent->data = $_REQUEST['data'];
+		if ($sharedContent->insert()) {
+			$result['success'] = true;
+		} else {
+			$result['message'] = $sharedContent->getLastError();
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function searchSharedContent(): array {
+		$result = [
+			'numResults' => 0,
+			'results' => [],
+		];
+
+		$objectType = $_REQUEST['objectType'];
+
+		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
+		$sharedContent = new SharedContent();
+		$sharedContent->type = $objectType;
+		$sharedContent->find();
+		while ($sharedContent->fetch()) {
+			$result['results'][] = [
+				'id' => $sharedContent->id,
+				'name' => $sharedContent->name,
+				'description' => $sharedContent->description,
+				'sharedFrom' => $sharedContent->sharedFrom,
+				'shareDate' => $sharedContent->shareDate,
+				'type' => $sharedContent->type
+			];
+			$result['numResults']++;
+		}
+
+		return $result;
+	}
+
+	function getSharedContent() : array {
+		$result = [];
+		$objectType = $_REQUEST['objectType'];
+		$objectId = $_REQUEST['objectId'];
+
+		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
+		$sharedContent = new SharedContent();
+		$sharedContent->type = $objectType;
+		$sharedContent->id = $objectId;
+		if ($sharedContent->find(true)) {
+			$result = [
+				'success'=> true,
+				'rawData' => $sharedContent->data
+			];
+		}else{
+			$result = [
+				'success' => false,
+				'message' => 'Could not find content with that id'
+			];
+		}
+
 		return $result;
 	}
 

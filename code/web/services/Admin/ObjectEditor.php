@@ -30,6 +30,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('canBatchDelete', $this->canBatchDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 		$interface->assign('showHistoryLinks', $this->showHistoryLinks());
+		$interface->assign('canShareToGreenhouse', $this->canShareToGreenhouse());
+		$interface->assign('canFetchFromGreenhouse', $this->canFetchFromGreenhouse());
 
 		$interface->assign('objectType', $this->getObjectType());
 		$interface->assign('toolName', $this->getToolName());
@@ -52,6 +54,12 @@ abstract class ObjectEditor extends Admin_Admin {
 			$this->showHistory();
 		} elseif ($objectAction == 'copy') {
 			$this->copyObject($structure);
+		} elseif ($objectAction == 'shareForm') {
+			$this->showShareForm($structure);
+		} elseif ($objectAction == 'shareToGreenhouse') {
+			$this->shareToGreenhouse($structure);
+		} elseif ($objectAction == 'importFromGreenhouse') {
+			$this->importFromGreenhouse($structure);
 		} else {
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)) {
@@ -264,8 +272,8 @@ abstract class ObjectEditor extends Admin_Admin {
 				return;
 			}
 		} else {
-			$existingObject = null;
-			//TODO: Display an error message
+			$interface->setTemplate('../Admin/invalidObject.tpl');
+			return;
 		}
 		$interface->assign('object', $existingObject);
 		//Check to see if the request should be multipart/form-data
@@ -274,6 +282,116 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->setTemplate('../Admin/objectEditor.tpl');
+	}
+
+	function showShareForm($structure) {
+		global $interface;
+		if (isset($_REQUEST['sourceId'])) {
+			$id = $_REQUEST['sourceId'];
+			$existingObject = $this->getExistingObjectById($id);
+			if ($existingObject != null) {
+				if ($existingObject->canActiveUserEdit()) {
+
+					$interface->assign('objectName', $existingObject->__toString());
+					$interface->assign('id', $id);
+					$interface->setTemplate('../Admin/shareForm.tpl');
+				} else {
+					$interface->setTemplate('../Admin/noPermission.tpl');
+				}
+			} else {
+				$interface->setTemplate('../Admin/invalidObject.tpl');
+			}
+		} else {
+			$interface->setTemplate('../Admin/invalidObject.tpl');
+		}
+	}
+
+	function shareToGreenhouse($structure) {
+		global $interface;
+		//TODO:: Double check permissions
+		if (isset($_REQUEST['sourceId'])) {
+			$id = $_REQUEST['sourceId'];
+			$existingObject = $this->getExistingObjectById($id);
+			if ($existingObject != null) {
+				if ($existingObject->canActiveUserEdit()) {
+
+					$interface->assign('objectName', $existingObject->__toString());
+					$interface->assign('id', $id);
+					$existingObject->prepareForSharingToGreenhouse();
+					$jsonRepresentation = $existingObject->getJSONString(false, true);
+
+					//Submit to the greenhouse
+					require_once ROOT_DIR . '/sys/SystemVariables.php';
+					$systemVariables = SystemVariables::getSystemVariables();
+					if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+						require_once ROOT_DIR . '/sys/CurlWrapper.php';
+						$curl = new CurlWrapper();
+						$body = [
+							'name' => $_REQUEST['contentName'],
+							'type' => $this->getObjectType(),
+							'description' => $_REQUEST['contentDescription'],
+							'sharedFrom' => $interface->getVariable('librarySystemName'),
+							'sharedByUserName' => UserAccount::getActiveUserObj()->displayName,
+							'data' => $jsonRepresentation
+						];
+						$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addSharedContent', $body);
+					}
+					header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
+					exit;
+				} else {
+					$interface->setTemplate('../Admin/noPermission.tpl');
+				}
+			} else {
+				$interface->setTemplate('../Admin/invalidObject.tpl');
+			}
+		} else {
+			$interface->setTemplate('../Admin/invalidObject.tpl');
+		}
+	}
+
+	function importFromGreenhouse($structure) {
+		global $interface;
+		//TODO: Double check permissions
+		if (isset($_REQUEST['sourceId'])) {
+			$sourceId = $_REQUEST['sourceId'];
+			$objectType = $_REQUEST['objectType'];
+
+			//Get the raw data from the greenhouse
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$curl = new CurlWrapper();
+				$response = $curl->curlGetPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
+				$jsonResponse = json_decode($response);
+				if ($jsonResponse->success) {
+					$rawData = json_decode($jsonResponse->rawData);
+
+					$objectType = $this->getObjectType();
+					/** @var DataObject $newObject */
+					$newObject = new $objectType;
+					$newObject->loadFromJSON($rawData, []);
+					$interface->assign('objectName', $newObject->__toString());
+					$newObject->unsetUniquenessFields();
+					if (method_exists($newObject, 'label')) {
+						$interface->assign('objectName', $newObject->label());
+					}
+					$this->activeObject = $newObject;
+
+					$interface->assign('object', $newObject);
+					//Check to see if the request should be multipart/form-data
+					$contentType = DataObjectUtil::getFormContentType($structure);
+					$interface->assign('contentType', $contentType);
+
+					$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newObject));
+					$interface->setTemplate('../Admin/objectEditor.tpl');
+				} else {
+					//TODO: Display error that data could not be loaded
+				}
+			}
+		} else {
+			$interface->setTemplate('../Admin/invalidObject.tpl');
+		}
 	}
 
 	function viewIndividualObject($structure) {
@@ -900,5 +1018,24 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	public function getContext() : string {
 		return '';
+	}
+
+	public function canShareToGreenhouse() {
+		return false;
+	}
+
+	public function canFetchFromGreenhouse() {
+		return false;
+	}
+
+	public function hasGreenhouseConnection() {
+		//Send the translation to the greenhouse
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
