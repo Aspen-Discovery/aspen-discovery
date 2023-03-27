@@ -210,3 +210,27 @@ export async function getRelatedRecord(id, recordId, format, url) {
           manifestation: data.record ?? [],
      }
 }
+
+/**
+ * Returns copies data for given record id
+ * @param {string} recordId
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function getCopies(recordId, language='en', url) {
+     const {data} = await axios.get('/ItemAPI?method=getCopies', {
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutSlow,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               recordId,
+               language
+          },
+     });
+
+     return {
+          recordId: recordId,
+          copies: data.copies ?? [],
+     };
+}
