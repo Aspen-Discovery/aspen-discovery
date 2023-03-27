@@ -5,11 +5,12 @@ require_once ROOT_DIR . '/JSON_Action.php';
 class Admin_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
-	function getReindexNotes() {
+	function getReindexNotes() : array {
 		$id = $_REQUEST['id'];
 		require_once ROOT_DIR . '/sys/Indexing/ReindexLogEntry.php';
 		$reindexProcess = new ReindexLogEntry();
 		$reindexProcess->id = $id;
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'title' => '',
 			'modalBody' => '',
@@ -26,7 +27,7 @@ class Admin_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]);
 			} else {
-				$results['modalBody'] = "<div class='helpText'>{$reindexProcess->notes}</div>";
+				$results['modalBody'] = "<div class='helpText'>$reindexProcess->notes</div>";
 			}
 		} else {
 			$results['title'] = translate([
@@ -42,10 +43,11 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCronProcessNotes() {
+	function getCronProcessNotes() : array {
 		$id = $_REQUEST['id'];
 		$cronProcess = new CronProcessLogEntry();
 		$cronProcess->id = $id;
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'title' => '',
 			'modalBody' => '',
@@ -63,7 +65,7 @@ class Admin_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]);
 			} else {
-				$results['modalBody'] = "<div class='helpText'>{$cronProcess->notes}</div>";
+				$results['modalBody'] = "<div class='helpText'>$cronProcess->notes</div>";
 			}
 		} else {
 			$results['title'] = "Error";
@@ -76,11 +78,12 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCronNotes() {
+	function getCronNotes() : array {
 		$id = $_REQUEST['id'];
 		$cronLog = new CronLogEntry();
 		$cronLog->id = $id;
 
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'title' => '',
 			'modalBody' => '',
@@ -98,7 +101,7 @@ class Admin_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]);
 			} else {
-				$results['modalBody'] = "<div class='helpText'>{$cronLog->notes}</div>";
+				$results['modalBody'] = "<div class='helpText'>$cronLog->notes</div>";
 			}
 		} else {
 			$results['title'] = translate([
@@ -114,7 +117,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getExtractNotes() {
+	function getExtractNotes() : array {
 		$id = $_REQUEST['id'];
 		$source = $_REQUEST['source'];
 		$extractLog = null;
@@ -167,6 +170,7 @@ class Admin_AJAX extends JSON_Action {
 			]);
 		} else {
 			$extractLog->id = $id;
+			/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 			$results = [
 				'title' => '',
 				'modalBody' => '',
@@ -184,7 +188,7 @@ class Admin_AJAX extends JSON_Action {
 						'isAdminFacing' => true,
 					]);
 				} else {
-					$results['modalBody'] = "<div class='helpText'>{$extractLog->notes}</div>";
+					$results['modalBody'] = "<div class='helpText'>$extractLog->notes</div>";
 				}
 			} else {
 				$results['title'] = translate([
@@ -203,7 +207,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getAddToSpotlightForm() {
+	function getAddToSpotlightForm() : array {
 		global $interface;
 		// Display Page
 		$interface->assign('id', strip_tags($_REQUEST['id']));
@@ -241,7 +245,8 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function ungroupRecord() {
+	function ungroupRecord() : array {
+		/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 		$results = [
 			'success' => false,
 			'message' => translate([
@@ -289,7 +294,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getReleaseNotes() {
+	function getReleaseNotes() : array {
 		global $interface;
 		$release = $_REQUEST['release'];
 		$releaseNotesPath = ROOT_DIR . '/release_notes';
@@ -325,7 +330,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCreateRoleForm() {
+	function getCreateRoleForm() : array {
 		global $interface;
 		if (UserAccount::userHasPermission('Administer Permissions')) {
 
@@ -365,7 +370,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function createRole() {
+	function createRole() : array {
 		if (UserAccount::userHasPermission('Administer Permissions')) {
 			if (isset($_REQUEST['roleName'])) {
 				$name = $_REQUEST['roleName'];
@@ -432,7 +437,8 @@ class Admin_AJAX extends JSON_Action {
 		}
 	}
 
-	function deleteRole() {
+	/** @noinspection PhpUnused */
+	function deleteRole() : array {
 		if (UserAccount::userHasPermission('Administer Permissions')) {
 			if (isset($_REQUEST['roleId']) && is_numeric($_REQUEST['roleId'])) {
 				//Check to be sure the role is not used by anyone
@@ -469,7 +475,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getBatchUpdateFieldForm() {
+	function getBatchUpdateFieldForm() : array {
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
@@ -494,7 +500,7 @@ class Admin_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]),
 				'modalBody' => $modalBody,
-				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('{$moduleName}', '{$toolName}', '{$batchUpdateScope}');\" class=\"modal-buttons btn btn-primary\">" . translate([
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchUpdateFieldForm('$moduleName', '$toolName', '$batchUpdateScope');\" class=\"modal-buttons btn btn-primary\">" . translate([
 						'text' => 'Update',
 						'isAdminFacing' => true,
 					]) . "</button>",
@@ -508,7 +514,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function doBatchUpdateField() {
+	function doBatchUpdateField() : array {
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchUpdateScope = $_REQUEST['batchUpdateScope'];
@@ -560,32 +566,32 @@ class Admin_AJAX extends JSON_Action {
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from linking to other accounts, but they can be linked to. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting disallows these patrons from linking to other accounts, but they can be linked to. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						} else if ($newValue == 2) {
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from being linked to, but they can link to others. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting disallows these patrons from being linked to, but they can link to others. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						} else if ($newValue == 3) {
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows all account linking for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting disallows all account linking for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						} else {
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting allows all account linking functionality for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting allows all account linking functionality for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						}
 					}else {
 						return [
 							'success' => true,
 							'title' => 'Success',
-							'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+							'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue.",
 						];
 					}
 				} else {
@@ -600,32 +606,32 @@ class Admin_AJAX extends JSON_Action {
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from linking to other accounts, but they can be linked to. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting disallows these patrons from linking to other accounts, but they can be linked to. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						}else if ($newValue == 2){
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows these patrons from being linked to, but they can link to others. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting disallows these patrons from being linked to, but they can link to others. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						}else if ($newValue == 3){
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting disallows all account linking for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting disallows all account linking for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						}else {
 							return [
 								'success' => true,
 								'title' => 'Success',
-								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}. This setting allows all account linking functionality for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
+								'message' => "Updated all {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue. This setting allows all account linking functionality for these patrons. For more information on how account linking settings affect these patron types, please visit the help center.",
 							];
 						}
 					}else {
 						return [
 							'success' => true,
 							'title' => 'Success',
-							'message' => "Updated selected {$tool->getPageTitle()} - {$fieldStructure['label']} fields to {$newValue}.",
+							'message' => "Updated selected {$tool->getPageTitle()} - {$fieldStructure['label']} fields to $newValue.",
 						];
 					}
 				}
@@ -640,7 +646,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCopyFacetGroupForm() {
+	function getCopyFacetGroupForm() : array {
 		if (!empty($_REQUEST['facetGroupId'])) {
 			global $interface;
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkFacetGroup.php';
@@ -668,7 +674,7 @@ class Admin_AJAX extends JSON_Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => "Copy {$facetLabel} Grouped Work Facet Group",
+						'text' => "Copy $facetLabel Grouped Work Facet Group",
 						'isAdminFacing' => true,
 					]),
 					'modalBody' => $modalBody,
@@ -677,12 +683,28 @@ class Admin_AJAX extends JSON_Action {
 							'isAdminFacing' => true,
 						]) . "</button>",
 				];
+			}else{
+				return[
+					'success' => false,
+					'message' => translate([
+						'text' => "Facet Group to copy could not be found.",
+						'isAdminFacing' => true,
+					])
+				];
 			}
+		}else{
+			return[
+				'success' => false,
+				'message' => translate([
+					'text' => "Facet Group to copy was not provided.",
+					'isAdminFacing' => true,
+				])
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function doCopyFacetGroup() {
+	function doCopyFacetGroup() : array {
 
 		if (!empty($_REQUEST['name'])) {
 			$facetsProcessed = 0;
@@ -733,19 +755,19 @@ class Admin_AJAX extends JSON_Action {
 				return [
 					'success' => true,
 					'title' => 'Success',
-					'message' => "Copied {$facetsProcessed} facets to {$name} and updated Grouped Work Display Settings",
+					'message' => "Copied $facetsProcessed facets to $name and updated Grouped Work Display Settings",
 				];
 			} elseif ($facetsProcessed > 0) {
 				return [
 					'success' => true,
 					'title' => 'Success',
-					'message' => "Copied {$facetsProcessed} facets to {$name}",
+					'message' => "Copied $facetsProcessed facets to $name",
 				];
 			} else {
 				return [
 					'success' => false,
 					'title' => 'Error',
-					'message' => "Unable to copy existing facets into {$name}",
+					'message' => "Unable to copy existing facets into $name",
 				];
 			}
 		} else {
@@ -758,7 +780,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getCopyDisplaySettingsForm() {
+	function getCopyDisplaySettingsForm() : array {
 		if (!empty($_REQUEST['settingsId'])) {
 			global $interface;
 			require_once ROOT_DIR . '/sys/Grouping/GroupedWorkDisplaySetting.php';
@@ -775,7 +797,7 @@ class Admin_AJAX extends JSON_Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => "Copy {$settingsName} Grouped Work Display Settings",
+						'text' => "Copy $settingsName Grouped Work Display Settings",
 						'isAdminFacing' => true,
 					]),
 					'modalBody' => $modalBody,
@@ -784,12 +806,24 @@ class Admin_AJAX extends JSON_Action {
 							'isAdminFacing' => true,
 						]) . "</button>",
 				];
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Could not find Grouped Work Display Setting to copy",
+				];
 			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => "Grouped Work Display Setting to copy was not found",
+			];
 		}
 	}
 
 	/** @noinspection PhpUnused */
-	function doCopyDisplaySettings() {
+	function doCopyDisplaySettings() : array {
 
 		if (!empty($_REQUEST['name'])) {
 			$id = $_REQUEST['id'];
@@ -806,7 +840,7 @@ class Admin_AJAX extends JSON_Action {
 					return [
 						'success' => true,
 						'title' => 'Success',
-						'message' => "Copied Grouped Work Display Settings to {$name}",
+						'message' => "Copied Grouped Work Display Settings to $name",
 					];
 				} else {
 					return [
@@ -815,6 +849,12 @@ class Admin_AJAX extends JSON_Action {
 						'message' => "Unable to create new Grouped Work Display Setting",
 					];
 				}
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => "Could not find Grouped Work Display Setting to copy",
+				];
 			}
 
 		} else {
@@ -827,7 +867,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getBatchDeleteForm() {
+	function getBatchDeleteForm() : array {
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchDeleteScope = $_REQUEST['batchDeleteScope'];
@@ -852,7 +892,7 @@ class Admin_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]),
 				'modalBody' => $modalBody,
-				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchDeleteForm('{$moduleName}', '{$toolName}', '{$batchDeleteScope}');\" class=\"modal-buttons btn btn-danger\">" . translate([
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processBatchDeleteForm('$moduleName', '$toolName', '$batchDeleteScope');\" class=\"modal-buttons btn btn-danger\">" . translate([
 						'text' => 'Yes, Delete',
 						'isAdminFacing' => true,
 					]) . "</button>",
@@ -865,7 +905,8 @@ class Admin_AJAX extends JSON_Action {
 		}
 	}
 
-	function doBatchDelete() {
+	/** @noinspection PhpUnused */
+	function doBatchDelete() : array {
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$batchDeleteScope = $_REQUEST['batchDeleteScope'];
@@ -915,7 +956,8 @@ class Admin_AJAX extends JSON_Action {
 		}
 	}
 
-	function getFilterOptions() {
+	/** @noinspection PhpUnused */
+	function getFilterOptions() : array {
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 
@@ -945,7 +987,7 @@ class Admin_AJAX extends JSON_Action {
 						'isAdminFacing' => true,
 					]),
 					'modalBody' => $modalBody,
-					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('{$moduleName}', '{$toolName}');\" class=\"modal-buttons btn btn-primary\">" . translate([
+					'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.getNewFilterRow('$moduleName', '$toolName');\" class=\"modal-buttons btn btn-primary\">" . translate([
 							'text' => 'Add Filter',
 							'isAdminFacing' => true,
 						]) . "</button>",
@@ -960,7 +1002,8 @@ class Admin_AJAX extends JSON_Action {
 		}
 	}
 
-	function getNewFilterRow() {
+	/** @noinspection PhpUnused */
+	function getNewFilterRow() : array {
 		$moduleName = $_REQUEST['moduleName'];
 		$toolName = $_REQUEST['toolName'];
 		$selectedFilter = $_REQUEST['selectedFilter'];
@@ -1010,7 +1053,7 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function deleteNYTList() {
+	function deleteNYTList() : array {
 		$result = [
 			'success' => false,
 			'message' => translate([
@@ -1047,12 +1090,20 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getFormPTypeSetting() {
+	function getFormPTypeSetting() : array {
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		$pType = $_REQUEST["data"]["pType"];
 		$selected = $_REQUEST["data"]["selected"];
 
 		$accountLinkingSetting = PType::getAccountLinkingSetting($pType);
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown error.',
+				'isAdminFacing' => true,
+			])
+		];
+
 		if (($accountLinkingSetting != $selected) && ($selected != 0) && ($accountLinkingSetting != 3)){
 			if ($accountLinkingSetting == 0) {
 				if ($selected == 1){
@@ -1172,18 +1223,72 @@ class Admin_AJAX extends JSON_Action {
 						])
 					];
 				}
+			}else {
+				$result = [
+					'success' => false,
+					'message' => translate([
+						'text' => 'Unknown account linking setting.',
+						'isAdminFacing' => true,
+					])
+				];
 			}
 		}else {
-			$result['success'] = false;
+			$result = [
+				'success' => false
+			];
 		}
 		return $result;
 	}
 
 	/** @noinspection PhpUnused */
-	function createRecoveryCode() {
+	function createRecoveryCode() : array {
 		$user = $_REQUEST['user'] ?? '0';
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
 		return $twoFactorAuth->createRecoveryCode($user);
+	}
+
+	/** @noinspection PhpUnused */
+	function getSearchGreenhouseContentForm() : array {
+		global $interface;
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			$toolName = $_REQUEST['toolName'];
+			$toolModule = $_REQUEST['toolModule'];
+			$objectType = $_REQUEST['objectType'];
+			$interface->assign('objectType', $objectType);
+			$interface->assign('toolModule', $toolModule);
+			$interface->assign('toolName', $toolName);
+
+			//Do the initial search
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$curl = new CurlWrapper();
+			$searchResults = $curl->curlGetPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=searchSharedContent&objectType=' . $objectType);
+			$decodedSearchResults = json_decode($searchResults);
+
+			$interface->assign('greenhouseSearchResults', $decodedSearchResults);
+
+			return [
+				'title' => translate([
+					'text' => 'Find Community Content',
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('Admin/searchGreenhouseContent.tpl'),
+				'modalButtons' => '',
+			];
+		} else {
+			return [
+				'title' => translate([
+					'text' => 'Error',
+					'isAdminFacing' => true,
+				]),
+				'modalBody' => translate([
+					'text' => 'Greenhouse is not available',
+					'isAdminFacing' => true,
+				]),
+				'modalButtons' => '',
+			];
+		}
 	}
 }

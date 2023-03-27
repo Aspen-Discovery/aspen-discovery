@@ -2633,5 +2633,4 @@ class Theme extends DataObject {
 
 		return $apiInfo;
 	}
-
 }

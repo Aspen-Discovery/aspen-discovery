@@ -1780,6 +1780,20 @@ AspenDiscovery.Admin = (function () {
 				});
 
 			}
+		},
+
+		showFindGreenhouseForm: function(toolModule, toolName, objectType) {
+			var params = {
+				method: 'getSearchGreenhouseContentForm',
+				toolModule: toolModule,
+				toolName: toolName,
+				objectType: objectType
+			}
+			var url = Globals.path + "/Admin/AJAX";
+			$.getJSON(url, params, function(data){
+				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
 		}
 	};
 }(AspenDiscovery.Admin || {}));

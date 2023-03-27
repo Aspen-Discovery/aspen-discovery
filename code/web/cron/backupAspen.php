@@ -37,7 +37,7 @@ $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportData = true;
 	//Ignore
-	if ($table == 'session') {
+	if ($table == 'session' || $table == 'cached_values') {
 		$exportData = false;
 	}
 

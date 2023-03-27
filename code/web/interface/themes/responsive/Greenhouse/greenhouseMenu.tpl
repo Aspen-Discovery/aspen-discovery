@@ -1,5 +1,5 @@
 {strip}
-    {if !empty($loggedIn)}
+	{if !empty($loggedIn)}
 		<div id="account-menu-label" class="sidebar-label row">
 			<div class="col-xs-12">{translate text='Aspen Greenhouse' isAdminFacing=true}</div>
 		</div>
@@ -16,8 +16,21 @@
 					<div id="greenhouseConfigurationGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
 							<div class="adminMenuLink "><a href="/Greenhouse/Sites">{translate text="Site Listing" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Greenhouse/UpdateCenter">{translate text="Update Center" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/Settings">{translate text="Settings" isAdminFacing=true}</a></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel active">
+					<a href="#greenhouseConfigurationGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Greenhouse Configuration" inAttribute=true isAdminFacing=true}">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Logging" isAdminFacing=true}
+							</div>
+						</div>
+					</a>
+					<div id="greenhouseConfigurationGroup" class="panel-collapse collapse in">
+						<div class="panel-body">
 							<div class="adminMenuLink "><a href="/Greenhouse/ExternalRequestLog">{translate text="External Request Log" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/ObjectHistoryLog">{translate text="Object History Log" isAdminFacing=true}</a></div>
 						</div>
@@ -25,19 +38,19 @@
 				</div>
 
 				<div class="panel active">
-                    <a href="#maintenanceToolsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Maintenance Tools" inAttribute=true isAdminFacing=true}">
-                        <div class="panel-heading">
-                            <div class="panel-title">
-                                {translate text="Maintenance Tools" isAdminFacing=true}
-                            </div>
-                        </div>
-                    </a>
-                    <div id="maintenanceToolsGroup" class="panel-collapse collapse in">
-                        <div class="panel-body">
-                            <div class="adminMenuLink "><a href="/Greenhouse/ReadingHistoryReload">{translate text="Reload Reading History from ILS" isAdminFacing=true}</a></div>
-                        </div>
-                    </div>
-                </div>
+					<a href="#maintenanceToolsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Maintenance Tools" inAttribute=true isAdminFacing=true}">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Maintenance Tools" isAdminFacing=true}
+							</div>
+						</div>
+					</a>
+					<div id="maintenanceToolsGroup" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="adminMenuLink "><a href="/Greenhouse/ReadingHistoryReload">{translate text="Reload Reading History from ILS" isAdminFacing=true}</a></div>
+						</div>
+					</div>
+				</div>
 
 				<div class="panel active">
 					<a href="#migrationToolsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Migration Tools" inAttribute=true isAdminFacing=true}">
@@ -65,12 +78,13 @@
 					<a href="#greenhouseStatsReportsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Greenhouse Stats/Reports" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
-                                {translate text="Greenhouse Stats/Reports" isAdminFacing=true}
+								{translate text="Greenhouse Stats/Reports" isAdminFacing=true}
 							</div>
 						</div>
 					</a>
 					<div id="greenhouseStatsReportsGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
+							<div class="adminMenuLink "><a href="/Greenhouse/UpdateCenter">{translate text="Update Center" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/SiteStatus">{translate text="Site Status" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/SiteStatDashboard">{translate text="Site Stats Dashboard" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/SiteCpuUsage">{translate text="Site CPU Usage" isAdminFacing=true}</a></div>
@@ -82,10 +96,25 @@
 				</div>
 
 				<div class="panel active">
+					<a href="#communityGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Community" inAttribute=true isAdminFacing=true}">
+						<div class="panel-heading">
+							<div class="panel-title">
+								{translate text="Community" isAdminFacing=true}
+							</div>
+						</div>
+					</a>
+					<div id="communityGroup" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="adminMenuLink "><a href="/Greenhouse/SharedContent">{translate text="Shared Content" isAdminFacing=true}</a></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel active">
 					<a href="#aspenLiDAGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Aspen LiDA" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
-                                {translate text="Aspen LiDA" isAdminFacing=true}
+								{translate text="Aspen LiDA" isAdminFacing=true}
 							</div>
 						</div>
 					</a>
@@ -98,5 +127,5 @@
 				</div>
 			</div>
 		</div>
-    {/if}
+	{/if}
 {/strip}
