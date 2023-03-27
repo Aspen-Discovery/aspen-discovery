@@ -38,8 +38,8 @@ foreach ($allTables as $table) {
 		$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
 		foreach ($createTablesRS as $createTableSql) {
 			$fhnd = fopen($exportFile, 'a+');
-			fwrite($fhnd, "DROP TABLE IF EXISTS $table" . "\n");
-			fwrite($fhnd, $createTableSql['Create Table'] . "\n");
+			fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
+			fwrite($fhnd, $createTableSql['Create Table'] . ";\n");
 			fclose($fhnd);
 		}
 		//$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --skip-comments --no-data $dbName $table >> $exportFile";

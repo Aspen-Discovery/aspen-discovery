@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS accelerated_reading_isbn
+DROP TABLE IF EXISTS accelerated_reading_isbn;
 CREATE TABLE `accelerated_reading_isbn` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `arBookId` int(11) NOT NULL,
@@ -6,8 +6,8 @@ CREATE TABLE `accelerated_reading_isbn` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `isbn` (`isbn`),
   KEY `arBookId` (`arBookId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS accelerated_reading_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS accelerated_reading_settings;
 CREATE TABLE `accelerated_reading_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexSeries` tinyint(1) DEFAULT '1',
@@ -20,24 +20,24 @@ CREATE TABLE `accelerated_reading_settings` (
   `updateOn` tinyint(4) DEFAULT '0',
   `updateFrequency` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS accelerated_reading_subject
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS accelerated_reading_subject;
 CREATE TABLE `accelerated_reading_subject` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `topic` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   `subTopic` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `topic` (`topic`,`subTopic`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS accelerated_reading_subject_to_title
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS accelerated_reading_subject_to_title;
 CREATE TABLE `accelerated_reading_subject_to_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `arBookId` int(11) NOT NULL,
   `arSubjectId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `arBookId` (`arBookId`,`arSubjectId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS accelerated_reading_titles
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS accelerated_reading_titles;
 CREATE TABLE `accelerated_reading_titles` (
   `arBookId` int(11) NOT NULL,
   `language` varchar(2) COLLATE utf8mb4_general_ci NOT NULL,
@@ -48,8 +48,8 @@ CREATE TABLE `accelerated_reading_titles` (
   `isFiction` tinyint(1) DEFAULT NULL,
   `interestLevel` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`arBookId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS account_profiles
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS account_profiles;
 CREATE TABLE `account_profiles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'ils',
@@ -83,8 +83,8 @@ CREATE TABLE `account_profiles` (
   `iiiLoginConfiguration` enum('','barcode_pin','name_barcode','name_barcode_pin') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aci_speedpay_settings
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aci_speedpay_settings;
 CREATE TABLE `aci_speedpay_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -99,8 +99,8 @@ CREATE TABLE `aci_speedpay_settings` (
   `sdkApiAuthKey` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS amazon_ses_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS amazon_ses_settings;
 CREATE TABLE `amazon_ses_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `fromAddress` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -111,8 +111,8 @@ CREATE TABLE `amazon_ses_settings` (
   `bulkMailConfigSet` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `region` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS api_usage
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS api_usage;
 CREATE TABLE `api_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -123,8 +123,8 @@ CREATE TABLE `api_usage` (
   `numCalls` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniqueness` (`year`,`month`,`instance`,`module`,`method`)
-) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS archive_requests
+) ENGINE=InnoDB AUTO_INCREMENT=65 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS archive_requests;
 CREATE TABLE `archive_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -144,8 +144,8 @@ CREATE TABLE `archive_requests` (
   PRIMARY KEY (`id`),
   KEY `pid` (`pid`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_branded_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_branded_settings;
 CREATE TABLE `aspen_lida_branded_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `slugName` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -157,8 +157,8 @@ CREATE TABLE `aspen_lida_branded_settings` (
   `logoNotification` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `slugName` (`slugName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_build
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_build;
 CREATE TABLE `aspen_lida_build` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `buildId` varchar(72) COLLATE utf8mb4_general_ci NOT NULL,
@@ -187,15 +187,15 @@ CREATE TABLE `aspen_lida_build` (
   `storeIdentifier` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `buildId` (`buildId`,`updateId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_general_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_general_settings;
 CREATE TABLE `aspen_lida_general_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `autoRotateCard` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_location_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_location_settings;
 CREATE TABLE `aspen_lida_location_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -203,8 +203,8 @@ CREATE TABLE `aspen_lida_location_settings` (
   `releaseChannel` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_notification_setting
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_notification_setting;
 CREATE TABLE `aspen_lida_notification_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -214,8 +214,8 @@ CREATE TABLE `aspen_lida_notification_setting` (
   `notifyAccount` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_notifications
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_notifications;
 CREATE TABLE `aspen_lida_notifications` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(75) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -229,36 +229,36 @@ CREATE TABLE `aspen_lida_notifications` (
   `deepLinkPath` varchar(75) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `deepLinkId` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-DROP TABLE IF EXISTS aspen_lida_notifications_library
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS aspen_lida_notifications_library;
 CREATE TABLE `aspen_lida_notifications_library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lidaNotificationId` int(11) DEFAULT NULL,
   `libraryId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_notifications_location
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_notifications_location;
 CREATE TABLE `aspen_lida_notifications_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lidaNotificationId` int(11) DEFAULT NULL,
   `locationId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_notifications_ptype
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_notifications_ptype;
 CREATE TABLE `aspen_lida_notifications_ptype` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lidaNotificationId` int(11) DEFAULT NULL,
   `patronTypeId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_quick_search_setting
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_quick_search_setting;
 CREATE TABLE `aspen_lida_quick_search_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_lida_quick_searches
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_lida_quick_searches;
 CREATE TABLE `aspen_lida_quick_searches` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) DEFAULT '-1',
@@ -267,8 +267,8 @@ CREATE TABLE `aspen_lida_quick_searches` (
   `label` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `quickSearchSettingId` int(11) DEFAULT '-1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_release
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_release;
 CREATE TABLE `aspen_release` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
@@ -276,8 +276,8 @@ CREATE TABLE `aspen_release` (
   `releaseDateTest` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_site_checks
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_site_checks;
 CREATE TABLE `aspen_site_checks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `siteId` int(11) NOT NULL,
@@ -289,8 +289,8 @@ CREATE TABLE `aspen_site_checks` (
   `lastErrorTime` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `siteId` (`siteId`,`checkName`)
-) ENGINE=InnoDB AUTO_INCREMENT=2469 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_site_cpu_usage
+) ENGINE=InnoDB AUTO_INCREMENT=2469 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_site_cpu_usage;
 CREATE TABLE `aspen_site_cpu_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `aspenSiteId` int(11) NOT NULL,
@@ -298,8 +298,8 @@ CREATE TABLE `aspen_site_cpu_usage` (
   `timestamp` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `aspenSiteId` (`aspenSiteId`,`timestamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=10921278 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_site_memory_usage
+) ENGINE=InnoDB AUTO_INCREMENT=10921278 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_site_memory_usage;
 CREATE TABLE `aspen_site_memory_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `aspenSiteId` int(11) NOT NULL,
@@ -309,8 +309,8 @@ CREATE TABLE `aspen_site_memory_usage` (
   `timestamp` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `aspenSiteId` (`aspenSiteId`,`timestamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=10921208 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_site_stats
+) ENGINE=InnoDB AUTO_INCREMENT=10921208 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_site_stats;
 CREATE TABLE `aspen_site_stats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `aspenSiteId` int(11) NOT NULL,
@@ -326,8 +326,8 @@ CREATE TABLE `aspen_site_stats` (
   `maxWaitTime` float DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `siteId` (`aspenSiteId`,`year`,`month`,`day`)
-) ENGINE=InnoDB AUTO_INCREMENT=14462 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_site_wait_time
+) ENGINE=InnoDB AUTO_INCREMENT=14462 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_site_wait_time;
 CREATE TABLE `aspen_site_wait_time` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `aspenSiteId` int(11) NOT NULL,
@@ -335,8 +335,8 @@ CREATE TABLE `aspen_site_wait_time` (
   `timestamp` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `aspenSiteId` (`aspenSiteId`,`timestamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=10338560 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_sites
+) ENGINE=InnoDB AUTO_INCREMENT=10338560 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_sites;
 CREATE TABLE `aspen_sites` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -370,8 +370,8 @@ CREATE TABLE `aspen_sites` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `baseUrl` (`baseUrl`)
-) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS aspen_usage
+) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS aspen_usage;
 CREATE TABLE `aspen_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -400,8 +400,8 @@ CREATE TABLE `aspen_usage` (
   `ebscohostSearches` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS author_authorities
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS author_authorities;
 CREATE TABLE `author_authorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `originalName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -409,8 +409,8 @@ CREATE TABLE `author_authorities` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `originalName` (`originalName`),
   KEY `authoritativeName` (`authoritativeName`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS author_authority
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS author_authority;
 CREATE TABLE `author_authority` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `author` varchar(512) COLLATE utf8mb4_general_ci NOT NULL,
@@ -418,8 +418,8 @@ CREATE TABLE `author_authority` (
   `normalized` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `author` (`author`)
-) ENGINE=InnoDB AUTO_INCREMENT=20238 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS author_authority_alternative
+) ENGINE=InnoDB AUTO_INCREMENT=20238 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS author_authority_alternative;
 CREATE TABLE `author_authority_alternative` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `authorId` int(11) DEFAULT NULL,
@@ -429,8 +429,8 @@ CREATE TABLE `author_authority_alternative` (
   UNIQUE KEY `alternativeAuthor` (`alternativeAuthor`),
   KEY `authorId` (`authorId`),
   KEY `normalized` (`normalized`)
-) ENGINE=InnoDB AUTO_INCREMENT=39979 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS author_enrichment
+) ENGINE=InnoDB AUTO_INCREMENT=39979 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS author_enrichment;
 CREATE TABLE `author_enrichment` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `authorName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -438,8 +438,8 @@ CREATE TABLE `author_enrichment` (
   `wikipediaUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `authorName` (`authorName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_export_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_export_log;
 CREATE TABLE `axis360_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -457,8 +457,8 @@ CREATE TABLE `axis360_export_log` (
   `numSkipped` int(11) DEFAULT NULL,
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=670 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=670 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_record_usage;
 CREATE TABLE `axis360_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -471,15 +471,15 @@ CREATE TABLE `axis360_record_usage` (
   KEY `instance` (`instance`,`axis360Id`,`year`,`month`),
   KEY `instance_2` (`instance`,`year`,`month`),
   KEY `instance_3` (`instance`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_scopes
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_scopes;
 CREATE TABLE `axis360_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `settingId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_settings
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_settings;
 CREATE TABLE `axis360_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -491,8 +491,8 @@ CREATE TABLE `axis360_settings` (
   `lastUpdateOfChangedRecords` int(11) DEFAULT '0',
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_stats
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_stats;
 CREATE TABLE `axis360_stats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -509,8 +509,8 @@ CREATE TABLE `axis360_stats` (
   `numConnectionFailures` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_title
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_title;
 CREATE TABLE `axis360_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `axis360Id` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -527,8 +527,8 @@ CREATE TABLE `axis360_title` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `axis360Id` (`axis360Id`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB AUTO_INCREMENT=241 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS axis360_title_availability
+) ENGINE=InnoDB AUTO_INCREMENT=241 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS axis360_title_availability;
 CREATE TABLE `axis360_title_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `titleId` int(11) DEFAULT NULL,
@@ -544,14 +544,14 @@ CREATE TABLE `axis360_title_availability` (
   UNIQUE KEY `titleId` (`titleId`,`settingId`),
   KEY `libraryPrefix` (`libraryPrefix`),
   KEY `titleId2` (`titleId`)
-) ENGINE=InnoDB AUTO_INCREMENT=879 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS bad_words
+) ENGINE=InnoDB AUTO_INCREMENT=879 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS bad_words;
 CREATE TABLE `bad_words` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique Id for bad_word',
   `word` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The bad word that will be replaced',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Stores information about bad_words that should be removed fr'
-DROP TABLE IF EXISTS bookcover_info
+) ENGINE=InnoDB AUTO_INCREMENT=1651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Stores information about bad_words that should be removed fr';
+DROP TABLE IF EXISTS bookcover_info;
 CREATE TABLE `bookcover_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `recordType` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -569,8 +569,8 @@ CREATE TABLE `bookcover_info` (
   UNIQUE KEY `record_info` (`recordType`,`recordId`),
   KEY `lastUsed` (`lastUsed`),
   KEY `imageSource` (`imageSource`)
-) ENGINE=InnoDB AUTO_INCREMENT=14539 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS browse_category
+) ENGINE=InnoDB AUTO_INCREMENT=14539 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS browse_category;
 CREATE TABLE `browse_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `textId` varchar(60) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '-1',
@@ -592,16 +592,16 @@ CREATE TABLE `browse_category` (
   `sourceCourseReserveId` mediumint(9) DEFAULT '-1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `textId` (`textId`)
-) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS browse_category_dismissal
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS browse_category_dismissal;
 CREATE TABLE `browse_category_dismissal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `browseCategoryId` varchar(60) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `userId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userBrowseCategory` (`userId`,`browseCategoryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS browse_category_group
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS browse_category_group;
 CREATE TABLE `browse_category_group` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -609,8 +609,8 @@ CREATE TABLE `browse_category_group` (
   `browseCategoryRatingsMode` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS browse_category_group_entry
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS browse_category_group_entry;
 CREATE TABLE `browse_category_group_entry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `browseCategoryGroupId` int(11) NOT NULL,
@@ -618,8 +618,8 @@ CREATE TABLE `browse_category_group_entry` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `browseCategoryGroupId` (`browseCategoryGroupId`,`browseCategoryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS browse_category_subcategories
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS browse_category_subcategories;
 CREATE TABLE `browse_category_subcategories` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `browseCategoryId` int(11) NOT NULL,
@@ -627,15 +627,15 @@ CREATE TABLE `browse_category_subcategories` (
   `weight` smallint(2) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `subCategoryId` (`subCategoryId`,`browseCategoryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cached_values
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cached_values;
 CREATE TABLE `cached_values` (
   `cacheKey` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `value` varchar(16000) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `expirationTime` int(11) DEFAULT NULL,
   UNIQUE KEY `cacheKey` (`cacheKey`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS claim_authorship_requests
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS claim_authorship_requests;
 CREATE TABLE `claim_authorship_requests` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -647,8 +647,8 @@ CREATE TABLE `claim_authorship_requests` (
   PRIMARY KEY (`id`),
   KEY `pid` (`pid`),
   KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cloud_library_availability
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cloud_library_availability;
 CREATE TABLE `cloud_library_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cloudLibraryId` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -664,8 +664,8 @@ CREATE TABLE `cloud_library_availability` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `cloudLibraryId` (`cloudLibraryId`,`settingId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB AUTO_INCREMENT=156930 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cloud_library_export_log
+) ENGINE=InnoDB AUTO_INCREMENT=156930 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cloud_library_export_log;
 CREATE TABLE `cloud_library_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -682,8 +682,8 @@ CREATE TABLE `cloud_library_export_log` (
   `settingId` int(11) DEFAULT NULL,
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=587 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cloud_library_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=587 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cloud_library_record_usage;
 CREATE TABLE `cloud_library_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cloudLibraryId` int(11) DEFAULT NULL,
@@ -696,8 +696,8 @@ CREATE TABLE `cloud_library_record_usage` (
   UNIQUE KEY `instance` (`instance`,`cloudLibraryId`,`year`,`month`),
   UNIQUE KEY `instance_2` (`instance`,`cloudLibraryId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cloud_library_scopes
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cloud_library_scopes;
 CREATE TABLE `cloud_library_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -706,8 +706,8 @@ CREATE TABLE `cloud_library_scopes` (
   `restrictToChildrensMaterial` tinyint(4) DEFAULT '0',
   `settingId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cloud_library_settings
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cloud_library_settings;
 CREATE TABLE `cloud_library_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -719,8 +719,8 @@ CREATE TABLE `cloud_library_settings` (
   `lastUpdateOfChangedRecords` int(11) DEFAULT '0',
   `lastUpdateOfAllRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cloud_library_title
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cloud_library_title;
 CREATE TABLE `cloud_library_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `cloudLibraryId` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -736,14 +736,14 @@ CREATE TABLE `cloud_library_title` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `cloudLibraryId` (`cloudLibraryId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB AUTO_INCREMENT=189313 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS coce_settings
+) ENGINE=InnoDB AUTO_INCREMENT=189313 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS coce_settings;
 CREATE TABLE `coce_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `coceServerUrl` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS collection_spotlight_lists
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS collection_spotlight_lists;
 CREATE TABLE `collection_spotlight_lists` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `collectionSpotlightId` int(11) NOT NULL,
@@ -759,8 +759,8 @@ CREATE TABLE `collection_spotlight_lists` (
   `sourceCourseReserveId` mediumint(9) DEFAULT '-1',
   PRIMARY KEY (`id`),
   KEY `ListWidgetId` (`collectionSpotlightId`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='The lists that should appear within the widget'
-DROP TABLE IF EXISTS collection_spotlights
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='The lists that should appear within the widget';
+DROP TABLE IF EXISTS collection_spotlights;
 CREATE TABLE `collection_spotlights` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -782,8 +782,8 @@ CREATE TABLE `collection_spotlights` (
   `showSpotlightTitle` tinyint(4) NOT NULL DEFAULT '1',
   `numTitlesToShow` int(11) NOT NULL DEFAULT '25',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='A widget that can be displayed within Pika or within other sites'
-DROP TABLE IF EXISTS communico_events
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='A widget that can be displayed within Pika or within other sites';
+DROP TABLE IF EXISTS communico_events;
 CREATE TABLE `communico_events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingsId` int(11) NOT NULL,
@@ -794,8 +794,8 @@ CREATE TABLE `communico_events` (
   `deleted` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `settingsId` (`settingsId`,`externalId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS communico_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS communico_settings;
 CREATE TABLE `communico_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -804,16 +804,16 @@ CREATE TABLE `communico_settings` (
   `clientSecret` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS component_development_epic_link
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS component_development_epic_link;
 CREATE TABLE `component_development_epic_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `componentId` int(11) DEFAULT NULL,
   `epicId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `componentId` (`componentId`,`epicId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS component_development_task_link
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS component_development_task_link;
 CREATE TABLE `component_development_task_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `componentId` int(11) DEFAULT NULL,
@@ -822,16 +822,16 @@ CREATE TABLE `component_development_task_link` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `componentId` (`componentId`,`taskId`),
   KEY `componentId_2` (`componentId`,`weight`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS component_ticket_link
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS component_ticket_link;
 CREATE TABLE `component_ticket_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ticketId` int(11) DEFAULT NULL,
   `componentId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ticketId` (`ticketId`,`componentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1219 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS comprise_settings
+) ENGINE=InnoDB AUTO_INCREMENT=1219 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS comprise_settings;
 CREATE TABLE `comprise_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `customerName` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -841,8 +841,8 @@ CREATE TABLE `comprise_settings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `customerName` (`customerName`),
   UNIQUE KEY `customerId` (`customerId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS contentcafe_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS contentcafe_settings;
 CREATE TABLE `contentcafe_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `contentCafeId` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -853,8 +853,8 @@ CREATE TABLE `contentcafe_settings` (
   `hasAuthorNotes` tinyint(1) DEFAULT '0',
   `enabled` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS course_reserve
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS course_reserve;
 CREATE TABLE `course_reserve` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `created` int(11) DEFAULT NULL,
@@ -866,8 +866,8 @@ CREATE TABLE `course_reserve` (
   `courseTitle` varchar(200) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `course` (`courseLibrary`,`courseNumber`,`courseInstructor`,`courseTitle`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS course_reserve_entry
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS course_reserve_entry;
 CREATE TABLE `course_reserve_entry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'GroupedWork',
@@ -878,8 +878,8 @@ CREATE TABLE `course_reserve_entry` (
   PRIMARY KEY (`id`),
   KEY `courseReserveId` (`courseReserveId`),
   KEY `source` (`source`,`sourceId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS course_reserves_indexing_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS course_reserves_indexing_log;
 CREATE TABLE `course_reserves_indexing_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `startTime` int(11) NOT NULL,
@@ -893,24 +893,24 @@ CREATE TABLE `course_reserves_indexing_log` (
   `numSkipped` int(11) DEFAULT '0',
   `numErrors` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS course_reserves_indexing_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS course_reserves_indexing_settings;
 CREATE TABLE `course_reserves_indexing_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `runFullUpdate` tinyint(1) DEFAULT '1',
   `lastUpdateOfChangedCourseReserves` int(11) DEFAULT '0',
   `lastUpdateOfAllCourseReserves` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS course_reserves_library_map
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS course_reserves_library_map;
 CREATE TABLE `course_reserves_library_map` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingId` int(11) DEFAULT NULL,
   `value` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `translation` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cron_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cron_log;
 CREATE TABLE `cron_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of the cron log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the cron run started',
@@ -919,8 +919,8 @@ CREATE TABLE `cron_log` (
   `notes` mediumtext COLLATE utf8mb4_general_ci COMMENT 'Additional information about the cron run',
   `numErrors` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS cron_process_log
+) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS cron_process_log;
 CREATE TABLE `cron_process_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of cron process',
   `cronId` int(11) NOT NULL COMMENT 'The id of the cron run this process ran during',
@@ -935,8 +935,8 @@ CREATE TABLE `cron_process_log` (
   PRIMARY KEY (`id`),
   KEY `cronId` (`cronId`),
   KEY `processName` (`processName`)
-) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS curbside_pickup_settings
+) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS curbside_pickup_settings;
 CREATE TABLE `curbside_pickup_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -953,7 +953,7 @@ CREATE TABLE `curbside_pickup_settings` (
   `curbsidePickupInstructions` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -990,7 +990,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-DROP TABLE IF EXISTS deluxe_certified_payments_settings
+DROP TABLE IF EXISTS deluxe_certified_payments_settings;
 CREATE TABLE `deluxe_certified_payments_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -999,8 +999,8 @@ CREATE TABLE `deluxe_certified_payments_settings` (
   `securityId` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_epic
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_epic;
 CREATE TABLE `development_epic` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1013,24 +1013,24 @@ CREATE TABLE `development_epic` (
   `privateStatus` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_epic_partner_link
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_epic_partner_link;
 CREATE TABLE `development_epic_partner_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `partnerId` int(11) DEFAULT NULL,
   `epicId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `partnerId` (`partnerId`,`epicId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_priorities
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_priorities;
 CREATE TABLE `development_priorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `priority1` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `priority2` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `priority3` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_sprint
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_sprint;
 CREATE TABLE `development_sprint` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1039,8 +1039,8 @@ CREATE TABLE `development_sprint` (
   `active` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task;
 CREATE TABLE `development_task` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `taskType` int(11) DEFAULT '0',
@@ -1058,16 +1058,16 @@ CREATE TABLE `development_task` (
   `suggestedForCommunityDev` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task_developer_link
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task_developer_link;
 CREATE TABLE `development_task_developer_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
   `taskId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`,`taskId`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task_epic_link
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task_epic_link;
 CREATE TABLE `development_task_epic_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `epicId` int(11) DEFAULT NULL,
@@ -1076,24 +1076,24 @@ CREATE TABLE `development_task_epic_link` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `epicId` (`epicId`,`taskId`),
   KEY `epicId_2` (`epicId`,`weight`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task_partner_link
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task_partner_link;
 CREATE TABLE `development_task_partner_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `partnerId` int(11) DEFAULT NULL,
   `taskId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `partnerId` (`partnerId`,`taskId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task_qa_link
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task_qa_link;
 CREATE TABLE `development_task_qa_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
   `taskId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`,`taskId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task_sprint_link
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task_sprint_link;
 CREATE TABLE `development_task_sprint_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sprintId` int(11) DEFAULT NULL,
@@ -1102,16 +1102,16 @@ CREATE TABLE `development_task_sprint_link` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `sprintId` (`sprintId`,`taskId`),
   KEY `sprintId_2` (`sprintId`,`weight`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS development_task_ticket_link
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS development_task_ticket_link;
 CREATE TABLE `development_task_ticket_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ticketId` int(11) DEFAULT NULL,
   `taskId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ticketId` (`ticketId`,`taskId`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS donations
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS donations;
 CREATE TABLE `donations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `paymentId` int(11) DEFAULT NULL,
@@ -1136,23 +1136,23 @@ CREATE TABLE `donations` (
   `notificationState` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `notificationZip` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS donations_dedicate_type
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS donations_dedicate_type;
 CREATE TABLE `donations_dedicate_type` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `label` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `donationSettingId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS donations_earmark
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS donations_earmark;
 CREATE TABLE `donations_earmark` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `label` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `weight` smallint(2) DEFAULT NULL,
   `donationSettingId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS donations_form_fields
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS donations_form_fields;
 CREATE TABLE `donations_form_fields` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `textId` varchar(60) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '-1',
@@ -1164,8 +1164,8 @@ CREATE TABLE `donations_form_fields` (
   `donationSettingId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `textId` (`textId`,`donationSettingId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS donations_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS donations_settings;
 CREATE TABLE `donations_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1176,8 +1176,8 @@ CREATE TABLE `donations_settings` (
   `donationEmailTemplate` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS donations_value
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS donations_value;
 CREATE TABLE `donations_value` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `value` int(11) DEFAULT NULL,
@@ -1185,14 +1185,14 @@ CREATE TABLE `donations_value` (
   `donationSettingId` int(11) DEFAULT NULL,
   `weight` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS dpla_api_settings
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS dpla_api_settings;
 CREATE TABLE `dpla_api_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiKey` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebsco_eds_settings
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebsco_eds_settings;
 CREATE TABLE `ebsco_eds_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1201,8 +1201,8 @@ CREATE TABLE `ebsco_eds_settings` (
   `edsApiUsername` varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
   `edsApiPassword` varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebsco_eds_usage
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebsco_eds_usage;
 CREATE TABLE `ebsco_eds_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ebscoId` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1214,24 +1214,24 @@ CREATE TABLE `ebsco_eds_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`ebscoId`,`year`,`month`),
   UNIQUE KEY `instance_2` (`instance`,`ebscoId`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=1552 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebsco_research_starter
+) ENGINE=InnoDB AUTO_INCREMENT=1552 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebsco_research_starter;
 CREATE TABLE `ebsco_research_starter` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ebscoId` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   `title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ebscoId` (`ebscoId`)
-) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebsco_research_starter_dismissals
+) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebsco_research_starter_dismissals;
 CREATE TABLE `ebsco_research_starter_dismissals` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `researchStarterId` int(11) NOT NULL,
   `userId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userId` (`userId`,`researchStarterId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebscohost_database
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebscohost_database;
 CREATE TABLE `ebscohost_database` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `searchSettingId` int(11) NOT NULL,
@@ -1244,23 +1244,23 @@ CREATE TABLE `ebscohost_database` (
   `logo` varchar(512) COLLATE utf8mb4_general_ci DEFAULT '',
   `hasDateAndRelevancySorting` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebscohost_facet
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebscohost_facet;
 CREATE TABLE `ebscohost_facet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `shortName` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `displayName` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `shortName` (`shortName`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebscohost_search_options
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebscohost_search_options;
 CREATE TABLE `ebscohost_search_options` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `settingId` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebscohost_settings
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebscohost_settings;
 CREATE TABLE `ebscohost_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1268,8 +1268,8 @@ CREATE TABLE `ebscohost_settings` (
   `profilePwd` varchar(50) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ebscohost_usage
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ebscohost_usage;
 CREATE TABLE `ebscohost_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1280,8 +1280,8 @@ CREATE TABLE `ebscohost_usage` (
   `timesUsed` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `ebscohostId` (`ebscohostId`,`year`,`instance`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=263 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS errors
+) ENGINE=InnoDB AUTO_INCREMENT=263 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS errors;
 CREATE TABLE `errors` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `module` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1292,8 +1292,8 @@ CREATE TABLE `errors` (
   `timestamp` int(11) DEFAULT NULL,
   `userAgent` mediumtext COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1165 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS events_indexing_log
+) ENGINE=InnoDB AUTO_INCREMENT=1165 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS events_indexing_log;
 CREATE TABLE `events_indexing_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log entry',
   `name` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1307,8 +1307,8 @@ CREATE TABLE `events_indexing_log` (
   `numDeleted` int(11) DEFAULT '0',
   `numUpdated` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS events_spotlights
+) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS events_spotlights;
 CREATE TABLE `events_spotlights` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1321,8 +1321,8 @@ CREATE TABLE `events_spotlights` (
   `defaultFilter` mediumtext COLLATE utf8mb4_general_ci,
   `defaultSort` enum('relevance','start_date_sort','title_sort') COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS events_usage
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS events_usage;
 CREATE TABLE `events_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1334,8 +1334,8 @@ CREATE TABLE `events_usage` (
   `timesUsed` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `type` (`type`,`source`,`identifier`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS external_request_log
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS external_request_log;
 CREATE TABLE `external_request_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `requestUrl` varchar(400) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1351,8 +1351,8 @@ CREATE TABLE `external_request_log` (
   KEY `requestTime` (`requestTime`),
   KEY `responseCode` (`responseCode`),
   KEY `requestType` (`requestType`)
-) ENGINE=InnoDB AUTO_INCREMENT=10922 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS file_uploads
+) ENGINE=InnoDB AUTO_INCREMENT=10922 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS file_uploads;
 CREATE TABLE `file_uploads` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1361,8 +1361,8 @@ CREATE TABLE `file_uploads` (
   `thumbFullPath` varchar(512) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS format_map_values
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS format_map_values;
 CREATE TABLE `format_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -1376,8 +1376,8 @@ CREATE TABLE `format_map_values` (
   `pickupAt` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `indexingProfileId` (`indexingProfileId`,`value`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS google_api_settings
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS google_api_settings;
 CREATE TABLE `google_api_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `googleBooksKey` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1388,8 +1388,8 @@ CREATE TABLE `google_api_settings` (
   `googleMapsKey` varchar(60) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `googleAnalyticsVersion` varchar(5) COLLATE utf8mb4_general_ci DEFAULT 'v3',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS greenhouse_cache
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS greenhouse_cache;
 CREATE TABLE `greenhouse_cache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1413,8 +1413,8 @@ CREATE TABLE `greenhouse_cache` (
   `tertiaryForegroundColor` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `version` varchar(25) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2929 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS greenhouse_settings
+) ENGINE=InnoDB AUTO_INCREMENT=2929 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS greenhouse_settings;
 CREATE TABLE `greenhouse_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `greenhouseAlertSlackHook` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1430,8 +1430,8 @@ CREATE TABLE `greenhouse_settings` (
   `sendBuildTrackerAlert` tinyint(1) DEFAULT '0',
   `expoEASSubmitWebhookKey` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work;
 CREATE TABLE `grouped_work` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `permanent_id` char(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1444,8 +1444,8 @@ CREATE TABLE `grouped_work` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `permanent_id` (`permanent_id`),
   KEY `date_updated` (`date_updated`)
-) ENGINE=InnoDB AUTO_INCREMENT=1366120 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_alternate_titles
+) ENGINE=InnoDB AUTO_INCREMENT=1366120 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_alternate_titles;
 CREATE TABLE `grouped_work_alternate_titles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `permanent_id` char(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1456,8 +1456,8 @@ CREATE TABLE `grouped_work_alternate_titles` (
   PRIMARY KEY (`id`),
   KEY `permanent_id` (`permanent_id`),
   KEY `alternateTitle` (`alternateTitle`,`alternateAuthor`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_display_info
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_display_info;
 CREATE TABLE `grouped_work_display_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `permanent_id` char(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1471,8 +1471,8 @@ CREATE TABLE `grouped_work_display_info` (
   UNIQUE KEY `permanent_id` (`permanent_id`),
   UNIQUE KEY `permanent_id_3` (`permanent_id`),
   KEY `permanent_id_2` (`permanent_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_display_settings
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_display_settings;
 CREATE TABLE `grouped_work_display_settings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1518,8 +1518,8 @@ CREATE TABLE `grouped_work_display_settings` (
   `showSearchToolsAtTop` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_facet
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_facet;
 CREATE TABLE `grouped_work_facet` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `facetGroupId` int(11) NOT NULL,
@@ -1540,15 +1540,15 @@ CREATE TABLE `grouped_work_facet` (
   `displayNamePlural` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_facet_groups
+) ENGINE=InnoDB AUTO_INCREMENT=83 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_facet_groups;
 CREATE TABLE `grouped_work_facet_groups` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_more_details
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_more_details;
 CREATE TABLE `grouped_work_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `weight` int(11) NOT NULL DEFAULT '0',
@@ -1556,8 +1556,8 @@ CREATE TABLE `grouped_work_more_details` (
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   `groupedWorkSettingsId` int(11) NOT NULL DEFAULT '-1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_primary_identifiers
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_primary_identifiers;
 CREATE TABLE `grouped_work_primary_identifiers` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `grouped_work_id` bigint(20) NOT NULL,
@@ -1566,15 +1566,15 @@ CREATE TABLE `grouped_work_primary_identifiers` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `type` (`type`,`identifier`),
   KEY `grouped_record_id` (`grouped_work_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1696037 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_record_item_url
+) ENGINE=InnoDB AUTO_INCREMENT=1696037 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_record_item_url;
 CREATE TABLE `grouped_work_record_item_url` (
   `groupedWorkItemId` int(11) DEFAULT NULL,
   `scopeId` int(11) DEFAULT NULL,
   `url` varchar(1000) COLLATE utf8mb4_general_ci DEFAULT NULL,
   UNIQUE KEY `groupedWorkItemId` (`groupedWorkItemId`,`scopeId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_record_items
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_record_items;
 CREATE TABLE `grouped_work_record_items` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedWorkRecordId` int(11) NOT NULL,
@@ -1602,8 +1602,8 @@ CREATE TABLE `grouped_work_record_items` (
   UNIQUE KEY `itemId` (`itemId`,`groupedWorkRecordId`),
   KEY `groupedWorkRecordId` (`groupedWorkRecordId`),
   KEY `groupedWorkVariationId` (`groupedWorkVariationId`)
-) ENGINE=InnoDB AUTO_INCREMENT=5897662 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_records
+) ENGINE=InnoDB AUTO_INCREMENT=5897662 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_records;
 CREATE TABLE `grouped_work_records` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedWorkId` int(11) NOT NULL,
@@ -1622,8 +1622,8 @@ CREATE TABLE `grouped_work_records` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `sourceId` (`sourceId`,`recordIdentifier`),
   KEY `groupedWorkId` (`groupedWorkId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3972863 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_scheduled_index
+) ENGINE=InnoDB AUTO_INCREMENT=3972863 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_scheduled_index;
 CREATE TABLE `grouped_work_scheduled_index` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `permanent_id` char(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1633,8 +1633,8 @@ CREATE TABLE `grouped_work_scheduled_index` (
   KEY `allfields` (`processed`,`indexAfter`,`permanent_id`),
   KEY `permanent_id` (`permanent_id`),
   KEY `permanent_id_with_date` (`permanent_id`,`indexAfter`)
-) ENGINE=InnoDB AUTO_INCREMENT=1490219 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_test_search
+) ENGINE=InnoDB AUTO_INCREMENT=1490219 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_test_search;
 CREATE TABLE `grouped_work_test_search` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `searchTerm` text CHARACTER SET utf8 COLLATE utf8_bin,
@@ -1645,8 +1645,8 @@ CREATE TABLE `grouped_work_test_search` (
   `searchIndex` varchar(40) COLLATE utf8mb4_general_ci DEFAULT 'Keyword',
   `description` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS grouped_work_variation
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS grouped_work_variation;
 CREATE TABLE `grouped_work_variation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedWorkId` int(11) NOT NULL,
@@ -1656,8 +1656,8 @@ CREATE TABLE `grouped_work_variation` (
   `formatCategoryId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `groupedWorkId` (`groupedWorkId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1402596 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hide_subject_facets
+) ENGINE=InnoDB AUTO_INCREMENT=1402596 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hide_subject_facets;
 CREATE TABLE `hide_subject_facets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `subjectTerm` varchar(512) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1666,16 +1666,16 @@ CREATE TABLE `hide_subject_facets` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `subjectTerm` (`subjectTerm`),
   UNIQUE KEY `subjectNormalized` (`subjectNormalized`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hold_request_confirmation
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hold_request_confirmation;
 CREATE TABLE `hold_request_confirmation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `requestId` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
   `additionalParams` mediumtext COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS holiday
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS holiday;
 CREATE TABLE `holiday` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of holiday',
   `libraryId` int(11) NOT NULL COMMENT 'The library system id',
@@ -1685,8 +1685,8 @@ CREATE TABLE `holiday` (
   UNIQUE KEY `LibraryDate` (`date`,`libraryId`),
   KEY `Library` (`libraryId`),
   KEY `Date` (`date`)
-) ENGINE=InnoDB AUTO_INCREMENT=1159 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hoopla_export
+) ENGINE=InnoDB AUTO_INCREMENT=1159 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hoopla_export;
 CREATE TABLE `hoopla_export` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hooplaId` int(11) NOT NULL,
@@ -1705,8 +1705,8 @@ CREATE TABLE `hoopla_export` (
   `dateFirstDetected` bigint(20) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `hooplaId` (`hooplaId`)
-) ENGINE=InnoDB AUTO_INCREMENT=878925 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hoopla_export_log
+) ENGINE=InnoDB AUTO_INCREMENT=878925 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hoopla_export_log;
 CREATE TABLE `hoopla_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -1723,8 +1723,8 @@ CREATE TABLE `hoopla_export_log` (
   `numRegrouped` int(11) DEFAULT '0',
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hoopla_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hoopla_record_usage;
 CREATE TABLE `hoopla_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `hooplaId` int(11) DEFAULT NULL,
@@ -1736,8 +1736,8 @@ CREATE TABLE `hoopla_record_usage` (
   UNIQUE KEY `instance` (`instance`,`hooplaId`,`year`,`month`),
   UNIQUE KEY `instance_2` (`instance`,`hooplaId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hoopla_scopes
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hoopla_scopes;
 CREATE TABLE `hoopla_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1764,8 +1764,8 @@ CREATE TABLE `hoopla_scopes` (
   `maxCostPerCheckoutBingePass` float DEFAULT '5',
   `genresToExclude` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS hoopla_settings
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS hoopla_settings;
 CREATE TABLE `hoopla_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1778,8 +1778,8 @@ CREATE TABLE `hoopla_settings` (
   `regroupAllRecords` tinyint(1) DEFAULT '0',
   `indexByDay` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS host_information
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS host_information;
 CREATE TABLE `host_information` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `host` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -1787,8 +1787,8 @@ CREATE TABLE `host_information` (
   `locationId` int(11) DEFAULT '-1',
   `defaultPath` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ils_extract_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ils_extract_log;
 CREATE TABLE `ils_extract_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `indexingProfile` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1809,16 +1809,16 @@ CREATE TABLE `ils_extract_log` (
   `numRecordsWithInvalidMarc` int(11) NOT NULL DEFAULT '0',
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=577 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ils_hold_summary
+) ENGINE=InnoDB AUTO_INCREMENT=577 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ils_hold_summary;
 CREATE TABLE `ils_hold_summary` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ilsId` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `numHolds` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ilsId` (`ilsId`)
-) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ils_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=108 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ils_record_usage;
 CREATE TABLE `ils_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -1833,8 +1833,8 @@ CREATE TABLE `ils_record_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`indexingProfileId`,`recordId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ils_records
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ils_records;
 CREATE TABLE `ils_records` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ilsId` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1850,8 +1850,8 @@ CREATE TABLE `ils_records` (
   `suppressionNotes` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`ilsId`)
-) ENGINE=InnoDB AUTO_INCREMENT=191329 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ils_volume_info
+) ENGINE=InnoDB AUTO_INCREMENT=191329 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ils_volume_info;
 CREATE TABLE `ils_volume_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `recordId` varchar(50) CHARACTER SET utf8 NOT NULL COMMENT 'Full Record ID including the source',
@@ -1862,8 +1862,8 @@ CREATE TABLE `ils_volume_info` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `recordVolume` (`recordId`,`volumeId`),
   KEY `recordId` (`recordId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS image_uploads
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS image_uploads;
 CREATE TABLE `image_uploads` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -1879,122 +1879,122 @@ CREATE TABLE `image_uploads` (
   `xLargeSizePath` varchar(512) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `type` (`type`,`title`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_callnumber
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_callnumber;
 CREATE TABLE `indexed_callnumber` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `callNumber` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `callNumber` (`callNumber`)
-) ENGINE=InnoDB AUTO_INCREMENT=39657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_econtentsource
+) ENGINE=InnoDB AUTO_INCREMENT=39657 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_econtentsource;
 CREATE TABLE `indexed_econtentsource` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `eContentSource` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `eContentSource` (`eContentSource`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_edition
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_edition;
 CREATE TABLE `indexed_edition` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `edition` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `edition` (`edition`(500))
-) ENGINE=InnoDB AUTO_INCREMENT=8639 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_format
+) ENGINE=InnoDB AUTO_INCREMENT=8639 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_format;
 CREATE TABLE `indexed_format` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `format` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `format` (`format`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_format_category
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_format_category;
 CREATE TABLE `indexed_format_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `formatCategory` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `formatCategory` (`formatCategory`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_groupedstatus
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_groupedstatus;
 CREATE TABLE `indexed_groupedstatus` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedStatus` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupedStatus` (`groupedStatus`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_itemtype
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_itemtype;
 CREATE TABLE `indexed_itemtype` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `itemType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `itemType` (`itemType`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_language
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_language;
 CREATE TABLE `indexed_language` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `language` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `language` (`language`)
-) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_locationcode
+) ENGINE=InnoDB AUTO_INCREMENT=106 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_locationcode;
 CREATE TABLE `indexed_locationcode` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationCode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationCode` (`locationCode`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_physicaldescription
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_physicaldescription;
 CREATE TABLE `indexed_physicaldescription` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `physicalDescription` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `physicalDescription` (`physicalDescription`(500))
-) ENGINE=InnoDB AUTO_INCREMENT=35709 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_publicationdate
+) ENGINE=InnoDB AUTO_INCREMENT=35709 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_publicationdate;
 CREATE TABLE `indexed_publicationdate` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `publicationDate` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `publicationDate` (`publicationDate`)
-) ENGINE=InnoDB AUTO_INCREMENT=2414 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_publisher
+) ENGINE=InnoDB AUTO_INCREMENT=2414 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_publisher;
 CREATE TABLE `indexed_publisher` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `publisher` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `publisher` (`publisher`),
   UNIQUE KEY `publisher_2` (`publisher`)
-) ENGINE=InnoDB AUTO_INCREMENT=11102 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_record_source
+) ENGINE=InnoDB AUTO_INCREMENT=11102 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_record_source;
 CREATE TABLE `indexed_record_source` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   `subSource` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`subSource`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_shelflocation
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_shelflocation;
 CREATE TABLE `indexed_shelflocation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `shelfLocation` varchar(600) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `shelfLocation` (`shelfLocation`)
-) ENGINE=InnoDB AUTO_INCREMENT=250 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_status
+) ENGINE=InnoDB AUTO_INCREMENT=250 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_status;
 CREATE TABLE `indexed_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `status` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `status` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexed_sublocationcode
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexed_sublocationcode;
 CREATE TABLE `indexed_sublocationcode` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `subLocationCode` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `subLocationCode` (`subLocationCode`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS indexing_profiles
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS indexing_profiles;
 CREATE TABLE `indexing_profiles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -2097,8 +2097,8 @@ CREATE TABLE `indexing_profiles` (
   `includePersonalAndCorporateNamesInTopics` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS invoice_cloud_settings
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS invoice_cloud_settings;
 CREATE TABLE `invoice_cloud_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -2107,8 +2107,8 @@ CREATE TABLE `invoice_cloud_settings` (
   `ccServiceFee` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ip_lookup
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ip_lookup;
 CREATE TABLE `ip_lookup` (
   `id` int(25) NOT NULL AUTO_INCREMENT,
   `locationid` int(5) NOT NULL,
@@ -2129,32 +2129,32 @@ CREATE TABLE `ip_lookup` (
   KEY `endIpVal` (`endIpVal`),
   KEY `startIpVal_2` (`startIpVal`),
   KEY `endIpVal_2` (`endIpVal`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS javascript_snippet_library
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS javascript_snippet_library;
 CREATE TABLE `javascript_snippet_library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `javascriptSnippetId` int(11) DEFAULT NULL,
   `libraryId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `javascriptSnippetLibrary` (`javascriptSnippetId`,`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS javascript_snippet_location
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS javascript_snippet_location;
 CREATE TABLE `javascript_snippet_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `javascriptSnippetId` int(11) DEFAULT NULL,
   `locationId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `javascriptSnippetLocation` (`javascriptSnippetId`,`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS javascript_snippets
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS javascript_snippets;
 CREATE TABLE `javascript_snippets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `snippet` mediumtext COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS languages
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS languages;
 CREATE TABLE `languages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `weight` int(11) NOT NULL DEFAULT '0',
@@ -2166,8 +2166,8 @@ CREATE TABLE `languages` (
   `locale` varchar(10) COLLATE utf8mb4_general_ci DEFAULT 'en-US',
   PRIMARY KEY (`id`),
   UNIQUE KEY `code` (`code`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS layout_settings
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS layout_settings;
 CREATE TABLE `layout_settings` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -2182,8 +2182,8 @@ CREATE TABLE `layout_settings` (
   `contrastRatio` varchar(5) COLLATE utf8mb4_general_ci DEFAULT '4.50',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library;
 CREATE TABLE `library` (
   `libraryId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id to identify the library within the system',
   `subdomain` varchar(25) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The subdomain which can be used to access settings for the library',
@@ -2451,16 +2451,16 @@ CREATE TABLE `library` (
   `deluxeCertifiedPaymentsSettingId` int(11) DEFAULT '-1',
   PRIMARY KEY (`libraryId`),
   UNIQUE KEY `subdomain` (`subdomain`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_cloud_library_scope
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_cloud_library_scope;
 CREATE TABLE `library_cloud_library_scope` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `scopeId` int(11) NOT NULL,
   `libraryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`scopeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_combined_results_section
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_combined_results_section;
 CREATE TABLE `library_combined_results_section` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2470,8 +2470,8 @@ CREATE TABLE `library_combined_results_section` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `LibraryIdIndex` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_events_setting
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_events_setting;
 CREATE TABLE `library_events_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingSource` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -2479,16 +2479,16 @@ CREATE TABLE `library_events_setting` (
   `libraryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `settingSource` (`settingSource`,`settingId`,`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_link_language
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_link_language;
 CREATE TABLE `library_link_language` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryLinkId` int(11) DEFAULT NULL,
   `languageId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryLinkLanguage` (`libraryLinkId`,`languageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_links
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_links;
 CREATE TABLE `library_links` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2506,24 +2506,24 @@ CREATE TABLE `library_links` (
   `published` tinyint(4) DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_links_access
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_links_access;
 CREATE TABLE `library_links_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryLinkId` int(11) NOT NULL,
   `patronTypeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryLinkId` (`libraryLinkId`,`patronTypeId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_open_archives_collection
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_open_archives_collection;
 CREATE TABLE `library_open_archives_collection` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `collectionId` int(11) NOT NULL,
   `libraryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `collectionId` (`collectionId`,`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_records_to_include
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_records_to_include;
 CREATE TABLE `library_records_to_include` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2555,8 +2555,8 @@ CREATE TABLE `library_records_to_include` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`,`indexingProfileId`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_search_source
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_search_source;
 CREATE TABLE `library_search_source` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL DEFAULT '-1',
@@ -2568,16 +2568,16 @@ CREATE TABLE `library_search_source` (
   `catalogScoping` enum('unscoped','library','location') COLLATE utf8mb4_general_ci DEFAULT 'unscoped',
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_sideload_scopes
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_sideload_scopes;
 CREATE TABLE `library_sideload_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
   `sideLoadScopeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`sideLoadScopeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_themes
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_themes;
 CREATE TABLE `library_themes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2585,8 +2585,8 @@ CREATE TABLE `library_themes` (
   `weight` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `libraryToTheme` (`libraryId`,`themeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_web_builder_basic_page
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_web_builder_basic_page;
 CREATE TABLE `library_web_builder_basic_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2594,8 +2594,8 @@ CREATE TABLE `library_web_builder_basic_page` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`),
   KEY `basicPageId` (`basicPageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_web_builder_custom_form
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_web_builder_custom_form;
 CREATE TABLE `library_web_builder_custom_form` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2603,8 +2603,8 @@ CREATE TABLE `library_web_builder_custom_form` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`),
   KEY `formId` (`formId`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_web_builder_portal_page
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_web_builder_portal_page;
 CREATE TABLE `library_web_builder_portal_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2612,8 +2612,8 @@ CREATE TABLE `library_web_builder_portal_page` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`),
   KEY `portalPageId` (`portalPageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_web_builder_resource
+) ENGINE=InnoDB AUTO_INCREMENT=114 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_web_builder_resource;
 CREATE TABLE `library_web_builder_resource` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2621,16 +2621,16 @@ CREATE TABLE `library_web_builder_resource` (
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`),
   KEY `webResourceId` (`webResourceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS library_website_indexing
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS library_website_indexing;
 CREATE TABLE `library_website_indexing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingId` int(11) NOT NULL,
   `libraryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `settingId` (`settingId`,`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS list_indexing_log
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS list_indexing_log;
 CREATE TABLE `list_indexing_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `startTime` int(11) NOT NULL,
@@ -2644,16 +2644,16 @@ CREATE TABLE `list_indexing_log` (
   `numSkipped` int(11) DEFAULT '0',
   `numErrors` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=321 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS list_indexing_settings
+) ENGINE=InnoDB AUTO_INCREMENT=321 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS list_indexing_settings;
 CREATE TABLE `list_indexing_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `runFullUpdate` tinyint(1) DEFAULT '1',
   `lastUpdateOfChangedLists` int(11) DEFAULT '0',
   `lastUpdateOfAllLists` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS lm_library_calendar_events
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS lm_library_calendar_events;
 CREATE TABLE `lm_library_calendar_events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingsId` int(11) NOT NULL,
@@ -2664,8 +2664,8 @@ CREATE TABLE `lm_library_calendar_events` (
   `deleted` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `settingsId` (`settingsId`,`externalId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS lm_library_calendar_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS lm_library_calendar_settings;
 CREATE TABLE `lm_library_calendar_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -2676,8 +2676,8 @@ CREATE TABLE `lm_library_calendar_settings` (
   `password` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location;
 CREATE TABLE `location` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique Id for the branch or location within vuFind',
   `code` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -2755,16 +2755,16 @@ CREATE TABLE `location` (
   KEY `ValidHoldPickupBranch` (`validHoldPickupBranch`),
   KEY `libraryId` (`libraryId`),
   KEY `ValidSelfRegistrationBranch` (`validSelfRegistrationBranch`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Stores information about the various locations that are part'
-DROP TABLE IF EXISTS location_cloud_library_scope
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Stores information about the various locations that are part';
+DROP TABLE IF EXISTS location_cloud_library_scope;
 CREATE TABLE `location_cloud_library_scope` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `scopeId` int(11) NOT NULL,
   `locationId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationId` (`locationId`,`scopeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_combined_results_section
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_combined_results_section;
 CREATE TABLE `location_combined_results_section` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2774,8 +2774,8 @@ CREATE TABLE `location_combined_results_section` (
   `weight` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `LocationIdIndex` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_hours
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_hours;
 CREATE TABLE `location_hours` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of hours entry',
   `locationId` int(11) NOT NULL COMMENT 'The location id',
@@ -2786,8 +2786,8 @@ CREATE TABLE `location_hours` (
   `notes` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `location` (`locationId`,`day`,`open`)
-) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_more_details
+) ENGINE=InnoDB AUTO_INCREMENT=62 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_more_details;
 CREATE TABLE `location_more_details` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL DEFAULT '-1',
@@ -2796,16 +2796,16 @@ CREATE TABLE `location_more_details` (
   `collapseByDefault` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_open_archives_collection
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_open_archives_collection;
 CREATE TABLE `location_open_archives_collection` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `collectionId` int(11) NOT NULL,
   `locationId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `collectionId` (`collectionId`,`locationId`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_records_to_include
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_records_to_include;
 CREATE TABLE `location_records_to_include` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2837,8 +2837,8 @@ CREATE TABLE `location_records_to_include` (
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`,`indexingProfileId`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_search_source
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_search_source;
 CREATE TABLE `location_search_source` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL DEFAULT '-1',
@@ -2850,16 +2850,16 @@ CREATE TABLE `location_search_source` (
   `catalogScoping` enum('unscoped','library','location') COLLATE utf8mb4_general_ci DEFAULT 'unscoped',
   PRIMARY KEY (`id`),
   KEY `locationId` (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_sideload_scopes
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_sideload_scopes;
 CREATE TABLE `location_sideload_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
   `sideLoadScopeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `locationId` (`locationId`,`sideLoadScopeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_themes
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_themes;
 CREATE TABLE `location_themes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `locationId` int(11) NOT NULL,
@@ -2867,16 +2867,16 @@ CREATE TABLE `location_themes` (
   `weight` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `libraryToTheme` (`locationId`,`themeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS location_website_indexing
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS location_website_indexing;
 CREATE TABLE `location_website_indexing` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingId` int(11) NOT NULL,
   `locationId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `settingId` (`settingId`,`locationId`)
-) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS marriage
+) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS marriage;
 CREATE TABLE `marriage` (
   `marriageId` int(11) NOT NULL AUTO_INCREMENT,
   `personId` int(11) NOT NULL COMMENT 'A link to one person in the marriage',
@@ -2888,8 +2888,8 @@ CREATE TABLE `marriage` (
   `marriageDateMonth` int(11) DEFAULT NULL COMMENT 'The month the marriage occurred, null or blank if not known',
   `marriageDateYear` int(11) DEFAULT NULL COMMENT 'The year the marriage occurred, null or blank if not known',
   PRIMARY KEY (`marriageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Information about a marriage between two people'
-DROP TABLE IF EXISTS materials_request
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Information about a marriage between two people';
+DROP TABLE IF EXISTS materials_request;
 CREATE TABLE `materials_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(10) unsigned DEFAULT NULL,
@@ -2949,8 +2949,8 @@ CREATE TABLE `materials_request` (
   KEY `format_2` (`format`),
   KEY `subFormat_2` (`subFormat`),
   KEY `status_3` (`status`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS materials_request_fields_to_display
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS materials_request_fields_to_display;
 CREATE TABLE `materials_request_fields_to_display` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(11) NOT NULL,
@@ -2960,8 +2960,8 @@ CREATE TABLE `materials_request_fields_to_display` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `columnNameToDisplay` (`columnNameToDisplay`,`libraryId`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS materials_request_form_fields
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS materials_request_form_fields;
 CREATE TABLE `materials_request_form_fields` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(10) unsigned NOT NULL,
@@ -2972,8 +2972,8 @@ CREATE TABLE `materials_request_form_fields` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS materials_request_formats
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS materials_request_formats;
 CREATE TABLE `materials_request_formats` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `libraryId` int(10) unsigned NOT NULL,
@@ -2985,8 +2985,8 @@ CREATE TABLE `materials_request_formats` (
   `activeForNewRequests` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS materials_request_status
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS materials_request_status;
 CREATE TABLE `materials_request_status` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `description` varchar(80) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3007,8 +3007,8 @@ CREATE TABLE `materials_request_status` (
   KEY `isDefault_3` (`isDefault`),
   KEY `isOpen_3` (`isOpen`),
   KEY `isPatronCancel_3` (`isPatronCancel`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS materials_request_usage
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS materials_request_usage;
 CREATE TABLE `materials_request_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `libraryId` int(4) DEFAULT NULL,
@@ -3017,8 +3017,8 @@ CREATE TABLE `materials_request_usage` (
   `statusId` int(4) NOT NULL,
   `numUsed` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS merged_grouped_works
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS merged_grouped_works;
 CREATE TABLE `merged_grouped_works` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `sourceGroupedWorkId` char(36) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3026,8 +3026,8 @@ CREATE TABLE `merged_grouped_works` (
   `notes` varchar(250) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sourceGroupedWorkId` (`sourceGroupedWorkId`,`destinationGroupedWorkId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS millennium_cache
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS millennium_cache;
 CREATE TABLE `millennium_cache` (
   `recordId` varchar(20) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The recordId being checked',
   `scope` int(16) NOT NULL COMMENT 'The scope that was loaded',
@@ -3035,7 +3035,7 @@ CREATE TABLE `millennium_cache` (
   `framesetInfo` longtext COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Raw HTML returned from Millennium on the frameset page',
   `cacheDate` int(16) NOT NULL COMMENT 'When the entry was recorded in the cache',
   PRIMARY KEY (`recordId`,`scope`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Caches information from Millennium so we do not have to cont'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Caches information from Millennium so we do not have to cont';
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -3081,15 +3081,15 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-DROP TABLE IF EXISTS non_holdable_locations
+DROP TABLE IF EXISTS non_holdable_locations;
 CREATE TABLE `non_holdable_locations` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
   `millenniumCode` varchar(5) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The internal 5 letter code within Millennium',
   `holdingDisplay` varchar(30) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The text displayed in the holdings list within Millennium',
   `availableAtCircDesk` tinyint(4) NOT NULL COMMENT 'The item is available if the patron visits the circulation desk.',
   PRIMARY KEY (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS nongrouped_records
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS nongrouped_records;
 CREATE TABLE `nongrouped_records` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3097,8 +3097,8 @@ CREATE TABLE `nongrouped_records` (
   `notes` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`recordId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS novelist_data
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS novelist_data;
 CREATE TABLE `novelist_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedRecordPermanentId` char(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3114,21 +3114,21 @@ CREATE TABLE `novelist_data` (
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`),
   KEY `primaryISBN` (`primaryISBN`),
   KEY `series` (`seriesTitle`,`volume`)
-) ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS novelist_settings
+) ENGINE=InnoDB AUTO_INCREMENT=363 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS novelist_settings;
 CREATE TABLE `novelist_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `profile` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `pwd` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS nyt_api_settings
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS nyt_api_settings;
 CREATE TABLE `nyt_api_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `booksApiKey` varchar(32) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS nyt_update_log
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS nyt_update_log;
 CREATE TABLE `nyt_update_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `startTime` int(11) NOT NULL,
@@ -3141,8 +3141,8 @@ CREATE TABLE `nyt_update_log` (
   `notes` mediumtext COLLATE utf8mb4_general_ci,
   `numSkipped` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS obituary
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS obituary;
 CREATE TABLE `obituary` (
   `obituaryId` int(11) NOT NULL AUTO_INCREMENT,
   `personId` int(11) NOT NULL COMMENT 'The person this obituary is for',
@@ -3155,8 +3155,8 @@ CREATE TABLE `obituary` (
   `dateMonth` int(11) DEFAULT NULL,
   `dateYear` int(11) DEFAULT NULL,
   PRIMARY KEY (`obituaryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Information about an obituary for a person'
-DROP TABLE IF EXISTS object_history
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Information about an obituary for a person';
+DROP TABLE IF EXISTS object_history;
 CREATE TABLE `object_history` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `objectType` varchar(75) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3171,8 +3171,8 @@ CREATE TABLE `object_history` (
   KEY `objectType` (`objectType`,`objectId`),
   KEY `changedBy` (`changedBy`),
   KEY `actionType` (`actionType`)
-) ENGINE=InnoDB AUTO_INCREMENT=11700 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS offline_circulation
+) ENGINE=InnoDB AUTO_INCREMENT=11700 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS offline_circulation;
 CREATE TABLE `offline_circulation` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `timeEntered` int(11) NOT NULL,
@@ -3196,8 +3196,8 @@ CREATE TABLE `offline_circulation` (
   KEY `initials` (`initials`),
   KEY `type` (`type`),
   KEY `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS offline_hold
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS offline_hold;
 CREATE TABLE `offline_hold` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `timeEntered` int(11) NOT NULL,
@@ -3216,15 +3216,15 @@ CREATE TABLE `offline_hold` (
   KEY `patronId` (`patronId`),
   KEY `bibId` (`bibId`),
   KEY `status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS omdb_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS omdb_settings;
 CREATE TABLE `omdb_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `apiKey` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
   `fetchCoversWithoutDates` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS open_archives_collection
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS open_archives_collection;
 CREATE TABLE `open_archives_collection` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3238,8 +3238,8 @@ CREATE TABLE `open_archives_collection` (
   `imageRegex` text COLLATE utf8mb4_general_ci,
   `deleted` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS open_archives_export_log
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS open_archives_export_log;
 CREATE TABLE `open_archives_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -3254,16 +3254,16 @@ CREATE TABLE `open_archives_export_log` (
   `numUpdated` int(11) DEFAULT '0',
   `numSkipped` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS open_archives_record
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS open_archives_record;
 CREATE TABLE `open_archives_record` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sourceCollection` int(11) NOT NULL,
   `permanentUrl` varchar(512) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `sourceCollection` (`sourceCollection`,`permanentUrl`)
-) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS open_archives_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=57 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS open_archives_record_usage;
 CREATE TABLE `open_archives_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `openArchivesRecordId` int(11) DEFAULT NULL,
@@ -3274,8 +3274,8 @@ CREATE TABLE `open_archives_record_usage` (
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`openArchivesRecordId`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_account_cache
+) ENGINE=InnoDB AUTO_INCREMENT=49 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_account_cache;
 CREATE TABLE `overdrive_account_cache` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -3286,8 +3286,8 @@ CREATE TABLE `overdrive_account_cache` (
   `wishlistPage` longtext COLLATE utf8mb4_general_ci,
   `wishlistPageLastLoaded` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='A cache to store information about a user''s account within OverDrive.'
-DROP TABLE IF EXISTS overdrive_api_product_availability
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='A cache to store information about a user''s account within OverDrive.';
+DROP TABLE IF EXISTS overdrive_api_product_availability;
 CREATE TABLE `overdrive_api_product_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3302,8 +3302,8 @@ CREATE TABLE `overdrive_api_product_availability` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `productId` (`productId`,`settingId`,`libraryId`),
   KEY `libraryId` (`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=6287 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_api_product_formats
+) ENGINE=InnoDB AUTO_INCREMENT=6287 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_api_product_formats;
 CREATE TABLE `overdrive_api_product_formats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3321,8 +3321,8 @@ CREATE TABLE `overdrive_api_product_formats` (
   UNIQUE KEY `productId_2` (`productId`,`textId`),
   KEY `productId` (`productId`),
   KEY `numericId` (`numericId`)
-) ENGINE=InnoDB AUTO_INCREMENT=315598 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_api_product_identifiers
+) ENGINE=InnoDB AUTO_INCREMENT=315598 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_api_product_identifiers;
 CREATE TABLE `overdrive_api_product_identifiers` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3331,8 +3331,8 @@ CREATE TABLE `overdrive_api_product_identifiers` (
   PRIMARY KEY (`id`),
   KEY `productId` (`productId`),
   KEY `type` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=289722 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_api_product_metadata
+) ENGINE=InnoDB AUTO_INCREMENT=289722 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_api_product_metadata;
 CREATE TABLE `overdrive_api_product_metadata` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `productId` int(11) DEFAULT NULL,
@@ -3352,8 +3352,8 @@ CREATE TABLE `overdrive_api_product_metadata` (
   `isOwnedByCollections` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `productId` (`productId`)
-) ENGINE=InnoDB AUTO_INCREMENT=125906 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_api_products
+) ENGINE=InnoDB AUTO_INCREMENT=125906 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_api_products;
 CREATE TABLE `overdrive_api_products` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `overdriveId` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3380,8 +3380,8 @@ CREATE TABLE `overdrive_api_products` (
   KEY `lastMetadataCheck` (`lastMetadataCheck`),
   KEY `lastAvailabilityCheck` (`lastAvailabilityCheck`),
   KEY `deleted` (`deleted`)
-) ENGINE=InnoDB AUTO_INCREMENT=47468 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_extract_log
+) ENGINE=InnoDB AUTO_INCREMENT=47468 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_extract_log;
 CREATE TABLE `overdrive_extract_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `startTime` int(11) DEFAULT NULL,
@@ -3399,8 +3399,8 @@ CREATE TABLE `overdrive_extract_log` (
   `settingId` int(11) DEFAULT NULL,
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1297 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=1297 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_record_usage;
 CREATE TABLE `overdrive_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `overdriveId` varchar(36) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3412,8 +3412,8 @@ CREATE TABLE `overdrive_record_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`overdriveId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_scopes
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_scopes;
 CREATE TABLE `overdrive_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3430,8 +3430,8 @@ CREATE TABLE `overdrive_scopes` (
   `circulationEnabled` tinyint(4) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_settings
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_settings;
 CREATE TABLE `overdrive_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `url` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3452,8 +3452,8 @@ CREATE TABLE `overdrive_settings` (
   `numRetriesOnError` int(11) DEFAULT '1',
   `productsToUpdate` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS overdrive_stats
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS overdrive_stats;
 CREATE TABLE `overdrive_stats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3475,8 +3475,8 @@ CREATE TABLE `overdrive_stats` (
   `numConnectionFailures` int(11) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS paypal_settings
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS paypal_settings;
 CREATE TABLE `paypal_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3487,7 +3487,7 @@ CREATE TABLE `paypal_settings` (
   `errorEmail` varchar(128) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -3529,7 +3529,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-DROP TABLE IF EXISTS person
+DROP TABLE IF EXISTS person;
 CREATE TABLE `person` (
   `personId` int(11) NOT NULL AUTO_INCREMENT,
   `firstName` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3573,48 +3573,48 @@ CREATE TABLE `person` (
   `deathDateMonth` int(11) DEFAULT NULL COMMENT 'The month the person died, null or blank if not known',
   `deathDateYear` int(11) DEFAULT NULL COMMENT 'The year the person died, null or blank if not known',
   PRIMARY KEY (`personId`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Stores information about a particular person for use in genealogy'
-DROP TABLE IF EXISTS pin_reset_token
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Stores information about a particular person for use in genealogy';
+DROP TABLE IF EXISTS pin_reset_token;
 CREATE TABLE `pin_reset_token` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
   `token` varchar(12) COLLATE utf8mb4_general_ci NOT NULL,
   `dateIssued` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS placard_dismissal
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS placard_dismissal;
 CREATE TABLE `placard_dismissal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `placardId` int(11) DEFAULT NULL,
   `userId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userPlacard` (`userId`,`placardId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS placard_language
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS placard_language;
 CREATE TABLE `placard_language` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `placardId` int(11) DEFAULT NULL,
   `languageId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `placardLanguage` (`placardId`,`languageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS placard_library
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS placard_library;
 CREATE TABLE `placard_library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `placardId` int(11) DEFAULT NULL,
   `libraryId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `placardLibrary` (`placardId`,`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS placard_location
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS placard_location;
 CREATE TABLE `placard_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `placardId` int(11) DEFAULT NULL,
   `locationId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `placardLocation` (`placardId`,`locationId`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS placard_trigger
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS placard_trigger;
 CREATE TABLE `placard_trigger` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `placardId` int(11) NOT NULL,
@@ -3622,8 +3622,8 @@ CREATE TABLE `placard_trigger` (
   `exactMatch` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `triggerWord` (`triggerWord`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS placards
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS placards;
 CREATE TABLE `placards` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3637,8 +3637,8 @@ CREATE TABLE `placards` (
   `altText` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `title` (`title`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS propay_settings
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS propay_settings;
 CREATE TABLE `propay_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3651,8 +3651,8 @@ CREATE TABLE `propay_settings` (
   `termId` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ptype
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ptype;
 CREATE TABLE `ptype` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `pType` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
@@ -3670,23 +3670,23 @@ CREATE TABLE `ptype` (
   `canSuggestMaterials` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `pType` (`pType`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ptype_restricted_locations
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ptype_restricted_locations;
 CREATE TABLE `ptype_restricted_locations` (
   `locationId` int(11) NOT NULL AUTO_INCREMENT COMMENT 'A unique id for the non holdable location',
   `millenniumCode` varchar(5) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The internal 5 letter code within Millennium',
   `holdingDisplay` varchar(30) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The text displayed in the holdings list within Millennium can use regular expression syntax to match multiple locations',
   `allowablePtypes` varchar(50) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'A list of PTypes that are allowed to place holds on items with this location separated with pipes (|).',
   PRIMARY KEY (`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS quipu_ecard_setting
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS quipu_ecard_setting;
 CREATE TABLE `quipu_ecard_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `server` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `clientId` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_availability
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_availability;
 CREATE TABLE `rbdigital_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rbdigitalId` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3700,8 +3700,8 @@ CREATE TABLE `rbdigital_availability` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `rbdigitalId` (`rbdigitalId`,`settingId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB AUTO_INCREMENT=6534 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_magazine
+) ENGINE=InnoDB AUTO_INCREMENT=6534 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_magazine;
 CREATE TABLE `rbdigital_magazine` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `magazineId` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3718,8 +3718,8 @@ CREATE TABLE `rbdigital_magazine` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `magazineId` (`magazineId`,`issueId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_magazine_issue
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_magazine_issue;
 CREATE TABLE `rbdigital_magazine_issue` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `magazineId` int(11) NOT NULL,
@@ -3729,8 +3729,8 @@ CREATE TABLE `rbdigital_magazine_issue` (
   `coverDate` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `magazineId` (`magazineId`,`issueId`)
-) ENGINE=InnoDB AUTO_INCREMENT=541 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_magazine_issue_availability
+) ENGINE=InnoDB AUTO_INCREMENT=541 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_magazine_issue_availability;
 CREATE TABLE `rbdigital_magazine_issue_availability` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `issueId` int(11) NOT NULL,
@@ -3740,8 +3740,8 @@ CREATE TABLE `rbdigital_magazine_issue_availability` (
   `stateId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `issueId` (`issueId`,`settingId`)
-) ENGINE=InnoDB AUTO_INCREMENT=541 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_magazine_usage
+) ENGINE=InnoDB AUTO_INCREMENT=541 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_magazine_usage;
 CREATE TABLE `rbdigital_magazine_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `magazineId` int(11) DEFAULT NULL,
@@ -3753,8 +3753,8 @@ CREATE TABLE `rbdigital_magazine_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`magazineId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_record_usage
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_record_usage;
 CREATE TABLE `rbdigital_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rbdigitalId` int(11) DEFAULT NULL,
@@ -3766,8 +3766,8 @@ CREATE TABLE `rbdigital_record_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`rbdigitalId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS rbdigital_title
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS rbdigital_title;
 CREATE TABLE `rbdigital_title` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `rbdigitalId` varchar(25) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3785,15 +3785,15 @@ CREATE TABLE `rbdigital_title` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `rbdigitalId` (`rbdigitalId`),
   KEY `lastChange` (`lastChange`)
-) ENGINE=InnoDB AUTO_INCREMENT=25522 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS recaptcha_settings
+) ENGINE=InnoDB AUTO_INCREMENT=25522 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS recaptcha_settings;
 CREATE TABLE `recaptcha_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `publicKey` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `privateKey` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS record_files
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS record_files;
 CREATE TABLE `record_files` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3802,8 +3802,8 @@ CREATE TABLE `record_files` (
   PRIMARY KEY (`id`),
   KEY `fileId` (`fileId`),
   KEY `type` (`type`,`identifier`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS record_identifiers_to_reload
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS record_identifiers_to_reload;
 CREATE TABLE `record_identifiers_to_reload` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3812,8 +3812,8 @@ CREATE TABLE `record_identifiers_to_reload` (
   PRIMARY KEY (`id`),
   KEY `type` (`type`,`identifier`),
   KEY `processed` (`processed`,`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS record_parents
+) ENGINE=InnoDB AUTO_INCREMENT=92 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS record_parents;
 CREATE TABLE `record_parents` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `childRecordId` varchar(50) CHARACTER SET utf8 COLLATE utf8_bin DEFAULT NULL,
@@ -3822,8 +3822,8 @@ CREATE TABLE `record_parents` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `childRecordId` (`childRecordId`,`parentRecordId`),
   KEY `parentRecordId` (`parentRecordId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-DROP TABLE IF EXISTS redwood_user_contribution
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS redwood_user_contribution;
 CREATE TABLE `redwood_user_contribution` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -3842,8 +3842,8 @@ CREATE TABLE `redwood_user_contribution` (
   `dateContributed` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS reindex_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS reindex_log;
 CREATE TABLE `reindex_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of reindex log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the reindex started',
@@ -3855,14 +3855,14 @@ CREATE TABLE `reindex_log` (
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=183 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS request_tracker_connection
+) ENGINE=InnoDB AUTO_INCREMENT=183 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS request_tracker_connection;
 CREATE TABLE `request_tracker_connection` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `baseUrl` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `activeTicketFeed` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -3939,7 +3939,7 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-DROP TABLE IF EXISTS rosen_levelup_settings
+DROP TABLE IF EXISTS rosen_levelup_settings;
 CREATE TABLE `rosen_levelup_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `lu_api_host` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -3954,8 +3954,8 @@ CREATE TABLE `rosen_levelup_settings` (
   `lu_ptypes_k` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `lu_location_code_prefix` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS scope
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS scope;
 CREATE TABLE `scope` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
@@ -3964,8 +3964,8 @@ CREATE TABLE `scope` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `name_2` (`name`,`isLibraryScope`,`isLocationScope`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS search
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS search;
 CREATE TABLE `search` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL DEFAULT '0',
@@ -3984,8 +3984,8 @@ CREATE TABLE `search` (
   KEY `user_id` (`user_id`),
   KEY `folder_id` (`folder_id`),
   KEY `session_id` (`session_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=915 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS search_stats_new
+) ENGINE=InnoDB AUTO_INCREMENT=915 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS search_stats_new;
 CREATE TABLE `search_stats_new` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The unique id of the search statistic',
   `phrase` varchar(500) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'The phrase being searched for',
@@ -3995,8 +3995,8 @@ CREATE TABLE `search_stats_new` (
   KEY `numSearches` (`numSearches`),
   KEY `lastSearch` (`lastSearch`),
   FULLTEXT KEY `phrase_text` (`phrase`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Statistical information about searches for use in reporting '
-DROP TABLE IF EXISTS search_update_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Statistical information about searches for use in reporting ';
+DROP TABLE IF EXISTS search_update_log;
 CREATE TABLE `search_update_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `startTime` int(11) NOT NULL,
@@ -4007,16 +4007,16 @@ CREATE TABLE `search_update_log` (
   `numUpdated` int(11) NOT NULL DEFAULT '0',
   `notes` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sendgrid_settings
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sendgrid_settings;
 CREATE TABLE `sendgrid_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `fromAddress` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `replyToAddress` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `apiKey` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS session
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS session;
 CREATE TABLE `session` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `session_id` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -4027,8 +4027,8 @@ CREATE TABLE `session` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `session_id` (`session_id`),
   KEY `last_used` (`last_used`)
-) ENGINE=InnoDB AUTO_INCREMENT=1159 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS shared_content
+) ENGINE=InnoDB AUTO_INCREMENT=1159 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS shared_content;
 CREATE TABLE `shared_content` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sharedFrom` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4042,8 +4042,8 @@ CREATE TABLE `shared_content` (
   `description` text COLLATE utf8mb4_general_ci,
   `data` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sideload_files
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sideload_files;
 CREATE TABLE `sideload_files` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sideLoadId` int(11) NOT NULL,
@@ -4053,8 +4053,8 @@ CREATE TABLE `sideload_files` (
   `lastIndexed` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `sideloadFile` (`sideLoadId`,`filename`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sideload_log
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sideload_log;
 CREATE TABLE `sideload_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -4071,8 +4071,8 @@ CREATE TABLE `sideload_log` (
   `numSkipped` int(11) DEFAULT '0',
   `numInvalidRecords` int(11) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sideload_record_usage
+) ENGINE=InnoDB AUTO_INCREMENT=70 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sideload_record_usage;
 CREATE TABLE `sideload_record_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sideloadId` int(11) NOT NULL,
@@ -4084,8 +4084,8 @@ CREATE TABLE `sideload_record_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`sideloadId`,`recordId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sideload_scopes
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sideload_scopes;
 CREATE TABLE `sideload_scopes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4097,8 +4097,8 @@ CREATE TABLE `sideload_scopes` (
   `urlToMatch` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `urlReplacement` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sideloads
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sideloads;
 CREATE TABLE `sideloads` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4137,8 +4137,8 @@ CREATE TABLE `sideloads` (
   `includePersonalAndCorporateNamesInTopics` tinyint(1) NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sierra_api_export_log
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sierra_api_export_log;
 CREATE TABLE `sierra_api_export_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `startTime` int(11) NOT NULL COMMENT 'The timestamp when the run started',
@@ -4150,8 +4150,8 @@ CREATE TABLE `sierra_api_export_log` (
   `numErrors` int(11) DEFAULT NULL,
   `numRemainingRecords` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sierra_export_field_mapping
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sierra_export_field_mapping;
 CREATE TABLE `sierra_export_field_mapping` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of field mapping',
   `indexingProfileId` int(11) NOT NULL COMMENT 'The indexing profile this field mapping is associated with',
@@ -4169,8 +4169,8 @@ CREATE TABLE `sierra_export_field_mapping` (
   `bibLevelLocationsSubfield` char(1) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `itemPublicNoteExportSubfield` varchar(1) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS slow_ajax_request
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS slow_ajax_request;
 CREATE TABLE `slow_ajax_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -4185,8 +4185,8 @@ CREATE TABLE `slow_ajax_request` (
   `timesVerySlow` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`,`method`)
-) ENGINE=InnoDB AUTO_INCREMENT=1566 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS slow_page
+) ENGINE=InnoDB AUTO_INCREMENT=1566 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS slow_page;
 CREATE TABLE `slow_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -4200,8 +4200,8 @@ CREATE TABLE `slow_page` (
   `timesVerySlow` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`module`,`action`)
-) ENGINE=InnoDB AUTO_INCREMENT=1552 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS springshare_libcal_events
+) ENGINE=InnoDB AUTO_INCREMENT=1552 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS springshare_libcal_events;
 CREATE TABLE `springshare_libcal_events` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `settingsId` int(11) NOT NULL,
@@ -4212,8 +4212,8 @@ CREATE TABLE `springshare_libcal_events` (
   `deleted` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `settingsId` (`settingsId`,`externalId`)
-) ENGINE=InnoDB AUTO_INCREMENT=20411 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS springshare_libcal_settings
+) ENGINE=InnoDB AUTO_INCREMENT=20411 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS springshare_libcal_settings;
 CREATE TABLE `springshare_libcal_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4223,8 +4223,8 @@ CREATE TABLE `springshare_libcal_settings` (
   `clientSecret` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sso_mapping
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sso_mapping;
 CREATE TABLE `sso_mapping` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `aspenField` varchar(75) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4233,8 +4233,8 @@ CREATE TABLE `sso_mapping` (
   `fallbackValue` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `mapping` (`aspenField`,`ssoSettingId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS sso_setting
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS sso_setting;
 CREATE TABLE `sso_setting` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4302,8 +4302,8 @@ CREATE TABLE `sso_setting` (
   `ssoILSUniqueAttribute` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS staff_members
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS staff_members;
 CREATE TABLE `staff_members` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -4314,8 +4314,8 @@ CREATE TABLE `staff_members` (
   `photo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `description` longtext COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS status_map_values
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS status_map_values;
 CREATE TABLE `status_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -4326,8 +4326,8 @@ CREATE TABLE `status_map_values` (
   `inLibraryUseOnly` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `indexingProfileId` (`indexingProfileId`,`value`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS syndetics_data
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS syndetics_data;
 CREATE TABLE `syndetics_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedRecordPermanentId` char(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4341,8 +4341,8 @@ CREATE TABLE `syndetics_data` (
   `lastExcerptUpdate` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS syndetics_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS syndetics_settings;
 CREATE TABLE `syndetics_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `syndeticsKey` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4357,32 +4357,32 @@ CREATE TABLE `syndetics_settings` (
   `syndeticsUnbound` tinyint(1) DEFAULT '0',
   `unboundAccountNumber` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS system_message_dismissal
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS system_message_dismissal;
 CREATE TABLE `system_message_dismissal` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `systemMessageId` int(11) DEFAULT NULL,
   `userId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userPlacard` (`userId`,`systemMessageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS system_message_library
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS system_message_library;
 CREATE TABLE `system_message_library` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `systemMessageId` int(11) DEFAULT NULL,
   `libraryId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `systemMessageLibrary` (`systemMessageId`,`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS system_message_location
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS system_message_location;
 CREATE TABLE `system_message_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `systemMessageId` int(11) DEFAULT NULL,
   `locationId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `systemMessageLocation` (`systemMessageId`,`locationId`)
-) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS system_messages
+) ENGINE=InnoDB AUTO_INCREMENT=31 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS system_messages;
 CREATE TABLE `system_messages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4395,8 +4395,8 @@ CREATE TABLE `system_messages` (
   `messageStyle` varchar(10) COLLATE utf8mb4_general_ci DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `title` (`title`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS system_variables
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS system_variables;
 CREATE TABLE `system_variables` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `errorEmail` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -4423,8 +4423,8 @@ CREATE TABLE `system_variables` (
   `appScheme` varchar(72) COLLATE utf8mb4_general_ci DEFAULT 'aspen-lida',
   `googleBucket` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS themes
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS themes;
 CREATE TABLE `themes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `themeName` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4651,8 +4651,8 @@ CREATE TABLE `themes` (
   `displayName` varchar(60) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   KEY `themeName` (`themeName`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ticket
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ticket;
 CREATE TABLE `ticket` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `ticketId` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4670,32 +4670,32 @@ CREATE TABLE `ticket` (
   `developmentTaskId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `ticketId` (`ticketId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3058 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ticket_component_feed
+) ENGINE=InnoDB AUTO_INCREMENT=3058 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ticket_component_feed;
 CREATE TABLE `ticket_component_feed` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `rssFeed` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ticket_queue_feed
+) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ticket_queue_feed;
 CREATE TABLE `ticket_queue_feed` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `rssFeed` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ticket_severity_feed
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ticket_severity_feed;
 CREATE TABLE `ticket_severity_feed` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `rssFeed` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ticket_stats
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ticket_stats;
 CREATE TABLE `ticket_stats` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -4707,16 +4707,16 @@ CREATE TABLE `ticket_stats` (
   `count` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `year` (`year`,`month`,`day`,`status`,`queue`,`severity`,`count`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS ticket_status_feed
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS ticket_status_feed;
 CREATE TABLE `ticket_status_feed` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   `rssFeed` text COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS time_to_reshelve
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS time_to_reshelve;
 CREATE TABLE `time_to_reshelve` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -4727,8 +4727,8 @@ CREATE TABLE `time_to_reshelve` (
   `weight` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `indexingProfileId` (`indexingProfileId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS title_authorities
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS title_authorities;
 CREATE TABLE `title_authorities` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `originalName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4736,8 +4736,8 @@ CREATE TABLE `title_authorities` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `originalName` (`originalName`),
   KEY `authoritativeName` (`authoritativeName`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS translation_map_values
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS translation_map_values;
 CREATE TABLE `translation_map_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `translationMapId` int(11) NOT NULL,
@@ -4745,8 +4745,8 @@ CREATE TABLE `translation_map_values` (
   `translation` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `translationMapId` (`translationMapId`,`value`)
-) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS translation_maps
+) ENGINE=InnoDB AUTO_INCREMENT=130 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS translation_maps;
 CREATE TABLE `translation_maps` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `indexingProfileId` int(11) NOT NULL,
@@ -4754,8 +4754,8 @@ CREATE TABLE `translation_maps` (
   `usesRegularExpressions` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `profileName` (`indexingProfileId`,`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS translation_terms
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS translation_terms;
 CREATE TABLE `translation_terms` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `term` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
@@ -4770,8 +4770,8 @@ CREATE TABLE `translation_terms` (
   PRIMARY KEY (`id`),
   KEY `url` (`samplePageUrl`),
   KEY `term` (`term`(500))
-) ENGINE=InnoDB AUTO_INCREMENT=31406 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS translations
+) ENGINE=InnoDB AUTO_INCREMENT=31406 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS translations;
 CREATE TABLE `translations` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `termId` int(11) NOT NULL,
@@ -4782,8 +4782,8 @@ CREATE TABLE `translations` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `term_language` (`termId`,`languageId`),
   KEY `translation_status` (`languageId`,`translated`)
-) ENGINE=InnoDB AUTO_INCREMENT=11341 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS two_factor_auth_codes
+) ENGINE=InnoDB AUTO_INCREMENT=11341 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS two_factor_auth_codes;
 CREATE TABLE `two_factor_auth_codes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -4792,8 +4792,8 @@ CREATE TABLE `two_factor_auth_codes` (
   `dateSent` int(12) DEFAULT NULL,
   `status` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS two_factor_auth_settings
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS two_factor_auth_settings;
 CREATE TABLE `two_factor_auth_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -4802,8 +4802,8 @@ CREATE TABLE `two_factor_auth_settings` (
   `deniedMessage` longtext COLLATE utf8mb4_general_ci,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS usage_by_ip_address
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS usage_by_ip_address;
 CREATE TABLE `usage_by_ip_address` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -4818,8 +4818,8 @@ CREATE TABLE `usage_by_ip_address` (
   `numFailedLoginAttempts` int(11) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `ip` (`year`,`month`,`instance`,`ipAddress`)
-) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS usage_tracking
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS usage_tracking;
 CREATE TABLE `usage_tracking` (
   `usageId` int(11) NOT NULL AUTO_INCREMENT,
   `ipId` int(11) NOT NULL,
@@ -4831,8 +4831,8 @@ CREATE TABLE `usage_tracking` (
   PRIMARY KEY (`usageId`),
   KEY `usageId` (`usageId`),
   KEY `IP_DATE` (`ipId`,`trackingDate`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user;
 CREATE TABLE `user` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(36) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4894,8 +4894,8 @@ CREATE TABLE `user` (
   `preferredTheme` int(11) DEFAULT '-1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `username` (`source`,`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_account_summary
+) ENGINE=InnoDB AUTO_INCREMENT=42 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_account_summary;
 CREATE TABLE `user_account_summary` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `source` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4911,8 +4911,8 @@ CREATE TABLE `user_account_summary` (
   `hasUpdatedSavedSearches` tinyint(4) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `source` (`source`,`userId`)
-) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_axis360_usage
+) ENGINE=InnoDB AUTO_INCREMENT=170 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_axis360_usage;
 CREATE TABLE `user_axis360_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -4923,8 +4923,8 @@ CREATE TABLE `user_axis360_usage` (
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`userId`,`year`,`month`),
   KEY `instance_2` (`instance`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_checkout
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_checkout;
 CREATE TABLE `user_checkout` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
@@ -4980,8 +4980,8 @@ CREATE TABLE `user_checkout` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`source`,`recordId`),
   KEY `userId_2` (`userId`,`groupedWorkId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_cloud_library_usage
+) ENGINE=InnoDB AUTO_INCREMENT=1195 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_cloud_library_usage;
 CREATE TABLE `user_cloud_library_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -4992,8 +4992,8 @@ CREATE TABLE `user_cloud_library_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_ebsco_eds_usage
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_ebsco_eds_usage;
 CREATE TABLE `user_ebsco_eds_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5004,8 +5004,8 @@ CREATE TABLE `user_ebsco_eds_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`year`,`month`),
   UNIQUE KEY `instance_2` (`instance`,`userId`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_ebscohost_usage
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_ebscohost_usage;
 CREATE TABLE `user_ebscohost_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5015,8 +5015,8 @@ CREATE TABLE `user_ebscohost_usage` (
   `usageCount` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `year` (`year`,`month`,`instance`,`userId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_events_usage
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_events_usage;
 CREATE TABLE `user_events_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5027,8 +5027,8 @@ CREATE TABLE `user_events_usage` (
   `usageCount` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `type` (`type`,`source`,`year`,`month`,`userId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_hold
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_hold;
 CREATE TABLE `user_hold` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `type` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5067,8 +5067,8 @@ CREATE TABLE `user_hold` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`source`,`recordId`),
   KEY `userId_2` (`userId`,`groupedWorkId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2600 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_hoopla_usage
+) ENGINE=InnoDB AUTO_INCREMENT=2600 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_hoopla_usage;
 CREATE TABLE `user_hoopla_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5079,8 +5079,8 @@ CREATE TABLE `user_hoopla_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_ils_usage
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_ils_usage;
 CREATE TABLE `user_ils_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5096,24 +5096,24 @@ CREATE TABLE `user_ils_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`indexingProfileId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_link
+) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_link;
 CREATE TABLE `user_link` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `primaryAccountId` int(11) NOT NULL,
   `linkedAccountId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_link` (`primaryAccountId`,`linkedAccountId`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_link_blocks
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_link_blocks;
 CREATE TABLE `user_link_blocks` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `primaryAccountId` int(10) unsigned NOT NULL,
   `blockedLinkAccountId` int(10) unsigned DEFAULT NULL COMMENT 'A specific account primaryAccountId will not be linked to.',
   `blockLinking` tinyint(3) unsigned DEFAULT NULL COMMENT 'Indicates primaryAccountId will not be linked to any other accounts.',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_list
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_list;
 CREATE TABLE `user_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
@@ -5129,8 +5129,8 @@ CREATE TABLE `user_list` (
   `nytListModified` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_list_entry
+) ENGINE=InnoDB AUTO_INCREMENT=93 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_list_entry;
 CREATE TABLE `user_list_entry` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `sourceId` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5145,8 +5145,8 @@ CREATE TABLE `user_list_entry` (
   KEY `groupedWorkPermanentId` (`sourceId`),
   KEY `listId` (`listId`),
   KEY `source` (`source`,`sourceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=1062 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_messages
+) ENGINE=InnoDB AUTO_INCREMENT=1062 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_messages;
 CREATE TABLE `user_messages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -5161,8 +5161,8 @@ CREATE TABLE `user_messages` (
   `addendum` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`isDismissed`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_not_interested
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_not_interested;
 CREATE TABLE `user_not_interested` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5171,8 +5171,8 @@ CREATE TABLE `user_not_interested` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`),
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`,`userId`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_notification_tokens
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_notification_tokens;
 CREATE TABLE `user_notification_tokens` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -5182,8 +5182,8 @@ CREATE TABLE `user_notification_tokens` (
   `notifyCustom` tinyint(1) DEFAULT '0',
   `notifyAccount` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_notifications
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_notifications;
 CREATE TABLE `user_notifications` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -5195,8 +5195,8 @@ CREATE TABLE `user_notifications` (
   `message` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `pushToken` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_open_archives_usage
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_open_archives_usage;
 CREATE TABLE `user_open_archives_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5207,8 +5207,8 @@ CREATE TABLE `user_open_archives_usage` (
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`openArchivesCollectionId`,`userId`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_overdrive_usage
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_overdrive_usage;
 CREATE TABLE `user_overdrive_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5219,8 +5219,8 @@ CREATE TABLE `user_overdrive_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_payments
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_payments;
 CREATE TABLE `user_payments` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -5241,8 +5241,8 @@ CREATE TABLE `user_payments` (
   PRIMARY KEY (`id`),
   KEY `userId` (`userId`,`paymentType`,`completed`),
   KEY `paymentType` (`paymentType`,`orderId`)
-) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_rbdigital_usage
+) ENGINE=InnoDB AUTO_INCREMENT=81 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_rbdigital_usage;
 CREATE TABLE `user_rbdigital_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5253,8 +5253,8 @@ CREATE TABLE `user_rbdigital_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_reading_history_work
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_reading_history_work;
 CREATE TABLE `user_reading_history_work` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL COMMENT 'The id of the user who checked out the item',
@@ -5275,15 +5275,15 @@ CREATE TABLE `user_reading_history_work` (
   KEY `sourceId` (`sourceId`),
   KEY `user_work` (`userId`,`groupedWorkPermanentId`),
   KEY `groupedWorkPermanentId` (`groupedWorkPermanentId`)
-) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='The reading history for patrons'
-DROP TABLE IF EXISTS user_roles
+) ENGINE=InnoDB AUTO_INCREMENT=86 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='The reading history for patrons';
+DROP TABLE IF EXISTS user_roles;
 CREATE TABLE `user_roles` (
   `userId` int(11) NOT NULL,
   `roleId` int(11) NOT NULL,
   `id` int(11) NOT NULL AUTO_INCREMENT,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Links users with roles so users can perform administration f'
-DROP TABLE IF EXISTS user_sideload_usage
+) ENGINE=InnoDB AUTO_INCREMENT=651 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Links users with roles so users can perform administration f';
+DROP TABLE IF EXISTS user_sideload_usage;
 CREATE TABLE `user_sideload_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5295,8 +5295,8 @@ CREATE TABLE `user_sideload_usage` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `instance` (`instance`,`userId`,`sideloadId`,`year`,`month`),
   KEY `year` (`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_vdx_request
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_vdx_request;
 CREATE TABLE `user_vdx_request` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) DEFAULT NULL,
@@ -5313,8 +5313,8 @@ CREATE TABLE `user_vdx_request` (
   `pickupLocation` varchar(75) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `vdxId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_website_usage
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_website_usage;
 CREATE TABLE `user_website_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `userId` int(11) NOT NULL,
@@ -5325,8 +5325,8 @@ CREATE TABLE `user_website_usage` (
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`websiteId`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS user_work_review
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS user_work_review;
 CREATE TABLE `user_work_review` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `groupedRecordPermanentId` varchar(40) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5339,8 +5339,8 @@ CREATE TABLE `user_work_review` (
   UNIQUE KEY `userId_2` (`userId`,`groupedRecordPermanentId`),
   KEY `groupedRecordPermanentId` (`groupedRecordPermanentId`),
   KEY `userId` (`userId`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS variables
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS variables;
 CREATE TABLE `variables` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5349,8 +5349,8 @@ CREATE TABLE `variables` (
   UNIQUE KEY `name_2` (`name`),
   UNIQUE KEY `name_3` (`name`),
   KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS vdx_form
+) ENGINE=InnoDB AUTO_INCREMENT=50 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS vdx_form;
 CREATE TABLE `vdx_form` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5364,23 +5364,23 @@ CREATE TABLE `vdx_form` (
   `showCatalogKey` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS vdx_hold_group_location
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS vdx_hold_group_location;
 CREATE TABLE `vdx_hold_group_location` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `vdxHoldGroupId` int(11) DEFAULT NULL,
   `locationId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `vdxHoldGroupLocation` (`vdxHoldGroupId`,`locationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS vdx_hold_groups
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS vdx_hold_groups;
 CREATE TABLE `vdx_hold_groups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS vdx_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS vdx_settings;
 CREATE TABLE `vdx_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5390,15 +5390,15 @@ CREATE TABLE `vdx_settings` (
   `reqVerifySource` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_audience
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_audience;
 CREATE TABLE `web_builder_audience` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_basic_page
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_basic_page;
 CREATE TABLE `web_builder_basic_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5409,47 +5409,47 @@ CREATE TABLE `web_builder_basic_page` (
   `requireLogin` tinyint(1) DEFAULT '0',
   `requireLoginUnlessInLibrary` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_basic_page_access
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_basic_page_access;
 CREATE TABLE `web_builder_basic_page_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `basicPageId` int(11) NOT NULL,
   `patronTypeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `basicPageId` (`basicPageId`,`patronTypeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_basic_page_audience
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_basic_page_audience;
 CREATE TABLE `web_builder_basic_page_audience` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `basicPageId` int(11) NOT NULL,
   `audienceId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `basicPageId` (`basicPageId`,`audienceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_basic_page_category
+) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_basic_page_category;
 CREATE TABLE `web_builder_basic_page_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `basicPageId` int(11) NOT NULL,
   `categoryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `basicPageId` (`basicPageId`,`categoryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_basic_page_home_location_access
+) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_basic_page_home_location_access;
 CREATE TABLE `web_builder_basic_page_home_location_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `basicPageId` int(11) NOT NULL,
   `homeLocationId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `basicPageId` (`basicPageId`,`homeLocationId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_category
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_category;
 CREATE TABLE `web_builder_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_custom_form
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_custom_form;
 CREATE TABLE `web_builder_custom_form` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5460,8 +5460,8 @@ CREATE TABLE `web_builder_custom_form` (
   `submissionResultText` longtext COLLATE utf8mb4_general_ci,
   `includeIntroductoryTextInEmail` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_custom_form_field
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_custom_form_field;
 CREATE TABLE `web_builder_custom_form_field` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `formId` int(11) NOT NULL,
@@ -5474,8 +5474,8 @@ CREATE TABLE `web_builder_custom_form_field` (
   `required` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `formId` (`formId`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_custom_from_submission
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_custom_from_submission;
 CREATE TABLE `web_builder_custom_from_submission` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `formId` int(11) NOT NULL,
@@ -5486,8 +5486,8 @@ CREATE TABLE `web_builder_custom_from_submission` (
   `isRead` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `formId` (`formId`,`libraryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_menu
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_menu;
 CREATE TABLE `web_builder_menu` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `label` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5498,8 +5498,8 @@ CREATE TABLE `web_builder_menu` (
   `libraryId` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `parentMenuId` (`parentMenuId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_portal_cell
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_portal_cell;
 CREATE TABLE `web_builder_portal_cell` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `portalRowId` int(11) DEFAULT NULL,
@@ -5526,8 +5526,8 @@ CREATE TABLE `web_builder_portal_cell` (
   `imgAlt` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `portalRowId` (`portalRowId`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_portal_page
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_portal_page;
 CREATE TABLE `web_builder_portal_page` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `title` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -5536,32 +5536,32 @@ CREATE TABLE `web_builder_portal_page` (
   `requireLogin` tinyint(1) DEFAULT '0',
   `requireLoginUnlessInLibrary` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_portal_page_access
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_portal_page_access;
 CREATE TABLE `web_builder_portal_page_access` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `portalPageId` int(11) NOT NULL,
   `patronTypeId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `portalPageId` (`portalPageId`,`patronTypeId`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_portal_page_audience
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_portal_page_audience;
 CREATE TABLE `web_builder_portal_page_audience` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `portalPageId` int(11) NOT NULL,
   `audienceId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `portalPageId` (`portalPageId`,`audienceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_portal_page_category
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_portal_page_category;
 CREATE TABLE `web_builder_portal_page_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `portalPageId` int(11) NOT NULL,
   `categoryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `portalPageId` (`portalPageId`,`categoryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_portal_row
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_portal_row;
 CREATE TABLE `web_builder_portal_row` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `portalPageId` int(11) DEFAULT NULL,
@@ -5572,8 +5572,8 @@ CREATE TABLE `web_builder_portal_row` (
   `invertColor` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `portalPageId` (`portalPageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_resource
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_resource;
 CREATE TABLE `web_builder_resource` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5589,24 +5589,24 @@ CREATE TABLE `web_builder_resource` (
   `requireLoginUnlessInLibrary` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `featured` (`featured`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_resource_audience
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_resource_audience;
 CREATE TABLE `web_builder_resource_audience` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `webResourceId` int(11) NOT NULL,
   `audienceId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `webResourceId` (`webResourceId`,`audienceId`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_resource_category
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_resource_category;
 CREATE TABLE `web_builder_resource_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `webResourceId` int(11) NOT NULL,
   `categoryId` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `webResourceId` (`webResourceId`,`categoryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS web_builder_resource_usage
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS web_builder_resource_usage;
 CREATE TABLE `web_builder_resource_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `year` int(4) NOT NULL,
@@ -5618,8 +5618,8 @@ CREATE TABLE `web_builder_resource_usage` (
   `instance` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`year`,`month`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS website_index_log
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS website_index_log;
 CREATE TABLE `website_index_log` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
   `websiteName` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5635,8 +5635,8 @@ CREATE TABLE `website_index_log` (
   `numInvalidPages` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `websiteName` (`websiteName`)
-) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS website_indexing_settings
+) ENGINE=InnoDB AUTO_INCREMENT=51 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS website_indexing_settings;
 CREATE TABLE `website_indexing_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(75) COLLATE utf8mb4_general_ci NOT NULL,
@@ -5653,8 +5653,8 @@ CREATE TABLE `website_indexing_settings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `lastIndexed` (`lastIndexed`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS website_page_usage
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS website_page_usage;
 CREATE TABLE `website_page_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `webPageId` int(11) DEFAULT NULL,
@@ -5666,8 +5666,8 @@ CREATE TABLE `website_page_usage` (
   PRIMARY KEY (`id`),
   KEY `instance` (`instance`,`webPageId`,`year`,`month`),
   KEY `instance_2` (`instance`,`webPageId`,`year`,`month`)
-) ENGINE=InnoDB AUTO_INCREMENT=136 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS website_pages
+) ENGINE=InnoDB AUTO_INCREMENT=136 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS website_pages;
 CREATE TABLE `website_pages` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `websiteId` int(11) NOT NULL,
@@ -5679,8 +5679,8 @@ CREATE TABLE `website_pages` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `url` (`url`),
   KEY `websiteId` (`websiteId`)
-) ENGINE=InnoDB AUTO_INCREMENT=14619 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS worldpay_settings
+) ENGINE=InnoDB AUTO_INCREMENT=14619 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS worldpay_settings;
 CREATE TABLE `worldpay_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -5690,15 +5690,15 @@ CREATE TABLE `worldpay_settings` (
   `useLineItems` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-DROP TABLE IF EXISTS xpresspay_settings
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+DROP TABLE IF EXISTS xpresspay_settings;
 CREATE TABLE `xpresspay_settings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `paymentTypeCode` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 INSERT INTO account_profiles (id, name, driver, loginConfiguration, authenticationMethod, vendorOpacUrl, patronApiUrl, recordSource, weight, ils) VALUES (1,'admin','Library','barcode_pin','db','defaultURL','defaultURL','admin',1,'library');
 INSERT INTO browse_category VALUES VALUES (1,'main_new_fiction',1,'everyone','New Fiction','','literary_form:Fiction','newest_to_oldest','',2,0,-1,'GroupedWork',-1,0,0),(2,'main_new_non_fiction',1,'everyone','New Non Fiction','','literary_form:Non Fiction','newest_to_oldest','',0,0,-1,'GroupedWork',-1,0,0)
 INSERT INTO browse_category_group (id, name) VALUES (1, 'Main Library');
