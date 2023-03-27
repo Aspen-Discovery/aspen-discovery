@@ -16,7 +16,7 @@ $dbPassword = $configArray['Database']['database_password'];
 $dbName = $configArray['Database']['database_aspen_dbname'];
 
 //Delete the old aspen.sql file
-$exportFile = $installDirectory . 'aspen.sql.new';
+$exportFile = $installDirectory . 'aspen.sql';
 unlink($exportFile);
 
 //Create the export files
@@ -82,7 +82,6 @@ fclose($fhnd);
 //TODO: Fix which modules are enabled by default
 //TODO: Make sure the permissions are all correct
 
-//Move the file to aspen.sql
 
 function exec_advanced($command, $log) {
 	if ($log) {
