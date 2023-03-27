@@ -191,6 +191,28 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				if($userLibrary->finePaymentType == 10) {
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
+					$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
+					$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
+					if($deluxeSettings->find(true)) {
+						// connection URL to payment portal
+						$url = 'https://www.velocitypayment.com/vrelay/verify.do';
+						if($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == "1") {
+							$url = 'https://demo.velocitypayment.com/vrelay/verify.do';
+						}
+						$interface->assign('deluxeAPIConnectionUrl', $url);
+
+						// generate remittance id
+						$uid = random_bytes(12);
+						$interface->assign('deluxeRemittanceId', bin2hex($uid));
+
+						// application id from deluxe
+						$interface->assign('deluxeApplicationId', $deluxeSettings->applicationId);
+					}
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 

@@ -6785,6 +6785,11 @@ AspenDiscovery.Account = (function () {
 				window.location.href = url;
 			}
 		},
+
+		createCertifiedPaymentsByDeluxeOrder: function (finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'CertifiedPaymentsByDeluxe', transactionType, null);
+		},
+
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {

@@ -1382,6 +1382,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentId;
 						} else if (paymentType === 'InvoiceCloud') {
 							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'CertifiedPaymentsByDeluxe') {
+							orderInfo = response.paymentRequestUrl;
 						}
 					}
 				}
@@ -1481,6 +1483,16 @@ AspenDiscovery.Account = (function () {
 				window.location.href = url;
 			}
 		},
+
+		createCertifiedPaymentsByDeluxeOrder: function (finesFormId, transactionType) {
+			var url = this.createGenericOrder(finesFormId, 'CertifiedPaymentsByDeluxe', transactionType, null);
+			if (url === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				window.location.href = url;
+			}
+		},
+
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
