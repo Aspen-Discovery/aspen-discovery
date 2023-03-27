@@ -124,11 +124,11 @@ class InclusionRule {
 		if (shelfLocation == null || shelfLocation.length() == 0) {
 			shelfLocation = ".*";
 		}
-		if (shelfLocation.equals(".*") && shelfLocationsToExclude.length() == 0){
+		if (shelfLocation.equals(".*") && (shelfLocationsToExclude == null || shelfLocationsToExclude.length() == 0)){
 			matchAllShelfLocations = true;
 		}
 		this.shelfLocationPattern = Pattern.compile(shelfLocation, Pattern.CASE_INSENSITIVE);
-		if (shelfLocationsToExclude.length() > 0){
+		if (shelfLocationsToExclude != null && shelfLocationsToExclude.length() > 0){
 			this.shelfLocationsToExcludePattern = Pattern.compile(shelfLocationsToExclude, Pattern.CASE_INSENSITIVE);
 		}
 
