@@ -3902,7 +3902,12 @@ class MyAccount_AJAX extends JSON_Action {
 			$payment->paidFromInstance = $library->subdomain;
 
 			if (isset($_REQUEST['token'])) {
-				$payment->aciToken = $_REQUEST['token'];
+				if($paymentType == 'ACI') {
+					$payment->aciToken = $_REQUEST['token'];
+				}
+				if($paymentType == 'CertifiedPaymentsByDeluxe') {
+					$payment->deluxeRemittanceId = $_REQUEST['token'];
+				}
 			}
 
 			$paymentId = $payment->insert();
@@ -4698,6 +4703,63 @@ class MyAccount_AJAX extends JSON_Action {
 			$paymentRequestUrl .= "&e=" . $patron->email;
 			$paymentRequestUrl .= "&p=" . $patron->phone;
 			$paymentRequestUrl .= "&uid=" . $payment->id;
+
+			return [
+				'success' => true,
+				'message' => 'Redirecting to payment processor',
+				'paymentRequestUrl' => $paymentRequestUrl,
+			];
+		}
+	}
+
+	function createCertifiedPaymentsByDeluxeOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('CertifiedPaymentsByDeluxe');
+		} else {
+			$result = $this->createGenericOrder('CertifiedPaymentsByDeluxe');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+
+			require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
+			$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
+			$deluxeSettings->id = $paymentLibrary->deluxeCertifiedPaymentsSettingId;
+			if (!$deluxeSettings->find(true)) {
+				return [
+					'success' => false,
+					'message' => 'Certified Payments by Deluxe settings are not configured correctly for ' . $paymentLibrary->displayName,
+				];
+			}
+
+			$patron->loadContactInformation();
+			$paymentRequestUrl = 'https://www.velocitypayment.com/vrelay/verify.do';
+			if ($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == '1') {
+				$paymentRequestUrl = 'https://demo.velocitypayment.com/vrelay/verify.do';
+			}
 
 			return [
 				'success' => true,

@@ -1484,8 +1484,8 @@ AspenDiscovery.Account = (function () {
 			}
 		},
 
-		createCertifiedPaymentsByDeluxeOrder: function (finesFormId, transactionType) {
-			var url = this.createGenericOrder(finesFormId, 'CertifiedPaymentsByDeluxe', transactionType, null);
+		createCertifiedPaymentsByDeluxeOrder: function (finesFormId, transactionType, remittanceId) {
+			var url = this.createGenericOrder(finesFormId, 'CertifiedPaymentsByDeluxe', transactionType, remittanceId);
 			if (url === false) {
 				// Do nothing; there was an error that should be displayed
 			} else {
