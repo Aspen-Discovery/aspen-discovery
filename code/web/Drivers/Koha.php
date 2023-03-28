@@ -4804,7 +4804,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 		} else {
-			//Restrict certain sections based on ASpen settings
+			//Restrict certain sections based on Aspen settings
 			if (!$library->allowPatronPhoneNumberUpdates) {
 				if (array_key_exists('contactInformationSection', $patronUpdateFields)) {
 					if (array_key_exists('borrower_phone', $patronUpdateFields['contactInformationSection']['properties'])) {

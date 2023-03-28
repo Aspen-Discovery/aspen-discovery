@@ -1794,6 +1794,31 @@ AspenDiscovery.Admin = (function () {
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+
+		searchGreenhouseContent: function (toolModule, toolName) {
+			$("#greenhouseSearchResultsLoading").show();
+			$("#greenhouseSearchResults").html("");
+			var searchForm = $("#searchGreenhouseContentForm");
+			var objectType = searchForm.find("#objectType").val();
+			var greenhouseSearchTerm = searchForm.find("#greenhouseSearchTerm").val();
+			var url = Globals.path + '/API/GreenhouseAPI';
+			var params = {
+				'method': 'searchSharedContent',
+				'objectType': objectType,
+				'toolModule': toolModule,
+				'toolName' : toolName,
+				'greenhouseSearchTerm': greenhouseSearchTerm,
+				'includeHtml': true
+			}
+			$.getJSON(url, params, function(data){
+				$("#greenhouseSearchResultsLoading").hide();
+				if (data.success === true){
+					$("#greenhouseSearchResults").html(data.greenhouseResults);
+				}else{
+					$("#greenhouseSearchResults").html(data.message);
+				}
+			});
 		}
 	};
 }(AspenDiscovery.Admin || {}));

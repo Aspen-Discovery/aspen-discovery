@@ -331,89 +331,81 @@ public class GroupedWorkIndexer {
 
 		//Initialize processors based on our indexing profiles and the primary identifiers for the records.
 		try {
-			PreparedStatement uniqueIdentifiersStmt = dbConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
-			PreparedStatement getIndexingProfile = dbConn.prepareStatement("SELECT * from indexing_profiles where name = ?");
-			PreparedStatement getSideLoadSettings = dbConn.prepareStatement("SELECT * from sideloads where name = ?");
+			//Don't load these based on the records in the database, base it on the actual indexing profiles defined (otherwise it will not index things the first time)
+			//PreparedStatement uniqueIdentifiersStmt = dbConn.prepareStatement("SELECT DISTINCT type FROM grouped_work_primary_identifiers");
+			PreparedStatement getIndexingProfilesStmt = dbConn.prepareStatement("SELECT * from indexing_profiles");
 
-			ResultSet uniqueIdentifiersRS = uniqueIdentifiersStmt.executeQuery();
+			ResultSet indexingProfilesRS = getIndexingProfilesStmt.executeQuery();
 
-			while (uniqueIdentifiersRS.next()){
-				String curType = uniqueIdentifiersRS.getString("type");
-				getIndexingProfile.setString(1, curType);
-				ResultSet indexingProfileRS = getIndexingProfile.executeQuery();
-				if (indexingProfileRS.next()){
-					String ilsIndexingClassString = indexingProfileRS.getString("indexingClass");
-					IndexingProfile indexingProfile = new IndexingProfile(indexingProfileRS);
-					switch (ilsIndexingClassString) {
-						case "ArlingtonKoha":
-							ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "CarlX":
-							ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "III":
-							ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "SideLoadedEContent":
-							ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Koha":
-							ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Symphony":
-							ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Polaris":
-							ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Evergreen":
-							ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Evolve":
-							ilsRecordProcessors.put(curType, new EvolveRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						case "Folio":
-							ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfileRS, logger, fullReindex));
-							break;
-						default:
-							logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
-							continue;
-					}
-					ilsRecordGroupers.put(curType, new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger));
-					if (ilsRecordProcessors.containsKey(curType)){
-						this.treatUnknownAudienceAs = indexingProfileRS.getString("treatUnknownAudienceAs");
-						if ("Unknown".equals(this.treatUnknownAudienceAs)) {
-							treatUnknownAudienceAsUnknown = true;
-						}
-						this.treatUnknownLanguageAs = indexingProfileRS.getString("treatUnknownLanguageAs");
-					}
-				}else if (!curType.equals("cloud_library")  && !curType.equals("hoopla") && !curType.equals("overdrive") && !curType.equals("axis360")) {
-					getSideLoadSettings.setString(1, curType);
-					ResultSet getSideLoadSettingsRS = getSideLoadSettings.executeQuery();
-					if (getSideLoadSettingsRS.next()){
-						String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
-						if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
-							SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
-							sideLoadProcessors.put(curType, sideloadProcessor);
-							sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
-						} else {
-							logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
-							getSideLoadSettings.close();
-							getIndexingProfile.close();
-							okToIndex = false;
-							return;
-						}
-					}else{
-						logEntry.addNote("Could not find indexing profile or side load settings for type " + curType);
-					}
-					getSideLoadSettingsRS.close();
+			while (indexingProfilesRS.next()){
+				String ilsIndexingClassString = indexingProfilesRS.getString("indexingClass");
+				String curType = indexingProfilesRS.getString("name");
+				IndexingProfile indexingProfile = new IndexingProfile(indexingProfilesRS);
+				switch (ilsIndexingClassString) {
+					case "ArlingtonKoha":
+						ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "CarlX":
+						ilsRecordProcessors.put(curType, new CarlXRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "III":
+						ilsRecordProcessors.put(curType, new IIIRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "SideLoadedEContent":
+						ilsRecordProcessors.put(curType, new SideLoadedEContentProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "Koha":
+						ilsRecordProcessors.put(curType, new KohaRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "Symphony":
+						ilsRecordProcessors.put(curType, new SymphonyRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "Polaris":
+						ilsRecordProcessors.put(curType, new PolarisRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "Evergreen":
+						ilsRecordProcessors.put(curType, new EvergreenRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "Evolve":
+						ilsRecordProcessors.put(curType, new EvolveRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					case "Folio":
+						ilsRecordProcessors.put(curType, new FolioRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));
+						break;
+					default:
+						logEntry.incErrors("Unknown indexing class " + ilsIndexingClassString);
+						continue;
 				}
-				indexingProfileRS.close();
+				ilsRecordGroupers.put(curType, new MarcRecordGrouper(serverName, dbConn, indexingProfile, logEntry, logger));
+
+				//Load how to treat unknown audiences for the entire indexer, this will be based on the last indexing profile encountered (at least for now since we only have one no big deal)
+				this.treatUnknownAudienceAs = indexingProfilesRS.getString("treatUnknownAudienceAs");
+				if ("Unknown".equals(this.treatUnknownAudienceAs)) {
+					treatUnknownAudienceAsUnknown = true;
+				}
+				this.treatUnknownLanguageAs = indexingProfilesRS.getString("treatUnknownLanguageAs");
 			}
-			uniqueIdentifiersRS.close();
-			uniqueIdentifiersStmt.close();
-			getIndexingProfile.close();
-			getSideLoadSettings.close();
+			indexingProfilesRS.close();
+			getIndexingProfilesStmt.close();
+
+			PreparedStatement getSideLoadSettingsStmt = dbConn.prepareStatement("SELECT * from sideloads");
+			ResultSet getSideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery();
+
+			while (getSideLoadSettingsRS.next()) {
+				String curType = getSideLoadSettingsRS.getString("name");
+				String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
+				if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
+					SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
+					sideLoadProcessors.put(curType, sideloadProcessor);
+					sideLoadRecordGroupers.put(curType, new SideLoadedRecordGrouper(serverName, dbConn, sideloadProcessor.getSettings(), logEntry, logger));
+				} else {
+					logEntry.incErrors("Unknown side load processing class " + sideLoadIndexingClassString);
+					okToIndex = false;
+					return;
+				}
+			}
+			getSideLoadSettingsStmt.close();
+			getSideLoadSettingsRS.close();
 
 		}catch (Exception e){
 			logEntry.incErrors("Error loading record processors for ILS records", e);
