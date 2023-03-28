@@ -9227,13 +9227,11 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
-		searchGreenhouseContent: function () {
+		searchGreenhouseContent: function (toolModule, toolName) {
 			$("#greenhouseSearchResultsLoading").show();
 			$("#greenhouseSearchResults").html("");
 			var searchForm = $("#searchGreenhouseContentForm");
 			var objectType = searchForm.find("#objectType").val();
-			var toolModule = searchForm.find("#toolModule").val();
-			var toolName = searchForm.find("#toolName").val();
 			var greenhouseSearchTerm = searchForm.find("#greenhouseSearchTerm").val();
 			var url = Globals.path + '/API/GreenhouseAPI';
 			var params = {

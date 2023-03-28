@@ -809,6 +809,7 @@ class GreenhouseAPI extends Action {
 		$result = [
 			'numResults' => 0,
 			'results' => [],
+			'success' => true,
 		];
 
 		$objectType = $_REQUEST['objectType'];
@@ -816,6 +817,11 @@ class GreenhouseAPI extends Action {
 		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
 		$sharedContent = new SharedContent();
 		$sharedContent->type = $objectType;
+		$sharedContent->approved = 1;
+		if (!empty($_REQUEST['greenhouseSearchTerm'])){
+			$searchTerm = $_REQUEST['greenhouseSearchTerm'];
+			$sharedContent->whereAdd("name like " . $sharedContent->escape( '%'. $searchTerm . '%'));
+		}
 		$sharedContent->find();
 		while ($sharedContent->fetch()) {
 			$result['results'][] = [
@@ -824,9 +830,17 @@ class GreenhouseAPI extends Action {
 				'description' => $sharedContent->description,
 				'sharedFrom' => $sharedContent->sharedFrom,
 				'shareDate' => $sharedContent->shareDate,
-				'type' => $sharedContent->type
+				'type' => $sharedContent->type,
 			];
 			$result['numResults']++;
+		}
+
+		if (!empty($_REQUEST['includeHtml'])) {
+			global $interface;
+			$interface->assign('toolModule', $_REQUEST['toolModule']);
+			$interface->assign('toolName', $_REQUEST['toolName']);
+			$interface->assign('results', $result['results']);
+			$result['greenhouseResults'] = $interface->fetch('Admin/greenhouseSearchResults.tpl');
 		}
 
 		return $result;

@@ -388,7 +388,7 @@ public class GroupedWorkIndexer {
 			indexingProfilesRS.close();
 			getIndexingProfilesStmt.close();
 
-			PreparedStatement getSideLoadSettingsStmt = dbConn.prepareStatement("SELECT * from sideloads where name = ?");
+			PreparedStatement getSideLoadSettingsStmt = dbConn.prepareStatement("SELECT * from sideloads");
 			ResultSet getSideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery();
 
 			while (getSideLoadSettingsRS.next()) {
