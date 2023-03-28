@@ -19,12 +19,11 @@ export const HoldPrompt = (props) => {
 	const { user, updateUser, accounts, locations } = React.useContext(UserContext);
 	const { library } = React.useContext(LibrarySystemContext);
 
-	let status, copies, error, isFetching;
-	({status, data: copies, error, isFetching} = useQuery({
+	const { status, data, error, isFetching } = useQuery({
 		queryKey: ['copies', id, language, library.baseUrl],
 		queryFn: () => getCopies(id, language, library.baseUrl),
 		enabled: holdTypeForFormat === 'item' || holdTypeForFormat === 'either',
-	}));
+	});
 
 	const isPlacingHold = action.includes('hold');
 	let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
@@ -114,13 +113,13 @@ export const HoldPrompt = (props) => {
 								setPhoneNumber={setPhoneNumber}
 							/>
 						) : null}
-						{_.isArray(copies) && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? (
+						{!isFetching && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? (
 							<SelectItem
 								id={id}
 								item={item}
 								setItem={setItem}
 								language={language}
-								copies={copies}
+								data={data}
 								holdType={holdType}
 								setHoldType={setHoldType}
 								holdTypeForFormat={holdTypeForFormat}
@@ -198,7 +197,7 @@ export const HoldPrompt = (props) => {
 								isLoading={loading}
 								onPress={async () => {
 									setLoading(true);
-									await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences).then(async (result) => {
+									await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences, item).then(async (result) => {
 										setResponse(result);
 										setShowModal(false);
 										if(result) {

@@ -322,5 +322,7 @@
   "axis360": "Axis 360",
   "cloud_library": "cloudLibrary",
   "hoopla": "Hoopla",
-  "overdrive": "OverDrive"
+  "overdrive": "OverDrive",
+  "specific_item": "Specific Item",
+  "select_item": "Select an Item"
 }
