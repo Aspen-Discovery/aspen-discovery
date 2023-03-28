@@ -4,19 +4,27 @@ import { Button, Modal, Heading, FormControl, Select, CheckIcon } from 'native-b
 import _ from 'lodash';
 import {completeAction} from '../../../screens/GroupedWork/Record';
 import {refreshProfile} from '../../../util/api/user';
-import {SelectPickupLocation} from './SelectPickupLocation';
-import {SelectLinkedAccount} from './SelectLinkedAccount';
+import { useQuery } from '@tanstack/react-query';
 import {SelectVolume} from './SelectVolume';
 import {HoldNotificationPreferences} from './HoldNotificationPreferences';
 import {getTermFromDictionary} from '../../../translations/TranslationService';
+import {getCopies} from '../../../util/api/item';
+import {SelectItem} from './SelectItem';
 
 export const HoldPrompt = (props) => {
-	const {language, id, title, action, volumeInfo, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef} = props;
+	const {language, id, title, action, volumeInfo, holdTypeForFormat, variationId, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef} = props;
 	const [loading, setLoading] = React.useState(false);
 	const [showModal, setShowModal] = React.useState(false);
 
 	const { user, updateUser, accounts, locations } = React.useContext(UserContext);
 	const { library } = React.useContext(LibrarySystemContext);
+
+	let status, copies, error, isFetching;
+	({status, data: copies, error, isFetching} = useQuery({
+		queryKey: ['copies', id, language, library.baseUrl],
+		queryFn: () => getCopies(id, language, library.baseUrl),
+		enabled: holdTypeForFormat === 'item' || holdTypeForFormat === 'either',
+	}));
 
 	const isPlacingHold = action.includes('hold');
 	let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
@@ -65,6 +73,7 @@ export const HoldPrompt = (props) => {
 
 	const [holdType, setHoldType] = React.useState(typeOfHold);
 	const [volume, setVolume] = React.useState('');
+	const [item, setItem] = React.useState('');
 
 	const [activeAccount, setActiveAccount] = React.useState(user.id ?? '');
 
@@ -103,6 +112,20 @@ export const HoldPrompt = (props) => {
 								setSMSNumber={setSMSNumber}
 								phoneNumber={phoneNumber}
 								setPhoneNumber={setPhoneNumber}
+							/>
+						) : null}
+						{_.isArray(copies) && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? (
+							<SelectItem
+								id={id}
+								item={item}
+								setItem={setItem}
+								language={language}
+								copies={copies}
+								holdType={holdType}
+								setHoldType={setHoldType}
+								holdTypeForFormat={holdTypeForFormat}
+								url={library.baseUrl}
+								showModal={showModal}
 							/>
 						) : null}
 						{promptForHoldType || holdType === 'volume' ? (
