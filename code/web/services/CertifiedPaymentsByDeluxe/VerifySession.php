@@ -9,12 +9,14 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 		$logger->log('Completing Session Verification Request for Certified Payments by Deluxe...', Logger::LOG_ERROR);
 
 		if($_POST) {
-			//$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
+			$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
 			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$payment = new UserPayment();
 			$payment->deluxeRemittanceId = $_POST['remittance_id'];
 			if($payment->find(true)) {
+				$logger->log('Found user payment with matching remittance id.', Logger::LOG_ERROR);
 				if($payment->completed || $payment->deluxeSecurityId) {
+					$logger->log('Payment already completed or using expired security id. Try again.', Logger::LOG_ERROR);
 					require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
 					$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
 					$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
@@ -33,6 +35,7 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 						return $invalidSessionReturn->curlPostPage($url, $postParams);
 					}
 				} else {
+					$logger->log('Session verified.', Logger::LOG_ERROR);
 					$success = true;
 					// store security id
 					$payment->deluxeSecurityId = $_POST['security_id'];
@@ -67,7 +70,11 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 						return $validSessionReturn->curlPostPage($url, $postParams);
 					}
 				}
+			} else {
+				$logger->log('User payment not found with given remittance id.', Logger::LOG_ERROR);
 			}
+		} else {
+			$logger->log('Post data not found.', Logger::LOG_ERROR);
 		}
 	}
 

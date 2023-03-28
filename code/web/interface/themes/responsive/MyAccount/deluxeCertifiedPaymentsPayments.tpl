@@ -17,7 +17,7 @@
     </script>
     <script>
         $('#fines{$userId}').submit(function() {ldelim}
-            return AspenDiscovery.Account.createCertifiedPaymentsByDeluxeOrder('#fines{$userId}', '#formattedTotal{$userId}', 'fine', '{$deluxeRemittanceId}');
+            AspenDiscovery.Account.createCertifiedPaymentsByDeluxeOrder('#fines{$userId}', 'fine', '{$deluxeRemittanceId}');
         {rdelim});
     </script>
 {/strip}
