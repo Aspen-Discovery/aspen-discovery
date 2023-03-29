@@ -86,7 +86,6 @@ function getUpdates23_04_00(): array {
 				"RENAME TABLE indexed_locationCode TO indexed_location_code;",
 				"RENAME TABLE indexed_shelfLocation TO indexed_shelf_location;",
 				"RENAME TABLE indexed_subLocationCode TO indexed_sub_location_code;",
-
 			],
 		],
 
