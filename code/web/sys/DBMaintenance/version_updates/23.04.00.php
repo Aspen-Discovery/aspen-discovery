@@ -153,6 +153,15 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		//update_deluxe_remittance_id
+		'extend_web_form_label' => [
+			'title' => 'Extend label in web_builder_custom_form_field',
+			'description' => 'Extend column for storing field label in web_builder_custom_form_field table',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE web_builder_custom_form_field MODIFY COLUMN label VARCHAR(255)',
+			]
+		],
+		//extend_web_form_label
 
 		//kodi
 		'permissions_create_events_communico' => [
