@@ -256,18 +256,18 @@ public class GroupedWorkIndexer {
 			addPublicationDateStmt = dbConn.prepareStatement("INSERT INTO indexed_publicationDate (publicationDate) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getPhysicalDescriptionStmt = dbConn.prepareStatement("SELECT id from indexed_physicalDescription where physicalDescription = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addPhysicalDescriptionStmt = dbConn.prepareStatement("INSERT INTO indexed_physicalDescription (physicalDescription) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getEContentSourceStmt = dbConn.prepareStatement("SELECT id from indexed_eContentSource where eContentSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_eContentSource (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelfLocation where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addShelfLocationStmt = dbConn.prepareStatement("INSERT INTO indexed_shelfLocation (shelfLocation) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getCallNumberStmt = dbConn.prepareStatement("SELECT id from indexed_callNumber where callNumber = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_callNumber (callNumber) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getEContentSourceStmt = dbConn.prepareStatement("SELECT id from indexed_econtent_source where eContentSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_econtent_source (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelf_location where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addShelfLocationStmt = dbConn.prepareStatement("INSERT INTO indexed_shelf_location (shelfLocation) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getCallNumberStmt = dbConn.prepareStatement("SELECT id from indexed_call_number where callNumber = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addCallNumberStmt = dbConn.prepareStatement("INSERT INTO indexed_call_number (callNumber) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getStatusStmt = dbConn.prepareStatement("SELECT id from indexed_status where status = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addStatusStmt = dbConn.prepareStatement("INSERT INTO indexed_status (status) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_locationCode where locationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_locationCode (locationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getSubLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_subLocationCode where subLocationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addSubLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_subLocationCode (subLocationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_location_code where locationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_location_code (locationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getSubLocationCodeStmt = dbConn.prepareStatement("SELECT id from indexed_sub_location_code where subLocationCode = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addSubLocationCodeStmt = dbConn.prepareStatement("INSERT INTO indexed_sub_location_code (subLocationCode) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 
 			getExistingRecordInfoForIdentifierStmt = dbConn.prepareStatement("SELECT id, checksum, deleted, UNCOMPRESSED_LENGTH(sourceData) as sourceDataLength FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getRecordForIdentifierStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(sourceData) as sourceData FROM ils_records where ilsId = ? and source = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
