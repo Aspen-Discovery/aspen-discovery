@@ -20,6 +20,7 @@
 		</div>
 	</form>
 
+
 	<form>
 		<input type="hidden" name="roleId" value="{$selectedRole->roleId}" />
 		{assign var=panelId value=0}

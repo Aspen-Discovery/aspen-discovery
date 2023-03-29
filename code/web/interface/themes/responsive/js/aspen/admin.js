@@ -1782,6 +1782,33 @@ AspenDiscovery.Admin = (function () {
 			}
 		},
 
+		searchProperties: function () {
+			var searchValue = $("#propertySearch").val();
+			var searchRegex = new RegExp(searchValue, 'i');
+			if (searchValue.length === 0) {
+				$(".propertyRow").show();
+				$(".propertySectionHeading").show();
+				$(".propertySection").show();
+				//Collapse all panels
+				$(".editor .panel").removeClass('active');
+				$(".editor .accordion_body").removeClass('in');
+			} else {
+				var allAPropertyRows = $(".propertyRow");
+				allAPropertyRows.each(function (){
+					var curRow = $(this);
+					var rowText = curRow.text();
+					if (searchRegex.test(rowText)) {
+						curRow.show();
+					}else {
+						curRow.hide();
+					}
+				});
+				//Expand all panels
+				$(".editor .panel").addClass('active');
+				$(".editor .accordion_body").addClass('in');
+			}
+		},
+
 		showFindGreenhouseForm: function(toolModule, toolName, objectType) {
 			var params = {
 				method: 'getSearchGreenhouseContentForm',

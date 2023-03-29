@@ -37,6 +37,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('toolName', $this->getToolName());
 		$interface->assign('initializationJs', $this->getInitializationJs());
 		$interface->assign('initializationAdditionalJs', $this->getInitializationAdditionalJs());
+		$interface->assign('allowSearchingProperties', $this->allowSearchingProperties($structure));
 
 		//Define the structure of the object.
 		$interface->assign('structure', $structure);
@@ -1037,5 +1038,9 @@ abstract class ObjectEditor extends Admin_Admin {
 		} else {
 			return false;
 		}
+	}
+
+	public function allowSearchingProperties($structure) {
+		return count($structure) > 10;
 	}
 }
