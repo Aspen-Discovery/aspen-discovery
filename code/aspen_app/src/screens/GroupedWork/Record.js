@@ -614,7 +614,7 @@ const OnHoldForYou = (props) => {
 };
 
 // complete the action on the item, i.e. checkout, hold, or view sample
-export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null, holdNotificationPreferences) {
+export async function completeAction(id, actionType, patronId, formatId = null, sampleNumber = null, pickupBranch = null, url, volumeId = null, holdType = null, holdNotificationPreferences, variationId = null) {
      const recordId = id.split(':');
      const source = recordId[0];
      let itemId = recordId[1];
@@ -648,7 +648,7 @@ export async function completeAction(id, actionType, patronId, formatId = null, 
                     return getPromptForOverdriveEmail;
                }
           } else {
-               return await placeHold(url, itemId, source, patronId, pickupBranch, null, holdType, id, holdNotificationPreferences);
+               return await placeHold(url, itemId, source, patronId, pickupBranch, null, holdType, id, holdNotificationPreferences, variationId);
           }
      } else if (actionType.includes('sample')) {
           return await overDriveSample(url, formatId, itemId, sampleNumber);

@@ -20,6 +20,7 @@ class UserPayment extends DataObject {
 	public $transactionType;
 	public $aciToken;
 	public $deluxeRemittanceId;
+	public $deluxeSecurityId;
 	public $requestingUrl;
 
 	public static function getObjectStructure($context = '') {

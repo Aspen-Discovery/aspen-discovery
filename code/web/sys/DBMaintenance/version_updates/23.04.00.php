@@ -112,6 +112,15 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		//add_deluxe_remittance_id
+		'add_deluxe_security_id' => [
+			'title' => 'Add security id for Deluxe user payments',
+			'description' => 'Store security id in user_payments for Certified Payments by Deluxe',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_payments ADD COLUMN deluxeSecurityId VARCHAR(32) DEFAULT null',
+			],
+		],
+		//add_deluxe_security_id
 
 		//kodi
 		'permissions_create_events_communico' => [
