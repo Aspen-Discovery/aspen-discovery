@@ -41,6 +41,7 @@ class SearchAPI extends Action {
 					'searchFacetCluster',
 					'getFormatCategories',
 					'getBrowseCategoryListForUser',
+					'searchAvailableFacets'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -2801,7 +2802,7 @@ class SearchAPI extends Action {
 						$i++;
 					}
 				} else {
-					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);;
+					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
 					$items[$key]['key'] = $index;
 					$items[$key]['label'] = $key;
 					$items[$key]['field'] = $facet['field_name'];
@@ -2838,6 +2839,131 @@ class SearchAPI extends Action {
 					}
 				}
 			}
+			$results = [
+				'success' => true,
+				'id' => $id,
+				'time' => round($searchObj->getQuerySpeed(), 2),
+				'data' => $items,
+			];
+		}
+		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function searchAvailableFacets() {
+		$results = [
+			'success' => false,
+			'message' => 'Unable to restore search from id',
+		];
+		if (empty($_REQUEST['id'])) {
+			return [
+				'success' => false,
+				'message' => 'Search id not provided',
+			];
+		}
+		if (empty($_REQUEST['facet'])) {
+			return [
+				'success' => false,
+				'message' => 'Facet name not provided',
+			];
+		}
+		$id = $_REQUEST['id'];
+		$facet = $_REQUEST['facet'];
+		$term = $_REQUEST['term'] ?? '';
+		$searchObj = $this->restoreSearch($id);
+		if ($searchObj) {
+			$items = [];
+			$index = 0;
+			if(array_key_exists($facet, $searchObj->getFacetConfig())) {
+				/** @var SearchObject_SolrSearcher $newSearch */
+				$newSearch = clone $searchObj;
+				$newSearch->addFacetSearch($facet, $term);
+				$newSearchResult = $newSearch->processSearch(false, true);
+				$facetConfig = $newSearch->getFacetConfig()[$facet];
+				if (is_object($facetConfig)) {
+					$facetTitle = $facetConfig->displayName;
+					$facetTitlePlural = $facetConfig->displayNamePlural;
+					$isMultiSelect = $facetConfig->multiSelect;
+				} else {
+					$facetTitle = $facet;
+					$facetTitlePlural = $facet;
+					$isMultiSelect = false;
+				}
+
+				$appliedFacets = $searchObj->getFilterList();
+				$appliedFacetValues = [];
+				if (array_key_exists($facetTitle, $appliedFacets)) {
+					$appliedFacetValues = $appliedFacets[$facetTitle];
+					asort($appliedFacetValues);
+				}
+
+				$allFacets = $newSearch->getFacetList();
+				if (isset($allFacets[$facet])) {
+					$facet = $allFacets[$facet];
+					asort($facet['list']);
+					$index++;
+					$i = 0;
+					if ($facet['field_name'] == 'availability_toggle') {
+						$availabilityToggle = $topFacetSet['availability_toggle'];
+						$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
+						$items[$key]['key'] = $index;
+						$items[$key]['label'] = $key;
+						$items[$key]['field'] = $availabilityToggle['field_name'];
+						$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
+						$items[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
+						foreach ($availabilityToggle['list'] as $item) {
+							$items[$key]['facets'][$i]['value'] = $item['value'];
+							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+							$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+							$items[$key]['facets'][$i]['count'] = $item['count'];
+							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							if (isset($item['multiSelect'])) {
+								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							} else {
+								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
+							$i++;
+						}
+					} else {
+						$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
+						$items[$key]['key'] = $index;
+						$items[$key]['label'] = $key;
+						$items[$key]['field'] = $facet['field_name'];
+						$items[$key]['hasApplied'] = $facet['hasApplied'];
+						$items[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+						if (isset($facet['sortedList'])) {
+							foreach ($facet['sortedList'] as $item) {
+								$items[$key]['facets'][$i]['value'] = $item['value'];
+								$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
+								$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+								$items[$key]['facets'][$i]['count'] = $item['count'];
+								$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+								if (isset($item['multiSelect'])) {
+									$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+								} else {
+									$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+								}
+								$i++;
+							}
+						} else {
+							foreach ($facet['list'] as $item) {
+								$items[$key]['facets'][$i]['value'] = $item['value'];
+								$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
+								$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+								$items[$key]['facets'][$i]['count'] = $item['count'];
+								$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+								if (isset($item['multiSelect'])) {
+									$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+								} else {
+									$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+								}
+								$i++;
+							}
+						}
+					}
+				}
+			}
+
 			$results = [
 				'success' => true,
 				'id' => $id,
