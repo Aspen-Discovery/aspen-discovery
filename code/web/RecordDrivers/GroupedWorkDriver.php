@@ -2787,12 +2787,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 			$records = [];
 		} else {
 			$uniqueRecordIdsString = implode(',', $uniqueRecordIds);
-			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physicalDescription.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, hasParentRecord, hasChildRecord FROM grouped_work_records 
+			$recordQuery = "SELECT grouped_work_records.id, recordIdentifier, isClosedCaptioned, indexed_record_source.source, indexed_record_source.subSource, indexed_edition.edition, indexed_publisher.publisher, indexed_publicationDate.publicationDate, indexed_physical_description.physicalDescription, indexed_format.format, indexed_format_category.formatCategory, indexed_language.language, hasParentRecord, hasChildRecord FROM grouped_work_records 
 								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
-								  LEFT JOIN indexed_publicationDate ON publicationDateId = indexed_publicationDate.id
-								  LEFT JOIN indexed_physicalDescription ON physicalDescriptionId = indexed_physicalDescription.id
+								  LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
+								  LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id
 								  LEFT JOIN indexed_language on languageId = indexed_language.id
