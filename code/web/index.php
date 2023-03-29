@@ -884,10 +884,12 @@ try {
 		$aspenUsage->insert();
 	}
 
-	if ($usageByIPAddress->id) {
-		$usageByIPAddress->update();
-	} else {
-		$usageByIPAddress->insert();
+	if (SystemVariables::getSystemVariables()->trackIpAddresses) {
+		if ($usageByIPAddress->id) {
+			$usageByIPAddress->update();
+		} else {
+			$usageByIPAddress->insert();
+		}
 	}
 } catch (Exception $e) {
 	//Table not created yet, ignore

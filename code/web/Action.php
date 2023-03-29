@@ -103,7 +103,9 @@ abstract class Action
 		global $usageByIPAddress;
 		try{
 			$usageByIPAddress->numBlockedApiRequests++;
-			$usageByIPAddress->update();
+			if (SystemVariables::getSystemVariables()->trackIpAddresses) {
+				$usageByIPAddress->update();
+			}
 		} catch (Exception $e) {
 			//Table does not exist yet
 		}
