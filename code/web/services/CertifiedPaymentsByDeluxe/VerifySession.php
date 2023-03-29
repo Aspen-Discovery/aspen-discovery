@@ -1,5 +1,8 @@
 <?php
 
+require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
+require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+
 class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 	public function launch() {
 		global $logger;
@@ -10,14 +13,12 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 
 		if($_POST) {
 			$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
-			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
 			$payment = new UserPayment();
 			$payment->deluxeRemittanceId = $_POST['remittance_id'];
 			if($payment->find(true)) {
 				$logger->log('Found user payment with matching remittance id.', Logger::LOG_ERROR);
 				if($payment->completed || $payment->deluxeSecurityId) {
 					$logger->log('Payment already completed or using expired security id. Try again.', Logger::LOG_ERROR);
-					require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
 					$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
 					$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
 					if($deluxeSettings->find(true)) {
