@@ -3745,6 +3745,16 @@ class Library extends DataObject {
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update($context = '') {
+		//Make sure we have no other default libraries since
+		if ($this->isDefault == 1 && in_array('isDefault', $this->_changedFields)) {
+			$library = new Library();
+			$library->isDefault = 1;
+			$library->find();
+			while ($library->fetch()) {
+				$library->isDefault = 0;
+				$library->update();
+			}
+		}
 		//Updates to properly update settings based on the ILS
 		$isKoha = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
