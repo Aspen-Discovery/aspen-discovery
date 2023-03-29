@@ -39,7 +39,9 @@ foreach ($allTables as $table) {
 		foreach ($createTablesRS as $createTableSql) {
 			$fhnd = fopen($exportFile, 'a+');
 			fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
-			fwrite($fhnd, $createTableSql['Create Table'] . ";\n");
+			$createTableValue = $createTableSql['Create Table'];
+			$createTableValue = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableValue);
+			fwrite($fhnd, $createTableValue . ";\n");
 			fclose($fhnd);
 		}
 		//$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --skip-comments --no-data $dbName $table >> $exportFile";
