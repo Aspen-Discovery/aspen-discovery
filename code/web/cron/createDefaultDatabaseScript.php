@@ -33,13 +33,13 @@ foreach ($allTables as $table) {
 		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --skip-comments $dbName $table >> $exportFile";
 		exec_advanced($dumpCommand, $debug);
 	}else{
-		//TODO: Remove AUTO_INCREMENT id
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
 		$createTablesRS = $createTableStmt->fetchAll(PDO::FETCH_ASSOC);
 		foreach ($createTablesRS as $createTableSql) {
 			$fhnd = fopen($exportFile, 'a+');
 			fwrite($fhnd, "DROP TABLE IF EXISTS $table;\n");
 			$createTableValue = $createTableSql['Create Table'];
+			//Remove the auto increment id
 			$createTableValue = preg_replace('/AUTO_INCREMENT=\d+/', '', $createTableValue);
 			fwrite($fhnd, $createTableValue . ";\n");
 			fclose($fhnd);
