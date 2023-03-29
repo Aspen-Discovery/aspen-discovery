@@ -26,6 +26,7 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 							'user_message' => 'This payment has already been processed or the session with the payment vendor is no longer valid.',
 							'redirect_user_url' => ''
 						]);
+						die();
 					}
 				} else {
 					$logger->log('Session verified.', Logger::LOG_ERROR);
@@ -56,6 +57,7 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 							$postParams['billing_lastname'] = $patron->lastname;
 						}
 						echo http_build_query($postParams);
+						die();
 					}
 				}
 			} else {
@@ -65,6 +67,7 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 					'user_message' => 'Could not find payment matching given remittance id.',
 					'redirect_user_url' => ''
 				]);
+				die();
 			}
 		} else {
 			$logger->log('Post data not found.', Logger::LOG_ERROR);
@@ -73,6 +76,7 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 				'user_message' => 'POST data not provided by vendor.',
 				'redirect_user_url' => ''
 			]);
+			die();
 		}
 	}
 
