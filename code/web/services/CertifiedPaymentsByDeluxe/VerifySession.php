@@ -33,7 +33,9 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 						];
 						$invalidSessionReturn = new CurlWrapper();
 						$invalidSessionReturn->setOption(CURLOPT_RETURNTRANSFER, true);
-						return $invalidSessionReturn->curlPostPage($url, $postParams);
+						$response = $invalidSessionReturn->curlPostPage($url, $postParams);
+						ExternalRequestLogEntry::logRequest('deluxe.verifySession', 'POST', $url, $invalidSessionReturn->getHeaders(), false, $invalidSessionReturn->getResponseCode(), $response, []);
+						return $response;
 					}
 				} else {
 					$logger->log('Session verified.', Logger::LOG_ERROR);
@@ -68,7 +70,9 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 
 						$validSessionReturn = new CurlWrapper();
 						$validSessionReturn->setOption(CURLOPT_RETURNTRANSFER, true);
-						return $validSessionReturn->curlPostPage($url, $postParams);
+						$response = $validSessionReturn->curlPostPage($url, $postParams);
+						ExternalRequestLogEntry::logRequest('deluxe.verifySession', 'POST', $url, $validSessionReturn->getHeaders(), false, $validSessionReturn->getResponseCode(), $response, []);
+						return $response;
 					}
 				}
 			} else {
