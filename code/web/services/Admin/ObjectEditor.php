@@ -1041,6 +1041,12 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function allowSearchingProperties($structure) {
-		return count($structure) > 10;
+		$hasSections = false;
+		foreach ($structure as $property) {
+			if ($property['type'] == 'section') {
+				$hasSections = true;
+			}
+		}
+		return $hasSections || count($structure) > 6;
 	}
 }
