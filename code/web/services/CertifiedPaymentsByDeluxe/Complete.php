@@ -9,17 +9,23 @@ class CertifiedPaymentsByDeluxe_Complete extends Action {
 		$logger->log('Completing Session Notification Request for Certified Payments by Deluxe...', Logger::LOG_ERROR);
 		$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
 
-		$result = [
-			'success' => $success,
-			'message' => $success ? $message : $error,
-		];
+		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+		$result = UserPayment::completeCertifiedPaymentsByDeluxePayment($_POST);
 
-		header('Content-type: application/json');
-		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-
-		echo json_encode($result);
-		die();
+		if($result['success']) {
+			$logger->log('User payment processed successfully.', Logger::LOG_ERROR);
+			echo http_build_query([
+				'success' => true,
+			]);
+			die();
+		} else {
+			$logger->log('Unable to process user payment. ' . $result['message'], Logger::LOG_ERROR);
+			echo http_build_query([
+				'success' => false,
+				'user_message' => $result['message'],
+			]);
+			die();
+		}
 	}
 
 	function getBreadcrumbs(): array {

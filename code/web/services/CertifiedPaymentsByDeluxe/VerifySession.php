@@ -24,7 +24,8 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 						echo http_build_query([
 							'continue_processing' => false,
 							'user_message' => 'This payment has already been processed or the session with the payment vendor is no longer valid.',
-							'redirect_user_url' => ''
+							'echo_failure' => true,
+							'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=failed&id=' . $payment->deluxeRemittanceId,
 						]);
 						die();
 					}
@@ -43,9 +44,10 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 							'security_id' => $_POST['security_id'],
 							'continue_processing' => true,
 							'action_type' => 'PayNow',
-							'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+							'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=success&id=' . $payment->deluxeRemittanceId,
 							'amount' => $payment->totalPaid,
 							'tax_amount' => '',
+							'echo_failure' => true,
 						];
 
 						// try to pre-populate payment profile with user data known
@@ -65,7 +67,8 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 				echo http_build_query([
 					'continue_processing' => false,
 					'user_message' => 'Could not find payment matching given remittance id.',
-					'redirect_user_url' => ''
+					'echo_failure' => true,
+					'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=failed&id=' . $_POST['remittance_id'],
 				]);
 				die();
 			}
@@ -74,7 +77,8 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 			echo http_build_query([
 				'continue_processing' => false,
 				'user_message' => 'POST data not provided by vendor.',
-				'redirect_user_url' => ''
+				'echo_failure' => true,
+				'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=failed&id=',
 			]);
 			die();
 		}
