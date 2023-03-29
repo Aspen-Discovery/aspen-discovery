@@ -181,10 +181,12 @@ class AspenError extends DataObject {
 		global $usageByIPAddress;
 		if (!empty($usageByIPAddress)) {
 			try {
-				if ($usageByIPAddress->id) {
-					$usageByIPAddress->update();
-				} else {
-					$usageByIPAddress->insert();
+				if (SystemVariables::getSystemVariables()->trackIpAddresses) {
+					if ($usageByIPAddress->id) {
+						$usageByIPAddress->update();
+					} else {
+						$usageByIPAddress->insert();
+					}
 				}
 			} catch (Exception $e) {
 				//Table does not exist yet

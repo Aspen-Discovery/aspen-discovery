@@ -75,6 +75,29 @@ function getUpdates23_04_00(): array {
 				) ENGINE INNODB",
 			],
 		],
+		'lowercase_all_tables' => [
+			'title' => 'Make all tables lower case',
+			'description' => 'Make all tables lower case for improved cross platform compatibility when installing clean via docker',
+			'continueOnError' => true,
+			'sql' => [
+				"RENAME TABLE indexed_callNumber TO indexed_call_number;",
+				"RENAME TABLE indexed_eContentSource TO indexed_econtent_source;",
+				"RENAME TABLE indexed_itemType TO indexed_item_type;",
+				"RENAME TABLE indexed_groupedStatus TO indexed_grouped_status;",
+				"RENAME TABLE indexed_locationCode TO indexed_location_code;",
+				"RENAME TABLE indexed_shelfLocation TO indexed_shelf_location;",
+				"RENAME TABLE indexed_subLocationCode TO indexed_sub_location_code;",
+				"RENAME TABLE indexed_physicalDescription TO indexed_physical_description;",
+				"RENAME TABLE indexed_publicationDate TO indexed_publication_date;",
+			],
+		],
+		'allow_ip_tracking_to_be_disabled' => [
+			'title' => 'Allow IP tracking to be disabled',
+			'description' => 'Allow IP tracking to be disabled for GDPR compliance',
+			'sql' => [
+				"ALTER TABLE system_variables add column trackIpAddresses TINYINT(1) DEFAULT 0"
+			],
+		],
 
 		//kirstien
 		'add_ecommerce_deluxe' => [

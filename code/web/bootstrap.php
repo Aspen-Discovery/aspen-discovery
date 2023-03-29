@@ -14,6 +14,7 @@ require_once ROOT_DIR . '/sys/Interface.php';
 require_once ROOT_DIR . '/sys/AspenError.php';
 require_once ROOT_DIR . '/sys/Module.php';
 require_once ROOT_DIR . '/sys/SystemLogging/AspenUsage.php';
+require_once ROOT_DIR . '/sys/SystemVariables.php';
 require_once ROOT_DIR . '/sys/SystemLogging/UsageByIPAddress.php';
 require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 require_once ROOT_DIR . '/sys/Utils/EncryptionUtils.php';
@@ -131,7 +132,9 @@ if (IPAddress::isClientIpBlocked()) {
 	$aspenUsage->update();
 	try {
 		$usageByIPAddress->numBlockedRequests++;
-		$usageByIPAddress->update();
+		if (SystemVariables::getSystemVariables()->trackIpAddresses) {
+			$usageByIPAddress->update();
+		}
 	} catch (Exception $e) {
 		//Ignore this, the class has not been created yet
 	}
