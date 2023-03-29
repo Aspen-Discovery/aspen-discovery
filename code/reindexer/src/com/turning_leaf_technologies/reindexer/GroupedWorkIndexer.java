@@ -252,10 +252,10 @@ public class GroupedWorkIndexer {
 			addEditionStmt = dbConn.prepareStatement("INSERT INTO indexed_edition (edition) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getPublisherStmt = dbConn.prepareStatement("SELECT id from indexed_publisher where publisher = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addPublisherStmt = dbConn.prepareStatement("INSERT INTO indexed_publisher (publisher) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getPublicationDateStmt = dbConn.prepareStatement("SELECT id from indexed_publicationDate where publicationDate = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addPublicationDateStmt = dbConn.prepareStatement("INSERT INTO indexed_publicationDate (publicationDate) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getPhysicalDescriptionStmt = dbConn.prepareStatement("SELECT id from indexed_physicalDescription where physicalDescription = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addPhysicalDescriptionStmt = dbConn.prepareStatement("INSERT INTO indexed_physicalDescription (physicalDescription) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getPublicationDateStmt = dbConn.prepareStatement("SELECT id from indexed_publication_date where publicationDate = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addPublicationDateStmt = dbConn.prepareStatement("INSERT INTO indexed_publication_date (publicationDate) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+			getPhysicalDescriptionStmt = dbConn.prepareStatement("SELECT id from indexed_physical_description where physicalDescription = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addPhysicalDescriptionStmt = dbConn.prepareStatement("INSERT INTO indexed_physical_description (physicalDescription) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getEContentSourceStmt = dbConn.prepareStatement("SELECT id from indexed_econtent_source where eContentSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addEContentSourceStmt = dbConn.prepareStatement("INSERT INTO indexed_econtent_source (eContentSource) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getShelfLocationStmt = dbConn.prepareStatement("SELECT id from indexed_shelf_location where shelfLocation = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
