@@ -131,7 +131,7 @@ function getUpdates23_04_00(): array {
 			'description' => 'Store remittance id in user_payments for Certified Payments by Deluxe',
 			'continueOnError' => true,
 			'sql' => [
-				'ALTER TABLE user_payments ADD COLUMN deluxeRemittanceId INT(24) DEFAULT null',
+				'ALTER TABLE user_payments ADD COLUMN deluxeRemittanceId VARCHAR(24) DEFAULT null',
 			],
 		],
 		//add_deluxe_remittance_id
@@ -144,6 +144,15 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		//add_deluxe_security_id
+		'update_deluxe_remittance_id' => [
+			'title' => 'Update remittance id type for Deluxe user payments',
+			'description' => 'Change remittance id column type in user_payments for Certified Payments by Deluxe',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_payments MODIFY COLUMN deluxeRemittanceId VARCHAR(24) DEFAULT null',
+			],
+		],
+		//update_deluxe_remittance_id
 
 		//kodi
 		'permissions_create_events_communico' => [
