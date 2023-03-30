@@ -20,8 +20,8 @@ import {
   addAppliedFilter,
   buildParamsForUrl,
   removeAppliedFilter,
-  SEARCH,
-} from "../../util/search";
+  SEARCH, searchAvailableFacets,
+} from '../../util/search';
 import Facet_Checkbox from "./Facets/Checkbox";
 import Facet_RadioGroup from "./Facets/RadioGroup";
 import Facet_Rating from "./Facets/Rating";
@@ -29,6 +29,7 @@ import Facet_Slider from "./Facets/Slider";
 import Facet_Year from "./Facets/Year";
 import { UnsavedChangesExit } from "./UnsavedChanges";
 import {getTermFromDictionary} from '../../translations/TranslationService';
+import {LIBRARY} from '../../util/loadLibrary';
 
 export default class Facet extends Component {
   static contextType = userContext;
@@ -129,41 +130,57 @@ export default class Facet extends Component {
     this._isMounted = false;
   }
 
-  filter(list, sorted = false) {
-    const filterByQuery = this.state.filterByQuery;
-    //todo: add method to use api endpoint to get more results to filter through by query
-    if (sorted) {
-      const sortedList = _.orderBy(
-        list,
-        ["isApplied", "count", "display"],
-        ["desc", "desc", "asc"]
-      );
-      return _.filter(sortedList, function (facet) {
-        return facet.display.indexOf(filterByQuery) > -1;
-      });
-    }
+  async filterFacets() {
+    await searchAvailableFacets(this.state.category, this.state.filterByQuery, LIBRARY.url, this.state.language).then(result => {
+      console.log(result);
+      if(result.success === false) {
+        this.setState({
+          isLoading: false
+        })
+      } else {
+        this.setState({
+          facets: result[0]["facets"],
+          numFacets: _.size(result[0]["facets"]),
+          isLoading: false
+        })
+      }
+    })
+    /*     if (sorted) {
+     const sortedList = _.orderBy(
+     list,
+     ["isApplied", "count", "display"],
+     ["desc", "desc", "asc"]
+     );
+     return _.filter(sortedList, function (facet) {
+     return facet.display.indexOf(filterByQuery) > -1;
+     });
+     }
 
-    return _.filter(list, function (facet) {
-      return facet.display.indexOf(filterByQuery) > -1;
-    });
+     return _.filter(list, function (facet) {
+     return facet.display.indexOf(filterByQuery) > -1;
+     }); */
   }
 
   searchBar = () => {
-    //todo: add searchbar to >10 results when able to filter thru every facet properly
-    if (this.state.numFacets > 105) {
-      const placeHolder = getTermFromDictionary(this.state.language, 'search') + " " + this.state.title;
+    const placeHolder = getTermFromDictionary(this.state.language, 'search') + " " + this.state.title;
+    /* always display the search bar */
+    if (this.state.numFacets > 0) {
       return (
-        <Box safeArea={5}>
-          <Input
-            name="filterSearchBar"
-            onChangeText={(filterByQuery) => this.setState({ filterByQuery })}
-            size="lg"
-            autoCorrect={false}
-            variant="outline"
-            returnKeyType="search"
-            placeholder={placeHolder}
-          />
-        </Box>
+          <Box safeArea={5}>
+            <Input
+                name="filterSearchBar"
+                onChangeText={(filterByQuery) => this.setState({filterByQuery})}
+                size="lg"
+                autoCorrect={false}
+                variant="outline"
+                returnKeyType="search"
+                placeholder={placeHolder}
+                onSubmitEditing={async () => {
+                  this.setState({isLoading: true});
+                  await this.filterFacets();
+                }}
+            />
+          </Box>
       );
     } else {
       return <Box pb={5} />;
@@ -353,7 +370,7 @@ export default class Facet extends Component {
                 accessibilityLabel={getTermFromDictionary(this.state.language, 'filter_by')}
                 onChange={(values) => this.updateLocalValues(category, values)}
               >
-                {this.filter(facets, true).map((item, index, array) => (
+                {facets.map((item, index, array) => (
                   <Facet_Checkbox key={index} data={item} language={this.state.language}/>
                 ))}
               </Checkbox.Group>

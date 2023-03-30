@@ -203,6 +203,36 @@ export async function getAvailableFacets(url, language) {
      }
 }
 
+export async function searchAvailableFacets(facet, term, url, language) {
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+          params: {
+               includeSortList: false,
+               id: SEARCH.id,
+               facet,
+               term,
+               language: language
+          },
+     });
+     const { data } = await discovery.get(endpoint.url + 'searchAvailableFacets');
+     if (data.success) {
+          return data.result?.data[0] ?? {
+               key: 1,
+               field: facet,
+               facets: []
+          };
+     } else {
+          console.log(data);
+     }
+     return {
+          success: false,
+          facets: [],
+     };
+}
+
 export async function getAvailableFacetsKeys(url, language) {
      const discovery = create({
           baseURL: url,

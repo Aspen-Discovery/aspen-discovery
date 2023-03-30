@@ -8,11 +8,10 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 		global $logger;
 		global $configArray;
 		global $library;
-		$result = '';
 		$logger->log('Completing Session Verification Request for Certified Payments by Deluxe...', Logger::LOG_ERROR);
 
 		if($_POST) {
-			$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
+			//$logger->log(print_r($_POST, true), Logger::LOG_ERROR);
 			$payment = new UserPayment();
 			$payment->deluxeRemittanceId = $_POST['remittance_id'];
 			if($payment->find(true)) {
@@ -22,44 +21,36 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 					$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
 					$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
 					if($deluxeSettings->find(true)) {
-						$url = 'https://www.velocitypayment.com/vrelay/verify.do';
-						if ($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == '1') {
-							$url = 'https://demo.velocitypayment.com/vrelay/verify.do';
-						}
-						$postParams = [
+						echo http_build_query([
 							'continue_processing' => false,
 							'user_message' => 'This payment has already been processed or the session with the payment vendor is no longer valid.',
-							'redirect_user_url' => ''
-						];
-						$invalidSessionReturn = new CurlWrapper();
-						$invalidSessionReturn->setOption(CURLOPT_RETURNTRANSFER, true);
-						$response = $invalidSessionReturn->curlPostPage($url, $postParams);
-						ExternalRequestLogEntry::logRequest('deluxe.verifySession', 'POST', $url, $invalidSessionReturn->getHeaders(), false, $invalidSessionReturn->getResponseCode(), $response, []);
-						return $response;
+							'echo_failure' => true,
+							'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=failed&id=' . $payment->deluxeRemittanceId,
+						]);
+						die();
 					}
 				} else {
 					$logger->log('Session verified.', Logger::LOG_ERROR);
-					$success = true;
 					// store security id
 					$payment->deluxeSecurityId = $_POST['security_id'];
 					$payment->update();
 					$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
 					$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
 					if($deluxeSettings->find(true)) {
-						$url = 'https://www.velocitypayment.com/vrelay/verify.do';
-						if ($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == '1') {
-							$url = 'https://demo.velocitypayment.com/vrelay/verify.do';
-						}
-
 						$postParams = [
+							'application_id' => $deluxeSettings->applicationId,
+							'message_version' => "2.7",
+							'remittance_id' => $payment->deluxeRemittanceId,
+							'security_id' => $_POST['security_id'],
 							'continue_processing' => true,
 							'action_type' => 'PayNow',
-							'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines',
+							'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=success&id=' . $payment->deluxeRemittanceId,
 							'amount' => $payment->totalPaid,
 							'tax_amount' => '',
+							'echo_failure' => true,
 						];
 
-						// try to populate payment profile with user data known
+						// try to pre-populate payment profile with user data known
 						require_once ROOT_DIR . '/sys/Account/User.php';
 						$patron = new User();
 						$patron->id = $payment->userId;
@@ -67,19 +58,29 @@ class CertifiedPaymentsByDeluxe_VerifySession extends Action {
 							$postParams['billing_firstname'] = $patron->firstname;
 							$postParams['billing_lastname'] = $patron->lastname;
 						}
-
-						$validSessionReturn = new CurlWrapper();
-						$validSessionReturn->setOption(CURLOPT_RETURNTRANSFER, true);
-						$response = $validSessionReturn->curlPostPage($url, $postParams);
-						ExternalRequestLogEntry::logRequest('deluxe.verifySession', 'POST', $url, $validSessionReturn->getHeaders(), false, $validSessionReturn->getResponseCode(), $response, []);
-						return $response;
+						echo http_build_query($postParams);
+						die();
 					}
 				}
 			} else {
 				$logger->log('User payment not found with given remittance id.', Logger::LOG_ERROR);
+				echo http_build_query([
+					'continue_processing' => false,
+					'user_message' => 'Could not find payment matching given remittance id.',
+					'echo_failure' => true,
+					'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=failed&id=' . $_POST['remittance_id'],
+				]);
+				die();
 			}
 		} else {
 			$logger->log('Post data not found.', Logger::LOG_ERROR);
+			echo http_build_query([
+				'continue_processing' => false,
+				'user_message' => 'POST data not provided by vendor.',
+				'echo_failure' => true,
+				'redirect_user_url' => $configArray['Site']['url'] . '/MyAccount/Fines?status=failed&id=',
+			]);
+			die();
 		}
 	}
 
