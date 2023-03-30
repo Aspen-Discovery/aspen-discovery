@@ -2269,6 +2269,7 @@ class Koha extends AbstractIlsDriver {
 			} else {
 				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
 			}
+
 			$renewResults = mysqli_query($this->dbConnection, $renewSql);
 			$maxRenewals = 0;
 
@@ -2774,7 +2775,7 @@ class Koha extends AbstractIlsDriver {
 						$postParams['branchcode'] = $newPickupLocation;
 					}
 				}
-				
+
 				$postParams = json_encode($postParams);
 				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, $method, $postParams);
 				ExternalRequestLogEntry::logRequest('koha.changeHoldPickupLocation', $method, $apiUrl, $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
