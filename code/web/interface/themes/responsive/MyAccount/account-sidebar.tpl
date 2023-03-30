@@ -247,7 +247,8 @@
 			{if !empty($allowMasqueradeMode) && !$masqueradeMode}
 				{if !empty($canMasquerade)}
 					<div>
-						<div class="myAccountLink btn btn-default btn-sm btn-block"><a onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">{translate text="Masquerade" isPublicFacing=true}</a></div>
+						<div class="myAccountLink">
+						<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.getMasqueradeForm();" href="#">{translate text="Masquerade" isPublicFacing=true}</a></div>
 					</div>
 				{/if}
 			{/if}
