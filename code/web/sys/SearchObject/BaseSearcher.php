@@ -2619,6 +2619,10 @@ abstract class SearchObject_BaseSearcher {
 	protected function getScopedFieldName($field): string {
 		return $field;
 	}
+
+	public function hasSearchableFacets() : bool {
+		return false;
+	}
 }//End of SearchObject_Base
 
 /**
