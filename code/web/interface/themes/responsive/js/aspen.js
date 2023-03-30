@@ -9216,18 +9216,18 @@ AspenDiscovery.Admin = (function() {
       var searchValue = $("#searchPermissions").val();
       var searchRegex = new RegExp(searchValue, 'i');
       if (searchValue.length === 0) {
-        $(".permission-row").show();
-        $(".permission").show().removeClass('active');
-        $('.search-collapse').addClass('collapse').css('height', '0px');
+        $(".permissionRow").show();
+        $(".permissionSection").show().removeClass('active');
+        $('.searchCollapse').addClass('collapse').css('height', '0px');
       } else {
-        $('.search-collapse').removeClass('collapse').css('height', 'auto');
-        $('.permission').addClass('active');
-        var allPermissionSections = $(".permission");
+        $('.searchCollapse').removeClass('collapse').css('height', 'auto');
+        $('.permissionSection').addClass('active');
+        var allPermissionSections = $(".permissionSection");
         allPermissionSections.each(function() {
           var curSection = $(this);
-          var sectionLabel = curSection.find(".panel-heading");
+          var sectionLabel = curSection.find(".permissionHeading");
           var permissionSectionLabel = sectionLabel.text();
-          var permissionsInSection = curSection.find(".permission-row");
+          var permissionsInSection = curSection.find(".permissionRow");
           if (searchRegex.test(permissionSectionLabel)) {
             curSection.show();
             permissionsInSection.show();
