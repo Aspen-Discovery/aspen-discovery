@@ -3905,7 +3905,7 @@ class MyAccount_AJAX extends JSON_Action {
 				if($paymentType == 'ACI') {
 					$payment->aciToken = $_REQUEST['token'];
 				}
-				if($paymentType == 'CertifiedPaymentsByDeluxe') {
+				if($paymentType == 'deluxe') {
 					$payment->deluxeRemittanceId = $_REQUEST['token'];
 				}
 			}
@@ -4717,9 +4717,9 @@ class MyAccount_AJAX extends JSON_Action {
 
 		$transactionType = $_REQUEST['type'];
 		if ($transactionType == 'donation') {
-			$result = $this->createGenericDonation('CertifiedPaymentsByDeluxe');
+			$result = $this->createGenericDonation('deluxe');
 		} else {
-			$result = $this->createGenericOrder('CertifiedPaymentsByDeluxe');
+			$result = $this->createGenericOrder('deluxe');
 		}
 		if (array_key_exists('success', $result) && $result['success'] === false) {
 			return $result;

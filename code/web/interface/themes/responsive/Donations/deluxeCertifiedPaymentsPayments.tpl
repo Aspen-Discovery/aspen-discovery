@@ -2,6 +2,7 @@
 	<input type="hidden" name="application_id" value="{$deluxeApplicationId}"/>
 	<input type="hidden" name="remittance_id" value="{$deluxeRemittanceId}"/>
 	<input type="hidden" name="message_version" value="2.7"/>
+	<input type="hidden" name="patronId" value="{$userId}"/>
 	<div class="row">
         <div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
             <div id="certifiedPaymentsByDeluxe-button-container{$userId}">

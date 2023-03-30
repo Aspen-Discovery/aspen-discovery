@@ -7,29 +7,32 @@
 			</label>
 		</div>
 	{/foreach}
-	{* Show more facet popup list *}
-	<div class="facetValue" id="more{$title}"><a href="#" onclick="return AspenDiscovery.Searches.showSearchFacetPopup('{$searchId}', '{$title}');">{translate text='more' isPublicFacing=true} ...</a></div>
-	{*<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('{translate text='More %1%' inAttribute=true isPublicFacing=true 1=$cluster.displayNamePlural translateParameters=true}', '{$title}', '{translate text='Apply Filters' inAttribute=true isPublicFacing=true}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>*}
-	{*<div id="moreFacetPopup_{$title}" style="display:none">*}
-	{*	<p>{translate text="Please select one of the items below to narrow your search by %1%." 1=$cluster.label isPublicFacing=true}</p>*}
-	{*	<form id="facetPopup_{$title|escapeCSS}" onsubmit="return AspenDiscovery.ResultsList.processMultiSelectMoreFacetForm('#facetPopup_{$title|escapeCSS}', '{$cluster.field_name}');">*}
-	{*		<div class="container-12">*}
-	{*			<div class="row moreFacetPopup">*}
-	{*				{foreach from=$cluster.sortedList item=thisFacet name="narrowLoop"}*}
-	{*					{strip}*}
-	{*					<div class="checkboxFacet col-tn-12">*}
-	{*						<label>*}
-	{*						<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}'>*}
-	{*							&nbsp;*}
-	{*							{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}*}
-	{*						</label>*}
-	{*					</div>*}
-	{*					{/strip}*}
-	{*				{/foreach}*}
-	{*			</div>*}
-	{*		</div>*}
-	{*	</form>*}
-	{*</div>*}
+	{if $hasSearchableFacets}
+		{* Show more facet popup list *}
+		<div class="facetValue" id="more{$title}"><a href="#" onclick="return AspenDiscovery.Searches.showSearchFacetPopup('{$searchId}', '{$title}');">{translate text='more' isPublicFacing=true} ...</a></div>
+	{else}
+		<div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.multiSelectMoreFacetPopup('{translate text='More %1%' inAttribute=true isPublicFacing=true 1=$cluster.displayNamePlural translateParameters=true}', '{$title}', '{translate text='Apply Filters' inAttribute=true isPublicFacing=true}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
+		<div id="moreFacetPopup_{$title}" style="display:none">
+			<p>{translate text="Please select one of the items below to narrow your search by %1%." 1=$cluster.label isPublicFacing=true}</p>
+			<form id="facetPopup_{$title|escapeCSS}" onsubmit="return AspenDiscovery.ResultsList.processMultiSelectMoreFacetForm('#facetPopup_{$title|escapeCSS}', '{$cluster.field_name}');">
+				<div class="container-12">
+					<div class="row moreFacetPopup">
+						{foreach from=$cluster.sortedList item=thisFacet name="narrowLoop"}
+							{strip}
+							<div class="checkboxFacet col-tn-12">
+								<label>
+								<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="filter[]" value='{$cluster.field_name}:{if empty($thisFacet.value)}(""){else}"{$thisFacet.value|escape:url}"{/if}'>
+									&nbsp;
+									{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+								</label>
+							</div>
+							{/strip}
+						{/foreach}
+					</div>
+				</div>
+			</form>
+		</div>
+	{/if}
 {else}
 	{* Simple list with more link to show remaining values (if any) *}
 	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}

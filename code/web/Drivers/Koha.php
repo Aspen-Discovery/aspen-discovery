@@ -2038,6 +2038,9 @@ class Koha extends AbstractIlsDriver {
 				$curHold->updateFromRecordDriver($recordDriver);
 				//See if we need to override the format based on the item type
 				$itemType = $curRow['itemtype'];
+				if(is_null($itemType) && isset($curRow['itype'])) {
+					$itemType = $curRow['itype'];
+				}
 				if (!is_null($itemType)) {
 					if ($iTypeTranslationMap != null) {
 						$curHold->format = $iTypeTranslationMap->translate($itemType);

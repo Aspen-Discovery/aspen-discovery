@@ -820,7 +820,8 @@ class GreenhouseAPI extends Action {
 		$sharedContent->approved = 1;
 		if (!empty($_REQUEST['greenhouseSearchTerm'])){
 			$searchTerm = $_REQUEST['greenhouseSearchTerm'];
-			$sharedContent->whereAdd("name like " . $sharedContent->escape( '%'. $searchTerm . '%'));
+			$escapedSearchTerm = $sharedContent->escape( '%'. $searchTerm . '%');
+			$sharedContent->whereAdd("name like $escapedSearchTerm or description like $escapedSearchTerm or sharedFrom like $escapedSearchTerm");
 		}
 		$sharedContent->find();
 		while ($sharedContent->fetch()) {

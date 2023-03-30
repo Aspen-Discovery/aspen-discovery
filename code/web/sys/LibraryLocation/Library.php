@@ -3745,6 +3745,16 @@ class Library extends DataObject {
 	 * @see DB/DB_DataObject::update()
 	 */
 	public function update($context = '') {
+		//Make sure we have no other default libraries since
+		if ($this->isDefault == 1 && in_array('isDefault', $this->_changedFields)) {
+			$library = new Library();
+			$library->isDefault = 1;
+			$library->find();
+			while ($library->fetch()) {
+				$library->isDefault = 0;
+				$library->update();
+			}
+		}
 		//Updates to properly update settings based on the ILS
 		$isKoha = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
@@ -4344,22 +4354,26 @@ class Library extends DataObject {
 		$allThemes = $this->getThemes();
 		if (count($allThemes) > 0) {
 			$activeTheme = reset($allThemes);
-			$activeTheme->applyDefaults();
-			if ($activeTheme->logoName) {
-				$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoName;
+			$theme = new Theme();
+			$theme->id = $activeTheme->id;
+			if($theme->find(true)) {
+				$theme->applyDefaults();
+				if ($theme->logoName) {
+					$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+				}
+				if ($theme->favicon) {
+					$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+				}
+				if ($theme->logoApp) {
+					$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoApp;
+				}
+				$apiInfo['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
+				$apiInfo['primaryForegroundColor'] = $theme->primaryForegroundColor;
+				$apiInfo['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
+				$apiInfo['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
+				$apiInfo['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
+				$apiInfo['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 			}
-			if ($activeTheme->favicon) {
-				$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->favicon;
-			}
-			if ($activeTheme->logoApp) {
-				$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $activeTheme->logoApp;
-			}
-			$apiInfo['primaryBackgroundColor'] = $activeTheme->primaryBackgroundColor;
-			$apiInfo['primaryForegroundColor'] = $activeTheme->primaryForegroundColor;
-			$apiInfo['secondaryBackgroundColor'] = $activeTheme->secondaryBackgroundColor;
-			$apiInfo['secondaryForegroundColor'] = $activeTheme->secondaryForegroundColor;
-			$apiInfo['tertiaryBackgroundColor'] = $activeTheme->tertiaryBackgroundColor;
-			$apiInfo['tertiaryForegroundColor'] = $activeTheme->tertiaryForegroundColor;
 		}
 		$locations = $this->getLocations();
 		$apiInfo['locations'] = [];

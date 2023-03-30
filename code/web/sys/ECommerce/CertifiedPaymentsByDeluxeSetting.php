@@ -142,4 +142,48 @@ class CertifiedPaymentsByDeluxeSetting extends DataObject {
 			unset($this->_libraries);
 		}
 	}
+
+	/**
+	 * @param $code
+	 * @param string $message
+	 * @return string
+	 */
+	public static function getFailedPaymentMessage($code, string $message): string {
+		if($code == null) {
+			$message .= 'Unknown Error';
+		} elseif ($code == 1) {
+			$message .= 'General platform system error from vendor';
+		} elseif ($code == 3) {
+			$message .= 'Duplicate transaction';
+		} elseif ($code == 5) {
+			$message .= 'Invalid transaction type';
+		} elseif ($code == 100) {
+			$message .= 'AVS initiated void';
+		} elseif ($code == 101) {
+			$message .= 'Card type not valid';
+		} elseif ($code == 102) {
+			$message .= 'Card expired';
+		} elseif ($code == 103) {
+			$message .= 'Card number not valid';
+		} elseif ($code == 104) {
+			$message .= 'Voice authorization requested (Call)';
+		} elseif ($code == 105) {
+			$message .= 'Processor reported error';
+		} elseif ($code == 106) {
+			$message .= 'Card declined';
+		} elseif ($code == 108) {
+			$message .= 'Card flagged by processor';
+		} elseif ($code == 109) {
+			$message .= 'Remittance ID is on administrative hold';
+		} elseif ($code == 116) {
+			$message .= 'Routing transit number invalid';
+		} elseif ($code == 118) {
+			$message .= 'Convenience fee transaction failure';
+		} elseif ($code == 200) {
+			$message .= 'Unknown Error';
+		} else {
+			$message .= 'Unknown Error';
+		}
+		return $message;
+	}
 }
