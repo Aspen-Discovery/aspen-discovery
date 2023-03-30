@@ -4,7 +4,7 @@
 	{else}
 	<h1>{translate text="Permissions" isAdminFacing=true}</h1>
 	{/if}
-<form role="form">
+<form class='alert alert-info'role="form">
 			<div class="form-group">
 				<label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
 				<div class="input-group">
