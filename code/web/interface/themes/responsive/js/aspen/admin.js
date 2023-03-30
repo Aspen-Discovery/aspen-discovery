@@ -1,4 +1,4 @@
-AspenDiscovery.Admin = (function() {
+AspenDiscovery.Admin = (function () {
 	return {
 		showReindexNotes: function (id) {
 			AspenDiscovery.Account.ajaxLightbox("/Admin/AJAX?method=getReindexNotes&id=" + id, true);
@@ -989,7 +989,7 @@ AspenDiscovery.Admin = (function() {
 			}
 		},
 
-		updateMaterialsRequestFields: function() {
+		updateMaterialsRequestFields: function () {
 			var materialRequestType = $("#enableMaterialsRequestSelect option:selected").val();
 			$("#propertyRowallowDeletingILSRequests").hide();
 			if (materialRequestType === "0" || materialRequestType === "2") {
@@ -1022,7 +1022,7 @@ AspenDiscovery.Admin = (function() {
 			}
 			return false;
 		},
-		updateDonationFields: function() {
+		updateDonationFields: function () {
 			var donationsEnabled = $("#enableDonations");
 			var donationsEnabledValue = $("#enableDonations:checked").val()
 			if (donationsEnabledValue == 1) {
@@ -1041,7 +1041,7 @@ AspenDiscovery.Admin = (function() {
 
 			return false;
 		},
-		validateCompare: function() {
+		validateCompare: function () {
 			var selectedObjects = $('.selectedObject:checked');
 			if (selectedObjects.length === 2) {
 				return true;
@@ -1098,7 +1098,7 @@ AspenDiscovery.Admin = (function() {
 					selectedField: selectedField,
 					newValue: newValue
 				};
-				selectedObjects.each(function() {
+				selectedObjects.each(function () {
 					params[$(this).prop('name')] = 'on';
 				});
 				$.getJSON(url, params,
@@ -1133,7 +1133,7 @@ AspenDiscovery.Admin = (function() {
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		processCopyFacetGroupForm: function() {
+		processCopyFacetGroupForm: function () {
 			var url = Globals.path + "/Admin/AJAX";
 			var applyToSettings = $('#displaySettingsSelector').val();
 			var newGroupName = $('#groupName').val();
@@ -1190,7 +1190,7 @@ AspenDiscovery.Admin = (function() {
 					toolName: toolName,
 					batchDeleteScope: batchDeleteScope
 				};
-				selectedObjects.each(function() {
+				selectedObjects.each(function () {
 					params[$(this).prop('name')] = 'on';
 				});
 				$.getJSON(url, params,
@@ -1225,7 +1225,7 @@ AspenDiscovery.Admin = (function() {
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		processCopyDisplaySettingsForm: function() {
+		processCopyDisplaySettingsForm: function () {
 			var url = Globals.path + "/Admin/AJAX";
 			var newName = $('#settingsName').val();
 			var settingsId = $('#settingsId').val();
@@ -1284,7 +1284,7 @@ AspenDiscovery.Admin = (function() {
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		displayReleaseNotes: function() {
+		displayReleaseNotes: function () {
 			var url = Globals.path + "/Admin/AJAX";
 			var selectedNotes = $('#releaseSelector').val();
 			var params = {
@@ -1315,7 +1315,7 @@ AspenDiscovery.Admin = (function() {
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
 		},
-		updateBrowseSearchForSource: function() {
+		updateBrowseSearchForSource: function () {
 			var selectedSource = $('#sourceSelect').val();
 			if (selectedSource === 'List') {
 				$("#propertyRowsearchTerm").hide();
@@ -1337,7 +1337,7 @@ AspenDiscovery.Admin = (function() {
 				$("#propertyRowsourceCourseReserveId").hide();
 			}
 		},
-		updateGroupedWorkDisplayFields: function() {
+		updateGroupedWorkDisplayFields: function () {
 			var showSearchTools = $('#showSearchTools');
 			if (showSearchTools.is(":checked")) {
 				$("#propertyRowshowSearchToolsAtTop").show();
@@ -1345,7 +1345,7 @@ AspenDiscovery.Admin = (function() {
 				$("#propertyRowshowSearchToolsAtTop").hide();
 			}
 		},
-		updateIndexingProfileFields: function() {
+		updateIndexingProfileFields: function () {
 			var audienceType = $('#determineAudienceBySelect').val();
 			if (audienceType === '3') {
 				$("#propertyRowaudienceSubfield").show();
@@ -1374,7 +1374,7 @@ AspenDiscovery.Admin = (function() {
 			}
 			AspenDiscovery.IndexingClass.indexingClassSelect();
 		},
-		updateLayoutSettingsFields: function() {
+		updateLayoutSettingsFields: function () {
 			var useHomeLink = $('#useHomeLinkSelect').val();
 			if ((useHomeLink === '0') || useHomeLink === '2') {
 				$("#propertyRowshowBookIcon").show();
@@ -1384,7 +1384,7 @@ AspenDiscovery.Admin = (function() {
 				$("#propertyRowhomeLinkText").show();
 			}
 		},
-		updateBrowseCategoryFields: function() {
+		updateBrowseCategoryFields: function () {
 			var sharingType = $('#sharingSelect').val();
 			if (sharingType === 'library') {
 				$("#propertyRowlibraryId").show();
@@ -1392,11 +1392,11 @@ AspenDiscovery.Admin = (function() {
 				$("#propertyRowlibraryId").hide();
 			}
 		},
-		showCreateRoleForm: function() {
+		showCreateRoleForm: function () {
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Admin/AJAX?method=getCreateRoleForm', true);
 			return false;
 		},
-		createRole: function() {
+		createRole: function () {
 			var url = Globals.path + '/Admin/AJAX';
 			var params = {
 				method: 'createRole',
@@ -1432,9 +1432,9 @@ AspenDiscovery.Admin = (function() {
 			).fail(AspenDiscovery.ajaxFail);
 		},
 
-		updateMakeRowAccordion: function() {
+		updateMakeRowAccordion: function () {
 			var makeRowAccordion = $('#makeAccordion');
-			$(makeRowAccordion).click(function() {
+			$(makeRowAccordion).click(function () {
 				if (makeRowAccordion.is(":checked")) {
 					$("#rowTitle").attr('required', "true");
 				} else {
@@ -1443,9 +1443,9 @@ AspenDiscovery.Admin = (function() {
 			});
 		},
 
-		updateMakeCellAccordion: function() {
+		updateMakeCellAccordion: function () {
 			var makeCellAccordion = $('#makeCellAccordion');
-			$(makeCellAccordion).click(function() {
+			$(makeCellAccordion).click(function () {
 				if (makeCellAccordion.is(":checked")) {
 					$("#title").attr('required', "true");
 				} else {
@@ -1464,7 +1464,7 @@ AspenDiscovery.Admin = (function() {
 			return false;
 		},
 
-		updateLibraryLinksFields: function() {
+		updateLibraryLinksFields: function () {
 			var requireLogin = $('#showToLoggedInUsersOnly');
 			if (requireLogin.is(":checked")) {
 				$("#propertyRowallowAccess").show();
@@ -1472,7 +1472,7 @@ AspenDiscovery.Admin = (function() {
 				$("#propertyRowallowAccess").hide();
 			}
 
-			$(requireLogin).click(function() {
+			$(requireLogin).click(function () {
 				if (requireLogin.is(":checked")) {
 					$("#propertyRowallowAccess").show();
 				} else {
@@ -1481,14 +1481,14 @@ AspenDiscovery.Admin = (function() {
 			});
 		},
 
-		updateDonationsSettingFields: function() {
+		updateDonationsSettingFields: function () {
 			var allowEarmarks = $('#allowDonationEarmark');
 			if (allowEarmarks.is(":checked")) {
 				$("#propertyRowdonationEarmarks").show();
 			} else {
 				$("#propertyRowdonationEarmarks").hide();
 			}
-			$(allowEarmarks).click(function() {
+			$(allowEarmarks).click(function () {
 				if (allowEarmarks.is(":checked")) {
 					$("#propertyRowdonationEarmarks").show();
 				} else {
@@ -1503,7 +1503,7 @@ AspenDiscovery.Admin = (function() {
 				$("#propertyRowdonationDedicationTypes").hide();
 			}
 
-			$(allowDedications).click(function() {
+			$(allowDedications).click(function () {
 				if (allowDedications.is(":checked")) {
 					$("#propertyRowdonationDedicationTypes").show();
 				} else {
@@ -1511,7 +1511,7 @@ AspenDiscovery.Admin = (function() {
 				}
 			});
 		},
-		createRecovery2FACode: function() {
+		createRecovery2FACode: function () {
 			var username = $("#username").val();
 			if (Globals.loggedIn) {
 				$.getJSON(Globals.path + "/Admin/AJAX?method=createRecoveryCode&user=" + username, function (data) {
@@ -1526,7 +1526,7 @@ AspenDiscovery.Admin = (function() {
 					return data;
 				});
 			} else {
-				AspenDiscovery.Account.ajaxLogin(null, function() {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
 					return AspenDiscovery.Account.verify2FA();
 				}, false);
 			}
@@ -1545,7 +1545,7 @@ AspenDiscovery.Admin = (function() {
 				$('#filterValue2_' + propertyName).show();
 			}
 		},
-		getUrlOptions: function() {
+		getUrlOptions: function () {
 			$('#propertyRowctaUrl').hide();
 			$('#propertyRowdeepLinkId').hide();
 			$('#propertyRowdeepLinkPath').hide();
@@ -1563,7 +1563,7 @@ AspenDiscovery.Admin = (function() {
 				$('#propertyRowdeepLinkFullPath').hide();
 			}
 		},
-		getDeepLinkFullPath: function() {
+		getDeepLinkFullPath: function () {
 			var selectedPath = $("#deepLinkPathSelect").val();
 			if (selectedPath === "search") {
 				$('#propertyRowdeepLinkId').show();
@@ -1584,7 +1584,7 @@ AspenDiscovery.Admin = (function() {
 				$('#propertyRowdeepLinkId').hide();
 			}
 		},
-		getSSOFields: function() {
+		getSSOFields: function () {
 			AspenDiscovery.Admin.toggleoAuthFields('hide');
 			AspenDiscovery.Admin.toggleSamlFields('hide');
 			AspenDiscovery.Admin.toggleLDAPFields('hide');
@@ -1654,7 +1654,7 @@ AspenDiscovery.Admin = (function() {
 				document.getElementById("ldapPassword").value = "";
 			}
 		},
-		toggleOAuthGatewayFields: function() {
+		toggleOAuthGatewayFields: function () {
 			var oAuthGateway = $("#oAuthGatewaySelect").val();
 			if (oAuthGateway === "custom") {
 				$('#propertyRowoAuthCustomGatewayOptionsSection').show();
@@ -1662,7 +1662,7 @@ AspenDiscovery.Admin = (function() {
 				$('#propertyRowoAuthCustomGatewayOptionsSection').hide();
 			}
 		},
-		toggleOAuthPrivateKeysField: function() {
+		toggleOAuthPrivateKeysField: function () {
 			var oAuthGrantType = $("#oAuthGrantTypeSelect").val();
 			if (oAuthGrantType === 2 || oAuthGrantType === '2') {
 				$('#propertyRowoAuthPrivateKeys').show();
@@ -1670,7 +1670,7 @@ AspenDiscovery.Admin = (function() {
 				$('#propertyRowoAuthPrivateKeys').hide();
 			}
 		},
-		toggleSamlMetadataFields: function() {
+		toggleSamlMetadataFields: function () {
 			var metadataType = $("#samlMetadataOptionSelect").val();
 			if (metadataType === 'url') {
 				$('#propertyRowssoXmlUrl').show();
@@ -1680,14 +1680,14 @@ AspenDiscovery.Admin = (function() {
 				$('#propertyRowssoMetadataFilename').show();
 			}
 		},
-		toggleSamlUserIdFields: function() {
+		toggleSamlUserIdFields: function () {
 			var userIdOption = $('#ssoUseGivenUserId');
 			if (userIdOption.is(":checked")) {
 				$('#propertyRowssoIdAttr').show();
 			} else {
 				$('#propertyRowssoIdAttr').hide();
 			}
-			$(userIdOption).click(function() {
+			$(userIdOption).click(function () {
 				if (userIdOption.is(":checked")) {
 					$('#propertyRowssoIdAttr').show();
 				} else {
@@ -1695,7 +1695,7 @@ AspenDiscovery.Admin = (function() {
 				}
 			});
 		},
-		toggleSamlUsernameFormatFields: function() {
+		toggleSamlUsernameFormatFields: function () {
 			var usernameFormat = $('#ssoUseGivenUsername');
 			if (usernameFormat.is(":checked")) {
 				$('#propertyRowssoUsernameAttr').show();
@@ -1704,7 +1704,7 @@ AspenDiscovery.Admin = (function() {
 				$('#propertyRowssoUsernameFormat').show();
 				$('#propertyRowssoUsernameAttr').hide();
 			}
-			$(usernameFormat).click(function() {
+			$(usernameFormat).click(function () {
 				if (usernameFormat.is(":checked")) {
 					$('#propertyRowssoUsernameAttr').show();
 					$('#propertyRowssoUsernameFormat').hide();
@@ -1714,7 +1714,7 @@ AspenDiscovery.Admin = (function() {
 				}
 			});
 		},
-		linkingSettingOptionChange: function() {
+		linkingSettingOptionChange: function () {
 			var url = Globals.path + "/Admin/AJAX";
 			var pType = $("#pType").val();
 			var selected = $('#accountLinkingSettingSelect option:selected').val();
@@ -1731,7 +1731,7 @@ AspenDiscovery.Admin = (function() {
 			});
 		},
 
-		toggleSSOSettingsInAccountProfile: function() {
+		toggleSSOSettingsInAccountProfile: function () {
 			var authMethod = $("#authenticationMethodSelect").val();
 			if (authMethod === "sso") {
 				$('#propertyRowssoSettingId').show();
@@ -1740,7 +1740,7 @@ AspenDiscovery.Admin = (function() {
 			}
 		},
 
-		searchSettings: function() {
+		searchSettings: function () {
 			var searchValue = $("#settingsSearch").val();
 			var searchRegex = new RegExp(searchValue, 'i');
 			if (searchValue.length === 0) {
@@ -1748,7 +1748,7 @@ AspenDiscovery.Admin = (function() {
 				$(".adminSection").show();
 			} else {
 				var allAdminSections = $(".adminSection");
-				allAdminSections.each(function() {
+				allAdminSections.each(function () {
 					var curSection = $(this);
 					var sectionLabel = curSection.find(".adminSectionLabel");
 					var adminSectionLabel = sectionLabel.text();
@@ -1758,7 +1758,7 @@ AspenDiscovery.Admin = (function() {
 						actionsInSection.show();
 					} else {
 						var numVisibleActions = 0;
-						actionsInSection.each(function() {
+						actionsInSection.each(function () {
 							var curAction = $(this);
 							var title = curAction.find(".adminActionLabel").text();
 							var description = curAction.find(".adminActionDescription").text();
@@ -1781,7 +1781,7 @@ AspenDiscovery.Admin = (function() {
 
 			}
 		},
-		searchPermissions: function() {
+		searchPermissions: function () {
 			var searchValue = $("#searchPermissions").val();
 			var searchRegex = new RegExp(searchValue, 'i');
 			if (searchValue.length === 0) {
@@ -1792,7 +1792,7 @@ AspenDiscovery.Admin = (function() {
 				$('.searchCollapse').removeClass('collapse').css('height', 'auto');
 				$('.permissionSection').addClass('active');
 				var allPermissionSections = $(".permissionSection");
-				allPermissionSections.each(function() {
+				allPermissionSections.each(function () {
 					var curSection = $(this);
 					var sectionLabel = curSection.find(".permissionHeading");
 					var permissionSectionLabel = sectionLabel.text();
@@ -1802,7 +1802,7 @@ AspenDiscovery.Admin = (function() {
 						permissionsInSection.show();
 					} else {
 						var numVisibleActions = 0;
-						permissionsInSection.each(function() {
+						permissionsInSection.each(function () {
 							var curPermission = $(this);
 							var title = curPermission.find("#permissionLabel").text();
 							var description = curPermission.find("#permissionDescription").text();
