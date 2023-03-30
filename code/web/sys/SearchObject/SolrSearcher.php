@@ -928,4 +928,8 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 		}
 		return $spotlightResults;
 	}
+
+	public function hasSearchableFacets() : bool {
+		return true;
+	}
 }
