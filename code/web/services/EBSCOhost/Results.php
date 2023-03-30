@@ -90,6 +90,7 @@ class EBSCOhost_Results extends ResultsAction {
 			$interface->assign('pageLinks', $pager->getLinks());
 		}
 
+		$searchObject->close();
 		$interface->assign('savedSearch', $searchObject->isSavedSearch());
 		$interface->assign('searchId', $searchObject->getSearchId());
 

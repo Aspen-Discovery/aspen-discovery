@@ -521,9 +521,14 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 			// Advanced search
 		} else {
 			foreach ($this->searchTerms as $search) {
-				foreach ($search['group'] as $field) {
-					// Add just the search terms to the list
-					$this->spellQuery[] = $field['lookfor'];
+				if (isset($search['group'])) {
+					foreach ($search['group'] as $field) {
+						// Add just the search terms to the list
+						$this->spellQuery[] = $field['lookfor'];
+					}
+				}else{
+					//This happens while restoring author searches
+					$this->spellQuery[] = $search['lookfor'];
 				}
 			}
 			// Return the list put together as a string
