@@ -16,7 +16,7 @@
 {/if}
 {strip}
 {if ((!isset($property.storeDb) || $property.storeDb == true) && !($property.type == 'oneToManyAssociation' || $property.type == 'hidden' || $property.type == 'method'))}
-	<div {if !isset($addFormGroupToProperty) || $addFormGroupToProperty !== false}class="form-group"{/if} id="propertyRow{$propName}" {if !empty($property.hiddenByDefault) && $property.hiddenByDefault}style="display:none" {/if}>
+	<div {if !isset($addFormGroupToProperty) || $addFormGroupToProperty !== false}class="form-group propertyRow"{/if} id="propertyRow{$propName}" {if !empty($property.hiddenByDefault) && $property.hiddenByDefault}style="display:none" {/if}>
 		{* Output the label *}
 		{if $property.type == 'enum'}
 			{if !empty($property.renderAsHeading)}
@@ -128,7 +128,7 @@
 		{* Output the editing control*}
 		{if $property.type == 'section'}
 			{if !empty($property.renderAsHeading)}
-				<div class="row">
+				<div class="row propertySectionHeading">
 					<div class="col-xs-12">
 						{if !empty($property.label)}
 						<div style="margin-bottom: .5em; {if !empty($property.showBottomBorder)}border-bottom: 2px solid {$secondaryBackgroundColor}{/if}">
@@ -151,7 +151,7 @@
 					</div>
 				</div>
 			{else}
-				<div class="panel-group" id="accordion_{$property.label|escapeCSS}">
+				<div class="panel-group propertySection" id="accordion_{$property.label|escapeCSS}">
 					<div class="panel panel-default {if !empty($property.expandByDefault)}active{/if}">
 						<div class="panel-heading row">
 							<div class="panel-title col-xs-11">
@@ -166,7 +166,7 @@
 							{/if}
 						</div>
 
-						<div id="accordion_body_{$property.label|escapeCSS}" class="panel-collapse {if !empty($property.expandByDefault)}in{else}collapse{/if}">
+						<div id="accordion_body_{$property.label|escapeCSS}" class="accordion_body panel-collapse {if !empty($property.expandByDefault)}in{else}collapse{/if}">
 							<div class="panel-body">
 								{if !empty($property.instructions)}
 									<div class="alert alert-info">

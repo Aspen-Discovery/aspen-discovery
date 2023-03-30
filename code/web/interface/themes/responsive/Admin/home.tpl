@@ -14,7 +14,7 @@
 							onkeyup="return AspenDiscovery.Admin.searchSettings();" class="form-control" />
 					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#settingsSearch').val('');return AspenDiscovery.Admin.searchSettings();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
 					<script type="text/javascript">
-                        {literal}
+						{literal}
 						$(document).ready(function() {
 							$("#settingsSearch").keydown("keydown", function (e) {
 								if (e.which === 13) {
@@ -22,7 +22,7 @@
 								}
 							});
 						});
-                        {/literal}
+						{/literal}
 					</script>
 				</div>
 			</div>

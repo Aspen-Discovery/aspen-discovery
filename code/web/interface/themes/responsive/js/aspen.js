@@ -9209,25 +9209,24 @@ AspenDiscovery.Admin = (function() {
             }
           }
         });
-
       }
     },
     searchPermissions: function() {
       var searchValue = $("#searchPermissions").val();
       var searchRegex = new RegExp(searchValue, 'i');
       if (searchValue.length === 0) {
-        $(".permission-row").show();
-        $(".permission").show().removeClass('active');
-        $('.search-collapse').addClass('collapse').css('height', '0px');
+        $(".permissionRow").show();
+        $(".permissionSection").show().removeClass('active');
+        $('.searchCollapse').addClass('collapse').css('height', '0px');
       } else {
-        $('.search-collapse').removeClass('collapse').css('height', 'auto');
-        $('.permission').addClass('active');
-        var allPermissionSections = $(".permission");
+        $('.searchCollapse').removeClass('collapse').css('height', 'auto');
+        $('.permissionSection').addClass('active');
+        var allPermissionSections = $(".permissionSection");
         allPermissionSections.each(function() {
           var curSection = $(this);
-          var sectionLabel = curSection.find(".panel-heading");
+          var sectionLabel = curSection.find(".permissionHeading");
           var permissionSectionLabel = sectionLabel.text();
-          var permissionsInSection = curSection.find(".permission-row");
+          var permissionsInSection = curSection.find(".permissionRow");
           if (searchRegex.test(permissionSectionLabel)) {
             curSection.show();
             permissionsInSection.show();
@@ -9254,9 +9253,79 @@ AspenDiscovery.Admin = (function() {
             }
           }
         });
+      }
+    },
+
+    searchProperties: function() {
+      var searchValue = $("#propertySearch").val();
+      var searchRegex = new RegExp(searchValue, 'i');
+      if (searchValue.length === 0) {
+        $(".propertyRow").show();
+        $(".propertySectionHeading").show();
+        $(".propertySection").show();
+        //Collapse all panels
+        $(".editor .panel").removeClass('active');
+        $(".editor .accordion_body").removeClass('in');
+      } else {
+        var allAPropertyRows = $(".propertyRow");
+        allAPropertyRows.each(function() {
+          var curRow = $(this);
+          var rowText = curRow.text();
+          if (searchRegex.test(rowText)) {
+            curRow.show();
+          } else {
+            curRow.hide();
+          }
+        });
+        //Expand all panels
+        $(".editor .panel").addClass('active');
+        $(".editor .accordion_body").addClass('in');
+      }
+    },
+
+    searchAdminBar: function() {
+      var searchValue = $("#searchAdminBar").val();
+      var searchRegex = new RegExp(searchValue, 'i');
+      if (searchValue.length === 0) {
+        $(".adminMenuLink").show();
+        $('.admin-search-collapse').addClass('collapse').css('height', '0px');
+        $('.admin-menu-section').show().removeClass('active')
+      } else {
+        $('.admin-search-collapse').removeClass('collapse').css('height', 'auto');
+        $('.admin-menu-section').addClass('active')
+        var allMenuSections = $(".admin-menu-section");
+        allMenuSections.each(function() {
+          var curSection = $(this);
+          var sectionLabel = curSection.find(".adminTitleItem");
+          var menuSectionLabel = sectionLabel.text();
+          var adminLinksInSection = curSection.find(".adminMenuLink");
+          if (searchRegex.test(menuSectionLabel)) {
+            curSection.show();
+            adminLinksInSection.show();
+          } else {
+            var numVisibleActions = 0;
+            adminLinksInSection.each(function() {
+              var curMenuLink = $(this);
+              var title = curMenuLink.find(".adminLink").text();
+              var titleMatches = searchRegex.test(title);
+              if (!titleMatches) {
+                curMenuLink.hide();
+              } else {
+                curMenuLink.show();
+                numVisibleActions++;
+              }
+            });
+            if (numVisibleActions > 0) {
+              curSection.show();
+            } else {
+              curSection.hide();
+            }
+          }
+        });
 
       }
     },
+
     searchAdminBar: function() {
       var searchValue = $("#searchAdminBar").val();
       var searchRegex = new RegExp(searchValue, 'i');

@@ -10774,6 +10774,9 @@ a.browse-thumbnail-sorted.active {
 #activeFilters input {
   width: 100%;
 }
+.searchForm {
+  margin-top: 8px;
+}
 .staff-member {
   padding: 5px 10px;
   border: 1px solid #bbb;

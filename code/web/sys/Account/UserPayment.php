@@ -647,6 +647,59 @@ class UserPayment extends DataObject {
 		];
 	}
 
+	public static function completeCertifiedPaymentsByDeluxePayment($payload): array {
+		$success = false;
+		$error = '';
+		$message = '';
+
+		$userPayment = new UserPayment();
+		$userPayment->deluxeRemittanceId = $payload['remittance_id'];
+		$userPayment->deluxeSecurityId = $payload['security_id'];
+		if($userPayment->find(true)) {
+			$userPayment->transactionId = $payload['transaction_id'];
+			$userPayment->orderId = $payload['approval_code'];
+
+			if($payload['transaction_status'] != 0 && $payload['fail_code'] != 0) {
+				// transaction failed
+				$userPayment->error = true;
+				$message = 'Unable to process payment. ';
+				$message = CertifiedPaymentsByDeluxeSetting::getFailedPaymentMessage($payload['fail_code'], $message);
+				$userPayment->message = $message;
+				$userPayment->update();
+			} else {
+				// transaction completed
+				$userPayment->completed = 1;
+				$userPayment->totalPaid = $payload['total_amount'];
+				$userPayment->update();
+
+				$user = new User();
+				$user->id = $userPayment->userId;
+				if ($user->find(true)) {
+					$completePayment = $user->completeFinePayment($userPayment);
+					if ($completePayment['success']) {
+						$success = true;
+						$message = translate([
+							'text' => 'Your payment has been completed. ',
+							'isPublicFacing' => true,
+						]);
+						$userPayment->message .= "Payment completed, TransactionId = " . $payload['transaction_id'] . ", TotalAmount = " . $payload['total_amount'] . ".";
+					} else {
+						$userPayment->error = true;
+						$userPayment->message .= $completePayment['message'];
+					}
+				} else {
+					$userPayment->error = true;
+					$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+				}
+			}
+		}
+
+		return [
+			'success' => $success,
+			'message' => $success ? $message : $error,
+		];
+	}
+
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
 		$return = parent::toArray($includeRuntimeProperties, $encryptFields);
 		unset($return['userId']);
