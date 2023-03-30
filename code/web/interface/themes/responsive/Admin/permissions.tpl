@@ -4,6 +4,27 @@
 	{else}
 	<h1>{translate text="Permissions" isAdminFacing=true}</h1>
 	{/if}
+<form class='alert alert-info'role="form">
+			<div class="form-group">
+				<label for="settingsSearch">{translate text="Search for a Permission" isAdminFacing=true}</label>
+				<div class="input-group">
+					<input  type="text" name="searchPermissions" id="searchPermissions"
+							onkeyup="return AspenDiscovery.Admin.searchPermissions();" class="form-control" />
+					<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#searchPermissions').val('');return AspenDiscovery.Admin.searchPermissions();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
+					<script type="text/javascript">
+                        {literal}
+						$(document).ready(function() {
+							$("#searchPermissions").keydown("keydown", function (e) {
+								if (e.which === 13) {
+									e.preventDefault();
+								}
+							});
+						});
+                        {/literal}
+					</script>
+				</div>
+			</div>
+		</form>
 
 	<form class="form-inline row" id="selectRoleForm" style="margin: 0; padding-bottom: 2em;">
 		<div class="form-group">
@@ -27,24 +48,24 @@
 		<div class="panel-group accordion" id="permissions-table-accordion">
 			{foreach from=$permissions item=sectionPermissions key=sectionName}
 				{assign var=panelId value=$panelId+1}
-				<div class="panel panel-default {if $panelId == 1 && count($selectedSections) == 0 || in_array($sectionName, $selectedSections)}active{/if}">
-					<div class="panel-heading" role="tab" id="heading{$panelId}">
+				<div class="permissionSection panel panel-default {if $panelId == 1 && count($selectedSections) == 0 || in_array($sectionName, $selectedSections)}active{/if}">
+					<div class="permissionHeading panel-heading" role="tab" id="heading{$panelId}">
 						<h2 class="panel-title">
 							<a role="button" data-toggle="collapse" data-parent="#permissionsTable" href="#permission{$panelId}Group" aria-expanded="true" aria-controls="permission{$panelId}PanelBody">
 							{translate text=$sectionName isAdminFacing=true}
 							</a>
 						</h2>
 					</div>
-					<div class="panel-collapse collapse{if $panelId == 1 && count($selectedSections) == 0 || in_array($sectionName, $selectedSections)} in{/if}" id="permission{$panelId}Group" role="tabpanel" aria-labelledby="heading{$panelId}">
+					<div class="searchCollapse panel-collapse collapse{if $panelId == 1 && count($selectedSections) == 0 || in_array($sectionName, $selectedSections)} in{/if}" id="permission{$panelId}Group" role="tabpanel" aria-labelledby="heading{$panelId}">
 						<div class="panel-body">
 							<table class="table table-striped table-sticky">
-								<thead>
-									<tr>
-										<th style="vertical-align: middle;"><strong>{translate text="Permissions for" isAdminFacing=true}</strong> {translate text=$selectedRole->name isAdminFacing=true isAdminEnteredData=true}</th>
+								<thead >
+									<tr class="permissionRow">
+										<th id='permissionLabel' style="vertical-align: middle;"><strong>{translate text="Permissions for" isAdminFacing=true}</strong> {translate text=$selectedRole->name isAdminFacing=true isAdminEnteredData=true}</th>
 										<th style="min-width: 100px">
                                             <label class="btn btn-default btn-sm pull-right">
                                                 <input style="position: absolute; clip: rect(0,0,0,0); pointer-events: none;" type="checkbox" name="permission[{$sectionName}]" id="allPermissions{$panelId}" title="{translate text="Toggle all permissions in %1 for %2%" 1=$sectionName 2=$selectedRole->name inAttribute=true isAdminFacing=true}" onclick="AspenDiscovery.toggleCheckboxes('.selectedPermission{$panelId}', '#allPermissions{$panelId}');" />
-                                                {translate text="Select All"}
+                                                {translate text="Select All" isAdminFacing=true}
                                             </label>
                                         </th>
 									</tr>
@@ -53,10 +74,10 @@
 								{foreach from=$sectionPermissions item=permission}
 									{if $permission->name == "Administer ProPay"} {*//PROPAY don't display propay permission*}
 									{else}
-									<tr id="{$permission->name}">
+									<tr class="permissionRow" id="{$permission->name}">
 										<th scope="row" style="vertical-align: middle;">
-											<span style="display: block">{translate text=$permission->name isAdminFacing=true}</span>
-											<small class="text-muted">{translate text=$permission->description isAdminFacing=true}</small>
+											<span id='permissionLabel' style="display: block">{translate text=$permission->name isAdminFacing=true}</span>
+											<small id='permissionDescription' class="text-muted">{translate text=$permission->description isAdminFacing=true}</small>
 										</th>
 										<td class="text-right">
 											<div class="checkbox pull-right">
