@@ -6,7 +6,7 @@
 	{/if}
 <form class='alert alert-info'role="form">
 			<div class="form-group">
-				<label for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
+				<label for="settingsSearch">{translate text="Search for a Permission" isAdminFacing=true}</label>
 				<div class="input-group">
 					<input  type="text" name="searchPermissions" id="searchPermissions"
 							onkeyup="return AspenDiscovery.Admin.searchPermissions();" class="form-control" />
