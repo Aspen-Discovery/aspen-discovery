@@ -573,6 +573,7 @@ class SearchObject_EbscohostSearcher extends SearchObject_BaseSearcher {
 								'url' => $this->renderLinkWithFilter($tag, $facetValue),
 								'removalUrl' => $this->renderLinkWithoutFilter("$tag:$facetValue"),
 								'isApplied' => $isApplied,
+								'count' => ''
 							];
 						}
 					}
