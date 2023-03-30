@@ -587,12 +587,13 @@ label{ldelim}
 
 {* Panels / Accordions *}
 .panel{ldelim}
-	border: 0 !important;
+	border: 1px solid {$openPanelBackgroundColor};
 	background-color: transparent !important;
 	box-shadow: none;
+	margin-bottom: 1em !important;
 {rdelim}
 
-.panel.active, .accordion .facetList{ldelim}
+.accordion .facetList{ldelim}
 	padding-bottom: 1em;
 {rdelim}
 
