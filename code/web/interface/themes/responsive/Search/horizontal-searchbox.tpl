@@ -22,7 +22,7 @@
 					{* <div class="input-group"> *}
 					<label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x" style="vertical-align: middle"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label>
 					{* Main Search Term Box *}
-					<input type="text" class="form-control" style="border-right:0"{/strip}
+					<input type="text" class="form-control"{/strip}
 						id="lookfor"
 						name="lookfor"
 						title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
