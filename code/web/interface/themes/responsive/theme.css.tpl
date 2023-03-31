@@ -463,6 +463,13 @@ body .container, #home-page-browse-content{ldelim}
 	border-radius: {$smallButtonRadius}
 {rdelim}
 
+.form-control:focus, #horizontal-search-box #lookfor:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{ldelim}
+	color: {$linkColor};
+	border-color: {$linkColor};
+	--webkit-box-shadow: inset 0 1px 1px {$linkColor}, 0 0 8px {$linkColor}
+	box-shadow: inset 0 1px 1px {$linkColor}, 0 0 8px {$linkColor}
+{rdelim}
+
 legend{ldelim}
 	color: {$bodyTextColor};
 	border-color: {$bodyTextColor};
