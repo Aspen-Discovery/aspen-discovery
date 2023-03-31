@@ -146,6 +146,11 @@ body .container, #home-page-browse-content{ldelim}
     background-color: {$menuDropdownBackgroundColor} !important;
 {rdelim}
 
+.dropdownMenu a.btn{ldelim}
+    color: {$defaultButtonForegroundColor} !important;
+    background-color: {$defaultButtonBackgroundColor} !important;
+{rdelim}
+
 .modal-header, .modal-footer{ldelim}
     background-color: {$bodyBackgroundColor};
     color: {$bodyTextColor};
