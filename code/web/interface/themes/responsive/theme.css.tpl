@@ -143,6 +143,12 @@ body .container, #home-page-browse-content{ldelim}
 
 .dropdownMenu a, .dropdownMenu a:visited, .dropdown-menu li a, .dropdown-menu li a:visited{ldelim}
     color: {$menuDropdownForegroundColor} !important;
+    background-color: {$menuDropdownBackgroundColor} !important;
+{rdelim}
+
+.dropdownMenu a.btn{ldelim}
+    color: {$defaultButtonForegroundColor} !important;
+    background-color: {$defaultButtonBackgroundColor} !important;
 {rdelim}
 
 .modal-header, .modal-footer{ldelim}
@@ -470,6 +476,13 @@ body .container, #home-page-browse-content{ldelim}
 	box-shadow: inset 0 1px 1px {$linkColor}, 0 0 8px {$linkColor}
 {rdelim}
 
+.input-group-addon{ldelim}
+	background-color: {$bodyBackgroundColor};
+	color: {$bodyTextColor};
+	border: 1px solid {$bodyTextColor};
+	border-radius: {$smallButtonRadius}
+{rdelim}
+
 legend{ldelim}
 	color: {$bodyTextColor};
 	border-color: {$bodyTextColor};
@@ -685,6 +698,12 @@ color: {$bodyTextColor};
 		filter: contrast(1.50);
 	{rdelim}
 
+	*{ldelim}
+        font-size: 10pt;
+        font-size: max(12pt, min(10pt, 22pt));
+        font-size: clamp(10pt, 12pt, 22pt);
+    {rdelim}
+
 	a{ldelim}
 		text-decoration: underline !important;
 		cursor: pointer;
@@ -693,6 +712,10 @@ color: {$bodyTextColor};
 	.modal{ldelim}
 		filter: invert(1);
 	{rdelim}
+
+	#more-details-accordion .panel-body, .itemSummary{ldelim}
+        font-size: 85%;
+    {rdelim}
 {/if}
 
 {$additionalCSS}

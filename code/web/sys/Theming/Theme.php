@@ -533,7 +533,7 @@ class Theme extends DataObject {
 				'property' => 'isHighContrast',
 				'type' => 'checkbox',
 				'label' => 'High Contrast Theme',
-				'description' => 'Whether or not the theme is high contrast',
+				'description' => 'Whether or not the theme is high contrast to add some accessibility styling enhancements.',
 				'required' => false,
 			],
 			'logoName' => [
