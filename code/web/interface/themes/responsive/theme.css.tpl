@@ -136,6 +136,10 @@ body .container, #home-page-browse-content{ldelim}
 	border: 1px solid {$bodyTextColor};
 {rdelim}
 
+#lookfor-label{ldelim}
+	color: {$bodyTextColor};
+{rdelim}
+
 .dropdownMenu, #account-menu, #header-menu, .dropdown .dropdown-menu.dropdownMenu, .dropdown-menu{ldelim}
     background-color: {$menuDropdownBackgroundColor} !important;
     color: {$menuDropdownForegroundColor} !important;
