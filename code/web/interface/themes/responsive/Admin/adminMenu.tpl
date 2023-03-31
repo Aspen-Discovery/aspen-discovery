@@ -5,11 +5,11 @@
 			<a class='searchSettings searchSettingsColor' onClick="return AspenDiscovery.Admin.showSearch();"
 			   id='showSearchButton'><i class="fas fa-search"></i> {translate text="Search" isAdminFacing=true}</a>
 		</div>
-		<form id='adminSearchBox' role="form" style='display:none'>
+		<form id='adminSearchBox' role="form" class="form-horizontal" style='display:none'>
 			<div class="form-group">
 				<label class='searchSettings'
 					   for="settingsSearch">{translate text="Search for a Setting" isAdminFacing=true}</label>
-				<div class="input-group">
+				<div class="input-group input-group-sm">
 					<input type="text" name="searchAdminBar" id="searchAdminBar"
 						   onkeyup="return AspenDiscovery.Admin.searchAdminBar();" class="form-control"/>
 					<span class="input-group-btn"><button class="btn btn-default" type="button"
