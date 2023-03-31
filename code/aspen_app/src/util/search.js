@@ -203,7 +203,7 @@ export async function getAvailableFacets(url, language) {
      }
 }
 
-export async function searchAvailableFacets(facet, term, url, language) {
+export async function searchAvailableFacets(facet, label, term, url, language) {
      const discovery = create({
           baseURL: url,
           timeout: GLOBALS.timeoutFast,
@@ -217,15 +217,16 @@ export async function searchAvailableFacets(facet, term, url, language) {
                language: language
           },
      });
-     const { data } = await discovery.get(endpoint.url + 'searchAvailableFacets');
-     if (data.success) {
-          return data.result?.data[0] ?? {
+     const response = await discovery.get(endpoint.url + 'searchAvailableFacets');
+     if (response.ok) {
+          const data = response.data;
+          return data.result?.data[label] ?? {
                key: 1,
                field: facet,
                facets: []
           };
      } else {
-          console.log(data);
+          //console.log(response);
      }
      return {
           success: false,

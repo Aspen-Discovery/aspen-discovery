@@ -19,7 +19,7 @@
 						<td>{translate text="Copies on order" isPublicFacing=true}</td>
 					{/if}
 				{else}
-					<td>{translate text="%1% of %2%" 1=$item.availableCopies 2=$item.totalCopies isPublicFacing=true}</td>
+					<td>{translate text="%1% of %2%" 1=$item.availableCopies 2=$item.totalCopies isPublicFacing=true}{if !empty($item.availableCopies)} <i class="fa fa-check"></i>{/if}</td>
 				{/if}
 				<td class="notranslate">{$item.shelfLocation}</td>
 				<td class="notranslate">

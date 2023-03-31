@@ -42,6 +42,7 @@ export default class Facet extends Component {
       data: this.props.route.params?.data ?? [],
       title: this.props.route.params?.extra["label"] ?? "Filter",
       facets: this.props.route.params?.facets ?? [],
+      facetsOriginal: this.props.route.params?.facets ?? [],
       numFacets: 0,
       category: this.props.route.params?.extra["field"] ?? "",
       applied: [],
@@ -131,17 +132,15 @@ export default class Facet extends Component {
   }
 
   async filterFacets() {
-    await searchAvailableFacets(this.state.category, this.state.filterByQuery, LIBRARY.url, this.state.language).then(result => {
-      console.log(result);
+    await searchAvailableFacets(this.state.category, this.state.title, this.state.filterByQuery, LIBRARY.url, this.state.language).then(result => {
       if(result.success === false) {
         this.setState({
           isLoading: false
         })
       } else {
         this.setState({
-          facets: result[0]["facets"],
-          numFacets: _.size(result[0]["facets"]),
-          isLoading: false
+          facets: result["facets"],
+          numFacets: _.size(result["facets"]),
         })
       }
     })
@@ -164,10 +163,11 @@ export default class Facet extends Component {
   searchBar = () => {
     const placeHolder = getTermFromDictionary(this.state.language, 'search') + " " + this.state.title;
     /* always display the search bar */
-    if (this.state.numFacets > 0) {
+    if (this.state.numFacets >= 0) {
       return (
           <Box safeArea={5}>
             <Input
+                value={this.state.filterByQuery}
                 name="filterSearchBar"
                 onChangeText={(filterByQuery) => this.setState({filterByQuery})}
                 size="lg"
@@ -176,7 +176,6 @@ export default class Facet extends Component {
                 returnKeyType="search"
                 placeholder={placeHolder}
                 onSubmitEditing={async () => {
-                  this.setState({isLoading: true});
                   await this.filterFacets();
                 }}
             />
