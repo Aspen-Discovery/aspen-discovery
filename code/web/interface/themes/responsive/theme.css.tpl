@@ -527,6 +527,7 @@ label{ldelim}
     border-bottom-left-radius: 0 !important;
     z-index: 2;
     margin-left: -1px;
+    border-color: {$bodyTextColor}
 {rdelim}
 
 {* Webbuilder*}
