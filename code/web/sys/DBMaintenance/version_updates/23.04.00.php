@@ -162,6 +162,15 @@ function getUpdates23_04_00(): array {
 			]
 		],
 		//extend_web_form_label
+		'add_high_contrast_checkbox' => [
+			'title' => 'Add checkbox for if theme is high contrast or not',
+			'description' => 'Adds checkbox to themes for additional CSS modifications applicable to high contrast themes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE themes ADD COLUMN isHighContrast TINYINT(1) DEFAULT 0',
+			]
+		],
+		//add_high_contrast_checkbox
 
 		//kodi
 		'permissions_create_events_communico' => [
