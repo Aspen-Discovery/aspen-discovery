@@ -141,6 +141,7 @@ export default class Facet extends Component {
         this.setState({
           facets: result["facets"],
           numFacets: _.size(result["facets"]),
+		  isLoading: false
         })
       }
     })
@@ -176,6 +177,9 @@ export default class Facet extends Component {
                 returnKeyType="search"
                 placeholder={placeHolder}
                 onSubmitEditing={async () => {
+					this.setState({
+						isLoading: true,
+					});
                   await this.filterFacets();
                 }}
             />
