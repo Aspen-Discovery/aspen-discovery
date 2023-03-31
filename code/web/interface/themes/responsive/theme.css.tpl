@@ -136,31 +136,31 @@ body .container, #home-page-browse-content{ldelim}
     border: 1px solid {$defaultButtonBorderColor};
 {rdelim}
 
-.dropdownMenu, #account-menu, #header-menu, .dropdown .dropdown-menu.dropdownMenu{ldelim}
-    background-color: {$menuDropdownBackgroundColor};
-    color: {$menuDropdownForegroundColor};
+.dropdownMenu, #account-menu, #header-menu, .dropdown .dropdown-menu.dropdownMenu, .dropdown-menu{ldelim}
+    background-color: {$menuDropdownBackgroundColor} !important;
+    color: {$menuDropdownForegroundColor} !important;
 {rdelim}
 
-.dropdownMenu a, .dropdownMenu a:visited{ldelim}
-    color: {$menuDropdownForegroundColor};
+.dropdownMenu a, .dropdownMenu a:visited, .dropdown-menu li a, .dropdown-menu li a:visited{ldelim}
+    color: {$menuDropdownForegroundColor} !important;
 {rdelim}
 
 .modal-header, .modal-footer{ldelim}
-    background-color: {$modalDialogHeaderFooterBackgroundColor};
-    color: {$modalDialogHeaderFooterForegroundColor};
+    background-color: {$bodyBackgroundColor};
+    color: {$bodyTextColor};
 {rdelim}
 .close, .close:hover, .close:focus{ldelim}
-    color: {$modalDialogHeaderFooterForegroundColor};
+    color: {$bodyTextColor};
 {rdelim}
 .modal-header{ldelim}
-    border-bottom-color: {$modalDialogHeaderFooterBorderColor};
+    border-bottom-color: {$bodyBackgroundColor};
 {rdelim}
 .modal-footer{ldelim}
-    border-top-color: {$modalDialogHeaderFooterBorderColor};
+    border-top-color: {$bodyBackgroundColor};
 {rdelim}
 .modal-content{ldelim}
-    background-color: {$modalDialogBackgroundColor};
-    color: {$modalDialogForegroundColor};
+    background-color: {$bodyBackgroundColor};
+    color: {$bodyTextColor};
 {rdelim}
 
 .exploreMoreBar{ldelim}
@@ -671,6 +671,22 @@ pre{ldelim}
 .formatCategoryLabel, .share-tools-label{ldelim}
 color: {$bodyTextColor};
 {rdelim}
+
+{* Accessiblity *}
+{if $themeIsHighContrast}
+	body{ldelim}
+		filter: contrast(1.50);
+	{rdelim}
+
+	a{ldelim}
+		text-decoration: underline !important;
+		cursor: pointer;
+	{rdelim}
+
+	.modal{ldelim}
+		filter: invert(1);
+	{rdelim}
+{/if}
 
 {$additionalCSS}
 </style>
