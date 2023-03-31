@@ -143,6 +143,7 @@ body .container, #home-page-browse-content{ldelim}
 
 .dropdownMenu a, .dropdownMenu a:visited, .dropdown-menu li a, .dropdown-menu li a:visited{ldelim}
     color: {$menuDropdownForegroundColor} !important;
+    background-color: {$menuDropdownBackgroundColor} !important;
 {rdelim}
 
 .modal-header, .modal-footer{ldelim}
