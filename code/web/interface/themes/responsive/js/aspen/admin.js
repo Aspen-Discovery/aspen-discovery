@@ -1778,7 +1778,6 @@ AspenDiscovery.Admin = (function () {
 						}
 					}
 				});
-
 			}
 		},
 		searchPermissions: function () {
@@ -1800,6 +1799,7 @@ AspenDiscovery.Admin = (function () {
 					if (searchRegex.test(permissionSectionLabel)) {
 						curSection.show();
 						permissionsInSection.show();
+						console.log(permissionsInSection)
 					} else {
 						var numVisibleActions = 0;
 						permissionsInSection.each(function () {
@@ -1837,12 +1837,12 @@ AspenDiscovery.Admin = (function () {
 				$(".editor .accordion_body").removeClass('in');
 			} else {
 				var allAPropertyRows = $(".propertyRow");
-				allAPropertyRows.each(function (){
+				allAPropertyRows.each(function () {
 					var curRow = $(this);
 					var rowText = curRow.text();
 					if (searchRegex.test(rowText)) {
 						curRow.show();
-					}else {
+					} else {
 						curRow.hide();
 					}
 				});
@@ -1850,6 +1850,97 @@ AspenDiscovery.Admin = (function () {
 				$(".editor .panel").addClass('active');
 				$(".editor .accordion_body").addClass('in');
 			}
+		},
+
+		searchAdminBar: function () {
+			var searchValue = $("#searchAdminBar").val();
+			var searchRegex = new RegExp(searchValue, 'i');
+			if (searchValue.length === 0) {
+				$(".adminMenuLink").show();
+				$('.admin-search-collapse').addClass('collapse').css('height', '0px');
+				$('.admin-menu-section').show().removeClass('active')
+			} else {
+				$('.admin-search-collapse').removeClass('collapse').css('height', 'auto');
+				$('.admin-menu-section').addClass('active')
+				var allMenuSections = $(".admin-menu-section");
+				allMenuSections.each(function () {
+					var curSection = $(this);
+					var sectionLabel = curSection.find(".adminTitleItem");
+					var menuSectionLabel = sectionLabel.text();
+					var adminLinksInSection = curSection.find(".adminMenuLink");
+					if (searchRegex.test(menuSectionLabel)) {
+						curSection.show();
+						adminLinksInSection.show();
+					} else {
+						var numVisibleActions = 0;
+						adminLinksInSection.each(function () {
+							var curMenuLink = $(this);
+							var title = curMenuLink.find(".adminLink").text();
+							var titleMatches = searchRegex.test(title);
+							if (!titleMatches) {
+								curMenuLink.hide();
+							} else {
+								curMenuLink.show();
+								numVisibleActions++;
+							}
+						});
+						if (numVisibleActions > 0) {
+							curSection.show();
+						} else {
+							curSection.hide();
+						}
+					}
+				});
+
+			}
+		},
+
+		searchAdminBar: function () {
+			var searchValue = $("#searchAdminBar").val();
+			var searchRegex = new RegExp(searchValue, 'i');
+			if (searchValue.length === 0) {
+				$(".adminMenuLink").show();
+				$('.admin-search-collapse').addClass('collapse').css('height', '0px');
+				$('.admin-menu-section').show().removeClass('active')
+			} else {
+				$('.admin-search-collapse').removeClass('collapse').css('height', 'auto');
+				$('.admin-menu-section').addClass('active')
+				var allMenuSections = $(".admin-menu-section");
+				allMenuSections.each(function () {
+					var curSection = $(this);
+					var sectionLabel = curSection.find(".adminTitleItem");
+					var menuSectionLabel = sectionLabel.text();
+					var adminLinksInSection = curSection.find(".adminMenuLink");
+					if (searchRegex.test(menuSectionLabel)) {
+						curSection.show();
+						adminLinksInSection.show();
+					} else {
+						var numVisibleActions = 0;
+						adminLinksInSection.each(function () {
+							var curMenuLink = $(this);
+							var title = curMenuLink.find(".adminLink").text();
+							var titleMatches = searchRegex.test(title);
+							if (!titleMatches) {
+								curMenuLink.hide();
+							} else {
+								curMenuLink.show();
+								numVisibleActions++;
+							}
+						});
+						if (numVisibleActions > 0) {
+							curSection.show();
+						} else {
+							curSection.hide();
+						}
+					}
+				});
+
+			}
+		},
+
+		showSearch: function () {
+			$('#adminSearchBox').css('display', 'block');
+			$('#showSearchButton').css('display', 'none');
 		},
 
 		showFindGreenhouseForm: function (toolModule, toolName, objectType) {

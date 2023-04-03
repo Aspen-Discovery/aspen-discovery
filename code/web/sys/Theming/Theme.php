@@ -391,6 +391,9 @@ class Theme extends DataObject {
 	public /** @noinspection PhpUnused */
 		$panelBodyForegroundColorDefault;
 
+	//Theme accessibility options
+	public $isHighContrast;
+
 	//Fonts
 	public $headingFont;
 	public $headingFontDefault;
@@ -525,6 +528,13 @@ class Theme extends DataObject {
 				'description' => 'Whether or not the header and footer should be full width',
 				'required' => false,
 				'hideInLists' => true,
+			],
+			'isHighContrast' => [
+				'property' => 'isHighContrast',
+				'type' => 'checkbox',
+				'label' => 'High Contrast Theme',
+				'description' => 'Whether or not the theme is high contrast to add some accessibility styling enhancements.',
+				'required' => false,
 			],
 			'logoName' => [
 				'property' => 'logoName',
@@ -1004,6 +1014,7 @@ class Theme extends DataObject {
 				],
 			],
 
+			/*
 			'modalDialogSection' => [
 				'property' => 'modalDialogSection',
 				'type' => 'section',
@@ -1060,7 +1071,7 @@ class Theme extends DataObject {
 						'default' => '#e5e5e5',
 					],
 				],
-			],
+			],*/
 
 			//Browse category theming
 			'browseCategorySection' => [
@@ -2328,7 +2339,7 @@ class Theme extends DataObject {
 		$interface->assign('dangerButtonHoverBackgroundColor', $this->dangerButtonHoverBackgroundColor);
 		$interface->assign('dangerButtonHoverForegroundColor', $this->dangerButtonHoverForegroundColor);
 		$interface->assign('dangerButtonHoverBorderColor', $this->dangerButtonHoverBorderColor);
-
+		$interface->assign('themeIsHighContrast', $this->isHighContrast);
 
 		foreach ($allAppliedThemes as $theme) {
 			if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
