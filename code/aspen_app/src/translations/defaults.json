@@ -324,5 +324,7 @@
   "hoopla": "Hoopla",
   "overdrive": "OverDrive",
   "specific_item": "Specific Item",
-  "select_item": "Select an Item"
+  "select_item": "Select an Item",
+  "alerts_from_library": "Alerts from your library",
+  "alerts_about_account": "Alerts about my library account"
 }

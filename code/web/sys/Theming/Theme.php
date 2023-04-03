@@ -1014,6 +1014,7 @@ class Theme extends DataObject {
 				],
 			],
 
+			/*
 			'modalDialogSection' => [
 				'property' => 'modalDialogSection',
 				'type' => 'section',
@@ -1070,7 +1071,7 @@ class Theme extends DataObject {
 						'default' => '#e5e5e5',
 					],
 				],
-			],
+			],*/
 
 			//Browse category theming
 			'browseCategorySection' => [

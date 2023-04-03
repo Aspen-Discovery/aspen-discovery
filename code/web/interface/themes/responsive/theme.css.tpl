@@ -131,9 +131,13 @@ body .container, #home-page-browse-content{ldelim}
 
 #lookfor{ldelim}
 	border-radius: 0;
-    background-color: {$defaultButtonBackgroundColor};
-    color: {$defaultButtonForegroundColor};
-    border: 1px solid {$defaultButtonBorderColor};
+	background-color: {$bodyBackgroundColor};
+	color: {$bodyTextColor};
+	border: 1px solid {$bodyTextColor};
+{rdelim}
+
+#lookfor-label{ldelim}
+	color: {$bodyTextColor};
 {rdelim}
 
 .dropdownMenu, #account-menu, #header-menu, .dropdown .dropdown-menu.dropdownMenu, .dropdown-menu{ldelim}
@@ -510,6 +514,20 @@ label{ldelim}
 .bootstrap-switch > div > span.bootstrap-switch-primary{ldelim}
 	background-color: {$tertiaryBackgroundColor} !important;
     color: {$tertiaryForegroundColor} !important;
+{rdelim}
+
+.input-group-btn{ldelim}
+	position: relative;
+	font-size: 0;
+	white-space: nowrap;
+{rdelim}
+
+.input-group-btn > .btn {ldelim}
+	border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    z-index: 2;
+    margin-left: -1px;
+    border-color: {$bodyTextColor}
 {rdelim}
 
 {* Webbuilder*}

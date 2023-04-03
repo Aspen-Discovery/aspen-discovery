@@ -4,6 +4,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import {BRANCH, formatDiscoveryVersion} from '../util/loadLibrary';
 import {PATRON} from '../util/loadPatron';
+import {getTermFromDictionary} from '../translations/TranslationService';
 
 export const ThemeContext = React.createContext({
      theme: [],
@@ -265,7 +266,7 @@ export const UserProvider = ({children}) => {
           }
 
           if (_.isObject(data) && !_.isUndefined(data.notification_preferences)) {
-               updateNotificationSettings(data.notification_preferences);
+               updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en');
           }
 
           setUser(data);
@@ -315,32 +316,35 @@ export const UserProvider = ({children}) => {
           console.log('updated library cards in UserContext');
      };
 
-     const updateNotificationSettings = async (data) => {
+     const updateNotificationSettings = async (data, language) => {
           if (Constants.isDevice) {
                if (!_.isEmpty(data)) {
                     const device = Device.modelName;
                     if (_.find(data, _.matchesProperty('device', device))) {
                          console.log('Found settings for this device model');
                          const deviceSettings = _.filter(data, {device: device});
+                         const savedSearches = await getTermFromDictionary(language, 'saved_searches');
+                         const alertsFromLibrary = await getTermFromDictionary(language, 'alerts_from_library');
+                         const alertsAboutAccount = await getTermFromDictionary(language, 'alerts_about_account');
                          const settings = [];
                          settings.push(
                              {
                                   id: 0,
-                                  label: 'Saved searches',
+                                  label: savedSearches,
                                   option: 'notifySavedSearch',
                                   description: null,
                                   allow: deviceSettings[0].notifySavedSearch ?? 0,
                              },
                              {
                                   id: 1,
-                                  label: 'Alerts from your library',
+                                  label: alertsFromLibrary,
                                   option: 'notifyCustom',
                                   description: null,
                                   allow: deviceSettings[0].notifyCustom ?? 0,
                              },
                              {
                                   id: 2,
-                                  label: 'Alerts about my library account',
+                                  label: alertsAboutAccount,
                                   option: 'notifyAccount',
                                   description: null,
                                   allow: deviceSettings[0].notifyAccount ?? 0,
