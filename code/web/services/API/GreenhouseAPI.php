@@ -23,10 +23,22 @@ class GreenhouseAPI extends Action {
 				'getLibrary',
 				'authenticateTokens',
 				'getNotificationAccessToken',
-				'updateAspenLiDABuild',
-				'addSharedContent'
+				'updateAspenLiDABuild'
 			]) && !IPAddress::allowAPIAccessForClientIP()) {
 			$this->forbidAPIAccess();
+		}
+
+		//Move a few methods from GreenhouseAPI to CommunityAPI, but maintain compatibility
+		// with existing installations by forwarding the requests
+		if (in_array($method, [
+			'addTranslationTerm',
+			'getDefaultTranslation',
+			'setTranslation',
+		])) {
+			require_once ROOT_DIR . '/services/API/CommunityAPI.php';
+			$communityAPI = new CommunityAPI();
+			$communityAPI->launch();
+			return;
 		}
 
 		header('Content-type: application/json');
@@ -34,7 +46,7 @@ class GreenhouseAPI extends Action {
 		header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
 
-		if ($method != 'getCatalogConnection' && $method != 'getUserForApiCall' && method_exists($this, $method)) {
+		if (method_exists($this, $method)) {
 			$result = $this->$method();
 			$output = json_encode($result);
 			require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -568,148 +580,6 @@ class GreenhouseAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	public function addTranslationTerm(): array {
-		$translationTerm = new TranslationTerm();
-		$translationTerm->term = $_REQUEST['term'];
-		if (!$translationTerm->find(true)) {
-			$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
-			$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
-			$translationTerm->isMetadata = $_REQUEST['isMetadata'];
-			$translationTerm->isAdminEnteredData = $_REQUEST['isAdminEnteredData'];
-			$translationTerm->lastUpdate = time();
-			try {
-				$translationTerm->insert();
-				$result = [
-					'success' => true,
-					'message' => translate([
-						'text' => 'The term was added.',
-						'isAdminFacing' => true,
-					]),
-				];
-			} catch (Exception $e) {
-				$result = [
-					'success' => false,
-					'message' => translate([
-						'text' => 'Could not update term. %1%',
-						'isAdminFacing' => true,
-						1 => (string)$e,
-					]),
-				];
-			}
-		} else {
-			$termChanged = false;
-			if ($_REQUEST['isPublicFacing'] && !$translationTerm->isPublicFacing) {
-				$translationTerm->isPublicFacing = $_REQUEST['isPublicFacing'];
-				$termChanged = true;
-			}
-			if ($_REQUEST['isAdminFacing'] && !$translationTerm->isAdminFacing) {
-				$translationTerm->isAdminFacing = $_REQUEST['isAdminFacing'];
-				$termChanged = true;
-			}
-			if ($_REQUEST['isAdminFacing'] && !$translationTerm->isMetadata) {
-				$translationTerm->isMetadata = $_REQUEST['isAdminFacing'];
-				$termChanged = true;
-			}
-			if ($_REQUEST['isAdminEnteredData'] && !$translationTerm->isAdminEnteredData) {
-				$translationTerm->isAdminEnteredData = $_REQUEST['isAdminEnteredData'];
-				$termChanged = true;
-			}
-			if ($termChanged) {
-				$translationTerm->lastUpdate = time();
-				$translationTerm->update();
-				$result = [
-					'success' => true,
-					'message' => translate([
-						'text' => 'The term was updated.',
-						'isAdminFacing' => true,
-					]),
-				];
-			} else {
-				$result = [
-					'success' => true,
-					'message' => translate([
-						'text' => 'The term already existed.',
-						'isAdminFacing' => true,
-					]),
-				];
-			}
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	public function getDefaultTranslation() {
-		$result = [
-			'success' => false,
-		];
-		if (!empty($_REQUEST['term']) && !empty($_REQUEST['languageCode'])) {
-			$translationTerm = new TranslationTerm();
-			$translationTerm->term = $_REQUEST['term'];
-			if ($translationTerm->find(true)) {
-				$language = new Language();
-				$language->code = $_REQUEST['languageCode'];
-				if ($language->find(true)) {
-					$translation = new Translation();
-					$translation->termId = $translationTerm->id;
-					$translation->languageId = $language->id;
-					if ($translation->find(true)) {
-						$result['success'] = true;
-						$result['translation'] = $translation->translation;
-					} else {
-						$result['message'] = 'No translation found';
-					}
-				} else {
-					$result['message'] = 'Could not find language';
-				}
-			} else {
-				$result['message'] = 'Could not find term';
-			}
-		} else {
-			$result['message'] = 'Term and/or languageCode not provided';
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	public function setTranslation() {
-		$result = [
-			'success' => false,
-		];
-		if (!empty($_REQUEST['term']) && !empty($_REQUEST['languageCode']) && !empty($_REQUEST['translation'])) {
-			$translationTerm = new TranslationTerm();
-			$translationTerm->term = $_REQUEST['term'];
-			if ($translationTerm->find(true)) {
-				$language = new Language();
-				$language->code = $_REQUEST['languageCode'];
-				if ($language->find(true)) {
-					$translation = new Translation();
-					$translation->termId = $translationTerm->id;
-					$translation->languageId = $language->id;
-					if ($translation->find(true)) {
-						if (!$translation->translated) {
-							$translation->translation = $_REQUEST['translation'];
-							$translation->translated = 1;
-							$translation->update();
-							$result['success'] = true;
-						} else {
-							$result['message'] = 'Term already translated';
-						}
-					} else {
-						$result['message'] = 'No translation found';
-					}
-				} else {
-					$result['message'] = 'Could not find language';
-				}
-			} else {
-				$result['message'] = 'Could not find term';
-			}
-		} else {
-			$result['message'] = 'Term, languageCode, and/or translation  not provided';
-		}
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
 	function updateAspenLiDABuild() {
 		global $logger;
 		$logger->log('Patch update found, updating Aspen LiDA Build Tracker...', Logger::LOG_ERROR);
@@ -786,7 +656,7 @@ class GreenhouseAPI extends Action {
 			'success' => false,
 		];
 
-		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
+		require_once ROOT_DIR . '/sys/Community/SharedContent.php';
 		$sharedContent = new SharedContent();
 		$sharedContent->name = $_REQUEST['name'];
 		$sharedContent->type = $_REQUEST['type'];
@@ -799,73 +669,6 @@ class GreenhouseAPI extends Action {
 			$result['success'] = true;
 		} else {
 			$result['message'] = $sharedContent->getLastError();
-		}
-
-		return $result;
-	}
-
-	/** @noinspection PhpUnused */
-	function searchSharedContent(): array {
-		$result = [
-			'numResults' => 0,
-			'results' => [],
-			'success' => true,
-		];
-
-		$objectType = $_REQUEST['objectType'];
-
-		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
-		$sharedContent = new SharedContent();
-		$sharedContent->type = $objectType;
-		$sharedContent->approved = 1;
-		if (!empty($_REQUEST['greenhouseSearchTerm'])){
-			$searchTerm = $_REQUEST['greenhouseSearchTerm'];
-			$escapedSearchTerm = $sharedContent->escape( '%'. $searchTerm . '%');
-			$sharedContent->whereAdd("name like $escapedSearchTerm or description like $escapedSearchTerm or sharedFrom like $escapedSearchTerm");
-		}
-		$sharedContent->find();
-		while ($sharedContent->fetch()) {
-			$result['results'][] = [
-				'id' => $sharedContent->id,
-				'name' => $sharedContent->name,
-				'description' => $sharedContent->description,
-				'sharedFrom' => $sharedContent->sharedFrom,
-				'shareDate' => $sharedContent->shareDate,
-				'type' => $sharedContent->type,
-			];
-			$result['numResults']++;
-		}
-
-		if (!empty($_REQUEST['includeHtml'])) {
-			global $interface;
-			$interface->assign('toolModule', $_REQUEST['toolModule']);
-			$interface->assign('toolName', $_REQUEST['toolName']);
-			$interface->assign('results', $result['results']);
-			$result['greenhouseResults'] = $interface->fetch('Admin/greenhouseSearchResults.tpl');
-		}
-
-		return $result;
-	}
-
-	function getSharedContent() : array {
-		$result = [];
-		$objectType = $_REQUEST['objectType'];
-		$objectId = $_REQUEST['objectId'];
-
-		require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
-		$sharedContent = new SharedContent();
-		$sharedContent->type = $objectType;
-		$sharedContent->id = $objectId;
-		if ($sharedContent->find(true)) {
-			$result = [
-				'success'=> true,
-				'rawData' => $sharedContent->data
-			];
-		}else{
-			$result = [
-				'success' => false,
-				'message' => 'Could not find content with that id'
-			];
 		}
 
 		return $result;

@@ -1249,11 +1249,11 @@ class Admin_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getSearchGreenhouseContentForm() : array {
+	function getSearchCommunityContentForm() : array {
 		global $interface;
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+		if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
 			$toolName = $_REQUEST['toolName'];
 			$toolModule = $_REQUEST['toolModule'];
 			$objectType = $_REQUEST['objectType'];
@@ -1264,7 +1264,7 @@ class Admin_AJAX extends JSON_Action {
 			//Do the initial search
 			require_once ROOT_DIR . '/sys/CurlWrapper.php';
 			$curl = new CurlWrapper();
-			$searchResults = $curl->curlGetPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=searchSharedContent&objectType=' . $objectType);
+			$searchResults = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=searchSharedContent&objectType=' . $objectType);
 			$decodedSearchResults = json_decode($searchResults);
 
 			$interface->assign('greenhouseSearchResults', $decodedSearchResults);
@@ -1274,7 +1274,7 @@ class Admin_AJAX extends JSON_Action {
 					'text' => 'Find Community Content',
 					'isAdminFacing' => true,
 				]),
-				'modalBody' => $interface->fetch('Admin/searchGreenhouseContent.tpl'),
+				'modalBody' => $interface->fetch('Admin/searchCommunityContent.tpl'),
 				'modalButtons' => '',
 			];
 		} else {
@@ -1284,7 +1284,7 @@ class Admin_AJAX extends JSON_Action {
 					'isAdminFacing' => true,
 				]),
 				'modalBody' => translate([
-					'text' => 'Greenhouse is not available',
+					'text' => 'Community Sharing is not available',
 					'isAdminFacing' => true,
 				]),
 				'modalButtons' => '',

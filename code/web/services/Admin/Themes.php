@@ -115,14 +115,14 @@ class Admin_Themes extends ObjectEditor {
 		return $this->canAddNew();
 	}
 
-	public function canShareToGreenhouse() {
+	public function canShareToCommunity() {
 		//TODO: This needs a permission
-		return $this->hasGreenhouseConnection();
+		return $this->hasCommunityConnection();
 	}
 
-	public function canFetchFromGreenhouse() {
+	public function canFetchFromCommunity() {
 		//TODO: This needs a permission
-		return $this->hasGreenhouseConnection();
+		return $this->hasCommunityConnection();
 	}
 
 }

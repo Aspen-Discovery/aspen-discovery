@@ -1895,57 +1895,15 @@ AspenDiscovery.Admin = (function () {
 			}
 		},
 
-		searchAdminBar: function () {
-			var searchValue = $("#searchAdminBar").val();
-			var searchRegex = new RegExp(searchValue, 'i');
-			if (searchValue.length === 0) {
-				$(".adminMenuLink").show();
-				$('.admin-search-collapse').addClass('collapse').css('height', '0px');
-				$('.admin-menu-section').show().removeClass('active')
-			} else {
-				$('.admin-search-collapse').removeClass('collapse').css('height', 'auto');
-				$('.admin-menu-section').addClass('active')
-				var allMenuSections = $(".admin-menu-section");
-				allMenuSections.each(function () {
-					var curSection = $(this);
-					var sectionLabel = curSection.find(".adminTitleItem");
-					var menuSectionLabel = sectionLabel.text();
-					var adminLinksInSection = curSection.find(".adminMenuLink");
-					if (searchRegex.test(menuSectionLabel)) {
-						curSection.show();
-						adminLinksInSection.show();
-					} else {
-						var numVisibleActions = 0;
-						adminLinksInSection.each(function () {
-							var curMenuLink = $(this);
-							var title = curMenuLink.find(".adminLink").text();
-							var titleMatches = searchRegex.test(title);
-							if (!titleMatches) {
-								curMenuLink.hide();
-							} else {
-								curMenuLink.show();
-								numVisibleActions++;
-							}
-						});
-						if (numVisibleActions > 0) {
-							curSection.show();
-						} else {
-							curSection.hide();
-						}
-					}
-				});
-
-			}
-		},
 
 		showSearch: function () {
 			$('#adminSearchBox').css('display', 'block');
 			$('#showSearchButton').css('display', 'none');
 		},
 
-		showFindGreenhouseForm: function (toolModule, toolName, objectType) {
+		showFindCommunityContentForm: function (toolModule, toolName, objectType) {
 			var params = {
-				method: 'getSearchGreenhouseContentForm',
+				method: 'getSearchCommunityContentForm',
 				toolModule: toolModule,
 				toolName: toolName,
 				objectType: objectType
@@ -1957,27 +1915,27 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
-		searchGreenhouseContent: function (toolModule, toolName) {
-			$("#greenhouseSearchResultsLoading").show();
-			$("#greenhouseSearchResults").html("");
-			var searchForm = $("#searchGreenhouseContentForm");
+		searchCommunityContent: function (toolModule, toolName) {
+			$("#communitySearchResultsLoading").show();
+			$("#communitySearchResults").html("");
+			var searchForm = $("#searchCommunityContentForm");
 			var objectType = searchForm.find("#objectType").val();
-			var greenhouseSearchTerm = searchForm.find("#greenhouseSearchTerm").val();
-			var url = Globals.path + '/API/GreenhouseAPI';
+			var communitySearchTerm = searchForm.find("#communitySearchTerm").val();
+			var url = Globals.path + '/API/CommunityAPI';
 			var params = {
 				'method': 'searchSharedContent',
 				'objectType': objectType,
 				'toolModule': toolModule,
 				'toolName': toolName,
-				'greenhouseSearchTerm': greenhouseSearchTerm,
+				'communitySearchTerm': communitySearchTerm,
 				'includeHtml': true
 			}
 			$.getJSON(url, params, function (data) {
-				$("#greenhouseSearchResultsLoading").hide();
+				$("#communitySearchResultsLoading").hide();
 				if (data.success === true) {
-					$("#greenhouseSearchResults").html(data.greenhouseResults);
+					$("#communitySearchResults").html(data.communityResults);
 				} else {
-					$("#greenhouseSearchResults").html(data.message);
+					$("#communitySearchResults").html(data.message);
 				}
 			});
 		}

@@ -56,7 +56,7 @@ class Translator {
 	//Cache any translations that have already been loaded.
 	private $cachedTranslations = [];
 
-	private $greenhouseCurlWrapper = null;
+	private $communityContentCurlWrapper = null;
 
 	/**
 	 * Translate the phrase
@@ -100,14 +100,14 @@ class Translator {
 						try {
 							if ($translationTerm->insert() !== false) {
 								$termTooLong = false;
-								//Send this to the Greenhouse as well
+								//Send this to the Community Content Server as well
 
 								require_once ROOT_DIR . '/sys/SystemVariables.php';
 								$systemVariables = SystemVariables::getSystemVariables();
-								if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
-									if ($this->greenhouseCurlWrapper == null) {
+								if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
+									if ($this->communityContentCurlWrapper == null) {
 										require_once ROOT_DIR . '/sys/CurlWrapper.php';
-										$this->greenhouseCurlWrapper = new CurlWrapper();
+										$this->communityContentCurlWrapper = new CurlWrapper();
 									}
 									$body = [
 										'term' => $phrase,
@@ -116,7 +116,7 @@ class Translator {
 										'isMetadata' => $isMetadata,
 										'isAdminEnteredData' => $isAdminEnteredData,
 									];
-									$this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addTranslationTerm', $body);
+									$this->communityContentCurlWrapper->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addTranslationTerm', $body);
 								}
 							} else {
 								$termTooLong = true;
@@ -179,32 +179,16 @@ class Translator {
 								$defaultTranslation = $defaultText;
 								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
 							} else {
-								//Check the greenhouse to see if there is a translation there
-								$translatedInGreenhouse = false;
+								//Check the community content server to see if there is a translation there
+								$translatedInCommunity = false;
 								if ($activeLanguage->code != 'en') {
-									require_once ROOT_DIR . '/sys/SystemVariables.php';
-									$systemVariables = SystemVariables::getSystemVariables();
-									if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
-										if ($this->greenhouseCurlWrapper == null) {
-											require_once ROOT_DIR . '/sys/CurlWrapper.php';
-											$this->greenhouseCurlWrapper = new CurlWrapper();
-										}
-										$body = [
-											'term' => $phrase,
-											'languageCode' => $activeLanguage->code,
-										];
-										$response = $this->greenhouseCurlWrapper->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getDefaultTranslation', $body);
-										if ($response !== false) {
-											$jsonResponse = json_decode($response);
-											if (!empty($jsonResponse) && $jsonResponse->success) {
-												$translation->translated = 1;
-												$defaultTranslation = $jsonResponse->translation;
-												$translatedInGreenhouse = true;
-											}
-										}
+									$translationResponse = $this->getCommunityTranslation($phrase, $activeLanguage);
+									if ($translationResponse['isTranslatedInCommunity']) {
+										$translation->translated = 1;
+										$defaultTranslation = $translationResponse['translation'];
 									}
 								}
-								if (!$translatedInGreenhouse) {
+								if (!$translatedInCommunity) {
 									//We don't have a translation in the database, load a default from the ini file if possible
 									$this->loadTranslationsFromIniFile();
 									if (isset($this->words[$phrase])) {
@@ -231,6 +215,23 @@ class Translator {
 						} elseif ($defaultTextChanged) {
 							$translation->needsReview = 1;
 							$translation->update();
+						}
+
+						//If we haven't gotten a translation, check community for a translation, but only once a day.
+						try {
+							$now = time();
+							if (!$translation->translated && ($translation->lastCheckInCommunity < ($now - 24 * 60 * 60) || isset($_REQUEST['reload']))) {
+								$translationResponse = $this->getCommunityTranslation($phrase, $activeLanguage);
+								if ($translationResponse['isTranslatedInCommunity']) {
+									$translation->translated = 1;
+									$translation->translation = trim($translationResponse['translation']);
+								} else {
+									$translation->lastCheckInCommunity = $now;
+								}
+								$translation->update();
+							}
+						}catch (Exception $e) {
+							//This will happen before last check in community is set.
 						}
 
 						if ($translationMode) {
@@ -280,6 +281,38 @@ class Translator {
 			$returnString .= ' Translation metadata not set properly';
 		}
 		return $returnString;
+	}/**
+ * @param string $phrase
+ * @param Language $activeLanguage
+ * @return array
+ */
+	public function getCommunityTranslation(string $phrase, $activeLanguage): array {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		$translatedInCommunity = false;
+		$defaultTranslation = null;
+		if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
+			if ($this->communityContentCurlWrapper == null) {
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$this->communityContentCurlWrapper = new CurlWrapper();
+			}
+			$body = [
+				'term' => $phrase,
+				'languageCode' => $activeLanguage->code,
+			];
+			$response = $this->communityContentCurlWrapper->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getDefaultTranslation', $body);
+			if ($response !== false) {
+				$jsonResponse = json_decode($response);
+				if (!empty($jsonResponse) && $jsonResponse->success) {
+					$defaultTranslation = $jsonResponse->translation;
+					$translatedInCommunity = true;
+				}
+			}
+		}
+		return [
+			'isTranslatedInCommunity' => $translatedInCommunity,
+			'translation' => $defaultTranslation
+		];
 	}
 
 	private function loadTranslationsFromIniFile() {

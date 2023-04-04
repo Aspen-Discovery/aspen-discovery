@@ -20,6 +20,7 @@ class SystemVariables extends DataObject {
 	public $indexVersion;
 	public $searchVersion;
 	public $greenhouseUrl;
+	public $communityContentUrl;
 	public $libraryToUseForPayments;
 	public $solrConnectTimeout;
 	public $solrQueryTimeout;
@@ -41,7 +42,14 @@ class SystemVariables extends DataObject {
 				'property' => 'greenhouseUrl',
 				'type' => 'url',
 				'label' => 'Greenhouse URL',
-				'description' => 'URL of the Greenhouse to store shared content',
+				'description' => 'URL of the Greenhouse for LiDA connections and system health reporting',
+				'maxLength' => 128,
+			],
+			'communityContentUrl' => [
+				'property' => 'communityContentUrl',
+				'type' => 'url',
+				'label' => 'Community Content URL',
+				'description' => 'URL of the community content server',
 				'maxLength' => 128,
 			],
 			'errorEmail' => [
