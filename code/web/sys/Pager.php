@@ -42,7 +42,11 @@ class Pager {
 		$this->_currentPage = (isset($_REQUEST[$urlVar]) && is_numeric($_REQUEST[$urlVar])) ? $_REQUEST[$urlVar] : 1;
 		$this->_totalPages = ceil($this->options['totalItems'] / $this->options['perPage']);
 
-		$this->_baseUrl = $this->curPageURL();
+		if (isset($this->options['fileName'])){
+			$this->_baseUrl = $this->options['fileName'];
+		}else{
+			$this->_baseUrl = $this->curPageURL();
+		}
 		//remove the page parameter
 		$this->_baseUrl = preg_replace("/\?{$this->options['urlVar']}=\d+&/", '?', $this->_baseUrl);
 		$this->_baseUrl = preg_replace("/{$this->options['urlVar']}=\d+&|[?&]{$this->options['urlVar']}=\d+/", '', $this->_baseUrl);
