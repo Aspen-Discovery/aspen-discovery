@@ -1,9 +1,9 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Greenhouse/SharedContent.php';
+require_once ROOT_DIR . '/sys/Community/SharedContent.php';
 
-class Greenhouse_SharedContent extends ObjectEditor {
+class Community_SharedContent extends ObjectEditor {
 	function getObjectType(): string {
 		return 'SharedContent';
 	}
@@ -13,7 +13,7 @@ class Greenhouse_SharedContent extends ObjectEditor {
 	}
 
 	function getModule(): string {
-		return 'Greenhouse';
+		return 'Community';
 	}
 
 	function getPageTitle(): string {
@@ -68,12 +68,12 @@ class Greenhouse_SharedContent extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
-		$breadcrumbs[] = new Breadcrumb('/Greenhouse/SharedContent', 'Shared Content');
+		$breadcrumbs[] = new Breadcrumb('/Community/SharedContent', 'Shared Content');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'greenhouse';
+		return 'community';
 	}
 
 	function canView(): bool {

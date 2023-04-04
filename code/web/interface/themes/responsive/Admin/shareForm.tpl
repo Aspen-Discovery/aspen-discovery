@@ -22,7 +22,7 @@
 			</div>
 		</div>
 		<form id="shareContentForm" method="post" class="form-horizontal">
-			<input type="hidden" name="objectAction" value="shareToGreenhouse">
+			<input type="hidden" name="objectAction" value="shareToCommunity">
 			<div class="form-group">
 				<label for="contentName" class="control-label">{translate text='Name' isPublicFacing=true}</label>
 				<input type="text" class="form-control" name="contentName" value="{$objectName}"/>

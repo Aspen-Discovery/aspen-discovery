@@ -105,7 +105,7 @@
 					</a>
 					<div id="communityGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
-							<div class="adminMenuLink "><a href="/Greenhouse/SharedContent">{translate text="Shared Content" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Community/SharedContent">{translate text="Shared Content" isAdminFacing=true}</a></div>
 						</div>
 					</div>
 				</div>

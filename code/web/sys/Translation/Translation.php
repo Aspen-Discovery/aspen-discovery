@@ -9,6 +9,7 @@ class Translation extends DataObject {
 	public $translation;
 	public $translated;
 	public $needsReview;
+	public $lastCheckInCommunity;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -33,10 +34,10 @@ class Translation extends DataObject {
 		$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
 		$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $term->term);
 
-		//Send the translation to the greenhouse
+		//Send the translation to the community content server
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+		if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
 			require_once ROOT_DIR . '/sys/CurlWrapper.php';
 			$curl = new CurlWrapper();
 			$body = [
@@ -44,7 +45,7 @@ class Translation extends DataObject {
 				'translation' => $translation,
 				'languageCode' => $activeLanguage->code,
 			];
-			$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=setTranslation', $body);
+			$curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=setTranslation', $body);
 		}
 	}
 }

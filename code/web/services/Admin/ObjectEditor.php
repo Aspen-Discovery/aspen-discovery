@@ -30,8 +30,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('canBatchDelete', $this->canBatchDelete());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 		$interface->assign('showHistoryLinks', $this->showHistoryLinks());
-		$interface->assign('canShareToGreenhouse', $this->canShareToGreenhouse());
-		$interface->assign('canFetchFromGreenhouse', $this->canFetchFromGreenhouse());
+		$interface->assign('canShareToCommunity', $this->canShareToCommunity());
+		$interface->assign('canFetchFromCommunity', $this->canFetchFromCommunity());
 
 		$interface->assign('objectType', $this->getObjectType());
 		$interface->assign('toolName', $this->getToolName());
@@ -57,10 +57,10 @@ abstract class ObjectEditor extends Admin_Admin {
 			$this->copyObject($structure);
 		} elseif ($objectAction == 'shareForm') {
 			$this->showShareForm($structure);
-		} elseif ($objectAction == 'shareToGreenhouse') {
-			$this->shareToGreenhouse($structure);
-		} elseif ($objectAction == 'importFromGreenhouse') {
-			$this->importFromGreenhouse($structure);
+		} elseif ($objectAction == 'shareToCommunity') {
+			$this->shareToCommunity($structure);
+		} elseif ($objectAction == 'importFromCommunity') {
+			$this->importFromCommunity($structure);
 		} else {
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)) {
@@ -307,7 +307,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function shareToGreenhouse($structure) {
+	function shareToCommunity($structure) {
 		global $interface;
 		//TODO:: Double check permissions
 		if (isset($_REQUEST['sourceId'])) {
@@ -318,13 +318,13 @@ abstract class ObjectEditor extends Admin_Admin {
 
 					$interface->assign('objectName', $existingObject->__toString());
 					$interface->assign('id', $id);
-					$existingObject->prepareForSharingToGreenhouse();
+					$existingObject->prepareForSharingToCommunity();
 					$jsonRepresentation = $existingObject->getJSONString(false, true);
 
 					//Submit to the greenhouse
 					require_once ROOT_DIR . '/sys/SystemVariables.php';
 					$systemVariables = SystemVariables::getSystemVariables();
-					if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+					if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
 						require_once ROOT_DIR . '/sys/CurlWrapper.php';
 						$curl = new CurlWrapper();
 						$body = [
@@ -335,10 +335,14 @@ abstract class ObjectEditor extends Admin_Admin {
 							'sharedByUserName' => UserAccount::getActiveUserObj()->displayName,
 							'data' => $jsonRepresentation
 						];
-						$curl->curlPostPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=addSharedContent', $body);
+						$response = $curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addSharedContent', $body);
+						header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
+						exit;
+					} else {
+						$error = new AspenError('A community sharing URL has not been configured. You can configure it in System Variables.');
+						$interface->setTemplate('../error.tpl');
 					}
-					header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
-					exit;
+
 				} else {
 					$interface->setTemplate('../Admin/noPermission.tpl');
 				}
@@ -350,7 +354,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 	}
 
-	function importFromGreenhouse($structure) {
+	function importFromCommunity($structure) {
 		global $interface;
 		//TODO: Double check permissions
 		if (isset($_REQUEST['sourceId'])) {
@@ -360,10 +364,10 @@ abstract class ObjectEditor extends Admin_Admin {
 			//Get the raw data from the greenhouse
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
 				require_once ROOT_DIR . '/sys/CurlWrapper.php';
 				$curl = new CurlWrapper();
-				$response = $curl->curlGetPage($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
+				$response = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
 				$jsonResponse = json_decode($response);
 				if ($jsonResponse->success) {
 					$rawData = json_decode($jsonResponse->rawData);
@@ -1021,19 +1025,19 @@ abstract class ObjectEditor extends Admin_Admin {
 		return '';
 	}
 
-	public function canShareToGreenhouse() {
+	public function canShareToCommunity() {
 		return false;
 	}
 
-	public function canFetchFromGreenhouse() {
+	public function canFetchFromCommunity() {
 		return false;
 	}
 
-	public function hasGreenhouseConnection() {
+	public function hasCommunityConnection() {
 		//Send the translation to the greenhouse
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+		if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
 			return true;
 		} else {
 			return false;

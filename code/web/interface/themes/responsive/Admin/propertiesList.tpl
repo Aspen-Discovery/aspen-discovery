@@ -13,7 +13,7 @@
 	</div>
 {/if}
 
-{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete || $canFetchFromGreenhouse}
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete || $canFetchFromCommunity}
 <form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
 	{if !empty($canSort) && count($sortableFields) > 0}
@@ -207,9 +207,9 @@
 			<button type='submit' value='addNew' class="btn btn-primary" onclick="$('#objectAction').val('addNew')"><i class="fas fa-plus"></i> {translate text='Add New' isAdminFacing=true}</button>
 		</div>
 	{/if}
-	{if !empty($canFetchFromGreenhouse)}
+	{if !empty($canFetchFromCommunity)}
 		<div class="btn-group">
-			<button type='submit' value='findGreenhouseContent' class="btn btn-default" onclick="return AspenDiscovery.Admin.showFindGreenhouseForm('{$module}', '{$toolName}', '{$objectType}')"><i class="fas fa-file-download"></i> {translate text='Import Community Content' isAdminFacing=true}</button>
+			<button type='submit' value='findGreenhouseContent' class="btn btn-default" onclick="return AspenDiscovery.Admin.showFindCommunityContentForm('{$module}', '{$toolName}', '{$objectType}')"><i class="fas fa-file-download"></i> {translate text='Import Community Content' isAdminFacing=true}</button>
 		</div>
 	{/if}
 	<div class="btn-group">
@@ -226,7 +226,7 @@
 		</div>
 	</div>
 	{/if}
-{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions) || $canBatchDelete || $canFetchFromGreenhouse}
+{if $canCompare || $canAddNew || $canBatchUpdate || $canFilter|| !empty($customListActions) || $canBatchDelete || $canFetchFromCommunity}
 </form>
 {/if}
 

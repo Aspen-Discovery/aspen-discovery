@@ -107,6 +107,7 @@ class MyAccount_MyPreferences extends MyAccount {
 				$locationList['0'] = translate([
 					'text' => "No Alternate Location Selected",
 					'isPublicFacing' => true,
+					'inAttribute' => true
 				]);
 				foreach ($pickupLocations as $pickupLocation) {
 					if (!is_string($pickupLocation)) {
