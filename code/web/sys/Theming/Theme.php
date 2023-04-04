@@ -2229,7 +2229,6 @@ class Theme extends DataObject {
 	public function generateCss($saveChanges = false) {
 		$allAppliedThemes = $this->getAllAppliedThemes();
 		global $interface;
-		global $configArray;
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$additionalCSS = '';
 		$appendCSS = true;
