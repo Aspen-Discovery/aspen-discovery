@@ -1155,7 +1155,7 @@ abstract class DataObject {
 		return [];
 	}
 
-	public function prepareForSharingToGreenhouse() {
+	public function prepareForSharingToCommunity() {
 		$this->unsetUniquenessFields();
 	}
 

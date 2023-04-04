@@ -35,7 +35,7 @@
 					{/if}
 				</div>
 				<div class="btn-group">
-					{if !empty($id) && $canShareToGreenhouse}
+					{if !empty($id) && $canShareToCommunity}
 						<a class="btn btn-default" href='/{$module}/{$toolName}?sourceId={$id}&amp;objectAction=shareForm'><i class="fas fa-file-upload"></i> {translate text="Share with Community" isAdminFacing=true}</a>
 					{/if}
 				</div>

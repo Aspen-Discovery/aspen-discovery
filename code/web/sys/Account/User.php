@@ -2762,7 +2762,11 @@ class User extends DataObject {
 
 	/** @noinspection PhpUnused */
 	function getHomeLocationName() {
-		return $this->getHomeLocation()->displayName;
+		if ($this->getHomeLocation() != null) {
+			return $this->getHomeLocation()->displayName;
+		} else {
+			return translate(['text' => 'N/A', 'isPublicFacing' => true]);
+		}
 	}
 
 	function getHomeLocation() {

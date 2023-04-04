@@ -26,7 +26,7 @@ function getUpdates23_04_00(): array {
 				) ENGINE INNODB",
 				'INSERT INTO library_themes (libraryId, themeId) (SELECT libraryId, theme from library)'
 			],
-		],
+		], //allow_multiple_themes_for_libraries
 		'allow_multiple_themes_for_locations' => [
 			'title' => 'Allow Multiple Themes for Locations',
 			'description' => 'Allow Multiple Themes for Locations',
@@ -40,7 +40,7 @@ function getUpdates23_04_00(): array {
 				) ENGINE INNODB",
 				'INSERT INTO location_themes (locationId, themeId) (SELECT locationId, theme from location)'
 			],
-		],
+		], //allow_multiple_themes_for_locations
 		'add_display_name_to_themes' => [
 			'title' => 'Add Display name to themes',
 			'description' => 'Add Display name to themes',
@@ -48,14 +48,14 @@ function getUpdates23_04_00(): array {
 				"ALTER TABLE themes add column displayName VARCHAR(60) NOT NULL",
 				"UPDATE themes set displayName = themeName",
 			],
-		],
+		], //add_display_name_to_themes
 		'allow_users_to_change_themes' => [
 			'title' => 'Allow Users to change themes',
 			'description' => 'Allow Users to change themes',
 			'sql' => [
 				"ALTER TABLE user add column preferredTheme int(11) default -1",
 			],
-		],
+		], //allow_users_to_change_themes
 		'shared_content_in_greenhouse' => [
 			'title' => 'Add shared content to the greenhouse',
 			'description' => 'Allow libraries to share content within the community',
@@ -74,7 +74,7 @@ function getUpdates23_04_00(): array {
 					data TEXT                                          
 				) ENGINE INNODB",
 			],
-		],
+		], //shared_content_in_greenhouse
 		'lowercase_all_tables' => [
 			'title' => 'Make all tables lower case',
 			'description' => 'Make all tables lower case for improved cross platform compatibility when installing clean via docker',
@@ -90,14 +90,29 @@ function getUpdates23_04_00(): array {
 				"RENAME TABLE indexed_physicalDescription TO indexed_physical_description;",
 				"RENAME TABLE indexed_publicationDate TO indexed_publication_date;",
 			],
-		],
+		], //lowercase_all_tables
 		'allow_ip_tracking_to_be_disabled' => [
 			'title' => 'Allow IP tracking to be disabled',
 			'description' => 'Allow IP tracking to be disabled for GDPR compliance',
 			'sql' => [
 				"ALTER TABLE system_variables add column trackIpAddresses TINYINT(1) DEFAULT 0"
 			],
-		],
+		], //allow_ip_tracking_to_be_disabled
+		'create_community_content_url' => [
+			'title' => 'Create Community Content URL',
+			'description' => 'Create Community Content URL',
+			'sql' => [
+				"ALTER TABLE system_variables add column communityContentUrl VARCHAR(128) DEFAULT ''",
+				"UPDATE system_variables set communityContentUrl = greenhouseUrl"
+			],
+		], //create_community_content_url
+		'add_last_check_in_community_for_translations' => [
+			'title' => 'Add Last Check In Community for Translations',
+			'description' => 'Add Last Check In Community for Translations',
+			'sql' => [
+				"ALTER TABLE translations add column lastCheckInCommunity INT(11) default 0",
+			],
+		], //add_last_check_in_community_for_translations
 
 		//kirstien
 		'add_ecommerce_deluxe' => [

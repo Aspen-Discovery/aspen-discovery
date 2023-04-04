@@ -1852,9 +1852,9 @@ AspenDiscovery.Admin = (function () {
 			}
 		},
 
-		showFindGreenhouseForm: function (toolModule, toolName, objectType) {
+		showFindCommunityContentForm: function (toolModule, toolName, objectType) {
 			var params = {
-				method: 'getSearchGreenhouseContentForm',
+				method: 'getSearchCommunityContentForm',
 				toolModule: toolModule,
 				toolName: toolName,
 				objectType: objectType
@@ -1866,27 +1866,27 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
-		searchGreenhouseContent: function (toolModule, toolName) {
-			$("#greenhouseSearchResultsLoading").show();
-			$("#greenhouseSearchResults").html("");
-			var searchForm = $("#searchGreenhouseContentForm");
+		searchCommunityContent: function (toolModule, toolName) {
+			$("#communitySearchResultsLoading").show();
+			$("#communitySearchResults").html("");
+			var searchForm = $("#searchCommunityContentForm");
 			var objectType = searchForm.find("#objectType").val();
-			var greenhouseSearchTerm = searchForm.find("#greenhouseSearchTerm").val();
-			var url = Globals.path + '/API/GreenhouseAPI';
+			var communitySearchTerm = searchForm.find("#communitySearchTerm").val();
+			var url = Globals.path + '/API/CommunityAPI';
 			var params = {
 				'method': 'searchSharedContent',
 				'objectType': objectType,
 				'toolModule': toolModule,
 				'toolName': toolName,
-				'greenhouseSearchTerm': greenhouseSearchTerm,
+				'communitySearchTerm': communitySearchTerm,
 				'includeHtml': true
 			}
 			$.getJSON(url, params, function (data) {
-				$("#greenhouseSearchResultsLoading").hide();
+				$("#communitySearchResultsLoading").hide();
 				if (data.success === true) {
-					$("#greenhouseSearchResults").html(data.greenhouseResults);
+					$("#communitySearchResults").html(data.communityResults);
 				} else {
-					$("#greenhouseSearchResults").html(data.message);
+					$("#communitySearchResults").html(data.message);
 				}
 			});
 		}

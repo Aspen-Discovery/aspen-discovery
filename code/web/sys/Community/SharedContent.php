@@ -86,10 +86,10 @@ class SharedContent extends DataObject {
 			'data' => [
 				'property' => 'data',
 				'type' => 'textArea',
-				'label' => 'Description',
+				'label' => 'Data',
 				'readOnly' => true,
 				'description' => 'The JSON content that was shared',
-				'hideInLists' => true
+				'hideInLists' => true,
 			],
 		];
 	}
