@@ -68,6 +68,24 @@ export default class Settings_Notifications extends Component {
                } else {
                     notificationStorage = [];
                }
+
+               const alertsFromLibrary = await getTermFromDictionary(this.state.language, 'alerts_from_library');
+               const alertsAboutAccount = await getTermFromDictionary(this.state.language, 'alerts_about_account');
+
+               this.setState((prevState) => ({
+                    ...prevState,
+                    categories: {
+                    ...prevState.categories,
+                        notifyCustom: {
+                         ...prevState.categories.notifyCustom,
+                                  label: alertsFromLibrary,
+                         },
+                         notifyAccount: {
+                         ...prevState.categories.notifyAccount,
+                                  label: alertsAboutAccount,
+                         },
+                    },
+               }))
           }
      };
 

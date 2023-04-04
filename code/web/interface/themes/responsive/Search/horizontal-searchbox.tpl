@@ -19,10 +19,10 @@
 		<div class="col-xs-12 col-sm-10 col-md-10 col-lg-10">
 			<div class="row">
 				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
-					{* <div class="input-group"> *}
-					<label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-2x" style="vertical-align: middle"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label>
+					<div class="input-group">
+					<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search" style="vertical-align: middle"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label></span>
 					{* Main Search Term Box *}
-					<input type="text" class="form-control" style="border-right:0"{/strip}
+					<input type="text" class="form-control"{/strip}
 						id="lookfor"
 						name="lookfor"
 						title="{translate text="Enter one or more terms to search for.	Surrounding a term with quotes will limit result to only those that exactly match the term." isPublicFacing=true inAttribute=true}"
@@ -35,7 +35,7 @@
 						{*<span class="input-group-btn">
 							<button class="btn btn-default" type="button" onclick="return AspenDiscovery.resetSearchBox();"><i class="fas fa-times"></i></button>
 						</span>*}
-					{*</div>*}
+					</div>
 				</div>
 
 				{* Search Type *}

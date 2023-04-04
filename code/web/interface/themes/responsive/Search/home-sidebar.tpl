@@ -2,11 +2,11 @@
 {* Search box *}
 	<div class="row">
 		{if !empty($userPermissions)}
-			<a href="/Admin/Home">
-				<div class="sidebar-button custom-sidebar-button">
-					{translate text="Aspen Administration" isAdminFacing=true}
-				</div>
-			</a>
+			<div style="margin-bottom: 1em">
+				<a href="/Admin/Home" class="btn btn-primary btn-block">
+					<i class="fas fa-tools fa-fw"></i> {translate text="Aspen Administration" isAdminFacing=true}
+				</a>
+			</div>
 		{/if}
 	</div>
 
