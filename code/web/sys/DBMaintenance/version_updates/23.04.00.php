@@ -186,6 +186,14 @@ function getUpdates23_04_00(): array {
 			]
 		],
 		//add_high_contrast_checkbox
+		'updateThemes' => [
+			'title' => 'Update themes for changes',
+			'description' => 'Automatically updates all themes to grab stylesheet changes',
+			'sql' => [
+				'updateAllThemes',
+			],
+		],
+		//updateThemes
 
 		//kodi
 		'permissions_create_events_communico' => [
