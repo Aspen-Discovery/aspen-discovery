@@ -52,7 +52,7 @@ class LocationTheme extends DataObject {
 				'label' => 'Location',
 				'description' => 'A link to the location which the theme belongs to',
 			],
-			'theme' => [
+			'themeId' => [
 				'property' => 'themeId',
 				'type' => 'enum',
 				'label' => 'Theme',
