@@ -47,7 +47,7 @@
 				        {/if}
 			            <a href="#" onclick="return AspenDiscovery.Account.showEmailSearchForm();" class="btn btn-default btn-block">{translate text='Email this Search' isPublicFacing=true}</a>
 			            <a href="{$rssLink|escape}" class="btn btn-default btn-block">{translate text='Get RSS Feed' isPublicFacing=true}</a>
-			            <a href="{$excelLink|escape}" class="btn btn-default btn-block">{translate text='Export To CSV' isPublicFacing=true}</a>
+			            {if !empty($excelLink)}<a href="{$excelLink|escape}" class="btn btn-default btn-block">{translate text='Export To CSV' isPublicFacing=true}</a>{/if}
 		            {/if}
 		            {if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 	                    <a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')" class="btn btn-default btn-block">{translate text='Create Spotlight' isAdminFacing=true}</a>
