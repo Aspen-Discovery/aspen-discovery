@@ -8732,8 +8732,8 @@ a.placard-link {
 }
 #horizontal-search-box #lookfor {
   height: 34px;
-  width: calc(100% - 35px);
-  display: inline-block;
+  /*width: calc(100% - 35px);
+    display: inline-block;*/
 }
 #horizontal-search-box #lookfor:focus {
   border-color: #66afe9;
