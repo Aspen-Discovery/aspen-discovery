@@ -15,6 +15,11 @@
 		<th>
 			<strong><u>{translate text="Location" isPublicFacing=true}</u></strong>
 		</th>
+		{if $showFormatInHoldings}
+			<th>
+				<strong><u>{translate text="Format" isPublicFacing=true}</u></strong>
+			</th>
+		{/if}
 		<th>
 			<strong><u>{translate text="Call Number" isPublicFacing=true}</u></strong>
 		</th>
