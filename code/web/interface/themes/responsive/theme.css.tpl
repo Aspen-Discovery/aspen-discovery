@@ -723,6 +723,12 @@ pre{ldelim}
 	color: {$primaryForegroundColor};
 {rdelim}
 
+.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+	background-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+	border: 1px solid {$primaryForegroundColor};
+}
+
 .formatCategoryLabel, .share-tools-label{ldelim}
 color: {$bodyTextColor};
 {rdelim}
