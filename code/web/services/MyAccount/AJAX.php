@@ -3066,6 +3066,99 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	public function getSavedEvents(){
+		global $interface;
+		global $timer;
+
+		//Load user ratings
+		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+
+		$page = $_REQUEST['page'] ?? 1;
+		$pageSize = $_REQUEST['pageSize'] ?? 20;
+
+		$eventsFilter = $_REQUEST['eventsFilter'] ?? 'upcoming';
+		$curTime = time();
+
+		$user = UserAccount::getActiveUserObj();
+		$numSaved = $user->getNumSavedEvents($eventsFilter);
+		$event = new UserEventsEntry();
+		$event->userId = UserAccount::getActiveUserId();
+		if ($eventsFilter == 'past'){
+			$event->whereAdd("eventDate < $curTime");
+		}
+		if ($eventsFilter == 'upcoming'){
+			$event->whereAdd("eventDate >= $curTime");
+		}
+		$event->orderBy('eventDate ASC');
+		$event->limit(($page - 1) * $pageSize, $pageSize);
+		$event->find();
+		$events = [];
+		$eventIds = [];
+		while ($event->fetch()) {
+			if (!array_key_exists($event->sourceId, $eventIds)) {
+				$eventIds[$event->sourceId] = clone $event;
+			}
+		}
+		$timer->logTime("Loaded events the user has saved");
+
+		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
+		$searchObject = SearchObjectFactory::initSearchObject("Events");
+		$eventRecords = $searchObject->getRecords(array_keys($eventIds));
+		foreach ($eventIds as $curEventId => $entry) {
+			if (array_key_exists($curEventId, $eventRecords)) {
+				$eventRecordDriver = $eventRecords[$curEventId];
+				if ($eventRecordDriver->isValid()) {
+					if (($entry->eventDate < $curTime)){
+						$events[$entry->sourceId] = [
+							'id' => $entry->id,
+							'sourceId' => $entry->sourceId,
+							'title' => $entry->title,
+							'link' => null,
+							'location' => $entry->location,
+							'regRequired' => $entry->regRequired,
+							'eventDate' => $entry->eventDate,
+							'pastEvent' => true,
+						];
+					}else{
+						$events[$entry->sourceId] = [
+							'id' => $entry->id,
+							'sourceId' => $entry->sourceId,
+							'title' => $entry->title,
+							'link' => $eventRecordDriver->getLinkUrl(),
+							'location' => $entry->location,
+							'regRequired' => $entry->regRequired,
+							'eventDate' => $entry->eventDate,
+							'pastEvent' => false,
+						];
+					}
+				}
+			}
+		}
+
+		$filter = isset($_REQUEST['eventsFilter']) ? $_REQUEST['eventsFilter'] : '';
+		$interface->assign('eventsFilter', $filter);
+
+		// Process Paging
+		$options = [
+			'perPage' => $pageSize,
+			'totalItems' => $numSaved,
+			'append' => false,
+			'filter' => urlencode($filter),
+			'fileName' => "/MyAccount/MyEvents?page=%d&eventsFilter=$eventsFilter",
+		];
+
+		$pager = new Pager($options);
+		$interface->assign('pageLinks', $pager->getLinks());
+		$interface->assign('events', $events);
+
+		$result['success'] = true;
+		$result['message'] = "";
+		$result['myEvents']= $interface->fetch('MyAccount/myEventsList.tpl');
+
+		return $result;
+	}
+
 	public function getReadingHistory() {
 		global $interface;
 		$showCovers = $this->setShowCovers();
@@ -5386,6 +5479,133 @@ class MyAccount_AJAX extends JSON_Action {
 				];
 			}
 		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function saveEvent() {
+		$result = [];
+
+		if (!UserAccount::isLoggedIn()) {
+			$result['success'] = false;
+			$result['message'] = translate([
+				'text' => 'Please login before saving an event.',
+				'isPublicFacing' => true,
+			]);
+		} else {
+			require_once ROOT_DIR . '/services/MyAccount/MyEvents.php';
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$result['success'] = true;
+			$sourceId = $_REQUEST['sourceId'];
+
+			$userEventsEntry = new UserEventsEntry();
+			$userEventsEntry->userId = UserAccount::getActiveUserId();
+
+			if (empty($sourceId)) {
+				$result['success'] = false;
+				$result['message'] = translate([
+					'text' => 'Unable to save event, not correctly specified.',
+					'isPublicFacing' => true,
+				]);
+			} else {
+				$userEventsEntry->sourceId = $sourceId;
+
+				if (preg_match('`^communico`', $userEventsEntry->sourceId)){
+					require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+					$recordDriver = new CommunicoEventRecordDriver($userEventsEntry->sourceId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+						$userEventsEntry->title = substr($title, 0, 50);
+						$eventDate = $recordDriver->getStartDate();
+						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						if ($recordDriver->isRegistrationRequired()){
+							$regRequired = 1;
+						}else{
+							$regRequired = 0;
+						}
+						$userEventsEntry->regRequired = $regRequired;
+						$userEventsEntry->location = $recordDriver->getBranch();
+					}
+				} elseif (preg_match('`^libcal`', $userEventsEntry->sourceId)){
+					require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+					$recordDriver = new SpringshareLibCalEventRecordDriver($userEventsEntry->sourceId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+						$userEventsEntry->title = substr($title, 0, 50);
+						$eventDate = $recordDriver->getStartDate();
+						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						if ($recordDriver->isRegistrationRequired()){
+							$regRequired = 1;
+						}else{
+							$regRequired = 0;
+						}
+						$userEventsEntry->regRequired = $regRequired;
+						$userEventsEntry->location = $recordDriver->getBranch();
+					}
+				} elseif (preg_match('`^lc_`', $userEventsEntry->sourceId)){
+					require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+					$recordDriver = new LibraryCalendarEventRecordDriver($userEventsEntry->sourceId);
+					if ($recordDriver->isValid()) {
+						$title = $recordDriver->getTitle();
+						$userEventsEntry->title = substr($title, 0, 50);
+						$eventDate = $recordDriver->getStartDate();
+						$userEventsEntry->eventDate = $eventDate->getTimestamp();
+						if ($recordDriver->isRegistrationRequired()){
+							$regRequired = 1;
+						}else{
+							$regRequired = 0;
+						}
+						$userEventsEntry->regRequired = $regRequired;
+						$userEventsEntry->location = $recordDriver->getBranch();
+					}
+				}
+			}
+
+			$existingEntry = false;
+
+			if ($userEventsEntry->find(true)) {
+				$existingEntry = true;
+			}
+			$userEventsEntry->dateAdded = time();
+
+			if ($existingEntry) {
+				$userEventsEntry->update();
+			} else {
+				$userEventsEntry->insert();
+			}
+
+			$result['success'] = true;
+			$result['message'] = translate([
+				'text' => 'This event was saved to your events successfully.',
+				'isPublicFacing' => true,
+			]);
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function deleteSavedEvent() {
+		$id = $_GET['id'];
+		$result = ['result' => false];
+		if (!UserAccount::isLoggedIn()) {
+			$result['message'] = 'You must be logged in to remove events.';
+		} else {
+			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+			$userEventsEntry = new UserEventsEntry();
+			$userEventsEntry->sourceId = $id;
+			$userEventsEntry->userId = UserAccount::getActiveUserId();
+			if ($userEventsEntry->find(true)) {
+				$userEventsEntry->delete();
+				$result = [
+					'result' => true,
+					'message' => 'Event successfully removed from your events.',
+				];
+			} else {
+				$result['message'] = 'Sorry, we could not find that event in the system.';
+			}
+		}
+
 		return $result;
 	}
 
