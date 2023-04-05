@@ -434,28 +434,37 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 {* Alerts *}
-.alert-success{ldelim}
-    background-color: {$successButtonBackgroundColor};
-    border-color: {$successButtonBackgroundColor};
-    color: {$successButtonForegroundColor};
-{rdelim}
-
 .alert-info{ldelim}
     background-color: {$infoButtonBackgroundColor};
-    border-color: {$infoButtonBackgroundColor};
+    border-color: {$infoButtonBorderColor};
     color: {$infoButtonForegroundColor};
+{rdelim}
+
+.alert-info a{ldelim}
+    color: {$infoButtonForegroundColor} !important;
+    text-decoration: underline;
 {rdelim}
 
 .alert-warning{ldelim}
     background-color: {$warningButtonBackgroundColor};
-    border-color: {$warningButtonBackgroundColor};
+    border-color: {$warningButtonBorderColor};
     color: {$warningButtonForegroundColor};
+{rdelim}
+
+.alert-warning a{ldelim}
+	color: {$warningButtonForegroundColor} !important;
+	text-decoration: underline;
 {rdelim}
 
 .alert-danger{ldelim}
     background-color: {$dangerButtonBackgroundColor};
-    border-color: {$dangerButtonBackgroundColor};
+    border-color: {$dangerButtonBorderColor};
     color: {$dangerButtonForegroundColor};
+{rdelim}
+
+.alert-danger a{ldelim}
+   color: {$dangerButtonForegroundColor} !important;
+   text-decoration: underline;
 {rdelim}
 
 #system-message-header {ldelim}
