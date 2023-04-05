@@ -40,7 +40,7 @@
 	<div {if empty($fullWidthTheme)}class="container"{/if} id="page-container">
 {*
 		{if !empty($systemMessage)}
-			<div id="system-message-header" class="row">{$systemMessage}</div>
+			<div id="system-message-header" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">{$systemMessage}</div>
 		{/if}
 *}
 

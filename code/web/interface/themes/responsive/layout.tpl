@@ -63,7 +63,7 @@
 	<div {if empty($fullWidthTheme)}class="container"{/if} id="page-container">
 		<div {if !empty($fullWidthTheme)}class="container-fluid"{/if} id="system-messages">
 			{if !empty($systemMessages)}
-				<div id="system-message-header" class="row">
+				<div id="system-message-header" class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
 					{include file="systemMessages.tpl" messages=$systemMessages}
 				</div>
 			{/if}

@@ -461,8 +461,6 @@ body .container, #home-page-browse-content{ldelim}
 #system-message-header {ldelim}
 	background-color: {$pageBackgroundColor};
 	color: {$primaryForegroundColor};
-	max-width: 1080px;
-	margin: 0 auto;
 {rdelim}
 
 {* Forms/Inputs *}
@@ -632,10 +630,13 @@ label{ldelim}
 
 {* Panels / Accordions *}
 .panel{ldelim}
-	border: 1px solid {$openPanelBackgroundColor};
 	background-color: transparent !important;
 	box-shadow: none;
-	margin-bottom: 1em !important;
+{rdelim}
+
+.panel.active{ldelim}
+	margin-bottom: .5em !important;
+	border: 1px solid {$openPanelBackgroundColor};
 {rdelim}
 
 .accordion .facetList{ldelim}
