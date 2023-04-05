@@ -1896,4 +1896,52 @@ class Evergreen extends AbstractIlsDriver {
 		}
 		return null;
 	}
+
+	function updatePin(User $patron, string $oldPin, string $newPin) {
+		if ($patron->cat_password != $oldPin) {
+			return [
+				'success' => false,
+				'message' => "The old password provided is incorrect.",
+			];
+		}
+		$result = [
+			'success' => false,
+			'error' => translate([
+				'text' => "Unknown error updating password.",
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$authToken = $this->getAPIAuthToken($patron, false);
+
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$request = 'service=open-ils.actor&method=open-ils.actor.user.password.update';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . json_encode($newPin);
+		$request .= '&param=' . json_encode($oldPin);
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->textcode)) {
+				$errorCode = $apiResponse->payload[0]->textcode;
+				if ($errorCode == 'INCORRECT_PASSWORD') {
+					$result['error'] = translate([
+						'text' => 'The old password provided is incorrect',
+						'isPublicFacing' => true,
+					]);
+				}
+			} elseif ($apiResponse->payload[0] == 1) {
+				$result['error'] = null;
+				$result['success'] = true;
+			}
+		}
+
+		return $result;
+	}
 }
