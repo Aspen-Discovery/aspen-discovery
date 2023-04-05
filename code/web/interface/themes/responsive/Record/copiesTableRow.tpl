@@ -19,6 +19,11 @@
 				{if !empty($holding.locationLink)} (<a href='{$holding.locationLink}' target="_blank">Map</a>){/if}
 			</strong>
 		</td>
+		{if $showFormatInHoldings}
+			<td>
+				{$holding.format}
+			</td>
+		{/if}
 		<td class="holdingsCallNumber">
 			{$holding.callNumber|escape}
 			{if !empty($holding.link)}
