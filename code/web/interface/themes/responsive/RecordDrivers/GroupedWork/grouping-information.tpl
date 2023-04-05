@@ -90,7 +90,11 @@
 {if !empty($bookcoverInfo)}
 	<h4>{translate text="Book Cover Information" isPublicFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
-		<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{$bookcoverInfo->imageSource}</td></tr>
+		{if !empty($bookcoverInfo->imageSource)}
+			<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{$bookcoverInfo->imageSource}</td></tr>
+		{else}
+			<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{translate text="Not Available" isPublicFacing=true}</td></tr>
+		{/if}
 		<tr><th>{translate text="First Loaded" isPublicFacing=true}</th><td>{$bookcoverInfo->firstLoaded|date_format}</td></tr>
 		<tr><th>{translate text="Last Used" isPublicFacing=true}</th><td>{$bookcoverInfo->lastUsed|date_format}</td></tr>
 	</table>
