@@ -1670,6 +1670,28 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
+		saveEventReg: function (trigger, source, id, regLink) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					'method': 'saveEvent',
+					sourceId: id,
+					source: source,
+					regLink: regLink
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+						window.open(regLink, "_blank");
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
 		deleteSavedEvent: function(id){
 			if (confirm("Are you sure you want to remove this event?")){
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id ;

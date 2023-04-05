@@ -130,10 +130,20 @@ class Events_Calendar extends Action {
 						if (array_key_exists('reservation_state', $result) && in_array('Cancelled', $result['reservation_state'])) {
 							$isCancelled = true;
 						}
+						$url = "";
+						if (preg_match('`^communico`', $result['id'])){
+							$url = '/Communico/' . $result['id'] . '/Event';
+						}
+						elseif (preg_match('`^libcal`', $result['id'])){
+							$url = '/Springshare/' . $result['id'] . '/Event';
+						}
+						elseif (preg_match('`^lc_`', $result['id'])){
+							$url = '/LibraryMarket/' . $result['id'] . '/Event';
+						}
 						$eventDayObj['events'][] = [
 							'id' => $result['id'],
 							'title' => $result['title'],
-							'link' => $result['url'],
+							'link' => $url,
 							'formattedTime' => $formattedTime,
 							'isCancelled' => $isCancelled,
 						];

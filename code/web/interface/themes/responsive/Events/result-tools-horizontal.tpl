@@ -16,15 +16,6 @@
 						</div>
 					</div>
 				{/if}
-
-				{if $showFavorites == true}
-					<div class="text-center row">
-						<div class="col-xs-12">
-							<span onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm addtolistlink saveEventBtn">{translate text="Save Event" isPublicFacing=true}</span>
-						</div>
-					</div>
-				{/if}
-
 			{/if}
 
 			<div class="btn-group btn-group-sm">
