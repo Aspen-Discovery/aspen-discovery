@@ -4412,7 +4412,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$compriseSettings->id = $paymentLibrary->compriseSettingId;
 			if ($compriseSettings->find(true)) {
 				$paymentRequestUrl = 'https://smartpayapi2.comprisesmartterminal.com/smartpayapi/websmartpay.dll?GetCreditForm';
-				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->username;
+				$paymentRequestUrl .= "&LocationID=" . $compriseSettings->customerName;
 				$paymentRequestUrl .= "&CustomerID=" . $compriseSettings->customerId;
 				if ($transactionType == 'donation') {
 					$paymentRequestUrl .= "&PatronID=Guest";

@@ -471,6 +471,14 @@ class Grouping_Record {
 					if (!$item->isVirtual) {
 						$key = $item->getSummaryKey();
 						$itemSummary = $item->getSummary();
+						//Get the correct variation
+						$itemSummary['format'] = $this->getFormat();
+						foreach ($this->recordVariations as $variationLabel => $recordVariation) {
+							if ($recordVariation->databaseId == $item->variationId) {
+								$itemSummary['format'] = $variationLabel;
+								break;
+							}
+						}
 						$this->addItemDetails($key . $item->itemId, $itemSummary);
 						$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
 					}

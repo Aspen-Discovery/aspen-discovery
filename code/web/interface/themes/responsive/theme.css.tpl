@@ -93,7 +93,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 #home-page-search, #horizontal-search-box,.searchTypeHome,.searchSource,.menu-bar {ldelim}
-    background-color: {$pageBackgroundColor};
+    background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
 
@@ -473,7 +473,14 @@ body .container, #home-page-browse-content{ldelim}
 	border-radius: {$smallButtonRadius}
 {rdelim}
 
-.form-control:focus, #horizontal-search-box #lookfor:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{ldelim}
+#horizontal-search-box #lookfor:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{ldelim}
+	color: {$primaryForegroundColor};
+	border-color: {$primaryForegroundColor};
+	--webkit-box-shadow: inset 0 1px 1px {$primaryForegroundColor}, 0 0 8px {$primaryForegroundColor}
+	box-shadow: inset 0 1px 1px {$primaryForegroundColor}, 0 0 8px {$primaryForegroundColor}
+{rdelim}
+
+.form-control:focus{ldelim}
 	color: {$linkColor};
 	border-color: {$linkColor};
 	--webkit-box-shadow: inset 0 1px 1px {$linkColor}, 0 0 8px {$linkColor}

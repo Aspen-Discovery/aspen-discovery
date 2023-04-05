@@ -1604,6 +1604,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 		$interface->assign('showLastCheckIn', $showLastCheckIn);
+		$interface->assign('showFormatInHoldings', count($this->getFormats()) > 1);
 		$moreDetailsOptions['copies'] = [
 			'label' => 'Copies',
 			'body' => $interface->fetch('Record/view-holdings.tpl'),
