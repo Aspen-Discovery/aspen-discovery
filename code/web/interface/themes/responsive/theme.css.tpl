@@ -461,8 +461,6 @@ body .container, #home-page-browse-content{ldelim}
 #system-message-header {ldelim}
 	background-color: {$pageBackgroundColor};
 	color: {$primaryForegroundColor};
-	max-width: 1080px;
-	margin: 0 auto;
 {rdelim}
 
 {* Forms/Inputs *}
