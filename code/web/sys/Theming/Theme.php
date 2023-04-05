@@ -2430,7 +2430,7 @@ class Theme extends DataObject {
 				}
 				$interface->assign('buttonRadius', $buttonRadius);
 			}
-			if ($interface->getVariable('smallButtonRadius') == null && $theme->buttonRadius != null) {
+			if ($interface->getVariable('smallButtonRadius') == null && $theme->smallButtonRadius != null) {
 				$buttonRadius = $theme->smallButtonRadius;
 				if (is_numeric($buttonRadius)) {
 					$buttonRadius = $buttonRadius . 'px';
