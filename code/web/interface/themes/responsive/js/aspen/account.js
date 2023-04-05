@@ -1649,6 +1649,99 @@ AspenDiscovery.Account = (function () {
 				}
 			}
 		},
+
+		saveEvent: function (trigger, source, id) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					'method': 'saveEvent',
+					sourceId: id,
+					source: source
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
+		saveEventReg: function (trigger, source, id, regLink) {
+			if (Globals.loggedIn) {
+				var url = Globals.path + "/MyAccount/AJAX";
+				var params = {
+					'method': 'saveEvent',
+					sourceId: id,
+					source: source,
+					regLink: regLink
+				};
+				// noinspection JSUnresolvedFunction
+				$.getJSON(url, params, function (data) {
+					if (data.success) {
+						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+						window.open(regLink, "_blank");
+					} else {
+						AspenDiscovery.showMessage("Error", data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+			return false;
+		},
+
+		deleteSavedEvent: function(id){
+			if (confirm("Are you sure you want to remove this event?")){
+				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id ;
+				$.getJSON(url, function(data){
+					if (data.result === true){
+						AspenDiscovery.showMessage('Success', data.message, true);
+					}else{
+						AspenDiscovery.showMessage('Sorry', data.message);
+					}
+				});
+			}
+			return false;
+		},
+
+		loadEvents: function (page, filter) {
+			var url = Globals.path + "/MyAccount/AJAX?method=getSavedEvents";
+			if (page !== undefined) {
+				url += "&page=" + page;
+			} else {
+				page = 1;
+			}
+			if (filter !== undefined) {
+				url += "&eventsFilter=" + filter;
+			}
+			var stateObj = {
+				page: 'MyEvents',
+				pageNumber: page,
+				readingHistoryFilter: filter
+			};
+			var newUrl = AspenDiscovery.buildUrl(document.location.origin + document.location.pathname, 'page', page);
+			if (filter !== undefined) {
+				newUrl = AspenDiscovery.buildUrl(newUrl, 'eventsFilter', filter);
+			}
+			if (document.location.href) {
+				var label = 'My Events page '.page;
+				history.pushState(stateObj, label, newUrl);
+			}
+			document.body.style.cursor = "wait";
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, function (data) {
+				document.body.style.cursor = "default";
+				if (data.success) {
+					$("#myEventsPlaceholder").html(data.myEvents);
+				} else {
+					$("#myEventsPlaceholder").html(data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+			return false;
+		},
+
 		showSaveToListForm: function (trigger, source, id) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();

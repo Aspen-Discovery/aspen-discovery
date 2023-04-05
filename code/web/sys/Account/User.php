@@ -2530,6 +2530,21 @@ class User extends DataObject {
 		return $this->_numMaterialsRequests;
 	}
 
+	function getNumSavedEvents($eventsFilter) {
+		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+		$curTime = time();
+
+		$event = new UserEventsEntry();
+		if ($eventsFilter == 'past'){
+			$event->whereAdd("eventDate < $curTime");
+		}
+		if ($eventsFilter == 'upcoming'){
+			$event->whereAdd("eventDate >= $curTime");
+		}
+		$event->whereAdd("userId = {$this->id}");
+		return $event->count();
+	}
+
 	function getNumRatings() {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/UserWorkReview.php';
 

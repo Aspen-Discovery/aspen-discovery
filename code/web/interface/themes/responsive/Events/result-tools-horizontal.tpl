@@ -16,7 +16,6 @@
 						</div>
 					</div>
 				{/if}
-
 			{/if}
 
 			<div class="btn-group btn-group-sm">

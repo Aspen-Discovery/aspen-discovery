@@ -26,7 +26,7 @@ abstract class MarcRecordProcessor {
 	private static final Pattern mpaaRatingRegex2 = Pattern.compile(".*?(G|PG-13|PG|R|NC-17|NR|X)\\sRated.*", Pattern.CANON_EQ);
 	private static final Pattern mpaaRatingRegex3 = Pattern.compile(".*?MPAA rating:\\s(G|PG-13|PG|R|NC-17|NR|X).*", Pattern.CANON_EQ);
 	private static final Pattern mpaaNotRatedRegex = Pattern.compile("Rated\\sNR\\.?|Not Rated\\.?|NR");
-	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?\\+\\s?dvd.*)|(.*blu-ray\\s?\\+blu-ray 3d\\s?\\+\\s?dvd.*)|(.*dvd\\s?\\+\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
+	private static final Pattern dvdBlurayComboRegex = Pattern.compile("(.*blu-ray\\s?[+\\\\/]\\s?dvd.*)|(blu-ray 3d\\s?[+\\\\/]\\s?dvd.*)|(.*dvd\\s?[+\\\\/]\\s?blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private static final Pattern bluray4kComboRegex = Pattern.compile("(.*4k ultra hd\\s?\\+\\s?blu-ray.*)|(.*blu-ray\\s?\\+\\s?.*4k.*)|(.*4k ultra hd blu-ray disc\\s?\\+\\s?.*blu-ray.*)", Pattern.CASE_INSENSITIVE);
 	private final HashSet<String> unknownSubjectForms = new HashSet<>();
 	int numCharsToCreateFolderFrom;
@@ -1420,6 +1420,19 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Blu-ray");
 			printFormats.remove("DVD");
 		}
+		if (printFormats.contains("Book+DVD")){
+			printFormats.remove("Book");
+			printFormats.remove("DVD");
+		}
+		if (printFormats.contains("Book+CD")){
+			printFormats.remove("Book");
+			printFormats.remove("CD");
+			printFormats.remove("CompactDisc");
+		}
+		if (printFormats.contains("Book+CD-ROM")){
+			printFormats.remove("Book");
+			printFormats.remove("CDROM");
+		}
 		if (printFormats.contains("SoundDisc")){
 			printFormats.remove("SoundRecording");
 			printFormats.remove("CDROM");
@@ -1472,6 +1485,12 @@ abstract class MarcRecordProcessor {
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("Book") && printFormats.contains("BoardBook")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Journal")){
+			printFormats.remove("Book");
+		}
+		if (printFormats.contains("Book") && printFormats.contains("Serial")){
 			printFormats.remove("Book");
 		}
 		if (printFormats.contains("AudioCD") && printFormats.contains("CD")){
@@ -1594,8 +1613,8 @@ abstract class MarcRecordProcessor {
 	}
 
 	private void getFormatFromEdition(Record record, Set<String> result) {
-		DataField edition = record.getDataField(250);
-		if (edition != null) {
+		List<DataField> allEditions = record.getDataFields(250);
+		for (DataField edition : allEditions) {
 			if (edition.getSubfield('a') != null) {
 				String editionData = edition.getSubfield('a').getData().toLowerCase();
 				if (editionData.contains("large type") || editionData.contains("large print")) {
@@ -1635,7 +1654,7 @@ abstract class MarcRecordProcessor {
 
 	Pattern audioDiscPattern = Pattern.compile(".*\\b(cd|cds|(sound|audio|compact) discs?)\\b.*");
 	Pattern pagesPattern = Pattern.compile("^.*?\\d+\\s+(p\\.|pages|v\\.|volume|volumes).*$");
-	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages|v\\.|volume|volumes)[\\s\\W]*$");
+	Pattern pagesPattern2 = Pattern.compile("^.*?\\b\\d+\\s+(p\\.|pages|v\\.|volume|volumes)\\b");
 	Pattern kitPattern = Pattern.compile(".*\\bkit\\b.*");
 	private void getFormatFromPhysicalDescription(Record record, Set<String> result) {
 		List<DataField> physicalDescriptions = MarcUtil.getDataFields(record, 300);
