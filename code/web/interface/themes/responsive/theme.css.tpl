@@ -434,35 +434,42 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 {* Alerts *}
-.alert-success{ldelim}
-    background-color: {$successButtonBackgroundColor};
-    border-color: {$successButtonBackgroundColor};
-    color: {$successButtonForegroundColor};
-{rdelim}
-
 .alert-info{ldelim}
     background-color: {$infoButtonBackgroundColor};
-    border-color: {$infoButtonBackgroundColor};
+    border-color: {$infoButtonBorderColor};
     color: {$infoButtonForegroundColor};
+{rdelim}
+
+.alert-info a{ldelim}
+    color: {$infoButtonForegroundColor} !important;
+    text-decoration: underline;
 {rdelim}
 
 .alert-warning{ldelim}
     background-color: {$warningButtonBackgroundColor};
-    border-color: {$warningButtonBackgroundColor};
+    border-color: {$warningButtonBorderColor};
     color: {$warningButtonForegroundColor};
+{rdelim}
+
+.alert-warning a{ldelim}
+	color: {$warningButtonForegroundColor} !important;
+	text-decoration: underline;
 {rdelim}
 
 .alert-danger{ldelim}
     background-color: {$dangerButtonBackgroundColor};
-    border-color: {$dangerButtonBackgroundColor};
+    border-color: {$dangerButtonBorderColor};
     color: {$dangerButtonForegroundColor};
+{rdelim}
+
+.alert-danger a{ldelim}
+   color: {$dangerButtonForegroundColor} !important;
+   text-decoration: underline;
 {rdelim}
 
 #system-message-header {ldelim}
 	background-color: {$pageBackgroundColor};
 	color: {$primaryForegroundColor};
-	max-width: 1080px;
-	margin: 0 auto;
 {rdelim}
 
 {* Forms/Inputs *}
@@ -632,10 +639,13 @@ label{ldelim}
 
 {* Panels / Accordions *}
 .panel{ldelim}
-	border: 1px solid {$openPanelBackgroundColor};
 	background-color: transparent !important;
 	box-shadow: none;
-	margin-bottom: 1em !important;
+{rdelim}
+
+.panel.active{ldelim}
+	margin-bottom: .5em !important;
+	border: 1px solid {$openPanelBackgroundColor};
 {rdelim}
 
 .accordion .facetList{ldelim}
@@ -713,8 +723,33 @@ pre{ldelim}
 	color: {$primaryForegroundColor};
 {rdelim}
 
+.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+	background-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+	border: 1px solid {$primaryForegroundColor};
+}
+
 .formatCategoryLabel, .share-tools-label{ldelim}
 color: {$bodyTextColor};
+{rdelim}
+
+{* Calendar *}
+.calendar-header-cell{ldelim}
+	background-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+	border: 1px solid {$bodyTextColor};
+{rdelim}
+
+.calendar-day-cell{ldelim}
+	border: 1px solid {$bodyTextColor};
+{rdelim}
+
+.calendar-event{ldelim}
+    background-color: {$primaryBackgroundColor};
+{rdelim}
+
+.calendar-event .calendar-event-title a{ldelim}
+	color: {$primaryForegroundColor}
 {rdelim}
 
 {* Accessiblity *}

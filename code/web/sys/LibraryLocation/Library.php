@@ -3469,6 +3469,27 @@ class Library extends DataObject {
 
 	static $searchLibrary = [];
 
+	static function hasEventSettings() : bool {
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+
+		$communicoSettings = new CommunicoSetting();
+		$SpringshareLibCalSetting = new SpringshareLibCalSetting();
+		$LMLibraryCalendarSetting = new LMLibraryCalendarSetting();
+
+		if ($communicoSettings->find(true)) {
+			return true;
+		}
+		else if ($SpringshareLibCalSetting->find(true)) {
+			return true;
+		}else if ($LMLibraryCalendarSetting->find(true)) {
+			return true;
+		}else{
+			return false;
+		}
+	}
+
 	static function getSearchLibrary($searchSource = null) {
 		if ($searchSource == null) {
 			global $searchSource;

@@ -1,5 +1,5 @@
 {strip}
-<div id="eventsResult{$resultIndex|escape}" class="resultsList">
+<div id="springshareEventResult{$resultIndex|escape}" class="resultsList">
 	<div class="row">
 		{if !empty($showCovers)}
 			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
@@ -34,16 +34,28 @@
 							&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
 						{/if}
 					</div>
-
-			{* Register Button *}
+			</div>
+			<div class="row">
+				<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
+				<div class="result-value col-tn-6 notranslate">
+					{$recordDriver->getBranch()}
+				</div>
+				{* Register Button *}
 				<div class="result-value col-tn-4">
 
 					{if $recordDriver->isRegistrationRequired()}
 						<div class="btn-toolbar">
-							<div class="btn-group btn-group-vertical btn-block">
-								<a class="btn btn-sm btn-action btn-wrap" href="{$recordDriver->getExternalUrl()}" target="_blank">
-									{translate text="Register on LibCal" isPublicFacing=true}
+							<div class="col-xs-12">
+								<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+									<i class="fas fa-external-link-alt"></i>{translate text=" Add to My Events and Register" isPublicFacing=true}
 								</a>
+							</div>
+						</div>
+						<br>
+					{else}
+						<div class="btn-toolbar">
+							<div class="col-xs-12">
+								<span onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap">{translate text="Add to My Events" isPublicFacing=true}</span>
 							</div>
 						</div>
 						<br>

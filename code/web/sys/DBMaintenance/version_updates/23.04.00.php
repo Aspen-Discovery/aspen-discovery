@@ -186,6 +186,14 @@ function getUpdates23_04_00(): array {
 			]
 		],
 		//add_high_contrast_checkbox
+		'updateThemes' => [
+			'title' => 'Update themes for changes',
+			'description' => 'Automatically updates all themes to grab stylesheet changes',
+			'sql' => [
+				'updateAllThemes',
+			],
+		],
+		//updateThemes
 
 		//kodi
 		'permissions_create_events_communico' => [
@@ -237,7 +245,23 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		// user_list_entry_length
-
+		'user_events_entry' => [
+			'title' => 'User Saved Events Data',
+			'description' => 'Setup table to store saved events data for patrons',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS user_events_entry (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11) NOT NULL, 
+					sourceId varchar(36) NOT NULL,
+					title varchar(255) NOT NULL,
+					eventDate INT (11),
+					regRequired TINYINT DEFAULT 0,
+					location varchar(50),
+					dateAdded INT(11),
+					UNIQUE (sourceId)
+				)',
+			],
+		],
 		//other
 	];
 }

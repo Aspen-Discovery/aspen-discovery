@@ -65,6 +65,7 @@ abstract class Action
 		$twoFactorEnabled = $interface->getVariable('twoFactorEnabled');
 		$allowPinReset = $interface->getVariable('allowPinReset');
 		$userIsStaff = $interface->getVariable('userIsStaff');
+		$showSaveEvents = $interface->getVariable('hasEventSettings');
 
 		$user = UserAccount::getLoggedInUser();
 
