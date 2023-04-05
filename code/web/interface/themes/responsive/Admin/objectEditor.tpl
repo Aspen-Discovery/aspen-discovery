@@ -58,7 +58,7 @@
 			<form role="form" class="searchForm">
 				<div class="alert alert-info">
 					<label for="settingsSearch">{translate text="Search for a Property" isAdminFacing=true}</label>
-					<div class="input-group">
+					<div class="input-group input-group-sm">
 						<input  type="text" name="propertySearch" id="propertySearch"
 								onkeyup="return AspenDiscovery.Admin.searchProperties();" class="form-control" />
 						<span class="input-group-btn"><button class="btn btn-default" type="button" onclick="$('#propertySearch').val('');return AspenDiscovery.Admin.searchProperties();" title="{translate text="Clear" inAttribute=true isAdminFacing=true}"><i class="fas fa-times-circle"></i></button></span>
