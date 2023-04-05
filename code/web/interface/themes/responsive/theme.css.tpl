@@ -723,8 +723,33 @@ pre{ldelim}
 	color: {$primaryForegroundColor};
 {rdelim}
 
+.form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+	background-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+	border: 1px solid {$primaryForegroundColor};
+}
+
 .formatCategoryLabel, .share-tools-label{ldelim}
 color: {$bodyTextColor};
+{rdelim}
+
+{* Calendar *}
+.calendar-header-cell{ldelim}
+	background-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+	border: 1px solid {$bodyTextColor};
+{rdelim}
+
+.calendar-day-cell{ldelim}
+	border: 1px solid {$bodyTextColor};
+{rdelim}
+
+.calendar-event{ldelim}
+    background-color: {$primaryBackgroundColor};
+{rdelim}
+
+.calendar-event .calendar-event-title a{ldelim}
+	color: {$primaryForegroundColor}
 {rdelim}
 
 {* Accessiblity *}
