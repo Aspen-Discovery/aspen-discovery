@@ -30,7 +30,7 @@
 					<div class="panel-body">
 						{foreach from=$recordDriver->getProgramTypes() item=type}
 							<div class="col-xs-12">
-								<a href='/Events/Results?filter[]=age_group_facet%3A"{$type|escape:'url'}"'>{$type}</a>
+								<a href='/Events/Results?filter[]=program_type_facet%3A"{$type|escape:'url'}"'>{$type}</a>
 							</div>
 						{/foreach}
 					</div>

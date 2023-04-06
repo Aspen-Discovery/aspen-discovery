@@ -5784,10 +5784,17 @@ class MyAccount_AJAX extends JSON_Action {
 							$userObject->update();
 						}
 						$result['success'] = true;
-						$result['message'] = translate([
-							'text' => 'This title was saved to your list successfully.',
-							'isPublicFacing' => true,
-						]);
+						if ($userListEntry->source == 'Events'){
+							$result['message'] = translate([
+								'text' => 'This event was saved to your list successfully.',
+								'isPublicFacing' => true,
+							]);
+						}else{
+							$result['message'] = translate([
+								'text' => 'This title was saved to your list successfully.',
+								'isPublicFacing' => true,
+							]);
+						}
 					}
 				}
 			}

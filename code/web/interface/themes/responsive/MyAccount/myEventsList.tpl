@@ -56,7 +56,15 @@
 					<div class="text-center">{$pageLinks.all}</div>
 				{/if}
 			{else}
+				{if $eventsFilter == 'upcoming'}
+					{translate text="You have no saved upcoming events." isPublicFacing=true}
+				{/if}
+				{if $eventsFilter == 'past'}
+					{translate text="You have no saved past events." isPublicFacing=true}
+				{/if}
+				{if $eventsFilter == 'all'}
 				{translate text="You have not saved any events yet." isPublicFacing=true}
+				{/if}
 			{/if}
 		</div>
 	</div>
