@@ -4,7 +4,9 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Actionsheet, Box, Button, CloseIcon, Icon, Pressable, HStack, VStack } from 'native-base';
 import Modal from 'react-native-modal';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import DatePicker from 'react-native-date-picker'
 import {getTermFromDictionary} from '../../../translations/TranslationService';
+import {Platform} from 'react-native';
 
 export const SelectThawDate = (props) => {
      const { libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, language } = props;
@@ -14,7 +16,8 @@ export const SelectThawDate = (props) => {
      const [showModal, setShowModal] = React.useState(false);
 
      const today = new Date();
-     const minDate = today.setDate(today.getDate() + 7);
+     let minDate = today.setDate(today.getDate() + 7);
+     minDate = new Date(minDate);
      const [date, setDate] = React.useState(new Date());
      const [show, setShow] = React.useState(false);
 
@@ -110,7 +113,7 @@ export const SelectThawDate = (props) => {
                                    </Pressable>
                               </HStack>
                               <Box p={4} _text={{ color: 'text.900' }} _hover={{ bg: 'muted.200' }} _pressed={{ bg: 'muted.300' }} _dark={{ _text: { color: 'text.50' } }}>
-                                   <DateTimePicker testID="dateTimePicker" value={date} mode="date" display="default" minimumDate={minDate} onChange={onChange} />
+                                  <DatePicker mode="date" date={date} onDateChange={setDate} minimumDate={minDate}/>
                               </Box>
                               <Button.Group
                                    p={4}
@@ -135,7 +138,7 @@ export const SelectThawDate = (props) => {
                                    {data ? (
                                         <Button
                                              isLoading={loading}
-                                             isLoadingText={getTermFromDictionary(language, 'freezing', true)}
+                                             isLoadingText={getTermFromDictionary(language, 'freezing_hold', true)}
                                              onPress={() => {
                                                   setLoading(true);
                                                   freezeHolds(data, libraryContext.baseUrl, date).then((result) => {
@@ -150,7 +153,7 @@ export const SelectThawDate = (props) => {
                                    ) : (
                                         <Button
                                              isLoading={loading}
-                                             isLoadingText={getTermFromDictionary(language, 'freezing', true)}
+                                             isLoadingText={getTermFromDictionary(language, 'freezing_hold', true)}
                                              onPress={() => {
                                                   setLoading(true);
                                                   freezeHold(freezeId, recordId, source, libraryContext.baseUrl, userId, date).then((result) => {
