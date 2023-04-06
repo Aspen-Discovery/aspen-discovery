@@ -469,7 +469,7 @@ body .container, #home-page-browse-content{ldelim}
 
 #system-message-header {ldelim}
 	background-color: {$pageBackgroundColor};
-	color: {$primaryForegroundColor};
+	color: {$bodyTextColor};
 {rdelim}
 
 {* Forms/Inputs *}
