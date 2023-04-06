@@ -375,7 +375,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					$objectType = $this->getObjectType();
 					/** @var DataObject $newObject */
 					$newObject = new $objectType;
-					$newObject->loadFromJSON($rawData, []);
+					$newObject->loadFromJSON($rawData, [], 'doNotSave');
 					$interface->assign('objectName', $newObject->__toString());
 					$newObject->unsetUniquenessFields();
 					if (method_exists($newObject, 'label')) {
