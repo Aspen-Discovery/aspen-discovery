@@ -42,7 +42,7 @@
 				                    {/if}
 			                    <li><a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a></li>
 			                    <li><a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a></li>
-			                    <li><a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a></li>
+			                    {if !empty($excellLink)}<li><a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a></li>{/if}
 			                    {/if}
 			                    {if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 	                                 <li><a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a></li>
@@ -59,7 +59,7 @@
 	</div>
 	<div class="row visible-sm visible-xs">
 		<div class="col-sm-12">
-            <button type="button" class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showSearchToolbar('{$displayMode}', '{$showCovers}', '{$rssLink|escape}', '{$excelLink|escape}', '{$searchId}', [{foreach from=$sortList item=sortData key=sortLabel}{ldelim}'desc': '{$sortData.desc}','selected': '{$sortData.selected}', 'sortUrl': '{$sortData.sortUrl|escape}'{rdelim},{/foreach}]);">
+            <button type="button" class="btn btn-default btn-sm" onclick="return AspenDiscovery.Account.showSearchToolbar('{$displayMode}', '{$showCovers}', '{$rssLink|escape}', '{if !empty($excelLink)}{$excelLink|escape}{/if}', '{$searchId}', [{foreach from=$sortList item=sortData key=sortLabel}{ldelim}'desc': '{$sortData.desc}','selected': '{$sortData.selected}', 'sortUrl': '{$sortData.sortUrl|escape}'{rdelim},{/foreach}]);">
               <i class="fas fa-toolbox"></i> {translate text='Search Tools' isPublicFacing=true}
             </button>
 		</div>

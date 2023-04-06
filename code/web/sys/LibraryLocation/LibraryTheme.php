@@ -52,7 +52,7 @@ class LibraryTheme extends DataObject {
 				'label' => 'Library',
 				'description' => 'A link to the library which the theme belongs to',
 			],
-			'theme' => [
+			'themeId' => [
 				'property' => 'themeId',
 				'type' => 'enum',
 				'label' => 'Theme',
