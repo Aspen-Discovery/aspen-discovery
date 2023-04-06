@@ -32,13 +32,11 @@
 					<input type="hidden" name="updateScope" value="userPreference">
 					{if !empty($showUsernameField)}
 						<div class="form-group propertyRow">
-							<div class="col-xs-4"><label for="username">{translate text="Username" isPublicFacing=true}</label></div>
-							<div class="col-xs-8">
-								<input type="text" name="username" id="username" value="{$editableUsername|escape}" size="25" minlength="6" maxlength="25" class="form-control">
-								<a href="#" onclick="$('#usernameHelp').toggle()">{translate text="What is this?" isPublicFacing=true}</a>
-								<div id="usernameHelp" style="display:none">
-									{translate text="A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “My Preferences” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters)." isPublicFacing=true}
-								</div>
+							<label for="username">{translate text="Username" isPublicFacing=true}</label>
+							<input type="text" name="username" id="username" value="{$editableUsername|escape}" size="25" minlength="6" maxlength="25" class="form-control">
+							<a href="#" onclick="$('#usernameHelp').toggle()">{translate text="What is this?" isPublicFacing=true}</a>
+							<div id="usernameHelp" style="display:none">
+								{translate text="A username is an optional feature. If you set one, your username will be your alias on hold slips and can also be used to log into your account in place of your card number.  A username can be set, reset or removed from the “My Preferences” section of your online account. Usernames must be between 6 and 25 characters (letters and number only, no special characters)." isPublicFacing=true}
 							</div>
 						</div>
 					{/if}
