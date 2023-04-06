@@ -125,4 +125,86 @@ class Admin_Themes extends ObjectEditor {
 		return $this->hasCommunityConnection();
 	}
 
+	/** @noinspection PhpUnused */
+	function addToAllLibraries() {
+		$themeId = $_REQUEST['id'];
+		$theme = new Theme();
+		$theme->id = $themeId;
+		if ($theme->find(true)) {
+			$existingLibraryThemes = $theme->getLibraries();
+			$library = new Library();
+			$library->find();
+			while ($library->fetch()) {
+				$alreadyAdded = false;
+				foreach ($existingLibraryThemes as $libraryTheme) {
+					if ($libraryTheme->libraryId == $library->libraryId) {
+						$alreadyAdded = true;
+					}
+				}
+				if (!$alreadyAdded) {
+					$newLibraryTheme = new LibraryTheme();
+					$newLibraryTheme->libraryId = $library->libraryId;
+					$newLibraryTheme->themeId = $themeId;
+					//Make it the highest weighted theme
+					$newLibraryTheme->weight = count($library->getThemes());
+					$newLibraryTheme->insert();
+				}
+			}
+		}
+		header("Location: /Admin/Themes?objectAction=edit&id=" . $themeId);
+	}
+
+	/** @noinspection PhpUnused */
+	function clearLibraries() {
+		$themeId = $_REQUEST['id'];
+		$theme = new Theme();
+		$theme->id = $themeId;
+		if ($theme->find(true)) {
+			$theme->clearLibraries();
+			$theme->update();
+		}
+		header("Location: /Admin/Themes?objectAction=edit&id=" . $themeId);
+	}
+
+	/** @noinspection PhpUnused */
+	function addToAllLocations() {
+		$themeId = $_REQUEST['id'];
+		$theme = new Theme();
+		$theme->id = $themeId;
+		if ($theme->find(true)) {
+			$existingLocationThemes = $theme->getLocations();
+			$location = new Location();
+			$location->find();
+			while ($location->fetch()) {
+				$alreadyAdded = false;
+				foreach ($existingLocationThemes as $locationTheme) {
+					if ($locationTheme->locationId == $location->locationId) {
+						$alreadyAdded = true;
+					}
+				}
+				if (!$alreadyAdded) {
+					$locationTheme = new LocationTheme();
+					$locationTheme->locationId = $location->locationId;
+					$locationTheme->themeId = $themeId;
+					//Make it the highest weighted theme
+					$locationTheme->weight = count($location->getThemes());
+					$locationTheme->insert();
+				}
+			}
+		}
+		header("Location: /Admin/Themes?objectAction=edit&id=" . $themeId);
+	}
+
+	/** @noinspection PhpUnused */
+	function clearLocations() {
+		$themeId = $_REQUEST['id'];
+		$theme = new Theme();
+		$theme->id = $themeId;
+		if ($theme->find(true)) {
+			$theme->clearLocations();
+			$theme->update();
+		}
+		header("Location: /Admin/Themes?objectAction=edit&id=" . $themeId);
+	}
+
 }

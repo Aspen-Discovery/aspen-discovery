@@ -370,12 +370,12 @@ abstract class ObjectEditor extends Admin_Admin {
 				$response = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
 				$jsonResponse = json_decode($response);
 				if ($jsonResponse->success) {
-					$rawData = json_decode($jsonResponse->rawData);
+					$rawData = json_decode($jsonResponse->rawData, true);
 
 					$objectType = $this->getObjectType();
 					/** @var DataObject $newObject */
 					$newObject = new $objectType;
-					$newObject->loadFromJSON($rawData, []);
+					$newObject->loadFromJSON($rawData, [], 'doNotSave');
 					$interface->assign('objectName', $newObject->__toString());
 					$newObject->unsetUniquenessFields();
 					if (method_exists($newObject, 'label')) {

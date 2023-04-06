@@ -201,8 +201,10 @@ class Record_AJAX extends Action {
 			if (isset($_REQUEST['volume'])) {
 				$interface->assign('volume', $_REQUEST['volume']);
 			}
+			$selectedVariationId = -1;
 			if (isset($_REQUEST['variationId'])) {
 				$interface->assign('variationId', $_REQUEST['variationId']);
+				$selectedVariationId = $_REQUEST['variationId'];
 			}
 
 			$marcRecord = new MarcRecordDriver($id);
@@ -234,18 +236,19 @@ class Record_AJAX extends Action {
 			$relatedRecord = $marcRecord->getGroupedWorkDriver()->getRelatedRecord($marcRecord->getIdWithSource());
 			if (count($relatedRecord->recordVariations) > 1){
 				foreach ($relatedRecord->recordVariations as $variation){
-					$formatValue = $variation->manifestation->format;
-					global $indexingProfiles;
-					$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
-					$formatMap = $indexingProfile->formatMap;
-					//Loop through the format map
-					/** @var FormatMapValue $formatMapValue */
-					//Check for a format with a hold type that is not 'none'
-					foreach ($formatMap as $formatMapValue) {
-						if (strcasecmp($formatMapValue->format, $formatValue) === 0) {
-							$holdType = $formatMapValue->holdType;
-							if ($holdType != 'none') {
-								$format = $formatValue;
+					if (($selectedVariationId == -1) || ($selectedVariationId == $variation->databaseId)) {
+						$formatValue = $variation->manifestation->format;
+						global $indexingProfiles;
+						$indexingProfile = $indexingProfiles[$marcRecord->getRecordType()];
+						$formatMap = $indexingProfile->formatMap;
+						//Loop through the format map /** @var FormatMapValue $formatMapValue */
+						//Check for a format with a hold type that is not 'none'
+						foreach ($formatMap as $formatMapValue) {
+							if (strcasecmp($formatMapValue->format, $formatValue) === 0) {
+								$holdType = $formatMapValue->holdType;
+								if ($holdType != 'none') {
+									$format = $formatValue;
+								}
 							}
 						}
 					}
@@ -253,6 +256,14 @@ class Record_AJAX extends Action {
 				//if we get no result and all hold types are 'none' just return the marc primary format
 				if (empty($format)){
 					$format = $marcRecord->getPrimaryFormat();
+				}
+				//Filter the items according to the selected variation
+				if ($selectedVariationId != -1) {
+					foreach ($items as $index => $item) {
+						if ($item['variationId'] != $selectedVariationId) {
+							unset($items[$index]);
+						}
+					}
 				}
 			}else{
 				$format = $marcRecord->getPrimaryFormat();

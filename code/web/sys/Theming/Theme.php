@@ -413,8 +413,16 @@ class Theme extends DataObject {
 	private $_locations;
 
 	static function getObjectStructure($context = ''): array {
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
-		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
+		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
+		unset($libraryThemeStructure['themeId']);
+		unset($libraryThemeStructure['weight']);
+
+		$locationThemeStructure = LocationTheme::getObjectStructure($context);
+		unset($locationThemeStructure['themeId']);
+		unset($locationThemeStructure['weight']);
+
+//		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
+//		$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
 
 		//Load Valid Fonts
 		$validHeadingFonts = [
@@ -1859,28 +1867,60 @@ class Theme extends DataObject {
 				],
 			],
 
-			'librariesAndLocationsSettings' => [
-				'property' => 'librariesAndLocationsSettings',
-				'type' => 'section',
-				'label' => 'Libraries and Locations',
-				'hideInLists' => true,
-				'properties' => [
-					'libraries' => [
-						'property' => 'libraries',
-						'type' => 'multiSelect',
-						'listStyle' => 'checkboxSimple',
-						'label' => 'Libraries',
-						'description' => 'Define libraries that use this theme',
-						'values' => $libraryList,
+			'libraries' => [
+				'property' => 'libraries',
+				'type' => 'oneToMany',
+				'label' => 'Libraries',
+				'description' => 'Define libraries that use this theme',
+				'keyThis' => 'id',
+				'keyOther' => 'themeId',
+				'subObjectType' => 'LibraryTheme',
+				'structure' => $libraryThemeStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'permissions' => ['Library Theme Configuration'],
+				'additionalOneToManyActions' => [
+					[
+						'text' => 'Apply To All Libraries',
+						'url' => '/Admin/Themes?id=$id&amp;objectAction=addToAllLibraries',
 					],
+					[
+						'text' => 'Clear Libraries',
+						'url' => '/Admin/Themes?id=$id&amp;objectAction=clearLibraries',
+						'class' => 'btn-warning',
+					],
+				],
+			],
 
-					'locations' => [
-						'property' => 'locations',
-						'type' => 'multiSelect',
-						'listStyle' => 'checkboxSimple',
-						'label' => 'Locations',
-						'description' => 'Define locations that use this theme',
-						'values' => $locationList,
+			'locations' => [
+				'property' => 'locations',
+				'type' => 'oneToMany',
+				'label' => 'Locations',
+				'description' => 'Define locations that use this theme',
+				'keyThis' => 'id',
+				'keyOther' => 'themeId',
+				'subObjectType' => 'LocationTheme',
+				'structure' => $locationThemeStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => true,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'permissions' => ['Location Theme Configuration'],
+				'additionalOneToManyActions' => [
+					[
+						'text' => 'Apply To All Locations',
+						'url' => '/Admin/Themes?id=$id&amp;objectAction=addToAllLocations',
+					],
+					[
+						'text' => 'Clear Locations',
+						'url' => '/Admin/Themes?id=$id&amp;objectAction=clearLocations',
+						'class' => 'btn-warning',
 					],
 				],
 			],
@@ -1965,14 +2005,14 @@ class Theme extends DataObject {
 		if ($menubarDropdownContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Menu dropdown contrast does not meet accessibility guidelines, contrast is: ' . ($menubarDropdownContrast);
 		}
-		$modalDialogContrast = ColorUtils::calculateColorContrast($this->modalDialogBackgroundColor, $this->modalDialogForegroundColor);
-		if ($modalDialogContrast < $minContrastRatio) {
-			$validationResults['errors'][] = 'Modal Dialog contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogContrast);
-		}
-		$modalDialogHeaderFooterContrast = ColorUtils::calculateColorContrast($this->modalDialogHeaderFooterBackgroundColor, $this->modalDialogHeaderFooterForegroundColor);
-		if ($modalDialogHeaderFooterContrast < $minContrastRatio) {
-			$validationResults['errors'][] = 'Modal Dialog Header Footer contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogHeaderFooterContrast);
-		}
+//		$modalDialogContrast = ColorUtils::calculateColorContrast($this->modalDialogBackgroundColor, $this->modalDialogForegroundColor);
+//		if ($modalDialogContrast < $minContrastRatio) {
+//			$validationResults['errors'][] = 'Modal Dialog contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogContrast);
+//		}
+//		$modalDialogHeaderFooterContrast = ColorUtils::calculateColorContrast($this->modalDialogHeaderFooterBackgroundColor, $this->modalDialogHeaderFooterForegroundColor);
+//		if ($modalDialogHeaderFooterContrast < $minContrastRatio) {
+//			$validationResults['errors'][] = 'Modal Dialog Header Footer contrast does not meet accessibility guidelines, contrast is: ' . ($modalDialogHeaderFooterContrast);
+//		}
 		$selectedBrowseCategoryContrast = ColorUtils::calculateColorContrast($this->selectedBrowseCategoryBackgroundColor, $this->selectedBrowseCategoryForegroundColor);
 		if ($selectedBrowseCategoryContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Selected Browse Category contrast does not meet accessibility guidelines, contrast is: ' . ($selectedBrowseCategoryContrast);
@@ -2111,6 +2151,13 @@ class Theme extends DataObject {
 		return $ret;
 	}
 
+	public function delete($useWhere = false) {
+		$this->clearLibraries();
+		$this->clearLocations();
+		$this->clearDefaultCovers();
+		return parent::delete($useWhere); // TODO: Change the autogenerated stub
+	}
+
 	public function applyDefaults() {
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$appliedThemes = $this->getAllAppliedThemes();
@@ -2142,11 +2189,11 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('menubarHighlightForegroundColor', '#265a87', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menuDropdownBackgroundColor', '#ededed', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('menuDropdownForegroundColor', '#404040', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('modalDialogBackgroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('modalDialogForegroundColor', '#333333', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBackgroundColor', '#ffffff', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
-		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogBackgroundColor', '#ffffff', $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogForegroundColor', '#333333', $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBackgroundColor', '#ffffff', $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterForegroundColor', '#333333', $appliedThemes);
+//		$this->getValueForPropertyUsingDefaults('modalDialogHeaderFooterBorderColor', '#e5e5e5', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('browseCategoryPanelColor', '#d7dce3', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryBackgroundColor', '#005C75', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('selectedBrowseCategoryForegroundColor', '#ffffff', $appliedThemes);
@@ -2270,11 +2317,11 @@ class Theme extends DataObject {
 		$interface->assign('menubarForegroundColor', $this->menubarForegroundColor);
 		$interface->assign('menuDropdownBackgroundColor', $this->menuDropdownBackgroundColor);
 		$interface->assign('menuDropdownForegroundColor', $this->menuDropdownForegroundColor);
-		$interface->assign('modalDialogBackgroundColor', $this->modalDialogBackgroundColor);
-		$interface->assign('modalDialogForegroundColor', $this->modalDialogForegroundColor);
-		$interface->assign('modalDialogHeaderFooterBackgroundColor', $this->modalDialogHeaderFooterBackgroundColor);
-		$interface->assign('modalDialogHeaderFooterForegroundColor', $this->modalDialogHeaderFooterForegroundColor);
-		$interface->assign('modalDialogHeaderFooterBorderColor', $this->modalDialogHeaderFooterBorderColor);
+//		$interface->assign('modalDialogBackgroundColor', $this->modalDialogBackgroundColor);
+//		$interface->assign('modalDialogForegroundColor', $this->modalDialogForegroundColor);
+//		$interface->assign('modalDialogHeaderFooterBackgroundColor', $this->modalDialogHeaderFooterBackgroundColor);
+//		$interface->assign('modalDialogHeaderFooterForegroundColor', $this->modalDialogHeaderFooterForegroundColor);
+//		$interface->assign('modalDialogHeaderFooterBorderColor', $this->modalDialogHeaderFooterBorderColor);
 		$interface->assign('browseCategoryPanelColor', $this->browseCategoryPanelColor);
 		$interface->assign('selectedBrowseCategoryBackgroundColor', $this->selectedBrowseCategoryBackgroundColor);
 		$interface->assign('selectedBrowseCategoryForegroundColor', $this->selectedBrowseCategoryForegroundColor);
@@ -2388,7 +2435,7 @@ class Theme extends DataObject {
 				}
 				$interface->assign('buttonRadius', $buttonRadius);
 			}
-			if ($interface->getVariable('smallButtonRadius') == null && $theme->buttonRadius != null) {
+			if ($interface->getVariable('smallButtonRadius') == null && $theme->smallButtonRadius != null) {
 				$buttonRadius = $theme->smallButtonRadius;
 				if (is_numeric($buttonRadius)) {
 					$buttonRadius = $buttonRadius . 'px';
@@ -2480,16 +2527,7 @@ class Theme extends DataObject {
 		if ($name == "libraries") {
 			return $this->getLibraries();
 		} elseif ($name == "locations") {
-			if (!isset($this->_locations) && $this->id) {
-				$this->_locations = [];
-				$obj = new Location();
-				$obj->theme = $this->id;
-				$obj->find();
-				while ($obj->fetch()) {
-					$this->_locations[$obj->locationId] = $obj->locationId;
-				}
-			}
-			return $this->_locations;
+			return $this->getLocations();
 		} else {
 			return $this->_data[$name] ?? null;
 		}
@@ -2507,61 +2545,14 @@ class Theme extends DataObject {
 
 	public function saveLibraries() {
 		if (isset ($this->_libraries) && is_array($this->_libraries)) {
-			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Themes'));
-			foreach ($libraryList as $libraryId => $displayName) {
-				$library = new Library();
-				$library->libraryId = $libraryId;
-				$library->find(true);
-				if (in_array($libraryId, $this->_libraries)) {
-					//We want to apply the scope to this library
-					if ($library->theme != $this->id) {
-						$library->theme = $this->id;
-						$library->update();
-					}
-				} else {
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($library->theme == $this->id) {
-						$library->theme = -1;
-						$library->update();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_libraries, 'themeId');
 			unset($this->_libraries);
 		}
 	}
 
 	public function saveLocations() {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$locationList = Location::getLocationList(!UserAccount::userHasPermission('Administer All Themes'));
-			/**
-			 * @var int $locationId
-			 * @var Location $location
-			 */
-			foreach ($locationList as $locationId => $displayName) {
-				$location = new Location();
-				$location->locationId = $locationId;
-				$location->find(true);
-				if (in_array($locationId, $this->_locations)) {
-					//We want to apply the scope to this library
-					if ($location->theme != $this->id) {
-						$location->theme = $this->id;
-						$location->update();
-					}
-				} else {
-					//It should not be applied to this scope. Only change if it was applied to the scope
-					if ($location->theme == $this->id) {
-						$library = new Library();
-						$library->libraryId = $location->libraryId;
-						$library->find(true);
-						if ($library->theme != -1) {
-							$location->theme = -1;
-						} else {
-							$location->theme = -2;
-						}
-						$location->update();
-					}
-				}
-			}
+			$this->saveOneToManyOptions($this->_locations, 'themeId');
 			unset($this->_locations);
 		}
 	}
@@ -2569,14 +2560,14 @@ class Theme extends DataObject {
 	/** @return Library[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLibraries() {
+	public function getLibraries() : ?array {
 		if (!isset($this->_libraries) && $this->id) {
 			$this->_libraries = [];
-			$obj = new Library();
-			$obj->theme = $this->id;
+			$obj = new LibraryTheme();
+			$obj->themeId = $this->id;
 			$obj->find();
 			while ($obj->fetch()) {
-				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+				$this->_libraries[$obj->id] = clone $obj;
 			}
 		}
 		return $this->_libraries;
@@ -2585,7 +2576,16 @@ class Theme extends DataObject {
 	/** @return Location[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLocations() {
+	public function getLocations() : ?array {
+		if (!isset($this->_locations) && $this->id) {
+			$this->_locations = [];
+			$obj = new LocationTheme();
+			$obj->themeId = $this->id;
+			$obj->find();
+			while ($obj->fetch()) {
+				$this->_locations[$obj->id] = clone $obj;
+			}
+		}
 		return $this->_locations;
 	}
 
@@ -2601,13 +2601,13 @@ class Theme extends DataObject {
 
 	/** @noinspection PhpUnused */
 	public function clearLibraries() {
-		$this->clearOneToManyOptions('Library', 'theme');
+		$this->clearOneToManyOptions('LibraryTheme', 'themeId');
 		unset($this->_libraries);
 	}
 
 	/** @noinspection PhpUnused */
 	public function clearLocations() {
-		$this->clearOneToManyOptions('Location', 'theme');
+		$this->clearOneToManyOptions('LocationTheme', 'themeId');
 		unset($this->_locations);
 	}
 
@@ -2642,5 +2642,20 @@ class Theme extends DataObject {
 		unset($this->_deleteOnSave);
 
 		return $apiInfo;
+	}
+
+	public function prepareForSharingToCommunity() {
+		parent::prepareForSharingToCommunity();
+		unset($this->logoName);
+		unset($this->_libraries);
+		unset($this->_locations);
+		unset($this->_parentTheme);
+		unset($this->extendsTheme);
+		unset($this->footerLogo);
+		unset($this->footerLogoAlt);
+		unset($this->footerLogoLink);
+		unset($this->favicon);
+		unset($this->logoApp);
+		unset($this->headerBackgroundImage);
 	}
 }

@@ -400,12 +400,12 @@ class UInterface extends Smarty {
 			//Get Logo
 			$logoName = null;
 			foreach ($allAppliedThemes as $theme) {
-				if (!is_null($theme->logoName)) {
+				if (!empty($theme->logoName)) {
 					$logoName = $theme->logoName;
 					break;
 				}
 			}
-			if ($logoName) {
+			if (!empty($logoName)) {
 				$this->assign('responsiveLogo', '/files/original/' . $logoName);
 			} else {
 				if (isset($configArray['Site']['responsiveLogo'])) {
@@ -416,7 +416,7 @@ class UInterface extends Smarty {
 			//Get Footer Logo
 			$footerLogo = null;
 			foreach ($allAppliedThemes as $theme) {
-				if (!is_null($theme->footerLogo)) {
+				if (!empty($theme->footerLogo)) {
 					$footerLogo = $theme->footerLogo;
 					break;
 				}
@@ -427,7 +427,7 @@ class UInterface extends Smarty {
 
 			$footerLogoLink = null;
 			foreach ($allAppliedThemes as $theme) {
-				if (!is_null($theme->footerLogoLink)) {
+				if (!empty($theme->footerLogoLink)) {
 					$footerLogoLink = $theme->footerLogoLink;
 					break;
 				}
@@ -444,7 +444,7 @@ class UInterface extends Smarty {
 			//Get favicon
 			$favicon = null;
 			foreach ($allAppliedThemes as $theme) {
-				if (!is_null($theme->favicon)) {
+				if (!empty($theme->favicon)) {
 					$favicon = $theme->favicon;
 					break;
 				}

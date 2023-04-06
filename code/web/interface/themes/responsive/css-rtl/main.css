@@ -245,6 +245,9 @@ table {
   .table-bordered td {
     border: 1px solid #ddd !important;
   }
+  #page-menu-bar {
+    display: none;
+  }
 }
 *,
 *:before,

@@ -1075,7 +1075,7 @@ abstract class DataObject {
 					return false;
 				}
 			}
-		} else {
+		} else if ($overrideExisting != 'doNotSave') {
 			$result = $this->update();
 			if ($result === false) {
 				return false;
