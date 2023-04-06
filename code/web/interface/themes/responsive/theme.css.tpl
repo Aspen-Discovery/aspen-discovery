@@ -481,7 +481,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 #horizontal-search-box #lookfor:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{ldelim}
-	color: {$primaryForegroundColor};
+	color: {$bodyTextColor};
 	border-color: {$primaryForegroundColor};
 	--webkit-box-shadow: inset 0 1px 1px {$primaryForegroundColor}, 0 0 8px {$primaryForegroundColor}
 	box-shadow: inset 0 1px 1px {$primaryForegroundColor}, 0 0 8px {$primaryForegroundColor}
