@@ -38,7 +38,7 @@ export const MyHold = (props) => {
                }
           }
           fetchTranslations()
-     }, []);
+     }, [language]);
 
      if (hold.canFreeze === true) {
           if (hold.frozen === true) {

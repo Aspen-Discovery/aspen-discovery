@@ -134,6 +134,7 @@ body .container, #home-page-browse-content{ldelim}
 	background-color: {$bodyBackgroundColor};
 	color: {$bodyTextColor};
 	border: 1px solid {$bodyTextColor};
+	border-left: 0px;
 {rdelim}
 
 #lookfor-label{ldelim}
@@ -469,7 +470,7 @@ body .container, #home-page-browse-content{ldelim}
 
 #system-message-header {ldelim}
 	background-color: {$pageBackgroundColor};
-	color: {$primaryForegroundColor};
+	color: {$bodyTextColor};
 {rdelim}
 
 {* Forms/Inputs *}
@@ -481,7 +482,7 @@ body .container, #home-page-browse-content{ldelim}
 {rdelim}
 
 #horizontal-search-box #lookfor:focus, #horizontal-search-box .searchSourceHorizontal:focus, #horizontal-search-box .searchTypeHorizontal:focus{ldelim}
-	color: {$primaryForegroundColor};
+	color: {$bodyTextColor};
 	border-color: {$primaryForegroundColor};
 	--webkit-box-shadow: inset 0 1px 1px {$primaryForegroundColor}, 0 0 8px {$primaryForegroundColor}
 	box-shadow: inset 0 1px 1px {$primaryForegroundColor}, 0 0 8px {$primaryForegroundColor}

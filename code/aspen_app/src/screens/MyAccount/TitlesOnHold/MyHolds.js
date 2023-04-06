@@ -103,147 +103,93 @@ export const MyHolds = () => {
                             updateHolds(result);
                         }
                         await getTranslationsWithValues('filter_by_source', 'Physical Materials', language, library.baseUrl).then(term => {
-                            const obj = {
-                                ils: _.toString(term)
-                            }
                             let tmp = filterBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'ils', _.toString(term));
                             setFilterBy(tmp);
                         })
                         await getTranslationsWithValues('filter_by_source', 'OverDrive', language, library.baseUrl).then(term => {
-                            const obj = {
-                                overdrive: _.toString(term)
-                            }
                             let tmp = filterBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'overdrive', _.toString(term));
                             setFilterBy(tmp);
                         })
                         await getTranslationsWithValues('filter_by_source', 'cloudLibrary', language, library.baseUrl).then(term => {
-                            const obj = {
-                                cloudlibrary: _.toString(term)
-                            }
                             let tmp = filterBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
                             setFilterBy(tmp);
                         })
                         await getTranslationsWithValues('filter_by_source', 'All', language, library.baseUrl).then(term => {
-                            const obj = {
-                                all: term
-                            }
                             let tmp = filterBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'all', _.toString(term));
                             setFilterBy(tmp);
                         })
                         await getTranslationsWithValues('filter_by_source', 'Axis 360', language, library.baseUrl).then(term => {
-                            const obj = {
-                                axis360: _.toString(term)
-                            }
                             let tmp = filterBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'axis360', _.toString(term));
                             setFilterBy(tmp);
                         })
                         await getTranslationsWithValues('titles_on_hold_by_source', 'OverDrive', language, library.baseUrl).then(term => {
-                            const obj = {
-                                overdrive: _.toString(term)
-                            }
                             let tmp = holdsBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'overdrive', _.toString(term));
                             setHoldsBy(tmp);
                         })
                         await getTranslationsWithValues('titles_on_hold_by_source', 'Hoopla', language, library.baseUrl).then(term => {
-                            const obj = {
-                                hoopla: _.toString(term)
-                            }
                             let tmp = holdsBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'hoopla', _.toString(term));
                             setHoldsBy(tmp);
                         })
                         await getTranslationsWithValues('titles_on_hold_by_source', 'cloudLibrary', language, library.baseUrl).then(term => {
-                            const obj = {
-                                cloudlibrary: _.toString(term)
-                            }
                             let tmp = holdsBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
                             setHoldsBy(tmp);
                         })
                         await getTranslationsWithValues('titles_on_hold_by_source', 'Axis 360', language, library.baseUrl).then(term => {
-                            const obj = {
-                                axis360: _.toString(term)
-                            }
                             let tmp = holdsBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'axis360', _.toString(term));
                             setHoldsBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Title', language, library.baseUrl).then(term => {
-                            const obj = {
-                                title: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'title', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Author', language, library.baseUrl).then(term => {
-                            const obj = {
-                                author: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'author', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Format', language, library.baseUrl).then(term => {
-                            const obj = {
-                                format: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'format', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Source', language, library.baseUrl).then(term => {
-                            const obj = {
-                                source: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'source', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Date Placed', language, library.baseUrl).then(term => {
-                            const obj = {
-                                placed: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'placed', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Position', language, library.baseUrl).then(term => {
-                            const obj = {
-                                position: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'position', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Pickup Location', language, library.baseUrl).then(term => {
-                            const obj = {
-                                location: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'location', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Library Account', language, library.baseUrl).then(term => {
-                            const obj = {
-                                libraryAccount: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'libraryAccount', _.toString(term));
                             setSortBy(tmp);
                         })
                         await getTranslationsWithValues('sort_by_with_sort', 'Expiration Date', language, library.baseUrl).then(term => {
-                            const obj = {
-                                expiration: _.toString(term)
-                            }
                             let tmp = sortBy;
-                            tmp = _.merge(obj, tmp);
+                            tmp = _.set(tmp, 'expiration', _.toString(term));
                             setSortBy(tmp);
                         })
                         setLoading(false);
@@ -257,7 +203,7 @@ export const MyHolds = () => {
                update().then(() => {
                     return () => update();
                });
-          }, [])
+          }, [language])
      );
 
      if (isLoading) {
@@ -442,7 +388,7 @@ export const MyHolds = () => {
                          onPress={() => {
                               refreshHolds();
                          }}>
-                         {getTermFromDictionary(language, 'reload_holds')}
+                         {getTermFromDictionary(language, 'holds_reload')}
                     </Button>
                    <FormControl w={175}>
                        <Select
