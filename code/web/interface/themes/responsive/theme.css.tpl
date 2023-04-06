@@ -440,6 +440,8 @@ body .container, #home-page-browse-content{ldelim}
     padding: 3px 7px;
     {if (!empty($badgeBorderRadius))}
     border-radius: {$badgeBorderRadius};
+    {else}
+    border-radius: 10px;
     {/if}
 {rdelim}
 
