@@ -106,7 +106,7 @@ export const DrawerContent = () => {
                });
           }
           fetchTranslations()
-     }, []);
+     }, [language]);
 
      const displayFinesAlert = () => {
           if (user.finesVal) {
@@ -237,7 +237,7 @@ const Checkouts = () => {
                });
           }
           fetchTranslations()
-     }, []);
+     }, [language]);
 
      return (
           <Pressable
@@ -282,7 +282,7 @@ const Holds = () => {
                });
           }
           fetchTranslations()
-     }, []);
+     }, [language]);
 
      return (
           <Pressable
@@ -379,7 +379,7 @@ const SavedSearches = () => {
                });
           }
           fetchTranslations()
-     }, []);
+     }, [language]);
 
      if (version >= '22.08.00') {
           return (

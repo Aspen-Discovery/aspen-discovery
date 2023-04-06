@@ -213,7 +213,7 @@ const CreateLibraryCard = (data) => {
                  });
              }
              fetchTranslations()
-         }, []);
+         }, [language]);
 
      }
 
