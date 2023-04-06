@@ -111,7 +111,7 @@
 		{if !empty($property.canAddNew)}
 			<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
 		{/if}
-		{if !empty($property.additionalOneToManyActions) && $id}{* Only display these actions for an existing object *}
+		{if !empty($property.additionalOneToManyActions) && !empty($id)}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right" style="padding-top: 0">
 				{foreach from=$property.additionalOneToManyActions item=action}
 					<a class="btn {if !empty($action.class)}{$action.class}{else}btn-primary{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isPublicFacing=true}</a>

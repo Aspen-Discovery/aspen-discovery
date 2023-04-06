@@ -2555,7 +2555,7 @@ class Theme extends DataObject {
 	/** @return Library[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLibraries() {
+	public function getLibraries() : array {
 		if (!isset($this->_libraries) && $this->id) {
 			$this->_libraries = [];
 			$obj = new LibraryTheme();
@@ -2571,7 +2571,7 @@ class Theme extends DataObject {
 	/** @return Location[]
 	 * @noinspection PhpUnused
 	 */
-	public function getLocations() {
+	public function getLocations() : array {
 		if (!isset($this->_locations) && $this->id) {
 			$this->_locations = [];
 			$obj = new LocationTheme();
@@ -2637,5 +2637,20 @@ class Theme extends DataObject {
 		unset($this->_deleteOnSave);
 
 		return $apiInfo;
+	}
+
+	public function prepareForSharingToCommunity() {
+		parent::prepareForSharingToCommunity();
+		unset($this->logoName);
+		unset($this->_libraries);
+		unset($this->_locations);
+		unset($this->_parentTheme);
+		unset($this->extendsTheme);
+		unset($this->footerLogo);
+		unset($this->footerLogoAlt);
+		unset($this->footerLogoLink);
+		unset($this->favicon);
+		unset($this->logoApp);
+		unset($this->headerBackgroundImage);
 	}
 }
