@@ -47,7 +47,7 @@
 						<div class="btn-toolbar">
 							<div class="col-xs-12">
 								<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
-									<i class="fas fa-external-link-alt"></i>{translate text=" Add to My Events and Register" isPublicFacing=true}
+									<i class="fas fa-external-link-alt"></i>{translate text=" Add to Your Events and Register" isPublicFacing=true}
 								</a>
 							</div>
 						</div>
@@ -55,7 +55,7 @@
 					{else}
 						<div class="btn-toolbar">
 							<div class="col-xs-12">
-								<span onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap">{translate text="Add to My Events" isPublicFacing=true}</span>
+								<span onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap">{translate text="Add to Your Events" isPublicFacing=true}</span>
 							</div>
 						</div>
 						<br>
