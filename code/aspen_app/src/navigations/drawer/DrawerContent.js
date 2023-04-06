@@ -98,12 +98,22 @@ export const DrawerContent = () => {
           }
      };
 
+     const [finesSummary, setFinesSummary] = React.useState('');
+     React.useEffect(() => {
+          async function fetchTranslations() {
+               await getTranslationsWithValues('accounts_have_fines', user.fines ?? 0, language, library.baseUrl).then(result => {
+                    setFinesSummary(_.toString(result));
+               });
+          }
+          fetchTranslations()
+     }, []);
+
      const displayFinesAlert = () => {
           if (user.finesVal) {
                if (user.finesVal > 0.01) {
                     let message = 'Your accounts have ' + user.fines + ' in fines.';
-                    if(discoveryVersion >= "23.04.00" && !_.isUndefined(user.summaryFines)) {
-                         message = user.summaryFines;
+                    if(finesSummary) {
+                         message = finesSummary;
                     }
                     return showILSMessage('warning', message);
                }
