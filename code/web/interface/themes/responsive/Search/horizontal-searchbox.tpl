@@ -20,7 +20,7 @@
 			<div class="row">
 				<div class="{if !empty($hiddenSearchSource)}col-lg-10 col-md-10{else}col-lg-7 col-md-7{/if} col-sm-12 col-xs-12">
 					<div class="input-group">
-					<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search" style="vertical-align: middle"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label></span>
+					<span class="input-group-addon"><label for="lookfor" class="label" id="lookfor-label"><i class="fas fa-search fa-lg"></i><span class="sr-only">{translate text="Look for" isPublicFacing=true}</span></label></span>
 					{* Main Search Term Box *}
 					<input type="text" class="form-control"{/strip}
 						id="lookfor"

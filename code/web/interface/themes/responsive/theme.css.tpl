@@ -134,6 +134,7 @@ body .container, #home-page-browse-content{ldelim}
 	background-color: {$bodyBackgroundColor};
 	color: {$bodyTextColor};
 	border: 1px solid {$bodyTextColor};
+	border-left: 0px;
 {rdelim}
 
 #lookfor-label{ldelim}
