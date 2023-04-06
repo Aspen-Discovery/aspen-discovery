@@ -8,6 +8,22 @@ class Nashville extends CarlX {
 		parent::__construct($accountProfile);
 	}
 
+    static $fineTypeTranslations = [
+        'F' => 'Fine',
+        'F2' => 'Processing',
+        'FS' => 'Manual',
+        'L' => 'Lost',
+        'NR' => 'Manual', // NR = Non Resident, a juke to identify Nashville non resident account fees
+    ];
+
+    static $fineTypeSIP2Translations = [
+        'F' => '04',
+        'F2' => '05',
+        'FS' => '01',
+        'L' => '07',
+        'NR' => '01', // NR = Non Resident, a juke to identify Nashville non resident account fees
+    ];
+
 	public function completeFinePayment(User $patron, UserPayment $payment): array {
 		global $logger;
 		global $serverName;
@@ -62,6 +78,9 @@ class Nashville extends CarlX {
 					$allPaymentsSucceed = false;
 				} else {
 					$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
+                    if ($feeType == 'NR') {
+                        $this->updateNonResident($patronId);
+                    }
 				}
 			}
 			if ($allPaymentsSucceed === false) {
@@ -102,6 +121,35 @@ class Nashville extends CarlX {
 		return $canPayFine;
 	}
 
+    // Following successful online payment, update Patron with new Expiration Date
+    protected function updateNonResident($patronId): array {
+        global $logger;
+        $request = $this->getSearchbyPatronIdRequest($patronId);
+        $request->Patron = new stdClass();
+        $request->Patron->PatronExpirationDate = date('c', strtotime('+1 year'));
+        $result = $this->doSoapRequest('UpdatePatron', $request);
+        if ($result) {
+            $success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+            if (!$success) {
+                $success = false;
+                $message = "Failed to update Non Resident Patron in CarlX for $patronId .";
+                $level = Logger::LOG_ERROR;
+            } else {
+                $success = true;
+                $message = "Non Resident Patron updated successfully in CarlX for $patronId .";
+                $level = Logger::LOG_NOTICE;
+            }
+        } else {
+            $success = false;
+            $message = "CarlX ILS gave no response when attempting to update Non Resident Patron $patronId .";
+            $level = Logger::LOG_ERROR;
+        }
+        $logger->log($message, $level);
+        return [
+            'success' => $success,
+            'message' => $message,
+        ];
+    }
 	protected function createPatronPaymentNote($patronId, $paymentId): array {
 		global $logger;
 		global $serverName;
@@ -215,10 +263,14 @@ class Nashville extends CarlX {
 				if ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'COLLECTION') !== false) {
 					$fineType = 'COLLECTION AGENCY';
 					$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
-				} else {
-					$fineType = 'FEE';
+				} elseif ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'Non Resident Ful') !== false) {
+					$fineType = 'NR FEE';
 					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
-				}
+                    $fine->TransactionCode = 'NR';
+				} else {
+                    $fineType = 'FEE';
+                    $fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+                }
 
 				$myFines[] = [
 					'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
@@ -233,6 +285,7 @@ class Nashville extends CarlX {
 					'system' => $fine->System,
 					'canPayFine' => $fine->CanPayFine,
 				];
+
 			}
 		}
 
@@ -281,6 +334,7 @@ class Nashville extends CarlX {
 						'system' => $fine->System,
 						'canPayFine' => $fine->CanPayFine,
 					];
+
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
 				$myLostFines = $this->getLostViaSIP($patron->cat_username);
