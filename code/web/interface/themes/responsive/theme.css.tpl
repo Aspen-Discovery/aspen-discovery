@@ -434,6 +434,15 @@ body .container, #home-page-browse-content{ldelim}
     {/if}
 {rdelim}
 
+.label{ldelim}
+	font-size: 10px;
+    min-width: 10px;
+    padding: 3px 7px;
+    {if (!empty($badgeBorderRadius))}
+    border-radius: {$badgeBorderRadius};
+    {/if}
+{rdelim}
+
 {* Alerts *}
 .alert-info{ldelim}
     background-color: {$infoButtonBackgroundColor};
