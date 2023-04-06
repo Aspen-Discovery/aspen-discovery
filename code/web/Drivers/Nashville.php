@@ -48,7 +48,7 @@ class Nashville extends CarlX {
 					$feeId,
 					$feeType,
 				] = explode('-', $feeId);
-				$feeType = CarlX::$fineTypeSIP2Translations[$feeType];
+				$feeType = Nashville::$fineTypeSIP2Translations[$feeType];
 				if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
 					$feeId = '#' . $feeId;
 				}
@@ -265,11 +265,11 @@ class Nashville extends CarlX {
 					$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
 				} elseif ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'Non Resident Ful') !== false) {
 					$fineType = 'NR FEE';
-					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+					$fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
                     $fine->TransactionCode = 'NR';
 				} else {
                     $fineType = 'FEE';
-                    $fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+                    $fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
                 }
 
 				$myFines[] = [
@@ -319,7 +319,7 @@ class Nashville extends CarlX {
 					}
 
 					$fineType = 'FEE';
-					$fine->FeeNotes = $fineType . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
+					$fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
 					$myFines[] = [
 						'fineId' => $fine->Identifier . "-" . $fine->TransactionCode,
