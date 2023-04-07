@@ -123,7 +123,7 @@ class SAMLAuthentication{
 
 		} else {
 			$logger->log('No single sign-on settings found for library', Logger::LOG_ALERT);
-			echo('Single sign-on settings must be configured to use SAML for user authentication.');
+			echo('Single sign-on settings must be configured to use SAML for ssoArray authentication.');
 			die();
 		}
 	}
@@ -183,38 +183,47 @@ class SAMLAuthentication{
 
 	public function validateAccount() {
 		global $logger;
+		// Get the attributes from the SAML Response - so we can use them for futher processing
 		$attributes = $this->getAttributes();
 		if(count($attributes) == 0) {
-			$logger->log("No SAML attributes found for user", Logger::LOG_ERROR, true);
+			$logger->log("No SAML attributes found for ssoArray", Logger::LOG_ERROR, true);
 			return false;
 		}
-		$user = $this->setupUser($attributes);
+		// Map the attributes from the SAML Response to the sso* attributes - so we can have consistent processing from here out
+		$ssoArray = $this->mapSAMLAttributesToSSOArray($attributes);
+
 		if($this->ssoAuthOnly === false) {
-			if(!$this->validateWithILS($user)) {
-				if($this->selfRegister($user)) {
-					return $this->validateWithILS($user);
+			$ilsUserArray = $this->setupILSUser($ssoArray);
+			if(!$this->validateWithILS($ssoArray)) {
+				if($this->selfRegister($ilsUserArray)) {
+					return $this->validateWithILS($ssoArray);
 				} else {
 					AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+					return false;
 				}
-			} return $this->validateWithILS($user);
+			} else {
+				return $this->validateWithILS($ssoArray);
+			}
 		} else {
 			if(!$this->validateWithAspen($this->uid)) {
-				$newUser = $this->selfRegisterAspenOnly($user);
+				$newUser = $this->selfRegisterAspenOnly($ssoArray);
 				if($newUser instanceof User) {
 					return $this->validateWithAspen($this->uid);
 				} else {
-					AspenError::raiseError(new AspenError('Unable to create account with Aspen for new SAML user.'));
+					AspenError::raiseError(new AspenError('Unable to create account with Aspen for new SAML ssoArray.'));
+					return false;
 				}
-			} return $this->validateWithAspen($this->uid);
+			} else {
+				return $this->validateWithAspen($this->uid);
+			}
 		}
 	}
 
-	private function validateWithILS($attributes): bool {
+	private function validateWithILS($ssoArray): bool {
 		global $logger;
-		$this->setupILSUser($attributes);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		if(!empty($this->ilsUniqueAttribute)) {
-			$logger->log("Finding user by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
+			$logger->log("Finding ssoArray by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -222,7 +231,7 @@ class SAMLAuthentication{
 				return false;
 			}
 		} elseif($this->uidAsEmail) {
-			$logger->log("Finding user by email ($this->uid)", Logger::LOG_ERROR);
+			$logger->log("Finding ssoArray by email ($this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -230,12 +239,13 @@ class SAMLAuthentication{
 				return false;
 			}
 		} else {
-			$logger->log("Finding user by barcode ($this->uid)", Logger::LOG_ERROR);
+			$logger->log("Finding ssoArray by barcode ($this->uid)", Logger::LOG_ERROR);
 			$_REQUEST['username'] = $this->uid;
 			$user = $catalogConnection->findNewUser($this->uid);
 		}
 
 		if(!$user instanceof User) {
+			$logger->log("  Could not find an existing ssoArray with that information", Logger::LOG_ERROR);
 			return false;
 		}
 
@@ -288,7 +298,7 @@ class SAMLAuthentication{
 		return false;
 	}
 
-	private function setupUser($user) {
+	private function mapSAMLAttributesToSSOArray($user) {
 		$tmpUser = [];
 		$tmpUser['isStaffUser'] = false;
 		$tmpUser['staffPType'] = null;
@@ -334,42 +344,59 @@ class SAMLAuthentication{
 		return $tmpUser;
 	}
 
-	private function setupILSUser($user) {
+	/**
+	 * Map from the sso attribute array to Aspen/ILS fields
+	 *
+	 * @param $ssoArray
+	 * @return array
+	 */
+	private function setupILSUser($ssoArray) : array {
+		$ilsUser = [];
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		$ilsMapping = $catalogConnection->getLmsToSso($this->isStaffUser, $this->config->ssoUseGivenUserId, $this->config->ssoUseGivenUsername);
 
 		foreach($ilsMapping as $key => $mappings) {
 			$primaryAttr = $mappings['primary'];
-			if (array_key_exists($primaryAttr, $user)) {
-				$_REQUEST[$key] = $user[$primaryAttr];
+			if (array_key_exists($primaryAttr, $ssoArray)) {
+				$_REQUEST[$key] = $ssoArray[$primaryAttr];
+				$ilsUser[$key] = $ssoArray[$primaryAttr];
 				if(isset($mappings['useGivenCardnumber'])) {
 					$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
 					if($useSecondaryOverPrimary == '0') {
 						$_REQUEST[$key] = null;
+						$ilsUser[$key] = null;
 					}
 				}
 				if(isset($mappings['useGivenUserId'])) {
 					$useSecondaryOverPrimary = $mappings['useGivenUserId'];
 					if($useSecondaryOverPrimary == '0') {
 						if($this->config->ssoUsernameFormat == '1') {
-							$_REQUEST[$key] = $user['ssoEmailAttr'];
+							$_REQUEST[$key] = $ssoArray['ssoEmailAttr'];
+							$ilsUser[$key] = $ssoArray['ssoEmailAttr'];
 						} elseif($this->config->ssoUsernameFormat == '2') {
-							$username = $user['ssoFirstnameAttr'] . '.' . $user['ssoLastnameAttr'];
+							$username = $ssoArray['ssoFirstnameAttr'] . '.' . $ssoArray['ssoLastnameAttr'];
 							$username = strtolower($username);
 							$_REQUEST[$key] = $username;
+							$ilsUser[$key] = $username;
 						} elseif($this->config->ssoUsernameFormat == '0') {
 							$_REQUEST[$key] = null;
+							$ilsUser[$key] = null;
 						}
 					}
 				}
 			} elseif (array_key_exists('fallback', $mappings)) {
 				if (strlen($mappings['fallback']) > 0) {
-					$_REQUEST[$key] = $user[$mappings['fallback']];
+					$_REQUEST[$key] = $ssoArray[$mappings['fallback']];
+					$ilsUser[$key] = $ssoArray[$mappings['fallback']];
 				} else {
 					$_REQUEST[$key] = $mappings['fallback'];
+					$ilsUser[$key] = $mappings['fallback'];
 				}
 			}
 		}
+
+		$ilsUser = array_merge($ilsUser, $ssoArray);
+		return $ilsUser;
 	}
 
 	private function selfRegister($user): bool {
@@ -414,7 +441,7 @@ class SAMLAuthentication{
 		$tmpUser->created = date('Y-m-d');
 		if(!$tmpUser->insert()) {
 			global $logger;
-			$logger->log('Error creating Aspen user ' . print_r($this->searchArray($user, $this->matchpoints['userId']), true), Logger::LOG_ERROR);
+			$logger->log('Error creating Aspen ssoArray ' . print_r($this->searchArray($user, $this->matchpoints['userId']), true), Logger::LOG_ERROR);
 			return false;
 		}
 
