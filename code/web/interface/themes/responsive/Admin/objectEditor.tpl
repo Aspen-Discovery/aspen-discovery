@@ -1,4 +1,4 @@
-<script src="/tinymce/tinymce-emoji/plugin.min.js"></script>
+<script src="/tinymce/plugins/tinymceEmoji/plugin.min.js"></script>
 <script src="/tinymce/tinymce.min.js"></script>
 {if !empty($updateMessage)}
 	<div class="alert {if !empty($updateMessageIsError)}alert-danger{else}alert-info{/if}">
