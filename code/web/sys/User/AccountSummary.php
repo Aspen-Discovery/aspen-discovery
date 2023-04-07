@@ -117,11 +117,30 @@ class AccountSummary extends DataObject {
 		$this->_expirationFinesNotice = $notice;
 	}
 
+	private $_expirationNotice = '';
+
+	public function setExpirationNotice(string $notice) {
+		$this->_expirationNotice = $notice;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getExpirationNotice(): string {
+		return $this->_expirationNotice;
+	}
+
 	/**
 	 * @return string
 	 */
 	public function getExpirationFinesNotice(): string {
 		return $this->_expirationFinesNotice;
+	}
+
+	private $_finesBadge = '';
+
+	public function setFinesBadge(string $notice) {
+		$this->_finesBadge = $notice;
 	}
 
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
@@ -130,6 +149,7 @@ class AccountSummary extends DataObject {
 		$return['expired'] = $this->isExpired();
 		$return['expireClose'] = $this->isExpirationClose();
 		$return['expirationFinesNotice'] = $this->_expirationFinesNotice;
+		$return['expirationNotice'] = $this->_expirationNotice;
 		$return['numHolds'] = $this->getNumHolds();
 		if ($this->_numUpdatedSearches > 0) {
 			$return['savedSearches'] = translate([
@@ -140,6 +160,7 @@ class AccountSummary extends DataObject {
 		} else {
 			$return['savedSearches'] = '';
 		}
+		$return['finesBadge'] = $this->_finesBadge;
 		return $return;
 	}
 

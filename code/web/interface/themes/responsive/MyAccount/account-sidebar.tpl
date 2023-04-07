@@ -22,7 +22,7 @@
 					<div id="myAccountPanel" class="panel-collapse collapse in">
 						<div class="panel-body">
 							{if empty($offline)}
-								<span class="expirationFinesNotice-placeholder"></span>
+								<span class="expirationNotice-placeholder"></span>
 							{/if}
 							{if !empty($userHasCatalogConnection) && (!$offline || $enableEContentWhileOffline) && $showUserCirculationModules}
 								<div class="myAccountLink">
@@ -129,7 +129,7 @@
 									{/if}
 									{if !empty($showFines)}
 										<div class="myAccountLink" title="Fines">
-											<a href="/MyAccount/Fines">{translate text='Fines' isPublicFacing=true}</a>
+											<a href="/MyAccount/Fines">{translate text='Fines' isPublicFacing=true} <span class="finesBadge-placeholder"><span class="badge">??</span></span></a>
 										</div>
 									{/if}
 								{/if}

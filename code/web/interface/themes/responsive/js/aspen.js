@@ -5650,6 +5650,7 @@ AspenDiscovery.Account = (function () {
 		loadMenuData: function () {
 			var totalCheckouts = 0;
 			var totalHolds = 0;
+			var totalFines = 0;
 			if (Globals.hasILSConnection) {
 				var ilsUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataIls&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
 				$.getJSON(ilsUrl, function (data) {
@@ -5683,7 +5684,8 @@ AspenDiscovery.Account = (function () {
 						}
 
 						$(".materialsRequests-placeholder").html(summary.materialsRequests);
-						$(".expirationFinesNotice-placeholder").html(summary.expirationFinesNotice);
+						$(".expirationNotice-placeholder").html(summary.expirationNotice);
+						$(".finesBadge-placeholder").html(summary.finesBadge);
 					}
 				});
 			}
