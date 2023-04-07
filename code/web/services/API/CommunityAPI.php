@@ -205,6 +205,23 @@ class CommunityAPI extends Action {
 		$sharedContent->sharedByUserName = $_REQUEST['sharedByUserName'];
 		$sharedContent->data = $_REQUEST['data'];
 		if ($sharedContent->insert()) {
+			require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+			$greenhouseSettings = new GreenhouseSettings();
+			$greenhouseAlertSlackHook = null;
+			if ($greenhouseSettings->find(true)) {
+				$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+				//Send a slack alert that new content has been shared
+				$curlWrapper = new CurlWrapper();
+				$headers = [
+					'Accept: application/json',
+					'Content-Type: application/json',
+				];
+				$curlWrapper->addCustomHeaders($headers, false);
+				$body = new stdClass();
+				$body->text = "New content shared with the community and needs review. $sharedContent->type - $sharedContent->name";
+				$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+			}
+
 			$result['success'] = true;
 		} else {
 			$result['message'] = $sharedContent->getLastError();
