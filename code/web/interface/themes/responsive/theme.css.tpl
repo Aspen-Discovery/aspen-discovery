@@ -665,10 +665,6 @@ label{ldelim}
 	border: 1px solid {$openPanelBackgroundColor};
 {rdelim}
 
-.accordion .facetList{ldelim}
-	padding-bottom: 1em;
-{rdelim}
-
 .panel-heading{ldelim}
 	border: 0 !important;
 {rdelim}
@@ -678,9 +674,8 @@ label{ldelim}
 {rdelim}
 
 .facetTitle{ldelim}
-	border: 0 !important;
+	border-top: 0;
 {rdelim}
-
 
 {* Tables *}
 .striped-odd{ldelim}
