@@ -15,8 +15,37 @@
 			<a class="btn btn-primary" id="importBulkTranslations" href="/Translation/ImportBulkTranslations">{translate text="Import Bulk Translations" isAdminFacing=true}</a>
 		</div>
 		<div class="form-group">
-			<input type="checkbox" name="showAllTranslations" id="showAllTranslations" {if !empty($showAllTranslations)}checked{/if}>
-			<label for="showAllTranslations">{translate text="Show All Translations" isAdminFacing=true}</label>
+			<input type="checkbox" name="hideTranslated" id="hideTranslated" {if !empty($showTranslated)}checked{/if}>&nbsp;
+			<label for="hideTranslated">{translate text="Hide terms that have been translated already" isAdminFacing=true}</label>
+		</div>
+		<div class="form-group">
+			<label for="updatedSince">{translate text="Show Terms created since" isAdminFacing=true}</label>
+			<div class="row">
+				<div class="col-sm-4">
+					<input name='updatedSince' id='updatedSince' value='{if !empty($updatedSince)}{$updatedSince|date_format:"%Y-%m-%d %H:%M"}{/if}' max="{$today}" class='form-control'>
+				</div>
+				<script type="text/javascript">
+					$(document).ready(function(){ldelim}
+						rome(updatedSince);
+                        {rdelim});
+				</script>
+			</div>
+		</div>
+		<div class="form-group">
+			<label for="interfaceArea">{translate text="Show Terms displayed to" isAdminFacing=true}</label>
+			<select id="interfaceArea" name="interfaceArea" class="form-control">
+				<option value="both" {if $interfaceArea == 'both'}selected{/if}>{translate text="Either Public or Administration Users" isAdminFacing=true}</option>
+				<option value="public" {if $interfaceArea == 'public'}selected{/if}>{translate text="Only Public Users" isAdminFacing=true}</option>
+				<option value="admin" {if $interfaceArea == 'admin'}selected{/if}>{translate text="Only Administration Users" isAdminFacing=true}</option>
+			</select>
+		</div>
+		<div class="form-group">
+			<input type="checkbox" name="showMetadata" id="showMetadata" {if !empty($showMetadata)}checked{/if}>&nbsp;
+			<label for="showMetadata">{translate text="Show metadata (from MARC Records, eContent, etc)" isAdminFacing=true}</label>
+		</div>
+		<div class="form-group">
+			<input type="checkbox" name="showAdminEnteredData" id="showAdminEnteredData" {if !empty($showAdminEnteredData)}checked{/if}>&nbsp;
+			<label for="showAdminEnteredData">{translate text="Show admin entered data (list names, system messages, etc)" isAdminFacing=true}</label>
 		</div>
 		<div class="form-group">
 			<label class="control-label" for="filterTerm">{translate text="Show Terms containing" isAdminFacing=true}</label>

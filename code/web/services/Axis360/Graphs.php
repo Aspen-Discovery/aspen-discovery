@@ -104,6 +104,8 @@ class Axis360_Graphs extends Admin_Admin {
 
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
+		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateColumnLabels', false);
 
 		$interface->assign('graphTitle', $title);
 		$this->display('../Admin/usage-graph.tpl', $title);

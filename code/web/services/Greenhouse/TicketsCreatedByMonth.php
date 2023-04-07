@@ -54,6 +54,8 @@ class Greenhouse_TicketsCreatedByMonth extends Admin_Admin {
 		}
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
+		$interface->assign('translateDataSeries', false);
+		$interface->assign('translateColumnLabels', false);
 
 		$interface->assign('graphTitle', $title);
 

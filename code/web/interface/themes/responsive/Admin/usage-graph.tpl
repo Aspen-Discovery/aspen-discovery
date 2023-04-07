@@ -11,14 +11,14 @@
 				<tr>
 					<th>{translate text="Date" isAdminFacing=true}</th>
 					{foreach from=$dataSeries key=seriesLabel item=seriesData}
-						<th>{translate text=$seriesLabel isAdminFacing=true}</th>
+						<th>{if !empty($translateDataSeries)}{translate text=$seriesLabel isAdminFacing=true}{else}{$seriesLabel}{/if}</th>
 					{/foreach}
 				</tr>
 			</thead>
 			<tbody>
 				{foreach from=$columnLabels item=label}
 					<tr>
-						<td>{translate text=$label isAdminFacing=true}</td>
+						<td>{if !empty($translateColumnLabels)}{translate text=$label isAdminFacing=true}{else}{$label}{/if}</td>
 						{foreach from=$dataSeries item=seriesData}
 							<td>{if (empty($seriesData.data.$label))}0{else}{$seriesData.data.$label|number_format}{/if}</td>
 						{/foreach}

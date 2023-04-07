@@ -269,6 +269,8 @@ class MaterialsRequest_SummaryReport extends Admin_Admin {
 
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
+		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateColumnLabels', false);
 	}
 
 	function getStats($instanceName, $month, $year, &$statsByFormat, $statsPeriodName) {
