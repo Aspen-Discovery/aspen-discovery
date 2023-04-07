@@ -263,5 +263,13 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		//other
+		'updateThemesFinal' => [
+			'title' => 'Update themes for changes',
+			'description' => 'Automatically updates all themes to grab stylesheet changes',
+			'sql' => [
+				'updateAllThemes',
+			],
+		],
+		//updateThemesFinal
 	];
 }
