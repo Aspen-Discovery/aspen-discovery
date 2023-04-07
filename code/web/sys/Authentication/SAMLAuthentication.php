@@ -223,7 +223,7 @@ class SAMLAuthentication{
 		global $logger;
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		if(!empty($this->ilsUniqueAttribute)) {
-			$logger->log("Finding ssoArray by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
+			$logger->log("Finding user in ILS by field ($this->ilsUniqueAttribute, $this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -231,7 +231,7 @@ class SAMLAuthentication{
 				return false;
 			}
 		} elseif($this->uidAsEmail) {
-			$logger->log("Finding ssoArray by email ($this->uid)", Logger::LOG_ERROR);
+			$logger->log("Finding user in ILS by email ($this->uid)", Logger::LOG_ERROR);
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 			if(is_string($user)) {
 				global $logger;
@@ -239,13 +239,13 @@ class SAMLAuthentication{
 				return false;
 			}
 		} else {
-			$logger->log("Finding ssoArray by barcode ($this->uid)", Logger::LOG_ERROR);
+			$logger->log("Finding user in ILS by barcode ($this->uid)", Logger::LOG_ERROR);
 			$_REQUEST['username'] = $this->uid;
 			$user = $catalogConnection->findNewUser($this->uid);
 		}
 
 		if(!$user instanceof User) {
-			$logger->log("  Could not find an existing ssoArray with that information", Logger::LOG_ERROR);
+			$logger->log("  Could not find an existing user in the ILS with that information", Logger::LOG_ERROR);
 			return false;
 		}
 
@@ -400,6 +400,8 @@ class SAMLAuthentication{
 	}
 
 	private function selfRegister($user): bool {
+		global $logger;
+		$logger->log("Permorming self registration of user " . print_r($user, true), Logger::LOG_ERROR);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		$selfReg = $catalogConnection->selfRegister(true, $user);
 		if($selfReg['success'] != '1') {
