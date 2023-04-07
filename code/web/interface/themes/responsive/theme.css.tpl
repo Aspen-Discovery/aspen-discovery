@@ -622,10 +622,6 @@ label{ldelim}
     border: 1px solid {$defaultButtonBorderColor};
 {rdelim}
 
-.related-manifestation.grouped{ldelim}
-	border-color: {$secondaryForegroundColor};
-{rdelim}
-
 {* Browse Category Carousel *}
 .jcarousel-pagination a{ldelim}
 	border-radius: {$smallButtonRadius};
