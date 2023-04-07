@@ -262,6 +262,15 @@ function getUpdates23_04_00(): array {
 				)',
 			],
 		],
+		// Set default weight for (library|location)_records_to_include to 0
+		'default_records_to_include_weight' => [
+			'title' => 'Default Value for Records to Include Weight',
+			'description' => 'Add a default of 0 for weight in the library_records_to_include and location_records_to_include tables',
+			'sql' => [
+				'ALTER TABLE library_records_to_include ALTER COLUMN weight SET DEFAULT 0',
+				'ALTER TABLE location_records_to_include ALTER COLUMN weight SET DEFAULT 0',
+			],
+		],
 		//other
 		'updateThemesFinal' => [
 			'title' => 'Update themes for changes',
