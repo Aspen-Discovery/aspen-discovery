@@ -88,6 +88,11 @@ body .container, #home-page-browse-content{ldelim}
 .table-striped > tbody > tr:nth-child(2n+1) > td, .table-striped > tbody > tr:nth-child(2n+1) > th{ldelim}
     background-color: {$tableStripeBackgroundColor};
 {rdelim}
+
+div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
+  background-color: {$tableStripeBackgroundColor};
+{rdelim}
+
 .table-sticky thead tr th{ldelim}
     background-color: {$bodyBackgroundColor};
 {rdelim}
@@ -682,15 +687,11 @@ label{ldelim}
 	background-color: transparent !important;
 {rdelim}
 
-div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
-	background-color: {$primaryBackgroundColor} !important;
-{rdelim}
-
 {* Tabs *}
 .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus, .nav-tabs > li > a:hover{ldelim}
 	background-color: {$primaryBackgroundColor};
     border-color: {$primaryBackgroundColor} !important;
-    color: {$bodyTextColor}
+    color: {$primaryForegroundColor}
 {rdelim}
 
 .nav-tabs{ldelim}
@@ -698,13 +699,14 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 .nav-tabs{ldelim}
-	border-left: 1px solid {$primaryBackgroundColor};
-	border-right: 1px solid {$primaryBackgroundColor};
+	border-left: 0px solid {$primaryBackgroundColor};
+	border-right: 0px solid {$primaryBackgroundColor};
 {rdelim}
 
 .tab-content{ldelim}
 	border-left: 1px solid {$primaryBackgroundColor};
 	border-right: 1px solid {$primaryBackgroundColor};
+	border-bottom: 1px solid {$primaryBackgroundColor};
 {rdelim}
 
 {* Syndetics Unbound *}
@@ -736,9 +738,10 @@ pre{ldelim}
 {rdelim}
 
 .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
-	background-color: {$primaryBackgroundColor};
-	color: {$primaryForegroundColor};
-	border: 1px solid {$primaryForegroundColor};
+	background-color: {$bodyBackgroundColor};
+    color: {$bodyTextColor};
+    border: 1px solid {$bodyTextColor};
+    border-radius: {$smallButtonRadius}
 }
 
 .formatCategoryLabel, .share-tools-label{ldelim}
