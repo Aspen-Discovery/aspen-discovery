@@ -3800,27 +3800,35 @@ class Koha extends AbstractIlsDriver {
 		return $fields;
 	}
 
+	/**
+	 * @param $ssoUser - an array of fields mapped according to the lmsToSso function
+	 * @return array|false[]
+	 */
 	function selfRegisterViaSSO($ssoUser): array {
 		global $library;
 
 		$result = ['success' => false,];
 
-		$mainBranch = null;
-		$location = new Location();
-		$location->libraryId = $library->libraryId;
-		$location->orderBy('isMainBranch desc');
-		if (!$location->find(true)) {
-			global $logger;
-			$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-			$result['messages'][] = translate([
-				'text' => 'Unable to find any location to assign the user as a home location for self-registration',
-				'isPublicFacing' => true,
-			]);
-			return $result;
-		}
-
-		if (isset($location)) {
-			$mainBranch = $location->code;
+		if (empty($ssoUser['borrower_branchcode'])) {
+			$mainBranch = null;
+			$location = new Location();
+			$location->libraryId = $library->libraryId;
+			$location->orderBy('isMainBranch desc');
+			if (!$location->find(true)) {
+				global $logger;
+				$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+				$result['messages'][] = translate([
+					'text' => 'Unable to find any location to assign the user as a home location for self-registration',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+			if (isset($location)) {
+				$mainBranch = $location->code;
+			}
+		} else {
+			//TODO: Do we need extra validation here?
+			$mainBranch = $ssoUser['borrower_branchcode'];
 		}
 
 		$oauthToken = $this->getOAuthToken();
@@ -3832,13 +3840,13 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$apiUrl = $this->getWebServiceURL() . '/api/v1/patrons';
 			$postParams = [
-				'userid' => $ssoUser['cat_username'],
-				'cardnumber' => $ssoUser['cat_username'],
-				'firstname' => $ssoUser['firstname'],
-				'surname' => $ssoUser['lastname'],
-				'email' => $ssoUser['email'],
-				'address' => 'UNKNOWN',
-				'city' => 'UNKNOWN',
+				'userid' => ($ssoUser['cat_username'] ?? ''),
+				'cardnumber' => ($ssoUser['cat_username'] ?? ''),
+				'firstname' => $ssoUser['borrower_firstname'] ?? $ssoUser['firstname'],
+				'surname' => $ssoUser['borrower_surname'] ?? $ssoUser['lastname'],
+				'email' => $ssoUser['borrower_email'] ?? $ssoUser['email'],
+				'address' =>  $ssoUser['borrower_address'] ?? 'UNKNOWN',
+				'city' => $ssoUser['borrower_city'] ?? 'UNKNOWN',
 				'library_id' => $mainBranch,
 				'category_id' => $ssoUser['category_id'] ?? $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory'),
 			];
