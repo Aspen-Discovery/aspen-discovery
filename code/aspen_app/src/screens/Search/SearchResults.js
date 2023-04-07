@@ -58,7 +58,7 @@ export const SearchResults = () => {
      });
 
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', url, page, term, scope, params],
+          queryKey: ['totalPages', url, page, term, scope, params, language],
           queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
           enabled: !!data,
      });

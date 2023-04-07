@@ -74,84 +74,53 @@ export const MyCheckouts = () => {
                               updateCheckouts(result);
                          }
                          await getTranslationsWithValues('filter_by_source', 'Physical Materials', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   ils: _.toString(term)
-                              }
                               let tmp = filterBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'ils', _.toString(term));
                               setFilterBy(tmp);
                          })
                          await getTranslationsWithValues('filter_by_source', 'Hoopla', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   hoopla: _.toString(term)
-                              }
-                              console.log(_.toString(term));
                               let tmp = filterBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'hoopla', _.toString(term));
                               setFilterBy(tmp);
                          })
                          await getTranslationsWithValues('filter_by_source', 'OverDrive', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   overdrive: _.toString(term)
-                              }
                               let tmp = filterBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'overdrive', _.toString(term));
                               setFilterBy(tmp);
                          })
                          await getTranslationsWithValues('filter_by_source', 'cloudLibrary', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   cloudlibrary: _.toString(term)
-                              }
                               let tmp = filterBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
                               setFilterBy(tmp);
                          })
                          await getTranslationsWithValues('filter_by_source', 'All', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   all: term
-                              }
                               let tmp = filterBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'all', _.toString(term));
                               setFilterBy(tmp);
                          })
                          await getTranslationsWithValues('filter_by_source', 'Axis 360', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   axis360: _.toString(term)
-                              }
                               let tmp = filterBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'axis360', _.toString(term));
                               setFilterBy(tmp);
                          })
                          await getTranslationsWithValues('checkouts_for_source', 'OverDrive', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   overdrive: _.toString(term)
-                              }
                               let tmp = checkoutsBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'overdrive', _.toString(term));
                               setCheckoutBy(tmp);
                          })
                          await getTranslationsWithValues('checkouts_for_source', 'Hoopla', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   hoopla: _.toString(term)
-                              }
                               let tmp = checkoutsBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'hoopla', _.toString(term));
                               setCheckoutBy(tmp);
                          })
                          await getTranslationsWithValues('checkouts_for_source', 'cloudLibrary', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   cloudlibrary: _.toString(term)
-                              }
                               let tmp = checkoutsBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
                               setCheckoutBy(tmp);
                          })
                          await getTranslationsWithValues('checkouts_for_source', 'Axis 360', language, library.baseUrl).then(term => {
-                              const obj = {
-                                   axis360: _.toString(term)
-                              }
                               let tmp = checkoutsBy;
-                              tmp = _.merge(obj, tmp);
+                              tmp = _.set(tmp, 'axis360', _.toString(term));
                               setCheckoutBy(tmp);
                          })
                          setLoading(false);
@@ -160,7 +129,7 @@ export const MyCheckouts = () => {
                update().then(() => {
                     return () => update();
                });
-          }, [])
+          }, [language])
      );
 
      if (isLoading) {
@@ -364,7 +333,7 @@ const Checkout = (props) => {
                }
           }
           preloadTranslations();
-     }, []);
+     }, [language]);
 
      let returnEarly = false;
      if (checkout.canReturnEarly === 1 || checkout.canReturnEarly === '1' || checkout.canReturnEarly === true || checkout.canReturnEarly === 'true') {

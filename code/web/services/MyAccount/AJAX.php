@@ -2091,7 +2091,8 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($interface->getVariable('expirationNearMessage')) {
 					$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
 				}
-				$ilsSummary->setExpirationFinesNotice($interface->fetch('MyAccount/expirationFinesNotice.tpl'));
+				$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
+				$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
 
 				$result = [
 					'success' => true,
