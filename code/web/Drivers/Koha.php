@@ -409,7 +409,11 @@ class Koha extends AbstractIlsDriver {
 
 			//Check to see if there is a volume for the checkout
 			/** @noinspection SqlResolve */
-			$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
+			if ($this->getKohaVersion() >= 22.11) {
+				$volumeSql = "SELECT description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id = $itemNumber";
+			} else {
+				$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
+			}
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
 			if ($volumeResults !== false) { //This is false if Koha does not support volumes
 				if ($volumeRow = $volumeResults->fetch_assoc()) {
@@ -1621,12 +1625,21 @@ class Koha extends AbstractIlsDriver {
 			]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
-			$postParams = [
-				'patron_id' => $patron->username,
-				'pickup_library_id' => $pickupBranch,
-				'volume_id' => (int)$volumeId,
-				'biblio_id' => $recordId,
-			];
+			if ($this->getKohaVersion() >= 22.11) {
+				$postParams = [
+					'patron_id' => $patron->username,
+					'pickup_library_id' => $pickupBranch,
+					'item_group_id' => (int)$volumeId,
+					'biblio_id' => $recordId,
+				];
+			} else {
+				$postParams = [
+					'patron_id' => $patron->username,
+					'pickup_library_id' => $pickupBranch,
+					'volume_id' => (int)$volumeId,
+					'biblio_id' => $recordId,
+				];
+			}
 			$postParams = json_encode($postParams);
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1939,11 +1952,16 @@ class Koha extends AbstractIlsDriver {
 			if (isset($curRow['enumchron'])) {
 				$curHold->volume = $curRow['enumchron'];
 			}
-			if (isset($curRow['volume_id'])) {
+			if (!empty($curRow['volume_id']) || !empty($curRow['item_group_id'])) {
 				//Get the volume info
 				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 				$volumeInfo = new IlsVolumeInfo();
-				$volumeInfo->volumeId = $curRow['volume_id'];
+				if (!empty($curRow['volume_id'])) {
+					$volumeInfo->volumeId = $curRow['volume_id'];
+				} else {
+					$volumeInfo->volumeId = $curRow['item_group_id'];
+				}
+
 				if ($volumeInfo->find(true)) {
 					$curHold->volume = $volumeInfo->displayLabel;
 				}

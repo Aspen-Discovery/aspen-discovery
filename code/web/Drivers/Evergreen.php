@@ -1741,7 +1741,7 @@ class Evergreen extends AbstractIlsDriver {
 	}
 
 	function getForgotPasswordType() {
-			return 'emailResetLink';
+		return 'emailResetLink';
 	}
 
 	function getEmailResetPinResultsTemplate() {
