@@ -42,7 +42,6 @@ class Lists extends MyAccount {
 
 		$options = [
 			'totalItems' => $listCount,
-			'fileName' => '/MyAccount/MyLists?page=%d',
 			'perPage' => $listsPerPage,
 			'showCovers' => isset($_REQUEST['showCovers']),
 		];
