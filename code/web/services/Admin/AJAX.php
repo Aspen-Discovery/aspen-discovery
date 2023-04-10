@@ -1267,7 +1267,7 @@ class Admin_AJAX extends JSON_Action {
 			$searchResults = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=searchSharedContent&objectType=' . $objectType);
 			$decodedSearchResults = json_decode($searchResults);
 
-			$interface->assign('greenhouseSearchResults', $decodedSearchResults);
+			$interface->assign('communitySearchResults', $decodedSearchResults);
 
 			return [
 				'title' => translate([
