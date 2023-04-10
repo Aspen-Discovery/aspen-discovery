@@ -1139,14 +1139,14 @@ class GroupedWork_AJAX extends JSON_Action {
 							'isAdminFacing' => true,
 						]);
 					}
-					if ($result['success'] == true) {
+					/*if ($result['success'] == true) {
 						try {
 							chgrp($destFullPath, 'aspen_apache');
 							chmod($destFullPath, 0775);
 						} catch (Exception $e) {
 							//Just ignore errors
 						}
-					}
+					}*/
 				}
 			} else {
 				$result['message'] = translate([
