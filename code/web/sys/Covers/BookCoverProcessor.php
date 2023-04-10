@@ -49,6 +49,11 @@ class BookCoverProcessor {
 				return true;
 			}
 		}
+		if($this->bookCoverInfo->imageSource == 'upload') {
+			if($this->getUploadedRecordCover($this->id)) {
+				return true;
+			}
+		}
 		if ($this->type == 'open_archives') {
 			if ($this->getOpenArchivesCover($this->id)) {
 				return true;
@@ -1608,6 +1613,20 @@ class BookCoverProcessor {
 					return $this->processImageURL('upload', $uploadedImage);
 				}
 			}
+		}
+		return false;
+	}
+
+	private function getUploadedRecordCover($id) {
+		if (strpos($id, ':') !== false) {
+			[
+				,
+				$id,
+			] = explode(':', $id);
+		}
+		$uploadedImage = $this->bookCoverPath . '/original/' . $id . '.png';
+		if (file_exists($uploadedImage)) {
+			return $this->processImageURL('upload', $uploadedImage);
 		}
 		return false;
 	}
