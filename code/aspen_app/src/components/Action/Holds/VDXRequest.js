@@ -208,12 +208,10 @@ const Request = (payload) => {
 
 	const getFeeInformation = () => {
 		const field = config.fields.feeInformationText;
-		if(field.display === 'show') {
+		if(field.display === 'show' && !_.isEmpty(field.label)) {
 			return (
-				<FormControl.HelperText>
-					{field.label}
-				</FormControl.HelperText>
-			);
+				<Text bold>{field.label}</Text>
+			)
 		}
 		return null;
 	}
