@@ -156,7 +156,7 @@
 			<div class="form-group propertyRow" id="langRow">
                 <label for="lang" class="control-label">{translate text="Preferred language for notices" isPublicFacing=true}</label>
                 {if !empty($canSave) && !empty($noticeLanguages)}
-	            <select class="form-control-sm" name="lang" aria-label="{translate text="Preferred language for notices" isPublicFacing=true}">
+	            <select class="form-control" name="lang" aria-label="{translate text="Preferred language for notices" isPublicFacing=true}">
                     {foreach from=$noticeLanguages item="language" key=id}
                         <option value="{$id}" {if $preferredNoticeLanguage==$id}selected="selected"{/if}>{$language}</option>
                     {/foreach}
