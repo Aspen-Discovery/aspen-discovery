@@ -26,6 +26,7 @@ class Lists extends MyAccount {
 		$interface->assign('page', $page);
 
 		$listsPerPage = 20;
+		$interface->assign('startingNumber', ($page - 1) * $listsPerPage);
 		$interface->assign('curPage', $page);
 		$userLists->orderBy($sort . $order);
 		$userLists->limit(($page - 1) * $listsPerPage, $listsPerPage);
