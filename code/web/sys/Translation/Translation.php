@@ -20,15 +20,21 @@ class Translation extends DataObject {
 		];
 	}
 
-	public function setTranslation($translation) {
+	public function setTranslation($translation, $term = null) {
+		if ($this->translation == $translation) {
+			//Nothing to do, exit early
+			return;
+		}
 		$this->translation = $translation;
 		$this->translated = 1;
 		$this->needsReview = 0;
 		$this->update();
 
-		$term = new TranslationTerm();
-		$term->id = $this->termId;
-		$term->find(true);
+		if ($term == null) {
+			$term = new TranslationTerm();
+			$term->id = $this->termId;
+			$term->find(true);
+		}
 		global $memCache;
 		global $activeLanguage;
 		$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $term->term);
@@ -45,7 +51,8 @@ class Translation extends DataObject {
 				'translation' => $translation,
 				'languageCode' => $activeLanguage->code,
 			];
-			$curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=setTranslation', $body);
+			$response = $curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=setTranslation', $body);
+			$response = json_decode($response);
 		}
 	}
 }

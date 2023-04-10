@@ -8,6 +8,12 @@
 		</div>
 	{/if}
 
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="alert alert-danger">{translate text="Bulk translation can ONLY be done with a file exported from this server. Bulk translations should not be used to load translations from one server to another. It is intended for use with Google Translate or other automated translation services to create a starting point for review." isAdminFacing=true}</div>
+		</div>
+	</div>
+
 	<form class="form" method="post" enctype="multipart/form-data">
 		<div class="form-group">
 			<div class="input-group">
