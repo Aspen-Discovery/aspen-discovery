@@ -495,9 +495,16 @@ public class KohaExportMain {
 
 				ResultSet getItemsForVolumeRS = getItemsForVolumeStmt.executeQuery();
 				while (getItemsForVolumeRS.next()){
-					String itemRecordNum = getItemsForVolumeRS.getString("itemnumber");
+					String itemRecordNum;
+					long volumeId;
+					if (kohaVersion < 22.11) {
+						itemRecordNum = getItemsForVolumeRS.getString("itemnumber");
+						volumeId = getItemsForVolumeRS.getLong("volume_id");
+					}else{
+						itemRecordNum = getItemsForVolumeRS.getString("item_id");
+						volumeId = getItemsForVolumeRS.getLong("item_group_id");
+					}
 
-					Long volumeId = getItemsForVolumeRS.getLong("volume_id");
 					itemsForVolume.merge(volumeId, itemRecordNum, (a, b) -> a + "|" + b);
 				}
 				getItemsForVolumeRS.close();
@@ -512,8 +519,15 @@ public class KohaExportMain {
 			if (!loadError) {
 				int numVolumesUpdated = 0;
 				while (volumeInfoRS.next()) {
-					long recordId = volumeInfoRS.getLong("biblionumber");
-					long volumeId = volumeInfoRS.getLong("id");
+					long recordId;
+					long volumeId;
+					if (kohaVersion < 22.11) {
+						recordId = volumeInfoRS.getLong("biblionumber");
+						volumeId = volumeInfoRS.getLong("id");
+					}else{
+						recordId = volumeInfoRS.getLong("biblio_id");
+						volumeId = volumeInfoRS.getLong("item_group_id");
+					}
 					int displayOrder = volumeInfoRS.getInt("display_order");
 					String description = volumeInfoRS.getString("description");
 					existingVolumes.remove(volumeId);

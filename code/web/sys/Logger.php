@@ -51,6 +51,9 @@ class Logger {
 		// Write the message to the log:
 		$fhnd = @fopen($this->logFilePath, 'a');
 		if ($fhnd) {
+			if (is_array($msg)) {
+				$msg = print_r($msg, true);
+			}
 			fwrite($fhnd, '[' . date('Y M d H:i:s') . '] ' . $msg . "\r\n");
 			fclose($fhnd);
 		}

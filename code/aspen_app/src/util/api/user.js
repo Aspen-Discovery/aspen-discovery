@@ -203,6 +203,9 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
           if (typeof allHolds !== 'undefined') {
                if (typeof allHolds.unavailable !== 'undefined') {
                     holdsNotReady = Object.values(allHolds.unavailable);
+                    if(pendingSortMethod === 'position') {
+                         holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['desc']);
+                    }
                     holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['asc']);
                }
 

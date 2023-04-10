@@ -409,7 +409,11 @@ class Koha extends AbstractIlsDriver {
 
 			//Check to see if there is a volume for the checkout
 			/** @noinspection SqlResolve */
-			$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
+			if ($this->getKohaVersion() >= 22.11) {
+				$volumeSql = "SELECT description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id = $itemNumber";
+			} else {
+				$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
+			}
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
 			if ($volumeResults !== false) { //This is false if Koha does not support volumes
 				if ($volumeRow = $volumeResults->fetch_assoc()) {
@@ -1621,12 +1625,21 @@ class Koha extends AbstractIlsDriver {
 			]);
 		} else {
 			$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds";
-			$postParams = [
-				'patron_id' => $patron->username,
-				'pickup_library_id' => $pickupBranch,
-				'volume_id' => (int)$volumeId,
-				'biblio_id' => $recordId,
-			];
+			if ($this->getKohaVersion() >= 22.11) {
+				$postParams = [
+					'patron_id' => $patron->username,
+					'pickup_library_id' => $pickupBranch,
+					'item_group_id' => (int)$volumeId,
+					'biblio_id' => $recordId,
+				];
+			} else {
+				$postParams = [
+					'patron_id' => $patron->username,
+					'pickup_library_id' => $pickupBranch,
+					'volume_id' => (int)$volumeId,
+					'biblio_id' => $recordId,
+				];
+			}
 			$postParams = json_encode($postParams);
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -1939,11 +1952,16 @@ class Koha extends AbstractIlsDriver {
 			if (isset($curRow['enumchron'])) {
 				$curHold->volume = $curRow['enumchron'];
 			}
-			if (isset($curRow['volume_id'])) {
+			if (!empty($curRow['volume_id']) || !empty($curRow['item_group_id'])) {
 				//Get the volume info
 				require_once ROOT_DIR . '/sys/ILS/IlsVolumeInfo.php';
 				$volumeInfo = new IlsVolumeInfo();
-				$volumeInfo->volumeId = $curRow['volume_id'];
+				if (!empty($curRow['volume_id'])) {
+					$volumeInfo->volumeId = $curRow['volume_id'];
+				} else {
+					$volumeInfo->volumeId = $curRow['item_group_id'];
+				}
+
 				if ($volumeInfo->find(true)) {
 					$curHold->volume = $volumeInfo->displayLabel;
 				}
@@ -3800,27 +3818,35 @@ class Koha extends AbstractIlsDriver {
 		return $fields;
 	}
 
+	/**
+	 * @param $ssoUser - an array of fields mapped according to the lmsToSso function
+	 * @return array|false[]
+	 */
 	function selfRegisterViaSSO($ssoUser): array {
 		global $library;
 
 		$result = ['success' => false,];
 
-		$mainBranch = null;
-		$location = new Location();
-		$location->libraryId = $library->libraryId;
-		$location->orderBy('isMainBranch desc');
-		if (!$location->find(true)) {
-			global $logger;
-			$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
-			$result['messages'][] = translate([
-				'text' => 'Unable to find any location to assign the user as a home location for self-registration',
-				'isPublicFacing' => true,
-			]);
-			return $result;
-		}
-
-		if (isset($location)) {
-			$mainBranch = $location->code;
+		if (empty($ssoUser['borrower_branchcode'])) {
+			$mainBranch = null;
+			$location = new Location();
+			$location->libraryId = $library->libraryId;
+			$location->orderBy('isMainBranch desc');
+			if (!$location->find(true)) {
+				global $logger;
+				$logger->log('Failed to find any location to assign to user as home location', Logger::LOG_ERROR);
+				$result['messages'][] = translate([
+					'text' => 'Unable to find any location to assign the user as a home location for self-registration',
+					'isPublicFacing' => true,
+				]);
+				return $result;
+			}
+			if (isset($location)) {
+				$mainBranch = $location->code;
+			}
+		} else {
+			//TODO: Do we need extra validation here?
+			$mainBranch = $ssoUser['borrower_branchcode'];
 		}
 
 		$oauthToken = $this->getOAuthToken();
@@ -3832,13 +3858,13 @@ class Koha extends AbstractIlsDriver {
 		} else {
 			$apiUrl = $this->getWebServiceURL() . '/api/v1/patrons';
 			$postParams = [
-				'userid' => $ssoUser['cat_username'],
-				'cardnumber' => $ssoUser['cat_username'],
-				'firstname' => $ssoUser['firstname'],
-				'surname' => $ssoUser['lastname'],
-				'email' => $ssoUser['email'],
-				'address' => 'UNKNOWN',
-				'city' => 'UNKNOWN',
+				'userid' => ($ssoUser['cat_username'] ?? ''),
+				'cardnumber' => ($ssoUser['cat_username'] ?? ''),
+				'firstname' => $ssoUser['borrower_firstname'] ?? $ssoUser['firstname'],
+				'surname' => $ssoUser['borrower_surname'] ?? $ssoUser['lastname'],
+				'email' => $ssoUser['borrower_email'] ?? $ssoUser['email'],
+				'address' =>  $ssoUser['borrower_address'] ?? 'UNKNOWN',
+				'city' => $ssoUser['borrower_city'] ?? 'UNKNOWN',
 				'library_id' => $mainBranch,
 				'category_id' => $ssoUser['category_id'] ?? $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory'),
 			];

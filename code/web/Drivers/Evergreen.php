@@ -1739,4 +1739,209 @@ class Evergreen extends AbstractIlsDriver {
 	public function showRenewalsRemaining(): bool {
 		return true;
 	}
+
+	function getForgotPasswordType() {
+		return 'emailResetLink';
+	}
+
+	function getEmailResetPinResultsTemplate() {
+		return 'emailResetPinResults.tpl';
+	}
+
+	function getEmailResetPinTemplate() {
+		if (isset($_REQUEST['resendEmail'])) {
+			global $interface;
+			$interface->assign('resendEmail', true);
+		}
+		return 'evergreenEmailResetPinLink.tpl';
+	}
+
+	private function _requestPasswordReset($identType, $identValue, $email) {
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+		$request = 'service=open-ils.actor&method=open-ils.actor.patron.password_reset.request';
+		$request .= '&param=' . json_encode($identType);
+		$request .= '&param=' . json_encode($identValue);
+		$request .= '&param=' . json_encode($email);
+
+		return $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+	}
+
+	function processEmailResetPinForm() {
+		$result = [
+			'success' => false,
+			'error' => translate([
+				'text' => "Unknown error sending password reset.",
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$patronIdentifier = strip_tags($_REQUEST['username']);
+		$email = strip_tags($_REQUEST['email']);
+		$apiResponse = $this->_requestPasswordReset('barcode', $patronIdentifier, $email);
+
+		if ($this->apiCurlWrapper->getResponseCode() !== 200) {
+			return $result;
+		}
+
+		$apiResponse = json_decode($apiResponse);
+
+		// first check to see if we need to retry the patron lookup by username
+		if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->textcode) &&
+			$apiResponse->payload[0]->textcode == 'ACTOR_USER_NOT_FOUND') {
+			$apiResponse = $this->_requestPasswordReset('username', $patronIdentifier, $email);
+			$apiResponse = json_decode($apiResponse);
+		}
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->textcode)) {
+				$errorCode = $apiResponse->payload[0]->textcode;
+				if ($errorCode == 'EMAIL_VERIFICATION_FAILED') {
+					$result['error'] = translate([
+						'text' => 'The email address you supplied does not match the address known to the library. Please try again',
+						'isPublicFacing' => true,
+					]);
+				} elseif ($errorCode == 'ACTOR_USER_NOT_FOUND') {
+					$result['error'] = translate([
+						'text' => 'Unable to find your record. Please try again',
+						'isPublicFacing' => true,
+					]);
+				}
+				// if we get here, fall back to the default error response, as the
+				// other errors that can happen likely signify
+				// that somebody is trying to abuse the reset API
+			} elseif ($apiResponse->payload[0] == 1) {
+				$result['error'] = null;
+				$result['success'] = true;
+			}
+		}
+
+		return $result;
+	}
+
+	function getPasswordRecoveryTemplate() {
+		global $interface;
+		if (isset($_REQUEST['uniqueKey'])) {
+			$error = null;
+			$uniqueKey = $_REQUEST['uniqueKey'];
+			$interface->assign('uniqueKey', $uniqueKey);
+
+			// unlike Koha, the unique key gets verified only upon attempting
+			// the password change
+			$interface->assign('error', $error);
+
+			$pinValidationRules = $this->getPasswordPinValidationRules();
+			$interface->assign('pinValidationRules', $pinValidationRules);
+
+			return 'evergreenPasswordRecovery.tpl';
+		} else {
+			//No key provided, go back to the starting point
+			header('Location: /MyAccount/EmailResetPin');
+			die();
+		}
+	}
+
+	function processPasswordRecovery() {
+		global $interface;
+		if (isset($_REQUEST['uniqueKey'])) {
+			$error = null;
+			$uniqueKey = $_REQUEST['uniqueKey'];
+			$pin1 = $_REQUEST['pin1'];
+
+			// unlike Koha, we don't separately verify whether the
+			// reset UUID is valid; that's handled by the method
+			// that attempts the password change
+
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = array(
+				'Content-Type: application/x-www-form-urlencoded',
+			);
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$username = strip_tags($_REQUEST['username']);
+			$email = strip_tags($_REQUEST['email']);
+			$request = 'service=open-ils.actor&method=open-ils.actor.patron.password_reset.commit';
+			$request .= '&param=' . json_encode($uniqueKey);
+			$request .= '&param=' . json_encode($pin1);
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$error = translate([
+					'text' => 'The link you clicked is either invalid, or expired.<br/>Be sure you used the link from the email, or contact library staff for assistance.<br/>Please contact the library if you need further assistance.',
+				]);
+
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->desc)) {
+					$error = $apiResponse->payload[0]->desc;
+				} elseif ($apiResponse->payload[0] == 1) {
+					$result = [
+						'success' => true,
+						'message' => 'Your password was updated successfully.',
+					];
+					$interface->assign('result', $result);
+					$error = null;
+				}
+				$interface->assign('error', $error);
+				return 'evergreenPasswordRecoveryResult.tpl';
+			} else {
+				//No key provided, go back to the starting point
+				header('Location: /MyAccount/EmailResetPin');
+				die();
+			}
+		}
+		return null;
+	}
+
+	function updatePin(User $patron, string $oldPin, string $newPin) {
+		if ($patron->cat_password != $oldPin) {
+			return [
+				'success' => false,
+				'message' => "The old password provided is incorrect.",
+			];
+		}
+		$result = [
+			'success' => false,
+			'error' => translate([
+				'text' => "Unknown error updating password.",
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$authToken = $this->getAPIAuthToken($patron, false);
+
+		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+		$headers = array(
+			'Content-Type: application/x-www-form-urlencoded',
+		);
+		$this->apiCurlWrapper->addCustomHeaders($headers, false);
+		$request = 'service=open-ils.actor&method=open-ils.actor.user.password.update';
+		$request .= '&param=' . json_encode($authToken);
+		$request .= '&param=' . json_encode($newPin);
+		$request .= '&param=' . json_encode($oldPin);
+
+		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+		if ($this->apiCurlWrapper->getResponseCode() == 200) {
+			$apiResponse = json_decode($apiResponse);
+			if (isset($apiResponse->payload[0]) && isset($apiResponse->payload[0]->textcode)) {
+				$errorCode = $apiResponse->payload[0]->textcode;
+				if ($errorCode == 'INCORRECT_PASSWORD') {
+					$result['error'] = translate([
+						'text' => 'The old password provided is incorrect',
+						'isPublicFacing' => true,
+					]);
+				}
+			} elseif ($apiResponse->payload[0] == 1) {
+				$result['error'] = null;
+				$result['success'] = true;
+			}
+		}
+
+		return $result;
+	}
 }

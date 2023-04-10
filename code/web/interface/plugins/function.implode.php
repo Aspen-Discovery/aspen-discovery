@@ -34,7 +34,6 @@ function smarty_function_implode($params, &$smarty) {
 
 	$subject = $params['subject'];
 
-	$implodedValue = null;
 	if (is_array($subject)) {
 		if ($translate) {
 			if (isset($params['isPublicFacing'])) {
@@ -47,11 +46,17 @@ function smarty_function_implode($params, &$smarty) {
 			} else {
 				$isAdminFacing = false;
 			}
+			if (isset($params['isMetadata'])) {
+				$isMetadata = $params['isMetadata'];
+			} else {
+				$isMetadata = false;
+			}
 			foreach ($subject as $index => $value) {
 				$subject[$index] = translate([
 					'text' => $value,
 					'isPublicFacing' => $isPublicFacing,
 					'isAdminFacing' => $isAdminFacing,
+					'isMetadata' => $isMetadata,
 				]);
 			}
 		}

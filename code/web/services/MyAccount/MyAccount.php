@@ -77,13 +77,13 @@ abstract class MyAccount extends Action {
 	 */
 	function display($mainContentTemplate, $pageTitle = 'Your Account', $sidebar = 'Search/home-sidebar.tpl', $translateTitle = true) {
 		global $interface;
-		$interface->setPageTitle($pageTitle);
+		$interface->setPageTitle($pageTitle, $translateTitle);
 
 		// If neither sidebar sections are show, don't display the sidebar
 		if ($interface->getVariable('showMyAccount') || $interface->getVariable('showAccountSettings')) {
-			parent::display($mainContentTemplate, $pageTitle);
+			parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);
 		} else {
-			parent::display($mainContentTemplate, $pageTitle, false);
+			parent::display($mainContentTemplate, $pageTitle, false, $translateTitle);
 		}
 	}
 }

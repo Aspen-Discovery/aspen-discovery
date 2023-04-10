@@ -88,9 +88,9 @@
 						<div class="result-label col-sm-4 col-xs-12">{translate text="Language" isPublicFacing=true} </div>
 						<div class="result-value col-sm-8 col-xs-12">
 							{if is_array($summLanguage)}
-								{implode subject=$summLanguage glue=', ' translate=true isPublicFacing=true}
+								{implode subject=$summLanguage glue=', ' translate=true isPublicFacing=true isMetadata=true}
 							{else}
-								{translate text=$summLanguage isPublicFacing=true}
+								{translate text=$summLanguage isPublicFacing=true isMetadata=true}
 							{/if}
 						</div>
 					</div>

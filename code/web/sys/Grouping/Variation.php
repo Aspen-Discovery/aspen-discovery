@@ -49,6 +49,7 @@ class Grouping_Variation {
 			$this->label .= translate([
 				'text' => $this->language,
 				'isPublicFacing' => true,
+				'isMetadata' => true
 			]);
 			$this->label = trim($this->label);
 		}

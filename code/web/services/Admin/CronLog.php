@@ -24,7 +24,6 @@ class Admin_CronLog extends Admin_Admin {
 
 		$options = [
 			'totalItems' => $total,
-			'fileName' => '/Admin/CronLog?page=%d',
 			'perPage' => 30,
 		];
 		$pager = new Pager($options);

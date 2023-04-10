@@ -114,7 +114,7 @@
 		{if !empty($property.additionalOneToManyActions) && !empty($id)}{* Only display these actions for an existing object *}
 			<div class="btn-group pull-right" style="padding-top: 0">
 				{foreach from=$property.additionalOneToManyActions item=action}
-					<a class="btn {if !empty($action.class)}{$action.class}{else}btn-primary{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isPublicFacing=true}</a>
+					<a class="btn {if !empty($action.class)}{$action.class}{else}btn-primary{/if} btn-sm" href="{$action.url|replace:'$id':$id}">{translate text=$action.text isAdminFacing=true}</a>
 				{/foreach}
 			</div>
 		{/if}

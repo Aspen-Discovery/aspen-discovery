@@ -228,7 +228,6 @@ abstract class ObjectEditor extends Admin_Admin {
 		if ($this->supportsPagination()) {
 			$options = [
 				'totalItems' => $numObjects,
-				'fileName' => "/{$this->getModule()}/{$this->getToolName()}?page=%d",
 				'perPage' => $recordsPerPage,
 				'canChangeRecordsPerPage' => true,
 				'canJumpToPage' => true,

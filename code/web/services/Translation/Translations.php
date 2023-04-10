@@ -6,7 +6,7 @@ class Translation_Translations extends Admin_Admin {
 
 	function launch() {
 		global $interface;
-		/** @var Translator $translator */ global $translator;
+		global $translator;
 		global $activeLanguage;
 		$translationModeActive = $translator->translationModeActive();
 		$interface->assign('translationModeActive', $translationModeActive);
@@ -31,11 +31,41 @@ class Translation_Translations extends Admin_Admin {
 		}
 
 		$translation = new Translation();
-		if (!isset($_REQUEST['showAllTranslations'])) {
+		if (isset($_REQUEST['hideTranslated'])) {
 			$translation->whereAdd('(translated = 0 OR needsReview = 1)');
-			$interface->assign('showAllTranslations', false);
+			$interface->assign('hideTranslated', true);
 		} else {
-			$interface->assign('showAllTranslations', true);
+			$interface->assign('hideTranslated', false);
+		}
+		$interfaceArea = $_REQUEST['interfaceArea'] ?? 'both';
+		$interface->assign('interfaceArea', $interfaceArea);
+		if ($interfaceArea == 'public') {
+			$translation->whereAdd('term.isPublicFacing = 1');
+		} elseif ($interfaceArea == 'admin') {
+			$translation->whereAdd('term.isAdminFacing = 1');
+		}
+
+		$todayFormatted = date('Y-m-d', strtotime('now'));
+		$interface->assign('today', $todayFormatted);
+		if (!empty($_REQUEST['updatedSince'])) {
+			$translation->whereAdd('term.lastUpdate > ' . strtotime($_REQUEST['updatedSince']));
+			$interface->assign('updatedSince', $_REQUEST['updatedSince']);
+		}else{
+			$interface->assign('updatedSince', '');
+		}
+
+		if (!empty($_REQUEST['showMetadata'])) {
+			$interface->assign('showMetadata', true);
+		} else {
+			$translation->whereAdd('term.isMetadata = 0');
+			$interface->assign('showMetadata', false);
+		}
+
+		if (!empty($_REQUEST['showAdminEnteredData'])) {
+			$interface->assign('showAdminEnteredData', true);
+		} else {
+			$translation->whereAdd('term.isAdminEnteredData = 0');
+			$interface->assign('showAdminEnteredData', false);
 		}
 
 		if (!empty($_REQUEST['filterTerm'])) {
@@ -76,7 +106,6 @@ class Translation_Translations extends Admin_Admin {
 
 		$options = [
 			'totalItems' => $total,
-			'fileName' => "/Translation/Translations?page=%d" . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 			'perPage' => $pageSize,
 		];
 		$pager = new Pager($options);
@@ -101,12 +130,35 @@ class Translation_Translations extends Admin_Admin {
 		echo('"Term"');
 		while ($validLanguage->fetch()) {
 			$validLanguages[$validLanguage->code] = $validLanguage->id;
-			echo(",\"{$validLanguage->code}\"");
+			if ($validLanguage->code != 'ubb' && $validLanguage->code != 'pig') {
+				echo(",\"{$validLanguage->code}\"");
+			}
 		}
 		echo("\n");
 
 		$term = new TranslationTerm();
 		$term->orderBy('term');
+
+		//Apply filters
+		$interfaceArea = $_REQUEST['interfaceArea'] ?? 'both';
+		if ($interfaceArea == 'public') {
+			$term->isPublicFacing = 1;
+		} elseif ($interfaceArea == 'admin') {
+			$term->isAdminFacing = 1;
+		}
+
+		if (!empty($_REQUEST['updatedSince'])) {
+			$term->whereAdd('lastUpdate > ' . strtotime($_REQUEST['updatedSince']));
+		}
+
+		if (empty($_REQUEST['showMetadata'])) {
+			$term->isMetadata = 0;;
+		}
+
+		if (empty($_REQUEST['showAdminEnteredData'])) {
+			$term->isAdminEnteredData = 0;
+		}
+
 		$term->find();
 		while ($term->fetch()) {
 			echo('"' . str_replace('"', '\"', $term->term) . '"');
@@ -147,6 +199,26 @@ class Translation_Translations extends Admin_Admin {
 
 		$term = new TranslationTerm();
 		$term->orderBy('id');
+
+		$interfaceArea = $_REQUEST['interfaceArea'] ?? 'both';
+		if ($interfaceArea == 'public') {
+			$term->isPublicFacing = 1;
+		} elseif ($interfaceArea == 'admin') {
+			$term->isAdminFacing = 1;
+		}
+
+		if (!empty($_REQUEST['updatedSince'])) {
+			$term->whereAdd('lastUpdate > ' . strtotime($_REQUEST['updatedSince']));
+		}
+
+		if (empty($_REQUEST['showMetadata'])) {
+			$term->isMetadata = 0;;
+		}
+
+		if (empty($_REQUEST['showAdminEnteredData'])) {
+			$term->isAdminEnteredData = 0;
+		}
+
 		$term->find();
 		while ($term->fetch()) {
 			//Look to see if we have translated it into the active language

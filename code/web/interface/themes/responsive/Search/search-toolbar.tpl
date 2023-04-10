@@ -42,7 +42,7 @@
 				                    {/if}
 			                    <li><a href="#" onclick="return AspenDiscovery.Account.ajaxLightbox('/Search/AJAX?method=getEmailForm', true);">{translate text='Email this Search' isPublicFacing=true}</a></li>
 			                    <li><a href="{$rssLink|escape}">{translate text='Get RSS Feed' isPublicFacing=true}</a></li>
-			                    {if !empty($excellLink)}<li><a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a></li>{/if}
+			                    {if !empty($excelLink)}<li><a href="{$excelLink|escape}">{translate text='Export To CSV' isPublicFacing=true}</a></li>{/if}
 			                    {/if}
 			                    {if !empty($loggedIn) && (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 	                                 <li><a href="#" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromSearch('{$searchId}')">{translate text='Create Spotlight' isAdminFacing=true}</a></li>

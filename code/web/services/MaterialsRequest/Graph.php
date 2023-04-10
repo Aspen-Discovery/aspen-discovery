@@ -56,6 +56,8 @@ class MaterialsRequest_Graph extends Admin_Admin {
 		$interface->assign('columnLabels', $columnLabels);
 		$interface->assign('dataSeries', $dataSeries);
 		$interface->assign('graphTitle', $title);
+		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateColumnLabels', false);
 
 		//Check to see if we are exporting to Excel
 		if (isset($_REQUEST['exportToExcel'])) {

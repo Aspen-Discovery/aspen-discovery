@@ -2,14 +2,12 @@ import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useQuery } from '@tanstack/react-query';
 import _ from 'lodash';
-import { create } from 'apisauce';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 
-import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container } from 'native-base';
+import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container, Center, Heading } from 'native-base';
 
 import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getAppliedFilters, getAvailableFacets, getSortList, SEARCH } from '../../util/search';
-import { translate } from '../../translations/translations';
 import AddToList from './AddToList';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
@@ -23,6 +21,8 @@ import {navigate} from '../../helpers/RootNavigator';
 import {getTermFromDictionary, getTranslationsWithValues} from '../../translations/TranslationService';
 
 export const SearchResults = () => {
+     const navigation = useNavigation();
+     const route = useRoute();
      const [page, setPage] = React.useState(1);
      const [storedTerm, setStoredTerm] = React.useState('');
      const { library } = React.useContext(LibrarySystemContext);
@@ -131,7 +131,17 @@ export const SearchResults = () => {
      };
 
      const NoResults = () => {
-          return null;
+         return (
+             <Center flex={1}>
+                  <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
+                  <Text bold w="75%" textAlign="center">
+                       {route.params?.term}
+                  </Text>
+                  <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                       {getTermFromDictionary(language, 'new_search_button')}
+                  </Button>
+             </Center>
+         )
      };
 
      return (
@@ -407,7 +417,7 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
      await getAppliedFilters(url, language);
 
      return {
-          results: data.result?.items,
+          results: data.result?.items ?? [],
           totalResults: data.result?.totalResults ?? 0,
           curPage: data.result?.page_current ?? 0,
           totalPages: data.result?.page_total ?? 0,
