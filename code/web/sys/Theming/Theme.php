@@ -2657,5 +2657,7 @@ class Theme extends DataObject {
 		unset($this->favicon);
 		unset($this->logoApp);
 		unset($this->headerBackgroundImage);
+		unset($this->customBodyFont);
+		unset($this->customHeadingFont);
 	}
 }

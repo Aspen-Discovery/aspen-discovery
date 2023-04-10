@@ -308,93 +308,99 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	function shareToCommunity($structure) {
 		global $interface;
-		//TODO:: Double check permissions
-		if (isset($_REQUEST['sourceId'])) {
-			$id = $_REQUEST['sourceId'];
-			$existingObject = $this->getExistingObjectById($id);
-			if ($existingObject != null) {
-				if ($existingObject->canActiveUserEdit()) {
+		if (UserAccount::userHasPermission('Share Content with Community')) {
+			if (isset($_REQUEST['sourceId'])) {
+				$id = $_REQUEST['sourceId'];
+				$existingObject = $this->getExistingObjectById($id);
+				if ($existingObject != null) {
+					if ($existingObject->canActiveUserEdit()) {
 
-					$interface->assign('objectName', $existingObject->__toString());
-					$interface->assign('id', $id);
-					$existingObject->prepareForSharingToCommunity();
-					$jsonRepresentation = $existingObject->getJSONString(false, true);
+						$interface->assign('objectName', $existingObject->__toString());
+						$interface->assign('id', $id);
+						$existingObject->prepareForSharingToCommunity();
+						$jsonRepresentation = $existingObject->getJSONString(false, true);
 
-					//Submit to the greenhouse
-					require_once ROOT_DIR . '/sys/SystemVariables.php';
-					$systemVariables = SystemVariables::getSystemVariables();
-					if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
-						require_once ROOT_DIR . '/sys/CurlWrapper.php';
-						$curl = new CurlWrapper();
-						$body = [
-							'name' => $_REQUEST['contentName'],
-							'type' => $this->getObjectType(),
-							'description' => $_REQUEST['contentDescription'],
-							'sharedFrom' => $interface->getVariable('librarySystemName'),
-							'sharedByUserName' => UserAccount::getActiveUserObj()->displayName,
-							'data' => $jsonRepresentation
-						];
-						$response = $curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addSharedContent', $body);
-						header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
-						exit;
+						//Submit to the greenhouse
+						require_once ROOT_DIR . '/sys/SystemVariables.php';
+						$systemVariables = SystemVariables::getSystemVariables();
+						if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
+							require_once ROOT_DIR . '/sys/CurlWrapper.php';
+							$curl = new CurlWrapper();
+							$body = [
+								'name' => $_REQUEST['contentName'],
+								'type' => $this->getObjectType(),
+								'description' => $_REQUEST['contentDescription'],
+								'sharedFrom' => $interface->getVariable('librarySystemName'),
+								'sharedByUserName' => UserAccount::getActiveUserObj()->displayName,
+								'data' => $jsonRepresentation
+							];
+							$response = $curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addSharedContent', $body);
+							header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
+							exit;
+						} else {
+							$error = new AspenError('A community sharing URL has not been configured. You can configure it in System Variables.');
+							$interface->setTemplate('../error.tpl');
+						}
+
 					} else {
-						$error = new AspenError('A community sharing URL has not been configured. You can configure it in System Variables.');
-						$interface->setTemplate('../error.tpl');
+						$interface->setTemplate('../Admin/noPermission.tpl');
 					}
-
 				} else {
-					$interface->setTemplate('../Admin/noPermission.tpl');
+					$interface->setTemplate('../Admin/invalidObject.tpl');
 				}
 			} else {
 				$interface->setTemplate('../Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/invalidObject.tpl');
+			$interface->setTemplate('../Admin/noPermission.tpl');
 		}
 	}
 
 	function importFromCommunity($structure) {
 		global $interface;
-		//TODO: Double check permissions
-		if (isset($_REQUEST['sourceId'])) {
-			$sourceId = $_REQUEST['sourceId'];
-			$objectType = $_REQUEST['objectType'];
+		if (UserAccount::userHasPermission('Import Content from Community')) {
+			if (isset($_REQUEST['sourceId'])) {
+				$sourceId = $_REQUEST['sourceId'];
+				$objectType = $_REQUEST['objectType'];
 
-			//Get the raw data from the greenhouse
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
-				require_once ROOT_DIR . '/sys/CurlWrapper.php';
-				$curl = new CurlWrapper();
-				$response = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
-				$jsonResponse = json_decode($response);
-				if ($jsonResponse->success) {
-					$rawData = json_decode($jsonResponse->rawData, true);
+				//Get the raw data from the greenhouse
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
+					require_once ROOT_DIR . '/sys/CurlWrapper.php';
+					$curl = new CurlWrapper();
+					$response = $curl->curlGetPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getSharedContent&objectType=' . $objectType . '&objectId=' . $sourceId);
+					$jsonResponse = json_decode($response);
+					if ($jsonResponse->success) {
+						$rawData = json_decode($jsonResponse->rawData, true);
 
-					$objectType = $this->getObjectType();
-					/** @var DataObject $newObject */
-					$newObject = new $objectType;
-					$newObject->loadFromJSON($rawData, [], 'doNotSave');
-					$interface->assign('objectName', $newObject->__toString());
-					$newObject->unsetUniquenessFields();
-					if (method_exists($newObject, 'label')) {
-						$interface->assign('objectName', $newObject->label());
+						$objectType = $this->getObjectType();
+						/** @var DataObject $newObject */
+						$newObject = new $objectType;
+						$newObject->loadFromJSON($rawData, [], 'doNotSave');
+						$interface->assign('objectName', $newObject->__toString());
+						$newObject->unsetUniquenessFields();
+						if (method_exists($newObject, 'label')) {
+							$interface->assign('objectName', $newObject->label());
+						}
+						$this->activeObject = $newObject;
+
+						$interface->assign('object', $newObject);
+						//Check to see if the request should be multipart/form-data
+						$contentType = DataObjectUtil::getFormContentType($structure);
+						$interface->assign('contentType', $contentType);
+
+						$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newObject));
+						$interface->setTemplate('../Admin/objectEditor.tpl');
+					} else {
+						$interface->setTemplate('../Admin/invalidObject.tpl');
 					}
-					$this->activeObject = $newObject;
-
-					$interface->assign('object', $newObject);
-					//Check to see if the request should be multipart/form-data
-					$contentType = DataObjectUtil::getFormContentType($structure);
-					$interface->assign('contentType', $contentType);
-
-					$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($newObject));
-					$interface->setTemplate('../Admin/objectEditor.tpl');
-				} else {
-					//TODO: Display error that data could not be loaded
 				}
+			} else {
+				$interface->setTemplate('../Admin/invalidObject.tpl');
 			}
 		} else {
-			$interface->setTemplate('../Admin/invalidObject.tpl');
+			$interface->setTemplate('../Admin/noPermission.tpl');
 		}
 	}
 

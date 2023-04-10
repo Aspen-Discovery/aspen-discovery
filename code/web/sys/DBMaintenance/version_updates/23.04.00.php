@@ -113,6 +113,17 @@ function getUpdates23_04_00(): array {
 				"ALTER TABLE translations add column lastCheckInCommunity INT(11) default 0",
 			],
 		], //add_last_check_in_community_for_translations
+		'permissions_community_sharing' => [
+			'title' => 'Add permissions for Sharing and retrieving content from the Community Server',
+			'description' => 'Add permissions for Sharing and retrieving content from the Community Server',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Community Sharing', 'Share Content with Community', '', 10, 'Controls if the user can share content with other members of the Aspen Discovery Community they are connected with.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Community Sharing', 'Import Content from Community', '', 20, 'Controls if the user can import content created by other members of the Aspen Discovery Community they are connected with.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Share Content with Community'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Import Content from Community'))",
+			],
+		],
 
 		//kirstien
 		'add_ecommerce_deluxe' => [

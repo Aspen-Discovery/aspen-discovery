@@ -552,7 +552,6 @@ public class KohaExportMain {
 				}
 				volumeInfoRS.close();
 
-
 				//Remove anything that no longer exists
 				long numVolumesDeleted = 0;
 				for (Long existingVolume : existingVolumes){

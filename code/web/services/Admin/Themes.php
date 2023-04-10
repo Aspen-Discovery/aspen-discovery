@@ -117,12 +117,12 @@ class Admin_Themes extends ObjectEditor {
 
 	public function canShareToCommunity() {
 		//TODO: This needs a permission
-		return $this->hasCommunityConnection();
+		return $this->hasCommunityConnection() && UserAccount::userHasPermission('Share Content with Community');
 	}
 
 	public function canFetchFromCommunity() {
 		//TODO: This needs a permission
-		return $this->hasCommunityConnection();
+		return $this->hasCommunityConnection() && UserAccount::userHasPermission('Import Content from Community');
 	}
 
 	/** @noinspection PhpUnused */
