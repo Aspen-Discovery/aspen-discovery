@@ -1050,8 +1050,12 @@ class GroupedWork_AJAX extends JSON_Action {
 	function getUploadCoverForm() {
 		global $interface;
 
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
+		$groupedWorkId = $_REQUEST['id'];
+		$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+		$recordId = $_REQUEST['recordId'] ?? $groupedWorkId;
+		$interface->assign('groupedWorkId', $groupedWorkId);
+		$interface->assign('recordType', $recordType);
+		$interface->assign('recordId', $recordId);
 
 		return [
 			'title' => translate([
@@ -1095,6 +1099,13 @@ class GroupedWork_AJAX extends JSON_Action {
 					]);
 				} else {
 					$id = $_REQUEST['id'];
+					$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+					$recordId = $_REQUEST['recordId'] ?? $id;
+
+					if($recordType !== 'grouped_work') {
+						$id = $recordId;
+					}
+
 					global $configArray;
 					$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 					$fileType = $uploadedFile["type"];
@@ -1147,8 +1158,8 @@ class GroupedWork_AJAX extends JSON_Action {
 		if ($result['success']) {
 			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 			$bookCoverInfo = new BookCoverInfo();
-			$bookCoverInfo->recordType = 'grouped_work';
-			$bookCoverInfo->recordId = $_REQUEST['id'];
+			$bookCoverInfo->recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+			$bookCoverInfo->recordId = $_REQUEST['recordId'] ?? $_REQUEST['id'];
 			if($bookCoverInfo->find(true)) {
 				$bookCoverInfo->imageSource = "upload";
 				$bookCoverInfo->thumbnailLoaded = 0;
@@ -1169,8 +1180,12 @@ class GroupedWork_AJAX extends JSON_Action {
 	function getUploadCoverFormByURL() {
 		global $interface;
 
-		$id = $_REQUEST['id'];
-		$interface->assign('id', $id);
+		$groupedWorkId = $_REQUEST['id'];
+		$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+		$recordId = $_REQUEST['recordId'] ?? $groupedWorkId;
+		$interface->assign('groupedWorkId', $groupedWorkId);
+		$interface->assign('recordType', $recordType);
+		$interface->assign('recordId', $recordId);
 
 		return [
 			'title' => translate([
@@ -1217,6 +1232,12 @@ class GroupedWork_AJAX extends JSON_Action {
 			}
 
 			$id = $_REQUEST['id'];
+			$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+			$recordId = $_REQUEST['recordId'] ?? $id;
+
+			if($recordType !== 'grouped_work') {
+				$id = $recordId;
+			}
 			global $configArray;
 			$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
@@ -1240,8 +1261,8 @@ class GroupedWork_AJAX extends JSON_Action {
 		if ($result['success']) {
 			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 			$bookCoverInfo = new BookCoverInfo();
-			$bookCoverInfo->recordType = 'grouped_work';
-			$bookCoverInfo->recordId = $_REQUEST['id'];
+			$bookCoverInfo->recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+			$bookCoverInfo->recordId = $_REQUEST['recordId'] ?? $_REQUEST['id'];
 			if ($bookCoverInfo->find(true)) {
 				$bookCoverInfo->imageSource = 'upload';
 				$bookCoverInfo->thumbnailLoaded = 0;

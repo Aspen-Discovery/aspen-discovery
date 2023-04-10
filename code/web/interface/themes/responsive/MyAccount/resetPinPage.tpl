@@ -36,30 +36,22 @@
 				</div>
 
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-				<form action="" method="post" class="form-horizontal" id="pinForm">
+				<form action="" method="post" id="pinForm">
 					<input type="hidden" name="updateScope" value="pin">
-					<div class="form-group">
-						<div class="col-xs-4"><label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
-						<div class="col-xs-8">
-							<input type="password" name="pin" id="pin" value="" size="{$pinValidationRules.minLength}" maxlength="60" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
-						</div>
+					<div class="form-group propertyRow">
+						<label for="pin" class="control-label">{translate text='Old %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label>
+						<input type="password" name="pin" id="pin" value="" size="{$pinValidationRules.minLength}" maxlength="60" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 					</div>
-					<div class="form-group">
-						<div class="col-xs-4"><label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
-						<div class="col-xs-8">
-							<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
-						</div>
+					<div class="form-group propertyRow">
+						<label for="pin1" class="control-label">{translate text='New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label>
+						<input type="password" name="pin1" id="pin1" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 					</div>
-					<div class="form-group">
-						<div class="col-xs-4"><label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label></div>
-						<div class="col-xs-8">
-								<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
-						</div>
+					<div class="form-group propertyRow">
+						<label for="pin2" class="control-label">{translate text='Re-enter New %1%' 1=$passwordLabel translateParameters=true isPublicFacing=true}</label>
+						<input type="password" name="pin2" id="pin2" value="" minlength="{$pinValidationRules.minLength}" maxlength="{$pinValidationRules.maxLength}" class="form-control required {if !empty($pinValidationRules.onlyDigitsAllowed)}digits{/if}">
 					</div>
-					<div class="form-group">
-						<div class="col-xs-8 col-xs-offset-4">
-							<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
-						</div>
+					<div class="form-group propertyRow">
+						<button type="submit" name="update" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
 					</div>
 					<script type="text/javascript">
 						{* input classes  'required', 'digits' are validation rules for the validation plugin *}
