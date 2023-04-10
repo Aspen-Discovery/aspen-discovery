@@ -11099,16 +11099,16 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		clearUploadedCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearUploadedCover';
+		clearUploadedCover: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUploadedCover&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
 				AspenDiscovery.showMessage("Success", data.message, true, true);
 			});
 			return false;
 		},
 
-		getUploadCoverForm: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
+		getUploadCoverForm: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getUploadCoverForm&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -11116,8 +11116,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		uploadCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCover';
+		uploadCover: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId;
 			var uploadCoverData = new FormData($("#uploadCoverForm")[0]);
 			$.ajax({
 				url: url,
@@ -11134,8 +11134,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		getUploadCoverFormByURL: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverFormByURL';
+		getUploadCoverFormByURL: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getUploadCoverFormByURL&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -11143,8 +11143,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		uploadCoverByURL: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCoverByURL';
+		uploadCoverByURL: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId;
 			var uploadCoverData = new FormData($("#uploadCoverFormByURL")[0]);
 			$.ajax({
 				url: url,

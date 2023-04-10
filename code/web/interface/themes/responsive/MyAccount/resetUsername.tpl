@@ -36,17 +36,13 @@
 				</div>
 
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
-				<form action="" method="post" class="form-horizontal" id="usernameForm">
-					<div class="form-group">
-						<div class="col-xs-4"><label for="newUsername" class="control-label">{translate text='Username' isPublicFacing=true}</label></div>
-						<div class="col-xs-8">
-							<input type="text" name="newUsername" id="newUsername" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="off">
-						</div>
+				<form action="" method="post" id="usernameForm">
+					<div class="form-group propertyRow">
+						<label for="newUsername" class="control-label">{translate text='Username' isPublicFacing=true}</label>
+						<input type="text" name="newUsername" id="newUsername" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="off">
 					</div>
-					<div class="form-group">
-						<div class="col-xs-8 col-xs-offset-4">
-							<button type="submit" name="submit" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
-						</div>
+					<div class="form-group propertyRow">
+						<button type="submit" name="submit" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
 					</div>
 				</form>
 			{/if}

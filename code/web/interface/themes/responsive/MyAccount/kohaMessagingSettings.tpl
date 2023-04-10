@@ -132,48 +132,36 @@
 					<span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span> {translate text="Some charges for text messages may be incurred when using this service. Please check with your mobile service provider if you have questions." isPublicFacing=true}
 				</p>
 			</div>
-			<div class="row form-group" id="smsNumberRow">
-				<div class="col-md-3">
-					<label for="SMSnumber" class="control-label">{translate text="SMS number" isPublicFacing=true}</label>
-				</div>
-				<div class="col-md-9">
-					<input type="text" id="SMSnumber" name="SMSnumber" value="{$smsAlertNumber}" class="form-control" {if empty($canSave)}readonly{/if}>
-					<span id="helpBlock_SMSnumber" class="help-block">
-					{translate text="Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>." isPublicFacing=true}
-					</span>
-				</div>
+			<div class="form-group propertyRow" id="smsNumberRow">
+				<label for="SMSnumber" class="control-label">{translate text="SMS number" isPublicFacing=true}</label>
+				<input type="text" id="SMSnumber" name="SMSnumber" value="{$smsAlertNumber}" class="form-control" {if empty($canSave)}readonly{/if}>
+				<span id="helpBlock_SMSnumber" class="help-block">
+				{translate text="Please enter numbers only. <b>(123) 456-7890</b> would be entered as <b>1234567890</b>." isPublicFacing=true}
+				</span>
 			</div>
-			<div class="row form-group" id="smsProviderRow">
-				<div class="col-md-3">
-					<label for="sms_provider_id" class="control-label">{translate text="SMS provider" isPublicFacing=true}</label>
-				</div>
-				<div class="col-md-9">
-					<select id="sms_provider_id" name="sms_provider_id" class="form-control" {if empty($canSave)}readonly{/if}>
-						<option value="">{translate text="Unknown" isPublicFacing=true}</option>
-						{foreach from=$smsProviders item=provider key=id}
-						<option value="{$id}" {if $smsProviderId==$id}selected="selected"{/if}>{$provider}</option>
-						{/foreach}
-					</select>
-					<span id="helpBlock_sms_provider_id" class="help-block">
-					{translate text="Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list." isPublicFacing=true}
-					</span>
-				</div>
+			<div class="form-group propertyRow" id="smsProviderRow">
+				<label for="sms_provider_id" class="control-label">{translate text="SMS provider" isPublicFacing=true}</label>
+				<select id="sms_provider_id" name="sms_provider_id" class="form-control" {if empty($canSave)}readonly{/if}>
+					<option value="">{translate text="Unknown" isPublicFacing=true}</option>
+					{foreach from=$smsProviders item=provider key=id}
+					<option value="{$id}" {if $smsProviderId==$id}selected="selected"{/if}>{$provider}</option>
+					{/foreach}
+				</select>
+				<span id="helpBlock_sms_provider_id" class="help-block">
+				{translate text="Please contact a library staff member if you are unsure of your mobile service provider, or you do not see your provider in this list." isPublicFacing=true}
+				</span>
 			</div>
 		{/if}
 		{if $canTranslateNotices}
-			<div class="row form-group" id="langRow">
-	            <div class="col-md-3">
-	                <label for="lang" class="control-label">{translate text="Preferred language for notices" isPublicFacing=true}</label>
-	            </div>
-	            <div class="col-md-9">
-	                {if !empty($canSave) && !empty($noticeLanguages)}
-		            <select class="form-control-sm" name="lang" aria-label="{translate text="Preferred language for notices" isPublicFacing=true}">
-	                    {foreach from=$noticeLanguages item="language" key=id}
-	                        <option value="{$id}" {if $preferredNoticeLanguage==$id}selected="selected"{/if}>{$language}</option>
-	                    {/foreach}
-	                </select>
-	                {/if}
-	            </div>
+			<div class="form-group propertyRow" id="langRow">
+                <label for="lang" class="control-label">{translate text="Preferred language for notices" isPublicFacing=true}</label>
+                {if !empty($canSave) && !empty($noticeLanguages)}
+	            <select class="form-control" name="lang" aria-label="{translate text="Preferred language for notices" isPublicFacing=true}">
+                    {foreach from=$noticeLanguages item="language" key=id}
+                        <option value="{$id}" {if $preferredNoticeLanguage==$id}selected="selected"{/if}>{$language}</option>
+                    {/foreach}
+                </select>
+                {/if}
 	        </div>
 		{/if}
 		{if !empty($canSave)}

@@ -19,89 +19,65 @@
 
 				{* Display user roles if the user has any roles*}
 				{if count($profile->roles) > 0}
-					<div class="row">
-						<div class="col-tn-12 lead">{translate text="Roles" isPublicFacing=true}</div>
-					</div>
-					<div class="row">
-						<div class="col-tn-12">
-							<ul>
-								{foreach from=$profile->roles item=role}
-									<li>{translate text=$role->name isStaffFacing=true isAdminEnteredData=true} - {translate text=$role->description isStaffFacing=true isAdminEnteredData=true}</li>
-								{/foreach}
-							</ul>
-						</div>
+					<h2>{translate text="Roles" isPublicFacing=true}</h2>
+					<div class="propertyRow">
+						<ul>
+							{foreach from=$profile->roles item=role}
+								<li>{translate text=$role->name isStaffFacing=true isAdminEnteredData=true} - {translate text=$role->description isStaffFacing=true isAdminEnteredData=true}</li>
+							{/foreach}
+						</ul>
 					</div>
 				{/if}
 
-				<form action="" method="post" class="form-horizontal" id="staffSettingsForm">
+				<form action="" method="post" id="staffSettingsForm">
 					<input type="hidden" name="updateScope" value="staffSettings">
 
 					{if !empty($userIsStaff)}
-						<div class="row">
-							<div class="col-tn-12 lead">{translate text="General" isPublicFacing=true}</div>
-						</div>
-						<div class="form-group row">
-							<div class="col-xs-4"><label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout' isPublicFacing=true}</label></div>
-							<div class="col-xs-8">
-								{if $edit == true}
-									<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
-								{else}
-									{if $profile->bypassAutoLogout==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
-								{/if}
-							</div>
+						<h2>{translate text="General" isPublicFacing=true}</h2>
+						<div class="form-group propertyRow">
+							<label for="bypassAutoLogout" class="control-label">{translate text='Bypass Automatic Logout' isPublicFacing=true}</label>&nbsp;
+							{if $edit == true}
+								<input type="checkbox" name="bypassAutoLogout" id="bypassAutoLogout" {if $profile->bypassAutoLogout==1}checked='checked'{/if} data-switch="">
+							{else}
+								{if $profile->bypassAutoLogout==0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
+							{/if}
 						</div>
 					{/if}
 
 					{if $profile->hasPermission('Manage Library Materials Requests') && ($materialRequestType == 1)}
-						<div class="row">
-							<div class="lead col-tn-12">{translate text="Materials Request Management" isPublicFacing=true}</div>
-						</div>
+						<h2>{translate text="Materials Request Management" isPublicFacing=true}</h2>
 						{if $sendEmailOnAssignmentForLibrary}
-							<div class="form-group row">
-								<div class="col-xs-4">
-									<label for="materialsRequestSendEmailOnAssign" class="control-label">{translate text="Receive email when a Materials Request is assigned to me" isPublicFacing=true}</label>
-								</div>
-								<div class="col-xs-8">
-									{if $edit == true}
-										<input type="checkbox" name="materialsRequestSendEmailOnAssign" id="materialsRequestSendEmailOnAssign" {if $user->materialsRequestSendEmailOnAssign==1}checked='checked'{/if} data-switch="">
-									{else}
-										{if $user->materialsRequestSendEmailOnAssign == 0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
-									{/if}
-								</div>
+							<div class="form-group propertyRow">
+								<label for="materialsRequestSendEmailOnAssign" class="control-label">{translate text="Receive email when a Materials Request is assigned to me" isPublicFacing=true}</label>&nbsp;
+								{if $edit == true}
+									<input type="checkbox" name="materialsRequestSendEmailOnAssign" id="materialsRequestSendEmailOnAssign" {if $user->materialsRequestSendEmailOnAssign==1}checked='checked'{/if} data-switch="">
+								{else}
+									{if $user->materialsRequestSendEmailOnAssign == 0} {translate text='No' isPublicFacing=true}{else} {translate text='Yes' isPublicFacing=true}{/if}
+								{/if}
 							</div>
 						{/if}
-						<div class="form-group row">
-							<div class="col-xs-4">
-								<label for="materialsRequestReplyToAddress" class="control-label">{translate text="Reply-To Email Address" isPublicFacing=true}</label>
-							</div>
-							<div class="col-xs-8">
-								{if $edit == true}
-									<input type="text" id="materialsRequestReplyToAddress" name="materialsRequestReplyToAddress" class="form-control multiemail" value="{$user->materialsRequestReplyToAddress}">
-								{else}
-									{$user->materialsRequestReplyToAddress}
-								{/if}
-							</div>
+						<div class="form-group propertyRow">
+							<label for="materialsRequestReplyToAddress" class="control-label">{translate text="Reply-To Email Address" isPublicFacing=true}</label>
+							{if $edit == true}
+								<input type="text" id="materialsRequestReplyToAddress" name="materialsRequestReplyToAddress" class="form-control multiemail" value="{$user->materialsRequestReplyToAddress}">
+							{else}
+								{$user->materialsRequestReplyToAddress}
+							{/if}
 						</div>
-						<div class="form-group row">
-							<div class="col-xs-4">
-								<label for="materialsRequestEmailSignature" class="control-label">{translate text="Email Signature" isPublicFacing=true}</label>
-							</div>
-							<div class="col-xs-8">
-								{if $edit == true}
-									<textarea id="materialsRequestEmailSignature" name="materialsRequestEmailSignature" class="form-control">{$user->materialsRequestEmailSignature}</textarea>
-								{else}
-									{$user->materialsRequestEmailSignature}
-								{/if}
-							</div>
+						<div class="form-group propertyRow">
+							<label for="materialsRequestEmailSignature" class="control-label">{translate text="Email Signature" isPublicFacing=true}</label>
+							{if $edit == true}
+								<textarea id="materialsRequestEmailSignature" name="materialsRequestEmailSignature" class="form-control">{$user->materialsRequestEmailSignature}</textarea>
+							{else}
+								{$user->materialsRequestEmailSignature}
+							{/if}
 						</div>
 					{/if}
 
 
 					{if empty($offline) && $edit == true}
 						<div class="form-group">
-							<div class="col-xs-8 col-xs-offset-4">
-								<button type="submit" name="updateStaffSettings" class="btn btn-sm btn-primary">{translate text="Update Settings" isPublicFacing=true}</button>
-							</div>
+							<button type="submit" name="updateStaffSettings" class="btn btn-sm btn-primary">{translate text="Update Settings" isPublicFacing=true}</button>
 						</div>
 					{/if}
 				</form>

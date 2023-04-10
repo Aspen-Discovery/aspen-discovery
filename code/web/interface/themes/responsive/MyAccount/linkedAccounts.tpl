@@ -32,7 +32,7 @@
 							{/foreach}
 						</ul>
 						{if $user->id == $profile->id}{* Only allow account adding for the actual account user is logged in with *}
-							<button class="btn btn-primary btn-xs" onclick="AspenDiscovery.Account.addAccountLink()">{translate text="Add an Account" isPublicFacing=true}</button>
+							<button class="btn btn-primary btn-sm" onclick="AspenDiscovery.Account.addAccountLink()">{translate text="Add an Account" isPublicFacing=true}</button>
 						{else}
 							<p>{translate text="Log into this account to add other accounts to it." isPublicFacing=true}</p>
 						{/if}
