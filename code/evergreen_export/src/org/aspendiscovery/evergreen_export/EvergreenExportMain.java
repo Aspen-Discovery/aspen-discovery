@@ -153,7 +153,7 @@ public class EvergreenExportMain {
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
 							updatePatronTypes(dbConn, staffToken);
-							logEntry.addNote("Finished updating branch information");
+							logEntry.addNote("Finished updating branch & patron type information");
 
 							exportVolumes(dbConn);
 
@@ -1534,7 +1534,7 @@ public class EvergreenExportMain {
 														String copyNumber = curCopy.getAttribute("copy_number");
 														curItemField.addSubfield(marcFactory.newSubfield('t', copyNumber));
 
-														boolean stillOpacVisible = true;
+														boolean isOpacVisible = true;
 														for (int m = 0; m < curCopy.getChildNodes().getLength(); m++) {
 															Node curCopySubNode = curCopy.getChildNodes().item(m);
 															if (curCopySubNode instanceof Element) {
@@ -1545,7 +1545,7 @@ public class EvergreenExportMain {
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), statusCode));
 																		String statusOpacVisible = curCopySubElement.getAttribute("opac_visible");
 																		if (statusOpacVisible.equals("f")) {
-																			stillOpacVisible = false;
+																			isOpacVisible = false;
 																		}
 																		break;
 																	case "location":
@@ -1553,7 +1553,7 @@ public class EvergreenExportMain {
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelfLocation));
 																		String locOpacVisible = curCopySubElement.getAttribute("opac_visible");
 																		if (locOpacVisible.equals("f")) {
-																			stillOpacVisible = false;
+																			isOpacVisible = false;
 																		}
 																		break;
 																	case "circ_lib":
@@ -1561,14 +1561,14 @@ public class EvergreenExportMain {
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLocationSubfield(), locationCode));
 																		String libOpacVisible = curCopySubElement.getAttribute("opac_visible");
 																		if (libOpacVisible.equals("f")) {
-																			stillOpacVisible = false;
+																			isOpacVisible = false;
 																		}
 																		break;
 																}
 															}
 														}
 
-														if (stillOpacVisible) {
+														if (isOpacVisible) {
 															marcRecord.addVariableField(curItemField);
 														}
 													}
