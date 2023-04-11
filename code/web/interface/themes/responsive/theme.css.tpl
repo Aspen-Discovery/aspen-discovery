@@ -179,19 +179,19 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     color: {$bodyTextColor};
 {rdelim}
 
-.exploreMoreBar{ldelim}
-    border-color: {$primaryBackgroundColor};
-    background: {$primaryBackgroundColor}07;
-    border: 0;
-{rdelim}
-.exploreMoreBar .label-top, #explore-more-bar-placeholder, .exploreMoreBar, .exploreMoreBar .label-top .exploreMoreBarLabel, .exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
+
 .exploreMoreBar .exploreMoreBarLabel{ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 
+.exploreMoreBar{ldelim}
+    border-color: {$primaryBackgroundColor};
+    background: {$primaryBackgroundColor}07;
+{rdelim}
 
 {if !empty($primaryForegroundColor)}
 #home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar, #horizontal-menu-bar-container {ldelim}
