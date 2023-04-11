@@ -216,6 +216,15 @@ function getUpdates23_04_00(): array {
 			],
 		],
 		//updateThemes
+		'add_branded_app_name' => [
+			'title' => 'Add name in branded app settings',
+			'description' => 'Adds column to store name for branded apps',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_lida_branded_settings ADD COLUMN appName VARCHAR(100)',
+			]
+		],
+		//add_branded_app_name
 
 		//kodi
 		'permissions_create_events_communico' => [

@@ -395,6 +395,18 @@ class SAMLAuthentication{
 			}
 		}
 
+		if(!empty($this->ilsUniqueAttribute)) {
+			if($this->ilsUniqueAttribute == 'sort1') {
+				$ilsUser['statistics_1'] = $this->uid;
+				$_REQUEST['statistics_1'] = $this->uid;
+			}
+
+			if($this->ilsUniqueAttribute == 'sort2') {
+				$ilsUser['statistics_2'] = $this->uid;
+				$_REQUEST['statistics_2'] = $this->uid;
+			}
+		}
+
 		$ilsUser = array_merge($ilsUser, $ssoArray);
 		return $ilsUser;
 	}
