@@ -386,8 +386,11 @@ class VdxDriver {
 		}
 
 		if (!empty($_REQUEST['oclcNumber'])) {
-			$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $_REQUEST['oclcNumber']) . "\r\n";
-			$body .= "ReqClassmark=" . $_REQUEST['oclcNumber'] . "\r\n";
+			$oclcNumber = $_REQUEST['oclcNumber'];
+			if (str_starts_with($oclcNumber, 'ocn') || str_starts_with($oclcNumber, 'ocm') || str_starts_with($oclcNumber, 'on')) {
+				$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $oclcNumber) . "\r\n";
+			}
+			$body .= "ReqClassmark=" . $oclcNumber . "\r\n";
 		}
 		$body .= "ReqPubPlace=\r\n";
 		$body .= "PickupLocation=" . $vdxLocation . "\r\n";
