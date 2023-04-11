@@ -2523,6 +2523,17 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 								'link' => $continuesRecordDriver->getLinkUrl(),
 								'actions' => $actions,
 							];
+						} else {
+							$subfieldT = $marc780Field->getSubfield('t');
+							if ($subfieldT != null) {
+								$continuesRecords[] = [
+									'id' => '',
+									'label' => $subfieldT->getData(),
+									'format' => '',
+									'link' => '',
+									'actions' => [],
+								];
+							}
 						}
 					}
 				}
@@ -2553,6 +2564,17 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 								'link' => $continuedByRecordDriver->getLinkUrl(),
 								'actions' => $continuedByRecordDriver->getRelatedRecord()->getActions(),
 							];
+						} else {
+							$subfieldT = $marc780Field->getSubfield('t');
+							if ($subfieldT != null) {
+								$continuedByRecords[] = [
+									'id' => '',
+									'label' => $subfieldT->getData(),
+									'format' => '',
+									'link' => '',
+									'actions' => [],
+								];
+							}
 						}
 					}
 				}
