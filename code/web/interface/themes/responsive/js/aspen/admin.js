@@ -1915,6 +1915,16 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
+		searchCommunityContentKeyDown: function (e, toolModule, toolName) {
+			if (e.keyCode === 9) {
+				AspenDiscovery.Admin.searchCommunityContent(toolModule, toolName);
+			}else if (e.keyCode === 10 || e.keyCode === 13) {
+				e.preventDefault();
+				AspenDiscovery.Admin.searchCommunityContent(toolModule, toolName);
+			}
+			return false;
+		},
+
 		searchCommunityContent: function (toolModule, toolName) {
 			$("#communitySearchResultsLoading").show();
 			$("#communitySearchResults").html("");

@@ -273,52 +273,54 @@ class MaterialsRequest extends DataObject {
 	}
 
 	function sendStaffNewMaterialsRequestEmail() {
-		global $library;
 		global $configArray;
 		global $interface;
-		if($library->materialsRequestSendStaffEmailOnNew && !empty($library->materialsRequestNewEmail)) {
-			$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
-			require_once ROOT_DIR . '/sys/Email/Mailer.php';
-			$mail = new Mailer();
-			$replyToAddress = '';
-			$subject = translate([
-				'text' => "New Materials Request submitted",
-				'isAdminFacing' => true,
-				'isPublicFacing' => true
-			]);
-			$body = translate([
-				'text' => 'Hi',
-				'isAdminFacing' => true,
-				'isPublicFacing' => true
-			]);
-			$body .= ', <br><br>';
-			$body .= translate([
-				'text' => "A new Materials Request has been submitted at %1%",
-				1 => $library->displayName,
-				'isAdminFacing' => true,
-				'isPublicFacing' => true,
-				]) . ": <br>";
-			$body .= $this->getEmailBody($library->libraryId);
-			$body .= "<br>";
-			$body .= translate([
-				'text' => "View more details online at %1%",
-				1 => $url,
-				'isAdminFacing' => true,
-				'isPublicFacing' => true
+		if ($this->getCreatedByUser() != false) {
+			$patronLibrary = $this->getCreatedByUser()->getHomeLibrary();
+			if ($patronLibrary->materialsRequestSendStaffEmailOnNew && !empty($patronLibrary->materialsRequestNewEmail)) {
+				$url = $configArray['Site']['url'] . '/MaterialsRequest/ManageRequests';
+				require_once ROOT_DIR . '/sys/Email/Mailer.php';
+				$mail = new Mailer();
+				$replyToAddress = '';
+				$subject = translate([
+					'text' => "New Materials Request submitted",
+					'isAdminFacing' => true,
+					'isPublicFacing' => true
 				]);
-			$body .= '<br>' . translate([
-					'text' => 'Materials Request originated from',
+				$body = translate([
+					'text' => 'Hi',
 					'isAdminFacing' => true,
 					'isPublicFacing' => true
-				]) . ' ' . $interface->getVariable('url');
-			$body .= '<br><br>' . translate([
-					'text' => 'Thanks',
+				]);
+				$body .= ', <br><br>';
+				$body .= translate([
+						'text' => "A new Materials Request has been submitted at %1%",
+						1 => $patronLibrary->displayName,
+						'isAdminFacing' => true,
+						'isPublicFacing' => true,
+					]) . ": <br>";
+				$body .= $this->getEmailBody($patronLibrary->libraryId);
+				$body .= "<br>";
+				$body .= translate([
+					'text' => "View more details online at %1%",
+					1 => $url,
 					'isAdminFacing' => true,
 					'isPublicFacing' => true
-				]) . ', <br>' . $library->displayName;
-			$mail->send($library->materialsRequestNewEmail, $subject, '', $replyToAddress, $body);
-			$this->createdEmailSent = 1;
-			$this->update();
+				]);
+				$body .= '<br>' . translate([
+						'text' => 'Materials Request originated from',
+						'isAdminFacing' => true,
+						'isPublicFacing' => true
+					]) . ' ' . $interface->getVariable('url');
+				$body .= '<br><br>' . translate([
+						'text' => 'Thanks',
+						'isAdminFacing' => true,
+						'isPublicFacing' => true
+					]) . ', <br>' . $patronLibrary->displayName;
+				$mail->send($patronLibrary->materialsRequestNewEmail, $subject, '', $replyToAddress, $body);
+				$this->createdEmailSent = 1;
+				$this->update();
+			}
 		}
 	}
 

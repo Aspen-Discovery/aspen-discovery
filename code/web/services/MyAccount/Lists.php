@@ -26,6 +26,7 @@ class Lists extends MyAccount {
 		$interface->assign('page', $page);
 
 		$listsPerPage = 20;
+		$interface->assign('startingNumber', ($page - 1) * $listsPerPage);
 		$interface->assign('curPage', $page);
 		$userLists->orderBy($sort . $order);
 		$userLists->limit(($page - 1) * $listsPerPage, $listsPerPage);
@@ -42,7 +43,6 @@ class Lists extends MyAccount {
 
 		$options = [
 			'totalItems' => $listCount,
-			'fileName' => '/MyAccount/MyLists?page=%d',
 			'perPage' => $listsPerPage,
 			'showCovers' => isset($_REQUEST['showCovers']),
 		];

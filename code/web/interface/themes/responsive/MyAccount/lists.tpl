@@ -65,7 +65,7 @@
 
 					<div class="row">
 						<div class="col-xs-12">
-							<span class="result-index">{$resultIndex+1})</span>&nbsp;
+							<span class="result-index">{$resultIndex+1+$startingNumber})</span>&nbsp;
 							<a href="/MyAccount/MyList/{$list->id}" class="result-title notranslate">
 								{$list->title}
 							</a>

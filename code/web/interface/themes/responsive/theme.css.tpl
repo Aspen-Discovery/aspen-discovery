@@ -523,9 +523,11 @@ legend{ldelim}
 	border-color: {$bodyTextColor};
 {rdelim}
 
+{if !empty($bodyFont)}
 label{ldelim}
 	font-family: "{$bodyFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
+{/if}
 
 .bootstrap-switch{ldelim}
 	border: 1px solid {$bodyTextColor};

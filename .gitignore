@@ -51,6 +51,7 @@ sites/default/solr/jetty/logs/*
 sites/default/solr-7.6.0/logs/*
 sites/default/solr-7.6.0/server/logs/*
 sites/default/solr-7.6.0/server/tmp/*
+install/templates/*
 
 # Compiled source #                                                                                   
 ###################

@@ -28,7 +28,6 @@ import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
 import org.apache.commons.codec.binary.Base64;
-import org.marc4j.*;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
@@ -49,13 +48,8 @@ public class SierraExportAPIMain {
 	private static String serverName;
 
 	private static boolean exportItemHolds = true;
-	private static boolean suppressOrderRecordsThatAreReceivedAndCataloged = false;
-	private static boolean suppressOrderRecordsThatAreCataloged = false;
-	private static boolean suppressOrderRecordsThatAreReceived = false;
-	private static String orderStatusesToExport;
 
 	private static String apiBaseUrl = null;
-	private static boolean allowFastExportMethod = false;
 
 	private static final TreeSet<String> allBibsToUpdate = new TreeSet<>();
 	private static final TreeSet<String> allDeletedIds = new TreeSet<>();
@@ -144,10 +138,6 @@ public class SierraExportAPIMain {
 					//Open the connection to the database
 					sierraConn = sierraInstanceInformation.sierraConnection;
 					if (!extractSingleRecord) {
-						orderStatusesToExport = ConfigUtil.cleanIniValue(configIni.get("Reindex", "orderStatusesToExport"));
-						if (orderStatusesToExport == null) {
-							orderStatusesToExport = "o|1";
-						}
 						//exportValidPatronIds(indexingProfile.getMarcPath(), sierraConn);
 						exportActiveOrders(indexingProfile.getMarcPath(), sierraConn);
 						exportHolds(sierraConn, dbConn);
@@ -158,18 +148,6 @@ public class SierraExportAPIMain {
 				String exportItemHoldsStr = configIni.get("Catalog", "exportItemHolds");
 				if (exportItemHoldsStr != null){
 					exportItemHolds = exportItemHoldsStr.equalsIgnoreCase("true");
-				}
-				String suppressOrderRecordsThatAreReceivedAndCatalogedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreReceivedAndCataloged");
-				if (suppressOrderRecordsThatAreReceivedAndCatalogedStr != null){
-					suppressOrderRecordsThatAreReceivedAndCataloged = suppressOrderRecordsThatAreReceivedAndCatalogedStr.equalsIgnoreCase("true");
-				}
-				String suppressOrderRecordsThatAreCatalogedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreCataloged");
-				if (suppressOrderRecordsThatAreCatalogedStr != null){
-					suppressOrderRecordsThatAreCataloged = suppressOrderRecordsThatAreCatalogedStr.equalsIgnoreCase("true");
-				}
-				String suppressOrderRecordsThatAreReceivedStr = configIni.get("Catalog", "suppressOrderRecordsThatAreReceived");
-				if (suppressOrderRecordsThatAreReceivedStr != null){
-					suppressOrderRecordsThatAreReceived = suppressOrderRecordsThatAreReceivedStr.equalsIgnoreCase("true");
 				}
 
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
@@ -194,7 +172,7 @@ public class SierraExportAPIMain {
 					}
 
 					//Load MARC record changes
-					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, dbConn, sierraConn);
+					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, sierraConn);
 				}
 
 				logEntry.setNumProducts(allBibsToUpdate.size());
@@ -346,25 +324,11 @@ public class SierraExportAPIMain {
 		}
 	}
 
-	private static void getBibsAndItemUpdatesFromSierra(SierraInstanceInformation sierraInstanceInformation, Connection dbConn, Connection sierraConn) {
+	private static void getBibsAndItemUpdatesFromSierra(SierraInstanceInformation sierraInstanceInformation, Connection sierraConn) {
 		long lastSierraExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 		if (indexingProfile.getLastUpdateOfAllRecords() > lastSierraExtractTime){
 			lastSierraExtractTime = indexingProfile.getLastUpdateOfAllRecords();
 		}
-
-//		try {
-//			PreparedStatement allowFastExportMethodStmt = dbConn.prepareStatement("SELECT * from variables WHERE name = 'allow_sierra_fast_export'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-//			ResultSet allowFastExportMethodRS = allowFastExportMethodStmt.executeQuery();
-//			if (allowFastExportMethodRS.next()) {
-//				allowFastExportMethod = allowFastExportMethodRS.getBoolean("value");
-//			}else{
-//				dbConn.prepareStatement("INSERT INTO variables (name, value) VALUES ('allow_sierra_fast_export', 1)").executeUpdate();
-//			}
-//		}catch (Exception e){
-//			logger.error("Unable to load allow_sierra_fast_export from variables", e);
-//			return;
-//		}
-		//allowFastExportMethod = false;
 
 		//Last Update in UTC
 		if (lastSierraExtractTime == 0 || indexingProfile.isRunFullUpdate()){
@@ -383,8 +347,8 @@ public class SierraExportAPIMain {
 				logEntry.incErrors("Error loading all records: " , e);
 			}
 		}else{
-			//Add a 5-second buffer to the extract
-			Date lastExtractDate = new Date((lastSierraExtractTime - 5) * 1000);
+			//Add a 120-second buffer to the extract
+			Date lastExtractDate = new Date((lastSierraExtractTime - 120) * 1000);
 
 			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			String lastExtractDateTimeFormatted = dateTimeFormatter.format(lastExtractDate);
@@ -413,19 +377,14 @@ public class SierraExportAPIMain {
 		boolean hasMoreIdsToProcess = true;
 		while (hasMoreIdsToProcess) {
 			hasMoreIdsToProcess = false;
-			StringBuilder idsToProcess = new StringBuilder();
 			int maxIndex = Math.min(allBibsToUpdate.size(), batchSize);
 			ArrayList<String> ids = new ArrayList<>();
 			for (int i = 0; i < maxIndex; i++) {
-				if (idsToProcess.length() > 0){
-					idsToProcess.append(",");
-				}
 				String lastId = allBibsToUpdate.last();
-				idsToProcess.append(lastId);
 				ids.add(lastId);
 				allBibsToUpdate.remove(lastId);
 			}
-			updateMarcAndRegroupRecordIds(sierraInstanceInformation, idsToProcess.toString(), ids);
+			updateMarcAndRegroupRecordIds(sierraInstanceInformation, ids);
 
 			numProcessed += maxIndex;
 			if (numProcessed % 250 == 0 || allBibsToUpdate.size() == 0){
@@ -564,7 +523,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 
 			if (deletedRecords != null) {
 				try {
@@ -635,7 +594,7 @@ public class SierraExportAPIMain {
 			if (firstRecordIdToLoad > 1){
 				url += "&id=[" + firstRecordIdToLoad + ",]";
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -692,7 +651,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -741,7 +700,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -786,7 +745,7 @@ public class SierraExportAPIMain {
 			if (firstRecordIdToLoad > 1){
 				url += "&id=[" + firstRecordIdToLoad + ",]";
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -838,7 +797,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (deletedRecords != null){
 				try {
 					JSONArray entries = deletedRecords.getJSONArray("entries");
@@ -882,7 +841,7 @@ public class SierraExportAPIMain {
 		final JSONObject[] itemIds = {null};
 		//noinspection CodeBlock2Expr
 		Thread itemUpdateThread = new Thread(() -> {
-			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false);
+			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false, true);
 		});
 		getMarcResultsThread.start();
 		fixedFieldThread.start();
@@ -1161,7 +1120,7 @@ public class SierraExportAPIMain {
 		}
 	}
 
-	private static void updateMarcAndRegroupRecordIds(SierraInstanceInformation sierraInstanceInformation, String ids, ArrayList<String> idArray) {
+	private static void updateMarcAndRegroupRecordIds(SierraInstanceInformation sierraInstanceInformation, ArrayList<String> idArray) {
 		try {
 			for (String id : idArray) {
 				logger.debug("starting to process " + id);
@@ -1186,7 +1145,7 @@ public class SierraExportAPIMain {
 		HashMap<String, Integer> existingBibsWithOrders = new HashMap<>();
 		readOrdersFile(orderRecordFile, existingBibsWithOrders);
 
-		String[] orderStatusesToExportValues = orderStatusesToExport.split("\\|");
+		String[] orderStatusesToExportValues = indexingProfile.getOrderRecordsStatusesToInclude().split("\\|");
 		StringBuilder orderStatusCodesSQL = new StringBuilder();
 		for (String orderStatusesToExportVal : orderStatusesToExportValues){
 			if (orderStatusCodesSQL.length() > 0){
@@ -1200,11 +1159,11 @@ public class SierraExportAPIMain {
 				"inner join sierra_view.bib_view on sierra_view.bib_view.id = bib_record_order_record_link.bib_record_id " +
 				"inner join sierra_view.order_record_cmf on order_record_cmf.order_record_id = order_view.id " +
 				"where (" + orderStatusCodesSQL + ") and order_view.is_suppressed = 'f' and location_code != 'multi' and ocode4 != 'n'";
-		if (suppressOrderRecordsThatAreReceivedAndCataloged){
+		if (indexingProfile.getOrderRecordsToSuppressByDate() == 4){
 			activeOrderSQL += " and (catalog_date_gmt IS NULL and received_date_gmt IS NULL) ";
-		}else if (suppressOrderRecordsThatAreCataloged){
+		}else if (indexingProfile.getOrderRecordsToSuppressByDate() == 2){
 			activeOrderSQL += " and (catalog_date_gmt IS NULL) ";
-		}else if (suppressOrderRecordsThatAreReceived){
+		}else if (indexingProfile.getOrderRecordsToSuppressByDate() == 3){
 			activeOrderSQL += " and (received_date_gmt IS NULL) ";
 		}
 		PreparedStatement getActiveOrdersStmt = conn.prepareStatement(activeOrderSQL, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -1345,7 +1304,7 @@ public class SierraExportAPIMain {
 		return true;
 	}
 
-	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors) {
+	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors, boolean ignore404errors) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
 			//Connect to the API to get our token
 			HttpURLConnection conn;
@@ -1383,6 +1342,9 @@ public class SierraExportAPIMain {
 					}
 
 				} else {
+					if (conn.getResponseCode() == 404 && ignore404errors) {
+						return null;
+					}
 					//Check to see if we failed due to the grant being invalid.
 					logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
 					// Get any errors
@@ -1403,7 +1365,7 @@ public class SierraExportAPIMain {
 							} catch (InterruptedException e) {
 								logger.error("Sleep was interrupted", e);
 							}
-							return callSierraApiURL(sierraInstanceInformation, baseUrl, sierraUrl, logErrors);
+							return callSierraApiURL(sierraInstanceInformation, baseUrl, sierraUrl, logErrors, ignore404errors);
 						}
 					}catch (JSONException jse){
 						logger.error("Error parsing response \n" + response, jse);
@@ -1425,65 +1387,6 @@ public class SierraExportAPIMain {
 		}
 		return null;
 	}
-
-//	private static String getMarcFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors) {
-//		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
-//			//Connect to the API to get our token
-//			HttpURLConnection conn;
-//			try {
-//				URL emptyIndexURL = new URL(sierraUrl);
-//				conn = (HttpURLConnection) emptyIndexURL.openConnection();
-//				if (conn instanceof HttpsURLConnection){
-//					HttpsURLConnection sslConn = (HttpsURLConnection)conn;
-//					sslConn.setHostnameVerifier((hostname, session) -> {
-//						//Do not verify host names
-//						return true;
-//					});
-//				}
-//				conn.setRequestMethod("GET");
-//				conn.setRequestProperty("Accept-Charset", "UTF-8");
-//				conn.setRequestProperty("Authorization", sierraAPITokenType + " " + sierraAPIToken);
-//				conn.setRequestProperty("Accept", "application/marc-json");
-//				conn.setReadTimeout(20000);
-//				conn.setConnectTimeout(5000);
-//
-//				StringBuilder response = new StringBuilder();
-//				if (conn.getResponseCode() == 200) {
-//					// Get the response
-//					BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8));
-//					String line;
-//					while ((line = rd.readLine()) != null) {
-//						response.append(line);
-//					}
-//					//logger.debug("  Finished reading response");
-//					rd.close();
-//					return response.toString();
-//				} else {
-//					if (logErrors) {
-//						logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
-//						// Get any errors
-//						BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
-//						String line;
-//						while ((line = rd.readLine()) != null) {
-//							response.append(line);
-//						}
-//						logger.error("  Finished reading response");
-//						logger.error(response.toString());
-//
-//						rd.close();
-//					}
-//				}
-//
-//			} catch (java.net.SocketTimeoutException e) {
-//				logger.error("Socket timeout talking to to sierra API (getMarcFromSierraApiURL) " + e );
-//			} catch (java.net.ConnectException e) {
-//				logger.error("Timeout connecting to sierra API (getMarcFromSierraApiURL) " + e );
-//			} catch (Exception e) {
-//				logger.error("Error loading data from sierra API (getMarcFromSierraApiURL) ", e );
-//			}
-//		}
-//		return null;
-//	}
 
 	private static JSONObject getMarcJSONFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){

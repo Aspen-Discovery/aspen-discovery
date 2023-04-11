@@ -62,6 +62,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private String customMarcFieldsToIndexAsKeyword;
 	private boolean processRecordLinking;
 	private int evergreenOrgUnitSchema;
+	private String orderRecordsStatusesToInclude;
+	private boolean hideOrderRecordsForBibsWithPhysicalItems;
+	private int orderRecordsToSuppressByDate;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -147,6 +150,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 
 		this.evergreenOrgUnitSchema = indexingProfileRS.getInt("evergreenOrgUnitSchema");
+
+		this.orderRecordsStatusesToInclude = indexingProfileRS.getString("orderRecordsStatusesToInclude");
+		this.hideOrderRecordsForBibsWithPhysicalItems = indexingProfileRS.getBoolean("hideOrderRecordsForBibsWithPhysicalItems");
+		this.orderRecordsToSuppressByDate = indexingProfileRS.getInt("orderRecordsToSuppressByDate");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -623,4 +630,17 @@ public class IndexingProfile extends BaseIndexingSettings {
 	public int getEvergreenOrgUnitSchema() {
 		return evergreenOrgUnitSchema;
 	}
+
+	public String getOrderRecordsStatusesToInclude() {
+		return orderRecordsStatusesToInclude;
+	}
+
+	public boolean isHideOrderRecordsForBibsWithPhysicalItems() {
+		return hideOrderRecordsForBibsWithPhysicalItems;
+	}
+
+	public int getOrderRecordsToSuppressByDate() {
+		return orderRecordsToSuppressByDate;
+	}
+
 }
