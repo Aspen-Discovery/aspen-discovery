@@ -892,6 +892,10 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$numValidRelatedLocations++;
 			}
 
+			if ($doBranchProcessing || $doInstitutionProcessing) {
+				ksort($list[$field]['list']);
+			}
+
 			//How many facets should be shown by default
 			//Only show one system unless we are in the global scope
 			if ($field == 'owning_library_' . $solrScope && isset($currentLibrary)) {
