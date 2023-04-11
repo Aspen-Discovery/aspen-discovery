@@ -11,6 +11,7 @@ class BrandedAppSetting extends DataObject {
 	public $privacyPolicy;
 	public $showFavicons;
 	public $logoNotification;
+	public $appName;
 
 	static function getObjectStructure($context = ''): array {
 
@@ -20,6 +21,13 @@ class BrandedAppSetting extends DataObject {
 				'type' => 'label',
 				'label' => 'Id',
 				'description' => 'The unique id',
+			],
+			'appName' => [
+				'property' => 'appName',
+				'type' => 'text',
+				'label' => 'App Name',
+				'description' => 'The name for the app',
+				'required' => true,
 			],
 			'slugName' => [
 				'property' => 'slugName',
