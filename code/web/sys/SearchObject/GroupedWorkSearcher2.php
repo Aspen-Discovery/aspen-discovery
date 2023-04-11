@@ -700,6 +700,19 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			} else {
 				$activeLocationFacet = $activeLocation->facetLabel;
 			}
+		} else {
+			//Use the main branch for the library if we have one
+			$locationsForLibrary = $currentLibrary->getLocations();
+			foreach ($locationsForLibrary as $tmpLocation) {
+				if ($tmpLocation->isMainBranch) {
+					if (empty($tmpLocation->facetLabel)) {
+						$activeLocationFacet = $tmpLocation->displayName;
+					} else {
+						$activeLocationFacet = $tmpLocation->facetLabel;
+					}
+					break;
+				}
+			}
 		}
 		$relatedLocationFacets = null;
 		$relatedHomeLocationFacets = null;
@@ -821,11 +834,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						$valueKey = '1' . $valueKey;
 						$numValidLibraries++;
 						$foundInstitution = true;
-					} elseif ($facetValue == $currentLibrary->facetLabel . ' Online') {
-						$valueKey = '1' . $valueKey;
-						$foundInstitution = true;
-						$numValidLibraries++;
-					} elseif ($facetValue == $currentLibrary->facetLabel . ' On Order' || $facetValue == $currentLibrary->facetLabel . ' Under Consideration') {
+					} elseif ($facetValue == $currentLibrary->facetLabel . ' On Order') {
 						$valueKey = '1' . $valueKey;
 						$foundInstitution = true;
 						$numValidLibraries++;
@@ -840,14 +849,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 							$valueKey = '1' . $valueKey;
 							$foundBranch = true;
 							$numValidRelatedLocations++;
-						} elseif (isset($currentLibrary) && $facetValue == $currentLibrary->facetLabel . ' Online') {
+						} elseif (isset($currentLibrary) && ($facetValue == $currentLibrary->facetLabel . ' On Order')) {
 							$valueKey = '1' . $valueKey;
-							$numValidRelatedLocations++;
-						} elseif (isset($currentLibrary) && ($facetValue == $currentLibrary->facetLabel . ' On Order' || $facetValue == $currentLibrary->facetLabel . ' Under Consideration')) {
-							$valueKey = '1' . $valueKey;
-							$numValidRelatedLocations++;
-						} elseif (!is_null($relatedLocationFacets) && in_array($facetValue, $relatedLocationFacets)) {
-							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
 						} elseif (!is_null($relatedLocationFacets) && in_array($facetValue, $relatedLocationFacets)) {
 							$valueKey = '2' . $valueKey;
@@ -855,8 +858,8 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 						} elseif (!is_null($relatedHomeLocationFacets) && in_array($facetValue, $relatedHomeLocationFacets)) {
 							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
-						} elseif (!is_null($currentLibrary) && $facetValue == $currentLibrary->facetLabel . ' Online') {
-							$valueKey = '3' . $valueKey;
+						} elseif (!is_null($additionalAvailableAtLocations) && in_array($facetValue, $additionalAvailableAtLocations)) {
+							$valueKey = '2' . $valueKey;
 							$numValidRelatedLocations++;
 						} else {
 							$valueKey = '4' . $valueKey;
