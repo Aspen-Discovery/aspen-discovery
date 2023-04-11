@@ -17,7 +17,7 @@
 	<div class="form-group">
 		<label for="facetSearchTerm">{translate text="Search %1%" isPublicFacing=true 1=$facetTitlePlural}</label>
 		<div class="input-group input-group-sm">
-			<input  type="text" name="facetSearchTerm" id="facetSearchTerm" class="form-control" onkeydown="AspenDiscovery.Searches.searchFacetValuesKeyDown(event)"/>
+			<input  type="text" name="facetSearchTerm" id="facetSearchTerm" class="form-control" onkeydown="AspenDiscovery.Searches.searchFacetValuesKeyDown(toolModule, toolName, event)"/>
 			<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.Searches.searchFacetValues();">{translate text="Search" isPublicFacing=true}</span>
 		</div>
 	</div>

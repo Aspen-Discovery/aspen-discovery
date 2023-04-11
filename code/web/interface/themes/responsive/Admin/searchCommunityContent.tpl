@@ -6,7 +6,7 @@
 			<div class="form-group">
 			<label for="facetSearchTerm">{translate text="Search" isPublicFacing=true}</label>
 			<div class="input-group input-group-sm">
-				<input  type="text" name="greenhouseSearchTerm" id="greenhouseSearchTerm" class="form-control" onkeydown="AspenDiscovery.Searches.searchFacetValuesKeyDown(event)"/>
+				<input  type="text" name="communitySearchTerm" id="communitySearchTerm" class="form-control" onkeydown="AspenDiscovery.Admin.searchCommunityContentKeyDown(event, '{$toolModule}', '{$toolName}')"/>
 				<span class="btn btn-sm btn-primary input-group-addon" onclick="return AspenDiscovery.Admin.searchCommunityContent('{$toolModule}', '{$toolName}');">{translate text="Search" isPublicFacing=true}</span>
 			</div>
 		</div>
