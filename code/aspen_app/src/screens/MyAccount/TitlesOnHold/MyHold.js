@@ -324,8 +324,13 @@ export const ManageSelectedHolds = (props) => {
           numToCancel = titlesToCancel.length;
           numToFreeze = titlesToFreeze.length;
           numToThaw = titlesToThaw.length;
-          numSelected = selectedValues.length;
+          numSelected = _.toString(selectedValues.length);
      }
+
+     const numToCancelLabel = getTermFromDictionary(language, 'cancel_selected_holds') + ' (' + numToCancel + ')';
+     const numToFreezeLabel = getTermFromDictionary(language, 'freeze_selected_holds') + ' (' + numToFreeze + ')';
+     const numToThawLabel = getTermFromDictionary(language, 'thaw_selected_holds') + ' (' + numToThaw + ')';
+     const numSelectedLabel = getTermFromDictionary(language, 'manage_selected') + ' (' + numSelected + ')';
 
      const cancelActionItem = () => {
           if (numToCancel > 0) {
@@ -341,7 +346,7 @@ export const ManageSelectedHolds = (props) => {
                          }}
                          isLoading={cancelling}
                          isLoadingText={getTermFromDictionary(language, 'canceling', true)}>
-                         {getTermFromDictionary(language, 'cancel_all_holds')} ({numToCancel})
+                         {numToCancelLabel}
                     </Actionsheet.Item>
                );
           } else {
@@ -363,23 +368,23 @@ export const ManageSelectedHolds = (props) => {
                          }}
                          isLoading={thawing}
                          isLoadingText={getTermFromDictionary(language, 'thawing_hold', true)}>
-                         {getTermFromDictionary(language, 'thaw_holds')} ({numToThaw})
+                         {numToThawLabel}
                     </Actionsheet.Item>
                );
           } else {
-               return <Actionsheet.Item isDisabled>{getTermFromDictionary(language, 'thaw_holds')}</Actionsheet.Item>;
+               return <Actionsheet.Item isDisabled>{numToThawLabel}</Actionsheet.Item>;
           }
      };
 
      return (
           <Center>
                <Button onPress={onOpen} size="sm" variant="solid" mr={1}>
-                    {getTermFromDictionary(language, 'manage_selected')} ({numSelected})
+                    {numSelectedLabel}
                </Button>
                <Actionsheet isOpen={isOpen} onClose={onClose}>
                     <Actionsheet.Content>
                          {cancelActionItem()}
-                         <SelectThawDate language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
+                         <SelectThawDate label={numToFreezeLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
                          {thawActionItem()}
                     </Actionsheet.Content>
                </Actionsheet>
@@ -441,7 +446,9 @@ export const ManageAllHolds = (props) => {
 
      let numToManage = numToCancel + numToFreeze + numToThaw;
 
-     console.log('numToManage > ' + numToManage);
+     const numToCancelLabel = getTermFromDictionary(language, 'cancel_all_holds') + ' (' + numToCancel + ')';
+     const numToFreezeLabel = getTermFromDictionary(language, 'freeze_all_holds') + ' (' + numToFreeze + ')';
+     const numToThawLabel = getTermFromDictionary(language, 'thaw_all_holds') + ' (' + numToThaw + ')';
 
      if (numToManage >= 1) {
           return (
@@ -462,9 +469,9 @@ export const ManageAllHolds = (props) => {
                                              startCancelling(false);
                                         });
                                    }}>
-                                   {getTermFromDictionary(language, 'cancel_all_holds')} ({numToCancel})
+                                   {numToCancelLabel}
                               </Actionsheet.Item>
-                              <SelectThawDate language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numToManage} data={titlesToFreeze} />
+                              <SelectThawDate label={numToFreezeLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numToManage} data={titlesToFreeze} />
                               <Actionsheet.Item
                                    isLoading={thawing}
                                    isLoadingText={getTermFromDictionary(language, 'thaw_hold', true)}
@@ -476,7 +483,7 @@ export const ManageAllHolds = (props) => {
                                              startThawing(false);
                                         });
                                    }}>
-                                   {getTermFromDictionary(language, 'thaw_all_holds')} ({numToThaw})
+                                   {numToThawLabel}
                               </Actionsheet.Item>
                          </Actionsheet.Content>
                     </Actionsheet>
