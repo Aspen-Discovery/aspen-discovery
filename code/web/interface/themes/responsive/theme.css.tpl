@@ -715,8 +715,12 @@ label{ldelim}
 
 {* Misc *}
 .well{ldelim}
-	background-color: {$primaryBackgroundColor};
-	border: 1px solid {$secondaryBackgroundColor};
+	background-color: {$primaryBackgroundColor}70;
+	border: 1px solid {$primaryBackgroundColor};
+{rdelim}
+
+.well a{ldelim}
+	color: {$primaryForegroundColor};
 {rdelim}
 
 .sidebar-label{ldelim}
