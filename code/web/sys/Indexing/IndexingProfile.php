@@ -174,6 +174,10 @@ class IndexingProfile extends DataObject {
 	public $index856Links;
 	public /** @noinspection PhpUnused */ $includePersonalAndCorporateNamesInTopics;
 
+	public $orderRecordsStatusesToInclude;
+	public $hideOrderRecordsForBibsWithPhysicalItems;
+	public $orderRecordsToSuppressByDate;
+
 	private $_translationMaps;
 	private $_timeToReshelve;
 	private $_sierraFieldMappings;
@@ -1024,64 +1028,6 @@ class IndexingProfile extends DataObject {
 				],
 			],
 
-			'orderSection' => [
-				'property' => 'orderSection',
-				'hiddenByDefault' => true ,
-				'type' => 'section',
-				'label' => 'Order Record Fields (Sierra Only, not frequently used)',
-				'hideInLists' => true,
-				'properties' => [
-					'orderTag' => [
-						'property' => 'orderTag',
-						'type' => 'text',
-						'label' => 'Order Tag',
-						'maxLength' => 3,
-						'description' => 'The MARC tag where order records can be found',
-						'forcesReindex' => true,
-					],
-					'orderStatus' => [
-						'property' => 'orderStatus',
-						'type' => 'text',
-						'label' => 'Order Status',
-						'maxLength' => 1,
-						'description' => 'Subfield for status of the order item',
-						'forcesReindex' => true,
-					],
-					'orderLocationSingle' => [
-						'property' => 'orderLocationSingle',
-						'type' => 'text',
-						'label' => 'Order Location Single',
-						'maxLength' => 1,
-						'description' => 'Subfield for location of the order item when the order applies to a single location',
-						'forcesReindex' => true,
-					],
-					'orderLocation' => [
-						'property' => 'orderLocation',
-						'type' => 'text',
-						'label' => 'Order Location Multi',
-						'maxLength' => 1,
-						'description' => 'Subfield for location of the order item when the order applies to multiple locations',
-						'forcesReindex' => true,
-					],
-					'orderCopies' => [
-						'property' => 'orderCopies',
-						'type' => 'text',
-						'label' => 'Order Copies',
-						'maxLength' => 1,
-						'description' => 'The number of copies if not shown within location',
-						'forcesReindex' => true,
-					],
-					'orderCode3' => [
-						'property' => 'orderCode3',
-						'type' => 'text',
-						'label' => 'Order Code3',
-						'maxLength' => 1,
-						'description' => 'Code 3 for the order record',
-						'forcesReindex' => true,
-					],
-				],
-			],
-
 			'regroupAllRecords' => [
 				'property' => 'regroupAllRecords',
 				'hiddenByDefault' => true ,
@@ -1193,23 +1139,121 @@ class IndexingProfile extends DataObject {
 				'forcesReindex' => true,
 			],
 
-			'sierraFieldMappings' => [
-				'property' => 'sierraFieldMappings',
-				'hiddenByDefault' => true ,
-				'type' => 'oneToMany',
-				'label' => 'Sierra Field Mappings (Sierra Systems only)',
-				'description' => 'Field Mappings for exports from Sierra.',
-				'keyThis' => 'id',
-				'keyOther' => 'indexingProfileId',
-				'subObjectType' => 'SierraExportFieldMapping',
-				'structure' => $sierraMappingStructure,
-				'sortable' => false,
-				'storeDb' => true,
-				'allowEdit' => true,
-				'canEdit' => false,
-				'canAddNew' => true,
-				'canDelete' => true,
-				'forcesReindex' => true,
+			'sierraSection' => [
+				'property' => 'sierraSection',
+				'type' => 'section',
+				'label' => 'Sierra Settings',
+				'hideInLists' => true,
+				'properties' => [
+					'orderRecordsStatusesToInclude' => [
+						'property' => 'orderRecordsStatusesToInclude',
+						'hiddenByDefault' => true,
+						'type' => 'text',
+						'label' => 'Order Record Statuses to Include',
+						'maxLength' => 25,
+						'description' => 'A pipe delimited list of statuses that should be exported from Sierra for display in Aspen.',
+						'default' => 'o|1',
+						'required' => true,
+					],
+					'hideOrderRecordsForBibsWithPhysicalItems' => [
+						'property' => 'hideOrderRecordsForBibsWithPhysicalItems',
+						'hiddenByDefault' => true,
+						'type' => 'checkbox',
+						'label' => 'Hide Order Records for bibs with physical items',
+						'maxLength' => 20,
+						'description' => 'If selected, any bib that has physical items will not show order records.',
+						'default' => false,
+					],
+					'orderRecordsToSuppressByDate' => [
+						'property' => 'orderRecordsToSuppressByDate',
+						'type' => 'enum',
+						'label' => 'Order Records To Suppress by Date',
+						'values' => [
+							1 => 'Do not suppress by date',
+							2 => 'Order Records with a Cataloged Date Set',
+							3 => 'Order Records with a Received Date Set',
+							4 => 'Order Records with both a Cataloged and Received Date Set'
+						],
+						'description' => 'Which order records should be suppressed based on dates in the record',
+						'forcesReindex' => true,
+						'default' => 1
+					],
+					'orderSection' => [
+						'property' => 'orderSection',
+						'hiddenByDefault' => true ,
+						'type' => 'section',
+						'label' => 'Order Record Fields (if order records exported in bib, not frequently used)',
+						'hideInLists' => true,
+						'properties' => [
+							'orderTag' => [
+								'property' => 'orderTag',
+								'type' => 'text',
+								'label' => 'Order Tag',
+								'maxLength' => 3,
+								'description' => 'The MARC tag where order records can be found',
+								'forcesReindex' => true,
+							],
+							'orderStatus' => [
+								'property' => 'orderStatus',
+								'type' => 'text',
+								'label' => 'Order Status',
+								'maxLength' => 1,
+								'description' => 'Subfield for status of the order item',
+								'forcesReindex' => true,
+							],
+							'orderLocationSingle' => [
+								'property' => 'orderLocationSingle',
+								'type' => 'text',
+								'label' => 'Order Location Single',
+								'maxLength' => 1,
+								'description' => 'Subfield for location of the order item when the order applies to a single location',
+								'forcesReindex' => true,
+							],
+							'orderLocation' => [
+								'property' => 'orderLocation',
+								'type' => 'text',
+								'label' => 'Order Location Multi',
+								'maxLength' => 1,
+								'description' => 'Subfield for location of the order item when the order applies to multiple locations',
+								'forcesReindex' => true,
+							],
+							'orderCopies' => [
+								'property' => 'orderCopies',
+								'type' => 'text',
+								'label' => 'Order Copies',
+								'maxLength' => 1,
+								'description' => 'The number of copies if not shown within location',
+								'forcesReindex' => true,
+							],
+							'orderCode3' => [
+								'property' => 'orderCode3',
+								'type' => 'text',
+								'label' => 'Order Code3',
+								'maxLength' => 1,
+								'description' => 'Code 3 for the order record',
+								'forcesReindex' => true,
+							],
+						],
+					],
+					'sierraFieldMappings' => [
+						'property' => 'sierraFieldMappings',
+						'hiddenByDefault' => true ,
+						'type' => 'oneToMany',
+						'label' => 'Sierra Field Mappings',
+						'description' => 'Field Mappings for exports from Sierra.',
+						'keyThis' => 'id',
+						'keyOther' => 'indexingProfileId',
+						'subObjectType' => 'SierraExportFieldMapping',
+						'structure' => $sierraMappingStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'allowEdit' => true,
+						'canEdit' => false,
+						'canAddNew' => true,
+						'canDelete' => true,
+						'forcesReindex' => true,
+					],
+				],
 			],
 
 			'evergreenSection' => [
@@ -1227,7 +1271,7 @@ class IndexingProfile extends DataObject {
 							2 => 'Level 0 = Overall instance, Level 1 = Consortium, Level 2 = Libraries, Level 3 = Branches'
 						],
 						'maxLength' => 3,
-						'description' => 'The MARC tag where order records can be found',
+						'description' => 'How the schema of org units should be read by Aspen when setting up default libraries and locations',
 						'forcesReindex' => true,
 						'default' => 1
 					],

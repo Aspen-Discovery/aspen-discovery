@@ -86,6 +86,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private boolean index856Links;
 
+	protected boolean hideOrderRecordsForBibsWithPhysicalItems;
+
 	private final HashMap<String, TranslationMap> translationMaps = new HashMap<>();
 	private final ArrayList<TimeToReshelve> timesToReshelve = new ArrayList<>();
 	protected final HashSet<String> formatsToSuppress = new HashSet<>();
@@ -253,6 +255,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			singleOrderLocationSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderLocationSingle");
 			orderCopiesSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderCopies");
 			orderStatusSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "orderStatus");
+
+			hideOrderRecordsForBibsWithPhysicalItems = indexingProfileRS.getBoolean("hideOrderRecordsForBibsWithPhysicalItems");
 
 			index856Links = indexingProfileRS.getBoolean("index856Links");
 
@@ -769,7 +773,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	}
 
 	protected boolean isOrderItemValid(String status) {
-		return status.equals("o") || status.equals("1");
+		return true;
+		//return status.equals("o") || status.equals("1");
 	}
 
 	private void loadOrderIds(AbstractGroupedWorkSolr groupedWork, Record record) {

@@ -124,6 +124,17 @@ function getUpdates23_04_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Import Content from Community'))",
 			],
 		],
+		'sierra_order_record_options' => [
+			'title' => 'Sierra Order Record Options',
+			'description' => 'Add new options for controlling the export and indexing of order records for Sierra',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordsStatusesToInclude VARCHAR(25) DEFAULT 'o|1'",
+				"ALTER TABLE indexing_profiles ADD COLUMN hideOrderRecordsForBibsWithPhysicalItems TINYINT(1) DEFAULT 0",
+				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordsToSuppressByDate TINYINT(1) DEFAULT 1",
+				"updateSierraOrderRecordSettings",
+			],
+		],
 
 		//kirstien
 		'add_ecommerce_deluxe' => [
@@ -292,4 +303,29 @@ function getUpdates23_04_00(): array {
 		],
 		//updateThemesFinal
 	];
+}
+
+function updateSierraOrderRecordSettings() {
+	//Check to see if we have a Sierra indexing profile
+	global $indexingProfiles;
+	global $configArray;
+	foreach ($indexingProfiles as $indexingProfile) {
+		if ($indexingProfile->indexingClass == 'III') {
+			if (isset($configArray['Index']['suppressOrderRecordsThatAreReceivedAndCataloged']) && $configArray['Index']['suppressOrderRecordsThatAreReceivedAndCataloged'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 4;
+			}elseif (isset($configArray['Index']['suppressOrderRecordsThatAreCataloged']) && $configArray['Index']['suppressOrderRecordsThatAreCataloged'] == true && isset($configArray['Index']['suppressOrderRecordsThatAreReceived']) && $configArray['Index']['suppressOrderRecordsThatAreReceived'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 4;
+			}elseif (isset($configArray['Index']['suppressOrderRecordsThatAreReceived']) && $configArray['Index']['suppressOrderRecordsThatAreReceived'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 3;
+			}elseif (isset($configArray['Index']['suppressOrderRecordsThatAreCataloged']) && $configArray['Index']['suppressOrderRecordsThatAreCataloged'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 2;
+			}else{
+				$indexingProfile->orderRecordsToSuppressByDate = 1;
+			}
+			if (isset($configArray['Reindex']['orderStatusesToExport'])) {
+				$indexingProfile->orderRecordsStatusesToInclude = $configArray['Reindex']['orderStatusesToExport'];
+			}
+			$indexingProfile->update();
+		}
+	}
 }
