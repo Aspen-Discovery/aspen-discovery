@@ -579,7 +579,14 @@ class ListAPI extends Action {
 				}
 			}
 
-			$totalRecords = $list->numValidListItems();
+			$isLida = $this->checkIfLiDA();
+
+			//if LiDA we don't want to include events list entries in the list count
+			if ($isLida){
+				$totalRecords = $list->numValidListItemsForLiDA();
+			}else {
+				$totalRecords = $list->numValidListItems();
+			}
 			$startRecord = ($page - 1) * $numTitlesToShow;
 			if ($startRecord < 0) {
 				$startRecord = 0;
@@ -593,35 +600,50 @@ class ListAPI extends Action {
 
 			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort);
 
-			$isLida = $this->checkIfLiDA();
-
 			foreach ($titles as $title) {
-				$imageUrl = "/bookcover.php?id=" . $title['id'];
-				$smallImageUrl = $imageUrl . "&size=small";
-				$imageUrl .= "&size=medium";
-
-				if ($isLida) {
+				if ($title['source'] != "Events" && $isLida){ //if LiDA don't look at events
 					$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
 					$smallImageUrl = $imageUrl . "&size=small";
 					$imageUrl .= "&size=medium";
-				}
 
-				$listTitles[] = [
-					'id' => $title['id'],
-					'image' => $imageUrl,
-					'small_image' => $smallImageUrl,
-					'title' => $title['title'],
-					'author' => $title['author'],
-					'shortId' => $title['shortId'],
-					'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
-					'titleURL' => $title['titleURL'],
-					'description' => $title['description'],
-					'length' => $title['length'],
-					'publisher' => $title['publisher'],
-					'ratingData' => $title['ratingData'],
-					'format' => $title['format'],
-					'language' => $title['language'],
-				];
+					$listTitles[] = [
+						'id' => $title['id'],
+						'image' => $imageUrl,
+						'small_image' => $smallImageUrl,
+						'title' => $title['title'],
+						'author' => $title['author'],
+						'shortId' => $title['shortId'],
+						'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
+						'titleURL' => $title['titleURL'],
+						'description' => $title['description'],
+						'length' => $title['length'],
+						'publisher' => $title['publisher'],
+						'ratingData' => $title['ratingData'],
+						'format' => $title['format'],
+						'language' => $title['language'],
+					];
+				} else if (!$isLida) { //if not LiDA look at all the things
+					$imageUrl = "/bookcover.php?id=" . $title['id'];
+					$smallImageUrl = $imageUrl . "&size=small";
+					$imageUrl .= "&size=medium";
+
+					$listTitles[] = [
+						'id' => $title['id'],
+						'image' => $imageUrl,
+						'small_image' => $smallImageUrl,
+						'title' => $title['title'],
+						'author' => $title['author'],
+						'shortId' => $title['shortId'],
+						'recordType' => isset($title['recordType']) ? $title['recordType'] : $title['recordtype'],
+						'titleURL' => $title['titleURL'],
+						'description' => $title['description'],
+						'length' => $title['length'],
+						'publisher' => $title['publisher'],
+						'ratingData' => $title['ratingData'],
+						'format' => $title['format'],
+						'language' => $title['language'],
+					];
+				}
 			}
 			return [
 				'success' => true,

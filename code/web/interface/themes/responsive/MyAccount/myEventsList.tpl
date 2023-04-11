@@ -46,7 +46,7 @@
 									{/if}
 								</td>
 								<td class="myAccountCell">
-									<span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.Account.deleteSavedEvent('{$event.sourceId}');">{translate text="Remove" isPublicFacing=true}</span>
+									<span class="btn btn-xs btn-warning" onclick="return AspenDiscovery.Account.deleteSavedEvent('{$event.sourceId}', {$page}, '{$eventsFilter|escape}');">{translate text="Remove" isPublicFacing=true}</span>
 								</td>
 							</tr>
 						{/foreach}
