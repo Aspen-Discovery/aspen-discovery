@@ -523,7 +523,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 
 			if (deletedRecords != null) {
 				try {
@@ -594,7 +594,7 @@ public class SierraExportAPIMain {
 			if (firstRecordIdToLoad > 1){
 				url += "&id=[" + firstRecordIdToLoad + ",]";
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -651,7 +651,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -700,7 +700,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -745,7 +745,7 @@ public class SierraExportAPIMain {
 			if (firstRecordIdToLoad > 1){
 				url += "&id=[" + firstRecordIdToLoad + ",]";
 			}
-			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject createdRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (createdRecords != null){
 				try {
 					JSONArray entries = createdRecords.getJSONArray("entries");
@@ -797,7 +797,7 @@ public class SierraExportAPIMain {
 			if (offset > 0){
 				url += "&offset=" + offset;
 			}
-			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false);
+			JSONObject deletedRecords = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, url, false, false);
 			if (deletedRecords != null){
 				try {
 					JSONArray entries = deletedRecords.getJSONArray("entries");
@@ -841,7 +841,7 @@ public class SierraExportAPIMain {
 		final JSONObject[] itemIds = {null};
 		//noinspection CodeBlock2Expr
 		Thread itemUpdateThread = new Thread(() -> {
-			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false);
+			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false, true);
 		});
 		getMarcResultsThread.start();
 		fixedFieldThread.start();
@@ -1304,7 +1304,7 @@ public class SierraExportAPIMain {
 		return true;
 	}
 
-	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors) {
+	private static JSONObject callSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, @SuppressWarnings("SameParameterValue") boolean logErrors, boolean ignore404errors) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
 			//Connect to the API to get our token
 			HttpURLConnection conn;
@@ -1342,6 +1342,9 @@ public class SierraExportAPIMain {
 					}
 
 				} else {
+					if (conn.getResponseCode() == 404 && ignore404errors) {
+						return null;
+					}
 					//Check to see if we failed due to the grant being invalid.
 					logger.error("Received error " + conn.getResponseCode() + " calling sierra API " + sierraUrl);
 					// Get any errors
@@ -1362,7 +1365,7 @@ public class SierraExportAPIMain {
 							} catch (InterruptedException e) {
 								logger.error("Sleep was interrupted", e);
 							}
-							return callSierraApiURL(sierraInstanceInformation, baseUrl, sierraUrl, logErrors);
+							return callSierraApiURL(sierraInstanceInformation, baseUrl, sierraUrl, logErrors, ignore404errors);
 						}
 					}catch (JSONException jse){
 						logger.error("Error parsing response \n" + response, jse);
