@@ -730,7 +730,12 @@ label{ldelim}
 {rdelim}
 
 pre{ldelim}
-	background-color: {$primaryBackgroundColor};
+	background-color: {$primaryBackgroundColor}70;
+	border-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+{rdelim}
+
+pre a{ldelim}
 	color: {$primaryForegroundColor};
 {rdelim}
 
