@@ -86,7 +86,7 @@ class Admin_DBMaintenance extends Admin_Admin {
 	function canView(): bool {
 		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
-	
+
 	function updateAllThemes() {
 		$theme = new Theme();
 		$theme->find();
