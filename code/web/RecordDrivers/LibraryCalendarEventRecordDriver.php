@@ -178,6 +178,41 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		return $this->eventObject;
 	}
 
+	function getStartDateFromDB($id) : ?object {
+		if ($this->eventObject == null) {
+			$this->eventObject = new LMLibraryCalendarEvent();
+			$this->eventObject->externalId = $id;
+
+			if (!$this->eventObject->find(true)) {
+				$this->eventObject = false;
+			}
+		}
+		$data = $this->eventObject->getDecodedData();
+
+		try {
+			$startDate = new DateTime($data->start_date);
+			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
+			return $startDate;
+		} catch (Exception $e) {
+			return null;
+		}
+
+	}
+
+	function getTitleFromDB($id) {
+		if ($this->eventObject == null) {
+			$this->eventObject = new LMLibraryCalendarEvent();
+			$this->eventObject->externalId = $id;
+
+			if (!$this->eventObject->find(true)) {
+				$this->eventObject = false;
+			}
+		}
+		$data = $this->eventObject->getDecodedData();
+
+		return $data->title;
+	}
+
 	private function getIdentifier() {
 		return $this->fields['identifier'];
 	}
