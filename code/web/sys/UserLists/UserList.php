@@ -110,10 +110,9 @@ class UserList extends DataObject {
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
+		$listEntry->whereAdd("source <> 'Events'");
 
-		if ($listEntry->source != "Events"){
-			return $listEntry->count();
-		}
+		return $listEntry->count();
 	}
 
 	function insert($createNow = true) {
