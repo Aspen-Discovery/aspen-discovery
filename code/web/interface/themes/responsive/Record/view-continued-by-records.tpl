@@ -3,7 +3,7 @@
 		{foreach from=$continuedByRecords item="record"}
 			<div class="row">
 				<div class="col-xs-7">
-					<a href="{$record.link}">{$record.label}</a>
+					{if !empty($record.link)}<a href="{$record.link}">{/if}{$record.label}{if !empty($record.link)}</a>{/if}
 				</div>
 				<div class="col-xs-3">
 					{$record.format}
