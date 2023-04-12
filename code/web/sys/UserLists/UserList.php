@@ -106,6 +106,15 @@ class UserList extends DataObject {
 		return $listEntry->count();
 	}
 
+	function numValidListItemsForLiDA() {
+		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
+		$listEntry = new UserListEntry();
+		$listEntry->listId = $this->id;
+		$listEntry->whereAdd("source <> 'Events'");
+
+		return $listEntry->count();
+	}
+
 	function insert($createNow = true) {
 		if ($createNow) {
 			$this->created = time();
@@ -160,11 +169,14 @@ class UserList extends DataObject {
 	 * @param null $sort optional SQL for the query's ORDER BY clause
 	 * @return array      of list entries
 	 */
-	function getListEntries($sort = null) {
+	function getListEntries($sort = null, $forLiDA = false) {
 		global $interface;
 		require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 		$listEntry = new UserListEntry();
 		$listEntry->listId = $this->id;
+		if ($forLiDA){
+			$listEntry->whereAdd("source <> 'Events'");
+		}
 
 		$entryPosition = 0;
 		$zeroCount = 0;
@@ -366,12 +378,12 @@ class UserList extends DataObject {
 	 * @param string $sortName How records should be sorted, if no sort is provided, will use the default for the list
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null): array {
+	public function getListRecords($start, $numItems, $allowEdit, $format, $citationFormat = null, $sortName = null, $forLiDA = false): array {
 		//Get all entries for the list
 		if ($sortName == null) {
 			$sortName = $this->defaultSort;
 		}
-		$listEntryInfo = $this->getListEntries($sortName);
+		$listEntryInfo = $this->getListEntries($sortName, $forLiDA);
 
 		//Trim to the number of records we want to return
 		if ($numItems > 0) {
@@ -418,6 +430,7 @@ class UserList extends DataObject {
 					$interface->assign('recordIndex', $listPosition + 1);
 					$interface->assign('resultIndex', $listPosition + $start + 1);
 					$interface->assign('listEntryId', $listEntryInfo['listEntryId']);
+					$interface->assign('listEntrySource', $listEntryInfo['source']);
 					if (!empty($listEntryInfo['title'])) {
 						$interface->assign('deletedEntryTitle', $listEntryInfo['title']);
 					} else {

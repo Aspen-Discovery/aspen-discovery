@@ -3076,6 +3076,7 @@ class MyAccount_AJAX extends JSON_Action {
 		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 
 		$page = $_REQUEST['page'] ?? 1;
+		$interface->assign('page', $page);
 		$pageSize = $_REQUEST['pageSize'] ?? 20;
 
 		$eventsFilter = $_REQUEST['eventsFilter'] ?? 'upcoming';

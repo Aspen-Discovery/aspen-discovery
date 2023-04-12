@@ -6998,12 +6998,14 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		deleteSavedEvent: function(id){
+		deleteSavedEvent: function(id, page, filter){
 			if (confirm("Are you sure you want to remove this event?")){
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id ;
+
 				$.getJSON(url, function(data){
 					if (data.result === true){
-						AspenDiscovery.showMessage('Success', data.message, true);
+						AspenDiscovery.showMessage('Success', data.message, false);
+						AspenDiscovery.Account.loadEvents(page, filter);
 					}else{
 						AspenDiscovery.showMessage('Sorry', data.message);
 					}
