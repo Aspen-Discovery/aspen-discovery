@@ -329,17 +329,20 @@ public class KohaExportMain {
 			}
 			PreparedStatement getGroupedWorkForRecordStmt = dbConn.prepareStatement("SELECT permanent_id from grouped_work inner join grouped_work_primary_identifiers on grouped_work.id = grouped_work_id where type = ? and identifier = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement clearBookCoverInfoStmt = dbConn.prepareStatement("UPDATE bookcover_info set imageSource = '', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0 where recordType = 'grouped_work' and recordId = ?");
+			long now = new Date().getTime() / 1000;
+			PreparedStatement updateILSBookCoverInfoStmt = dbConn.prepareStatement("INSERT INTO bookcover_info set imageSource = 'upload', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0, firstLoaded = " + now + ", lastUsed = 0, recordType = '" + indexingProfile.getName() + "', recordId = ? ON DUPLICATE KEY UPDATE imageSource = 'upload', thumbnailLoaded=0, mediumLoaded=0, largeLoaded= 0");
 
 			String coversPath = configIni.get("Site","coverPath") + "/original/";
 			ResultSet kohaCoversRS = getKohaCoversStmt.executeQuery();
 			while (kohaCoversRS.next()){
+				String biblioNumber = kohaCoversRS.getString("biblionumber");
 				getGroupedWorkForRecordStmt.setString(1, indexingProfile.getName());
-				getGroupedWorkForRecordStmt.setString(2, kohaCoversRS.getString("biblionumber"));
+				getGroupedWorkForRecordStmt.setString(2, biblioNumber);
 				ResultSet getGroupedWorkForRecordRS = getGroupedWorkForRecordStmt.executeQuery();
 				if (getGroupedWorkForRecordRS.next()){
 					//Check to see if we have an existing uploaded record
 					String groupedWorkId = getGroupedWorkForRecordRS.getString("permanent_id");
-					File coverFile = new File(coversPath + groupedWorkId + ".png");
+					File coverFile = new File(coversPath + biblioNumber + ".png");
 					Timestamp kohaCoverTimestamp = null;
 					try{
 						kohaCoverTimestamp = kohaCoversRS.getTimestamp("timestamp");
@@ -375,6 +378,8 @@ public class KohaExportMain {
 								if (numUpdates > 0){
 									logger.debug("Cleared cover cache info for " + groupedWorkId);
 								}
+								updateILSBookCoverInfoStmt.setString(1, biblioNumber);
+								updateILSBookCoverInfoStmt.executeUpdate();
 
 								try {
 									Set<PosixFilePermission> perms = new HashSet<>();
