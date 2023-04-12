@@ -99,11 +99,13 @@
 				<label class="control-label">{translate text="Place hold on" isPublicFacing=true}</label>
 				{if !empty($hasItemsWithoutVolumes)}
 					<div id="holdTypeSelection" class="form-group">
-						<div class="col-tn-6">
-							<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" {if empty($majorityOfItemsHaveVolumes)}checked{/if} onchange="$('#volumeSelection').hide()"> {translate text="First Available Item" isPublicFacing=true}</label>
-						</div>
-						<div class="col-tn-6">
-							<label for="holdTypeItem"><input type="radio" name="holdType" value="volume" id="holdTypeItem" {if !empty($majorityOfItemsHaveVolumes)}checked{/if} onchange="$('#volumeSelection').show()"> {translate text="Specific Volume" isPublicFacing=true}</label>
+						<div class="row">
+							<div class="col-tn-6">
+								<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" {if empty($majorityOfItemsHaveVolumes)}checked{/if} onchange="$('#volumeSelection').hide()"> {translate text="First Available Item" isPublicFacing=true}</label>
+							</div>
+							<div class="col-tn-6">
+								<label for="holdTypeItem"><input type="radio" name="holdType" value="volume" id="holdTypeItem" {if !empty($majorityOfItemsHaveVolumes)}checked{/if} onchange="$('#volumeSelection').show()"> {translate text="Specific Volume" isPublicFacing=true}</label>
+							</div>
 						</div>
 					</div>
 				{else}
