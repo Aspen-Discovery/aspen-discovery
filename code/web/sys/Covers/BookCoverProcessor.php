@@ -1481,9 +1481,15 @@ class BookCoverProcessor {
 		}
 		require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
 		$driver = new LibraryCalendarEventRecordDriver($id);
-		if ($driver) {
-//			$coverUrl = $driver->getEventCoverUrl();
-//			if ($coverUrl == null) {
+		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$props = [
+				'eventDate' => $driver->getStartDateFromDB($id),
+			];
+			$coverBuilder->getCover($driver->getTitleFromDB($id), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
+		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
 			$props = [
@@ -1491,9 +1497,6 @@ class BookCoverProcessor {
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
-//			}else{
-//				return $this->processImageURL('library_calendar_event', $coverUrl, true);
-//			}
 		}
 		return false;
 	}
@@ -1507,9 +1510,15 @@ class BookCoverProcessor {
 		}
 		require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
 		$driver = new SpringshareLibCalEventRecordDriver($id);
-		if ($driver) {
-//			$coverUrl = $driver->getEventCoverUrl();
-//			if ($coverUrl == null) {
+		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$props = [
+				'eventDate' => $driver->getStartDateFromDB($id),
+			];
+			$coverBuilder->getCover($driver->getTitleFromDB($id), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
+		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
 			$props = [
@@ -1517,9 +1526,6 @@ class BookCoverProcessor {
 			];
 			$coverBuilder->getCover($driver->getTitle(), $this->cacheFile, $props);
 			return $this->processImageURL('default_event', $this->cacheFile, false);
-//			}else{
-//				return $this->processImageURL('springshare_libcal_event', $coverUrl, true);
-//			}
 		}
 		return false;
 	}
@@ -1533,7 +1539,15 @@ class BookCoverProcessor {
 		}
 		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
 		$driver = new CommunicoEventRecordDriver($id);
-		if ($driver) {
+		if (!($driver->isValid())){ //if driver isn't valid, likely a past event on a list
+			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
+			$coverBuilder = new EventCoverBuilder();
+			$props = [
+				'eventDate' => $driver->getStartDateFromDB($id),
+			];
+			$coverBuilder->getCover($driver->getTitleFromDB($id), $this->cacheFile, $props);
+			return $this->processImageURL('default_event', $this->cacheFile, false);
+		} else if ($driver) {
 			require_once ROOT_DIR . '/sys/Covers/EventCoverBuilder.php';
 			$coverBuilder = new EventCoverBuilder();
 			$props = [
