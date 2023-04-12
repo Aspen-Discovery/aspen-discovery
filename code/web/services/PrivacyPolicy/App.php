@@ -37,7 +37,7 @@ class PrivacyPolicy_App extends Action {
 		$interface->assign('address', $address);
 		$interface->assign('tel', $tel);
 		$interface->assign('email', $email);
-		$this->display('App.tpl', $appName . ' Privacy Policy', false);
+		$this->display('app.tpl', $appName . ' Privacy Policy', false);
 	}
 
 	function getBreadcrumbs(): array {
