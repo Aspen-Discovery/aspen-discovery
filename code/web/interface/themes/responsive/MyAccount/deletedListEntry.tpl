@@ -8,7 +8,11 @@
 		{/if}
 		{if !empty($showCovers)}
 			<div class="col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center">
-
+				{if $disableCoverArt != 1 && !empty($bookCoverUrl)}
+					<div>
+						<img src="{$bookCoverUrl}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
+					</div>
+				{/if}
 			</div>
 		{/if}
 		<div class="{if empty($showCovers)}col-xs-9 col-sm-9 col-md-9 col-lg-10{else}col-xs-6 col-sm-6 col-md-6 col-lg-7{/if}">
