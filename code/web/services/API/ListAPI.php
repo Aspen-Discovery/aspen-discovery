@@ -598,7 +598,11 @@ class ListAPI extends Action {
 			];
 			$pager = new Pager($options);
 
-			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort);
+			if ($isLida){
+				$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort, true);
+			}else{
+				$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort);
+			}
 
 			foreach ($titles as $title) {
 				if ($title['source'] != "Events" && $isLida){ //if LiDA don't look at events
