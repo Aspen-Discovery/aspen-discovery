@@ -439,7 +439,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     {/if}
 {rdelim}
 
-.label{ldelim}
+#myAccountPanel .label{ldelim}
 	font-size: 10px;
     min-width: 10px;
     padding: 3px 7px;
