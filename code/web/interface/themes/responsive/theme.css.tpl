@@ -717,6 +717,7 @@ label{ldelim}
 .well{ldelim}
 	background-color: {$primaryBackgroundColor}70;
 	border: 1px solid {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
 {rdelim}
 
 .well a{ldelim}
