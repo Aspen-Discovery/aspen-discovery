@@ -373,7 +373,7 @@ export default class Facet extends Component {
                 accessibilityLabel={getTermFromDictionary(this.state.language, 'filter_by')}
                 onChange={(values) => this.updateLocalValues(category, values)}
               >
-                {facets.map((item, index, array) => (
+                {_.orderBy(facets, ['isApplied', 'display'], ['desc', 'asc']).map((item, index, array) => (
                   <Facet_Checkbox key={index} data={item} language={this.state.language}/>
                 ))}
               </Checkbox.Group>
