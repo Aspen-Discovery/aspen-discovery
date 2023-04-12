@@ -1196,6 +1196,11 @@ class BookCoverProcessor {
 				}
 				$driver = $relatedRecord->getDriver();
 				if ($driver != null) {
+					//Check to see if there is an uploaded cover
+					if ($this->getUploadedRecordCover($relatedRecord->id)){
+						return true;
+					}
+
 					//First check to see if there is a specific record defined in an 856 etc.
 					if ($driver->hasMarcRecord() && $this->getCoverFromMarc($driver->getMarcRecord())) {
 						return true;
