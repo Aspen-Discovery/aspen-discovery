@@ -507,7 +507,7 @@ class UserList extends DataObject {
 					break;
 				}
 			}
-			if (!empty($current) && ($currentId['source'] != "Events")) {
+			if (!empty($current)) {
 				$results[$listPosition] = $current->getSummaryInformation();
 			}
 		}
