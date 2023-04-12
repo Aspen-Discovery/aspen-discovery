@@ -208,14 +208,6 @@ function getUpdates23_04_00(): array {
 			]
 		],
 		//add_high_contrast_checkbox
-		'updateThemes' => [
-			'title' => 'Update themes for changes',
-			'description' => 'Automatically updates all themes to grab stylesheet changes',
-			'sql' => [
-				'updateAllThemes',
-			],
-		],
-		//updateThemes
 		'add_branded_app_name' => [
 			'title' => 'Add name in branded app settings',
 			'description' => 'Adds column to store name for branded apps',
@@ -302,15 +294,6 @@ function getUpdates23_04_00(): array {
 				'ALTER TABLE location_records_to_include ALTER COLUMN weight SET DEFAULT 0',
 			],
 		],
-		//other
-		'updateThemesFinal' => [
-			'title' => 'Update themes for changes',
-			'description' => 'Automatically updates all themes to grab stylesheet changes',
-			'sql' => [
-				'updateAllThemes',
-			],
-		],
-		//updateThemesFinal
 	];
 }
 
