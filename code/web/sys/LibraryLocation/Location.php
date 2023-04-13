@@ -383,7 +383,7 @@ class Location extends DataObject {
 				'sortable' => true,
 				'storeDb' => true,
 				'allowEdit' => true,
-				'canEdit' => false,
+				'canEdit' => true,
 				'canAddNew' => true,
 				'canDelete' => true,
 				'editPermissions' => ['Location Theme Configuration'],
