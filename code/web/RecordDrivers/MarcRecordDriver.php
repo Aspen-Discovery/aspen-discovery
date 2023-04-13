@@ -2577,11 +2577,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						}
 					}
 				}
+				$title = '';
+				$subfieldA = $marc780Field->getSubfield('a');
+				if ($subfieldA != null) {
+					$title = $subfieldA->getData();
+				}
 				$subfieldT = $marc780Field->getSubfield('t');
 				if ($subfieldT != null) {
+					$title .= ' ' . $subfieldT->getData();
+					$title = trim($title);
+				}
+				if (!empty($title)) {
 					$continuedByRecords[] = [
 						'id' => '',
-						'label' => $subfieldT->getData(),
+						'label' => $title,
 						'format' => '',
 						'link' => '',
 						'actions' => [],
