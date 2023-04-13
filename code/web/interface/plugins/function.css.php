@@ -28,12 +28,12 @@ function smarty_function_css($params, &$smarty) {
 		if (file_exists("{$local}/interface/themes/responsive/css-rtl/{$filename}")) {
 			$css = "/interface/themes/responsive/css-rtl/{$filename}";
 		}
-	}
-
-	// If the file exists on the local file system, set $css to the relative
-	// path needed to link to it from the web interface.
-	if (file_exists("{$local}/interface/themes/responsive/css/{$filename}")) {
-		$css = "/interface/themes/responsive/css/{$filename}";
+	} else {
+		// If the file exists on the local file system, set $css to the relative
+		// path needed to link to it from the web interface.
+		if (file_exists("{$local}/interface/themes/responsive/css/{$filename}")) {
+			$css = "/interface/themes/responsive/css/{$filename}";
+		}
 	}
 
 	// If we couldn't find the file, we shouldn't try to link to it:
