@@ -275,7 +275,7 @@ function getUpdates23_04_00(): array {
 				'CREATE TABLE IF NOT EXISTS user_events_entry (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					userId INT(11) NOT NULL, 
-					sourceId varchar(36) NOT NULL,
+					sourceId varchar(50) NOT NULL,
 					title varchar(255) NOT NULL,
 					eventDate INT (11),
 					regRequired TINYINT DEFAULT 0,
@@ -283,6 +283,14 @@ function getUpdates23_04_00(): array {
 					dateAdded INT(11),
 					UNIQUE (sourceId)
 				)',
+			],
+		],
+		//user_events_entry_length
+		'user_events_entry_length' => [
+			'title' => 'User Events Entry sourceId Length',
+			'description' => 'Increase allowed length for sourceId in user event entries.',
+			'sql' => [
+				"ALTER TABLE user_events_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
 			],
 		],
 		// Set default weight for (library|location)_records_to_include to 0
