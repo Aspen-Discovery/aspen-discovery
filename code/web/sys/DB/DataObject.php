@@ -1007,6 +1007,10 @@ abstract class DataObject {
 		return true;
 	}
 
+	public function canActiveUserDelete() {
+		return $this->canActiveUserEdit();
+	}
+
 	public function canActiveUserCopy() {
 		return true;
 	}
