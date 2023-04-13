@@ -352,12 +352,13 @@ class ItemAPI extends Action {
 		$copies = $marcRecord->getCopies();
 		$items = [];
 		foreach($copies as $copy) {
-			$items[$copy['description']]['id'] = $copy['itemId'];
-			$items[$copy['description']]['location'] = $copy['description'];
-			$items[$copy['description']]['library'] = $copy['section'];
-			$items[$copy['description']]['volume'] = $copy['volume'];
-			$items[$copy['description']]['volumeId'] = $copy['volumeId'];
-			$items[$copy['description']]['variationId'] = $copy['variationId'];
+			$key = $copy['description'] . ' ' . $copy['itemId'];
+			$items[$key]['id'] = $copy['itemId'];
+			$items[$key]['location'] = $copy['description'];
+			$items[$key]['library'] = $copy['section'];
+			$items[$key]['volume'] = $copy['volume'];
+			$items[$key]['volumeId'] = $copy['volumeId'];
+			$items[$key]['variationId'] = $copy['variationId'];
 		}
 		return [
 			'success' => true,

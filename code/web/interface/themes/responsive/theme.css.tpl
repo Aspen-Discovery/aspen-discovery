@@ -627,7 +627,7 @@ label{ldelim}
 {* Browse Category Carousel *}
 .jcarousel-pagination a{ldelim}
 	border-radius: {$smallButtonRadius};
-	background: {$deselectedBrowseCategoryBackgroundColor};
+	background: {$selectedBrowseCategoryBackgroundColor}70;
 	color: {$bodyTextColor};
 	box-shadow: none;
 {rdelim}
