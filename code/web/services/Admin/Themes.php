@@ -28,7 +28,12 @@ class Admin_Themes extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Themes')) {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$object->id = $library->theme;
+			$libraryThemes = $library->getThemes();
+			$libraryThemeIds = [];
+			foreach ($libraryThemes as $libraryTheme) {
+				$libraryThemeIds[] = $libraryTheme->themeId;
+			}
+			$object->whereAddIn('id', $libraryThemeIds, false);
 		}
 		$object->find();
 		$list = [];

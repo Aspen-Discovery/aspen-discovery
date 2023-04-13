@@ -392,7 +392,7 @@ public class GroupedWorkIndexer {
 			ResultSet getSideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery();
 
 			while (getSideLoadSettingsRS.next()) {
-				String curType = getSideLoadSettingsRS.getString("name");
+				String curType = getSideLoadSettingsRS.getString("name").toLowerCase();
 				String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 				if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
 					SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
