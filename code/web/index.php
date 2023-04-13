@@ -1271,6 +1271,10 @@ function isSpammySearchTerm($lookfor): bool {
 		return true;
 	} elseif (strpos($lookfor, 'sleep(') !== false) {
 		return true;
+	} elseif (strpos($lookfor, 'cast(') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'current_database') !== false) {
+		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);
 	if ($termWithoutTags != $lookfor) {
