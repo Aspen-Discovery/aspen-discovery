@@ -60,7 +60,7 @@
 				<div class="header-menu-option" ><a href="/Search/History?require_login">{translate text='Your Searches' isPublicFacing=true}</a></div>
 			{/if}
 			{if $hasEventSettings}
-				<div class="myAccountLink"><a href="/MyAccount/MyEvents">{translate text='Your Events' isPublicFacing=true}</a></div>
+				<div class="header-menu-option"><a href="/MyAccount/MyEvents">{translate text='Your Events' isPublicFacing=true}</a></div>
 			{/if}
 			{if !empty($userHasCatalogConnection) && $enableReadingHistory}
 				<div class="header-menu-option" >
