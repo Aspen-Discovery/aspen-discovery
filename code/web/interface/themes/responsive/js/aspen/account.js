@@ -778,7 +778,7 @@ AspenDiscovery.Account = (function () {
 					AspenDiscovery.Account.cancelHold(patronId, recordId, holdIdToCancel, isIll)
 				}, false);
 			}
-			AspenDiscovery.Account.reloadHolds();
+			//AspenDiscovery.Account.reloadHolds();
 
 			return false
 		},
