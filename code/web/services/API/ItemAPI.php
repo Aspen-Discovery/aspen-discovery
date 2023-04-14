@@ -1122,6 +1122,14 @@ class ItemAPI extends Action {
 				}
 			}
 
+			$marcRecordDriver = new MarcRecordDriver($relatedRecord->id);
+			$oclcNumberString = '';
+			/** @var File_MARC_Control_Field $oclcNumber */
+			$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
+			if ($oclcNumber != null) {
+				$oclcNumberString = substr($oclcNumber->getData(), 0, 50);
+			}
+
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
 			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
 			$variations[$relatedVariation->label]['closedCaptioned'] = (int) $relatedRecord->closedCaptioned;
@@ -1145,6 +1153,11 @@ class ItemAPI extends Action {
 				'showItsHere' => (int) $library->showItsHere,
 				'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 			];
+			$variations[$relatedVariation->label]['title'] = $marcRecordDriver->getTitle() ?? '';
+			$variations[$relatedVariation->label]['author'] = $marcRecordDriver->getAuthor() ?? '';
+			$variations[$relatedVariation->label]['publisher'] = $relatedRecord->publisher ?? '';
+			$variations[$relatedVariation->label]['isbn'] = $marcRecordDriver->getCleanISBN() ?? '';
+			$variations[$relatedVariation->label]['oclcNumber'] = $oclcNumberString;
 		}
 
 		return [
