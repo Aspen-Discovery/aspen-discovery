@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
-import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
@@ -16,6 +16,7 @@ import {ActionButton} from '../../components/Action/ActionButton';
 import {decodeHTML, stripHTML} from '../../util/apiAuth';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 import {confirmHold} from '../../util/api/circulation';
+import {refreshProfile} from '../../util/api/user';
 
 export const Variations = (props) => {
      const route = useRoute();
@@ -24,7 +25,9 @@ export const Variations = (props) => {
      const format = props.format;
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const { updateUser } = React.useContext(UserContext);
      const [isLoading, setLoading] = React.useState(false);
+     const [confirmingHold, setConfirmingHold] = React.useState(false);
      const [responseIsOpen, setResponseIsOpen] = React.useState(false);
      const onResponseClose = () => setResponseIsOpen(false);
      const cancelResponseRef = React.useRef(null);
@@ -93,15 +96,27 @@ export const Variations = (props) => {
                                  <AlertDialog.Footer>
                                       <Button.Group space={3}>
                                            <Button variant="outline" colorScheme="primary" ref={cancelHoldConfirmationRef} onPress={() => setHoldConfirmationIsOpen(false)}>{getTermFromDictionary(language, 'close_window')}</Button>
-                                           <Button onPress={async () => {
-                                                await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(result => {
-                                                     setResponse(result);
-                                                     setHoldConfirmationIsOpen(false);
-                                                     if(result) {
-                                                          console.log(result);
-                                                          setResponseIsOpen(true);
-                                                     }
-                                                })
+                                           <Button
+                                               isLoading={confirmingHold}
+                                               isLoadingText="Placing hold..."
+                                               onPress={async () => {
+                                                    setConfirmingHold(true);
+                                                    await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async result => {
+                                                         setResponse(result);
+
+                                                         await refreshProfile(library.baseUrl).then((result) => {
+                                                              updateUser(result);
+                                                         });
+
+                                                         setHoldConfirmationIsOpen(false);
+                                                         setConfirmingHold(false);
+
+                                                         if (result) {
+                                                              console.log(result);
+                                                              setResponseIsOpen(true);
+                                                         }
+
+                                                    })
                                            }
                                            }>Yes, Place Hold</Button>
                                       </Button.Group>
