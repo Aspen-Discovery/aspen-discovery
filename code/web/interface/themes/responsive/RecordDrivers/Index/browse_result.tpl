@@ -8,7 +8,7 @@
 		</div>
 
 	{else}{*Default Browse Mode (covers) *}
-		<div class="browse-thumbnail grid-item">
+		<div class="browse-thumbnail grid-item {$coverStyle}">
 			<a href="{$summUrl}" {if !empty($openInNewWindow)}target="_blank"{/if} {if !empty($onclick)}onclick="{$onclick}" {/if}>
 				<div>
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle}{* by {$summAuthor}*}" title="{$summTitle}">

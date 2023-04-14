@@ -30,9 +30,17 @@
 		</div>
 		<div class="col-sm-4">
 				<ul>
-					<li>Date: {$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
-					<li>Time: {$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
-					<li>Branch: {$recordDriver->getBranch()}</li>
+					{if $recordDriver->getEventLength() == 0}
+						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+						<li>{translate text="Time: All Day Event" isPublicFacing=true}</li>
+					{elseif $recordDriver->getEventLength() > 24}
+						<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
+						<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
+					{else}
+						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+						<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
+					{/if}
+					<li>{translate text="Branch: " isPublicFacing=true}{$recordDriver->getBranch()}</li>
 				</ul>
 		</div>
 		<div class="col-sm-4" style="display:flex; justify-content:center;">

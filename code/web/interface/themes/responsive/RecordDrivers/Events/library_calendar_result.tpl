@@ -29,7 +29,13 @@
 			<div class="row">
 				<div class="result-label col-tn-2">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-6 notranslate">
-					{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
+					{if $allDayEvent}
+						{translate text="All Day Event" isPublicFacing=true}
+					{elseif $multiDayEvent}
+						{$start_date|date_format:"%a %b %e, %Y %l:%M%p"} to {$end_date|date_format:"%a %b %e, %Y %l:%M%p"}
+					{else}
+						{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
+					{/if}
 					{if !empty($isCancelled)}
 						&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
 					{/if}

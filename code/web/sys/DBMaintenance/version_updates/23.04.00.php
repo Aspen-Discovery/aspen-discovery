@@ -293,6 +293,16 @@ function getUpdates23_04_00(): array {
 				"ALTER TABLE user_events_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
 			],
 		],
+
+		//user_events_entry_unique
+		'user_events_entry_unique' => [
+			'title' => 'Changes UNIQUE key for user_events_entry',
+			'description' => 'Changes unique key for user_events_entry from (sourceId) to (userId, sourceId).',
+			'sql' => [
+				"ALTER TABLE user_events_entry DROP INDEX sourceId",
+				"ALTER TABLE user_events_entry ADD UNIQUE (userId, sourceId)",
+			],
+		],
 		// Set default weight for (library|location)_records_to_include to 0
 		'default_records_to_include_weight' => [
 			'title' => 'Default Value for Records to Include Weight',

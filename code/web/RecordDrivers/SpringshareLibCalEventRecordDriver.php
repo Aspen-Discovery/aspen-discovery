@@ -70,6 +70,15 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		} else {
 			$interface->assign('isCancelled', false);
 		}
+		$allDayEvent = false;
+		$multiDayEvent = false;
+		if ($this->getEventLength() == 0 || $this->getEventLength() == 24){
+			$allDayEvent = true;
+		} elseif ($this->getEventLength() > 24){
+			$multiDayEvent = true;
+		}
+		$interface->assign('allDayEvent', $allDayEvent);
+		$interface->assign('multiDayEvent', $multiDayEvent);
 		$interface->assign('start_date', $this->fields['start_date']);
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
@@ -228,6 +237,22 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			$startDate = new DateTime($this->fields['start_date']);
 			$startDate->setTimezone(new DateTimeZone(date_default_timezone_get()));
 			return $startDate;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+
+	public function getEventLength() {
+		try {
+			$start = new DateTime($this->fields['start_date']);
+			$end = new DateTime($this->fields['end_date']);
+
+			$interval = $start->diff($end);
+
+			if ($interval->i > 0 && $interval->h == 0){ //some events don't last an hour
+				return 1;
+			}
+			return $interval->h;
 		} catch (Exception $e) {
 			return null;
 		}
