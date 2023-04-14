@@ -1603,6 +1603,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 								continue;
 							}
 						}
+						//Do not index 856 links with subfield 6 set since those go with library holdings.
+						if (recordUrl.getSubfield('6') != null) {
+							continue;
+						}
 						//Get the econtent source
 						String urlLower = url.toLowerCase();
 						String econtentSource;
