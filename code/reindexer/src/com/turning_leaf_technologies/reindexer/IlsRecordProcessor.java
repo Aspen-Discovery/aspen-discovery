@@ -1640,7 +1640,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 						if (linkTextSubfield != null) {
 							itemInfo.setDetailedLocation(linkTextSubfield.getData());
 						} else {
-							itemInfo.setDetailedLocation(econtentSource);
+							linkTextSubfield = recordUrl.getSubfield('z');
+							if (linkTextSubfield != null) {
+								itemInfo.setDetailedLocation(linkTextSubfield.getData());
+							} else {
+								itemInfo.setDetailedLocation(econtentSource);
+							}
 						}
 						itemInfo.setIType("eCollection");
 						mainRecordInfo.addItem(itemInfo);
