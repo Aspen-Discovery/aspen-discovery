@@ -1541,6 +1541,13 @@ class Koha extends AbstractIlsDriver {
 							1 => $responseCode,
 							'isPublicFacing' => true,
 						]),
+						'api' => [
+							'message' => translate([
+								'text' => "Error (%1%) placing a hold on this title.",
+								1 => $responseCode,
+								'isPublicFacing' => true,
+							])
+						]
 					];
 
 					if ($response) {
