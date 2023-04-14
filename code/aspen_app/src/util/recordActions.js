@@ -273,6 +273,7 @@ export async function submitVdxRequest(url, request) {
                acceptFee: request.acceptFee,
                pickupLocation: request.pickupLocation,
                catalogKey: request.catalogKey,
+               oclcNumber: request.oclcNumber,
                note: request.note,
           },
      });
