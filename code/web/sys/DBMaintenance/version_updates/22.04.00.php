@@ -70,6 +70,7 @@ function getUpdates22_04_00(): array {
 		'permissions_create_events_springshare' => [
 			'title' => 'Alters permissions for Events',
 			'description' => 'Create permissions for Springshare LibCal; update permissions for LibraryMarket LibraryCalendar',
+			'continueOnError' => true,
 			'sql' => [
 				"UPDATE permissions SET name = 'Administer LibraryMarket LibraryCalendar Settings', description = 'Allows the user to administer integration with LibraryMarket LibraryCalendar for all libraries.' WHERE name = 'Administer Library Calendar Settings'",
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Springshare LibCal Settings', 'Events', 20, 'Allows the user to administer integration with Springshare LibCal for all libraries.')",
