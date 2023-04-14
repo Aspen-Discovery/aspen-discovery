@@ -66,7 +66,6 @@ class SharedContent extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Approved?',
 				'description' => 'Whether or not the content is approved for use in the community',
-				'hideInLists' => true,
 				'required' => false,
 			],
 			'approvalDate' => [

@@ -100,17 +100,13 @@ class Translation_ImportTranslations extends Admin_Admin {
 										$translation->termId = $translationTerm->id;
 										if ($translation->find(true)) {
 											if (!$translation->translated || $overrideExistingTranslations) {
-												$translation->translation = $newValue;
-												$translation->translated = true;
-												$translation->update();
+												if ($newValue != $translation->translation) {
+													$translation->setTranslation($newValue, $translationTerm);
+												}
 											}
 										} else {
-											$translation->translation = $newValue;
-											$translation->translated = true;
-											$translation->insert();
+											$translation->setTranslation($newValue, $translationTerm);
 										}
-										$memCache->delete('translation_' . $codeToLanguageId[$code] . '_0_' . $term);
-										$memCache->delete('translation_' . $codeToLanguageId[$code] . '_1_' . $term);
 									}
 								}
 								$translationTerm = null;

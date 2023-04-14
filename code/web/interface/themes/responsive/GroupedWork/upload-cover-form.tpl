@@ -1,6 +1,8 @@
 {strip}
 <form enctype="multipart/form-data" name="uploadCoverForm" id="uploadCoverForm" method="post" action="/GroupedWork/AJAX">
-	<input type="hidden" name="id" value="{$id}"/>
+	<input type="hidden" name="groupedWorkId" value="{$groupedWorkId}"/>
+	<input type="hidden" name="recordType" value="{$recordType}"/>
+	<input type="hidden" name="recordId" value="{$recordId}"/>
 	<input type="hidden" name="method" value="uploadCover"/>
 	<div class="form-group">
 		<div class="input-group">
@@ -18,7 +20,7 @@
 		{literal}
 		$("#uploadCoverForm").validate({
 			submitHandler: function(){
-				AspenDiscovery.GroupedWork.uploadCover("{/literal}{$id}{literal}")
+				AspenDiscovery.GroupedWork.uploadCover("{/literal}{$groupedWorkId}{literal}", "{/literal}{$recordType}{literal}", "{/literal}{$recordId}{literal}")
 			}
 		});
 		$(document).on('change', ':file', function() {

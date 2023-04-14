@@ -81,16 +81,12 @@ class Translation_ImportBulkTranslations extends Admin_Admin {
 									$translation->languageId = $activeLanguage->id;
 									$translation->termId = $translationTerm->id;
 									if ($translation->find(true)) {
-										$translation->translation = $newText;
-										$translation->translated = true;
-										$translation->update();
+										if ($newText != $translation->translation) {
+											$translation->setTranslation($newText, $translationTerm);
+										}
 									} else {
-										$translation->translation = $newText;
-										$translation->translated = true;
-										$translation->insert();
+										$translation->setTranslation($newText, $translationTerm);
 									}
-									$memCache->delete('translation_' . $activeLanguage->id . '_0_' . $translationTerm->term);
-									$memCache->delete('translation_' . $activeLanguage->id . '_1_' . $translationTerm->term);
 									$translation->__destruct();
 									$translation = null;
 								}

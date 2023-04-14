@@ -28,7 +28,12 @@ class Admin_Themes extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Themes')) {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$object->id = $library->theme;
+			$libraryThemes = $library->getThemes();
+			$libraryThemeIds = [];
+			foreach ($libraryThemes as $libraryTheme) {
+				$libraryThemeIds[] = $libraryTheme->themeId;
+			}
+			$object->whereAddIn('id', $libraryThemeIds, false);
 		}
 		$object->find();
 		$list = [];
@@ -117,12 +122,12 @@ class Admin_Themes extends ObjectEditor {
 
 	public function canShareToCommunity() {
 		//TODO: This needs a permission
-		return $this->hasCommunityConnection();
+		return $this->hasCommunityConnection() && UserAccount::userHasPermission('Share Content with Community');
 	}
 
 	public function canFetchFromCommunity() {
 		//TODO: This needs a permission
-		return $this->hasCommunityConnection();
+		return $this->hasCommunityConnection() && UserAccount::userHasPermission('Import Content from Community');
 	}
 
 	/** @noinspection PhpUnused */

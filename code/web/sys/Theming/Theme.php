@@ -494,7 +494,7 @@ class Theme extends DataObject {
 			$themesToExtend[$theme->themeName] = $theme->themeName;
 		}
 
-		return [
+		$objectStructure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -1879,16 +1879,16 @@ class Theme extends DataObject {
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => true,
-				'canEdit' => false,
+				'canEdit' => true,
 				'canAddNew' => true,
 				'canDelete' => true,
 				'permissions' => ['Library Theme Configuration'],
 				'additionalOneToManyActions' => [
-					[
+					'applyToAllLibraries' => [
 						'text' => 'Apply To All Libraries',
 						'url' => '/Admin/Themes?id=$id&amp;objectAction=addToAllLibraries',
 					],
-					[
+					'clearLibraries' => [
 						'text' => 'Clear Libraries',
 						'url' => '/Admin/Themes?id=$id&amp;objectAction=clearLibraries',
 						'class' => 'btn-warning',
@@ -1908,7 +1908,7 @@ class Theme extends DataObject {
 				'sortable' => false,
 				'storeDb' => true,
 				'allowEdit' => true,
-				'canEdit' => false,
+				'canEdit' => true,
 				'canAddNew' => true,
 				'canDelete' => true,
 				'permissions' => ['Location Theme Configuration'],
@@ -1925,6 +1925,16 @@ class Theme extends DataObject {
 				],
 			],
 		];
+
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
+			$objectStructure['libraries']['additionalOneToManyActions'] = [];
+		}
+
+		if (!UserAccount::userHasPermission('Administer All Locations')) {
+			$objectStructure['locations']['additionalOneToManyActions'] = [];
+		}
+
+		return $objectStructure;
 	}
 
 	/** @noinspection PhpUnused */
@@ -2617,11 +2627,12 @@ class Theme extends DataObject {
 		} elseif (UserAccount::userHasPermission('Administer Library Themes')) {
 			$libraries = $this->getLibraries();
 			$homeLibrary = UserAccount::getActiveUserObj()->getHomeLibrary();
-			if (array_key_exists($homeLibrary->libraryId, $libraries)) {
-				return true;
-			} else {
-				return false;
+			foreach ($libraries as $libraryTheme) {
+				if ($libraryTheme->libraryId == $homeLibrary->libraryId) {
+					return true;
+				}
 			}
+			return false;
 		} else {
 			return false;
 		}
@@ -2657,5 +2668,7 @@ class Theme extends DataObject {
 		unset($this->favicon);
 		unset($this->logoApp);
 		unset($this->headerBackgroundImage);
+		unset($this->customBodyFont);
+		unset($this->customHeadingFont);
 	}
 }

@@ -113,6 +113,28 @@ function getUpdates23_04_00(): array {
 				"ALTER TABLE translations add column lastCheckInCommunity INT(11) default 0",
 			],
 		], //add_last_check_in_community_for_translations
+		'permissions_community_sharing' => [
+			'title' => 'Add permissions for Sharing and retrieving content from the Community Server',
+			'description' => 'Add permissions for Sharing and retrieving content from the Community Server',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Community Sharing', 'Share Content with Community', '', 10, 'Controls if the user can share content with other members of the Aspen Discovery Community they are connected with.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Community Sharing', 'Import Content from Community', '', 20, 'Controls if the user can import content created by other members of the Aspen Discovery Community they are connected with.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Share Content with Community'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Import Content from Community'))",
+			],
+		],
+		'sierra_order_record_options' => [
+			'title' => 'Sierra Order Record Options',
+			'description' => 'Add new options for controlling the export and indexing of order records for Sierra',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordsStatusesToInclude VARCHAR(25) DEFAULT 'o|1'",
+				"ALTER TABLE indexing_profiles ADD COLUMN hideOrderRecordsForBibsWithPhysicalItems TINYINT(1) DEFAULT 0",
+				"ALTER TABLE indexing_profiles ADD COLUMN orderRecordsToSuppressByDate TINYINT(1) DEFAULT 1",
+				"updateSierraOrderRecordSettings",
+			],
+		],
 
 		//kirstien
 		'add_ecommerce_deluxe' => [
@@ -186,14 +208,15 @@ function getUpdates23_04_00(): array {
 			]
 		],
 		//add_high_contrast_checkbox
-		'updateThemes' => [
-			'title' => 'Update themes for changes',
-			'description' => 'Automatically updates all themes to grab stylesheet changes',
+		'add_branded_app_name' => [
+			'title' => 'Add name in branded app settings',
+			'description' => 'Adds column to store name for branded apps',
+			'continueOnError' => true,
 			'sql' => [
-				'updateAllThemes',
-			],
+				'ALTER TABLE aspen_lida_branded_settings ADD COLUMN appName VARCHAR(100)',
+			]
 		],
-		//updateThemes
+		//add_branded_app_name
 
 		//kodi
 		'permissions_create_events_communico' => [
@@ -252,7 +275,7 @@ function getUpdates23_04_00(): array {
 				'CREATE TABLE IF NOT EXISTS user_events_entry (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					userId INT(11) NOT NULL, 
-					sourceId varchar(36) NOT NULL,
+					sourceId varchar(50) NOT NULL,
 					title varchar(255) NOT NULL,
 					eventDate INT (11),
 					regRequired TINYINT DEFAULT 0,
@@ -260,6 +283,14 @@ function getUpdates23_04_00(): array {
 					dateAdded INT(11),
 					UNIQUE (sourceId)
 				)',
+			],
+		],
+		//user_events_entry_length
+		'user_events_entry_length' => [
+			'title' => 'User Events Entry sourceId Length',
+			'description' => 'Increase allowed length for sourceId in user event entries.',
+			'sql' => [
+				"ALTER TABLE user_events_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
 			],
 		],
 		// Set default weight for (library|location)_records_to_include to 0
@@ -271,14 +302,30 @@ function getUpdates23_04_00(): array {
 				'ALTER TABLE location_records_to_include ALTER COLUMN weight SET DEFAULT 0',
 			],
 		],
-		//other
-		'updateThemesFinal' => [
-			'title' => 'Update themes for changes',
-			'description' => 'Automatically updates all themes to grab stylesheet changes',
-			'sql' => [
-				'updateAllThemes',
-			],
-		],
-		//updateThemesFinal
 	];
+}
+
+function updateSierraOrderRecordSettings() {
+	//Check to see if we have a Sierra indexing profile
+	global $indexingProfiles;
+	global $configArray;
+	foreach ($indexingProfiles as $indexingProfile) {
+		if ($indexingProfile->indexingClass == 'III') {
+			if (isset($configArray['Index']['suppressOrderRecordsThatAreReceivedAndCataloged']) && $configArray['Index']['suppressOrderRecordsThatAreReceivedAndCataloged'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 4;
+			}elseif (isset($configArray['Index']['suppressOrderRecordsThatAreCataloged']) && $configArray['Index']['suppressOrderRecordsThatAreCataloged'] == true && isset($configArray['Index']['suppressOrderRecordsThatAreReceived']) && $configArray['Index']['suppressOrderRecordsThatAreReceived'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 4;
+			}elseif (isset($configArray['Index']['suppressOrderRecordsThatAreReceived']) && $configArray['Index']['suppressOrderRecordsThatAreReceived'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 3;
+			}elseif (isset($configArray['Index']['suppressOrderRecordsThatAreCataloged']) && $configArray['Index']['suppressOrderRecordsThatAreCataloged'] == true) {
+				$indexingProfile->orderRecordsToSuppressByDate = 2;
+			}else{
+				$indexingProfile->orderRecordsToSuppressByDate = 1;
+			}
+			if (isset($configArray['Reindex']['orderStatusesToExport'])) {
+				$indexingProfile->orderRecordsStatusesToInclude = $configArray['Reindex']['orderStatusesToExport'];
+			}
+			$indexingProfile->update();
+		}
+	}
 }

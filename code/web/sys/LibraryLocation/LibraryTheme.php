@@ -23,11 +23,10 @@ class LibraryTheme extends DataObject {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$library->libraryId = $homeLibrary->libraryId;
 		}
-		$library->find();
-		$libraryList = [];
-		while ($library->fetch()) {
-			$libraryList[$library->libraryId] = $library->displayName;
-		}
+		$libraryList = $library->fetchAll('libraryId', 'displayName');
+		$library = new Library();
+		$library->orderBy('displayName');
+		$allLibraryList = $library->fetchAll('libraryId', 'displayName');
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();
@@ -49,6 +48,7 @@ class LibraryTheme extends DataObject {
 				'property' => 'libraryId',
 				'type' => 'enum',
 				'values' => $libraryList,
+				'allValues' => $allLibraryList,
 				'label' => 'Library',
 				'description' => 'A link to the library which the theme belongs to',
 			],
@@ -61,5 +61,26 @@ class LibraryTheme extends DataObject {
 				'permissions' => ['Library Theme Configuration'],
 			],
 		];
+	}
+
+	public function canActiveUserEdit() {
+		if (!UserAccount::userHasPermission('Administer All Libraries')) {
+			$homeLibrary = Library::getPatronHomeLibrary();
+			if ($homeLibrary->libraryId == $this->libraryId) {
+				return true;
+			}else {
+				return false;
+			}
+		}else {
+			return true;
+		}
+	}
+
+	function getEditLink($context): string {
+		if ($context == 'libraries') {
+			return '/Admin/Libraries?objectAction=edit&id=' . $this->libraryId;
+		} else {
+			return '/Admin/Themes?objectAction=edit&id=' . $this->themeId;
+		}
 	}
 }

@@ -153,7 +153,7 @@ public class EvergreenExportMain {
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
 							updatePatronTypes(dbConn, staffToken);
-							logEntry.addNote("Finished updating branch information");
+							logEntry.addNote("Finished updating branch & patron type information");
 
 							exportVolumes(dbConn);
 
@@ -1487,6 +1487,11 @@ public class EvergreenExportMain {
 												//Get the call number
 												String callNumber = curVolume.getAttribute("label");
 
+												String opacVisible = curVolume.getAttribute("opac_visible");
+												if (opacVisible.equals("f")) {
+													continue;
+												}
+
 												//Get all the copies within each volume
 												NodeList copies = curVolume.getElementsByTagName("copies");
 												if (copies.getLength() > 0) {
@@ -1496,6 +1501,10 @@ public class EvergreenExportMain {
 														Element curCopy = (Element) copyList.item(l);
 														String deleted = curCopy.getAttribute("deleted");
 														if (deleted.equals("t")) {
+															continue;
+														}
+														opacVisible = curCopy.getAttribute("opac_visible");
+														if (opacVisible.equals("f")) {
 															continue;
 														}
 														DataField curItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
@@ -1525,6 +1534,7 @@ public class EvergreenExportMain {
 														String copyNumber = curCopy.getAttribute("copy_number");
 														curItemField.addSubfield(marcFactory.newSubfield('t', copyNumber));
 
+														boolean isOpacVisible = true;
 														for (int m = 0; m < curCopy.getChildNodes().getLength(); m++) {
 															Node curCopySubNode = curCopy.getChildNodes().item(m);
 															if (curCopySubNode instanceof Element) {
@@ -1533,20 +1543,34 @@ public class EvergreenExportMain {
 																	case "status":
 																		String statusCode = curCopySubElement.getTextContent();
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemStatusSubfield(), statusCode));
+																		String statusOpacVisible = curCopySubElement.getAttribute("opac_visible");
+																		if (statusOpacVisible.equals("f")) {
+																			isOpacVisible = false;
+																		}
 																		break;
 																	case "location":
 																		String shelfLocation = curCopySubElement.getTextContent();
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getShelvingLocationSubfield(), shelfLocation));
+																		String locOpacVisible = curCopySubElement.getAttribute("opac_visible");
+																		if (locOpacVisible.equals("f")) {
+																			isOpacVisible = false;
+																		}
 																		break;
 																	case "circ_lib":
 																		String locationCode = curCopySubElement.getAttribute("shortname");
 																		curItemField.addSubfield(marcFactory.newSubfield(indexingProfile.getLocationSubfield(), locationCode));
+																		String libOpacVisible = curCopySubElement.getAttribute("opac_visible");
+																		if (libOpacVisible.equals("f")) {
+																			isOpacVisible = false;
+																		}
 																		break;
 																}
 															}
 														}
 
-														marcRecord.addVariableField(curItemField);
+														if (isOpacVisible) {
+															marcRecord.addVariableField(curItemField);
+														}
 													}
 												}
 											}

@@ -2750,6 +2750,8 @@ class SearchAPI extends Action {
 			$topFacetSet = $interface->getVariable('topFacetSet');
 			$facets = $interface->getVariable('sideFacetSet');
 			//$facets = $searchObj->getFacetList();
+			$appliedFacets = $searchObj->getFilterList();
+
 			$items = [];
 			$index = 0;
 			if ($includeSortList) {
@@ -2825,7 +2827,7 @@ class SearchAPI extends Action {
 					} else {
 						foreach ($facet['list'] as $item) {
 							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
+							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
 							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 							$items[$key]['facets'][$i]['count'] = $item['count'];
 							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
@@ -2838,7 +2840,23 @@ class SearchAPI extends Action {
 						}
 					}
 				}
+
+				if (array_key_exists($facet['label'], $appliedFacets)) {
+					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
+					$label = $facet['label'];
+					if (!in_array($appliedFacets[$label], $items[$key]['facets'])) {
+						$facet = $appliedFacets[$facet['label']][0];
+						$items[$key]['facets'][$i]['value'] = $facet['value'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $facet['display'], 'isPublicFacing' => true]);
+						$items[$key]['facets'][$i]['field'] = $facet['field'];
+						$items[$key]['facets'][$i]['count'] = 0;
+						$items[$key]['facets'][$i]['isApplied'] = true;
+						$items[$key]['facets'][$i]['multiSelect'] = true;
+					}
+				}
+
 			}
+
 			$results = [
 				'success' => true,
 				'id' => $id,

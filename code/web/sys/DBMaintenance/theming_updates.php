@@ -448,7 +448,7 @@ function getThemingUpdates() {
 				"ALTER TABLE themes ADD COLUMN menuDropdownBackgroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColor CHAR(7) DEFAULT '#404040'",
 				"ALTER TABLE themes ADD COLUMN menuDropdownForegroundColorDefault tinyint(1) DEFAULT 1",
-				"updateAllThemes",
+				//"updateAllThemes",
 			],
 		],
 
@@ -466,24 +466,16 @@ function getThemingUpdates() {
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterForegroundColorDefault tinyint(1) DEFAULT 1",
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColor CHAR(7) DEFAULT '#e5e5e5'",
 				"ALTER TABLE themes ADD COLUMN modalDialogHeaderFooterBorderColorDefault tinyint(1) DEFAULT 1",
-				"updateAllThemes",
+				//"updateAllThemes",
 			],
 		],
 
-		'rebuildThemes21_03' => [
-			'title' => 'Rebuild Themes for 21.03',
-			'description' => 'Rebuild Themes for 21.03',
-			'sql' => [
-				"updateAllThemes",
-			],
-		],
+//		'rebuildThemes21_03' => [
+//			'title' => 'Rebuild Themes for 21.03',
+//			'description' => 'Rebuild Themes for 21.03',
+//			'sql' => [
+//				"updateAllThemes",
+//			],
+//		],
 	];
-}
-
-function updateAllThemes() {
-	$theme = new Theme();
-	$theme->find();
-	while ($theme->fetch()) {
-		$theme->generateCss(true);
-	}
 }

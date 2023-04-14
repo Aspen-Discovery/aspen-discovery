@@ -124,11 +124,13 @@
 						<label class="control-label">{translate text="Place hold on" isPublicFacing=true}</label>
 						{if $holdType == 'either'}
 							<div id="holdTypeSelection" class="form-group">
-								<div class="col-tn-6">
-									<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" checked onchange="$('#itemSelection').hide()"> {translate text="First Available Item" isPublicFacing=true}</label>
-								</div>
-								<div class="col-tn-6">
-									<label for="holdTypeItem"><input type="radio" name="holdType" value="item" id="holdTypeItem" onchange="$('#itemSelection').show()"> {translate text="Specific Item" isPublicFacing=true}</label>
+								<div class="row">
+									<div class="col-tn-6">
+										<label for="holdTypeBib"><input type="radio" name="holdType" value="bib" id="holdTypeBib" checked onchange="$('#itemSelection').hide()"> {translate text="First Available Item" isPublicFacing=true}</label>
+									</div>
+									<div class="col-tn-6">
+										<label for="holdTypeItem"><input type="radio" name="holdType" value="item" id="holdTypeItem" onchange="$('#itemSelection').show()"> {translate text="Specific Item" isPublicFacing=true}</label>
+									</div>
 								</div>
 							</div>
 						{else}

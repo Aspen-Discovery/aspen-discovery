@@ -2523,8 +2523,28 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 								'link' => $continuesRecordDriver->getLinkUrl(),
 								'actions' => $actions,
 							];
+							continue;
 						}
 					}
+				}
+				$title = '';
+				$subfieldA = $marc780Field->getSubfield('a');
+				if ($subfieldA != null) {
+					$title = $subfieldA->getData();
+				}
+				$subfieldT = $marc780Field->getSubfield('t');
+				if ($subfieldT != null) {
+					$title .= ' ' . $subfieldT->getData();
+					$title = trim($title);
+				}
+				if (!empty($title)) {
+					$continuesRecords[] = [
+						'id' => '',
+						'label' => $title,
+						'format' => '',
+						'link' => '',
+						'actions' => [],
+					];
 				}
 			}
 		}
@@ -2553,8 +2573,28 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 								'link' => $continuedByRecordDriver->getLinkUrl(),
 								'actions' => $continuedByRecordDriver->getRelatedRecord()->getActions(),
 							];
+							continue;
 						}
 					}
+				}
+				$title = '';
+				$subfieldA = $marc780Field->getSubfield('a');
+				if ($subfieldA != null) {
+					$title = $subfieldA->getData();
+				}
+				$subfieldT = $marc780Field->getSubfield('t');
+				if ($subfieldT != null) {
+					$title .= ' ' . $subfieldT->getData();
+					$title = trim($title);
+				}
+				if (!empty($title)) {
+					$continuedByRecords[] = [
+						'id' => '',
+						'label' => $title,
+						'format' => '',
+						'link' => '',
+						'actions' => [],
+					];
 				}
 			}
 		}

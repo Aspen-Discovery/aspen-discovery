@@ -419,6 +419,8 @@ function getSubdomainsToTestFromServerName($fullServerName, array $subdomainsToT
 	$lastChar = substr($tempSubdomain, -1);
 	if ($lastChar == '2' || $lastChar == '3' || $lastChar == 't' || $lastChar == 'd' || $lastChar == 'x') {
 		$subdomainsToTest[] = substr($tempSubdomain, 0, -1);
+	} elseif (strpos($tempSubdomain, '-test') !== false) {
+		$subdomainsToTest[] = str_replace('-test', '', $tempSubdomain);
 	}
 	return $subdomainsToTest;
 }

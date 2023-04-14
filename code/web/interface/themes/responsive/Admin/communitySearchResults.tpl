@@ -10,9 +10,9 @@
 	<tbody>
 		{foreach from=$results item=$communitySearchResult}
 			<tr>
-				<td>{$greenhouseSearchResult.name}</td>
-				<td>{$greenhouseSearchResult.sharedFrom} {$communitySearchResult.shareDate|date_format:"%D"}</td>
-				<td>{$greenhouseSearchResult.description}</td>
+				<td>{$communitySearchResult.name}</td>
+				<td>{$communitySearchResult.sharedFrom} {$communitySearchResult.shareDate|date_format:"%D"}</td>
+				<td>{$communitySearchResult.description}</td>
 				<td><a class="btn btn-default btn-sm" href="/{$toolModule}/{$toolName}?objectAction=importFromCommunity&objectType={$communitySearchResult.type}&sourceId={$communitySearchResult.id}">{translate text="Import" isAdminFacing=true}</a> </td>
 			</tr>
 		{/foreach}

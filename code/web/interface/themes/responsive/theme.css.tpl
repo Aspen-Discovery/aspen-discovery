@@ -179,19 +179,19 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     color: {$bodyTextColor};
 {rdelim}
 
-.exploreMoreBar{ldelim}
-    border-color: {$primaryBackgroundColor};
-    background: {$primaryBackgroundColor}07;
-    border: 0;
-{rdelim}
-.exploreMoreBar .label-top, #explore-more-bar-placeholder, .exploreMoreBar, .exploreMoreBar .label-top .exploreMoreBarLabel, .exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
+.exploreMoreBar .label-top, .exploreMoreBar .label-top img{ldelim}
     background-color: {$primaryBackgroundColor};
     color: {$primaryForegroundColor};
 {rdelim}
+
 .exploreMoreBar .exploreMoreBarLabel{ldelim}
     color: {$primaryForegroundColor};
 {rdelim}
 
+.exploreMoreBar{ldelim}
+    border-color: {$primaryBackgroundColor};
+    background: {$primaryBackgroundColor}07;
+{rdelim}
 
 {if !empty($primaryForegroundColor)}
 #home-page-search-label,#home-page-advanced-search-link,#keepFiltersSwitchLabel,.menu-bar, #horizontal-menu-bar-container {ldelim}
@@ -439,7 +439,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     {/if}
 {rdelim}
 
-.label{ldelim}
+#myAccountPanel .label{ldelim}
 	font-size: 10px;
     min-width: 10px;
     padding: 3px 7px;
@@ -523,9 +523,11 @@ legend{ldelim}
 	border-color: {$bodyTextColor};
 {rdelim}
 
+{if !empty($bodyFont)}
 label{ldelim}
 	font-family: "{$bodyFont}", "Helvetica Neue", Helvetica, Arial, sans-serif;
 {rdelim}
+{/if}
 
 .bootstrap-switch{ldelim}
 	border: 1px solid {$bodyTextColor};
@@ -625,7 +627,7 @@ label{ldelim}
 {* Browse Category Carousel *}
 .jcarousel-pagination a{ldelim}
 	border-radius: {$smallButtonRadius};
-	background: {$deselectedBrowseCategoryBackgroundColor};
+	background: {$selectedBrowseCategoryBackgroundColor}70;
 	color: {$bodyTextColor};
 	box-shadow: none;
 {rdelim}
@@ -713,8 +715,13 @@ label{ldelim}
 
 {* Misc *}
 .well{ldelim}
-	background-color: {$primaryBackgroundColor};
-	border: 1px solid {$secondaryBackgroundColor};
+	background-color: {$primaryBackgroundColor}70;
+	border: 1px solid {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+{rdelim}
+
+.well a{ldelim}
+	color: {$primaryForegroundColor};
 {rdelim}
 
 .sidebar-label{ldelim}
@@ -724,7 +731,12 @@ label{ldelim}
 {rdelim}
 
 pre{ldelim}
-	background-color: {$primaryBackgroundColor};
+	background-color: {$primaryBackgroundColor}70;
+	border-color: {$primaryBackgroundColor};
+	color: {$primaryForegroundColor};
+{rdelim}
+
+pre a{ldelim}
 	color: {$primaryForegroundColor};
 {rdelim}
 

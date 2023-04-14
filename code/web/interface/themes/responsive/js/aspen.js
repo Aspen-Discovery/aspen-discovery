@@ -6998,12 +6998,14 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		deleteSavedEvent: function(id){
+		deleteSavedEvent: function(id, page, filter){
 			if (confirm("Are you sure you want to remove this event?")){
 				var url = Globals.path + '/MyAccount/AJAX?method=deleteSavedEvent&id=' + id ;
+
 				$.getJSON(url, function(data){
 					if (data.result === true){
-						AspenDiscovery.showMessage('Success', data.message, true);
+						AspenDiscovery.showMessage('Success', data.message, false);
+						AspenDiscovery.Account.loadEvents(page, filter);
 					}else{
 						AspenDiscovery.showMessage('Sorry', data.message);
 					}
@@ -9441,6 +9443,16 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
+		searchCommunityContentKeyDown: function (e, toolModule, toolName) {
+			if (e.keyCode === 9) {
+				AspenDiscovery.Admin.searchCommunityContent(toolModule, toolName);
+			}else if (e.keyCode === 10 || e.keyCode === 13) {
+				e.preventDefault();
+				AspenDiscovery.Admin.searchCommunityContent(toolModule, toolName);
+			}
+			return false;
+		},
+
 		searchCommunityContent: function (toolModule, toolName) {
 			$("#communitySearchResultsLoading").show();
 			$("#communitySearchResults").html("");
@@ -11099,16 +11111,16 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		clearUploadedCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=clearUploadedCover';
+		clearUploadedCover: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUploadedCover&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
 				AspenDiscovery.showMessage("Success", data.message, true, true);
 			});
 			return false;
 		},
 
-		getUploadCoverForm: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverForm';
+		getUploadCoverForm: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getUploadCoverForm&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -11116,8 +11128,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		uploadCover: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCover';
+		uploadCover: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId;
 			var uploadCoverData = new FormData($("#uploadCoverForm")[0]);
 			$.ajax({
 				url: url,
@@ -11134,8 +11146,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		getUploadCoverFormByURL: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=getUploadCoverFormByURL';
+		getUploadCoverFormByURL: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=getUploadCoverFormByURL&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
 					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 				}
@@ -11143,8 +11155,8 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
-		uploadCoverByURL: function (id){
-			var url = Globals.path + '/GroupedWork/' + id + '/AJAX?method=uploadCoverByURL';
+		uploadCoverByURL: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId;
 			var uploadCoverData = new FormData($("#uploadCoverFormByURL")[0]);
 			$.ajax({
 				url: url,
@@ -14411,7 +14423,7 @@ AspenDiscovery.IndexingClass = (function () {
 				ArlingtonKoha: ['propertyRowlastUpdateOfAuthorities'],
 				CarlX: [],
 				Folio: [],
-				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection'],
+				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection', 'propertyRowsierraSection', 'propertyRoworderRecordsStatusesToInclude', 'propertyRowhideOrderRecordsForBibsWithPhysicalItems', 'propertyRoworderRecordsToSuppressByDate', 'propertyRowsierraFieldMappings'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],
 				Polaris: [],
 				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection']

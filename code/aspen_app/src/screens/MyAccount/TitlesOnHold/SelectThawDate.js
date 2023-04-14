@@ -9,7 +9,7 @@ import {getTermFromDictionary} from '../../../translations/TranslationService';
 import {Platform} from 'react-native';
 
 export const SelectThawDate = (props) => {
-     const { libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, language } = props;
+     const { libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, language, label } = props;
      let data = props.data;
      let count = props.count;
      const [loading, setLoading] = React.useState(false);
@@ -34,7 +34,7 @@ export const SelectThawDate = (props) => {
                          onPress={() => {
                               setShowModal(true);
                          }}>
-                        {getTermFromDictionary(language, 'freeze_all_holds')} ({count})
+                        {label}
                     </Actionsheet.Item>
                );
           } else {

@@ -171,11 +171,16 @@ class CommunityAPI extends Action {
 							$translation->translated = 1;
 							$translation->update();
 							$result['success'] = true;
+							$result['message'] = 'Translation updated';
 						} else {
 							$result['message'] = 'Term already translated';
 						}
 					} else {
-						$result['message'] = 'No translation found';
+						$translation->translation = $_REQUEST['translation'];
+						$translation->translated = 1;
+						$translation->insert();
+						$result['success'] = true;
+						$result['message'] = 'New translation inserted';
 					}
 				} else {
 					$result['message'] = 'Could not find language';
