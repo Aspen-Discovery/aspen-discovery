@@ -16,6 +16,13 @@ export const SelectVolume = (props) => {
 		enabled: !!showModal,
 	});
 
+	let key = data[0];
+	let defaultVolume = key.volumeId
+
+	if(volume) {
+		defaultVolume = volume;
+	}
+
 	return (
 		<>
 			{status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : (
@@ -44,7 +51,8 @@ export const SelectVolume = (props) => {
 							<FormControl.Label>{getTermFromDictionary(language, 'select_volume')}</FormControl.Label>
 							<Select
 								name="volumeForHold"
-								selectedValue={volume}
+								selectedValue={defaultVolume}
+								defaultValue={defaultVolume}
 								minWidth="200"
 								accessibilityLabel={getTermFromDictionary(language, 'select_volume')}
 								_selectedItem={{
