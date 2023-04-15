@@ -8516,7 +8516,14 @@ AspenDiscovery.Admin = (function () {
 				return Math.pow((component + 0.055) / 1.055, 2.4);
 			}
 		},
-
+		updateLocationFields: function () {
+			var useLibraryThemes = $("#useLibraryThemes").prop("checked");
+			if (useLibraryThemes) {
+				$("#propertyRowthemes").hide();
+			}else{
+				$("#propertyRowthemes").show();
+			}
+		},
 		updateMaterialsRequestFields: function () {
 			var materialRequestType = $("#enableMaterialsRequestSelect option:selected").val();
 			$("#propertyRowallowDeletingILSRequests").hide();

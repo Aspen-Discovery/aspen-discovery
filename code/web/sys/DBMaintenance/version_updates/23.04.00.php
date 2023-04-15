@@ -13,6 +13,14 @@ function getUpdates23_04_00(): array {
 		], //sample*/
 
 		//mark
+		'use_library_themes_for_location' => [
+			'title' => 'Use Library Themes for Location',
+			'description' => 'Use Library Themes for Location',
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN useLibraryThemes TINYINT(1) DEFAULT 1",
+				"UPDATE location set useLibraryThemes = 1 where theme = -1",
+			],
+		],
 		'allow_multiple_themes_for_libraries' => [
 			'title' => 'Allow Multiple Themes for Libraries',
 			'description' => 'Allow Multiple Themes for Libraries',
