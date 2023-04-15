@@ -730,6 +730,10 @@ label{ldelim}
 	margin-bottom: .75em;
 {rdelim}
 
+.sidebar-label a, .sidebar-label a:hover, .sidebar-label a:visited, .searchSettingsColor, .searchSettingsColor:hover, .searchSettingsColor:visited{ldelim}
+	color: {$primaryForegroundColor};
+{rdelim}
+
 pre{ldelim}
 	background-color: {$primaryBackgroundColor}70;
 	border-color: {$primaryBackgroundColor};
