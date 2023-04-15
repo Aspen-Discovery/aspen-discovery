@@ -102,7 +102,7 @@
 					</div>
 
 					<div class="row">
-						<div class="col-xs-12"><span class="badge">{if $list->public == '0'}{translate text="Private" isPublicFacing=true}{else}{translate text="Public" isPublicFacing=true}{/if}</span> {if $list->searchable == '1'}<span class="badge">{translate text="Searchable" isPublicFacing=true}</span>{/if}</div>
+						<div class="col-xs-12"><span class="badge">{if $list->public == '0'}{translate text="Private" isPublicFacing=true}{else}{translate text="Public" isPublicFacing=true}{/if}</span> {if $list->searchable == '1' && $list->public == '1'}<span class="badge">{translate text="Searchable" isPublicFacing=true}</span>{/if}</div>
 					</div>
 
 				</div>
