@@ -16,11 +16,10 @@ export const SelectVolume = (props) => {
 		enabled: !!showModal,
 	});
 
-	let key = data[0];
-	let defaultVolume = key.volumeId
-
-	if(volume) {
-		defaultVolume = volume;
+	if(!isFetching && data && _.isEmpty(volume)) {
+		let volumesKeys = Object.keys(data);
+		let key = volumesKeys[0];
+		setVolume(data[key].volumeId);
 	}
 
 	return (
@@ -35,6 +34,7 @@ export const SelectVolume = (props) => {
 								value={holdType}
 								onChange={(nextValue) => {
 									setHoldType(nextValue);
+									setVolume('');
 								}}
 								accessibilityLabel="">
 								<Radio value="item" my={1} size="sm">
@@ -51,8 +51,8 @@ export const SelectVolume = (props) => {
 							<FormControl.Label>{getTermFromDictionary(language, 'select_volume')}</FormControl.Label>
 							<Select
 								name="volumeForHold"
-								selectedValue={defaultVolume}
-								defaultValue={defaultVolume}
+								selectedValue={volume}
+								defaultValue={volume}
 								minWidth="200"
 								accessibilityLabel={getTermFromDictionary(language, 'select_volume')}
 								_selectedItem={{

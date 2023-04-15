@@ -1727,7 +1727,29 @@ class UserAPI extends Action {
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
 							];
+					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
+						$recordId = $_REQUEST['recordId'];
+						if (strpos($recordId, ':') > 0) {
+							[
+								,
+								$shortId,
+							] = explode(':', $recordId, 2);
 						} else {
+							$shortId = $recordId;
+						}
+						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch);
+						$action = $result['api']['action'] ?? null;
+						$responseMessage = strip_tags($result['api']['message']);
+						$responseMessage = trim($responseMessage);
+						return [
+							'success' => $result['success'],
+							'title' => $result['api']['title'],
+							'message' => $responseMessage,
+							'action' => $action,
+							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
+							'confirmationId' => $result['api']['confirmationId'] ?? null,
+						];
+					} else {
 							//Make sure that there are not volumes available
 							require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 							$recordDriver = new MarcRecordDriver($bibId);
