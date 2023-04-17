@@ -2844,14 +2844,20 @@ class SearchAPI extends Action {
 				if (array_key_exists($facet['label'], $appliedFacets)) {
 					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
 					$label = $facet['label'];
-					if (!in_array($appliedFacets[$label], $items[$key]['facets'])) {
-						$facet = $appliedFacets[$facet['label']][0];
-						$items[$key]['facets'][$i]['value'] = $facet['value'];
-						$items[$key]['facets'][$i]['display'] = translate(['text' => $facet['display'], 'isPublicFacing' => true]);
-						$items[$key]['facets'][$i]['field'] = $facet['field'];
-						$items[$key]['facets'][$i]['count'] = 0;
-						$items[$key]['facets'][$i]['isApplied'] = true;
-						$items[$key]['facets'][$i]['multiSelect'] = true;
+					foreach($appliedFacets[$label] as $appliedFacet) {
+						if (!in_array($appliedFacet['display'], $items[$key]['facets'])) {
+							//$facet = $appliedFacets[$facet['label']][0];
+							$items[$key]['facets'][$i]['value'] = $appliedFacet['value'];
+							$items[$key]['facets'][$i]['display'] = translate([
+								'text' => $appliedFacet['display'],
+								'isPublicFacing' => true
+							]);
+							$items[$key]['facets'][$i]['field'] = $appliedFacet['field'];
+							$items[$key]['facets'][$i]['count'] = null;
+							$items[$key]['facets'][$i]['isApplied'] = true;
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$i++;
+						}
 					}
 				}
 
