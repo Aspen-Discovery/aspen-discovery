@@ -5495,7 +5495,6 @@ class MyAccount_AJAX extends JSON_Action {
 		} else {
 			require_once ROOT_DIR . '/services/MyAccount/MyEvents.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$result['success'] = true;
 			$sourceId = $_REQUEST['sourceId'];
 
 			$userEventsEntry = new UserEventsEntry();
@@ -5559,26 +5558,25 @@ class MyAccount_AJAX extends JSON_Action {
 						$userEventsEntry->location = $recordDriver->getBranch();
 					}
 				}
+				$existingEntry = false;
+
+				if ($userEventsEntry->find(true)) {
+					$existingEntry = true;
+				}
+				$userEventsEntry->dateAdded = time();
+
+				if ($existingEntry) {
+					$userEventsEntry->update();
+				} else {
+					$userEventsEntry->insert();
+				}
+
+				$result['success'] = true;
+				$result['message'] = translate([
+					'text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,
+				]);
 			}
-
-			$existingEntry = false;
-
-			if ($userEventsEntry->find(true)) {
-				$existingEntry = true;
-			}
-			$userEventsEntry->dateAdded = time();
-
-			if ($existingEntry) {
-				$userEventsEntry->update();
-			} else {
-				$userEventsEntry->insert();
-			}
-
-			$result['success'] = true;
-			$result['message'] = translate([
-				'text' => 'This event was saved to your events successfully.',
-				'isPublicFacing' => true,
-			]);
 		}
 
 		return $result;
