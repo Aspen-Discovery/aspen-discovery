@@ -325,13 +325,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 {/if}
 
-.btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited{ldelim}
+.btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited,.btn-default a,.btn-default a:visited{ldelim}
     background-color: {$defaultButtonBackgroundColor};
     color: {$defaultButtonForegroundColor};
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
-.btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
+.btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
     background-color: {$defaultButtonHoverBackgroundColor};
     color: {$defaultButtonHoverForegroundColor};
     border-color: {$defaultButtonHoverBorderColor};
@@ -682,24 +682,24 @@ label{ldelim}
 
 {* Tabs *}
 .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus, .nav-tabs > li > a:hover{ldelim}
-	background-color: {$primaryBackgroundColor};
-    border-color: {$primaryBackgroundColor} !important;
-    color: {$primaryForegroundColor}
+	background-color: {$closedPanelBackgroundColor};
+    border-color: {$closedPanelBackgroundColor} !important;
+    color: {$closedPanelForegroundColor}
 {rdelim}
 
 .nav-tabs{ldelim}
-	border-bottom: 1px solid {$primaryBackgroundColor}
+	border-bottom: 1px solid {$closedPanelBackgroundColor}
 {rdelim}
 
 .nav-tabs{ldelim}
-	border-left: 0px solid {$primaryBackgroundColor};
-	border-right: 0px solid {$primaryBackgroundColor};
+	border-left: 0px solid {$closedPanelBackgroundColor};
+	border-right: 0px solid {$closedPanelBackgroundColor}
 {rdelim}
 
 .tab-content{ldelim}
-	border-left: 1px solid {$primaryBackgroundColor};
-	border-right: 1px solid {$primaryBackgroundColor};
-	border-bottom: 1px solid {$primaryBackgroundColor};
+	border-left: 1px solid {$closedPanelBackgroundColor};
+	border-right: 1px solid {$closedPanelBackgroundColor};
+	border-bottom: 1px solid {$closedPanelBackgroundColor};
 {rdelim}
 
 {* Syndetics Unbound *}
@@ -728,6 +728,10 @@ label{ldelim}
 	background-color: {$primaryBackgroundColor};
 	color: {$primaryForegroundColor};
 	margin-bottom: .75em;
+{rdelim}
+
+.sidebar-label a, .sidebar-label a:hover, .sidebar-label a:visited, .searchSettingsColor, .searchSettingsColor:hover, .searchSettingsColor:visited{ldelim}
+	color: {$primaryForegroundColor};
 {rdelim}
 
 pre{ldelim}

@@ -122,6 +122,9 @@ class UserList extends DataObject {
 				$this->dateUpdated = time();
 			}
 		}
+		if ($this->public == 0) {
+			$this->searchable = 0;
+		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return parent::insert();
@@ -130,6 +133,9 @@ class UserList extends DataObject {
 	function update($context = '') {
 		if ($this->created == 0) {
 			$this->created = time();
+		}
+		if ($this->public == 0) {
+			$this->searchable = 0;
 		}
 		$this->dateUpdated = time();
 		$result = parent::update();

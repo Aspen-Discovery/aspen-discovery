@@ -862,9 +862,11 @@ class Record_AJAX extends Action {
 							'success' => $return['success'],
 							'message' => $interface->fetch('Record/hold-success-popup.tpl'),
 							'title' => $return['title'] ?? '',
-							'newHoldButtonText' => $return['newHoldButtonText'],
 							'confirmationNeeded' => $confirmationNeeded,
 						];
+						if (isset($return['viewHoldsAction'])) {
+							$results['viewHoldsAction'] = $return['viewHoldsAction'];
+						}
 						if ($confirmationNeeded) {
 							$results['modalButtons'] = '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.confirmHold(\'Record\', \'' . $shortId . '\', ' . $return['confirmationId'] . ')">' . translate([
 									'text' => 'Yes, Place Hold',

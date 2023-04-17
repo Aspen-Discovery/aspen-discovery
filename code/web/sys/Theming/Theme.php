@@ -2670,5 +2670,6 @@ class Theme extends DataObject {
 		unset($this->headerBackgroundImage);
 		unset($this->customBodyFont);
 		unset($this->customHeadingFont);
+		unset($this->generatedCss);
 	}
 }

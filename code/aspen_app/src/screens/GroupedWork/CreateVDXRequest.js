@@ -2,7 +2,7 @@ import _ from 'lodash';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import {Box, Button, Checkbox, CheckIcon, FormControl, Input, Select, Text, TextArea} from 'native-base';
 import React from 'react';
-import {useQuery} from '@tanstack/react-query';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {loadingSpinner} from '../../components/loadingSpinner';
 import {submitVdxRequest} from '../../util/recordActions';
 import {SafeAreaView} from 'react-native';
@@ -10,12 +10,17 @@ import {HoldsContext, LibraryBranchContext, LibrarySystemContext, UserContext} f
 import {getBasicItemInfo} from '../../util/api/item';
 import {loadError} from '../../components/loadError';
 import {getVdxForm} from '../../util/loadLibrary';
-import {refreshProfile, reloadProfile} from '../../util/api/user';
+import {reloadProfile} from '../../util/api/user';
 import {reloadHolds} from '../../util/loadPatron';
 
 export const CreateVDXRequest = () => {
     const route = useRoute();
     const id = route.params.id;
+    const title = route.params.workTitle ?? null;
+    const author = route.params.author ?? null;
+    const publisher = route.params.publisher ?? null;
+    const isbn = route.params.isbn ?? null;
+    const oclcNumber = route.params.oclcNumber ?? null;
     const {library} = React.useContext(LibrarySystemContext);
     const {location} = React.useContext(LibraryBranchContext);
     const {updateUser} = React.useContext(UserContext);
@@ -24,41 +29,34 @@ export const CreateVDXRequest = () => {
           return loadError('Location not setup for VDX', '');
      }
 
-    const { data: item } = useQuery({
-        queryKey: ['vdxItem', id, library.baseUrl],
-        queryFn: () => getBasicItemInfo(id, library.baseUrl)
-    });
-    const vdxItem = item;
-
     const {status, data, error, isFetching} = useQuery({
         queryKey: ['vdxForm', location.vdxFormId, library.baseUrl],
         queryFn: () => getVdxForm(library.baseUrl, location.vdxFormId),
-        enabled: !!vdxItem,
     });
 
-    return <>{status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <Request config={data} item={vdxItem}/>}</>;
+    return <>{status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <Request config={data} workId={id} workTitle={title} workAuthor={author} workPublisher={publisher} workIsbn={isbn} workOclcNumber={oclcNumber} />}</>;
 
 };
 
 const Request = (payload) => {
     const navigation = useNavigation();
-    const {config, item} = payload;
+    const {config, workId, workTitle, workOclcNumber, workPublisher, workAuthor, workIsbn} = payload;
     const {library} = React.useContext(LibrarySystemContext);
     const { updateUser } = React.useContext(UserContext);
     const { updateHolds } = React.useContext(HoldsContext);
 
     let publisherValue = "";
-    if(!_.isUndefined(item.publisher)) {
-        publisherValue = item.publisher;
-        if (_.isArray(item.publisher)) {
-            publisherValue = item.publisher[0];
+    if(!_.isUndefined(workPublisher)) {
+        publisherValue = workPublisher;
+        if (_.isArray(workPublisher)) {
+            publisherValue = workPublisher[0];
         }
     }
 
-    const [title, setTitle] = React.useState(item.title);
-    const [author, setAuthor] = React.useState(item.author);
+    const [title, setTitle] = React.useState(workTitle);
+    const [author, setAuthor] = React.useState(workAuthor);
     const [publisher, setPublisher] = React.useState(publisherValue);
-    const [isbn, setIsbn] = React.useState(item.isbn);
+    const [isbn, setIsbn] = React.useState(workIsbn);
     const [note, setNote] = React.useState('');
     const [acceptFee, setAcceptFee] = React.useState(false);
     const [pickupLocation, setPickupLocation] = React.useState();
@@ -73,7 +71,8 @@ const Request = (payload) => {
             isbn: isbn ?? null,
             acceptFee: acceptFee,
             note: note ?? null,
-            catalogKey: item.id ?? null,
+            catalogKey: workId ?? null,
+            oclcNumber: workOclcNumber ?? null,
             pickupLocation: pickupLocation ?? null,
         }
         await submitVdxRequest(library.baseUrl, request).then(async (result) => {
@@ -267,7 +266,7 @@ const Request = (payload) => {
             return (
                 <FormControl my={2} isDisabled isRequired={field.required}>
                     <FormControl.Label>{field.label}</FormControl.Label>
-                    <Input name={field.property} defaultValue={item.id} accessibilityLabel={field.description ?? field.label}/>
+                    <Input name={field.property} defaultValue={catalogKey} accessibilityLabel={field.description ?? field.label}/>
                 </FormControl>
             );
         }

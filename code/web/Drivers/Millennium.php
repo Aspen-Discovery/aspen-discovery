@@ -1258,6 +1258,10 @@ class Millennium extends AbstractIlsDriver {
 	 * @return String the check digit
 	 */
 	function getCheckDigit($baseId) {
+		return Millennium::getCheckDigitStatic($baseId);
+	}
+
+	static function getCheckDigitStatic($baseId) {
 		$baseId = preg_replace('/\.?[bij]/', '', $baseId);
 		$sumOfDigits = 0;
 		for ($i = 0; $i < strlen($baseId); $i++) {

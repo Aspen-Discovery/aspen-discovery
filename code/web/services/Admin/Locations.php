@@ -113,4 +113,8 @@ class Admin_Locations extends ObjectEditor {
 	protected function showQuickFilterOnPropertiesList() {
 		return true;
 	}
+
+	function getInitializationJs(): string {
+		return 'return AspenDiscovery.Admin.updateLocationFields();';
+	}
 }

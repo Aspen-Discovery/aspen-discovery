@@ -13,6 +13,14 @@ function getUpdates23_04_00(): array {
 		], //sample*/
 
 		//mark
+		'use_library_themes_for_location' => [
+			'title' => 'Use Library Themes for Location',
+			'description' => 'Use Library Themes for Location',
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN useLibraryThemes TINYINT(1) DEFAULT 1",
+				"UPDATE location set useLibraryThemes = 1 where theme = -1",
+			],
+		],
 		'allow_multiple_themes_for_libraries' => [
 			'title' => 'Allow Multiple Themes for Libraries',
 			'description' => 'Allow Multiple Themes for Libraries',
@@ -291,6 +299,16 @@ function getUpdates23_04_00(): array {
 			'description' => 'Increase allowed length for sourceId in user event entries.',
 			'sql' => [
 				"ALTER TABLE user_events_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
+			],
+		],
+
+		//user_events_entry_unique
+		'user_events_entry_unique' => [
+			'title' => 'Changes UNIQUE key for user_events_entry',
+			'description' => 'Changes unique key for user_events_entry from (sourceId) to (userId, sourceId).',
+			'sql' => [
+				"ALTER TABLE user_events_entry DROP INDEX sourceId",
+				"ALTER TABLE user_events_entry ADD UNIQUE (userId, sourceId)",
 			],
 		],
 		// Set default weight for (library|location)_records_to_include to 0

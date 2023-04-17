@@ -16,6 +16,12 @@ export const SelectVolume = (props) => {
 		enabled: !!showModal,
 	});
 
+	if(!isFetching && data && _.isEmpty(volume)) {
+		let volumesKeys = Object.keys(data);
+		let key = volumesKeys[0];
+		setVolume(data[key].volumeId);
+	}
+
 	return (
 		<>
 			{status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : (
@@ -28,6 +34,7 @@ export const SelectVolume = (props) => {
 								value={holdType}
 								onChange={(nextValue) => {
 									setHoldType(nextValue);
+									setVolume('');
 								}}
 								accessibilityLabel="">
 								<Radio value="item" my={1} size="sm">
@@ -45,6 +52,7 @@ export const SelectVolume = (props) => {
 							<Select
 								name="volumeForHold"
 								selectedValue={volume}
+								defaultValue={volume}
 								minWidth="200"
 								accessibilityLabel={getTermFromDictionary(language, 'select_volume')}
 								_selectedItem={{

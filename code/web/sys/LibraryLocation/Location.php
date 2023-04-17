@@ -36,6 +36,7 @@ class Location extends DataObject {
 	public $enableAppAccess;
 	public $appReleaseChannel;
 	public $theme;
+	public $useLibraryThemes;
 	public $_themes;
 	public $showDisplayNameInHeader;
 	public $headerText;
@@ -369,6 +370,16 @@ class Location extends DataObject {
 				'forcesReindex' => false,
 				'editPermissions' => ['Location Domain Settings'],
 				'default' => true,
+			],
+			'useLibraryThemes' => [
+				'property' => 'useLibraryThemes',
+				'type' => 'checkbox',
+				'label' => 'Use Library Themes',
+				'description' => "Whether or not this location will use it's own themes or use themes from the parent library.",
+				'forcesReindex' => false,
+				'editPermissions' => ['Location Theme Configuration'],
+				'default' => true,
+				'onchange' => 'return AspenDiscovery.Admin.updateLocationFields()'
 			],
 			'themes' => [
 				'property' => 'themes',
