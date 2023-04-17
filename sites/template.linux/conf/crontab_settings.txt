@@ -67,7 +67,7 @@
 #############################
 # Refresh SAML SSO metadata #
 #############################
-00 05  * * * www-data php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php {sitename}
+00 05  * * * aspen php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php {sitename}
 
 #########################
 # Fetch Notification Receipts #
