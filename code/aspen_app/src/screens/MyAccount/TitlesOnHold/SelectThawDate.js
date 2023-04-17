@@ -1,17 +1,15 @@
 import { freezeHold, freezeHolds } from '../../../util/accountActions';
 import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
-import { Actionsheet, Box, Button, CloseIcon, Icon, Pressable, HStack, VStack } from 'native-base';
+import { Actionsheet, Box, Button, CloseIcon, Icon, Pressable, HStack, VStack, useColorModeValue, useToken } from 'native-base';
 import Modal from 'react-native-modal';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import DatePicker from 'react-native-date-picker'
 import {getTermFromDictionary} from '../../../translations/TranslationService';
-import {Platform} from 'react-native';
 
 export const SelectThawDate = (props) => {
      const { libraryContext, onClose, freezeId, recordId, source, userId, resetGroup, language, label } = props;
      let data = props.data;
-     let count = props.count;
+     let count = props.count ?? 1;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);
 
@@ -19,13 +17,10 @@ export const SelectThawDate = (props) => {
      let minDate = today.setDate(today.getDate() + 7);
      minDate = new Date(minDate);
      const [date, setDate] = React.useState(new Date());
-     const [show, setShow] = React.useState(false);
 
-     const onChange = (event, selectedDate) => {
-          const currentDate = selectedDate;
-          setShow(false);
-          setDate(currentDate);
-     };
+    const textColor = useToken('colors', useColorModeValue('muted.800', 'muted.50'));
+    const backgroundColor = useToken('colors', useColorModeValue('text.50', 'text.900'));
+    const colorMode = useColorModeValue('light', 'dark');
 
      const createActionsheetItem = () => {
           if (data) {
@@ -45,7 +40,7 @@ export const SelectThawDate = (props) => {
                               onClose();
                               setShowModal(true);
                          }}>
-                         {getTermFromDictionary(language, 'freeze_hold')}
+                         {count > 1 ? getTermFromDictionary(language, 'freeze_holds') : getTermFromDictionary(language, 'freeze_hold')}
                     </Actionsheet.Item>
                );
           }
@@ -91,7 +86,7 @@ export const SelectThawDate = (props) => {
                                         _dark={{
                                              _text: { color: 'text.50' },
                                         }}>
-                                        {data ? getTermFromDictionary(language, 'freeze_all_holds') : getTermFromDictionary(language, 'freeze_hold')}
+                                       {count > 1 ? getTermFromDictionary(language, 'freeze_holds') : getTermFromDictionary(language, 'freeze_hold')}
                                    </Box>
                                    <Pressable onPress={() => setShowModal(false)}>
                                         <CloseIcon
@@ -113,7 +108,7 @@ export const SelectThawDate = (props) => {
                                    </Pressable>
                               </HStack>
                               <Box p={4} _text={{ color: 'text.900' }} _hover={{ bg: 'muted.200' }} _pressed={{ bg: 'muted.300' }} _dark={{ _text: { color: 'text.50' } }}>
-                                  <DatePicker mode="date" date={date} onDateChange={setDate} minimumDate={minDate}/>
+                                  <DatePicker mode="date" date={date} onDateChange={setDate} minimumDate={minDate} theme={colorMode} textColor={textColor} fadeToColor={backgroundColor}/>
                               </Box>
                               <Button.Group
                                    p={4}
