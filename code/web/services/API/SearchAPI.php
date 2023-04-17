@@ -1510,7 +1510,7 @@ class SearchAPI extends Action {
 		$sourceList = new UserList();
 		$sourceList->id = $id;
 		if ($sourceList->find(true)) {
-			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, true);
 		}
 		$response['items'] = $records;
 
@@ -2024,7 +2024,7 @@ class SearchAPI extends Action {
 						$sourceList = new UserList();
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
-							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, true);
 						} else {
 							$records = [];
 						}
