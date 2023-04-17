@@ -1835,6 +1835,7 @@ class SearchAPI extends Action {
 							if ($list->find(true)) {
 								$listEntry = new UserListEntry();
 								$listEntry->listId = $list->id;
+								$listEntry->whereAdd("source <> 'Events'");
 								$listEntry->find();
 								$count = 0;
 								do {
