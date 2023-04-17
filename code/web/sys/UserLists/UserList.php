@@ -638,9 +638,9 @@ class UserList extends DataObject {
 	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecordsRaw($start, $numItems): array {
+	public function getBrowseRecordsRaw($start, $numItems, $forLiDA = false): array {
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries();
+		$listEntryInfo = $this->getListEntries(null, $forLiDA);
 
 		//Trim to the number of records we want to return
 		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);

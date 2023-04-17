@@ -1286,7 +1286,7 @@ class SearchAPI extends Action {
 				$sourceList = new UserList();
 				$sourceList->id = $browseCategory->sourceListId;
 				if ($sourceList->find(true)) {
-					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $this->checkIfLiDA());
 				} else {
 					$records = [];
 				}
@@ -3182,5 +3182,16 @@ class SearchAPI extends Action {
 			// do something with the term
 		}
 		return $results;
+	}
+
+	function checkIfLiDA() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'User-Agent' || $name == 'user-agent') {
+				if (strpos($value, "Aspen LiDA") !== false) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }
