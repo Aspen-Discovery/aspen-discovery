@@ -270,11 +270,12 @@ public class EvolveExportMain {
 			//Give a small buffer (5 minute to account for server time differences)
 			lastExtractTime = (indexingProfile.getLastUpdateOfAllRecords() - (5 * 60)) * 1000 ;
 		}
-		long ninetyDaysAgo = new Date().getTime() - (90 * 24 * 60 * 60 * 1000L);
-		if (lastExtractTime < ninetyDaysAgo){
-			logEntry.addNote("Last Extract Time is more than 90 days ago, resetting to only load the next 90 days. ");
-			lastExtractTime = ninetyDaysAgo;
-		}
+		//allow updating more than 90 days of records from Evolve.
+//		long ninetyDaysAgo = new Date().getTime() - (90 * 24 * 60 * 60 * 1000L);
+//		if (lastExtractTime < ninetyDaysAgo){
+//			logEntry.addNote("Last Extract Time is more than 90 days ago, resetting to only load the next 90 days. ");
+//			lastExtractTime = ninetyDaysAgo;
+//		}
 
 		int numProcessed = 0;
 		long now = new Date().getTime();
