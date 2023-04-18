@@ -713,6 +713,10 @@ label{ldelim}
     color: {$tertiaryForegroundColor} !important;
 {rdelim}
 
+.unbound_lookinside_excerpt::after{ldelim}
+	background-image: none !important;
+{rdelim}
+
 {* Misc *}
 .well{ldelim}
 	background-color: {$primaryBackgroundColor}70;
