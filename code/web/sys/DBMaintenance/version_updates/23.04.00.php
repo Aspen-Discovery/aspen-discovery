@@ -287,7 +287,7 @@ function getUpdates23_04_00(): array {
 					title varchar(255) NOT NULL,
 					eventDate INT (11),
 					regRequired TINYINT DEFAULT 0,
-					location varchar(50),
+					location varchar(255),
 					dateAdded INT(11),
 					UNIQUE (sourceId)
 				)',
@@ -301,7 +301,14 @@ function getUpdates23_04_00(): array {
 				"ALTER TABLE user_events_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
 			],
 		],
-
+		//user_events_entry_location_length
+		'user_events_entry_location_length' => [
+			'title' => 'User Events Entry location Length',
+			'description' => 'Increase allowed length for location in user event entries.',
+			'sql' => [
+				"ALTER TABLE user_events_entry CHANGE COLUMN location location VARCHAR(255) NOT NULL",
+			],
+		],
 		//user_events_entry_unique
 		'user_events_entry_unique' => [
 			'title' => 'Changes UNIQUE key for user_events_entry',
