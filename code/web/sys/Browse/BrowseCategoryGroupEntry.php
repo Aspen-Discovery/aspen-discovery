@@ -45,6 +45,13 @@ class BrowseCategoryGroupEntry extends DataObject {
 				$browseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})". " - $browseCategories->id";
 			}
 		}
+		$browseCategories  = new BrowseCategory();
+		$browseCategories->orderBy('label');
+		$browseCategories->find();
+		$allBrowseCategoryList = [];
+		while ($browseCategories->fetch()) {
+			$allBrowseCategoryList[$browseCategories->id] = $browseCategories->label . " ({$browseCategories->textId})". " - $browseCategories->id";
+		}
 		return [
 			'id' => [
 				'property' => 'id',
@@ -63,6 +70,7 @@ class BrowseCategoryGroupEntry extends DataObject {
 				'property' => 'browseCategoryId',
 				'type' => 'enum',
 				'values' => $browseCategoryList,
+				'allValues' => $allBrowseCategoryList,
 				'label' => 'Browse Category',
 				'description' => 'The browse category to display ',
 			],
@@ -92,6 +100,14 @@ class BrowseCategoryGroupEntry extends DataObject {
 			}
 		}
 		return $this->_browseCategory;
+	}
+
+	public function canActiveUserChangeSelection() {
+		return  UserAccount::userHasPermission('Administer All Browse Categories') ||  UserAccount::userHasPermission('Administer Library Browse Categories');
+	}
+
+	public function canActiveUserDelete() {
+		return  UserAccount::userHasPermission('Administer All Browse Categories') ||  UserAccount::userHasPermission('Administer Library Browse Categories');
 	}
 
 	public function canActiveUserEdit() {

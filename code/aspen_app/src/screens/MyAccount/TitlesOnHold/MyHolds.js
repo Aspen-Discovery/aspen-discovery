@@ -1,7 +1,7 @@
 import { ScrollView, Box, Button, Center, Text, HStack, Checkbox, Select, FormControl, CheckIcon, Heading } from 'native-base';
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
-import {SafeAreaView, SectionList} from 'react-native';
+import {Platform, SafeAreaView, SectionList} from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import _ from 'lodash';
 

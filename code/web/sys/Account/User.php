@@ -1727,6 +1727,7 @@ class User extends DataObject {
 				'url' => "/MyAccount/Holds",
 				'requireLogin' => false,
 				'btnType' => 'btn-info',
+				'id' => 'onHoldAction' . $recordId
 			];
 		}
 		if (!$loadingLinkedUser) {
@@ -1891,7 +1892,7 @@ class User extends DataObject {
 				'inAttribute' => true
 			]);
 
-			$result['viewHoldsAction'] = "<a href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
 			
 			$this->clearCache();
 		}
@@ -1913,10 +1914,10 @@ class User extends DataObject {
 				'text' => 'On Hold for %1%',
 				1 => $thisUser,
 				'isPublicFacing' => true,
-				'inAttribute' => true
+				'inAttribute' => true,
 			]);
 
-			$result['viewHoldsAction'] = "<a href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
 
 			$this->clearCache();
 		}
@@ -1982,10 +1983,10 @@ class User extends DataObject {
 				'text' => 'On Hold for %1%',
 				1 => $thisUser,
 				'isPublicFacing' => true,
-				'inAttribute' => true
+				'inAttribute' => true,
 			]);
 
-			$result['viewHoldsAction'] = "<a href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
 
 			$this->clearCache();
 		}
@@ -3342,7 +3343,7 @@ class User extends DataObject {
 			$sections['events'] = new AdminSection('Events');
 			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer LibraryMarket LibraryCalendar Settings');
 			$sections['events']->addAction(new AdminAction('Springshare - LibCal Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/SpringshareLibCalSettings'), 'Administer Springshare LibCal Settings');
-			$sections['events']->addAction(new AdminAction('Communico Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/CommunicoSettings'), 'Administer Communico Settings');
+			$sections['events']->addAction(new AdminAction('Communico - Attend Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/CommunicoSettings'), 'Administer Communico Settings');
 			$sections['events']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Events.', '/Events/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
