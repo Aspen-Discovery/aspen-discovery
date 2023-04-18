@@ -20,7 +20,7 @@
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
 					{if !empty($deletedEntryTitle)}
-						{if $listEntrySource="Events"}
+						{if $listEntrySource == "Events"}
 							<span class="result-title">{$deletedEntryTitle}</span>
 							<div>{translate text="This event has passed" isPublicFacing=true}</div>
 						{else}
@@ -28,7 +28,7 @@
 							<div>{translate text="This entry no longer exists in the catalog" isPublicFacing=true}</div>
 						{/if}
 					{else}
-						{if $listEntrySource="Events"}
+						{if $listEntrySource == "Events"}
 							<span class="result-title">{translate text="This event has passed" isPublicFacing=true}</span>
 						{else}
 							<span class="result-title">{translate text="This entry no longer exists in the catalog" isPublicFacing=true}</span>
