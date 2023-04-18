@@ -2,7 +2,7 @@ import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
 import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
-import { SelectThawDate } from './SelectThawDate';
+import { SelectThawDate } from './SelectThawDate.js';
 import { SelectPickupLocation } from './SelectPickupLocation';
 import _ from 'lodash';
 import React from 'react';
@@ -17,7 +17,6 @@ export const MyHold = (props) => {
      const resetGroup = props.resetGroup;
      const pickupLocations = props.pickupLocations;
      const section = props.section;
-     const navigation = useNavigation();
      const { isOpen, onOpen, onClose } = useDisclose();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -212,7 +211,7 @@ export const MyHold = (props) => {
                          </Actionsheet.Item>
                     );
                } else {
-                    return <SelectThawDate language={language} libraryContext={library} holdsContext={updateHolds} onClose={onClose} freezeId={hold.cancelId} recordId={hold.recordId} source={hold.source} libraryUrl={library.baseUrl} userId={hold.userId} resetGroup={resetGroup} />;
+                    return <SelectThawDate isOpen={isOpen} label={null} language={language} libraryContext={library} holdsContext={updateHolds} onClose={onClose} freezeId={hold.cancelId} recordId={hold.recordId} source={hold.source} libraryUrl={library.baseUrl} userId={hold.userId} resetGroup={resetGroup} />;
                }
           } else {
                return null;
@@ -221,7 +220,7 @@ export const MyHold = (props) => {
 
      const createUpdatePickupLocationAction = (canUpdate, available) => {
           if (canUpdate && !available) {
-               return <SelectPickupLocation language={language} libraryContext={library} holdsContext={updateHolds} locations={pickupLocations} onClose={onClose} userId={hold.userId} currentPickupId={hold.pickupLocationId} holdId={hold.cancelId} resetGroup={resetGroup} />;
+               return <SelectPickupLocation isOpen={isOpen} language={language} libraryContext={library} holdsContext={updateHolds} locations={pickupLocations} onClose={onClose} userId={hold.userId} currentPickupId={hold.pickupLocationId} holdId={hold.cancelId} resetGroup={resetGroup} />;
           } else {
                return null;
           }
@@ -384,7 +383,7 @@ export const ManageSelectedHolds = (props) => {
                <Actionsheet isOpen={isOpen} onClose={onClose}>
                     <Actionsheet.Content>
                          {cancelActionItem()}
-                         <SelectThawDate label={numToFreezeLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
+                         <SelectThawDate isOpen={isOpen} label={numToFreezeLabel} language={language} holdsContext={updateHolds} libraryContext={library} resetGroup={resetGroup} onClose={onClose} count={numToFreeze} numSelected={numSelected} data={titlesToFreeze} />
                          {thawActionItem()}
                     </Actionsheet.Content>
                </Actionsheet>
