@@ -1003,6 +1003,10 @@ abstract class DataObject {
 		return [];
 	}
 
+	public function canActiveUserChangeSelection() {
+		return $this->canActiveUserEdit();
+	}
+
 	public function canActiveUserEdit() {
 		return true;
 	}
