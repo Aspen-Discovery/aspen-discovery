@@ -784,6 +784,10 @@ color: {$bodyTextColor};
 	color: {$primaryForegroundColor}
 {rdelim}
 
+.calendar-event-time{ldelim}
+    color: {$primaryForegroundColor};
+{rdelim}
+
 {* Accessiblity *}
 {if $themeIsHighContrast}
 	body{ldelim}
