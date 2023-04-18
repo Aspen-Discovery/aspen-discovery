@@ -6972,6 +6972,10 @@ AspenDiscovery.Account = (function () {
 						AspenDiscovery.showMessage("Error", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
+			}else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.saveEvent(trigger, source, id);
+				}, false);
 			}
 			return false;
 		},
@@ -6994,6 +6998,10 @@ AspenDiscovery.Account = (function () {
 						AspenDiscovery.showMessage("Error", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
+			}else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					return AspenDiscovery.Account.saveEventReg(trigger, source, id);
+				}, false);
 			}
 			return false;
 		},

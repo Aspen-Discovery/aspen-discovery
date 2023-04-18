@@ -48,7 +48,7 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 	 * @param false|int $textColor
 	 */
 	protected function drawEventText($imageCanvas, $title, $eventDate, $textColor) {
-		$title_font_size = $this->imageWidth * 0.09;
+		$title_font_size = $this->imageWidth * 0.08;
 
 		$x = 17;
 		$width = $this->imageWidth - (34);
