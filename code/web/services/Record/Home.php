@@ -348,6 +348,15 @@ class Record_Home extends GroupedWorkSubRecordHomeAction {
 			$interface->assign('id', $this->id);
 		} else {
 			$source = 'ils';
+			$this->id = $id;
+		}
+		if (substr($this->id, 0, 1) == 'b' && strlen($this->id) == 8) {
+			//This is probably a Sierra/Millennium record without a check digit
+			require_once ROOT_DIR . '/Drivers/Millennium.php';
+			$this->id = '.' . $this->id . Millennium::getCheckDigitStatic($id);
+		} elseif (substr($this->id, 0, 2) == '.b' && strlen($this->id) == 9) {
+			require_once ROOT_DIR . '/Drivers/Millennium.php';
+			$this->id = $this->id . Millennium::getCheckDigitStatic($id);
 		}
 
 		//Check to see if the record exists within the resources table

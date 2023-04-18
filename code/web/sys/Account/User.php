@@ -1429,6 +1429,7 @@ class User extends DataObject {
 	}
 
 	public function isRecordCheckedOut($source, $recordId) {
+		$this->getCheckouts(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Checkout.php";
 		$checkout = new Checkout();
 		$checkout->userId = $this->id;
@@ -1677,6 +1678,7 @@ class User extends DataObject {
 	}
 
 	public function isRecordOnHold($source, $recordId) {
+		$this->getHolds(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Hold.php";
 		$hold = new Hold();
 		$hold->userId = $this->id;
@@ -1725,6 +1727,7 @@ class User extends DataObject {
 				'url' => "/MyAccount/Holds",
 				'requireLogin' => false,
 				'btnType' => 'btn-info',
+				'id' => 'onHoldAction' . $recordId
 			];
 		}
 		if (!$loadingLinkedUser) {
@@ -1882,11 +1885,15 @@ class User extends DataObject {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
-			$result['newHoldButtonText'] = translate([
+			$viewHoldsText = translate([
 				'text' => 'On Hold for %1%',
 				1 => $thisUser,
 				'isPublicFacing' => true,
+				'inAttribute' => true
 			]);
+
+			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+			
 			$this->clearCache();
 		}
 		return $result;
@@ -1903,11 +1910,15 @@ class User extends DataObject {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
-			$result['newHoldButtonText'] = translate([
+			$viewHoldsText = translate([
 				'text' => 'On Hold for %1%',
 				1 => $thisUser,
 				'isPublicFacing' => true,
+				'inAttribute' => true,
 			]);
+
+			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
+
 			$this->clearCache();
 		}
 		return $result;
@@ -1968,11 +1979,15 @@ class User extends DataObject {
 			$thisUser = $this->displayName;
 		}
 		if ($result['success']) {
-			$result['newHoldButtonText'] = translate([
+			$viewHoldsText = translate([
 				'text' => 'On Hold for %1%',
 				1 => $thisUser,
 				'isPublicFacing' => true,
+				'inAttribute' => true,
 			]);
+
+			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='{$viewHoldsText}'>{$viewHoldsText}</a>";
+
 			$this->clearCache();
 		}
 		return $result;
@@ -2012,6 +2027,9 @@ class User extends DataObject {
 	 */
 	function cancelHold($recordId, $cancelId, $isIll): array {
 		$result = $this->getCatalogDriver()->cancelHold($this, $recordId, $cancelId, $isIll);
+		if ($result['success']) {
+			$this->forceReloadOfHolds();
+		}
 		$this->clearCache();
 		return $result;
 	}

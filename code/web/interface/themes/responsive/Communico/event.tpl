@@ -6,13 +6,13 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-4">
-			<div class="panel active">
-				{if (!empty($recordDriver->getEventCoverUrl()))}
-				<div class="panel-body">
-					<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}"></a>
+			{if !empty($recordDriver->getEventCoverUrl())}
+				<div class="panel active">
+					<div class="panel-body" style="display:flex; justify-content:center">
+						<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}" style="max-height: 280px; width: auto"></a>
+					</div>
 				</div>
-				{/if}
-			</div>
+			{/if}
 			{if !empty($recordDriver->getAudiences())}
 				<div class="panel active">
 					<div class="panel-heading">
@@ -44,14 +44,22 @@
 		</div>
 		<div class="col-sm-4">
 			<ul>
-				<li>Date: {$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
-				<li>Time: {$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
-				<li>Branch: {$recordDriver->getBranch()}</li>
+				{if $recordDriver->getEventLength() == 0}
+					<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+					<li>{translate text="Time: All Day Event" isPublicFacing=true}</li>
+				{elseif $recordDriver->getEventLength() > 24}
+					<li>{translate text="Start Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
+					<li>{translate text="End Date: " isPublicFacing=true}{$recordDriver->getEndDate()|date_format:"%a %b %e, %Y %l:%M%p"}</li>
+				{else}
+					<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
+					<li>{translate text="Time: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%l:%M %p"} to {$recordDriver->getEndDate()|date_format:"%l:%M %p"}</li>
+				{/if}
+				<li>{translate text="Branch: " isPublicFacing=true}{$recordDriver->getBranch()}</li>
 				{if !empty($recordDriver->getRoom())}
-					<li>Room: {$recordDriver->getRoom()}</li>
+					<li>{translate text="Room: " isPublicFacing=true}{$recordDriver->getRoom()}</li>
 				{/if}
 				{if !empty($recordDriver->getType())}
-					<li>Event Type: {$recordDriver->getType()}</li>
+					<li>{translate text="Event Type: " isPublicFacing=true}{$recordDriver->getType()}</li>
 				{/if}
 			</ul>
 		</div>
@@ -62,21 +70,14 @@
 					{translate text=" Add to Your Events and Register" isPublicFacing=true}
 				</a>
 			{else}
-				<a class="btn btn-primary"  href="{$recordDriver->getExternalUrl()}" target="_blank"><i class="fas fa-external-link-alt"></i>
-					{translate text=" View on Communico" isPublicFacing=true}
-				</a>
+				<a class="btn btn-primary" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
 			{/if}
 		</div>
 			<br>
 		<div class="col-sm-8">
 			<div class="btn-group btn-group-sm">
-				{if $recordDriver->isRegistrationRequired()}
-					<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm addtolistlink addToListBtn" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
-					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm addtolistlink addToListBtn">{translate text="Add to list" isPublicFacing=true}</button>
-				{else}
-					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm addtolistlink addToListBtn">{translate text="Add to list" isPublicFacing=true}</button>
-					<button onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm addtolistlink addToListBtn">{translate text="Add to Your Events" isPublicFacing=true}</button>
-				{/if}
+				<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm addtolistlink addToListBtn" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
+				<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm addtolistlink addToListBtn">{translate text="Add to list" isPublicFacing=true}</button>
 			</div>
 			<div class="btn-group btn-group-sm">
 				{include file="Events/share-tools.tpl" eventUrl=$recordDriver->getExternalUrl()}

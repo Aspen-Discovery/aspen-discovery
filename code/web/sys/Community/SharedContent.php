@@ -84,7 +84,7 @@ class SharedContent extends DataObject {
 			],
 			'data' => [
 				'property' => 'data',
-				'type' => 'textArea',
+				'type' => 'textarea',
 				'label' => 'Data',
 				'readOnly' => true,
 				'description' => 'The JSON content that was shared',

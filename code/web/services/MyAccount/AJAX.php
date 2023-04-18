@@ -3068,7 +3068,8 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	public function getSavedEvents(){
+	public function getSavedEvents()
+	{
 		global $interface;
 		global $timer;
 
@@ -3086,10 +3087,10 @@ class MyAccount_AJAX extends JSON_Action {
 		$numSaved = $user->getNumSavedEvents($eventsFilter);
 		$event = new UserEventsEntry();
 		$event->userId = UserAccount::getActiveUserId();
-		if ($eventsFilter == 'past'){
+		if ($eventsFilter == 'past') {
 			$event->whereAdd("eventDate < $curTime");
 		}
-		if ($eventsFilter == 'upcoming'){
+		if ($eventsFilter == 'upcoming') {
 			$event->whereAdd("eventDate >= $curTime");
 		}
 		$event->orderBy('eventDate ASC');
@@ -3107,36 +3108,33 @@ class MyAccount_AJAX extends JSON_Action {
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject("Events");
 		$eventRecords = $searchObject->getRecords(array_keys($eventIds));
+
 		foreach ($eventIds as $curEventId => $entry) {
 			if (array_key_exists($curEventId, $eventRecords)) {
 				$eventRecordDriver = $eventRecords[$curEventId];
-				if ($eventRecordDriver->isValid()) {
-					if (($entry->eventDate < $curTime)){
-						$events[$entry->sourceId] = [
-							'id' => $entry->id,
-							'sourceId' => $entry->sourceId,
-							'title' => $entry->title,
-							'link' => null,
-							'location' => $entry->location,
-							'regRequired' => $entry->regRequired,
-							'eventDate' => $entry->eventDate,
-							'pastEvent' => true,
-						];
-					}else{
-						$events[$entry->sourceId] = [
-							'id' => $entry->id,
-							'sourceId' => $entry->sourceId,
-							'title' => $entry->title,
-							'link' => $eventRecordDriver->getLinkUrl(),
-							'location' => $entry->location,
-							'regRequired' => $entry->regRequired,
-							'eventDate' => $entry->eventDate,
-							'pastEvent' => false,
-						];
-					}
-				}
-			}
+				$events[$entry->sourceId] = [
+					'id' => $entry->id,
+					'sourceId' => $entry->sourceId,
+					'title' => $entry->title,
+					'link' => $eventRecordDriver->getLinkUrl(),
+					'location' => $entry->location,
+					'regRequired' => $entry->regRequired,
+					'eventDate' => $entry->eventDate,
+					'pastEvent' => false,
+				];
+			} else {
+				$events[$entry->sourceId] = [
+				'id' => $entry->id,
+				'sourceId' => $entry->sourceId,
+				'title' => $entry->title,
+				'link' => null,
+				'location' => $entry->location,
+				'regRequired' => $entry->regRequired,
+				'eventDate' => $entry->eventDate,
+				'pastEvent' => true,
+			];
 		}
+	}
 
 		$filter = isset($_REQUEST['eventsFilter']) ? $_REQUEST['eventsFilter'] : '';
 		$interface->assign('eventsFilter', $filter);
@@ -5497,7 +5495,6 @@ class MyAccount_AJAX extends JSON_Action {
 		} else {
 			require_once ROOT_DIR . '/services/MyAccount/MyEvents.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
-			$result['success'] = true;
 			$sourceId = $_REQUEST['sourceId'];
 
 			$userEventsEntry = new UserEventsEntry();
@@ -5561,26 +5558,25 @@ class MyAccount_AJAX extends JSON_Action {
 						$userEventsEntry->location = $recordDriver->getBranch();
 					}
 				}
+				$existingEntry = false;
+
+				if ($userEventsEntry->find(true)) {
+					$existingEntry = true;
+				}
+				$userEventsEntry->dateAdded = time();
+
+				if ($existingEntry) {
+					$userEventsEntry->update();
+				} else {
+					$userEventsEntry->insert();
+				}
+
+				$result['success'] = true;
+				$result['message'] = translate([
+					'text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,
+				]);
 			}
-
-			$existingEntry = false;
-
-			if ($userEventsEntry->find(true)) {
-				$existingEntry = true;
-			}
-			$userEventsEntry->dateAdded = time();
-
-			if ($existingEntry) {
-				$userEventsEntry->update();
-			} else {
-				$userEventsEntry->insert();
-			}
-
-			$result['success'] = true;
-			$result['message'] = translate([
-				'text' => 'This event was saved to your events successfully.',
-				'isPublicFacing' => true,
-			]);
 		}
 
 		return $result;

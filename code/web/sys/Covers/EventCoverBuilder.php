@@ -48,7 +48,7 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 	 * @param false|int $textColor
 	 */
 	protected function drawEventText($imageCanvas, $title, $eventDate, $textColor) {
-		$title_font_size = $this->imageWidth * 0.09;
+		$title_font_size = $this->imageWidth * 0.08;
 
 		$x = 17;
 		$width = $this->imageWidth - (34);
@@ -59,7 +59,7 @@ class EventCoverBuilder extends AbstractCoverBuilder {
 		$y = addCenteredWrappedTextToImage($imageCanvas, $this->titleFont, $dayOfWeek, $title_font_size, $title_font_size * .15, $x, $y, $this->imageWidth - 30, $textColor);
 		$y += 10;
 		$month = $eventDate->format('F');
-		$fontMultiplier = 1.75;
+		$fontMultiplier = 1.6;
 		if (strlen($month) > 5) {
 			$fontMultiplier = 1.5;
 		}

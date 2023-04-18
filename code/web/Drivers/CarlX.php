@@ -2145,9 +2145,9 @@ EOT;
                       , itembranch.branchgroup AS SYSTEM
                       , item_v.cn AS Call_Number
                       , bbibmap_v.title AS Title
-                      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
+                      , to_char(transitem_v.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date
                       , item_v.price AS Owed
-                      , to_char(jts.todate(transitem_v.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
+                      , to_char(transitem_v.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date_Dup
                       , item_v.item AS Item
                     from 
                       bbibmap_v
@@ -2212,9 +2212,9 @@ EOT;
                     , itembranch.branchgroup AS SYSTEM
                     , r.callnumber AS Call_Number
                     , r.title AS Title
-                    , to_char(jts.todate(r.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date
+                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date
                     , to_char(r.amountowed / 100, 'fm999D00') as Owed
-                    , to_char(jts.todate(r.dueornotneededafterdate),'MM/DD/YYYY') AS Due_Date_Dup
+                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date_Dup
                     , r.item AS Item
                 from p 
                 left join report3fines_v r on p.patronid = r.patronid

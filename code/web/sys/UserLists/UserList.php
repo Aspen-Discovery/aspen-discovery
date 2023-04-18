@@ -122,6 +122,9 @@ class UserList extends DataObject {
 				$this->dateUpdated = time();
 			}
 		}
+		if ($this->public == 0) {
+			$this->searchable = 0;
+		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
 		return parent::insert();
@@ -130,6 +133,9 @@ class UserList extends DataObject {
 	function update($context = '') {
 		if ($this->created == 0) {
 			$this->created = time();
+		}
+		if ($this->public == 0) {
+			$this->searchable = 0;
 		}
 		$this->dateUpdated = time();
 		$result = parent::update();
@@ -431,6 +437,31 @@ class UserList extends DataObject {
 					$interface->assign('resultIndex', $listPosition + $start + 1);
 					$interface->assign('listEntryId', $listEntryInfo['listEntryId']);
 					$interface->assign('listEntrySource', $listEntryInfo['source']);
+
+					if ($listEntryInfo['source'] = "Events"){ //get covers for past events
+						if (preg_match('`^communico`', $listEntryInfo['sourceId'])){
+							$id = explode("communico_1_", $listEntryInfo['sourceId']);
+							$id = $id[1];
+							$coverUrl = "/bookcover.php?id={$id}&size=small&type=communico_event";
+
+							$interface->assign('bookCoverUrl', $coverUrl);
+						}
+						elseif (preg_match('`^libcal`', $listEntryInfo['sourceId'])){
+							$id = explode("libcal_1_", $listEntryInfo['sourceId']);
+							$id = $id[1];
+							$coverUrl = "/bookcover.php?id={$id}&size=small&type=springshare_libcal_event";
+
+							$interface->assign('bookCoverUrl', $coverUrl);
+						}
+						elseif (preg_match('`^lc_`', $listEntryInfo['sourceId'])){
+							$id = explode("lc_1_", $listEntryInfo['sourceId']);
+							$id = $id[1];
+							$coverUrl = "/bookcover.php?id={$id}&size=small&type=library_calendar_event";
+
+							$interface->assign('bookCoverUrl', $coverUrl);
+						}
+					}
+
 					if (!empty($listEntryInfo['title'])) {
 						$interface->assign('deletedEntryTitle', $listEntryInfo['title']);
 					} else {
@@ -607,9 +638,9 @@ class UserList extends DataObject {
 	 * @param int $numItems Number of items to fetch for this result
 	 * @return array     Array of HTML to display to the user
 	 */
-	public function getBrowseRecordsRaw($start, $numItems): array {
+	public function getBrowseRecordsRaw($start, $numItems, $forLiDA = false): array {
 		//Get all entries for the list
-		$listEntryInfo = $this->getListEntries();
+		$listEntryInfo = $this->getListEntries(null, $forLiDA);
 
 		//Trim to the number of records we want to return
 		$filteredListEntries = array_slice($listEntryInfo['listEntries'], $start, $numItems);

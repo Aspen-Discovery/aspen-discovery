@@ -392,7 +392,7 @@ public class GroupedWorkIndexer {
 			ResultSet getSideLoadSettingsRS = getSideLoadSettingsStmt.executeQuery();
 
 			while (getSideLoadSettingsRS.next()) {
-				String curType = getSideLoadSettingsRS.getString("name");
+				String curType = getSideLoadSettingsRS.getString("name").toLowerCase();
 				String sideLoadIndexingClassString = getSideLoadSettingsRS.getString("indexingClass");
 				if ("SideLoadedEContent".equals(sideLoadIndexingClassString) || "SideLoadedEContentProcessor".equals(sideLoadIndexingClassString)) {
 					SideLoadedEContentProcessor sideloadProcessor = new SideLoadedEContentProcessor(this, curType, dbConn, getSideLoadSettingsRS, logger, fullReindex);
@@ -1448,7 +1448,7 @@ public class GroupedWorkIndexer {
 				addRecordForWorkStmt.setLong(2, sourceId);
 				addRecordForWorkStmt.setString(3, recordInfo.getRecordIdentifier());
 				addRecordForWorkStmt.setLong(4, getEditionId(recordInfo.getEdition()));
-				addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher()));
+				addRecordForWorkStmt.setLong(5, getPublisherId(recordInfo.getPublisher(), recordInfo.getRecordIdentifier()));
 				addRecordForWorkStmt.setLong(6, getPublicationDateId(recordInfo.getPublicationDate()));
 				addRecordForWorkStmt.setLong(7, getPhysicalDescriptionId(recordInfo.getPhysicalDescription()));
 				addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
@@ -1474,7 +1474,7 @@ public class GroupedWorkIndexer {
 				//Check to see if we have any changes
 				boolean hasChanges = false;
 				long editionId = getEditionId(recordInfo.getEdition());
-				long publisherId = getPublisherId(recordInfo.getPublisher());
+				long publisherId = getPublisherId(recordInfo.getPublisher(), recordInfo.getRecordIdentifier());
 				long publicationDateId = getPublicationDateId(recordInfo.getPublicationDate());
 				long physicalDescriptionId = getPhysicalDescriptionId(recordInfo.getPhysicalDescription());
 				long formatId = getFormatId(recordInfo.getPrimaryFormat());
@@ -1687,12 +1687,12 @@ public class GroupedWorkIndexer {
 	}
 
 	private final MaxSizeHashMap<String, Long> publisherIds = new MaxSizeHashMap<>(1000);
-	private long getPublisherId(String publisher) {
+	private long getPublisherId(String publisher, String recordIdentifier) {
 		if (publisher == null){
 			return -1;
 		}
 		if (publisher.length() > 500) {
-			logEntry.incErrors("Publisher was more than 500 characters (" + publisher.length() + ") " + publisher);
+			logEntry.incErrors("Publisher for record " + recordIdentifier + " was more than 500 characters (" + publisher.length() + ") " + publisher);
 			publisher = publisher.substring(0, 500);
 		}
 		Long id = publisherIds.get(publisher);

@@ -45,11 +45,20 @@
 									{/if}
 									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if} {if !empty($subProperty.readOnly)} style="display: none"{/if}/>
 								{else}
-									<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if}>
-										{foreach from=$subProperty.values item=propertyName key=propertyValue}
-											<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}</option>
+									{if $subObject->canActiveUserChangeSelection()}
+										<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if}>
+											{foreach from=$subProperty.values item=propertyName key=propertyValue}
+												<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}</option>
+											{/foreach}
+										</select>
+									{else}
+										<input type="hidden" name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' value="$subPropValue"/>
+										{foreach from=$subProperty.allValues item=propertyName key=propertyValue}
+											{if $subPropValue == $propertyValue}
+												{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}
+											{/if}
 										{/foreach}
-									</select>
+									{/if}
 								{/if}
 							</td>
 						{elseif $subProperty.type == 'multiSelect'}
@@ -89,7 +98,7 @@
 						{/if}
 						{* link to delete*}
 						<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
-						{if !empty($property.canDelete)}
+						{if !empty($property.canDelete) && $subObject->canActiveUserDelete()}
 							{* link to delete *}
 							<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 								{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}

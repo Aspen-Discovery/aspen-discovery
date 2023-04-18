@@ -7,6 +7,13 @@ export const SelectItem = (props) => {
 	const { id, data, item, setItem, holdType, setHoldType, showModal, holdTypeForFormat, language, url } = props;
 
 	let copies = data.copies;
+	let copyKeys = Object.keys(copies);
+	let key = copyKeys[0];
+	let defaultItem = copies[key].id
+
+	if(item) {
+		defaultItem = item;
+	}
 
 	return (
 		<>
@@ -30,13 +37,14 @@ export const SelectItem = (props) => {
 						</Radio.Group>
 					</FormControl>
 			) : null}
-			{holdType === 'item' ? (
+			{holdTypeForFormat === 'item' || holdType === 'item' ? (
 				<FormControl>
 					<FormControl.Label>{getTermFromDictionary(language, 'select_item')}</FormControl.Label>
 					<Select
 						name="itemForHold"
-						selectedValue={item}
+						selectedValue={defaultItem}
 						minWidth="200"
+						defaultValue={defaultItem}
 						accessibilityLabel={getTermFromDictionary(language, 'select_item')}
 						_selectedItem={{
 							bg: 'tertiary.300',

@@ -778,7 +778,6 @@ class Evergreen extends AbstractIlsDriver {
 						}
 						$curHold->cancelId = $holdInfo['id'];
 
-						//TODO: Validate if these are accurate
 						$curHold->locationUpdateable = true;
 						$curHold->cancelable = true;
 
@@ -800,7 +799,6 @@ class Evergreen extends AbstractIlsDriver {
 							}
 							$curHold->locationUpdateable = true;
 						} elseif (!empty($holdInfo['shelf_time'])) {
-							$curHold->cancelable = false;
 							$curHold->expirationDate = strtotime($holdInfo['shelf_expire_time']);
 							$curHold->status = "Ready to Pickup";
 							$curHold->available = true;

@@ -34,7 +34,7 @@
 	];
 function reloadCombinedResults(){ldelim}
 	{foreach from=$combinedResultSections item=combinedResultSection}
-	AspenDiscovery.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
+	AspenDiscovery.Searches.getCombinedResults('{$combinedResultSection|get_class}:{$combinedResultSection->id}', '{$combinedResultSection->id}', '{$combinedResultSection->source}', '{$lookfor|escape:javascript}', '{$basicSearchType}', {$combinedResultSection->numberOfResultsToShow});
 	{/foreach}
 {rdelim};
 

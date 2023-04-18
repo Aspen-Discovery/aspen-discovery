@@ -97,6 +97,11 @@ const Edition = (payload) => {
      const fullRecordId = records.id;
      const volumeInfo = payload.volumeInfo;
      const closedCaptioned = records.closedCaptioned;
+     const title = records.title ?? null;
+     const author = records.author ?? null;
+     const publisher = records.publisher ?? null;
+     const isbn = records.isbn ?? null;
+     const oclcNumber = records.oclcNumber ?? null;
 
      const handleOnPress = () => {
           navigate('WhereIsIt', { id: id, format: format, prevRoute: prevRoute, type: 'record', recordId: fullRecordId });
@@ -133,7 +138,7 @@ const Edition = (payload) => {
                          </VStack>
                     </VStack>
                     <Button.Group direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
-                         <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />} />
+                         <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />} />
                     </Button.Group>
                </HStack>
           </Box>

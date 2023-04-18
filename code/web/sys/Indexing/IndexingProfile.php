@@ -432,7 +432,7 @@ class IndexingProfile extends DataObject {
 				'property' => 'index856Links',
 				'type' => 'checkbox',
 				'label' => 'Index 856 links',
-				'description' => 'Whether or not 856 links with indicator 1 of 4 and indicator 2 of 0 are indexed and treated as items.',
+				'description' => 'Whether or not 856 links with a first indicator of 4 and second indicator of 0 or 1 are indexed and treated as items.',
 				'defaultValue' => false,
 				'hideInLists' => true,
 				'forcesReindex' => true,

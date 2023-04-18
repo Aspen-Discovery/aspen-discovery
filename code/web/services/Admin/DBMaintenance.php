@@ -32,6 +32,8 @@ class Admin_DBMaintenance extends Admin_Admin {
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			SystemVariables::forceNightlyIndex();
 
+			$this->updateAllThemes();
+
 			//Optimize tables that have temporary data and need clearing regularly
 			try {
 				global $aspen_db;
@@ -84,4 +86,13 @@ class Admin_DBMaintenance extends Admin_Admin {
 	function canView(): bool {
 		return UserAccount::userHasPermission('Run Database Maintenance');
 	}
+
+	function updateAllThemes() {
+		$theme = new Theme();
+		$theme->find();
+		while ($theme->fetch()) {
+			$theme->generateCss(true);
+		}
+	}
+
 }

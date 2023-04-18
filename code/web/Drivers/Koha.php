@@ -1541,6 +1541,13 @@ class Koha extends AbstractIlsDriver {
 							1 => $responseCode,
 							'isPublicFacing' => true,
 						]),
+						'api' => [
+							'message' => translate([
+								'text' => "Error (%1%) placing a hold on this title.",
+								1 => $responseCode,
+								'isPublicFacing' => true,
+							])
+						]
 					];
 
 					if ($response) {
@@ -1820,6 +1827,10 @@ class Koha extends AbstractIlsDriver {
 				]);
 				$hold_result['api']['message'] = translate([
 					'text' => 'Your hold was placed successfully.',
+					'isPublicFacing' => true,
+				]);
+				$hold_result['api']['action'] = translate([
+					'text' => 'Go to Holds',
 					'isPublicFacing' => true,
 				]);
 

@@ -34,7 +34,7 @@ $timer->logTime('Create interface');
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 36);
+$interface->assign('cssJsCacheCounter', 38);
 
 // Setup Translator
 global $language;
@@ -1270,6 +1270,10 @@ function isSpammySearchTerm($lookfor): bool {
 	} elseif (strpos($lookfor, 'sysdate()') !== false) {
 		return true;
 	} elseif (strpos($lookfor, 'sleep(') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'cast(') !== false) {
+		return true;
+	} elseif (strpos($lookfor, 'current_database') !== false) {
 		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);

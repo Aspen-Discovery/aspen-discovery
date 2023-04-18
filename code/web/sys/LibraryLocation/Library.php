@@ -857,7 +857,7 @@ class Library extends DataObject {
 						'sortable' => true,
 						'storeDb' => true,
 						'allowEdit' => true,
-						'canEdit' => false,
+						'canEdit' => true,
 						'canAddNew' => true,
 						'canDelete' => true,
 						'permissions' => ['Library Theme Configuration'],
@@ -3470,28 +3470,18 @@ class Library extends DataObject {
 	static $searchLibrary = [];
 
 	static function hasEventSettings() : bool {
-		try {
-			require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
-			require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
-			require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+		global $enabledModules;
+		global $library;
 
-			$communicoSettings = new CommunicoSetting();
-			$SpringshareLibCalSetting = new SpringshareLibCalSetting();
-			$LMLibraryCalendarSetting = new LMLibraryCalendarSetting();
-
-			if ($communicoSettings->find(true)) {
+		if (array_key_exists('Events', $enabledModules)) {
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventsSetting = new LibraryEventsSetting();
+			$libraryEventsSetting->libraryId = $library->libraryId;
+			if ($libraryEventsSetting->find(true)) {
 				return true;
-			} elseif ($SpringshareLibCalSetting->find(true)) {
-				return true;
-			} elseif ($LMLibraryCalendarSetting->find(true)) {
-				return true;
-			} else {
-				return false;
 			}
-		}catch (Exception $e) {
-			//This happens when all tables are not created
-			return false;
 		}
+		return false;
 	}
 
 	static function getSearchLibrary($searchSource = null) {

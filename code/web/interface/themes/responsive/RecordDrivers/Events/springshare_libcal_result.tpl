@@ -28,12 +28,18 @@
 
 			<div class="row">
 					<div class="result-label col-tn-2">{translate text="Date" isPublicFacing=true} </div>
-					<div class="result-value col-tn-6 notranslate">
+				<div class="result-value col-tn-6 notranslate">
+					{if $allDayEvent}
+						{translate text="All Day Event" isPublicFacing=true}
+					{elseif $multiDayEvent}
+						{$start_date|date_format:"%a %b %e, %Y %l:%M%p"} to {$end_date|date_format:"%a %b %e, %Y %l:%M%p"}
+					{else}
 						{$start_date|date_format:"%a %b %e, %Y from %l:%M%p"} to {$end_date|date_format:"%l:%M%p"}
-						{if !empty($isCancelled)}
-							&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
-						{/if}
-					</div>
+					{/if}
+					{if !empty($isCancelled)}
+						&nbsp;<span class="label label-danger">{translate text="Cancelled" isPublicFacing=true}</span>
+					{/if}
+				</div>
 			</div>
 			<div class="row">
 				<div class="result-label col-tn-2">{translate text="Location" isPublicFacing=true} </div>
@@ -55,7 +61,7 @@
 					{else}
 						<div class="btn-toolbar">
 							<div class="col-xs-12">
-								<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap">{translate text="Add to Your Events" isPublicFacing=true}</a>
+								<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
 							</div>
 						</div>
 						<br>

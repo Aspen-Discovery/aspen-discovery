@@ -13,6 +13,14 @@ function getUpdates23_04_00(): array {
 		], //sample*/
 
 		//mark
+		'use_library_themes_for_location' => [
+			'title' => 'Use Library Themes for Location',
+			'description' => 'Use Library Themes for Location',
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN useLibraryThemes TINYINT(1) DEFAULT 1",
+				"UPDATE location set useLibraryThemes = 1 where theme = -1",
+			],
+		],
 		'allow_multiple_themes_for_libraries' => [
 			'title' => 'Allow Multiple Themes for Libraries',
 			'description' => 'Allow Multiple Themes for Libraries',
@@ -208,14 +216,6 @@ function getUpdates23_04_00(): array {
 			]
 		],
 		//add_high_contrast_checkbox
-		'updateThemes' => [
-			'title' => 'Update themes for changes',
-			'description' => 'Automatically updates all themes to grab stylesheet changes',
-			'sql' => [
-				'updateAllThemes',
-			],
-		],
-		//updateThemes
 		'add_branded_app_name' => [
 			'title' => 'Add name in branded app settings',
 			'description' => 'Adds column to store name for branded apps',
@@ -283,7 +283,7 @@ function getUpdates23_04_00(): array {
 				'CREATE TABLE IF NOT EXISTS user_events_entry (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					userId INT(11) NOT NULL, 
-					sourceId varchar(36) NOT NULL,
+					sourceId varchar(50) NOT NULL,
 					title varchar(255) NOT NULL,
 					eventDate INT (11),
 					regRequired TINYINT DEFAULT 0,
@@ -291,6 +291,24 @@ function getUpdates23_04_00(): array {
 					dateAdded INT(11),
 					UNIQUE (sourceId)
 				)',
+			],
+		],
+		//user_events_entry_length
+		'user_events_entry_length' => [
+			'title' => 'User Events Entry sourceId Length',
+			'description' => 'Increase allowed length for sourceId in user event entries.',
+			'sql' => [
+				"ALTER TABLE user_events_entry CHANGE COLUMN sourceId sourceId VARCHAR(50) NOT NULL",
+			],
+		],
+
+		//user_events_entry_unique
+		'user_events_entry_unique' => [
+			'title' => 'Changes UNIQUE key for user_events_entry',
+			'description' => 'Changes unique key for user_events_entry from (sourceId) to (userId, sourceId).',
+			'sql' => [
+				"ALTER TABLE user_events_entry DROP INDEX sourceId",
+				"ALTER TABLE user_events_entry ADD UNIQUE (userId, sourceId)",
 			],
 		],
 		// Set default weight for (library|location)_records_to_include to 0
@@ -302,15 +320,6 @@ function getUpdates23_04_00(): array {
 				'ALTER TABLE location_records_to_include ALTER COLUMN weight SET DEFAULT 0',
 			],
 		],
-		//other
-		'updateThemesFinal' => [
-			'title' => 'Update themes for changes',
-			'description' => 'Automatically updates all themes to grab stylesheet changes',
-			'sql' => [
-				'updateAllThemes',
-			],
-		],
-		//updateThemesFinal
 	];
 }
 

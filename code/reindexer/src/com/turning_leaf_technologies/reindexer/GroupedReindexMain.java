@@ -15,12 +15,8 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.*;
 import java.sql.*;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.temporal.TemporalField;
 import java.util.Date;
-import java.util.TimeZone;
 
 public class GroupedReindexMain {
 	private static BaseIndexingLogEntry logEntry;
@@ -147,7 +143,7 @@ public class GroupedReindexMain {
 
 			}
 		} catch (Error e) {
-			logEntry.incErrors("Error processing reindex " + e.toString());
+			logEntry.incErrors("Error processing reindex " + e);
 		} catch (Exception e) {
 			logEntry.incErrors("Exception processing reindex ", e);
 		}
@@ -161,28 +157,28 @@ public class GroupedReindexMain {
 		File solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log");
 		if (solrMarcLog.exists()){
 			if (!solrMarcLog.delete()){
-				logger.warn("Could not remove " + solrMarcLog.toString());
+				logger.warn("Could not remove " + solrMarcLog);
 			}
 		}
 		for (int i = 1; i <= 10; i++){
 			solrMarcLog = new File(baseLogPath + "/" + serverName + "/logs/grouped_reindex.log." + i);
 			if (solrMarcLog.exists()){
 				if (!solrMarcLog.delete()){
-					logger.warn("Could not remove " + solrMarcLog.toString());
+					logger.warn("Could not remove " + solrMarcLog);
 				}
 			}
 		}
 		solrMarcLog = new File("org.solrmarc.log");
 		if (solrMarcLog.exists()){
 			if (!solrMarcLog.delete()){
-				logger.warn("Could not remove " + solrMarcLog.toString());
+				logger.warn("Could not remove " + solrMarcLog);
 			}
 		}
 		for (int i = 1; i <= 4; i++){
 			solrMarcLog = new File("org.solrmarc.log." + i);
 			if (solrMarcLog.exists()){
 				if (!solrMarcLog.delete()){
-					logger.warn("Could not remove " + solrMarcLog.toString());
+					logger.warn("Could not remove " + solrMarcLog);
 				}
 			}
 		}

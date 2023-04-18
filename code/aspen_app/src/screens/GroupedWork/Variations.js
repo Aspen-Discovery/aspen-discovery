@@ -6,7 +6,7 @@ import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
-import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
+import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
@@ -16,6 +16,7 @@ import {ActionButton} from '../../components/Action/ActionButton';
 import {decodeHTML, stripHTML} from '../../util/apiAuth';
 import {getTermFromDictionary} from '../../translations/TranslationService';
 import {confirmHold} from '../../util/api/circulation';
+import {refreshProfile} from '../../util/api/user';
 
 export const Variations = (props) => {
      const route = useRoute();
@@ -24,7 +25,9 @@ export const Variations = (props) => {
      const format = props.format;
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const { updateUser } = React.useContext(UserContext);
      const [isLoading, setLoading] = React.useState(false);
+     const [confirmingHold, setConfirmingHold] = React.useState(false);
      const [responseIsOpen, setResponseIsOpen] = React.useState(false);
      const onResponseClose = () => setResponseIsOpen(false);
      const cancelResponseRef = React.useRef(null);
@@ -93,15 +96,27 @@ export const Variations = (props) => {
                                  <AlertDialog.Footer>
                                       <Button.Group space={3}>
                                            <Button variant="outline" colorScheme="primary" ref={cancelHoldConfirmationRef} onPress={() => setHoldConfirmationIsOpen(false)}>{getTermFromDictionary(language, 'close_window')}</Button>
-                                           <Button onPress={async () => {
-                                                await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(result => {
-                                                     setResponse(result);
-                                                     setHoldConfirmationIsOpen(false);
-                                                     if(result) {
-                                                          console.log(result);
-                                                          setResponseIsOpen(true);
-                                                     }
-                                                })
+                                           <Button
+                                               isLoading={confirmingHold}
+                                               isLoadingText="Placing hold..."
+                                               onPress={async () => {
+                                                    setConfirmingHold(true);
+                                                    await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async result => {
+                                                         setResponse(result);
+
+                                                         await refreshProfile(library.baseUrl).then((result) => {
+                                                              updateUser(result);
+                                                         });
+
+                                                         setHoldConfirmationIsOpen(false);
+                                                         setConfirmingHold(false);
+
+                                                         if (result) {
+                                                              console.log(result);
+                                                              setResponseIsOpen(true);
+                                                         }
+
+                                                    })
                                            }
                                            }>Yes, Place Hold</Button>
                                       </Button.Group>
@@ -124,6 +139,11 @@ const Variation = (payload) => {
      const status = getStatusIndicator(variation.statusIndicator, language);
      const holdTypeForFormat = variation.holdType ?? 'default';
      const variationId = variation.variationId ?? null;
+     const title = variation.title ?? null;
+     const author = variation.author ?? null;
+     const publisher = variation.publisher ?? null;
+     const isbn = variation.isbn ?? null;
+     const oclcNumber = variation.oclcNumber ?? null;
 
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
@@ -142,6 +162,9 @@ const Variation = (payload) => {
                prevRoute: prevRoute,
           });
      };
+
+     console.log(variation.holdType);
+     console.log(holdTypeForFormat);
 
      return (
           <Box
@@ -172,7 +195,7 @@ const Variation = (payload) => {
                          ) : null}
                     </VStack>
                     <Button.Group width="50%" justifyContent="center" alignItems="stretch" direction={_.size(variation.actions) > 1 ? 'column' : 'row'}>
-                         <FlatList data={actions} renderItem={({ item }) => <ActionButton language={language} groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} variationId={variationId} holdTypeForFormat={holdTypeForFormat} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>} />
+                         <FlatList data={actions} renderItem={({ item }) => <ActionButton language={language} groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} variationId={variationId} holdTypeForFormat={holdTypeForFormat} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>} />
                     </Button.Group>
                </HStack>
                <Center mt={2}>

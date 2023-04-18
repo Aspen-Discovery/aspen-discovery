@@ -3,10 +3,14 @@ import React from 'react';
 import {navigate} from '../../../helpers/RootNavigator';
 
 export const StartVDXRequest = (props) => {
-	console.log(props);
 	const openVDXRequest = () => {
 		navigate('CreateVDXRequest', {
-			id: props.record
+			id: props.id,
+			workTitle: props.workTitle,
+			author: props.author,
+			publisher: props.publisher,
+			isbn: props.isbn,
+			oclcNumber: props.oclcNumber
 		});
 	};
 

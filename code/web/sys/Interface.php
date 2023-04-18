@@ -338,7 +338,7 @@ class UInterface extends Smarty {
 			$allActiveThemes = [];
 
 			$activeThemeId = -1;
-			if (isset($location) && !empty($location->getThemes())) {
+			if (isset($location) && !$location->useLibraryThemes && !empty($location->getThemes())) {
 				$theme->id = $location->getPrimaryTheme()->themeId;
 				$allIds = [];
 				foreach ($location->getThemes() as $tmpTheme) {

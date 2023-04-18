@@ -352,12 +352,13 @@ class ItemAPI extends Action {
 		$copies = $marcRecord->getCopies();
 		$items = [];
 		foreach($copies as $copy) {
-			$items[$copy['description']]['id'] = $copy['itemId'];
-			$items[$copy['description']]['location'] = $copy['description'];
-			$items[$copy['description']]['library'] = $copy['section'];
-			$items[$copy['description']]['volume'] = $copy['volume'];
-			$items[$copy['description']]['volumeId'] = $copy['volumeId'];
-			$items[$copy['description']]['variationId'] = $copy['variationId'];
+			$key = $copy['description'] . ' ' . $copy['itemId'];
+			$items[$key]['id'] = $copy['itemId'];
+			$items[$key]['location'] = $copy['description'];
+			$items[$key]['library'] = $copy['section'];
+			$items[$key]['volume'] = $copy['volume'];
+			$items[$key]['volumeId'] = $copy['volumeId'];
+			$items[$key]['variationId'] = $copy['variationId'];
 		}
 		return [
 			'success' => true,
@@ -1121,6 +1122,14 @@ class ItemAPI extends Action {
 				}
 			}
 
+			$marcRecordDriver = new MarcRecordDriver($relatedRecord->id);
+			$oclcNumberString = '';
+			/** @var File_MARC_Control_Field $oclcNumber */
+			$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
+			if ($oclcNumber != null) {
+				$oclcNumberString = substr($oclcNumber->getData(), 0, 50);
+			}
+
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
 			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
 			$variations[$relatedVariation->label]['closedCaptioned'] = (int) $relatedRecord->closedCaptioned;
@@ -1144,6 +1153,11 @@ class ItemAPI extends Action {
 				'showItsHere' => (int) $library->showItsHere,
 				'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 			];
+			$variations[$relatedVariation->label]['title'] = $marcRecordDriver->getTitle() ?? '';
+			$variations[$relatedVariation->label]['author'] = $marcRecordDriver->getAuthor() ?? '';
+			$variations[$relatedVariation->label]['publisher'] = $relatedRecord->publisher ?? '';
+			$variations[$relatedVariation->label]['isbn'] = $marcRecordDriver->getCleanISBN() ?? '';
+			$variations[$relatedVariation->label]['oclcNumber'] = $oclcNumberString;
 		}
 
 		return [

@@ -23,11 +23,10 @@ class LocationTheme extends DataObject {
 			$homeLibrary = Library::getPatronHomeLibrary();
 			$location->libraryId = $homeLibrary->libraryId;
 		}
-		$location->find();
-		$locationList = [];
-		while ($location->fetch()) {
-			$locationList[$location->locationId] = $location->displayName;
-		}
+		$locationList = $location->fetchAll('locationId', 'displayName');
+		$location = new Location();
+		$location->orderBy('displayName');
+		$allLocationList = $location->fetchAll('locationId', 'displayName');
 
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		$theme = new Theme();
@@ -49,6 +48,7 @@ class LocationTheme extends DataObject {
 				'property' => 'locationId',
 				'type' => 'enum',
 				'values' => $locationList,
+				'allValues' => $allLocationList,
 				'label' => 'Location',
 				'description' => 'A link to the location which the theme belongs to',
 			],
@@ -61,5 +61,27 @@ class LocationTheme extends DataObject {
 				'permissions' => ['Library Theme Configuration'],
 			],
 		];
+	}
+
+	public function canActiveUserEdit() {
+		if (!UserAccount::userHasPermission('Administer All Locations')) {
+			$homeLibrary = Library::getPatronHomeLibrary();
+			foreach ($homeLibrary->getLocations() as $location) {
+				if ($location->locationId == $this->locationId) {
+					return true;
+				}
+			}
+			return false;
+		}else {
+			return true;
+		}
+	}
+
+	function getEditLink($context): string {
+		if ($context == 'locations') {
+			return '/Admin/Locations?objectAction=edit&id=' . $this->locationId;
+		} else {
+			return '/Admin/Themes?objectAction=edit&id=' . $this->themeId;
+		}
 	}
 }
