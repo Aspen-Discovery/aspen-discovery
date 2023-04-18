@@ -136,6 +136,10 @@ public class KohaExportMain {
 				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 				if (!extractSingleWork) {
+					float kohaVersion = getKohaVersion(kohaConn);
+					logEntry.addNote("Indexing from Koha version " + kohaVersion);
+					logEntry.saveResults();
+
 					updateBranchInfo(dbConn, kohaConn);
 					logEntry.addNote("Finished updating branch information");
 
