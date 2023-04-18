@@ -1286,7 +1286,7 @@ class SearchAPI extends Action {
 				$sourceList = new UserList();
 				$sourceList->id = $browseCategory->sourceListId;
 				if ($sourceList->find(true)) {
-					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+					$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $this->checkIfLiDA());
 				} else {
 					$records = [];
 				}
@@ -1481,7 +1481,7 @@ class SearchAPI extends Action {
 		return $response;
 	}
 
-	private function getUserListBrowseCategoryResults(int $pageToLoad, int $pageSize, $id = null) {
+	private function getUserListBrowseCategoryResults(int $pageToLoad, int $pageSize, $id = null, $forLida = false) {
 		if (!isset($_REQUEST['username']) || !isset($_REQUEST['password'])) {
 			return [
 				'success' => false,
@@ -1500,7 +1500,7 @@ class SearchAPI extends Action {
 			];
 		}
 
-		if ($id) {
+		if (!empty($id)) {
 			$label = explode('_', $id);
 		} else {
 			$label = explode('_', $_REQUEST['id']);
@@ -1510,7 +1510,7 @@ class SearchAPI extends Action {
 		$sourceList = new UserList();
 		$sourceList->id = $id;
 		if ($sourceList->find(true)) {
-			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $forLida);
 		}
 		$response['items'] = $records;
 
@@ -1835,6 +1835,7 @@ class SearchAPI extends Action {
 							if ($list->find(true)) {
 								$listEntry = new UserListEntry();
 								$listEntry->listId = $list->id;
+								$listEntry->whereAdd("source <> 'Events'");
 								$listEntry->find();
 								$count = 0;
 								do {
@@ -2000,9 +2001,9 @@ class SearchAPI extends Action {
 			}
 		} elseif (strpos($thisId, "system_user_lists") !== false) {
 			if ($id) {
-				$result = $this->getUserListBrowseCategoryResults($pageToLoad, $pageSize, $id);
+				$result = $this->getUserListBrowseCategoryResults($pageToLoad, $pageSize, $id, true);
 			} else {
-				$result = $this->getUserListBrowseCategoryResults($pageToLoad, $pageSize);
+				$result = $this->getUserListBrowseCategoryResults($pageToLoad, $pageSize, null, true);
 			}
 			if (!$id) {
 				$response['key'] = $thisId;
@@ -2024,7 +2025,7 @@ class SearchAPI extends Action {
 						$sourceList = new UserList();
 						$sourceList->id = $browseCategory->sourceListId;
 						if ($sourceList->find(true)) {
-							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+							$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, true);
 						} else {
 							$records = [];
 						}
@@ -3182,5 +3183,16 @@ class SearchAPI extends Action {
 			// do something with the term
 		}
 		return $results;
+	}
+
+	function checkIfLiDA() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'User-Agent' || $name == 'user-agent') {
+				if (strpos($value, "Aspen LiDA") !== false) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 }

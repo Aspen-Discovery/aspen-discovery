@@ -337,9 +337,19 @@ abstract class IndexRecordDriver extends RecordInterface {
 
 		$url = $this->getLinkUrl();
 
+		// Rating & Browse Mode Settings
+		global $library;
+		global $location;
+		if ($location) { // Try Location Setting
+			$browseCategoryRatingsMode = $location->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		} else {
+			$browseCategoryRatingsMode = $library->getBrowseCategoryGroup()->browseCategoryRatingsMode;
+		}
+
 		$interface->assign('summUrl', $url);
 		$interface->assign('summTitle', $this->getTitle());
 		$interface->assign('summAuthor', $this->getPrimaryAuthor());
+		$interface->assign('browseCategoryRatingsMode', $browseCategoryRatingsMode);
 
 		//Get cover image size
 		global $interface;
