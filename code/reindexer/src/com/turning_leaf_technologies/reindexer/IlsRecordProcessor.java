@@ -1213,12 +1213,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (format == null){
 			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
-		if (format == null) {
-			//We still have no format so assume it's not in library use only
-			return false;
-		} else {
-			return inLibraryUseOnlyFormats.contains(format.toUpperCase());
-		}
+		return inLibraryUseOnlyFormats.contains(format.toUpperCase());
 	}
 
 	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
