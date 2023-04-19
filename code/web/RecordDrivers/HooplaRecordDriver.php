@@ -213,6 +213,10 @@ class HooplaRecordDriver extends GroupedWorkSubDriver {
 		return $isbns;
 	}
 
+	public function getOCLCNumber() {
+		return '';
+	}
+
 	public function getISSNs() {
 		return [];
 	}
