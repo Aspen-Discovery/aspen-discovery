@@ -155,107 +155,106 @@ class HooplaProcessor {
 				if (children){
 					groupedWork.addTargetAudience("Juvenile");
 					groupedWork.addTargetAudienceFull("Juvenile");
-				}else{
-					if (rawResponse.has("rating")){
-						String rating = rawResponse.getString("rating");
-						if (rating.equals("TVMA") || rating.equals("M") || rating.equals("NC17")){
-							groupedWork.addTargetAudience("Adult");
-							groupedWork.addTargetAudienceFull("Adult");
-						}else {
-							//Todo: Also check the genres (Children's, Teen
-							boolean foundAudience = false;
-							if (rawResponse.has("genres")){
-								JSONArray genres = rawResponse.getJSONArray("genres");
-								for (int i = 0; i < genres.length(); i++) {
-									if (genres.getString(i).equals("Teen")){
-										groupedWork.addTargetAudience("Young Adult");
-										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-										foundAudience = true;
-									}else if (genres.getString(i).startsWith("Young Adult")){
-										groupedWork.addTargetAudience("Young Adult");
-										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-										foundAudience = true;
-									}else if (genres.getString(i).equals("Children's")){
-										groupedWork.addTargetAudience("Juvenile");
-										groupedWork.addTargetAudienceFull("Juvenile");
-										foundAudience = true;
-									}else if (genres.getString(i).equals("Adult")){
-										groupedWork.addTargetAudience("Adult");
-										groupedWork.addTargetAudienceFull("Adult");
-										foundAudience = true;
-									}
-								}
-							}
-							if (!foundAudience) {
-								if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
-									switch (rating) {
-										case "R":
-										case "NR":
-										case "NRA":
-										case "NRM":
-										case "NC-17":
-											groupedWork.addTargetAudience("Adult");
-											groupedWork.addTargetAudienceFull("Adult");
-											break;
-										case "PG-13":
-										case "PG13":
-										case "PG":
-										case "TVPG":
-										case "TV14":
-										case "NRT":
-											groupedWork.addTargetAudience("Young Adult");
-											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-											groupedWork.addTargetAudience("Adult");
-											groupedWork.addTargetAudienceFull("Adult");
-											break;
-										case "TVY":
-										case "TVY7":
-										case "NRC":
-											groupedWork.addTargetAudience("Juvenile");
-											groupedWork.addTargetAudienceFull("Juvenile");
-											break;
-										case "TVG":
-										case "G":
-											groupedWork.addTargetAudience("General");
-											groupedWork.addTargetAudienceFull("General");
-											break;
-										default:
-											//todo, do we want to add additional ratings here?
-											logger.debug("rating " + rating);
-											break;
-									}
-								}else if (kind.equals("COMIC")){
-									switch (rating) {
-										case "E":
-											groupedWork.addTargetAudience("Juvenile");
-											groupedWork.addTargetAudienceFull("Juvenile");
-											break;
-										case "PA":
-										case "EX":
-											groupedWork.addTargetAudience("Adult");
-											groupedWork.addTargetAudienceFull("Adult");
-											break;
-										case "T":
-											groupedWork.addTargetAudience("Young Adult");
-											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-											break;
-										case "T+":
-										default:
-											groupedWork.addTargetAudience("Young Adult");
-											groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-											groupedWork.addTargetAudience("Adult");
-											groupedWork.addTargetAudienceFull("Adult");
-									}
-
-								}else{
-									groupedWork.addTargetAudience("Young Adult");
-									groupedWork.addTargetAudienceFull("Adolescent (14-17)");
-									groupedWork.addTargetAudience("Adult");
-									groupedWork.addTargetAudienceFull("Adult");
-								}
+				}else {
+					//Todo: Also check the genres (Children's, Teen
+					boolean foundAudience = false;
+					if (rawResponse.has("genres")) {
+						JSONArray genres = rawResponse.getJSONArray("genres");
+						for (int i = 0; i < genres.length(); i++) {
+							if (genres.getString(i).equals("Teen")) {
+								groupedWork.addTargetAudience("Young Adult");
+								groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+								foundAudience = true;
+							} else if (genres.getString(i).startsWith("Young Adult")) {
+								groupedWork.addTargetAudience("Young Adult");
+								groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+								foundAudience = true;
+							} else if (genres.getString(i).equals("Children's")) {
+								groupedWork.addTargetAudience("Juvenile");
+								groupedWork.addTargetAudienceFull("Juvenile");
+								foundAudience = true;
+							} else if (genres.getString(i).equals("Adult")) {
+								groupedWork.addTargetAudience("Adult");
+								groupedWork.addTargetAudienceFull("Adult");
+								foundAudience = true;
 							}
 						}
-					}else{
+					}
+
+					if (!foundAudience && rawResponse.has("rating")) {
+						String rating = rawResponse.getString("rating");
+						if (rating.equals("TVMA") || rating.equals("M") || rating.equals("NC17")) {
+							groupedWork.addTargetAudience("Adult");
+							groupedWork.addTargetAudienceFull("Adult");
+						} else {
+							if (kind.equals("MOVIE") || kind.equals("TELEVISION")) {
+								switch (rating) {
+									case "R":
+									case "NR":
+									case "NRA":
+									case "NRM":
+									case "NC-17":
+										groupedWork.addTargetAudience("Adult");
+										groupedWork.addTargetAudienceFull("Adult");
+										break;
+									case "PG-13":
+									case "PG13":
+									case "PG":
+									case "TVPG":
+									case "TV14":
+									case "NRT":
+										groupedWork.addTargetAudience("Young Adult");
+										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+										groupedWork.addTargetAudience("Adult");
+										groupedWork.addTargetAudienceFull("Adult");
+										break;
+									case "TVY":
+									case "TVY7":
+									case "NRC":
+										groupedWork.addTargetAudience("Juvenile");
+										groupedWork.addTargetAudienceFull("Juvenile");
+										break;
+									case "TVG":
+									case "G":
+										groupedWork.addTargetAudience("General");
+										groupedWork.addTargetAudienceFull("General");
+										break;
+									default:
+										//todo, do we want to add additional ratings here?
+										logger.debug("rating " + rating);
+										break;
+								}
+							} else if (kind.equals("COMIC")) {
+								switch (rating) {
+									case "E":
+										groupedWork.addTargetAudience("Juvenile");
+										groupedWork.addTargetAudienceFull("Juvenile");
+										break;
+									case "PA":
+									case "EX":
+										groupedWork.addTargetAudience("Adult");
+										groupedWork.addTargetAudienceFull("Adult");
+										break;
+									case "T":
+										groupedWork.addTargetAudience("Young Adult");
+										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+										break;
+									case "T+":
+									default:
+										groupedWork.addTargetAudience("Young Adult");
+										groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+										groupedWork.addTargetAudience("Adult");
+										groupedWork.addTargetAudienceFull("Adult");
+								}
+
+							} else {
+								groupedWork.addTargetAudience("Young Adult");
+								groupedWork.addTargetAudienceFull("Adolescent (14-17)");
+								groupedWork.addTargetAudience("Adult");
+								groupedWork.addTargetAudienceFull("Adult");
+							}
+						}
+					} else {
 						groupedWork.addTargetAudience("Adult");
 						groupedWork.addTargetAudienceFull("Adult");
 					}
