@@ -264,7 +264,7 @@ class Nashville extends CarlX {
 					$fineType = 'COLLECTION AGENCY';
 					$fine->FeeNotes = 'COLLECTION AGENCY: must be paid last';
 				} elseif ($fine->TransactionCode == 'FS' && stripos($fine->FeeNotes, 'Non Resident Ful') !== false) {
-					$fineType = 'NR FEE';
+					$fineType = 'FEE';
 					$fine->FeeNotes = $fineType . ' (' . Nashville::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
                     $fine->TransactionCode = 'NR';
 				} else {
