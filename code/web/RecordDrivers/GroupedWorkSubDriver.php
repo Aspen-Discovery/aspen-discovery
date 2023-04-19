@@ -331,6 +331,8 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 	 */
 	public abstract function getISBNs();
 
+	public abstract function getOCLCNumber();
+
 	/**
 	 * Get an array of all ISSNs associated with the record (may be empty).
 	 *

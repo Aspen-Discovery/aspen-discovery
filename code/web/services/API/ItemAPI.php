@@ -1065,6 +1065,13 @@ class ItemAPI extends Action {
 			}
 		}
 
+		if ($relatedManifestation == null) {
+			return [
+				'success' => false,
+				'message' => 'Manifestation could not be found'
+			];
+		}
+
 		require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 		$marcRecord = new MarcRecordDriver($groupedWorkId);
 		$alwaysPlaceVolumeHoldWhenVolumesArePresent = $marcRecord->getCatalogDriver()->alwaysPlaceVolumeHoldWhenVolumesArePresent();
@@ -1122,13 +1129,9 @@ class ItemAPI extends Action {
 				}
 			}
 
-			$marcRecordDriver = new MarcRecordDriver($relatedRecord->id);
-			$oclcNumberString = '';
+			$relatedRecordDriver = $relatedRecord->getDriver();
 			/** @var File_MARC_Control_Field $oclcNumber */
-			$oclcNumber = $marcRecordDriver->getMarcRecord()->getField('001');
-			if ($oclcNumber != null) {
-				$oclcNumberString = substr($oclcNumber->getData(), 0, 50);
-			}
+			$oclcNumber = $relatedRecordDriver->getOCLCNumber();
 
 			$variations[$relatedVariation->label]['id'] = $relatedRecord->id;
 			$variations[$relatedVariation->label]['source'] = $relatedRecord->source;
@@ -1153,11 +1156,11 @@ class ItemAPI extends Action {
 				'showItsHere' => (int) $library->showItsHere,
 				'isGlobalScope' => $interface->getVariable('isGlobalScope'),
 			];
-			$variations[$relatedVariation->label]['title'] = $marcRecordDriver->getTitle() ?? '';
-			$variations[$relatedVariation->label]['author'] = $marcRecordDriver->getAuthor() ?? '';
+			$variations[$relatedVariation->label]['title'] = $relatedRecordDriver->getTitle() ?? '';
+			$variations[$relatedVariation->label]['author'] = $relatedRecordDriver->getAuthor() ?? '';
 			$variations[$relatedVariation->label]['publisher'] = $relatedRecord->publisher ?? '';
-			$variations[$relatedVariation->label]['isbn'] = $marcRecordDriver->getCleanISBN() ?? '';
-			$variations[$relatedVariation->label]['oclcNumber'] = $oclcNumberString;
+			$variations[$relatedVariation->label]['isbn'] = $relatedRecordDriver->getCleanISBN() ?? '';
+			$variations[$relatedVariation->label]['oclcNumber'] = $oclcNumber;
 		}
 
 		return [

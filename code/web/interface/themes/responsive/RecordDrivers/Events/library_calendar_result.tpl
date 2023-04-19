@@ -30,7 +30,7 @@
 				<div class="result-label col-tn-2">{translate text="Date" isPublicFacing=true} </div>
 				<div class="result-value col-tn-6 notranslate">
 					{if $allDayEvent}
-						{translate text="All Day Event" isPublicFacing=true}
+						{$start_date|date_format:"%a %b %e, %Y"}{translate text=" - All Day Event" isPublicFacing=true}
 					{elseif $multiDayEvent}
 						{$start_date|date_format:"%a %b %e, %Y %l:%M%p"} to {$end_date|date_format:"%a %b %e, %Y %l:%M%p"}
 					{else}
