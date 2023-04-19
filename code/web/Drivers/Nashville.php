@@ -48,18 +48,18 @@ class Nashville extends CarlX {
 					$feeId,
 					$feeType,
 				] = explode('-', $feeId);
-				$feeType = Nashville::$fineTypeSIP2Translations[$feeType];
+				$SIP2FeeType = Nashville::$fineTypeSIP2Translations[$feeType];
 				if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
 					$feeId = '#' . $feeId;
 				}
-				$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
+				$response = $this->feePaidViaSIP($SIP2FeeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
 				// If failed with 'Invalid patron ID', check for changed patron ID
 				if ($response['success'] === false && $response['message'] == 'Invalid patron ID.') {
 					$newPatronIds = $this->getPatronIDChanges($patronId);
 					if ($newPatronIds) {
 						foreach ($newPatronIds as $newPatronId) {
 							$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found " . $newPatronId['NEWPATRONID'], Logger::LOG_ERROR);
-							$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
+							$response = $this->feePaidViaSIP($SIP2FeeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
 							if ($response['success'] === false) {
 								$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
 								$allPaymentsSucceed = false;
@@ -191,10 +191,10 @@ class Nashville extends CarlX {
 		];
 	}
 
-	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array {
+	protected function feePaidViaSIP($SIP2FeeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array {
 		$mySip = $this->initSIPConnection();
 		if (!is_null($mySip)) {
-			$in = $mySip->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
+			$in = $mySip->msgFeePaid($SIP2FeeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.feePaid', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			if (preg_match("/^38/", $msg_result)) {
