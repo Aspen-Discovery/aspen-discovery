@@ -1645,6 +1645,8 @@ class UserAPI extends Action {
 
 		if (isset($_REQUEST['bibId'])) {
 			$bibId = $_REQUEST['bibId'];
+		} elseif(isset($_REQUEST['recordId'])) {
+			$bibId = $_REQUEST['recordId'];
 		} else {
 			$bibId = $_REQUEST['itemId'];
 		}
@@ -1653,6 +1655,18 @@ class UserAPI extends Action {
 			$source = $_REQUEST['itemSource'];
 		} else {
 			$source = null;
+		}
+
+		$shortId = null;
+		if($bibId) {
+			if (strpos($bibId, ':') > 0) {
+				[
+					,
+					$bibId,
+				] = explode(':', $bibId, 2);
+			} else {
+				$shortId = $bibId;
+			}
 		}
 
 		$user = $this->getUserForApiCall();
@@ -1703,18 +1717,8 @@ class UserAPI extends Action {
 						$cancelDate = date('Y-m-d', $nnaDate);
 					}
 
-
 					$holdType = $_REQUEST['holdType'];
 					if ($holdType == 'item' && isset($_REQUEST['itemId'])) {
-						$recordId = $_REQUEST['recordId'];
-						if (strpos($recordId, ':') > 0) {
-							[
-								,
-								$shortId,
-							] = explode(':', $recordId, 2);
-						} else {
-							$shortId = $recordId;
-						}
 						$result = $user->placeItemHold($shortId, $_REQUEST['itemId'], $pickupBranch, $cancelDate);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
@@ -1728,15 +1732,6 @@ class UserAPI extends Action {
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
 							];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
-						$recordId = $_REQUEST['recordId'];
-						if (strpos($recordId, ':') > 0) {
-							[
-								,
-								$shortId,
-							] = explode(':', $recordId, 2);
-						} else {
-							$shortId = $recordId;
-						}
 						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch);
 						$action = $result['api']['action'] ?? null;
 						$responseMessage = strip_tags($result['api']['message']);
