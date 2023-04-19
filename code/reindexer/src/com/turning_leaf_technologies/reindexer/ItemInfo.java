@@ -164,13 +164,7 @@ public class ItemInfo{
 			} else {
 				primaryFormat = recordInfo.getPrimaryFormat();
 			}
-			if (primaryFormat != null) {
-				primaryFormatUppercase = primaryFormat.toUpperCase();
-			} else {
-				primaryFormat = "Unknown";
-				primaryFormatUppercase = "UNKNOWN";
-			}
-
+			primaryFormatUppercase = primaryFormat.toUpperCase();
 		}
 		return primaryFormat;
 	}
