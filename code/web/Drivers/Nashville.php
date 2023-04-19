@@ -124,7 +124,10 @@ class Nashville extends CarlX {
     // Following successful online payment, update Patron with new Expiration Date
     protected function updateNonResident($patronId): array {
         global $logger;
-        $request = $this->getSearchbyPatronIdRequest($patronId);
+        $request = new stdClass();
+		$request->SearchType = 'Patron ID';
+		$request->SearchID = $patronId;
+		$request->Modifiers = '';
         $request->Patron = new stdClass();
         $request->Patron->PatronExpirationDate = date('c', strtotime('+1 year'));
         $result = $this->doSoapRequest('UpdatePatron', $request);
