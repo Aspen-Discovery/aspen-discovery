@@ -195,9 +195,9 @@ public class SideLoadingMain {
 					//Get the SideLoadFile for the file
 					boolean foundFileInDB = false;
 					for (SideLoadFile curFile : filesToProcess){
-						if (curFile.getFilename().equals(marcFile.getName())){
+						if (curFile.getFilename().equalsIgnoreCase(marcFile.getName())){
 							curFile.setExistingFile(marcFile);
-							//Force resorting if needed
+							//Force resorting if needed to make sure the file is sorted based on the last change time
 							filesToProcess.add(curFile);
 							foundFileInDB = true;
 							break;
@@ -213,7 +213,7 @@ public class SideLoadingMain {
 			//file a record comes from.
 			boolean changesMade = false;
 			for (SideLoadFile curFile : filesToProcess){
-				//We need a reindex if
+				//We need a reindex if the file was undeleted or modified since we last saw it
 				if (curFile.isNeedsReindex()){
 					if (curFile.getId() == 0){
 						logEntry.addNote(curFile.getFilename() + " was added");
@@ -222,6 +222,7 @@ public class SideLoadingMain {
 					}
 					changesMade = true;
 				}else if (curFile.getExistingFile() == null){
+					//The file no longer exists, so we need to mark it as deleted.
 					if (curFile.getDeletedTime() == 0){
 						logEntry.addNote(curFile.getFilename() + " was deleted");
 						curFile.setDeletedTime(new Date().getTime() / 1000);
@@ -232,6 +233,7 @@ public class SideLoadingMain {
 					}
 				}
 			}
+			logEntry.saveResults();
 
 			HashMap<String, IlsTitle> existingRecords;
 
@@ -249,11 +251,15 @@ public class SideLoadingMain {
 						//the other issue would be if a record is deleted from File B we would not necessarily know
 						//That it should be removed unless we process both.
 						if (curFile.getExistingFile() != null) {
+							logEntry.addNote("Processing sideload " + curFile.getFilename());
 							processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
 						} else {
 							if (curFile.getDeletedTime() > curFile.getLastIndexed()) {
+								logEntry.addNote("Marking " + curFile.getFilename() + " as deleted");
 								curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
+							}else{
+								logEntry.addNote("Ignoring " + curFile.getFilename() + ", because it was marked as deleted previously");
 							}
 						}
 					}catch (SQLException sqlE){

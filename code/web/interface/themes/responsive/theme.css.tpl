@@ -201,7 +201,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 
 .facetTitle, .exploreMoreTitle, .panel-heading, .panel-heading .panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title{ldelim}
     background-color: {$closedPanelBackgroundColor};
+    border-color: {$closedPanelForegroundColor}70;
 {rdelim}
+
+.panel-default{ldelim}
+	border-color: {$closedPanelForegroundColor}70;
+{rdelim}
+
 .facetTitle, .exploreMoreTitle,.panel-title,.panel-default > .panel-heading, .sidebar-links .panel-heading, #account-link-accordion .panel .panel-title, #account-settings-accordion .panel .panel-title, .panel-title > a,.panel-default > .panel-heading{ldelim}
     color: {$closedPanelForegroundColor};
 {rdelim}
@@ -713,15 +719,19 @@ label{ldelim}
     color: {$tertiaryForegroundColor} !important;
 {rdelim}
 
+.unbound_lookinside_excerpt::after{ldelim}
+	background-image: none !important;
+{rdelim}
+
 {* Misc *}
 .well{ldelim}
-	background-color: {$primaryBackgroundColor}70;
-	border: 1px solid {$primaryBackgroundColor};
-	color: {$primaryForegroundColor};
+	background-color: {$closedPanelBackgroundColor};
+	border: 1px solid {$closedPanelForegroundColor}70;
+	color: {$closedPanelForegroundColor};
 {rdelim}
 
 .well a{ldelim}
-	color: {$primaryForegroundColor};
+	color: {$closedPanelForegroundColor};
 {rdelim}
 
 .sidebar-label{ldelim}
@@ -772,6 +782,10 @@ color: {$bodyTextColor};
 
 .calendar-event .calendar-event-title a{ldelim}
 	color: {$primaryForegroundColor}
+{rdelim}
+
+.calendar-event-time{ldelim}
+    color: {$primaryForegroundColor};
 {rdelim}
 
 {* Accessiblity *}

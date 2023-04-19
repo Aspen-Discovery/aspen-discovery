@@ -421,6 +421,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		return $this->isbns;
 	}
 
+	public function getOCLCNumber() {
+		return '';
+	}
+
 	/**
 	 * Get an array of all UPCs associated with the record (may be empty).
 	 *

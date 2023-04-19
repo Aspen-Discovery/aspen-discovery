@@ -176,6 +176,10 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 		return $this->getFieldValue('isbn');
 	}
 
+	public function getOCLCNumber() {
+		return '';
+	}
+
 	public function getISSNs() {
 		return [];
 	}

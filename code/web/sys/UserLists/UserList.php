@@ -437,6 +437,7 @@ class UserList extends DataObject {
 					$interface->assign('resultIndex', $listPosition + $start + 1);
 					$interface->assign('listEntryId', $listEntryInfo['listEntryId']);
 					$interface->assign('listEntrySource', $listEntryInfo['source']);
+					$interface->assign('bookCoverUrl', '');
 
 					if ($listEntryInfo['source'] = "Events"){ //get covers for past events
 						if (preg_match('`^communico`', $listEntryInfo['sourceId'])){
@@ -445,15 +446,13 @@ class UserList extends DataObject {
 							$coverUrl = "/bookcover.php?id={$id}&size=small&type=communico_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
-						}
-						elseif (preg_match('`^libcal`', $listEntryInfo['sourceId'])){
+						} elseif (preg_match('`^libcal`', $listEntryInfo['sourceId'])){
 							$id = explode("libcal_1_", $listEntryInfo['sourceId']);
 							$id = $id[1];
 							$coverUrl = "/bookcover.php?id={$id}&size=small&type=springshare_libcal_event";
 
 							$interface->assign('bookCoverUrl', $coverUrl);
-						}
-						elseif (preg_match('`^lc_`', $listEntryInfo['sourceId'])){
+						} elseif (preg_match('`^lc_`', $listEntryInfo['sourceId'])){
 							$id = explode("lc_1_", $listEntryInfo['sourceId']);
 							$id = $id[1];
 							$coverUrl = "/bookcover.php?id={$id}&size=small&type=library_calendar_event";

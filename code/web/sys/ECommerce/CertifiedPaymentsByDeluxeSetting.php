@@ -7,7 +7,6 @@ class CertifiedPaymentsByDeluxeSetting extends DataObject {
 	public $name;
 	public $sandboxMode;
 	public $applicationId;
-	public $securityId;
 
 	private $_libraries;
 
@@ -40,14 +39,6 @@ class CertifiedPaymentsByDeluxeSetting extends DataObject {
 				'property' => 'applicationId',
 				'type' => 'text',
 				'label' => 'Application Id',
-				'hideInLists' => true,
-				'default' => '',
-				'size' => 500,
-			],
-			'securityId' => [
-				'property' => 'securityId',
-				'type' => 'text',
-				'label' => 'Security Id',
 				'hideInLists' => true,
 				'default' => '',
 				'size' => 500,

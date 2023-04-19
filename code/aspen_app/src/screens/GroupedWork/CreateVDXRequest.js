@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import {useRoute, useNavigation} from '@react-navigation/native';
-import {Box, Button, Checkbox, CheckIcon, FormControl, Input, Select, Text, TextArea} from 'native-base';
+import {Box, Button, Checkbox, CheckIcon, FormControl, Input, Select, Text, TextArea, ScrollView} from 'native-base';
 import React from 'react';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {loadingSpinner} from '../../components/loadingSpinner';
@@ -294,7 +294,7 @@ const Request = (payload) => {
     }
 
     return (
-        <SafeAreaView>
+        <ScrollView>
             <Box safeArea={5}>
                 {getIntroText()}
                 {getTitleField()}
@@ -308,7 +308,7 @@ const Request = (payload) => {
                 {getCatalogKeyField()}
                 {getActions()}
             </Box>
-        </SafeAreaView>
+        </ScrollView>
     )
 }
 
