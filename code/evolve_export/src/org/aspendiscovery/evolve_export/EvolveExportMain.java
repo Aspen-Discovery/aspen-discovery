@@ -257,6 +257,8 @@ public class EvolveExportMain {
 	}
 
 	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {
+		//String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ITEM=" + CA.... + "|Marc=Yes";
+		//String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CATALOGITEM=" + CA....;
 		logEntry.incErrors("Cannot extract Single Works from Evolve.");
 		return 0;
 	}

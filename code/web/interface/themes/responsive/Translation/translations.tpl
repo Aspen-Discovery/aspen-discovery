@@ -19,7 +19,7 @@
 			<label for="hideTranslated">{translate text="Hide terms that have been translated already" isAdminFacing=true}</label>
 		</div>
 		<div class="form-group">
-			<label for="updatedSince">{translate text="Show Terms created since" isAdminFacing=true}</label>
+			<label for="updatedSince">{translate text="Show Terms created / changed since" isAdminFacing=true}</label>
 			<div class="row">
 				<div class="col-sm-4">
 					<input name='updatedSince' id='updatedSince' value='{if !empty($updatedSince)}{$updatedSince|date_format:"%Y-%m-%d %H:%M"}{/if}' max="{$today}" class='form-control'>
