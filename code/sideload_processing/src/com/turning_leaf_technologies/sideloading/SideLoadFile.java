@@ -47,10 +47,12 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 
 	public void setExistingFile(File marcFile){
 		this.existingFile = marcFile;
-		if ((marcFile.lastModified() / 1000) > this.lastIndexed){
+		//File has changed since we last saw it or this is the first time we are seeing it
+		if ((marcFile.lastModified() / 1000) >= this.lastIndexed){
 			this.needsReindex = true;
 			this.lastChanged = marcFile.lastModified() / 1000;
 		}
+		//File has been undeleted since we last saw it
 		if (this.deletedTime != 0){
 			this.deletedTime = 0;
 			this.needsReindex = true;
