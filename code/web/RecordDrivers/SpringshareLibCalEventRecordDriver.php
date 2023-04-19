@@ -55,7 +55,7 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('eventUrl', $this->getLinkUrl());
 		$interface->assign('externalUrl', $this->getExternalUrl());
 		$interface->assign('branch', $this->getBranch());

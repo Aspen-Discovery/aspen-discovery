@@ -55,7 +55,7 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		global $interface;
 
 		$interface->assign('id', $this->getId());
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 		$interface->assign('eventUrl', $this->getLinkUrl());
 		$interface->assign('title', $this->getTitle());
 		if (isset($this->fields['description'])) {

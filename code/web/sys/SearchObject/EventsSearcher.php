@@ -156,8 +156,8 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 			require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
 			return new SpringshareLibCalEventRecordDriver($current);
 		} else if (substr($current['type'], 0, 15) == 'event_communico') {
-		require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
-		return new CommunicoEventRecordDriver($current);
+			require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+			return new CommunicoEventRecordDriver($current);
 		}else {
 			// TODO: rewrite Library Market Library Calendar type as event_lm or something similar. 2022 03 20 James.
 			require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';

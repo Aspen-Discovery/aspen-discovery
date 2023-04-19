@@ -1,3 +1,4 @@
+{strip}
 {if !empty($recordDriver)}
 	<div class="row">
 		<div class="result-label col-xs-2">{translate text="Grouped Work ID" isPublicFacing=true}</div>
@@ -55,9 +56,11 @@
 		</div>
 	</div>
 {/if}
+{/strip}
 
 {include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
+{strip}
 {if !empty($uploadedPDFs)}
 	<h4>{translate text="Uploaded PDFs" isAdminFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
@@ -109,8 +112,10 @@
 		</tbody>
 	</table>
 {/if}
+{/strip}
 
 {if !empty($marcRecord)}
+	{strip}
 	<h4>{translate text="Marc Record" isAdminFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
 		{if !empty($ilsRecord)}
@@ -146,6 +151,7 @@
 			{/if}
 		{/if}
 	</table>
+	{/strip}
 
 	<div id="formattedMarcRecord">
 		<h3>{translate text="MARC Record" isAdminFacing=true}</h3>
@@ -154,6 +160,7 @@
 				{*Output leader*}
 				<tr><th>LEADER</th><td colspan="3">{$marcRecord->getLeader()}</td></tr>
 				{foreach from=$marcRecord->getFields() item=field}
+					{strip}
 					{if get_class($field) == "File_MARC_Control_Field"}
 						<tr><th>{$field->getTag()}</th><td colspan="3">{$field->getData()|escape|replace:' ':'&nbsp;'}</td></tr>
 					{else}
@@ -163,7 +170,7 @@
 						{/foreach}
 						</td></tr>
 					{/if}
-
+					{/strip}
 				{/foreach}
 			</tbody>
 		</table>
