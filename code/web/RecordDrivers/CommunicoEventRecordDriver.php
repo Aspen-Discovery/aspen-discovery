@@ -70,9 +70,11 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 		$allDayEvent = false;
 		$multiDayEvent = false;
-		if ($this->getEventLength() == 0 || $this->getEventLength() == 24){
+		if ($this->isAllDayEvent()){
 			$allDayEvent = true;
-		} elseif ($this->getEventLength() > 24){
+		}
+		if ($this->isMultiDayEvent()){
+			$allDayEvent = false; //if the event is multiple days we don't want to say it's all day
 			$multiDayEvent = true;
 		}
 		$interface->assign('allDayEvent', $allDayEvent);
@@ -263,17 +265,33 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
-	public function getEventLength() {
+	public function isAllDayEvent() {
 		try {
 			$start = new DateTime($this->fields['start_date']);
 			$end = new DateTime($this->fields['end_date']);
 
 			$interval = $start->diff($end);
 
-			if ($interval->i > 0 && $interval->h == 0){ //some events don't last an hour
+			if ($interval->h == 24 || ($interval->i == 0 && $interval->h == 0)){ //some events don't last an hour
 				return 1;
 			}
-			return $interval->h;
+			return 0;
+		} catch (Exception $e) {
+			return null;
+		}
+	}
+
+	public function isMultiDayEvent() {
+		try {
+			$start = new DateTime($this->fields['start_date']);
+			$end = new DateTime($this->fields['end_date']);
+
+			$interval = $start->diff($end);
+
+			if ($interval->d > 0){
+				return 1;
+			}
+			return 0;
 		} catch (Exception $e) {
 			return null;
 		}
