@@ -37,6 +37,10 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 		return filename;
 	}
 
+	public Long getSideLoadId() {
+		return sideLoadId;
+	}
+
 	public long getDeletedTime() {
 		return deletedTime;
 	}
@@ -101,7 +105,8 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 
 	public boolean equals(Object obj) {
 		if (obj instanceof SideLoadFile) {
-			return (((SideLoadFile) obj).sideLoadId == this.sideLoadId && ((SideLoadFile) obj).filename.equals(this.filename));
+			SideLoadFile sideLoadFile = ((SideLoadFile) obj);
+			return (sideLoadFile.sideLoadId == this.sideLoadId && sideLoadFile.filename.equals(this.filename));
 		} else {
 			return false;
 		}
