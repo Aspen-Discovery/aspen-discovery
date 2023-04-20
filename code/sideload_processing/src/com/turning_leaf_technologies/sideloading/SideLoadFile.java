@@ -98,4 +98,12 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 	public long getId() {
 		return this.id;
 	}
+
+	public boolean equals(Object obj) {
+		if (obj instanceof SideLoadFile) {
+			return (((SideLoadFile) obj).sideLoadId == this.sideLoadId && ((SideLoadFile) obj).filename.equals(this.filename));
+		} else {
+			return false;
+		}
+	}
 }
