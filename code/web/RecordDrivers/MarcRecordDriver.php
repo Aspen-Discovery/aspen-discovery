@@ -1500,6 +1500,25 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->isbns;
 	}
 
+	private $_oclcNumber = null;
+	public function getOCLCNumber() {
+		if ($this->_oclcNumber == null) {
+			$this->_oclcNumber = '';
+			$marcRecord = $this->getMarcRecord();
+			if ($marcRecord != null) {
+				/** @var File_MARC_Control_Field $oclcNumberField */
+				$oclcNumberField = $this->getMarcRecord()->getField('001');
+				if ($oclcNumberField != null) {
+					$oclcNumber = $oclcNumberField->getData();
+					if (strpos($oclcNumber, 'ocn') === 0 || strpos($oclcNumber, 'ocm') === 0 || strpos($oclcNumber, 'on') === 0) {
+						$this->_oclcNumber = $oclcNumber;
+					}
+				}
+			}
+		}
+		return $this->_oclcNumber;
+	}
+
 	private $issns = null;
 
 	/**
