@@ -1895,6 +1895,8 @@ class User extends DataObject {
 			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
 			
 			$this->clearCache();
+
+			$this->forceReloadOfHolds();
 		}
 		return $result;
 	}
