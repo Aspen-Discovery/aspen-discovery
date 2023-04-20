@@ -1,21 +1,21 @@
 import * as WebBrowser from 'expo-web-browser';
 import { Box, Center, FlatList, HStack, Pressable, Text } from 'native-base';
-import React, { Component } from 'react';
+import React from 'react';
 
 // custom components and helper files
-import { loadError } from '../../components/loadError';
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { translate } from '../../translations/translations';
 import { GLOBALS } from '../../util/globals';
 import {LanguageContext, LibraryBranchContext, LibrarySystemContext} from '../../context/initialContext';
 import { LIBRARY } from '../../util/loadLibrary';
 import {getTermFromDictionary} from '../../translations/TranslationService';
-import {navigate, navigateStack} from '../../helpers/RootNavigator';
+import {navigate} from '../../helpers/RootNavigator';
 
 export const MoreScreen = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
+
+     console.log(LIBRARY.appSettings);
+
      const defaultMenuItems = [
           {
                key: '0',
@@ -26,12 +26,12 @@ export const MoreScreen = () => {
           {
                key: '1',
                title: getTermFromDictionary(language, 'privacy_policy'),
-               path: LIBRARY.appSettings.privacyPolicy ?? '',
+               path: LIBRARY.appSettings.privacyPolicy ?? GLOBALS.privacyPolicy,
                external: true,
           },
      ];
 
-     const openWebsite = async () => {
+     const openWebsite = async (url) => {
           WebBrowser.openBrowserAsync(url);
      }
 

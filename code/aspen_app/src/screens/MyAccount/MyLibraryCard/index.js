@@ -25,7 +25,7 @@ export const MyLibraryCard = () => {
      const [isLoading, setLoading] = React.useState(true);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [previousBrightness, setPreviousBrightness] = React.useState();
-     const [isLandscape, setIsLandscape] = React.useState();
+     const [isLandscape, setIsLandscape] = React.useState(false);
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
      //const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
      const { library } = React.useContext(LibrarySystemContext);
@@ -140,7 +140,7 @@ export const MyLibraryCard = () => {
                })();
           });
           return () => {};
-     }, [navigation, previousBrightness]);
+     }, [navigation, previousBrightness, isLandscape]);
 
      if(shouldRequestPermissions) {
          return <PermissionsPrompt promptTitle='permissions_screen_brightness_title' promptBody='permissions_screen_brightness_body' setShouldRequestPermissions={setShouldRequestPermissions} />
