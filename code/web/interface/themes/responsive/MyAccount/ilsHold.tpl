@@ -151,8 +151,13 @@
 								{if $record->frozen}
 									<span class="frozenHold label label-warning">
 								{/if}
-								{translate text=$record->status isPublicFacing=true}
-								{if $record->frozen && $showDateWhenSuspending && !empty($record->reactivateDate)} until {$record->reactivateDate|date_format:"%b %d, %Y"}</span>{/if}
+								{if $record->frozen && $showDateWhenSuspending && !empty($record->reactivateDate)}
+									{$status = $record->status}
+									{translate text="$status until %1%" 1=($record->reactivateDate|date_format:"%b %d, %Y") isPublicFacing=true}
+								{else}
+									{translate text=$record->status isPublicFacing=true}
+								{/if}
+									</span>
 							</div>
 						</div>
 

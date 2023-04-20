@@ -2011,7 +2011,7 @@ class Koha extends AbstractIlsDriver {
 				$curHold->status = "Frozen";
 				$curHold->canFreeze = true;
 				if ($curRow['suspend_until'] != null) {
-					$curHold->status .= ' until ' . date("M d, Y", strtotime($curRow['suspend_until']));
+					$curHold->reactivateDate = strtotime($curRow['suspend_until']);
 				}
 				$curHold->locationUpdateable = true;
 				if($this->getKohaVersion() >= 22.11) {
