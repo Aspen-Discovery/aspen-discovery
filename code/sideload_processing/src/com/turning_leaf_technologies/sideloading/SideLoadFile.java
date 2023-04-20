@@ -117,11 +117,11 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 		}
 	}
 
-//	public String toString() {
-//		return this.filename + this.sideLoadId;
-//	}
-//
-//	public int hashCode() {
-//		return this.toString().hashCode();
-//	}
+	public String toString() {
+		return this.sideLoadId  + " " + this.filename;
+	}
+
+	public int hashCode() {
+		return this.toString().hashCode();
+	}
 }
