@@ -184,7 +184,7 @@ public class SideLoadingMain {
 				ResultSet filesForSideloadRS = getFilesForSideloadStmt.executeQuery();
 				while (filesForSideloadRS.next()){
 					filesToProcess.add(new SideLoadFile(filesForSideloadRS));
-					logger.warn("Found existing file in database '" + filesForSideloadRS.getString("filename") + "' - id " + filesForSideloadRS.getString("id"));
+					logger.warn("Found existing file in database '" + filesForSideloadRS.getString("filename") + "' - id " + filesForSideloadRS.getString("id") + " number of files to process is: " + filesToProcess.size());
 				}
 			}catch (Exception e){
 				logEntry.incErrors("Could not load existing files for sideload " + settings.getName(), e);
