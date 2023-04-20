@@ -205,6 +205,7 @@ public class SideLoadingMain {
 							//Force resorting if needed to make sure the list is sorted based on the last change time so remove it and then readd
 							filesToProcess.remove(curFile);
 							filesToProcess.add(curFile);
+							logger.warn("There are " + filesToProcess.size() + " files to process after adding and removing " + curFile.toString());
 							foundFileInDB = true;
 							break;
 						}
