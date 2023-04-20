@@ -71,7 +71,12 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 
 	@Override
 	public int compareTo(SideLoadFile o) {
-		return Long.compare(lastChanged, o.lastChanged);
+		int comparison = Long.compare(lastChanged, o.lastChanged);
+		if (comparison == 0) {
+			return filename.compareTo(o.filename);
+		} else {
+			return comparison;
+		}
 	}
 
 	public boolean isNeedsReindex() {
@@ -106,9 +111,17 @@ public class SideLoadFile implements Comparable<SideLoadFile>{
 	public boolean equals(Object obj) {
 		if (obj instanceof SideLoadFile) {
 			SideLoadFile sideLoadFile = ((SideLoadFile) obj);
-			return (sideLoadFile.sideLoadId == this.sideLoadId && sideLoadFile.filename.equals(this.filename));
+			return (sideLoadFile.sideLoadId == this.sideLoadId && sideLoadFile.filename.equalsIgnoreCase(this.filename));
 		} else {
 			return false;
 		}
 	}
+
+//	public String toString() {
+//		return this.filename + this.sideLoadId;
+//	}
+//
+//	public int hashCode() {
+//		return this.toString().hashCode();
+//	}
 }
