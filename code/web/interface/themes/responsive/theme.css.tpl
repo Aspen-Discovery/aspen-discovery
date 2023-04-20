@@ -190,7 +190,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
-    background: {$primaryBackgroundColor}07;
+    background: {$primaryBackgroundColor}50;
 {rdelim}
 
 {if !empty($primaryForegroundColor)}
@@ -337,10 +337,16 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
-.btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
+.btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus{ldelim}
     background-color: {$defaultButtonHoverBackgroundColor};
     color: {$defaultButtonHoverForegroundColor};
     border-color: {$defaultButtonHoverBorderColor};
+{rdelim}
+
+.btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
+    background-color: {$defaultButtonHoverBackgroundColor}70;
+    color: {$defaultButtonHoverForegroundColor};
+    border-color: {$defaultButtonBorderColor};
 {rdelim}
 
 .btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
@@ -628,6 +634,17 @@ label{ldelim}
     background-color: {$defaultButtonBackgroundColor};
     color: {$defaultButtonForegroundColor};
     border: 1px solid {$defaultButtonBorderColor};
+{rdelim}
+
+{* Placards *}
+.placard{ldelim}
+	border: 1px solid {$searchToolsForegroundColor}70;
+    background-color: {$searchToolsBackgroundColor};
+    color: {$searchToolsForegroundColor};
+{rdelim}
+
+.placard a{ldelim}
+    color: {$searchToolsForegroundColor} !important;
 {rdelim}
 
 {* Browse Category Carousel *}

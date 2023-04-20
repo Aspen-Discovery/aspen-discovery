@@ -172,6 +172,7 @@ public class SideLoadingMain {
 	}
 
 	private static void processSideLoad(SideLoadSettings settings, PreparedStatement getFilesForSideloadStmt, PreparedStatement insertSideloadFileStmt, PreparedStatement updateSideloadFileStmt) {
+		logger.warn("Processing side load " + settings.getName() + " " + settings.getId());
 		File marcDirectory = new File(settings.getMarcPath());
 		if (!marcDirectory.exists()) {
 			logEntry.incErrors("Marc Directory " + settings.getMarcPath() + " did not exist");
@@ -183,6 +184,7 @@ public class SideLoadingMain {
 				ResultSet filesForSideloadRS = getFilesForSideloadStmt.executeQuery();
 				while (filesForSideloadRS.next()){
 					filesToProcess.add(new SideLoadFile(filesForSideloadRS));
+					logger.warn("Found existing file in database " + filesForSideloadRS.getString("filename"));
 				}
 			}catch (Exception e){
 				logEntry.incErrors("Could not load existing files for sideload " + settings.getName(), e);
@@ -192,10 +194,12 @@ public class SideLoadingMain {
 			File[] marcFiles = marcDirectory.listFiles((dir, name) -> name.matches(settings.getFilenamesToInclude()));
 			if (marcFiles != null) {
 				for (File marcFile : marcFiles) {
+					logger.warn("Found file in the filesystem " + marcFile.getName());
 					//Get the SideLoadFile for the file
 					boolean foundFileInDB = false;
 					for (SideLoadFile curFile : filesToProcess){
 						if (curFile.getFilename().equalsIgnoreCase(marcFile.getName())){
+							logger.warn("Found an existing file for " + marcFile.getName() + " - id " + curFile.getId());
 							curFile.setExistingFile(marcFile);
 							//Force resorting if needed to make sure the file is sorted based on the last change time
 							filesToProcess.add(curFile);
@@ -216,12 +220,15 @@ public class SideLoadingMain {
 				//We need a reindex if the file was undeleted or modified since we last saw it
 				if (curFile.isNeedsReindex()){
 					if (curFile.getId() == 0){
+						logger.warn("File " + curFile.getFilename() + " - id " + curFile.getId() + " was added");
 						logEntry.addNote(curFile.getFilename() + " was added");
 					}else{
+						logger.warn("File " + curFile.getFilename() + " - id " + curFile.getId() + " was changed");
 						logEntry.addNote(curFile.getFilename() + " was changed");
 					}
 					changesMade = true;
 				}else if (curFile.getExistingFile() == null){
+					logger.warn("File " + curFile.getFilename() + " - id " + curFile.getId() + " no longer exists");
 					//The file no longer exists, so we need to mark it as deleted.
 					if (curFile.getDeletedTime() == 0){
 						logEntry.addNote(curFile.getFilename() + " was deleted");
@@ -251,7 +258,7 @@ public class SideLoadingMain {
 						//the other issue would be if a record is deleted from File B we would not necessarily know
 						//That it should be removed unless we process both.
 						if (curFile.getExistingFile() != null) {
-							logEntry.addNote("Processing sideload " + curFile.getFilename());
+							logEntry.addNote("Processing sideload file " + curFile.getFilename());
 							processSideLoadFile(curFile.getExistingFile(), existingRecords, settings);
 							curFile.updateDatabase(insertSideloadFileStmt, updateSideloadFileStmt);
 						} else {
