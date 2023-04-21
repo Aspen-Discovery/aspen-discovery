@@ -183,8 +183,9 @@ public class SideLoadingMain {
 				getFilesForSideloadStmt.setLong(1, settings.getId());
 				ResultSet filesForSideloadRS = getFilesForSideloadStmt.executeQuery();
 				while (filesForSideloadRS.next()){
-					filesToProcess.add(new SideLoadFile(filesForSideloadRS));
-					logger.warn("Found existing file in database " + filesForSideloadRS.getString("filename"));
+					SideLoadFile fileForRecordInDatabase = new SideLoadFile(filesForSideloadRS);
+					filesToProcess.add(fileForRecordInDatabase);
+					logger.warn("Found existing file in database '" + fileForRecordInDatabase.getFilename() + "' - sideLoadId " + fileForRecordInDatabase.getSideLoadId() + " - id " + fileForRecordInDatabase.getId() + " number of files to process is: " + filesToProcess.size());
 				}
 			}catch (Exception e){
 				logEntry.incErrors("Could not load existing files for sideload " + settings.getName(), e);
@@ -194,20 +195,23 @@ public class SideLoadingMain {
 			File[] marcFiles = marcDirectory.listFiles((dir, name) -> name.matches(settings.getFilenamesToInclude()));
 			if (marcFiles != null) {
 				for (File marcFile : marcFiles) {
-					logger.warn("Found file in the filesystem " + marcFile.getName());
+					logger.warn("Found file in the filesystem '" + marcFile.getName() + "'");
 					//Get the SideLoadFile for the file
 					boolean foundFileInDB = false;
 					for (SideLoadFile curFile : filesToProcess){
 						if (curFile.getFilename().equalsIgnoreCase(marcFile.getName())){
-							logger.warn("Found an existing file for " + marcFile.getName() + " - id " + curFile.getId());
+							logger.warn("Matched file on file system '" + marcFile.getName() + " 'to file in database - id " + curFile.getId());
 							curFile.setExistingFile(marcFile);
-							//Force resorting if needed to make sure the file is sorted based on the last change time
+							//Force resorting if needed to make sure the list is sorted based on the last change time so remove it and then readd
+							filesToProcess.remove(curFile);
 							filesToProcess.add(curFile);
+							logger.warn("There are " + filesToProcess.size() + " files to process after adding and removing " + curFile.toString());
 							foundFileInDB = true;
 							break;
 						}
 					}
 					if (!foundFileInDB){
+						logger.warn("Did not find the file in the database, added a new file to process with id 0 (new)");
 						filesToProcess.add(new SideLoadFile(settings.getId(), marcFile));
 					}
 				}

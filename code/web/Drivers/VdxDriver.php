@@ -379,13 +379,10 @@ class VdxDriver {
 		$body .= "ReqMaxCostCurr=USD " . "\r\n";
 		$body .= "ReqMaxCost=" . $newRequest->maximumFeeAmount . "\r\n";
 		$body .= "ReqISBN=" . $newRequest->isbn . "\r\n";
-		if (!$isFromEmptyRequest) {
+		if (!$isFromEmptyRequest && !empty($_REQUEST['oclcNumber'])) {
 			$body .= "ControlNumbers._new=1\r\n";
 			$body .= "ControlNumbers.icn_rota_pos=-1\r\n";
 			$body .= "ControlNumbers.icn_loc_well_known=4\r\n";
-		}
-
-		if (!empty($_REQUEST['oclcNumber'])) {
 			$oclcNumber = $_REQUEST['oclcNumber'];
 			if (str_starts_with($oclcNumber, 'ocn') || str_starts_with($oclcNumber, 'ocm') || str_starts_with($oclcNumber, 'on')) {
 				$body .= "ControlNumbers.icn_control_number=" . preg_replace('/\D/', '', $oclcNumber) . "\r\n";
