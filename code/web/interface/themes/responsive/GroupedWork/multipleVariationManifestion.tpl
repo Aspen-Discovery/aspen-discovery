@@ -42,7 +42,7 @@
 		</div>
 		<div class="row">
 			<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}" style="display:none">
-				{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$variation->getRelatedRecords() relatedManifestation=$relatedManifestation}
+				{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$variation->getRelatedRecords() relatedManifestation=$relatedManifestation variationId=$variation->databaseId}
 			</div>
 		</div>
 	{/foreach}
