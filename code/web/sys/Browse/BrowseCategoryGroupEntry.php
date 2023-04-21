@@ -103,7 +103,15 @@ class BrowseCategoryGroupEntry extends DataObject {
 	}
 
 	public function canActiveUserChangeSelection() {
-		return  UserAccount::userHasPermission('Administer All Browse Categories') ||  UserAccount::userHasPermission('Administer Library Browse Categories');
+		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		$libraryId = $library == null ? -1 : $library->libraryId;
+		$browseCatId = $this->getBrowseCategory()->libraryId;
+		if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
+			return true;
+		}else if ($browseCatId == $libraryId){
+			return UserAccount::userHasPermission('Administer Library Browse Categories');
+		}
+		return false;
 	}
 
 	public function canActiveUserDelete() {
@@ -111,11 +119,15 @@ class BrowseCategoryGroupEntry extends DataObject {
 	}
 
 	public function canActiveUserEdit() {
-		if ($this->getBrowseCategory()->sharing == 'everyone') {
-			return UserAccount::userHasPermission('Administer All Browse Categories');
+		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+		$libraryId = $library == null ? -1 : $library->libraryId;
+		$browseCatId = $this->getBrowseCategory()->libraryId;
+		if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
+			return true;
+		}else if ($browseCatId == $libraryId){
+			return UserAccount::userHasPermission('Administer Library Browse Categories');
 		}
-		//Don't need to limit for the library since the user will need Administer Library Browse Categories to even view them.
-		return true;
+		return false;
 	}
 
 	public function toArray($includeRuntimeProperties = true, $encryptFields = false): array {
