@@ -393,10 +393,14 @@ class Grouping_Record {
 	/**
 	 * @return array
 	 */
-	public function getItemSummary(): array {
-		if (empty($this->_itemSummary)) {
+	public function getItemSummary($variationId = ''): array {
+		if (empty($variationId)) {
+			$variationId = 'any';
+		}
+		if (empty($this->_itemSummary[$variationId])) {
 			if ($this->_items != null) {
 				foreach ($this->_items as $item) {
+					if ($item)
 					$key = $item->getSummaryKey();
 					$itemSummary = $item->getSummary();
 					$this->addItemDetails($key, $itemSummary);
@@ -406,7 +410,7 @@ class Grouping_Record {
 			$this->sortItemDetails();
 			$this->sortItemSummary();
 		}
-		return $this->_itemSummary;
+		return $this->_itemSummary[$variationId];
 	}
 
 	public function getItemsDisplayedByDefault(): array {
