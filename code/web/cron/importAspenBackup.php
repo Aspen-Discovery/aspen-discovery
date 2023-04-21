@@ -17,7 +17,7 @@ if (file_exists($sqlBackupDir)) {
 	$exportFiles = scandir($sqlBackupDir);
 	foreach ($exportFiles as $exportFile) {
 		if ($exportFile != '.' && $exportFile != '..' && is_file($sqlBackupDir . $exportFile)) {
-			if (strpos($exportFile, ".sql") > 0 && !str_starts_with($exportFile, 'mysql')) {
+			if (strpos($exportFile, ".sql") > 0 && strpos($exportFile, 'mysql') === false) {
 				echo("Importing $exportFile\n");
 				$importCommand = "mysql -u$dbUser -p$dbPassword $dbName < $sqlBackupDir$exportFile";
 				$results = [];
