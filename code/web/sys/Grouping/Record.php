@@ -393,20 +393,26 @@ class Grouping_Record {
 	/**
 	 * @return array
 	 */
-	public function getItemSummary(): array {
-		if (empty($this->_itemSummary)) {
+	public function getItemSummary($variationId = ''): array {
+		if ($variationId == '') {
+			$variationId = 'any';
+		}
+		if (empty($this->_itemSummary[$variationId])) {
+			$this->_itemSummary[$variationId] = [];
 			if ($this->_items != null) {
 				foreach ($this->_items as $item) {
-					$key = $item->getSummaryKey();
-					$itemSummary = $item->getSummary();
-					$this->addItemDetails($key, $itemSummary);
-					$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+					if ($variationId == 'any' || $item->variationId == $variationId) {
+						$key = $item->getSummaryKey();
+						$itemSummary = $item->getSummary();
+						$this->addItemDetails($variationId, $key, $itemSummary);
+						$this->addItemSummary($variationId, $key, $itemSummary, $item->groupedStatus);
+					}
 				}
 			}
-			$this->sortItemDetails();
-			$this->sortItemSummary();
+			$this->sortItemDetails($variationId);
+			$this->sortItemSummary($variationId);
 		}
-		return $this->_itemSummary;
+		return $this->_itemSummary[$variationId];
 	}
 
 	public function getItemsDisplayedByDefault(): array {
@@ -417,25 +423,28 @@ class Grouping_Record {
 		return $this->_itemsDisplayedByDefault;
 	}
 
-	public function hasItemSummary($itemKey): bool {
-		return isset($this->_itemSummary[$itemKey]);
+	public function hasItemSummary($variationId, $itemKey): bool {
+		return isset($this->_itemSummary[$variationId][$itemKey]);
 	}
 
-	public function addItemSummary($key, $itemSummaryInfo, $groupedStatus): void {
-		if ($this->hasItemSummary($key)) {
-			$this->_itemSummary[$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
-			$this->_itemSummary[$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
+	public function addItemSummary($variationId, $key, $itemSummaryInfo, $groupedStatus): void {
+		if ($this->hasItemSummary($variationId, $key)) {
+			$this->_itemSummary[$variationId][$key]['totalCopies'] += $itemSummaryInfo['totalCopies'];
+			$this->_itemSummary[$variationId][$key]['availableCopies'] += $itemSummaryInfo['availableCopies'];
 			if ($itemSummaryInfo['displayByDefault']) {
-				$this->_itemSummary[$key]['displayByDefault'] = true;
+				$this->_itemSummary[$variationId][$key]['displayByDefault'] = true;
 			}
-			$this->_itemSummary[$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
-			$lastStatus = $this->_itemSummary[$key]['status'];
-			$this->_itemSummary[$key]['status'] = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
-			if ($lastStatus != $this->_itemSummary[$key]['status']) {
-				$this->_itemSummary[$key]['statusFull'] = $itemSummaryInfo['statusFull'];
+			$this->_itemSummary[$variationId][$key]['onOrderCopies'] += $itemSummaryInfo['onOrderCopies'];
+			$lastStatus = $this->_itemSummary[$variationId][$key]['status'];
+			$this->_itemSummary[$variationId][$key]['status'] = GroupedWorkDriver::keepBestGroupedStatus($lastStatus, $groupedStatus);
+			if ($lastStatus != $this->_itemSummary[$variationId][$key]['status']) {
+				$this->_itemSummary[$variationId][$key]['statusFull'] = $itemSummaryInfo['statusFull'];
 			}
 		} else {
-			$this->_itemSummary[$key] = $itemSummaryInfo;
+			if (!isset($this->_itemSummary[$variationId])) {
+				$this->_itemSummary[$variationId] = [];
+			}
+			$this->_itemSummary[$variationId][$key] = $itemSummaryInfo;
 		}
 
 		if ($this->_itemsDisplayedByDefault == null) {
@@ -457,18 +466,21 @@ class Grouping_Record {
 		}
 	}
 
-	public function sortItemSummary(): void {
-		ksort($this->_itemSummary);
+	public function sortItemSummary($variationId): void {
+		ksort($this->_itemSummary[$variationId]);
 	}
 
 	/**
 	 * @return array
 	 */
-	public function getItemDetails(): array {
-		if (empty($this->_itemDetails)) {
+	public function getItemDetails($variationId = ''): array {
+		if (empty($variationId)) {
+			$variationId = 'any';
+		}
+		if (empty($this->_itemDetails[$variationId])) {
 			if ($this->_items != null) {
 				foreach ($this->_items as $item) {
-					if (!$item->isVirtual) {
+					if (!$item->isVirtual && ($variationId == 'any' || $variationId == $item->variationId)) {
 						$key = $item->getSummaryKey();
 						$itemSummary = $item->getSummary();
 						//Get the correct variation
@@ -479,26 +491,29 @@ class Grouping_Record {
 								break;
 							}
 						}
-						$this->addItemDetails($key . $item->itemId, $itemSummary);
-						$this->addItemSummary($key, $itemSummary, $item->groupedStatus);
+						$this->addItemDetails($variationId,$key . $item->itemId, $itemSummary);
+						$this->addItemSummary($variationId, $key, $itemSummary, $item->groupedStatus);
 					}
 				}
 			}
-			$this->sortItemDetails();
-			$this->sortItemSummary();
+			$this->sortItemDetails($variationId);
+			$this->sortItemSummary($variationId);
 			if ($this->_itemsDisplayedByDefault == null) {
 				$this->_itemsDisplayedByDefault = [];
 			}
 		}
-		return $this->_itemDetails;
+		return $this->_itemDetails[$variationId];
 	}
 
-	public function addItemDetails($key, $itemSummaryInfo): void {
-		$this->_itemDetails[$key] = $itemSummaryInfo;
+	public function addItemDetails($variationId, $key, $itemSummaryInfo): void {
+		if (!array_key_exists($variationId, $this->_itemDetails)) {
+			$this->_itemDetails[$variationId] = [];
+		}
+		$this->_itemDetails[$variationId][$key] = $itemSummaryInfo;
 	}
 
-	public function sortItemDetails(): void {
-		ksort($this->_itemDetails);
+	public function sortItemDetails($variationId): void {
+		ksort($this->_itemDetails[$variationId]);
 	}
 
 	/**

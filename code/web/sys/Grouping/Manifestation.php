@@ -383,4 +383,8 @@ class Grouping_Manifestation {
 		return $this->_variations;
 	}
 
+	function getFirstVariation() {
+		return reset($this->_variations);
+	}
+
 }
