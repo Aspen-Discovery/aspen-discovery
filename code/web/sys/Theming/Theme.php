@@ -391,6 +391,20 @@ class Theme extends DataObject {
 	public /** @noinspection PhpUnused */
 		$panelBodyForegroundColorDefault;
 
+	//Tab Colors
+	public $inactiveTabBackgroundColor;
+	public /** @noinspection PhpUnused */
+		$inactiveTabBackgroundColorDefault;
+	public $inactiveTabForegroundColor;
+	public /** @noinspection PhpUnused */
+		$inactiveTabForegroundColorDefault;
+	public $activeTabBackgroundColor;
+	public /** @noinspection PhpUnused */
+		$activeTabBackgroundColorDefault;
+	public $activeTabForegroundColor;
+	public /** @noinspection PhpUnused */
+		$activeTabForegroundColorDefault;
+
 	//Theme accessibility options
 	public $isHighContrast;
 
@@ -1867,6 +1881,55 @@ class Theme extends DataObject {
 				],
 			],
 
+			'tabsSection' => [
+				'property' => 'tabsSection',
+				'type' => 'section',
+				'label' => 'Tabs',
+				'hideInLists' => true,
+				'properties' => [
+					'inactiveTabBackgroundColor' => [
+						'property' => 'inactiveTabBackgroundColor',
+						'type' => 'color',
+						'label' => 'Inactive Tab Background Color',
+						'description' => 'Tab Background Color while inactive',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#ffffff',
+						'checkContrastWith' => 'inactiveTabForegroundColor',
+					],
+					'inactiveTabForegroundColor' => [
+						'property' => 'inactiveTabForegroundColor',
+						'type' => 'color',
+						'label' => 'Inactive Tab Text Color',
+						'description' => 'Tab Foreground Color while inactive',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#6B6B6B',
+						'checkContrastWith' => 'inactiveTabBackgroundColor',
+					],
+					'activeTabBackgroundColor' => [
+						'property' => 'activeTabBackgroundColor',
+						'type' => 'color',
+						'label' => 'Active Tab Background Color',
+						'description' => 'Tab Background Color while active',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#e7e7e7',
+						'checkContrastWith' => 'activeTabForegroundColor',
+					],
+					'activeTabForegroundColor' => [
+						'property' => 'activeTabForegroundColor',
+						'type' => 'color',
+						'label' => 'Active Tab Text Color',
+						'description' => 'Tab Foreground Color while open',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#333333',
+						'checkContrastWith' => 'activeTabBackgroundColor',
+					],
+				]
+			],
+
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'oneToMany',
@@ -2047,6 +2110,14 @@ class Theme extends DataObject {
 		if ($panelBodyContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Open Panel contrast does not meet accessibility guidelines, contrast is: ' . ($panelBodyContrast);
 		}
+		$inactiveTabContrast = ColorUtils::calculateColorContrast($this->inactiveTabBackgroundColor, $this->inactiveTabForegroundColor);
+		if ($inactiveTabContrast < $minContrastRatio) {
+			$validationResults['errors'][] = 'Inactive Tab contrast does not meet accessibility guidelines, contrast is: ' . ($inactiveTabContrast);
+		}
+		$activeTabContrast = ColorUtils::calculateColorContrast($this->activeTabBackgroundColor, $this->activeTabForegroundColor);
+		if ($activeTabContrast < $minContrastRatio) {
+			$validationResults['errors'][] = 'Active Tab contrast does not meet accessibility guidelines, contrast is: ' . ($activeTabContrast);
+		}
 		$defaultButtonContrast = ColorUtils::calculateColorContrast($this->defaultButtonBackgroundColor, $this->defaultButtonForegroundColor);
 		if ($defaultButtonContrast < $minContrastRatio) {
 			$validationResults['errors'][] = 'Default Button contrast does not meet accessibility guidelines, contrast is: ' . ($defaultButtonContrast);
@@ -2219,6 +2290,10 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('openPanelForegroundColor', $this->secondaryForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('panelBodyBackgroundColor', '#ffffff', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('panelBodyForegroundColor', '#404040', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('inactiveTabBackgroundColor', '#ffffff', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('inactiveTabForegroundColor', '#6B6B6B', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('activeTabBackgroundColor', '#e7e7e7', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('activeTabForegroundColor', '#333333', $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonBackgroundColor', Theme::$defaultDefaultButtonBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonForegroundColor', Theme::$defaultDefaultButtonForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('defaultButtonBorderColor', Theme::$defaultDefaultButtonBorderColor, $appliedThemes);
@@ -2347,6 +2422,10 @@ class Theme extends DataObject {
 		$interface->assign('openPanelForegroundColor', $this->openPanelForegroundColor);
 		$interface->assign('panelBodyBackgroundColor', $this->panelBodyBackgroundColor);
 		$interface->assign('panelBodyForegroundColor', $this->panelBodyForegroundColor);
+		$interface->assign('inactiveTabBackgroundColor', $this->inactiveTabBackgroundColor);
+		$interface->assign('inactiveTabForegroundColor', $this->inactiveTabForegroundColor);
+		$interface->assign('activeTabBackgroundColor', $this->activeTabBackgroundColor);
+		$interface->assign('activeTabForegroundColor', $this->activeTabForegroundColor);
 		$interface->assign('defaultButtonBackgroundColor', $this->defaultButtonBackgroundColor);
 		$interface->assign('defaultButtonForegroundColor', $this->defaultButtonForegroundColor);
 		$interface->assign('defaultButtonBorderColor', $this->defaultButtonBorderColor);

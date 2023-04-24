@@ -704,25 +704,31 @@ label{ldelim}
 {rdelim}
 
 {* Tabs *}
+.nav-tabs > li{ldelim}
+	background-color: {$inactiveTabBackgroundColor};
+    border-color: {$inactiveTabBackgroundColor} !important;
+    color: {$inactiveTabForegroundColor}
+{rdelim}
+
 .nav-tabs > li.active > a, .nav-tabs > li.active > a:hover, .nav-tabs > li.active > a:focus, .nav-tabs > li > a:hover{ldelim}
-	background-color: {$closedPanelBackgroundColor};
-    border-color: {$closedPanelBackgroundColor} !important;
-    color: {$closedPanelForegroundColor}
+	background-color: {$activeTabBackgroundColor};
+    border-color: {$activeTabBackgroundColor} !important;
+    color: {$activeTabForegroundColor}
 {rdelim}
 
 .nav-tabs{ldelim}
-	border-bottom: 1px solid {$closedPanelBackgroundColor}
+	border-bottom: 1px solid {$activeTabBackgroundColor}
 {rdelim}
 
 .nav-tabs{ldelim}
-	border-left: 0px solid {$closedPanelBackgroundColor};
-	border-right: 0px solid {$closedPanelBackgroundColor}
+	border-left: 0px solid {$activeTabBackgroundColor};
+	border-right: 0px solid {$activeTabBackgroundColor}
 {rdelim}
 
 .tab-content{ldelim}
-	border-left: 1px solid {$closedPanelBackgroundColor};
-	border-right: 1px solid {$closedPanelBackgroundColor};
-	border-bottom: 1px solid {$closedPanelBackgroundColor};
+	border-left: 1px solid {$activeTabBackgroundColor};
+	border-right: 1px solid {$activeTabBackgroundColor};
+	border-bottom: 1px solid {$activeTabBackgroundColor};
 {rdelim}
 
 {* Syndetics Unbound *}
