@@ -1,5 +1,6 @@
 {strip}
 	<div class="col-sm-12">
+		{* These are all of the grouping records for the given MARC record*}
 		{foreach from=$recordDriver->getRecordVariations() item=record}
 			<div class="row related-manifestation grouped" >
 				{* Display Format Button (does nothing) *}
@@ -12,7 +13,7 @@
 				<div class="col-tn-8 col-xs-8 col-md-5 col-lg-6">
 					{include file='GroupedWork/statusIndicator.tpl' statusInformation=$record->getStatusInformation() viewingIndividualRecord=0}
 					{if !$record->isEContent()}
-						{include file='GroupedWork/copySummary.tpl' summary=$record->getItemsDisplayedByDefault() totalCopies=$record->getCopies() itemSummaryId=$workId recordViewUrl=$record->getUrl() format=$record->format}
+						{include file='GroupedWork/copySummary.tpl' summary=$record->getItemsDisplayedByDefault($record->variationId) totalCopies=$record->getCopies() itemSummaryId=$workId recordViewUrl=$record->getUrl() format=$record->variationFormat}
 					{/if}
 				</div>
 				{* Display Hold/Action Button *}
