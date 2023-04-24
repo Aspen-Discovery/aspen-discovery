@@ -190,7 +190,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 
 .exploreMoreBar{ldelim}
     border-color: {$primaryBackgroundColor};
-    background: {$primaryBackgroundColor}50;
+    background: {$primaryBackgroundColor}07;
 {rdelim}
 
 {if !empty($primaryForegroundColor)}
