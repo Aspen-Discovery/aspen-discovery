@@ -390,7 +390,6 @@ class Location extends DataObject {
 				'keyOther' => 'locationId',
 				'subObjectType' => 'LocationTheme',
 				'structure' => $locationThemeStructure,
-				'default' => 'default',
 				'sortable' => true,
 				'storeDb' => true,
 				'allowEdit' => true,

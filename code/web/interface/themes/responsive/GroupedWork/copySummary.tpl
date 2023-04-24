@@ -1,13 +1,13 @@
 {strip}
-	{if !empty($format) && ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine')}
-		{if !empty($recordViewUrl) && ($showQuickCopy != 0)}
-			<div class="itemSummary">
-				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">
-					{translate text="Where is it?" isPublicFacing=true}
-				</a>
-			</div>
-		{/if}
-	{else}
+{*	{if !empty($format) && ($format == 'Journal' || $format == 'Newspaper' || $format == 'Print Periodical' || $format == 'Magazine')}*}
+{*		{if !empty($recordViewUrl) && ($showQuickCopy != 0)}*}
+{*			<div class="itemSummary">*}
+{*				&nbsp;&nbsp;<a href="{$recordViewUrl}#copiesPanelBody">*}
+{*					{translate text="Where is it?" isPublicFacing=true}*}
+{*				</a>*}
+{*			</div>*}
+{*		{/if}*}
+{*	{else}*}
 		{assign var=numDefaultItems value="0"}
 		{assign var=numRowsShown value="0"}
 		{if $showQuickCopy != 3}
@@ -47,5 +47,5 @@
 				{/if}
 			{/if}
 		{/if}
-	{/if}
+{*	{/if}*}
 {/strip}
