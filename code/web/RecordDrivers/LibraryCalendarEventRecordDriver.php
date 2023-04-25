@@ -291,8 +291,11 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function inEvents() {
-		require_once ROOT_DIR . '/sys/Account/User.php';
-		return (new user)->inUserEvents($this->getId());
+		if (UserAccount::isLoggedIn()) {
+			return UserAccount::getActiveUserObj()->inUserEvents($this->getId());
+		}else{
+			return false;
+		}
 	}
 
 	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
