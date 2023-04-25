@@ -305,6 +305,11 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function inEvents() {
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		return (new user)->inUserEvents($this->getId());
+	}
+
 	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		$result = parent::getSpotlightResult($collectionSpotlight, $index);
 		if ($collectionSpotlight->style == 'text-list') {

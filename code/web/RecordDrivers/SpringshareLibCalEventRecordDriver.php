@@ -326,4 +326,9 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			return false;
 		}
 	}
+
+	public function inEvents() {
+		require_once ROOT_DIR . '/sys/Account/User.php';
+		return (new user)->inUserEvents($this->getId());
+	}
 }
