@@ -60,7 +60,7 @@ function getUpdates23_05_00(): array {
 					dateRun INT(11) DEFAULT NULL,
 					status VARCHAR(10) DEFAULT NULL,
 					notes VARCHAR(255) DEFAULT NULL,
-					siteId INT(11) NOT NULL
+					siteId INT(11) DEFAULT NULL
 				) ENGINE INNODB',
 			],
 		],
