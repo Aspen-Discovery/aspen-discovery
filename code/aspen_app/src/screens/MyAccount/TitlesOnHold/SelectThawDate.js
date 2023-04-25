@@ -29,10 +29,10 @@ export const SelectThawDate = (props) => {
 
     const hideDatePicker = () => {
         setDatePickerVisibility(false);
-        setDate(today);
     };
 
     const onSelectDate = (date) => {
+        hideDatePicker();
         setLoading(true);
         console.warn("A date has been picked: ", date);
         setDate(date);
