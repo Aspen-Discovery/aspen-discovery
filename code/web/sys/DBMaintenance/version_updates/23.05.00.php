@@ -38,6 +38,15 @@ function getUpdates23_05_00(): array {
 			]
 		],
 		//add_tab_coloring_theme
+		'add_bypass_patron_login' => [
+			'title' => 'Add option to bypass local patron login',
+			'description' => 'Adds column to bypass local patron login when using a single sign-on service',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN bypassAspenPatronLogin tinyint(1) DEFAULT 0',
+			]
+		],
+		//add_bypass_patron_login
 		//kodi
 		//other
 	];
