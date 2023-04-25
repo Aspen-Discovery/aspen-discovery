@@ -6405,14 +6405,25 @@ class Koha extends AbstractIlsDriver {
 				}
 
 				if ($curRow['debarred'] != null) {
-					$message = '<strong>Please note:</strong> Your account has been frozen. ';
+					$message = '<strong>' . translate([
+							'text' => 'Please note: Your account has been frozen.',
+							'isPublicFacing' => true,
+						]) . '</strong>';
 					if ($library->showDebarmentNotes) {
 						if (!empty($curRow['debarredcomment'])) {
 							$debarredComment = str_replace('OVERDUES_PROCESS', 'Restriction added by overdues process', $curRow['debarredcomment']);
-							$message .= "Comment: " . $debarredComment . '<br/>';
+							$debarredComment = translate(['text' => $debarredComment, 'isPublicFacing' => true]);
+
+							$message .= ' ' . translate([
+								'text' => 'Comment:',
+								'isPublicFacing' => true,
+							]) . " " . $debarredComment . '<br/>';
 						}
 					}
-					$message .= "  <em>Usually the reason for freezing an account is overdues or damage fees. If your account shows to be clear, please contact the library.</em>";
+					$message .= "  <em>" . translate([
+						'text' => 'Usually the reason for freezing an account is overdues or damage fees. If your account shows to be clear, please contact the library.',
+						'isPublicFacing' => true,
+					]) . "</em>";
 					$messages[] = [
 						'message' => $message,
 						'messageStyle' => 'danger',

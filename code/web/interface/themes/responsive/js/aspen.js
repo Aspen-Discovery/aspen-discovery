@@ -5822,7 +5822,7 @@ AspenDiscovery.Account = (function () {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
-				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset')) {
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin')) {
 					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;
@@ -12839,11 +12839,19 @@ AspenDiscovery.Record = (function(){
 			var holdType = $('#holdType');
 			if (holdType.length > 0){
 				params['holdType'] = holdType.val();
+				if ( holdType.val() === 'item' && selectedItem.length === 0){
+					alert("Please select an item to place your hold on");
+					return false;
+				}
 			}else{
 				if ($('#holdTypeBib').is(':checked')){
 					params['holdType'] = 'bib';
 				}else{
 					params['holdType'] = 'item';
+					if (selectedItem.length === 0){
+						alert("Please select an item to place your hold on");
+						return false;
+					}
 				}
 			}
 			params = this.loadHoldNotificationOptions(params);
@@ -12950,6 +12958,9 @@ AspenDiscovery.Record = (function(){
 			}
 			if (volume.length > 0){
 				params['volume'] = volume.val();
+			} else {
+				alert("Please select a volume to place a hold on.");
+				return false;
 			}
 			if (params['pickupBranch'] === 'undefined'){
 				alert("Please select a location to pick up your hold when it is ready.");
