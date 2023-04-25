@@ -1,13 +1,23 @@
 import React from 'react';
 import { FormControl, Select, Input, Checkbox, Text, CheckIcon } from 'native-base';
 import _ from 'lodash';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
 
 export const HoldNotificationPreferences = (props) => {
-	const {user,language, emailNotification, setEmailNotification, emailNotificationLabel, phoneNotification, setPhoneNotification, smsNotification, setSMSNotification, smsCarrier, setSMSCarrier, smsNumber, setSMSNumber, phoneNumber, setPhoneNumber} = props;
+	const {user, url, language, emailNotification, setEmailNotification, phoneNotification, setPhoneNotification, smsNotification, setSMSNotification, smsCarrier, setSMSCarrier, smsNumber, setSMSNumber, phoneNumber, setPhoneNumber} = props;
 
 	const holdNotificationInfo = user.holdNotificationInfo;
 	const smsCarriers = holdNotificationInfo.smsCarriers;
+
+	const [emailNotificationLabel, setEmailNotificationLabel] = React.useState('Yes, by email');
+	React.useEffect(() => {
+		async function fetchTranslations() {
+			await getTranslationsWithValues('hold_email_notification', user.email ?? null, language, url).then(result => {
+				setEmailNotificationLabel(_.toString(result));
+			});
+		}
+		fetchTranslations()
+	}, [language]);
 
 	return (
 		<>
