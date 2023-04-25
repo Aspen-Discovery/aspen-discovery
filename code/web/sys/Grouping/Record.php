@@ -397,20 +397,9 @@ class Grouping_Record {
 		if ($variationId == '') {
 			$variationId = 'any';
 		}
-		if (empty($this->_itemSummary[$variationId])) {
-			$this->_itemSummary[$variationId] = [];
-			if ($this->_items != null) {
-				foreach ($this->_items as $item) {
-					if ($variationId == 'any' || $item->variationId == $variationId) {
-						$key = $item->getSummaryKey();
-						$itemSummary = $item->getSummary();
-						$this->addItemDetails($variationId, $key, $itemSummary);
-						$this->addItemSummary($variationId, $key, $itemSummary, $item->groupedStatus);
-					}
-				}
-			}
-			$this->sortItemDetails($variationId);
-			$this->sortItemSummary($variationId);
+		if (!array_key_exists($variationId, $this->_itemSummary)) {
+			//Load details and summary
+			$this->getItemDetails($variationId);
 		}
 		return $this->_itemSummary[$variationId];
 	}
@@ -477,7 +466,11 @@ class Grouping_Record {
 		if (empty($variationId)) {
 			$variationId = 'any';
 		}
-		if (empty($this->_itemDetails[$variationId])) {
+		if (!array_key_exists($variationId, $this->_itemDetails)) {
+			$this->_itemDetails[$variationId] = [];
+			if (!isset($this->_itemSummary[$variationId])) {
+				$this->_itemSummary[$variationId] = [];
+			}
 			if ($this->_items != null) {
 				foreach ($this->_items as $item) {
 					if (!$item->isVirtual && ($variationId == 'any' || $variationId == $item->variationId)) {

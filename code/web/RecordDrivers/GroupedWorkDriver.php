@@ -1652,6 +1652,9 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	}
 
 	/**
+	 * TODO: This needs cleanup, it is not handling multiple variations properly.
+	 * Should get the related record based on the selected manifestation (format)
+	 *
 	 * @param $recordIdentifier
 	 * @return Grouping_Record
 	 */
