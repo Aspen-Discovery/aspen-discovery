@@ -48,23 +48,31 @@
 				</div>
 				{* Register Button *}
 				<div class="result-value col-tn-4">
-
-					{if $recordDriver->isRegistrationRequired()}
+					{if $recordDriver->inEvents()}
 						<div class="btn-toolbar">
 							<div class="col-xs-12">
-								<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
-									<i class="fas fa-external-link-alt"></i>{translate text=" Add to Your Events and Register" isPublicFacing=true}
-								</a>
+								<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
 							</div>
 						</div>
 						<br>
 					{else}
-						<div class="btn-toolbar">
-							<div class="col-xs-12">
-								<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+						{if $recordDriver->isRegistrationRequired()}
+							<div class="btn-toolbar">
+								<div class="col-xs-12">
+									<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+										<i class="fas fa-external-link-alt"></i>{translate text=" Add to Your Events and Register" isPublicFacing=true}
+									</a>
+								</div>
 							</div>
-						</div>
-						<br>
+							<br>
+						{else}
+							<div class="btn-toolbar">
+								<div class="col-xs-12">
+									<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+								</div>
+							</div>
+							<br>
+						{/if}
 					{/if}
 				</div>
 			</div>
