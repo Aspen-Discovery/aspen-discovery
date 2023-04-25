@@ -1682,7 +1682,7 @@ class User extends DataObject {
 
 		$event = new UserEventsEntry();
 		$event->sourceId = $id;
-		$event->userId = UserAccount::getActiveUserId();
+		$event->userId = $this->id;
 		if ($event->find()){
 			return true;
 		}
