@@ -47,6 +47,24 @@ function getUpdates23_05_00(): array {
 			]
 		],
 		//add_bypass_patron_login
+		'add_aspen_site_scheduled_update' => [
+			'title' => 'Add table to store scheduled updates',
+			'description' => 'Create a table to store scheduled system updates',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS aspen_site_scheduled_update (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					dateScheduled INT(11) DEFAULT NULL,
+					updateToVersion VARCHAR(32) DEFAULT NULL,
+					updateType VARCHAR(10) DEFAULT NULL,
+					dateRun INT(11) DEFAULT NULL,
+					status VARCHAR(10) DEFAULT NULL,
+					notes VARCHAR(255) DEFAULT NULL,
+					siteId INT(11) NOT NULL
+				) ENGINE INNODB',
+			],
+		],
+		//add_aspen_site_scheduled_update
 		//kodi
 		//other
 	];
