@@ -2381,7 +2381,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			} else {
-				$apiUrl = $this->getWebServiceUrl() . "/api/v1/checkouts/$sourceId/renewal";
+				$apiUrl = $this->getWebServiceUrl() . "/api/v1/checkouts/$sourceId/renewals";
 				$this->apiCurlWrapper->addCustomHeaders([
 					'Authorization: Bearer ' . $oauthToken,
 					'User-Agent: Aspen Discovery',
