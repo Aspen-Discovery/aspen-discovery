@@ -65,6 +65,15 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//add_aspen_site_scheduled_update
+		'add_opt_out_batch_updates' => [
+			'title' => 'Add option opt out of batch scheduled updates',
+			'description' => 'Adds column to opt-out of batch scheduled updates for an Aspen site',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_sites ADD COLUMN optOutBatchUpdates tinyint(1) DEFAULT 0',
+			]
+		],
+		//add_opt_out_batch_updates
 		//kodi
 		//other
 	];
