@@ -38,6 +38,42 @@ function getUpdates23_05_00(): array {
 			]
 		],
 		//add_tab_coloring_theme
+		'add_bypass_patron_login' => [
+			'title' => 'Add option to bypass local patron login',
+			'description' => 'Adds column to bypass local patron login when using a single sign-on service',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN bypassAspenPatronLogin tinyint(1) DEFAULT 0',
+			]
+		],
+		//add_bypass_patron_login
+		'add_aspen_site_scheduled_update' => [
+			'title' => 'Add table to store scheduled updates',
+			'description' => 'Create a table to store scheduled system updates',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS aspen_site_scheduled_update (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					dateScheduled INT(11) DEFAULT NULL,
+					updateToVersion VARCHAR(32) DEFAULT NULL,
+					updateType VARCHAR(10) DEFAULT NULL,
+					dateRun INT(11) DEFAULT NULL,
+					status VARCHAR(10) DEFAULT NULL,
+					notes VARCHAR(255) DEFAULT NULL,
+					siteId INT(11) DEFAULT NULL
+				) ENGINE INNODB',
+			],
+		],
+		//add_aspen_site_scheduled_update
+		'add_opt_out_batch_updates' => [
+			'title' => 'Add option opt out of batch scheduled updates',
+			'description' => 'Adds column to opt-out of batch scheduled updates for an Aspen site',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_sites ADD COLUMN optOutBatchUpdates tinyint(1) DEFAULT 0',
+			]
+		],
+		//add_opt_out_batch_updates
 		//kodi
 		//other
 	];

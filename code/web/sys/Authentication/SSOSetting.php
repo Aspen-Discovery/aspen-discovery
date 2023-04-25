@@ -9,6 +9,7 @@ class SSOSetting extends DataObject {
 	public $service;
 	public $staffOnly;
 	public $bypassAspenLogin;
+	public $bypassAspenPatronLogin;
 	public $ssoAuthOnly;
 
 	//oAuth
@@ -183,6 +184,14 @@ class SSOSetting extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Bypass the Aspen Discovery staff login page when using footer link',
 				'description' => 'Whether or not the staff login link in the footer should first send the user to the Aspen Discovery login page',
+				'note' => 'Enable this to skip the traditional Aspen Discovery login and redirect the staff user to your single sign-on portal'
+			],
+			'bypassAspenPatronLogin' => [
+				'property' => 'bypassAspenPatronLogin',
+				'type' => 'checkbox',
+				'label' => 'Bypass the Aspen Discovery patron login page',
+				'description' => 'Whether or not the patron login should first send the user to the Aspen Discovery login page',
+				'note' => 'Enable this to skip the traditional Aspen Discovery login and redirect the user to your single sign-on portal'
 			],
 			'ssoAuthOnly' => [
 				'property' => 'ssoAuthOnly',

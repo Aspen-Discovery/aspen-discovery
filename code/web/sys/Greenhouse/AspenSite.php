@@ -32,6 +32,7 @@ class AspenSite extends DataObject {
 	public $lastOnlineTime;
 	public $lastOfflineNote;
 	public $isOnline;
+	public $optOutBatchUpdates;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
 
@@ -316,6 +317,13 @@ class AspenSite extends DataObject {
 				'type' => 'timestamp',
 				'label' => 'Last Online Time',
 				'description' => 'When the last time the site was online.',
+			],
+			'optOutBatchUpdates' => [
+				'property' => 'optOutBatchUpdates',
+				'type' => 'checkbox',
+				'label' => 'Opt out of Batch Updates',
+				'description' => 'Whether the site can be included when running batch updates from the Greenhouse',
+				'default' => 0,
 			],
 		];
 	}
