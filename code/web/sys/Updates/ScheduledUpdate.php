@@ -73,7 +73,7 @@ class ScheduledUpdate extends DataObject {
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
-			'siteId',
+			'siteId'
 		];
 	}
 }
