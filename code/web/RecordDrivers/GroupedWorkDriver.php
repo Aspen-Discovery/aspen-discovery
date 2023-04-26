@@ -2611,10 +2611,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$recordDriver = RecordDriverFactory::initRecordDriverById($recordId, $groupedWork);
 
 							$volumeData = $this->getVolumeDataForRecord($recordId);
-							$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true);
-
-							$relatedRecord->variationFormat = $variation->manifestation->format;
-							$relatedRecord->variationId = $variation->databaseId;
+							$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true, $variation);
 							$relatedRecord->recordVariations = $recordVariations;
 
 							$relatedRecords[$relatedRecord->id] = $relatedRecord;
@@ -2671,7 +2668,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							]);
 							$manifestation->setSortedRelatedRecords($relatedRecordsForManifestation);
 							foreach ($manifestation->getVariations() as $variationKey => $variation) {
-								$relatedRecordsForVariation = $variation->getRelatedRecords();
+								$relatedRecordsForVariation = $variation->getRelatedRecords($variation->databaseId);
 								if (count($relatedRecordsForVariation) > 1) {
 									uasort($relatedRecordsForVariation, [
 										$this,
@@ -2878,7 +2875,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		$memoryWatcher->logMemory("Loaded Record Driver for  $recordDetails[0]");
 
 		require_once ROOT_DIR . '/sys/Grouping/Record.php';
-		$relatedRecord = new Grouping_Record($recordDetails[0], $recordDetails, $recordDriver, $volumeData, $source);
+		$relatedRecord = new Grouping_Record($recordDetails[0], $recordDetails, $recordDriver, $volumeData, $source, null);
 
 		$timer->logTime("Setup base related record");
 		$memoryWatcher->logMemory("Setup base related record");
