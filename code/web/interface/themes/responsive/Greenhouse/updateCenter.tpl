@@ -67,7 +67,7 @@
 						<td>
 						{assign var='lastScheduledUpdate' value=$site->getLastScheduledUpdate()}
 							{if $lastScheduledUpdate['time'] !== 'Never'}
-								<a href="/Admin/ScheduledUpdate?id={$lastScheduledUpdate['id']}">{$lastScheduledUpdate['time']}</a>
+								<a href="/Admin/ScheduledUpdates?objectAction=edit&id={$lastScheduledUpdate['id']}">{$lastScheduledUpdate['time']}</a>
 							{else}
 								{$lastScheduledUpdate['time']}
 							{/if}
@@ -75,7 +75,7 @@
 						<td>
 							{assign var='lastSuccessfulUpdate' value=$site->getLastSuccessfulUpdate()}
 							{if $lastSuccessfulUpdate['time'] !== 'Never'}
-                                <a href="/Admin/ScheduledUpdate?id={$lastSuccessfulUpdate['id']}">{$lastSuccessfulUpdate['time']}</a>
+                                <a href="/Admin/ScheduledUpdates?objectAction=edit&id={$lastSuccessfulUpdate['id']}">{$lastSuccessfulUpdate['time']}</a>
                             {else}
                                 {$lastSuccessfulUpdate['time']}
                             {/if}

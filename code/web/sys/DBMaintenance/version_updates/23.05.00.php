@@ -81,9 +81,20 @@ function getUpdates23_05_00(): array {
 			'sql' => [
 				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateScheduled VARCHAR(16)',
 				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateRun VARCHAR(16)',
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN status VARCHAR(10) DEFAULT "pending"',
 			]
 		],
 		//update_dates_scheduled_updates
+		'permissions_view_scheduled_updates' => [
+			'title' => 'Add permissions for viewing scheduled updates',
+			'description' => 'Create permissions for viewing scheduled updates',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'View Scheduled Updates', '', 10, 'Controls if the user can view scheduled updates for Aspen Discovery.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Scheduled Updates'))",
+			],
+		],
+		//permissions_view_scheduled_updates
 		//kodi
 		//other
 	];
