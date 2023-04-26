@@ -29,25 +29,24 @@ export const SelectThawDate = (props) => {
 
     const hideDatePicker = () => {
         setDatePickerVisibility(false);
-        setDate(today);
     };
 
     const onSelectDate = (date) => {
+        hideDatePicker();
         setLoading(true);
         console.warn("A date has been picked: ", date);
         setDate(date);
+        onClose();
         if(data) {
             freezeHolds(data, libraryContext.baseUrl, date).then((result) => {
-                resetGroup();
                 setLoading(false);
-                onClose();
+                resetGroup();
                 hideDatePicker();
             });
         } else {
             freezeHold(freezeId, recordId, source, libraryContext.baseUrl, userId, date).then((result) => {
-                resetGroup();
                 setLoading(false);
-                onClose();
+                resetGroup();
                 hideDatePicker();
             });
         }

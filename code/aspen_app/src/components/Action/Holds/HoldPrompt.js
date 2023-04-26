@@ -111,6 +111,7 @@ export const HoldPrompt = (props) => {
 								setSMSNumber={setSMSNumber}
 								phoneNumber={phoneNumber}
 								setPhoneNumber={setPhoneNumber}
+								url={library.baseUrl}
 							/>
 						) : null}
 						{!isFetching && (holdTypeForFormat === 'either' || holdTypeForFormat === 'item') ? (
