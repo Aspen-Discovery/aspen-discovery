@@ -74,6 +74,16 @@ function getUpdates23_05_00(): array {
 			]
 		],
 		//add_opt_out_batch_updates
+		'update_dates_scheduled_updates' => [
+			'title' => 'Change column types for dates in Scheduled Updates',
+			'description' => 'Changes column type and extends for date fields in aspen_site_scheduled_update',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateScheduled VARCHAR(16)',
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateRun VARCHAR(16)',
+			]
+		],
+		//update_dates_scheduled_updates
 		//kodi
 		//other
 	];
