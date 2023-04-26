@@ -1677,6 +1677,18 @@ class User extends DataObject {
 		return $holdsToReturn;
 	}
 
+	public function inUserEvents($id) {
+		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+
+		$event = new UserEventsEntry();
+		$event->sourceId = $id;
+		$event->userId = $this->id;
+		if ($event->find()){
+			return true;
+		}
+		return false;
+	}
+
 	public function isRecordOnHold($source, $recordId) {
 		$this->getHolds(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Hold.php";

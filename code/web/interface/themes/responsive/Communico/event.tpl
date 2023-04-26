@@ -64,13 +64,17 @@
 			</ul>
 		</div>
 		<div class="col-sm-4" style="display:flex; justify-content:center;">
-			{if $recordDriver->isRegistrationRequired()}
-				<a class="btn btn-primary"  onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
-					<i class="fas fa-external-link-alt"></i>
-					{translate text=" Add to Your Events and Register" isPublicFacing=true}
-				</a>
+			{if $recordDriver->inEvents()}
+				<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
 			{else}
-				<a class="btn btn-primary" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+				{if $recordDriver->isRegistrationRequired()}
+					<a class="btn btn-primary"  onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+						<i class="fas fa-external-link-alt"></i>
+						{translate text=" Add to Your Events and Register" isPublicFacing=true}
+					</a>
+				{else}
+					<a class="btn btn-primary" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+				{/if}
 			{/if}
 		</div>
 			<br>
