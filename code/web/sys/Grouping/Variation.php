@@ -262,7 +262,7 @@ class Grouping_Variation {
 			require_once ROOT_DIR . '/sys/Utils/GroupingUtils.php';
 			$itemSummary = [];
 			foreach ($this->_records as $record) {
-				$itemSummary = mergeItemSummary($itemSummary, $record->getItemSummary());
+				$itemSummary = mergeItemSummary($itemSummary, $record->getItemSummary($this->databaseId));
 			}
 			$this->_itemSummary = $itemSummary;
 			$timer->logTime("Got item summary for variation");

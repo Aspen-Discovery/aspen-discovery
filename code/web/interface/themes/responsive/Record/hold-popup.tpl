@@ -138,6 +138,7 @@
 						{/if}
 						<div id="itemSelection" class="form-group" {if $holdType=='either'}style="display: none"{/if}>
 							<select name="selectedItem" id="selectedItem" class="form-control" aria-label="{translate text="Selected Item" isPublicFacing=true}">
+								<option value="">{translate text="Please select an item from the list below" isPublicFacing=true}</option>
 								{foreach from=$items item=item}
 									{if !empty($item.holdable)}
 										<option value="{$item.itemId}">{$item.description}</option>

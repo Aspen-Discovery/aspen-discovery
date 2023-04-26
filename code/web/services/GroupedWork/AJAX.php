@@ -1303,7 +1303,18 @@ class GroupedWork_AJAX extends JSON_Action {
 		if ($recordId != $id) {
 			$record = $recordDriver->getRelatedRecord($recordId);
 			if ($record != null) {
-				$summary = $record->getItemSummary();
+				$summary = null;
+				foreach ($relatedManifestation->getVariations() as $variation) {
+					foreach ($variation->getRecords() as $recordWithVariation) {
+						if ($recordWithVariation->id == $recordId) {
+							$summary = $recordWithVariation->getItemSummary();
+							break;
+						}
+					}
+					if (!empty($summary)) {
+						break;
+					}
+				}
 			} else {
 				$summary = null;
 				foreach ($relatedManifestation->getVariations() as $variation) {

@@ -113,6 +113,7 @@
 				{/if}
 				<div id="volumeSelection" class="form-group" {if empty($majorityOfItemsHaveVolumes)}style="display: none" {/if}>
 					<select name="selectedVolume" id="selectedVolume" class="form-control" aria-label="{translate text="Selected Volume" isPublicFacing=true}">
+						<option value="">{translate text="Please select a volume from the list below" isPublicFacing=true}</option>
 						{foreach from=$volumes item=volume}
 							<option value="{$volume->volumeId}">{$volume->displayLabel} {if $alwaysPlaceVolumeHoldWhenVolumesArePresent && $volume->hasLocalItems()}({translate text="Owned by %1%" 1=$localSystemName isPublicFacing=true}){/if}</option>
 						{/foreach}

@@ -518,7 +518,7 @@ AspenDiscovery.Account = (function () {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
-				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset')) {
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin')) {
 					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;
@@ -1663,7 +1663,7 @@ AspenDiscovery.Account = (function () {
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+						AspenDiscovery.showMessage("Added Successfully", data.message, 2000, true); // auto-close after 2 seconds.
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
 					}
@@ -1688,7 +1688,7 @@ AspenDiscovery.Account = (function () {
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage("Added Successfully", data.message, 2000); // auto-close after 2 seconds.
+						AspenDiscovery.showMessage("Added Successfully", data.message, 2000, true); // auto-close after 2 seconds.
 						window.open(regLink, "_blank");
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);

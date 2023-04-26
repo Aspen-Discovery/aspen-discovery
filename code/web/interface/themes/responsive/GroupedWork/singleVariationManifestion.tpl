@@ -38,7 +38,7 @@
 	</div>
 	<div class="row">
 		<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" style="display:none">
-			{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$relatedManifestation->getRelatedRecords() relatedManifestation=$relatedManifestation}
+			{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$relatedManifestation->getRelatedRecords() relatedManifestation=$relatedManifestation variationId=$relatedManifestation->getFirstVariation()->databaseId}
 		</div>
 	</div>
 </div>

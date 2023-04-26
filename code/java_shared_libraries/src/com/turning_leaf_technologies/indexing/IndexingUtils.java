@@ -467,15 +467,15 @@ public class IndexingUtils {
 							libraryRecordInclusionRulesRS.getString("includeExcludeMatches") + "~" +
 							libraryRecordInclusionRulesRS.getString("urlToMatch") + "~" +
 							libraryRecordInclusionRulesRS.getString("urlReplacement");
+					//Don't need to check this when adding the library records to include since we only add non-owned.
 					boolean isOwned = libraryRecordInclusionRulesRS.getBoolean("markRecordsAsOwned");
 					if (allInclusionRules.containsKey(inclusionRuleKey)){
-						if (isOwned){
-							locationScopeInfo.addOwnershipRule(allInclusionRules.get(inclusionRuleKey));
-						}else {
+//						if (isOwned){
+//							locationScopeInfo.addOwnershipRule(allInclusionRules.get(inclusionRuleKey));
+//						}else {
 							locationScopeInfo.addInclusionRule(allInclusionRules.get(inclusionRuleKey));
-						}
-					}
-					else{
+//						}
+					} else{
 						InclusionRule inclusionRule = new InclusionRule(libraryRecordInclusionRulesRS.getString("name"),
 								libraryRecordInclusionRulesRS.getString("location"),
 								libraryRecordInclusionRulesRS.getString("subLocation"),
@@ -500,11 +500,11 @@ public class IndexingUtils {
 								libraryRecordInclusionRulesRS.getString("urlToMatch"),
 								libraryRecordInclusionRulesRS.getString("urlReplacement")
 						);
-						if (isOwned){
-							locationScopeInfo.addOwnershipRule(inclusionRule);
-						}else {
+//						if (isOwned){
+//							locationScopeInfo.addOwnershipRule(inclusionRule);
+//						}else {
 							locationScopeInfo.addInclusionRule(inclusionRule);
-						}
+//						}
 						allInclusionRules.put(inclusionRuleKey, inclusionRule);
 					}
 				}

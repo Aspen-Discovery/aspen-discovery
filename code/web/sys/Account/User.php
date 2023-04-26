@@ -1677,6 +1677,18 @@ class User extends DataObject {
 		return $holdsToReturn;
 	}
 
+	public function inUserEvents($id) {
+		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+
+		$event = new UserEventsEntry();
+		$event->sourceId = $id;
+		$event->userId = $this->id;
+		if ($event->find()){
+			return true;
+		}
+		return false;
+	}
+
 	public function isRecordOnHold($source, $recordId) {
 		$this->getHolds(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Hold.php";
@@ -1895,6 +1907,8 @@ class User extends DataObject {
 			$result['viewHoldsAction'] = "<a id='onHoldAction$recordId' href='/MyAccount/Holds' class='btn btn-sm btn-info btn-wrap' title='$viewHoldsText'>$viewHoldsText</a>";
 			
 			$this->clearCache();
+
+			$this->forceReloadOfHolds();
 		}
 		return $result;
 	}

@@ -853,7 +853,6 @@ class Library extends DataObject {
 						'keyOther' => 'libraryId',
 						'subObjectType' => 'LibraryTheme',
 						'structure' => $libraryThemeStructure,
-						'default' => 'default',
 						'sortable' => true,
 						'storeDb' => true,
 						'allowEdit' => true,
@@ -3958,14 +3957,16 @@ class Library extends DataObject {
 	 * @return LibraryTheme[]|null
 	 */
 	public function getThemes(): ?array {
-		if (!isset($this->_themes) && $this->libraryId) {
+		if (!isset($this->_themes)) {
 			$this->_themes = [];
-			$libraryTheme = new LibraryTheme();
-			$libraryTheme->libraryId = $this->libraryId;
-			$libraryTheme->orderBy('weight');
-			if ($libraryTheme->find()) {
-				while ($libraryTheme->fetch()) {
-					$this->_themes[$libraryTheme->id] = clone $libraryTheme;
+			if (!empty($this->libraryId)) {
+				$libraryTheme = new LibraryTheme();
+				$libraryTheme->libraryId = $this->libraryId;
+				$libraryTheme->orderBy('weight');
+				if ($libraryTheme->find()) {
+					while ($libraryTheme->fetch()) {
+						$this->_themes[$libraryTheme->id] = clone $libraryTheme;
+					}
 				}
 			}
 		}
