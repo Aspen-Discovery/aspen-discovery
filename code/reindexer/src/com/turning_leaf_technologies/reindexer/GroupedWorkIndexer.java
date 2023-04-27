@@ -1429,7 +1429,7 @@ public class GroupedWorkIndexer {
 			getExistingRecordsForWorkStmt.setLong(1, groupedWorkId);
 			ResultSet getExistingRecordsForWorkRS = getExistingRecordsForWorkStmt.executeQuery();
 			while (getExistingRecordsForWorkRS.next()){
-				String key = getExistingRecordsForWorkRS.getString("sourceId") + ":" + getExistingRecordsForWorkRS.getString("recordIdentifier") + ":" + getExistingRecordsForWorkRS.getLong("formatId");
+				String key = getExistingRecordsForWorkRS.getString("sourceId") + ":" + getExistingRecordsForWorkRS.getString("recordIdentifier"); // + ":" + getExistingRecordsForWorkRS.getLong("formatId");
 				existingRecords.put(key, new SavedRecordInfo(getExistingRecordsForWorkRS));
 			}
 		} catch (SQLException e) {
