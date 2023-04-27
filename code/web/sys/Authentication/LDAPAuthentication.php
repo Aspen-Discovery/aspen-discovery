@@ -93,14 +93,15 @@ class LDAPAuthentication extends Action {
 						}
 					} return $this->validateWithILS($username);
 				} else {
-					if(!$this->validateWithAspen($username)) {
+					$aspenUser = $this->validateWithAspen($username);
+					if(!$aspenUser) {
 						$newUser = $this->createNewAspenUser($attributes);
 						if($newUser instanceof User) {
 							return $this->validateWithAspen($username);
 						} else {
 							AspenError::raiseError(new AspenError('Unable to create account with Aspen for new LDAP user.'));
 						}
-					} return $this->validateWithAspen($username);
+					} return $this->login($aspenUser);
 				}
 			}
 			AspenError::raiseError(new AspenError('Unable to find user with that username in LDAP. ' . ldap_error($this->ldap_client)));
@@ -111,10 +112,15 @@ class LDAPAuthentication extends Action {
 
 	private function findUser($username): mixed {
 		if($this->ldap_config['ou']) {
-			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], '(&(' . $this->ldap_config['idAttr'] . '=' . $username . ')(ou=' . $this->ldap_config['ou'] . '))');
+			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], '(&(' . $this->ldap_config['idAttr'] . '=*' . $username . ')(ou=' . $this->ldap_config['ou'] . '))');
 		} else {
 			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], $this->ldap_config['idAttr'] . '=' . $username);
 		}
+
+		if(!@ldap_first_entry($this->ldap_client, $result)) {
+			AspenError::raiseError(new AspenError('Unable to find user with that username in LDAP. '));
+		}
+
 		return @ldap_first_entry($this->ldap_client, $result);
 	}
 
@@ -159,14 +165,14 @@ class LDAPAuthentication extends Action {
 		return $this->login($user, $username);
 	}
 
-	private function validateWithAspen($username): bool {
+	private function validateWithAspen($username): User|bool {
 		$user = UserAccount::findNewAspenUser('username', $username);
 
 		if(!$user instanceof User){
 			return false;
 		}
 
-		return $this->login($user);
+		return $user;
 	}
 
 	private function validateWithLDAP($user, $password): bool {

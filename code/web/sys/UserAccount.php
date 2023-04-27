@@ -469,6 +469,7 @@ class UserAccount {
 		global $usageByIPAddress;
 		$usageByIPAddress->numLoginAttempts++;
 		UserAccount::$ssoAuthOnly = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$localAuthOnly = false;
 
 		if (isset($_REQUEST['casLogin'])) {
 			$logger->log("Logging the user in via CAS", Logger::LOG_NOTICE);
@@ -503,6 +504,7 @@ class UserAccount {
 			} else {
 				$logger->log("LDAP user logged in OK", Logger::LOG_NOTICE);
 				$validatedViaSSO = true;
+				$localAuthOnly = UserAccount::isSSOAuthenticationOnly();
 			}
 		}
 
@@ -520,10 +522,15 @@ class UserAccount {
 			//  1) A user which means we authenticated correctly
 			//  2) Null which means the authentication method couldn't handle the user
 			//  3) AspenError which means the authentication method handled the user, but didn't find the user
-			$tempUser = $authN->authenticate($validatedViaSSO);
+
+			if(!$localAuthOnly) {
+				$tempUser = $authN->authenticate($validatedViaSSO);
+			} else {
+				$tempUser = UserAccount::findNewAspenUser('username', $_POST['username']);
+			}
 
 			// If we authenticated, store the user in the session:
-			if (!($tempUser instanceof AspenError) && $tempUser != null) {
+			if ((!($tempUser instanceof AspenError) && $tempUser != null)) {
 				if ($validatedViaSSO) {
 					if (isset($_REQUEST['casLogin'])) {
 						$_SESSION['loggedInViaCAS'] = true;
@@ -534,7 +541,7 @@ class UserAccount {
 					}
 				}
 
-				if(!UserAccount::$ssoAuthOnly) {
+				if(!UserAccount::$ssoAuthOnly && !$localAuthOnly) {
 					global $library;
 					if ($library->preventExpiredCardLogin && $tempUser->_expired) {
 						// Create error
@@ -846,6 +853,18 @@ class UserAccount {
 			}
 		}
 		return false;
+	}
+
+	public static function isSSOAuthenticationOnly(): bool {
+		global $library;
+		require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+		$ssoSetting = new SSOSetting();
+		$ssoSetting->id = $library->ssoSettingId;
+		if($ssoSetting->find(true)) {
+			if($ssoSetting->ssoAuthOnly) {
+				return true;
+			}
+		}
 	}
 
 	static function has2FAEnabledForPType() {
