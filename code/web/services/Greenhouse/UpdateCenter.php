@@ -16,14 +16,14 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 		}
 		global $interface;
 		$interface->assign('allSites', $allSites);
-		$this->display('updateCenter.tpl', 'Aspen Upgrade Center', false);
+		$this->display('updateCenter.tpl', 'Aspen Update Center', false);
 	}
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
 		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Sites', 'Sites');
-		$breadcrumbs[] = new Breadcrumb('', 'Upgrade Center');
+		$breadcrumbs[] = new Breadcrumb('', 'Update Center');
 		return $breadcrumbs;
 	}
 

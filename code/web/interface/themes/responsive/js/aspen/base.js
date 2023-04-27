@@ -300,6 +300,16 @@ var AspenDiscovery = (function(){
 			}
 			return selectedCategories;
 		},
+		getSelectedAspenSites: function(){
+			var selectedSites = $("input.siteSelect:checked ").map(function() {
+				return $(this).attr('name');
+			}).get().join(",");
+			if (selectedSites.length === 0){
+				AspenDiscovery.showMessage("Error", "Please select at least one site to update");
+				return false;
+			}
+			return selectedSites;
+		},
 
 		pwdToText: function(fieldId){
 			var elem = document.getElementById(fieldId);
