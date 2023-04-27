@@ -7,11 +7,14 @@ apt-get -y install gpg openjdk-11-jre-headless openjdk-11-jdk-headless apache2 c
 
 # Install Ondrej Sury's php repo for access to additional PHP versions
 keyrings="/etc/apt/keyrings"
-test -d "$keyrings" || (mkdir -p "$keyrings" ; chmod 0755 "$keyrings")
-if ! test -f "$keyrings/sury.gpg" || ! test -f /etc/apt/sources.list.d/sury.list ; then
-  wget -q -O - https://packages.sury.org/php/apt.gpg | gpg -o "$keyrings/sury.gpg" --dearmor
-  echo "deb [signed-by=$keyrings/sury.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/sury.list
-  apt-get update
+test -d "$keyrings" || (
+	mkdir -p "$keyrings"
+	chmod 0755 "$keyrings"
+)
+if ! test -f "$keyrings/sury.gpg" || ! test -f /etc/apt/sources.list.d/sury.list; then
+	wget -q -O - https://packages.sury.org/php/apt.gpg | gpg -o "$keyrings/sury.gpg" --dearmor
+	echo "deb [signed-by=$keyrings/sury.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" >/etc/apt/sources.list.d/sury.list
+	apt-get update
 fi
 
 # Override default OS PHP version
@@ -45,7 +48,7 @@ chmod -R 755 /usr/local/aspen-discovery/tmp
 cp solr_limits.conf /etc/security/limits.d/solr.conf
 
 # Create aspen MySQL superuser
-printf "Please enter the username for the Aspen MySQL superuser (can't be root) : " >&2
+printf "Please enter the username for the Aspen MySQL superuser (cannot be root) : " >&2
 read -r username
 printf "Please enter the password for the Aspen MySQL superuser (%s) : " "$username" >&2
 read -r password
