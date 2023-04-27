@@ -11,12 +11,17 @@ class ScheduledUpdate extends DataObject {
 	public $notes;
 	public $siteId;
 
-	public static $_updateTypes = [
-		'patch' => 'Patch',
-		'complete' => 'Complete',
-	];
-
 	public static function getObjectStructure($context = ''): array {
+		$updateTypes = [
+			'patch' => 'Patch',
+			'complete' => 'Complete',
+		];
+
+		$statuses = [
+			'pending' => 'Pending',
+			'canceled' => 'Canceled',
+		];
+
 		return [
 			'id' => [
 				'property' => 'id',
@@ -26,39 +31,47 @@ class ScheduledUpdate extends DataObject {
 			],
 			'siteId' => [
 				'property' => 'siteId',
-				'type' => 'label',
+				'type' => 'hidden',
 				'label' => 'Aspen Site Id',
 				'description' => 'The unique Aspen Site Id',
+				'default' => '',
+				'hideInLists' => true,
 			],
 			'dateScheduled' => [
 				'property' => 'dateScheduled',
 				'type' => 'timestamp',
 				'label' => 'Date Scheduled',
 				'description' => 'When the update was scheduled to run',
+				'required' => true,
 			],
 			'status' => [
 				'property' => 'status',
-				'type' => 'label',
+				'type' => 'enum',
 				'label' => 'Status',
+				'values' => $statuses,
 				'description' => 'The status of the update',
+				'default' => 'pending'
 			],
 			'updateToVersion' => [
 				'property' => 'updateToVersion',
-				'type' => 'label',
+				'type' => 'text',
 				'label' => 'Update to Version',
 				'description' => 'The version the update will upgrade to',
+				'required' => true,
 			],
 			'updateType' => [
 				'property' => 'updateType',
-				'type' => 'label',
+				'type' => 'enum',
 				'label' => 'Update Type',
+				'values' => $updateTypes,
 				'description' => 'The type of update (patch or complete)',
 			],
 			'dateRun' => [
 				'property' => 'dateRun',
-				'type' => 'timestamp',
+				'type' => 'label',
 				'label' => 'Date Ran',
 				'description' => 'When the update actually ran',
+				'default' => null
 			],
 			'notes' => [
 				'property' => 'notes',
@@ -73,7 +86,7 @@ class ScheduledUpdate extends DataObject {
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
-			'siteId',
+			'siteId'
 		];
 	}
 }

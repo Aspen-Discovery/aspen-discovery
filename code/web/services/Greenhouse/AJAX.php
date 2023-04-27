@@ -170,6 +170,148 @@ class Greenhouse_AJAX extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function getScheduleUpdateForm() {
+		global $interface;
+		if (isset($_REQUEST['siteId'])) {
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+			$siteToUpdate = new AspenSite();
+			$siteToUpdate->id = $_REQUEST['siteId'];
+			if($siteToUpdate->find(true)) {
+
+				$interface->assign('siteToUpdate', $siteToUpdate);
+				return [
+					'title' => 'Schedule Update for ' . $siteToUpdate->name,
+					'modalBody' => $interface->fetch('Greenhouse/scheduleUpdateForm.tpl'),
+					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'You must provide a valid id for the site to update',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getBatchScheduleUpdateForm() {
+		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+		$sites = new AspenSite();
+		$sites->whereAdd('implementationStatus != 4');
+		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
+		$sites->find();
+		$allBatchUpdateSites = [];
+		while ($sites->fetch()) {
+			if(!$sites->optOutBatchUpdates) {
+				$allBatchUpdateSites[] = $sites->id;
+			}
+		}
+
+		$allBatchUpdateSites = implode(',', $allBatchUpdateSites);
+		global $interface;
+		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
+
+		return [
+			'title' => 'Schedule Batch Update',
+			'modalBody' => $interface->fetch('Greenhouse/batchScheduleUpdateForm.tpl'),
+			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getSelectedScheduleUpdateForm() {
+		$sitesToUpdate = $_REQUEST['sitesToUpdate'];
+		global $interface;
+		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
+
+		return [
+			'title' => 'Schedule Update for Selected Sites',
+			'modalBody' => $interface->fetch('Greenhouse/batchScheduleUpdateForm.tpl'),
+			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+		];
+	}
+
+	function scheduleUpdate() {
+		if (isset($_REQUEST['siteToUpdate'])) {
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+			$site = new AspenSite();
+			$site->id = $_REQUEST['siteToUpdate'];
+			if($site->find(true)) {
+				$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
+				$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
+				if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
+					$now = new DateTime();
+					$runUpdateOn = $now->format('Y-m-d H:i');
+				}
+				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+				$scheduledUpdate = new ScheduledUpdate();
+				$scheduledUpdate->updateType = $runType;
+				$scheduledUpdate->dateScheduled = $runUpdateOn;
+				$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
+				$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
+				$scheduledUpdate->status = 'pending';
+				if($scheduledUpdate->insert()) {
+					// update scheduled
+					return [
+						'success' => true,
+						'title' => 'Schedule Update for ' . $site->name,
+						'message' => 'Update successfully scheduled for ' . $site->name,
+					];
+				} else {
+					// unable to schedule update
+					return [
+						'success' => false,
+						'title' => 'Schedule Update for ' . $site->name,
+						'message' => 'Unable to schedule update for ' . $site->name,
+					];
+				}
+			} else {
+				// no site found with that id
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Could not find a valid site with given id ' . $_REQUEST['siteToUpdate'],
+				];
+			}
+		} elseif (isset($_REQUEST['sitesToUpdate'])) {
+			$sitesToUpdate = explode(",", $_REQUEST['sitesToUpdate']);
+			$numSitesUpdated = 0;
+			$numSites = count($sitesToUpdate);
+			$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
+			$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
+			if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
+				$now = new DateTime();
+				$runUpdateOn = $now->format('Y-m-d H:i');
+			}
+			foreach($sitesToUpdate as $site){
+				require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+				$siteToUpdate = new AspenSite();
+				$siteToUpdate->id = $site;
+				if($siteToUpdate->find(true)) {
+					require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+					$scheduledUpdate = new ScheduledUpdate();
+					$scheduledUpdate->updateType = $runType;
+					$scheduledUpdate->dateScheduled = $runUpdateOn;
+					$scheduledUpdate->siteId = $site;
+					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
+					$scheduledUpdate->status = 'pending';
+					if($scheduledUpdate->insert()) {
+						// update scheduled
+						$numSitesUpdated++;
+					}
+				}
+			}
+			return [
+				'success' => true,
+				'title' => 'Schedule Batch Update',
+				'message' => 'Update successfully scheduled updates for ' . $numSitesUpdated . ' of ' . $numSites . ' sites.',
+			];
+		} else {
+			return false;
+		}
+	}
+
 	function getBreadcrumbs(): array {
 		return [];
 	}

@@ -631,4 +631,33 @@ class AspenSite extends DataObject {
 	public function getTimezoneName() {
 		return AspenSite::$_timezones[$this->timezone];
 	}
+
+	public function getLastScheduledUpdate() {
+		$lastUpdate['time'] = 'Never';
+		$lastUpdate['id'] = null;
+		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+		$scheduledUpdates = new ScheduledUpdate();
+		$scheduledUpdates->siteId = $this->id;
+		$scheduledUpdates->orderBy('dateScheduled DESC');
+		if($scheduledUpdates->find(true)) {
+			$lastUpdate['time'] = $scheduledUpdates->dateScheduled;
+			$lastUpdate['id'] = $scheduledUpdates->id;
+		}
+		return $lastUpdate;
+	}
+
+	public function getLastSuccessfulUpdate() {
+		$lastUpdate['time'] = 'Never';
+		$lastUpdate['id'] = null;
+		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+		$scheduledUpdates = new ScheduledUpdate();
+		$scheduledUpdates->siteId = $this->id;
+		$scheduledUpdates->status = 'complete';
+		$scheduledUpdates->orderBy('dateRun DESC');
+		if($scheduledUpdates->find(true)) {
+			$lastUpdate['time'] = $scheduledUpdates->dateRun;
+			$lastUpdate['id'] = $scheduledUpdates->id;
+		}
+		return $lastUpdate;
+	}
 }

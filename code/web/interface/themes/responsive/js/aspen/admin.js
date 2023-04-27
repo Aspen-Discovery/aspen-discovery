@@ -1955,6 +1955,72 @@ AspenDiscovery.Admin = (function () {
 					$("#communitySearchResults").html(data.message);
 				}
 			});
+		},
+
+		showBatchScheduleUpdateForm: function () {
+			var url = Globals.path + '/Greenhouse/AJAX';
+			var params = {
+				'method': 'getBatchScheduleUpdateForm'
+			}
+			AspenDiscovery.loadingMessage();
+			$.getJSON(url, params,
+				function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		showSelectedScheduleUpdateForm: function () {
+			var selectedSites = AspenDiscovery.getSelectedAspenSites();
+			if(selectedSites) {
+				var url = Globals.path + '/Greenhouse/AJAX';
+				var params = {
+					'method': 'getSelectedScheduleUpdateForm',
+					'sitesToUpdate': selectedSites
+				}
+				AspenDiscovery.loadingMessage();
+				$.getJSON(url, params,
+					function(data){
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					}
+				);
+				return false;
+			}
+		},
+
+		showScheduleUpdateForm: function (siteId) {
+			var url = Globals.path + '/Greenhouse/AJAX';
+			var params = {
+				'method': 'getScheduleUpdateForm',
+				'siteId': siteId
+			}
+			AspenDiscovery.loadingMessage();
+			$.getJSON(url, params,
+				function(data){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				}
+			);
+			return false;
+		},
+
+		scheduleUpdate: function () {
+			var url = Globals.path + '/Greenhouse/AJAX?method=scheduleUpdate';
+			var newData = new FormData($("#scheduleUpdateForm")[0]);
+			$.ajax({
+				url: url,
+				type: 'POST',
+				data: newData,
+				dataType: 'json',
+				success: function (data) {
+					AspenDiscovery.showMessage(data.title, data.message, true, data.success);
+				},
+				async: false,
+				contentType: false,
+				processData: false
+			});
+			return false;
 		}
+
 	};
 }(AspenDiscovery.Admin || {}));
