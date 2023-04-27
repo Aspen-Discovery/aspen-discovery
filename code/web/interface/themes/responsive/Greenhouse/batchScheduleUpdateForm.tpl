@@ -3,7 +3,13 @@
 		<input type="hidden" name="sitesToUpdate" id="sitesToUpdate" value="{$allBatchUpdateSites}">
 		<div class="form-group">
             <label for="updateToVersion" class="col-sm-4">{translate text='Update to Version' isAdminFacing=true}</label>
-            <div class="col-sm-8"><input type="text" class="form-control" name="updateToVersion"></div>
+            <div class="col-sm-8">
+                <select name="updateToVersion" id="updateToVersion" class="form-control" aria-label="{translate text="Update to Version" isAdminFacing=true}">
+                    {foreach from=$releases item=release}
+                        <option value="{$release.id}">{$release.version} ({$release.date})</option>
+                    {/foreach}
+                </select>
+            </div>
         </div>
         <div class="form-group">
             <label for="updateType" class="col-sm-4">{translate text='Update Type' isAdminFacing=true}</label>

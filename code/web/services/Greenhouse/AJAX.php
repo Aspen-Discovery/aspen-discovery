@@ -178,7 +178,9 @@ class Greenhouse_AJAX extends Action {
 			$siteToUpdate = new AspenSite();
 			$siteToUpdate->id = $_REQUEST['siteId'];
 			if($siteToUpdate->find(true)) {
-
+				require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+				$releases = AspenRelease::getReleasesList();
+				$interface->assign('releases', $releases);
 				$interface->assign('siteToUpdate', $siteToUpdate);
 				return [
 					'title' => 'Schedule Update for ' . $siteToUpdate->name,
@@ -210,6 +212,9 @@ class Greenhouse_AJAX extends Action {
 
 		$allBatchUpdateSites = implode(',', $allBatchUpdateSites);
 		global $interface;
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$releases = AspenRelease::getReleasesList();
+		$interface->assign('releases', $releases);
 		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
 
 		return [
@@ -223,6 +228,9 @@ class Greenhouse_AJAX extends Action {
 	function getSelectedScheduleUpdateForm() {
 		$sitesToUpdate = $_REQUEST['sitesToUpdate'];
 		global $interface;
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$releases = AspenRelease::getReleasesList();
+		$interface->assign('releases', $releases);
 		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
 
 		return [
