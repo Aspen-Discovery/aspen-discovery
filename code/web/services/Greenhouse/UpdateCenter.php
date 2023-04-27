@@ -2,20 +2,50 @@
 
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 require_once ROOT_DIR . '/services/Admin/Admin.php';
+require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
 
 class Greenhouse_UpdateCenter extends Admin_Admin {
 
 	function launch() {
+		global $interface;
+
+		$implementationStatuses = AspenSite::$_implementationStatuses;
+		$interface->assign('implementationStatuses', $implementationStatuses);
+		$implementationStatusToShow = '3';
+		if (isset($_REQUEST['implementationStatusToShow'])) {
+			$implementationStatusToShow = $_REQUEST['implementationStatusToShow'];
+		}
+		$interface->assign('implementationStatusToShow', $implementationStatusToShow);
+
+		$siteTypes = AspenSite::$_siteTypes;
+		$interface->assign('siteTypes', $siteTypes);
+		$siteTypeToShow = '1';
+		if (isset($_REQUEST['siteTypeToShow'])) {
+			$siteTypeToShow = $_REQUEST['siteTypeToShow'];
+		}
+		$interface->assign('siteTypeToShow', $siteTypeToShow);
+
+		$releases = AspenRelease::getReleasesList();
+		$interface->assign('releases', $releases);
+		$releaseToShow = '';
+		if (isset($_REQUEST['releaseToShow'])) {
+			$releaseToShow = $_REQUEST['releaseToShow'];
+		}
+		$interface->assign('releaseToShow', $releaseToShow);
+
 		$sites = new AspenSite();
-		$sites->whereAdd('implementationStatus != 4');
+		$sites->whereAdd('implementationStatus = ' . $implementationStatusToShow);
+		$sites->whereAdd('siteType = ' . $siteTypeToShow);
+		$escapedRelease = $sites->escape('%' . $releaseToShow . '%');
+		$sites->whereAdd('version LIKE ' . $escapedRelease);
 		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
 		$sites->find();
 		$allSites = [];
 		while ($sites->fetch()) {
 			$allSites[] = clone $sites;
 		}
-		global $interface;
 		$interface->assign('allSites', $allSites);
+
 		$this->display('updateCenter.tpl', 'Aspen Update Center', false);
 	}
 
