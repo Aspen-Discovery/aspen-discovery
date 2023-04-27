@@ -63,11 +63,12 @@ class Grouping_Record {
 	 * @param string $source
 	 * @param bool $useAssociativeArray
 	 */
-	public function __construct(string $recordId, array $recordDetails, GroupedWorkSubDriver $recordDriver, array $volumeData, string $source, bool $useAssociativeArray = false) {
+	public function __construct(string $recordId, array $recordDetails, GroupedWorkSubDriver $recordDriver, array $volumeData, string $source, bool $useAssociativeArray = false, $variation = null) {
 		$this->_driver = $recordDriver;
 		$this->_url = $recordDriver != null ? $recordDriver->getRecordUrl() : '';
 		$this->id = $recordId;
 		if ($useAssociativeArray) {
+			//Loaded from Database
 			$this->format = $recordDetails['format'];
 			$this->formatCategory = $recordDetails['formatCategory'];
 			$this->databaseId = $recordDetails['id'];
@@ -81,7 +82,15 @@ class Grouping_Record {
 			}
 			$this->hasParentRecord = $recordDetails['hasParentRecord'];
 			$this->hasChildRecord = $recordDetails['hasChildRecord'];
+
+			if ($variation != null) {
+				$this->variationFormat = $variation->manifestation->format;
+				$this->variationId = $variation->databaseId;
+				//Let the variation format override the format stored in the database.
+				$this->format = $this->variationFormat;
+			}
 		} else {
+			//Loaded from Solr
 			$this->format = $recordDetails[1];
 			$this->formatCategory = $recordDetails[2];
 			$this->edition = $recordDetails[3];
