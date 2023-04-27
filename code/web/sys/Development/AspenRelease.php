@@ -135,4 +135,18 @@ class AspenRelease extends DataObject {
 		}
 		return $this->_relatedTasks;
 	}
+
+	static function getReleasesList() {
+		$release = new AspenRelease();
+		$release->orderBy('name');
+		$release->find();
+		$releases = [];
+		while($release->fetch()) {
+			$releases[$release->name]['id'] = $release->id;
+			$releases[$release->name]['version'] = $release->name;
+			$releases[$release->name]['date'] = $release->releaseDate;
+		}
+
+		return $releases;
+	}
 }
