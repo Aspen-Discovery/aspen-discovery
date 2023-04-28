@@ -2022,6 +2022,10 @@ AspenDiscovery.Admin = (function () {
 				processData: false
 			});
 			return false;
+		},
+
+		showScheduledUpdateDetails: function(id){
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/Greenhouse/AJAX?method=showScheduledUpdateDetails&id=" +id, true);
 		}
 
 	};

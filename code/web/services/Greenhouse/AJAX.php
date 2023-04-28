@@ -287,6 +287,7 @@ class Greenhouse_AJAX extends Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	function scheduleUpdate() {
 		if (isset($_REQUEST['siteToUpdate'])) {
 			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
@@ -365,6 +366,84 @@ class Greenhouse_AJAX extends Action {
 		} else {
 			return false;
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function showScheduledUpdateDetails(): array {
+		global $interface;
+		$viewMoreBtn = '';
+		$user = UserAccount::getLoggedInUser();
+		if (!isset($_REQUEST['id'])) {
+			$interface->assign('error', translate([
+				'text' => 'Please provide an id of the materials request to view.',
+				'isAdminFacing' => true,
+			]));
+		} elseif (empty($user)) {
+			$interface->assign('error', translate([
+				'text' => 'Please log in to view details.',
+				'isAdminFacing' => true,
+			]));
+		} else {
+			$id = $_REQUEST['id'];
+			if($id) {
+				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+				$scheduledUpdate = new ScheduledUpdate();
+				$scheduledUpdate->id = $id;
+				if($scheduledUpdate->find(true)) {
+					$updateStatus = 'pending';
+					if($scheduledUpdate->status) {
+						$updateStatus = $scheduledUpdate->status;
+					}
+					$interface->assign('updateStatus', $updateStatus);
+
+					$updateTo = null;
+					if($scheduledUpdate->updateToVersion) {
+						$updateTo = $scheduledUpdate->updateToVersion;
+					}
+					$interface->assign('updateTo', $updateTo);
+
+					$updateType = null;
+					if($scheduledUpdate->updateType) {
+						$updateType = $scheduledUpdate->updateType;
+					}
+					$interface->assign('updateType', $updateType);
+
+					$updateScheduled = null;
+					if($scheduledUpdate->dateScheduled) {
+						$updateScheduled = $scheduledUpdate->dateScheduled;
+					}
+					$interface->assign('updateScheduled', $updateScheduled);
+
+					$updateRan = null;
+					if($scheduledUpdate->dateRun) {
+						$updateRan = $scheduledUpdate->dateRun;
+					}
+					$interface->assign('updateRan', $updateRan);
+
+					$updateNotes = '';
+					if($scheduledUpdate->notes) {
+						$updateNotes = $scheduledUpdate->notes;
+					}
+					$interface->assign('updateNotes', $updateNotes);
+				} else {
+					$interface->assign('error', translate([
+						'text' => 'Sorry, we couldn\'t find a scheduled update for that id.',
+						'isAdminFacing' => true,
+					]));
+				}
+
+				$viewMoreBtn = "<a class='btn btn-primary' href='/Admin/ScheduledUpdates?objectAction=edit&id=$id'>" . translate(['text' => 'View Details', 'isAdminFacing' => true]) . "</a>";
+			}
+		}
+
+		return [
+			'title' => translate([
+				'text' => 'Scheduled Update Details',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Greenhouse/ajaxScheduledUpdateDetails.tpl'),
+			'modalButtons' => $viewMoreBtn,
+		];
 	}
 
 	function getBreadcrumbs(): array {
