@@ -180,7 +180,15 @@ class Greenhouse_AJAX extends Action {
 			if($siteToUpdate->find(true)) {
 				require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
 				$releases = AspenRelease::getReleasesList();
-				$interface->assign('releases', $releases);
+				$eligibleReleases = [];
+				$siteCurrentRelease = explode(" ", $siteToUpdate->version);
+				$siteCurrentRelease = $siteCurrentRelease[0];
+				foreach($releases as $release) {
+					if(version_compare($release['version'], $siteCurrentRelease, '>=')) {
+						$eligibleReleases[$release['version']] = $release;
+					}
+				}
+				$interface->assign('releases', $eligibleReleases);
 				$interface->assign('siteToUpdate', $siteToUpdate);
 				return [
 					'title' => 'Schedule Update for ' . $siteToUpdate->name,
