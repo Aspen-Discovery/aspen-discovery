@@ -60,16 +60,18 @@
 		</div>
 	</form>
 
+	{if $allSites|@count gt 0}
 	<div class="row">
 		<div class="col-xs-12">
 			<div class="btn-toolbar" role="toolbar">
                 <div class="btn-group" role="group">
                     <a onclick="return AspenDiscovery.Admin.showSelectedScheduleUpdateForm();" class="btn btn-default"><i class="fas fa-wrench"></i> Schedule Update for Selected</a>
-                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm();" class="btn btn-default"><i class="fas fa-wrench"></i> Schedule Update for All</a>
+                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}');" class="btn btn-default"><i class="fas fa-wrench"></i> Schedule Update for All</a>
                 </div>
 			</div>
 		</div>
 	</div>
+	{/if}
 
 	<div class="siteStatusRegion">
 		<table class="table table-striped table-condensed smallText table-sticky" id="siteStatusTable" aria-label="{translate text="List of sites to update" inAttribute=true isAdminFacing=true}">
