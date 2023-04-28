@@ -36,6 +36,8 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 		$sites = new AspenSite();
 		if($implementationStatusToShow !== 'any') {
 			$sites->whereAdd('implementationStatus = ' . $implementationStatusToShow);
+		} else {
+			$sites->whereAdd('implementationStatus != 4');
 		}
 		if($siteTypeToShow !== 'any') {
 			$sites->whereAdd('siteType = ' . $siteTypeToShow);
