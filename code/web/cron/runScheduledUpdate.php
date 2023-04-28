@@ -69,45 +69,25 @@ foreach($updatesToRun as $id) {
 
 		$scheduledUpdate->update();
 
-		// send Slack notification
-		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
-		$greenhouseSettings = new GreenhouseSettings();
-		$greenhouseAlertSlackHook = null;
-		$shouldSendBuildAlert = false;
-		if ($greenhouseSettings->find(true)) {
-			$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
-			$shouldSendBuildAlert = $greenhouseSettings->sendBuildTrackerAlert;
-		}
+		if($scheduledUpdate->greenhouseId) {
+			// update greenhouse if the update was scheduled from there
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if (!empty($systemVariables)) {
+				$greenhouseUrl = $systemVariables->greenhouseUrl . '/Greenhouse/UpdateCenter/';
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$curl = new CurlWrapper();
+				$body = [
+					'runType' => $scheduledUpdate->updateType,
+					'dateScheduled' => $scheduledUpdate->dateScheduled,
+					'updateToVersion' => $scheduledUpdate->updateToVersion,
+					'status' => $scheduledUpdate->status,
+					'greenhouseId' => $scheduledUpdate->greenhouseId,
+					'notes' => $scheduledUpdate->notes,
+					'dateRun' => $scheduledUpdate->dateRun,
 
-		if ($greenhouseAlertSlackHook && $shouldSendBuildAlert) {
-			$scheduledUpdateUrl = $configArray['Site']['url'] . '/Admin/ScheduledUpdates/';
-			if($scheduledUpdate->siteId) {
-				// update scheduled from the greenhouse
-				require_once ROOT_DIR . '/sys/SystemVariables.php';
-				$systemVariables = SystemVariables::getSystemVariables();
-				if(!empty($systemVariables)) {
-					$scheduledUpdateUrl = $systemVariables->greenhouseUrl . '/Greenhouse/UpdateCenter/';
-				}
-			}
-			if($scheduledUpdate->status === 'failed') {
-				$notification = "- :fire: <$scheduledUpdateUrl|Update failed> for $siteName while updating to $scheduledUpdate->updateToVersion ($scheduledUpdate->updateType)";
-				$notification .= '<!here>';
-			} else if($scheduledUpdate->status === 'complete') {
-				$notification = "- <$scheduledUpdateUrl|Update completed> for $siteName to $scheduledUpdate->updateToVersion ($scheduledUpdate->updateType)";
-			} else {
-				$notification = null;
-			}
-			$alertText = "*$siteName* $notification\n";
-			if($notification) {
-				$curlWrapper = new CurlWrapper();
-				$headers = [
-					'Accept: application/json',
-					'Content-Type: application/json',
 				];
-				$curlWrapper->addCustomHeaders($headers, false);
-				$body = new stdClass();
-				$body->text = $alertText;
-				$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+				$response = $curl->curlPostPage($greenhouseUrl . '/API/GreenhouseAPI?method=updateScheduledUpdate', $body);
 			}
 		}
 	}

@@ -317,7 +317,19 @@ class Greenhouse_AJAX extends Action {
 				$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
 				$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 				$scheduledUpdate->status = 'pending';
-				if($scheduledUpdate->insert()) {
+				$scheduledUpdate->insert();
+
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$curl = new CurlWrapper();
+				$body = [
+					'runType' => $scheduledUpdate->updateType,
+					'dateScheduled' => $scheduledUpdate->dateScheduled,
+					'updateToVersion' => $scheduledUpdate->updateToVersion,
+					'status' => $scheduledUpdate->status,
+					'greenhouseId' => $scheduledUpdate->id,
+				];
+				$response = $curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
+				if($response['success']) {
 					// update scheduled
 					return [
 						'success' => true,
@@ -334,6 +346,8 @@ class Greenhouse_AJAX extends Action {
 					];
 				} else {
 					// unable to schedule update
+					$scheduledUpdate->notes = $response['message'];
+					$scheduledUpdate->update();
 					return [
 						'success' => false,
 						'title' => translate([
@@ -341,7 +355,7 @@ class Greenhouse_AJAX extends Action {
 							'isAdminFacing' => true,
 						]),
 						'message' => translate([
-							'text' => 'Unable to schedule an update for %1%',
+							'text' => 'Unable to schedule an update for %1%. See notes for details',
 							1 => $site->name,
 							'isAdminFacing' => true,
 						]),
@@ -381,12 +395,27 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate = new ScheduledUpdate();
 					$scheduledUpdate->updateType = $runType;
 					$scheduledUpdate->dateScheduled = $runUpdateOn;
-					$scheduledUpdate->siteId = $site;
+					$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
-					if($scheduledUpdate->insert()) {
+					$scheduledUpdate->insert();
+
+					require_once ROOT_DIR . '/sys/CurlWrapper.php';
+					$curl = new CurlWrapper();
+					$body = [
+						'runType' => $scheduledUpdate->updateType,
+						'dateScheduled' => $scheduledUpdate->dateScheduled,
+						'updateToVersion' => $scheduledUpdate->updateToVersion,
+						'status' => $scheduledUpdate->status,
+						'greenhouseId' => $scheduledUpdate->id,
+					];
+					$response = $curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
+					if($response['success']) {
 						// update scheduled
 						$numSitesUpdated++;
+					} else {
+						$scheduledUpdate->notes = $response['message'];
+						$scheduledUpdate->update();
 					}
 				}
 			}

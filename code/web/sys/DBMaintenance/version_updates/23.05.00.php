@@ -95,6 +95,15 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//permissions_view_scheduled_updates
+		'add_greenhouse_id_scheduled_update' => [
+			'title' => 'Add greenhouseId to aspen_site_scheduled_update',
+			'description' => 'Adds column to store the greenhouse id for an off-site scheduled update',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update ADD COLUMN greenhouseId INT(11) DEFAULT NULL',
+			]
+		],
+		//add_greenhouse_id_scheduled_update
 		//kodi
 		//other
 	];

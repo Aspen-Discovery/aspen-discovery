@@ -10,7 +10,7 @@ class ScheduledUpdate extends DataObject {
 	public $status;
 	public $notes;
 	public $siteId;
-
+	public $greenhouseId;
 	public $currentVersion;
 
 	public static function getObjectStructure($context = ''): array {
@@ -64,6 +64,14 @@ class ScheduledUpdate extends DataObject {
 				'label' => 'Aspen Site Id',
 				'description' => 'The unique Aspen Site Id',
 				'default' => '',
+				'hideInLists' => true,
+			],
+			'greenhouseId' => [
+				'property' => 'greenhouseId',
+				'type' => 'text',
+				'label' => 'Greenhouse Update Id',
+				'description' => 'The unique update id from Greenhouse',
+				'readOnly' => true,
 				'hideInLists' => true,
 			],
 			'dateScheduled' => [
@@ -123,7 +131,8 @@ class ScheduledUpdate extends DataObject {
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
-			'siteId'
+			'siteId',
+			'greenhouseId'
 		];
 	}
 }
