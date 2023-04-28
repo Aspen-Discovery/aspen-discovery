@@ -674,6 +674,24 @@ class GreenhouseAPI extends Action {
 		return $result;
 	}
 
+	function getReleaseInformation(): array {
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$release = new AspenRelease();
+		$release->orderBy('name DESC');
+		$release->find();
+		$releases = [];
+		while($release->fetch()) {
+			$releases[$release->name]['id'] = $release->id;
+			$releases[$release->name]['version'] = $release->name;
+			$releases[$release->name]['date'] = $release->releaseDate;
+		}
+
+		return [
+			'success' => true,
+			'releases' => $releases,
+		];
+	}
+
 	function getBreadcrumbs(): array {
 		return [];
 	}
