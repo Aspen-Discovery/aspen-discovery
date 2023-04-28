@@ -191,9 +191,13 @@ class Greenhouse_AJAX extends Action {
 				$interface->assign('releases', $eligibleReleases);
 				$interface->assign('siteToUpdate', $siteToUpdate);
 				return [
-					'title' => 'Schedule Update for ' . $siteToUpdate->name,
+					'title' => translate([
+						'text' => 'Schedule Update for %1%',
+						1 => $siteToUpdate->name,
+						'isAdminFacing' => true,
+					]),
 					'modalBody' => $interface->fetch('Greenhouse/scheduleUpdateForm.tpl'),
-					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 				];
 			}
 		} else {
@@ -246,9 +250,12 @@ class Greenhouse_AJAX extends Action {
 		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
 
 		return [
-			'title' => 'Schedule Batch Update',
+			'title' => translate([
+				'text' => 'Schedule Batch Update',
+				'isAdminFacing' => true,
+			]),
 			'modalBody' => $interface->fetch('Greenhouse/batchScheduleUpdateForm.tpl'),
-			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 		];
 	}
 
@@ -281,9 +288,12 @@ class Greenhouse_AJAX extends Action {
 		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
 
 		return [
-			'title' => 'Schedule Update for Selected Sites',
+			'title' => translate([
+				'text' => 'Schedule Update for Selected Sites',
+				'isAdminFacing' => true,
+			]),
 			'modalBody' => $interface->fetch('Greenhouse/batchScheduleUpdateForm.tpl'),
-			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 		];
 	}
 
@@ -311,23 +321,45 @@ class Greenhouse_AJAX extends Action {
 					// update scheduled
 					return [
 						'success' => true,
-						'title' => 'Schedule Update for ' . $site->name,
-						'message' => 'Update successfully scheduled for ' . $site->name,
+						'title' => translate([
+							'text' => 'Schedule Update for %1%',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'Update successfully scheduled for %1%',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
 					];
 				} else {
 					// unable to schedule update
 					return [
 						'success' => false,
-						'title' => 'Schedule Update for ' . $site->name,
-						'message' => 'Unable to schedule update for ' . $site->name,
+						'title' => translate([
+							'text' => 'Error',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'Unable to schedule an update for %1%',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
 					];
 				}
 			} else {
 				// no site found with that id
 				return [
 					'success' => false,
-					'title' => 'Error',
-					'message' => 'Could not find a valid site with given id ' . $_REQUEST['siteToUpdate'],
+					'title' => translate([
+						'text' => 'Error',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Could not find a valid site with given id %1%',
+						1 => $_REQUEST['siteToUpdate'],
+						'isAdminFacing' => true,
+					]),
 				];
 			}
 		} elseif (isset($_REQUEST['sitesToUpdate'])) {
@@ -360,8 +392,16 @@ class Greenhouse_AJAX extends Action {
 			}
 			return [
 				'success' => true,
-				'title' => 'Schedule Batch Update',
-				'message' => 'Update successfully scheduled updates for ' . $numSitesUpdated . ' of ' . $numSites . ' sites.',
+				'title' => translate([
+					'text' => 'Schedule Batch Update',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Successfully scheduled updates for %1% of %2% sites.',
+					1 => $numSitesUpdated,
+					2 => $numSites,
+					'isAdminFacing' => true,
+				]),
 			];
 		} else {
 			return false;
