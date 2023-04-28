@@ -206,23 +206,34 @@ class Greenhouse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function getBatchScheduleUpdateForm() {
+		global $interface;
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$releases = AspenRelease::getReleasesList();
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 		$sites = new AspenSite();
 		$sites->whereAdd('implementationStatus != 4');
 		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
 		$sites->find();
 		$allBatchUpdateSites = [];
+		$eligibleReleases = [];
 		while ($sites->fetch()) {
 			if(!$sites->optOutBatchUpdates) {
+				$currentRelease = explode(' ', $sites->version);
+				$currentRelease = $currentRelease[0];
+				foreach($releases as $release) {
+					if(version_compare($release['version'], $currentRelease, '>=')) {
+						$eligibleReleases[$release['version']] = $release;
+					} else {
+						unset($eligibleReleases[$release['version']]);
+					}
+				}
 				$allBatchUpdateSites[] = $sites->id;
 			}
 		}
 
 		$allBatchUpdateSites = implode(',', $allBatchUpdateSites);
-		global $interface;
-		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
-		$releases = AspenRelease::getReleasesList();
-		$interface->assign('releases', $releases);
+
+		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
 
 		return [
@@ -235,10 +246,29 @@ class Greenhouse_AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function getSelectedScheduleUpdateForm() {
 		$sitesToUpdate = $_REQUEST['sitesToUpdate'];
+		$sitesArray = explode(",", $sitesToUpdate);
 		global $interface;
 		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
 		$releases = AspenRelease::getReleasesList();
-		$interface->assign('releases', $releases);
+		$eligibleReleases = [];
+		foreach($sitesArray as $site) {
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+			$aspenSite = new AspenSite();
+			$aspenSite->id = $site;
+			if($aspenSite->find(true)) {
+				$currentRelease = explode(' ', $aspenSite->version);
+				$currentRelease = $currentRelease[0];
+				foreach($releases as $release) {
+					if(version_compare($release['version'], $currentRelease, '>=')) {
+						$eligibleReleases[$release['version']] = $release;
+					} else {
+						unset($eligibleReleases[$release['version']]);
+					}
+				}
+			}
+		}
+
+		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
 
 		return [
