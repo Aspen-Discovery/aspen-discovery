@@ -34,37 +34,42 @@ foreach($updatesToRun as $id) {
 
 		if($scheduledUpdate->updateType === 'complete') {
 			exec("cd /usr/local/aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
-			$scheduledUpdate->notes .= $resetGitResult;
-			if(str_contains($resetGitResult, 'fatal') || str_contains($resetGitResult, 'failed') || str_contains($resetGitResult, 'rejected')) {
-				$scheduledUpdate->status = 'failed';
-			} else {
-				$scheduledUpdate->status = 'complete';
+			foreach($resetGitResult as $result) {
+				$scheduledUpdate->notes .= $result;
 			}
 
 			exec("cd /usr/local/aspen-discovery; sudo git pull origin $scheduledUpdate->updateToVersion", $gitResult);
-			$scheduledUpdate->notes .= $gitResult;
-			if(str_contains($gitResult, 'fatal') || str_contains($gitResult, 'failed') || str_contains($gitResult, 'rejected')) {
-				$scheduledUpdate->status = 'failed';
-			} else {
-				$scheduledUpdate->status = 'complete';
+			foreach($gitResult as $result) {
+				$scheduledUpdate->notes .= $result;
 			}
 		}else if($scheduledUpdate->updateType === 'patch') {
 			exec("cd /usr/local/aspen-discovery; sudo git pull origin $scheduledUpdate->updateToVersion", $gitResult);
-			$scheduledUpdate->notes .= $gitResult;
-			if(str_contains($gitResult, 'fatal') || str_contains($gitResult, 'failed') || str_contains($gitResult, 'rejected')) {
-				$scheduledUpdate->status = 'failed';
-			} else {
-				$scheduledUpdate->status = 'complete';
+			foreach($gitResult as $result) {
+				$scheduledUpdate->notes .= $result;
 			}
 		} else {
 			// invalid updateType
 		}
 
-		// run db maintenance ???
+		if(str_contains($scheduledUpdate->notes, 'fatal') || str_contains($scheduledUpdate->notes, 'failed') || str_contains($scheduledUpdate->notes, 'rejected')) {
+			$scheduledUpdate->status = 'failed';
+		} else {
+			$scheduledUpdate->status = 'complete';
+		}
+
+		// run db maintenance
+		require_once ROOT_DIR . '/services/API/SystemAPI.php';
+		$systemAPI = new SystemAPI();
+		$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
+		if(!$dbMaintenance['success'] || $dbMaintenance['success'] == 'false') {
+			$message = $dbMaintenance['message'] ?? '';
+			$scheduledUpdate->status = 'failed';
+			$scheduledUpdate->notes .= $message;
+		}
 
 		$scheduledUpdate->update();
 
-		// send slack notification
+		// send Slack notification
 		require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
 		$greenhouseSettings = new GreenhouseSettings();
 		$greenhouseAlertSlackHook = null;
@@ -90,7 +95,6 @@ foreach($updatesToRun as $id) {
 			} else if($scheduledUpdate->status === 'complete') {
 				$notification = "- <$scheduledUpdateUrl|Update completed> for $siteName to $scheduledUpdate->updateToVersion ($scheduledUpdate->updateType)";
 			} else {
-				// something weird has happened
 				$notification = null;
 			}
 			$alertText = "*$siteName* $notification\n";
