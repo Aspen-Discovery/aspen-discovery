@@ -2498,8 +2498,10 @@ class UserAPI extends Action {
 			$patron = $user->getUserReferredTo($user->id);
 
 			require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
+			require_once ROOT_DIR . '/Drivers/CloudLibraryDriver.php';
 			$driver = new CloudLibraryRecordDriver($id);
-			$accessUrl = $driver->getAccessOnlineLinkUrl($patron);
+			$cloudLibrary = new CloudLibraryDriver();
+			$accessUrl = $cloudLibrary->getCloudLibraryUrl($patron, $driver);
 
 			return [
 				'success' => true,
