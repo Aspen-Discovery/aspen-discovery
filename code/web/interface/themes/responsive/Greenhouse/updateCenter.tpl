@@ -18,6 +18,7 @@
 				<div class="form-group">
 	                <label for="implementationStatusToShow">{translate text='Implementation Status' isAdminFacing=true}</label>
 	                <select name="implementationStatusToShow" id="implementationStatusToShowSelect" class="form-control">
+	                    <option value="any"{if !empty($implementationStatusToShow) && ($implementationStatusToShow == 'any')} selected='selected'{/if}>Any</option>
 	                    {foreach from=$implementationStatuses item=status key=index}
 	                        <option value="{$index}"{if !empty($implementationStatusToShow) && ($implementationStatusToShow == $index)} selected='selected'{/if}>{$status}</option>
 	                    {/foreach}
@@ -28,6 +29,7 @@
 				<div class="form-group">
 	                <label for="siteTypeToShow">{translate text='Site Type' isAdminFacing=true}</label>
 	                <select name="siteTypeToShow" id="siteTypeToShowSelect" class="form-control">
+	                    <option value="any"{if !empty($siteTypeToShow) && ($siteTypeToShow == 'any')} selected='selected'{/if}>Any</option>
 		                {foreach from=$siteTypes item=type key=index}
 		                    <option value="{$index}"{if !empty($siteTypeToShow) && ($siteTypeToShow == $index)} selected='selected'{/if}>{$type}</option>
 		                {/foreach}
@@ -38,6 +40,7 @@
 				<div class="form-group">
 	                <label for="releaseToShow">{translate text='Version' isAdminFacing=true}</label>
 	                <select name="releaseToShow" id="releaseToShowSelect" class="form-control">
+                        <option value="any"{if !empty($releaseToShow) && ($releaseToShow == 'any')} selected='selected'{/if}>Any</option>
 	                    {foreach from=$releases item=release}
 	                        <option value="{$release.version}"{if !empty($releaseToShow) && ($releaseToShow == $release.version)} selected='selected'{/if}>{$release.version}</option>
 	                    {/foreach}

@@ -27,17 +27,23 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 
 		$releases = AspenRelease::getReleasesList();
 		$interface->assign('releases', $releases);
-		$releaseToShow = '';
+		$releaseToShow = 'any';
 		if (isset($_REQUEST['releaseToShow'])) {
 			$releaseToShow = $_REQUEST['releaseToShow'];
 		}
 		$interface->assign('releaseToShow', $releaseToShow);
 
 		$sites = new AspenSite();
-		$sites->whereAdd('implementationStatus = ' . $implementationStatusToShow);
-		$sites->whereAdd('siteType = ' . $siteTypeToShow);
-		$escapedRelease = $sites->escape('%' . $releaseToShow . '%');
-		$sites->whereAdd('version LIKE ' . $escapedRelease);
+		if($implementationStatusToShow !== 'any') {
+			$sites->whereAdd('implementationStatus = ' . $implementationStatusToShow);
+		}
+		if($siteTypeToShow !== 'any') {
+			$sites->whereAdd('siteType = ' . $siteTypeToShow);
+		}
+		if($releaseToShow !== 'any') {
+			$escapedRelease = $sites->escape('%' . $releaseToShow . '%');
+			$sites->whereAdd('version LIKE ' . $escapedRelease);
+		}
 		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
 		$sites->find();
 		$allSites = [];
