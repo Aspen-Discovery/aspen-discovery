@@ -11,7 +11,11 @@ class ScheduledUpdate extends DataObject {
 	public $notes;
 	public $siteId;
 
+	public $currentVersion;
+
 	public static function getObjectStructure($context = ''): array {
+		global $interface;
+		$currentRelease = $interface->getVariable('gitBranch');
 		$updateTypes = [
 			'patch' => 'Patch',
 			'complete' => 'Complete',
@@ -21,6 +25,31 @@ class ScheduledUpdate extends DataObject {
 			'pending' => 'Pending',
 			'canceled' => 'Canceled',
 		];
+
+		$releases = [];
+		$eligibleReleases = [];
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			if ($result = file_get_contents($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getReleaseInformation')) {
+				$data = json_decode($result, true);
+				$releases = $data['releases'];
+			}
+		} else {
+			global $configArray;
+			if ($result = file_get_contents($configArray['Site']['url'] . '/API/GreenhouseAPI?method=getReleaseInformation')) {
+				$data = json_decode($result, true);
+				$releases = $data['releases'];
+			}
+		}
+
+		foreach($releases as $release) {
+			if(version_compare($release['version'], $currentRelease, '>=')) {
+				$eligibleReleases[$release['version']] = $release;
+			} else {
+				unset($eligibleReleases[$release['version']]);
+			}
+		}
 
 		return [
 			'id' => [
@@ -52,10 +81,18 @@ class ScheduledUpdate extends DataObject {
 				'description' => 'The status of the update',
 				'default' => 'pending'
 			],
+			'currentVersion' => [
+				'property' => 'currentVersion',
+				'type' => 'text',
+				'label' => 'Current Version',
+				'default' => $currentRelease,
+				'readOnly' => true,
+			],
 			'updateToVersion' => [
 				'property' => 'updateToVersion',
-				'type' => 'text',
+				'type' => 'enum',
 				'label' => 'Update to Version',
+				'values' => $eligibleReleases,
 				'description' => 'The version the update will upgrade to',
 				'required' => true,
 			],
