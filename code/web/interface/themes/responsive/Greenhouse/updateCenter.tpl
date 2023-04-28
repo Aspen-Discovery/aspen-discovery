@@ -65,8 +65,8 @@
 		<div class="col-xs-12">
 			<div class="btn-toolbar" role="toolbar">
                 <div class="btn-group" role="group">
-                    <a onclick="return AspenDiscovery.Admin.showSelectedScheduleUpdateForm();" class="btn btn-default"><i class="fas fa-wrench"></i> Schedule Update for Selected</a>
-                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}');" class="btn btn-default"><i class="fas fa-wrench"></i> Schedule Update for All</a>
+                    <a onclick="return AspenDiscovery.Admin.showSelectedScheduleUpdateForm();" class="btn btn-warning">{translate text="Schedule Update for Selected" isAdminFacing=true}</a>
+                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}');" class="btn btn-warning">{translate text="Schedule Update for All Listed" isAdminFacing=true}</a>
                 </div>
 			</div>
 		</div>
