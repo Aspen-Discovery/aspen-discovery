@@ -211,7 +211,16 @@ class Greenhouse_AJAX extends Action {
 		$releases = AspenRelease::getReleasesList();
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 		$sites = new AspenSite();
-		$sites->whereAdd('implementationStatus != 4');
+		if(isset($_REQUEST['implementationStatus'])) {
+			$sites->whereAdd('implementationStatus = ' . $_REQUEST['implementationStatus']);
+		} else {
+			$sites->whereAdd('implementationStatus != 4');
+		}
+
+		if(isset($_REQUEST['siteType'])) {
+			$sites->whereAdd('siteType = ' . $_REQUEST['siteType']);
+		}
+
 		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
 		$sites->find();
 		$allBatchUpdateSites = [];
