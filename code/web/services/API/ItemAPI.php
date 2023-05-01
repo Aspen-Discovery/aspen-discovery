@@ -341,6 +341,14 @@ class ItemAPI extends Action {
 			];
 		}
 
+		if (!isset($_REQUEST['variationId'])) {
+			return [
+				'success' => false,
+				'message' => 'Variation id not provided'
+			];
+		}
+
+		$variationId = $_REQUEST['variationId'];
 		$id = $_REQUEST['recordId'];
 		$recordId = explode(':', $id);
 		$id = $recordId[1];
@@ -352,8 +360,7 @@ class ItemAPI extends Action {
 		$copies = $marcRecord->getCopies();
 		$items = [];
 		foreach($copies as $copy) {
-			// Todo: Temporarily hide 856 links until we formally integrate into the app
-			if(!str_contains($copy['itemId'], '856link')) {
+			if($copy['variationId'] == $variationId) {
 				$key = $copy['description'] . ' ' . $copy['itemId'];
 				$items[$key]['id'] = $copy['itemId'];
 				$items[$key]['location'] = $copy['description'];
