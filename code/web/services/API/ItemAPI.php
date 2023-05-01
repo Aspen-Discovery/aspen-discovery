@@ -1195,7 +1195,12 @@ class ItemAPI extends Action {
 		$records = [];
 		global $interface;
 		global $library;
-		foreach ($recordDriver->getRelatedRecords() as $relatedRecord) {
+		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $format) {
+				break;
+			}
+		}
+		foreach ($relatedManifestation->getRelatedRecords() as $relatedRecord) {
 			if ($relatedRecord->source == $source) {
 				foreach ($relatedRecord->recordVariations as $variationFormat => $recordVariation) {
 					if ($variationFormat == $format) {
