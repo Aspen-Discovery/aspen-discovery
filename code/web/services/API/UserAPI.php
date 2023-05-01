@@ -1664,9 +1664,8 @@ class UserAPI extends Action {
 					,
 					$bibId,
 				] = explode(':', $bibId, 2);
-			} else {
-				$shortId = $bibId;
 			}
+			$shortId = $bibId;
 		}
 
 		$user = $this->getUserForApiCall();
