@@ -184,6 +184,30 @@ class IndexingProfile extends DataObject {
 	private $_statusMap;
 	private $_formatMap;
 
+	public function getNumericColumnNames(): array {
+		return [
+			'numCharsToCreateFolderFrom',
+			'createFolderFromLeadingCharacters',
+			'processRecordLinking',
+			'index856Links',
+			'determineAudienceBy',
+			'determineLiteraryFormBy',
+			'hideUnknownLiteraryForm',
+			'hideNotCodedLiteraryForm',
+			'includePersonalAndCorporateNamesInTopics',
+			'suppressItemlessBibs',
+			'useItemBasedCallNumbers',
+			'includeLocationNameInDetailedLocation',
+			'treatLibraryUseOnlyGroupedStatusesAsAvailable',
+			'useICode2Suppression',
+			'doAutomaticEcontentSuppression',
+			'checkRecordForLargePrint',
+			'regroupAllRecords',
+			'runFullUpdate',
+			'evergreenOgUnitSchema',
+		];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		$translationMapStructure = TranslationMap::getObjectStructure($context);
 		unset($translationMapStructure['indexingProfileId']);
@@ -969,7 +993,7 @@ class IndexingProfile extends DataObject {
 						],
 						'label' => 'Specified Format Boost',
 						'description' => 'The format boost to set when using a defined format',
-						'default' => '8',
+						'default' => '6',
 						'required' => false,
 						'forcesReindex' => true,
 					],
