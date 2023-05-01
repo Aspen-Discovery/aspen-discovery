@@ -352,13 +352,16 @@ class ItemAPI extends Action {
 		$copies = $marcRecord->getCopies();
 		$items = [];
 		foreach($copies as $copy) {
-			$key = $copy['description'] . ' ' . $copy['itemId'];
-			$items[$key]['id'] = $copy['itemId'];
-			$items[$key]['location'] = $copy['description'];
-			$items[$key]['library'] = $copy['section'];
-			$items[$key]['volume'] = $copy['volume'];
-			$items[$key]['volumeId'] = $copy['volumeId'];
-			$items[$key]['variationId'] = $copy['variationId'];
+			// Todo: Temporarily hide 856 links until we formally integrate into the app
+			if(!str_contains($copy['itemId'], '856link')) {
+				$key = $copy['description'] . ' ' . $copy['itemId'];
+				$items[$key]['id'] = $copy['itemId'];
+				$items[$key]['location'] = $copy['description'];
+				$items[$key]['library'] = $copy['section'];
+				$items[$key]['volume'] = $copy['volume'];
+				$items[$key]['volumeId'] = $copy['volumeId'];
+				$items[$key]['variationId'] = $copy['variationId'];
+			}
 		}
 		return [
 			'success' => true,
