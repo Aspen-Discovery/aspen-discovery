@@ -1,20 +1,22 @@
 {strip}
 	<div class="col-xs-12">
 		<h1>{translate text="Research & Learn" isPublicFacing=true}</h1>
-		<h2>{translate text="Featured Resources" isPublicFacing=true}</h2>
-		<div class="row">
-			{foreach from=$featuredResources item=resource}
-				<div class="col-xs-4 col-md-3 col-lg-2 featuredResource">
-					<a href="/WebBuilder/WebResource?id={$resource->id}">
-					{if !empty($resource->logo)}
-						<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
-					{else}
-						{$resource->name}
-					{/if}
-					</a>
-				</div>
-			{/foreach}
-		</div>
+		{if !empty($featuredResources)}
+			<h2>{translate text="Featured Resources" isPublicFacing=true}</h2>
+			<div class="row">
+				{foreach from=$featuredResources item=resource}
+					<div class="col-xs-4 col-md-3 col-lg-2 featuredResource">
+						<a href="/WebBuilder/WebResource?id={$resource->id}">
+						{if !empty($resource->logo)}
+							<img src='/files/thumbnail/{$resource->logo}' alt="{$resource->name}" class="img-responsive img-thumbnail">
+						{else}
+							{$resource->name}
+						{/if}
+						</a>
+					</div>
+				{/foreach}
+			</div>
+		{/if}
 
 		<h2>{translate text="Resources by Category" isPublicFacing=true}</h2>
 		{foreach from=$resourcesByCategory key=category item=resources}
