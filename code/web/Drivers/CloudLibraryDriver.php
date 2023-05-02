@@ -943,4 +943,56 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		header('Location:' . $redirectUrl);
 		die();
 	}
+
+	public function getCloudLibraryUrl(User $patron, CloudLibraryRecordDriver $recordDriver) {
+		$redirectUrl = null;
+		$settings = $this->getSettings($patron);
+		$userInterfaceUrl = $settings->userInterfaceUrl;
+		if (substr($userInterfaceUrl, -1) == '/') {
+			$userInterfaceUrl = substr($userInterfaceUrl, 0, -1);
+		}
+
+		//Setup the default redirection paths
+		if ($recordDriver->getPrimaryFormat() == 'MP3') {
+			$redirectUrl = $userInterfaceUrl . '/AudioPlayer/' . $recordDriver->getId();
+		} else {
+			$redirectUrl = $userInterfaceUrl . '/EPubRead/' . $recordDriver->getId();
+		}
+
+		//Login the user to CloudLibrary
+		$loginUrl = "{$userInterfaceUrl}/login";
+		$postParams = [
+			'username' => $patron->getBarcode(),
+			'password' => $patron->getPasswordOrPin(),
+		];
+		$curlWrapper = new CurlWrapper();
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+		];
+		$curlWrapper->addCustomHeaders($headers, false);
+		$response = $curlWrapper->curlPostPage($loginUrl, $postParams, [CURLOPT_HEADER => true]);
+		ExternalRequestLogEntry::logRequest('cloudLibrary.redirectToCloudLibrary', 'POST', $loginUrl, $curlWrapper->getHeaders(), '', $curlWrapper->getResponseCode(), $response, ['password' => $patron->getPasswordOrPin()]);
+		if ($response) {
+			preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $response, $matches);
+			$cookies = [];
+			foreach ($matches[1] as $item) {
+				parse_str($item, $cookie);
+				$cookies = array_merge($cookies, $cookie);
+			}
+			foreach ($cookies as $name => $value) {
+				if (strpos($name, 'sessionid_') === 0) {
+					if ($recordDriver->getPrimaryFormat() == 'MP3') {
+						//TODO: Need a new URL from CloudLibrary for audio books
+						$redirectUrl = "$userInterfaceUrl/audiobooks/{$recordDriver->getId()}?auth_cookie={$value}";
+					} else {
+						$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
+					}
+
+					break;
+				}
+			}
+		}
+
+		return $redirectUrl;
+	}
 }

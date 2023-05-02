@@ -285,6 +285,7 @@ class LDAPAuthentication extends Action {
 		}
 		$tmpUser->myLocation1Id = 0;
 		$tmpUser->myLocation2Id = 0;
+		$tmpUser->source = 'admin_sso';
 		$tmpUser->created = date('Y-m-d');
 		if(!$tmpUser->insert()) {
 			global $logger;

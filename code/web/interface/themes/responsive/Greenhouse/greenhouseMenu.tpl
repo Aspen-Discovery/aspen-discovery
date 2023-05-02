@@ -47,6 +47,7 @@
 					</a>
 					<div id="maintenanceToolsGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
+							<div class="adminMenuLink "><a href="/Greenhouse/ScheduledUpdates">{translate text="Scheduled Updates" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/ReadingHistoryReload">{translate text="Reload Reading History from ILS" isAdminFacing=true}</a></div>
 						</div>
 					</div>
@@ -78,7 +79,7 @@
 					<a href="#greenhouseStatsReportsGroup" data-toggle="collapse" data-parent="#adminMenuAccordion" aria-label="{translate text="Greenhouse Stats/Reports" inAttribute=true isAdminFacing=true}">
 						<div class="panel-heading">
 							<div class="panel-title">
-								{translate text="Greenhouse Stats/Reports" isAdminFacing=true}
+								{translate text="Greenhouse Partner Maintenance & Reports" isAdminFacing=true}
 							</div>
 						</div>
 					</a>

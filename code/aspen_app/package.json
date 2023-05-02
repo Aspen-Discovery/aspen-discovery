@@ -62,7 +62,7 @@
     "native-base": "3.4.25",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-native": "0.71.6",
+    "react-native": "0.71.7",
     "react-native-barcode-expo": "^1.2.0",
     "react-native-base64": "^0.2.1",
     "react-native-check-version": "^1.0.20",

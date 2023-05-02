@@ -9503,10 +9503,12 @@ AspenDiscovery.Admin = (function () {
 			});
 		},
 
-		showBatchScheduleUpdateForm: function () {
+		showBatchScheduleUpdateForm: function (implementationStatus, siteType) {
 			var url = Globals.path + '/Greenhouse/AJAX';
 			var params = {
-				'method': 'getBatchScheduleUpdateForm'
+				'method': 'getBatchScheduleUpdateForm',
+				'implementationStatus': implementationStatus,
+				'siteType': siteType
 			}
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, params,
@@ -9566,6 +9568,10 @@ AspenDiscovery.Admin = (function () {
 				processData: false
 			});
 			return false;
+		},
+
+		showScheduledUpdateDetails: function(id){
+			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/Greenhouse/AJAX?method=showScheduledUpdateDetails&id=" +id, true);
 		}
 
 	};

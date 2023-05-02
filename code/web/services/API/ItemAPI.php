@@ -341,6 +341,14 @@ class ItemAPI extends Action {
 			];
 		}
 
+		if (!isset($_REQUEST['variationId'])) {
+			return [
+				'success' => false,
+				'message' => 'Variation id not provided'
+			];
+		}
+
+		$variationId = $_REQUEST['variationId'];
 		$id = $_REQUEST['recordId'];
 		$recordId = explode(':', $id);
 		$id = $recordId[1];
@@ -352,13 +360,15 @@ class ItemAPI extends Action {
 		$copies = $marcRecord->getCopies();
 		$items = [];
 		foreach($copies as $copy) {
-			$key = $copy['description'] . ' ' . $copy['itemId'];
-			$items[$key]['id'] = $copy['itemId'];
-			$items[$key]['location'] = $copy['description'];
-			$items[$key]['library'] = $copy['section'];
-			$items[$key]['volume'] = $copy['volume'];
-			$items[$key]['volumeId'] = $copy['volumeId'];
-			$items[$key]['variationId'] = $copy['variationId'];
+			if($copy['variationId'] == $variationId) {
+				$key = $copy['description'] . ' ' . $copy['itemId'];
+				$items[$key]['id'] = $copy['itemId'];
+				$items[$key]['location'] = $copy['description'];
+				$items[$key]['library'] = $copy['section'];
+				$items[$key]['volume'] = $copy['volume'];
+				$items[$key]['volumeId'] = $copy['volumeId'];
+				$items[$key]['variationId'] = $copy['variationId'];
+			}
 		}
 		return [
 			'success' => true,
