@@ -1,10 +1,9 @@
 <?php
 
-require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 
-class Admin_ScheduledUpdates extends ObjectEditor {
+class Greenhouse_ScheduledUpdates extends ObjectEditor {
 	function getObjectType(): string {
 		return 'ScheduledUpdate';
 	}
@@ -14,7 +13,7 @@ class Admin_ScheduledUpdates extends ObjectEditor {
 	}
 
 	function getModule(): string {
-		return 'Admin';
+		return 'Greenhouse';
 	}
 
 	function getPageTitle(): string {
@@ -60,18 +59,22 @@ class Admin_ScheduledUpdates extends ObjectEditor {
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
-		$breadcrumbs[] = new Breadcrumb('/Admin/ScheduledUpdates', 'Scheduled Updates');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/Home', 'Greenhouse Home');
+		$breadcrumbs[] = new Breadcrumb('/Greenhouse/ScheduledUpdates', 'Scheduled Updates');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'system_admin';
+		return 'greenhouse';
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('View Scheduled Updates');
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	function canAddNew() {
@@ -91,4 +94,7 @@ class Admin_ScheduledUpdates extends ObjectEditor {
 		return false;
 	}
 
+	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Development/development-sidebar.tpl', $translateTitle = true) {
+		parent::display($mainContentTemplate, $pageTitle, $sidebarTemplate, $translateTitle);
+	}
 }

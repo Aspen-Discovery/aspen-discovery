@@ -85,16 +85,6 @@ function getUpdates23_05_00(): array {
 			]
 		],
 		//update_dates_scheduled_updates
-		'permissions_view_scheduled_updates' => [
-			'title' => 'Add permissions for viewing scheduled updates',
-			'description' => 'Create permissions for viewing scheduled updates',
-			'continueOnError' => true,
-			'sql' => [
-				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'View Scheduled Updates', '', 10, 'Controls if the user can view scheduled updates for Aspen Discovery.')",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Scheduled Updates'))",
-			],
-		],
-		//permissions_view_scheduled_updates
 		'add_greenhouse_id_scheduled_update' => [
 			'title' => 'Add greenhouseId to aspen_site_scheduled_update',
 			'description' => 'Adds column to store the greenhouse id for an off-site scheduled update',
