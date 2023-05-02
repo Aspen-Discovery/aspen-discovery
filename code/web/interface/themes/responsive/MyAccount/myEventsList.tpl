@@ -12,6 +12,7 @@
 						<th>{translate text='Event Name' isPublicFacing=true}</th>
 						<th>{translate text='Location' isPublicFacing=true}</th>
 						<th>{translate text='Registration Required?' isPublicFacing=true}</th>
+						<th>{translate text='Registration Status' isPublicFacing=true}</th>
 						<th>&nbsp;</th>
 					</tr>
 					</thead>
@@ -43,6 +44,15 @@
 										<span>{translate text="Yes" isPublicFacing=true}</span>
 									{else}
 										<span>{translate text="No" isPublicFacing=true}</span>
+									{/if}
+								</td>
+								<td class="myAccountCell">
+									{if ($event.regRequired == 1)}
+										{if $event.externalLink != null}
+											<a href="{$event.externalLink}" class="btn btn-xs btn-warning" target="_blank"><i class="fas fa-external-link-alt"></i>{translate text=" Check Registration" isPublicFacing=true}</a>
+										{else}
+											<span>{translate text="Event Has Passed" isPublicFacing=true}</span>
+										{/if}
 									{/if}
 								</td>
 								<td class="myAccountCell">
