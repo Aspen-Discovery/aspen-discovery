@@ -917,7 +917,7 @@ class Admin_AJAX extends JSON_Action {
 		/** @var ObjectEditor $tool */
 		$tool = new $fullToolName();
 
-		if ($tool->canBatchEdit()) {
+		if ($tool->canBatchDelete()) {
 			if ($batchDeleteScope == 'all') {
 				$numObjects = $tool->getNumObjects();
 				$recordsPerPage = 100;

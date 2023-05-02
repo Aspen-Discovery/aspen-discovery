@@ -49,12 +49,22 @@
 				{* Register Button *}
 				<div class="result-value col-tn-4">
 					{if $recordDriver->inEvents()}
-						<div class="btn-toolbar">
-							<div class="col-xs-12">
-								<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
+						{if $recordDriver->isRegistrationRequired()}
+							<div class="btn-toolbar">
+								<div class="btn-group btn-group-vertical btn-block">
+									<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>{translate text="Check Registration" isPublicFacing=true}</a>
+									<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
+								</div>
 							</div>
-						</div>
-						<br>
+							<br>
+						{else}
+							<div class="btn-toolbar">
+								<div class="col-xs-12">
+									<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
+								</div>
+							</div>
+							<br>
+						{/if}
 					{else}
 						{if $recordDriver->isRegistrationRequired()}
 							<div class="btn-toolbar">

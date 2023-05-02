@@ -3,11 +3,16 @@ package com.turning_leaf_technologies.events;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -420,7 +425,7 @@ class CommunicoIndexer {
 					apiEventsURL += "&startDate=" + firstOfMonth;
 					apiEventsURL += "&endDate=" + endOfMonth;
 					//Need to request the fields we want as many are "optional" and aren't returned unless asked for
-					apiEventsURL += "&fields=ages,searchTags,registration,eventImage,eventType,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types";
+					apiEventsURL += "&fields=ages,searchTags,registration,eventImage,eventType,privateEvent,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types";
 					HttpGet apiRequest = new HttpGet(apiEventsURL);
 					apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
 					try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
@@ -432,7 +437,10 @@ class CommunicoIndexer {
 							JSONObject data = response2.getJSONObject("data");
 							JSONArray events1 = data.getJSONArray("entries");
 							for (int i = 0; i < events1.length(); i++) {
-								events.put(events1.get(i));
+								JSONObject event = events1.getJSONObject(i);
+								if ((!event.getBoolean("privateEvent")) && (!event.getString("modified").equals("canceled"))){
+									events.put(events1.get(i));
+								}
 							}
 						}
 					} catch (Exception e) {

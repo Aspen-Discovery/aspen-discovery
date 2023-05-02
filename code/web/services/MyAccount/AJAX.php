@@ -3117,6 +3117,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'sourceId' => $entry->sourceId,
 					'title' => $entry->title,
 					'link' => $eventRecordDriver->getLinkUrl(),
+					'externalLink' => $eventRecordDriver->getExternalUrl(),
 					'location' => $entry->location,
 					'regRequired' => $entry->regRequired,
 					'eventDate' => $entry->eventDate,
@@ -3128,6 +3129,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'sourceId' => $entry->sourceId,
 				'title' => $entry->title,
 				'link' => null,
+				'externalLink' => null,
 				'location' => $entry->location,
 				'regRequired' => $entry->regRequired,
 				'eventDate' => $entry->eventDate,
@@ -5524,6 +5526,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 						$userEventsEntry->regRequired = $regRequired;
 						$userEventsEntry->location = $recordDriver->getBranch();
+						$externalUrl = $recordDriver->getExternalUrl();
 					}
 				} elseif (preg_match('`^libcal`', $userEventsEntry->sourceId)){
 					require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
@@ -5540,6 +5543,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 						$userEventsEntry->regRequired = $regRequired;
 						$userEventsEntry->location = $recordDriver->getBranch();
+						$externalUrl = $recordDriver->getExternalUrl();
 					}
 				} elseif (preg_match('`^lc_`', $userEventsEntry->sourceId)){
 					require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
@@ -5556,6 +5560,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 						$userEventsEntry->regRequired = $regRequired;
 						$userEventsEntry->location = $recordDriver->getBranch();
+						$externalUrl = $recordDriver->getExternalUrl();
 					}
 				}
 				$existingEntry = false;
@@ -5572,10 +5577,22 @@ class MyAccount_AJAX extends JSON_Action {
 				}
 
 				$result['success'] = true;
-				$result['message'] = translate([
-					'text' => 'This event was saved to your events successfully.',
-					'isPublicFacing' => true,
+				$result['title'] = translate([
+					'text' => "Added Successfully",
 				]);
+				if ($regRequired){
+					$result['message'] = translate([
+						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.</br></br> 
+						We are taking you to the library’s event management page where you will need to complete your registration. 
+						If you are not redirected to the event registration page, please follow <a href='$externalUrl'>this link.</a>",
+						'isPublicFacing' => true,
+					]);
+				}else{
+					$result['message'] = translate([
+						'text' => 'This event was saved to your events successfully.',
+						'isPublicFacing' => true,
+					]);
+				}
 			}
 		}
 

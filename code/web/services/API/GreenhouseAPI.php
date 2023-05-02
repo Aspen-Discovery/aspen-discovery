@@ -674,6 +674,122 @@ class GreenhouseAPI extends Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function addScheduledUpdate(): array {
+		$result = [
+			'success' => false,
+		];
+
+		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+		$scheduledUpdate = new ScheduledUpdate();
+		$scheduledUpdate->status = $_REQUEST['status'];
+		$scheduledUpdate->updateType = $_REQUEST['runType'];
+		$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
+		$scheduledUpdate->dateScheduled = $_REQUEST['dateScheduled'];
+		$scheduledUpdate->greenhouseId = $_REQUEST['greenhouseId'];
+		if($scheduledUpdate->insert()) {
+			$result = [
+				'success' => true,
+			];
+		} else {
+			$result = [
+				'success' => false,
+				'message' => $scheduledUpdate->getLastError(),
+			];
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function updateScheduledUpdate(): array {
+		$result = [
+			'success' => false,
+		];
+
+		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+		$scheduledUpdate = new ScheduledUpdate();
+		$scheduledUpdate->id = $_REQUEST['greenhouseId'];
+		if($scheduledUpdate->find(true)) {
+			$scheduledUpdate->status = $_REQUEST['status'];
+			$scheduledUpdate->updateType = $_REQUEST['runType'];
+			$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
+			$scheduledUpdate->dateScheduled = $_REQUEST['dateScheduled'];
+			$scheduledUpdate->dateRun = $_REQUEST['dateRun'];
+			$scheduledUpdate->notes = $_REQUEST['notes'];
+			if($scheduledUpdate->update()) {
+				$result = [
+					'success' => true,
+				];
+			} else {
+				$result = [
+					'success' => false,
+					'message' => $scheduledUpdate->getLastError(),
+				];
+			}
+
+			$siteName = 'Unknown Site';
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+			$site = new AspenSite();
+			$site->id = $scheduledUpdate->siteId;
+			if($site->find(true)) {
+				$siteName = $site->name;
+			}
+
+			// send Slack notification
+			require_once ROOT_DIR . '/sys/Greenhouse/GreenhouseSettings.php';
+			$greenhouseSettings = new GreenhouseSettings();
+			$greenhouseAlertSlackHook = null;
+			if ($greenhouseSettings->find(true)) {
+				$greenhouseAlertSlackHook = $greenhouseSettings->greenhouseAlertSlackHook;
+			}
+
+			if ($greenhouseAlertSlackHook) {
+				if($scheduledUpdate->status === 'failed') {
+					$notification = "- :fire: Update failed for $siteName while updating to $scheduledUpdate->updateToVersion ($scheduledUpdate->updateType)";
+					$notification .= '<!here>';
+				} else if($scheduledUpdate->status === 'complete') {
+					$notification = "- Update completed for $siteName to $scheduledUpdate->updateToVersion ($scheduledUpdate->updateType)";
+				} else {
+					$notification = null;
+				}
+				$alertText = "*$siteName* $notification\n";
+				if($notification) {
+					$curlWrapper = new CurlWrapper();
+					$headers = [
+						'Accept: application/json',
+						'Content-Type: application/json',
+					];
+					$curlWrapper->addCustomHeaders($headers, false);
+					$body = new stdClass();
+					$body->text = $alertText;
+					$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function getReleaseInformation(): array {
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$release = new AspenRelease();
+		$release->orderBy('name DESC');
+		$release->find();
+		$releases = [];
+		while($release->fetch()) {
+			$releases[$release->name]['id'] = $release->id;
+			$releases[$release->name]['version'] = $release->name;
+			$releases[$release->name]['date'] = $release->releaseDate;
+		}
+
+		return [
+			'success' => true,
+			'releases' => $releases,
+		];
+	}
+
 	function getBreadcrumbs(): array {
 		return [];
 	}

@@ -138,7 +138,7 @@ class AspenRelease extends DataObject {
 
 	static function getReleasesList() {
 		$release = new AspenRelease();
-		$release->orderBy('name');
+		$release->orderBy('name DESC');
 		$release->find();
 		$releases = [];
 		while($release->fetch()) {
