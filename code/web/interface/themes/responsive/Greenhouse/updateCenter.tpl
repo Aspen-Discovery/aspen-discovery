@@ -94,7 +94,7 @@
 					<tr>
 						<td>
 							{if !$site->optOutBatchUpdates}
-								<input type="checkbox" class="form-control siteSelect" name="{$site->id}" id="{$site->id}">
+								<input type="checkbox" class="siteSelect" name="{$site->id}" id="{$site->id}">
 							{/if}
 						</td>
 						<td>
