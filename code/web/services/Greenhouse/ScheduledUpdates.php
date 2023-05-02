@@ -91,7 +91,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 	}
 
 	function canBatchDelete() {
-		return false;
+		return true;
 	}
 
 	public function display($mainContentTemplate, $pageTitle, $sidebarTemplate = 'Greenhouse/greenhouse-sidebar.tpl', $translateTitle = true) {
