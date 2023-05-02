@@ -86,7 +86,7 @@
 
 		<div class="adminSection grid-item" id="greenhouse-stats-reports">
 			<div class="adminPanel">
-				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Stats/Reports" isAdminFacing=true}</div></div>
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Partner Maintenance & Reports" isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
 					<div class="col-tn-12">
 						<div class="adminAction row">
