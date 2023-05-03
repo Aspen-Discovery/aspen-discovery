@@ -178,12 +178,26 @@ class Greenhouse_AJAX extends Action {
 			$siteToUpdate = new AspenSite();
 			$siteToUpdate->id = $_REQUEST['siteId'];
 			if($siteToUpdate->find(true)) {
-
+				require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+				$releases = AspenRelease::getReleasesList();
+				$eligibleReleases = [];
+				$siteCurrentRelease = explode(" ", $siteToUpdate->version);
+				$siteCurrentRelease = $siteCurrentRelease[0];
+				foreach($releases as $release) {
+					if(version_compare($release['version'], $siteCurrentRelease, '>=')) {
+						$eligibleReleases[$release['version']] = $release;
+					}
+				}
+				$interface->assign('releases', $eligibleReleases);
 				$interface->assign('siteToUpdate', $siteToUpdate);
 				return [
-					'title' => 'Schedule Update for ' . $siteToUpdate->name,
+					'title' => translate([
+						'text' => 'Schedule Update for %1%',
+						1 => $siteToUpdate->name,
+						'isAdminFacing' => true,
+					]),
 					'modalBody' => $interface->fetch('Greenhouse/scheduleUpdateForm.tpl'),
-					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 				];
 			}
 		} else {
@@ -196,42 +210,94 @@ class Greenhouse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function getBatchScheduleUpdateForm() {
+		global $interface;
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$releases = AspenRelease::getReleasesList();
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 		$sites = new AspenSite();
-		$sites->whereAdd('implementationStatus != 4');
+		if(isset($_REQUEST['implementationStatus'])) {
+			$sites->whereAdd('implementationStatus = ' . $_REQUEST['implementationStatus']);
+		} else {
+			$sites->whereAdd('implementationStatus != 4');
+		}
+
+		if(isset($_REQUEST['siteType'])) {
+			$sites->whereAdd('siteType = ' . $_REQUEST['siteType']);
+		}
+
 		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
 		$sites->find();
 		$allBatchUpdateSites = [];
+		$eligibleReleases = [];
 		while ($sites->fetch()) {
 			if(!$sites->optOutBatchUpdates) {
+				$currentRelease = explode(' ', $sites->version);
+				$currentRelease = $currentRelease[0];
+				foreach($releases as $release) {
+					if(version_compare($release['version'], $currentRelease, '>=')) {
+						$eligibleReleases[$release['version']] = $release;
+					} else {
+						unset($eligibleReleases[$release['version']]);
+					}
+				}
 				$allBatchUpdateSites[] = $sites->id;
 			}
 		}
 
 		$allBatchUpdateSites = implode(',', $allBatchUpdateSites);
-		global $interface;
+
+		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
 
 		return [
-			'title' => 'Schedule Batch Update',
+			'title' => translate([
+				'text' => 'Schedule Batch Update',
+				'isAdminFacing' => true,
+			]),
 			'modalBody' => $interface->fetch('Greenhouse/batchScheduleUpdateForm.tpl'),
-			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 		];
 	}
 
 	/** @noinspection PhpUnused */
 	function getSelectedScheduleUpdateForm() {
 		$sitesToUpdate = $_REQUEST['sitesToUpdate'];
+		$sitesArray = explode(",", $sitesToUpdate);
 		global $interface;
+		require_once ROOT_DIR . '/sys/Development/AspenRelease.php';
+		$releases = AspenRelease::getReleasesList();
+		$eligibleReleases = [];
+		foreach($sitesArray as $site) {
+			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
+			$aspenSite = new AspenSite();
+			$aspenSite->id = $site;
+			if($aspenSite->find(true)) {
+				$currentRelease = explode(' ', $aspenSite->version);
+				$currentRelease = $currentRelease[0];
+				foreach($releases as $release) {
+					if(version_compare($release['version'], $currentRelease, '>=')) {
+						$eligibleReleases[$release['version']] = $release;
+					} else {
+						unset($eligibleReleases[$release['version']]);
+					}
+				}
+			}
+		}
+
+		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
 
 		return [
-			'title' => 'Schedule Update for Selected Sites',
+			'title' => translate([
+				'text' => 'Schedule Update for Selected Sites',
+				'isAdminFacing' => true,
+			]),
 			'modalBody' => $interface->fetch('Greenhouse/batchScheduleUpdateForm.tpl'),
-			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">Schedule</span>',
+			'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	function scheduleUpdate() {
 		if (isset($_REQUEST['siteToUpdate'])) {
 			require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
@@ -251,27 +317,63 @@ class Greenhouse_AJAX extends Action {
 				$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
 				$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 				$scheduledUpdate->status = 'pending';
-				if($scheduledUpdate->insert()) {
+				$scheduledUpdate->insert();
+
+				require_once ROOT_DIR . '/sys/CurlWrapper.php';
+				$curl = new CurlWrapper();
+				$body = [
+					'runType' => $scheduledUpdate->updateType,
+					'dateScheduled' => $scheduledUpdate->dateScheduled,
+					'updateToVersion' => $scheduledUpdate->updateToVersion,
+					'status' => $scheduledUpdate->status,
+					'greenhouseId' => $scheduledUpdate->id,
+				];
+				$response = $curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
+				if($response['success']) {
 					// update scheduled
 					return [
 						'success' => true,
-						'title' => 'Schedule Update for ' . $site->name,
-						'message' => 'Update successfully scheduled for ' . $site->name,
+						'title' => translate([
+							'text' => 'Schedule Update for %1%',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'Update successfully scheduled for %1%',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
 					];
 				} else {
 					// unable to schedule update
+					$scheduledUpdate->notes = $response['message'];
+					$scheduledUpdate->update();
 					return [
 						'success' => false,
-						'title' => 'Schedule Update for ' . $site->name,
-						'message' => 'Unable to schedule update for ' . $site->name,
+						'title' => translate([
+							'text' => 'Error',
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'Unable to schedule an update for %1%. See notes for details',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
 					];
 				}
 			} else {
 				// no site found with that id
 				return [
 					'success' => false,
-					'title' => 'Error',
-					'message' => 'Could not find a valid site with given id ' . $_REQUEST['siteToUpdate'],
+					'title' => translate([
+						'text' => 'Error',
+						'isAdminFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Could not find a valid site with given id %1%',
+						1 => $_REQUEST['siteToUpdate'],
+						'isAdminFacing' => true,
+					]),
 				];
 			}
 		} elseif (isset($_REQUEST['sitesToUpdate'])) {
@@ -293,23 +395,124 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate = new ScheduledUpdate();
 					$scheduledUpdate->updateType = $runType;
 					$scheduledUpdate->dateScheduled = $runUpdateOn;
-					$scheduledUpdate->siteId = $site;
+					$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
-					if($scheduledUpdate->insert()) {
+					$scheduledUpdate->insert();
+
+					require_once ROOT_DIR . '/sys/CurlWrapper.php';
+					$curl = new CurlWrapper();
+					$body = [
+						'runType' => $scheduledUpdate->updateType,
+						'dateScheduled' => $scheduledUpdate->dateScheduled,
+						'updateToVersion' => $scheduledUpdate->updateToVersion,
+						'status' => $scheduledUpdate->status,
+						'greenhouseId' => $scheduledUpdate->id,
+					];
+					$response = $curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
+					if($response['success']) {
 						// update scheduled
 						$numSitesUpdated++;
+					} else {
+						$scheduledUpdate->notes = $response['message'];
+						$scheduledUpdate->update();
 					}
 				}
 			}
 			return [
 				'success' => true,
-				'title' => 'Schedule Batch Update',
-				'message' => 'Update successfully scheduled updates for ' . $numSitesUpdated . ' of ' . $numSites . ' sites.',
+				'title' => translate([
+					'text' => 'Schedule Batch Update',
+					'isAdminFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Successfully scheduled updates for %1% of %2% sites.',
+					1 => $numSitesUpdated,
+					2 => $numSites,
+					'isAdminFacing' => true,
+				]),
 			];
 		} else {
 			return false;
 		}
+	}
+
+	/** @noinspection PhpUnused */
+	function showScheduledUpdateDetails(): array {
+		global $interface;
+		$viewMoreBtn = '';
+		$user = UserAccount::getLoggedInUser();
+		if (!isset($_REQUEST['id'])) {
+			$interface->assign('error', translate([
+				'text' => 'Please provide an id of the materials request to view.',
+				'isAdminFacing' => true,
+			]));
+		} elseif (empty($user)) {
+			$interface->assign('error', translate([
+				'text' => 'Please log in to view details.',
+				'isAdminFacing' => true,
+			]));
+		} else {
+			$id = $_REQUEST['id'];
+			if($id) {
+				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
+				$scheduledUpdate = new ScheduledUpdate();
+				$scheduledUpdate->id = $id;
+				if($scheduledUpdate->find(true)) {
+					$updateStatus = 'pending';
+					if($scheduledUpdate->status) {
+						$updateStatus = $scheduledUpdate->status;
+					}
+					$interface->assign('updateStatus', $updateStatus);
+
+					$updateTo = null;
+					if($scheduledUpdate->updateToVersion) {
+						$updateTo = $scheduledUpdate->updateToVersion;
+					}
+					$interface->assign('updateTo', $updateTo);
+
+					$updateType = null;
+					if($scheduledUpdate->updateType) {
+						$updateType = $scheduledUpdate->updateType;
+					}
+					$interface->assign('updateType', $updateType);
+
+					$updateScheduled = null;
+					if($scheduledUpdate->dateScheduled) {
+						$updateScheduled = $scheduledUpdate->dateScheduled;
+					}
+					$interface->assign('updateScheduled', $updateScheduled);
+
+					$updateRan = null;
+					if($scheduledUpdate->dateRun) {
+						$updateRan = $scheduledUpdate->dateRun;
+					}
+					$interface->assign('updateRan', $updateRan);
+
+					$updateNotes = '';
+					if($scheduledUpdate->notes) {
+						$updateNotes = $scheduledUpdate->notes;
+					}
+					$interface->assign('updateNotes', $updateNotes);
+				} else {
+					$interface->assign('error', translate([
+						'text' => 'Sorry, we couldn\'t find a scheduled update for that id.',
+						'isAdminFacing' => true,
+					]));
+				}
+
+				$viewMoreBtn = "<a class='btn btn-primary' href='/Admin/ScheduledUpdates?objectAction=edit&id=$id'>" . translate(['text' => 'View Details', 'isAdminFacing' => true]) . "</a>";
+			}
+		}
+
+		return [
+			'title' => translate([
+				'text' => 'Scheduled Update Details',
+				'isAdminFacing' => true,
+			]),
+			'modalBody' => $interface->fetch('Greenhouse/ajaxScheduledUpdateDetails.tpl'),
+			'modalButtons' => $viewMoreBtn,
+		];
 	}
 
 	function getBreadcrumbs(): array {

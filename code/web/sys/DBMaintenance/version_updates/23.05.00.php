@@ -84,17 +84,26 @@ function getUpdates23_05_00(): array {
 				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN status VARCHAR(10) DEFAULT "pending"',
 			]
 		],
-		//update_dates_scheduled_updates
-		'permissions_view_scheduled_updates' => [
-			'title' => 'Add permissions for viewing scheduled updates',
-			'description' => 'Create permissions for viewing scheduled updates',
+		'update_dates_scheduled_updates2' => [
+			'title' => 'Set dates for Scheduled Updates back to timestamps',
+			'description' => 'Changes column type and extends for date fields in aspen_site_scheduled_update',
 			'continueOnError' => true,
 			'sql' => [
-				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'View Scheduled Updates', '', 10, 'Controls if the user can view scheduled updates for Aspen Discovery.')",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View Scheduled Updates'))",
-			],
+				'TRUNCATE TABLE aspen_site_scheduled_update',
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateScheduled INT(11) DEFAULT 0',
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateRun INT(11) DEFAULT 0',
+			]
 		],
-		//permissions_view_scheduled_updates
+		//update_dates_scheduled_updates
+		'add_greenhouse_id_scheduled_update' => [
+			'title' => 'Add greenhouseId to aspen_site_scheduled_update',
+			'description' => 'Adds column to store the greenhouse id for an off-site scheduled update',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update ADD COLUMN greenhouseId INT(11) DEFAULT NULL',
+			]
+		],
+		//add_greenhouse_id_scheduled_update
 		//kodi
 		//other
 	];

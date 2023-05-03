@@ -189,7 +189,7 @@ export const MyCheckouts = () => {
                                    });
                               }}
                               startIcon={<Icon as={MaterialIcons} name="autorenew" size={5} />}>
-                              {getTermFromDictionary(language, 'renew_all')}
+                              {getTermFromDictionary(language, 'checkout_renew_all')}
                          </Button>
                          <Button
                               size="sm"

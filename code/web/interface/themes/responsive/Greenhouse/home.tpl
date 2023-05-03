@@ -86,7 +86,7 @@
 
 		<div class="adminSection grid-item" id="greenhouse-stats-reports">
 			<div class="adminPanel">
-				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Stats/Reports" isAdminFacing=true}</div></div>
+				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Greenhouse Partner Maintenance & Reports" isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
 					<div class="col-tn-12">
 						<div class="adminAction row">
@@ -305,6 +305,14 @@
 				<div class="adminSectionLabel row"><div class="col-tn-12">{translate text="Maintenance Tools " isAdminFacing=true}</div></div>
 				<div class="adminSectionActions row">
 					<div class="col-tn-12">
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/ScheduledUpdates" title="{translate text="Scheduled Updates" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/ScheduledUpdates">{translate text="Scheduled Updates" isAdminFacing=true}</a></div>
+							</div>
+						</div>
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/ReadingHistoryReload" title="{translate text="Reload Reading History from ILS" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>

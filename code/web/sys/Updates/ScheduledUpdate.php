@@ -10,8 +10,12 @@ class ScheduledUpdate extends DataObject {
 	public $status;
 	public $notes;
 	public $siteId;
+	public $greenhouseId;
+	public $currentVersion;
 
 	public static function getObjectStructure($context = ''): array {
+		global $interface;
+		$currentRelease = $interface->getVariable('gitBranch');
 		$updateTypes = [
 			'patch' => 'Patch',
 			'complete' => 'Complete',
@@ -20,7 +24,31 @@ class ScheduledUpdate extends DataObject {
 		$statuses = [
 			'pending' => 'Pending',
 			'canceled' => 'Canceled',
+			'failed' => 'Failed',
 		];
+
+		$releases = [];
+		$eligibleReleases = [];
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables && !empty($systemVariables->greenhouseUrl)) {
+			if ($result = file_get_contents($systemVariables->greenhouseUrl . '/API/GreenhouseAPI?method=getReleaseInformation')) {
+				$data = json_decode($result, true);
+				$releases = $data['releases'];
+			}
+		} else {
+			global $configArray;
+			if ($result = file_get_contents($configArray['Site']['url'] . '/API/GreenhouseAPI?method=getReleaseInformation')) {
+				$data = json_decode($result, true);
+				$releases = $data['releases'];
+			}
+		}
+
+		foreach($releases as $release) {
+			if(version_compare($release['version'], $currentRelease, '>=')) {
+				$eligibleReleases[$release['version']] = $release['version'];
+			}
+		}
 
 		return [
 			'id' => [
@@ -35,6 +63,14 @@ class ScheduledUpdate extends DataObject {
 				'label' => 'Aspen Site Id',
 				'description' => 'The unique Aspen Site Id',
 				'default' => '',
+				'hideInLists' => true,
+			],
+			'greenhouseId' => [
+				'property' => 'greenhouseId',
+				'type' => 'text',
+				'label' => 'Greenhouse Update Id',
+				'description' => 'The unique update id from Greenhouse',
+				'readOnly' => true,
 				'hideInLists' => true,
 			],
 			'dateScheduled' => [
@@ -52,10 +88,18 @@ class ScheduledUpdate extends DataObject {
 				'description' => 'The status of the update',
 				'default' => 'pending'
 			],
+//			'currentVersion' => [
+//				'property' => 'currentVersion',
+//				'type' => 'text',
+//				'label' => 'Current Version',
+//				'default' => $currentRelease,
+//				'readOnly' => true,
+//			],
 			'updateToVersion' => [
 				'property' => 'updateToVersion',
-				'type' => 'text',
+				'type' => 'enum',
 				'label' => 'Update to Version',
+				'values' => $eligibleReleases,
 				'description' => 'The version the update will upgrade to',
 				'required' => true,
 			],
@@ -68,10 +112,11 @@ class ScheduledUpdate extends DataObject {
 			],
 			'dateRun' => [
 				'property' => 'dateRun',
-				'type' => 'label',
-				'label' => 'Date Ran',
+				'type' => 'timestamp',
+				'label' => 'Date Run',
 				'description' => 'When the update actually ran',
-				'default' => null
+				'default' => null,
+				'readOnly' => true,
 			],
 			'notes' => [
 				'property' => 'notes',
@@ -79,6 +124,7 @@ class ScheduledUpdate extends DataObject {
 				'label' => 'Notes',
 				'description' => 'Notes from when the update ran',
 				'hideInLists' => true,
+				'readOnly' => true,
 			],
 		];
 	}
@@ -86,7 +132,8 @@ class ScheduledUpdate extends DataObject {
 	public function getNumericColumnNames(): array {
 		return [
 			'id',
-			'siteId'
+			'siteId',
+			'greenhouseId'
 		];
 	}
 }
