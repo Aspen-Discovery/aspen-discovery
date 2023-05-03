@@ -313,6 +313,14 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function isRegisteredForEvent() {
+		if (UserAccount::isLoggedIn()) {
+			return UserAccount::getActiveUserObj()->isRegistered($this->getId());
+		}else{
+			return false;
+		}
+	}
+
 	public function getSpotlightResult(CollectionSpotlight $collectionSpotlight, string $index) {
 		$result = parent::getSpotlightResult($collectionSpotlight, $index);
 		if ($collectionSpotlight->style == 'text-list') {
