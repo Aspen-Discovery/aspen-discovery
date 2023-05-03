@@ -52,8 +52,12 @@
 						{if $recordDriver->isRegistrationRequired()}
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
-									<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>{translate text="Check Registration" isPublicFacing=true}</a>
-									<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
+									{if $recordDriver->isRegisteredForEvent()}
+										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>{translate text="You Are Registered" isPublicFacing=true}</a>
+									{else}
+										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>{translate text="Check Registration" isPublicFacing=true}</a>
+									{/if}
+										<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
 								</div>
 							</div>
 							<br>

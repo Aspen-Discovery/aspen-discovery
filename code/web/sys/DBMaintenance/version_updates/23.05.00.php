@@ -105,6 +105,21 @@ function getUpdates23_05_00(): array {
 		],
 		//add_greenhouse_id_scheduled_update
 		//kodi
+		'user_events_registrations' => [
+			'title' => 'User Event Registration Data',
+			'description' => 'Setup table to store event registration data for patrons',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS user_events_registrations (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					userId INT(11) NOT NULL,
+					userBarcode varchar (256) NOT NULL, 
+					sourceId varchar(50) NOT NULL,
+					waitlist TINYINT(1) DEFAULT 0,
+					UNIQUE (userId, sourceId)
+				)',
+			],
+		],
+		//user_events_registrations
 		//other
 	];
 }

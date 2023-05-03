@@ -12,7 +12,6 @@ class UserEventsEntry extends DataObject {
 	public $dateAdded;
 	public $regRequired;
 	public $location;
-	//public $pastEvent;
 
 	public function getUniquenessFields(): array {
 		return [

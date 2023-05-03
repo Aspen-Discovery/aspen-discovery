@@ -1689,6 +1689,18 @@ class User extends DataObject {
 		return false;
 	}
 
+	public function isRegistered($eventId): bool {
+		require_once ROOT_DIR . '/sys/Events/UserEventsRegistrations.php';
+
+		$registration = new UserEventsRegistrations();
+		$registration->sourceId = $eventId;
+		$registration->userId = $this->id;
+		if ($registration->find()){
+			return true;
+		}
+		return false;
+	}
+
 	public function isRecordOnHold($source, $recordId) {
 		$this->getHolds(false, 'all');
 		require_once ROOT_DIR . "/sys/User/Hold.php";
