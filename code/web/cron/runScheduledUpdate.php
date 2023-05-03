@@ -37,16 +37,14 @@ foreach($updatesToRun as $id) {
 					$scheduledUpdate->notes .= $result;
 				}
 
-				if ($scheduledUpdate->status == 'complete') {
-					// run db maintenance
-					require_once ROOT_DIR . '/services/API/SystemAPI.php';
-					$systemAPI = new SystemAPI();
-					$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
-					if (!$dbMaintenance['success'] || $dbMaintenance['success'] == 'false') {
-						$message = $dbMaintenance['message'] ?? '';
-						$scheduledUpdate->status = 'failed';
-						$scheduledUpdate->notes .= $message;
-					}
+				// run db maintenance
+				require_once ROOT_DIR . '/services/API/SystemAPI.php';
+				$systemAPI = new SystemAPI();
+				$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
+				if (!$dbMaintenance['success'] || $dbMaintenance['success'] == 'false') {
+					$message = $dbMaintenance['message'] ?? '';
+					$scheduledUpdate->status = 'failed';
+					$scheduledUpdate->notes .= $message;
 				}
 			} else {
 				// invalid updateType
@@ -62,10 +60,11 @@ foreach($updatesToRun as $id) {
 		} else {
 			$scheduledUpdate->status = 'complete';
 		}
+		$scheduledUpdate->dateRun = time();
 
 		$scheduledUpdate->update();
 
-		if($scheduledUpdate->greenhouseId) {
+		if(!empty($scheduledUpdate->greenhouseId)) {
 			// update greenhouse if the update was scheduled from there
 			require_once ROOT_DIR . '/sys/SystemVariables.php';
 			$systemVariables = SystemVariables::getSystemVariables();

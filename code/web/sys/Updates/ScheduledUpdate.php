@@ -24,6 +24,7 @@ class ScheduledUpdate extends DataObject {
 		$statuses = [
 			'pending' => 'Pending',
 			'canceled' => 'Canceled',
+			'failed' => 'Failed',
 		];
 
 		$releases = [];
