@@ -704,7 +704,7 @@ class Evergreen extends AbstractIlsDriver {
 	}
 
 	public function hasNativeReadingHistory(): bool {
-		return false;
+		return true;
 	}
 
 	/**
@@ -715,39 +715,114 @@ class Evergreen extends AbstractIlsDriver {
 	 * @return array
 	 * @throws Exception
 	 */
-//	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
-//		$historyActive = false;
-//		$readingHistoryTitles = [];
-//		$numTitles = 0;
-//
-//		$authToken = $this->getAPIAuthToken($patron, true);
-//		if ($authToken != null) {
-//			//Get a list of checkouts
-//
-//			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
-//			$headers = [
-//				'Content-Type: application/x-www-form-urlencoded',
-//			];
-//			$this->apiCurlWrapper->addCustomHeaders($headers, false);
-//			$params = [
-//				'service' => 'open-ils.actor',
-//				'method' => 'open-ils.actor.history.circ',
-//				'param' => json_encode($authToken),
-//			];
-//			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
-//
-//			ExternalRequestLogEntry::logRequest('evergreen.getReadingHistory', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
-//			if ($this->apiCurlWrapper->getResponseCode() == 200) {
-//
-//			}
-//		}
-//
-//		return [
-//			'historyActive' => $historyActive,
-//			'titles' => $readingHistoryTitles,
-//			'numTitles' => $numTitles,
-//		];
-//	}
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
+		$historyActive = false;
+		$readingHistoryTitles = [];
+		$numTitles = 0;
+
+		$authToken = $this->getAPIAuthToken($patron, true);
+		if ($authToken != null) {
+			//Get a list of checkouts
+
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$params = [
+				'service' => 'open-ils.actor',
+				'method' => 'open-ils.actor.history.circ',
+				'param' => json_encode($authToken),
+			];
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+
+			ExternalRequestLogEntry::logRequest('evergreen.getReadingHistory', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$circHistoryDecoded = json_decode($apiResponse);
+				foreach ($circHistoryDecoded->payload as $circEntry) {
+					$circEntryMapped = $this->mapEvergreenFields($circEntry->__p, $this->fetchIdl('auch'));
+
+					require_once ROOT_DIR . '/sys/User/Checkout.php';
+					$checkout = $this->loadCheckoutData($patron, $circEntryMapped['source_circ'], $authToken);
+					$curTitle = [];
+					$curTitle['id'] = $checkout->recordId;
+					$curTitle['shortId'] = $checkout->recordId;
+					$curTitle['recordId'] = $checkout->recordId;
+					$curTitle['title'] = $checkout->title;
+					$curTitle['author'] = $checkout->author;
+					$curTitle['format'] = $checkout->format;
+					$curTitle['checkout'] = $checkout->checkoutDate;
+					if (!empty($circEntryMapped['checkin_time'])) {
+						$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
+					} else {
+						$curTitle['checkin'] = null;
+					}
+					$readingHistoryTitles[] = $curTitle;
+					$numTitles++;
+				}
+			}
+		}
+
+		set_time_limit(20 * count($readingHistoryTitles));
+		$systemVariables = SystemVariables::getSystemVariables();
+		global $aspen_db;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		foreach ($readingHistoryTitles as $key => $historyEntry) {
+			//Get additional information from resources table
+			$historyEntry['ratingData'] = null;
+			$historyEntry['permanentId'] = null;
+			$historyEntry['linkUrl'] = null;
+			$historyEntry['coverUrl'] = null;
+			if (!empty($historyEntry['recordId'])) {
+				if ($systemVariables->storeRecordDetailsInDatabase) {
+					/** @noinspection SqlResolve */
+					$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
+								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' and recordIdentifier = ' . $aspen_db->quote($historyEntry['recordId']);
+					$results = $aspen_db->query($getRecordDetailsQuery, PDO::FETCH_ASSOC);
+					if ($results) {
+						$result = $results->fetch();
+						if ($result) {
+							$groupedWorkDriver = new GroupedWorkDriver($result['permanent_id']);
+							if ($groupedWorkDriver->isValid()) {
+								$historyEntry['ratingData'] = $groupedWorkDriver->getRatingData();
+								$historyEntry['permanentId'] = $groupedWorkDriver->getPermanentId();
+								$historyEntry['linkUrl'] = $groupedWorkDriver->getLinkUrl();
+								$historyEntry['coverUrl'] = $groupedWorkDriver->getBookcoverUrl('medium', true);
+								$historyEntry['format'] = $result['format'];
+								$historyEntry['title'] = $groupedWorkDriver->getTitle();
+								$historyEntry['author'] = $groupedWorkDriver->getPrimaryAuthor();
+							}
+						}
+					}
+				} else {
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+					if ($recordDriver->isValid()) {
+						$historyEntry['ratingData'] = $recordDriver->getRatingData();
+						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+						$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+						$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+						$historyEntry['format'] = $recordDriver->getFormats();
+						$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+					}
+					$recordDriver->__destruct();
+					$recordDriver = null;
+				}
+			}
+			$readingHistoryTitles[$key] = $historyEntry;
+		}
+
+		$numTitles = count($readingHistoryTitles);
+
+		return [
+			'historyActive' => $historyActive,
+			'titles' => $readingHistoryTitles,
+			'numTitles' => $numTitles,
+		];
+	}
 
 	/**
 	 * @inheritDoc
