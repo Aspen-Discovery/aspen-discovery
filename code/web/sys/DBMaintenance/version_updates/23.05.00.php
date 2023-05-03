@@ -84,6 +84,16 @@ function getUpdates23_05_00(): array {
 				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN status VARCHAR(10) DEFAULT "pending"',
 			]
 		],
+		'update_dates_scheduled_updates2' => [
+			'title' => 'Set dates for Scheduled Updates back to timestamps',
+			'description' => 'Changes column type and extends for date fields in aspen_site_scheduled_update',
+			'continueOnError' => true,
+			'sql' => [
+				'TRUNCATE TABLE aspen_site_scheduled_update',
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateScheduled INT(11) DEFAULT 0',
+				'ALTER TABLE aspen_site_scheduled_update MODIFY COLUMN dateRun INT(11) DEFAULT 0',
+			]
+		],
 		//update_dates_scheduled_updates
 		'add_greenhouse_id_scheduled_update' => [
 			'title' => 'Add greenhouseId to aspen_site_scheduled_update',

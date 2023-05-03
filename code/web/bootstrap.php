@@ -352,3 +352,40 @@ function getValidServerNames(): array {
 	}
 	return $validServerNames;
 }
+
+function getGitBranch() {
+	global $interface;
+	global $configArray;
+
+	$gitName = $configArray['System']['gitVersionFile'];
+	$branchName = 'Unknown';
+	$branchNameWithCommit = 'Unknown';
+	if ($gitName == 'HEAD') {
+		$stringFromFile = file(ROOT_DIR . '/../../.git/HEAD');
+		$stringFromFile = $stringFromFile[0]; //get the string from the array
+		$explodedString = explode("/", $stringFromFile); //separate out by the "/" in the string
+		$branchName = trim($explodedString[2]); //get the one that is always the branch name
+		$branchNameWithCommit = $branchName;
+	} else {
+		if (file_exists(ROOT_DIR . '/../../.git/FETCH_HEAD')) {
+			$stringFromFile = file(ROOT_DIR . '/../../.git/FETCH_HEAD');
+			if (!empty($stringFromFile)) {
+				$stringFromFile = $stringFromFile[0]; //get the string from the array
+				if (preg_match('/(.*?)\s+branch\s+\'(.*?)\'.*/', $stringFromFile, $matches)) {
+					$branchName = $matches[2]; //get the branch name
+					$branchNameWithCommit = $matches[2] . ' (' . substr($matches[1], 0, 7) . ')'; //get the branch name
+				}
+			}
+		} else {
+			$branchName = 'Unknown';
+			$branchNameWithCommit = 'Unknown';
+		}
+	}
+
+	if (!empty($interface)) {
+		$interface->assign('gitBranch', $branchName);
+		$interface->assign('gitBranchWithCommit', $branchNameWithCommit);
+	}
+
+	return $branchName;
+}

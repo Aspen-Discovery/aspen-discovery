@@ -45,9 +45,7 @@ class ScheduledUpdate extends DataObject {
 
 		foreach($releases as $release) {
 			if(version_compare($release['version'], $currentRelease, '>=')) {
-				$eligibleReleases[$release['version']] = $release;
-			} else {
-				unset($eligibleReleases[$release['version']]);
+				$eligibleReleases[$release['version']] = $release['version'];
 			}
 		}
 
@@ -89,13 +87,13 @@ class ScheduledUpdate extends DataObject {
 				'description' => 'The status of the update',
 				'default' => 'pending'
 			],
-			'currentVersion' => [
-				'property' => 'currentVersion',
-				'type' => 'text',
-				'label' => 'Current Version',
-				'default' => $currentRelease,
-				'readOnly' => true,
-			],
+//			'currentVersion' => [
+//				'property' => 'currentVersion',
+//				'type' => 'text',
+//				'label' => 'Current Version',
+//				'default' => $currentRelease,
+//				'readOnly' => true,
+//			],
 			'updateToVersion' => [
 				'property' => 'updateToVersion',
 				'type' => 'enum',
@@ -113,10 +111,11 @@ class ScheduledUpdate extends DataObject {
 			],
 			'dateRun' => [
 				'property' => 'dateRun',
-				'type' => 'label',
-				'label' => 'Date Ran',
+				'type' => 'timestamp',
+				'label' => 'Date Run',
 				'description' => 'When the update actually ran',
-				'default' => null
+				'default' => null,
+				'readOnly' => true,
 			],
 			'notes' => [
 				'property' => 'notes',
@@ -124,6 +123,7 @@ class ScheduledUpdate extends DataObject {
 				'label' => 'Notes',
 				'description' => 'Notes from when the update ran',
 				'hideInLists' => true,
+				'readOnly' => true,
 			],
 		];
 	}
