@@ -1804,7 +1804,7 @@ class SirsiDynixROA extends HorizonAPI {
 			//create the hold using the web service
 			$webServiceURL = $this->getWebServiceURL();
 
-			$includeFields = urlencode("blockList{*,item{bib{title,author}}}");
+			$includeFields = urlencode("blockList{*,item{bib{title,author},barcode}}");
 			$blockList = $this->getWebServiceResponse('getFines', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
 			// Include Title data if available
 
@@ -1814,14 +1814,18 @@ class SirsiDynixROA extends HorizonAPI {
 				foreach ($blockList->fields->blockList as $block) {
 					$fine = $block->fields;
 					$title = '';
+					$barcode = '';
 					if (!empty($fine->item) && !empty($fine->item->key)) {
 						$bibInfo = $fine->item->fields->bib;
 						$title = $bibInfo->fields->title;
 						if (!empty($bibInfo->fields->author)) {
 							$title .= '  by ' . $bibInfo->fields->author;
 						}
-
+						if (!empty($fine->item->fields->barcode)) {
+							$barcode = $fine->item->fields->barcode;
+						}
 					}
+
 					$fines[] = [
 						'fineId' => str_replace(':', '_', $block->key),
 						'reason' => translate([
@@ -1833,6 +1837,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'amount' => $fine->amount->amount,
 						'amountVal' => $fine->amount->amount,
 						'message' => $title,
+						'barcode' => $barcode,
 						'amountOutstanding' => $fine->owed->amount,
 						'amountOutstandingVal' => $fine->owed->amount,
 						'date' => $fine->billDate,
