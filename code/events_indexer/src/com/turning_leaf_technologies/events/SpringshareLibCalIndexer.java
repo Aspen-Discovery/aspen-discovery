@@ -4,6 +4,7 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -22,6 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -49,6 +51,7 @@ class SpringshareLibCalIndexer {
 
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
+	private PreparedStatement addRegistrantStmt;
 
 	private ConcurrentUpdateSolrClient solrUpdateServer;
 	//TODO: Update full reload based on settings
@@ -81,7 +84,13 @@ class SpringshareLibCalIndexer {
 			}
 
 		} catch (Exception e) {
-			logEntry.incErrors("Error setting up statements ", e);
+			logEntry.incErrors("Error setting up event indexing statements ", e);
+		}
+
+		try {
+			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
+		} catch (Exception e) {
+			logEntry.incErrors("Error setting up registration statements ", e);
 		}
 
 		loadExistingEvents();
@@ -314,8 +323,42 @@ class SpringshareLibCalIndexer {
 					}else{
 						logEntry.incAdded();
 					}
-				}
 
+					//Fetch registrations here and add to DB - for events that require registration ONLY
+					if (curEvent.getBoolean("registration")){
+						JSONArray libCalEvent = getRegistrations(Integer.valueOf(eventId));
+
+						if (libCalEvent != null) {
+							JSONArray libCalEventRegistrants = libCalEvent.getJSONArray(0);
+							for (int j = 0; j < libCalEventRegistrants.length(); j++) {
+								try {
+									JSONObject curRegistrant = libCalEventRegistrants.getJSONObject(j);
+
+									if (!curRegistrant.getString("barcode").isEmpty()){
+										try {
+											PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
+											getUserIdStmt.setString(1, curRegistrant.getString("barcode"));
+											ResultSet getUserIdRS = getUserIdStmt.executeQuery();
+											while (getUserIdRS.next()){
+												long userId = getUserIdRS.getLong("id");
+
+												addRegistrantStmt.setLong(1, userId);
+												addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
+												addRegistrantStmt.setLong(3, Long.parseLong("libcal_" + settingsId + "_" + eventId));
+												addRegistrantStmt.setInt(4, 0);
+												addRegistrantStmt.executeUpdate();
+											}
+										} catch (SQLException e) {
+											logEntry.incErrors("Error adding registrant info to database " , e);
+										}
+									}
+								} catch (JSONException e) {
+									logEntry.incErrors("Error getting JSON information ", e);
+								}
+							}
+						}
+					}
+				}
 			} catch (JSONException e) {
 				logEntry.incErrors("Error getting JSON information ", e);
 			}
@@ -471,6 +514,55 @@ class SpringshareLibCalIndexer {
 			return events;
 		} catch (Exception e) {
 			logEntry.incErrors("Error getting events", e);
+		}
+		return null;
+	}
+
+	private JSONArray getRegistrations(Integer eventId) {
+		try {
+			CloseableHttpClient httpclient = HttpClients.createDefault();
+			HttpRequestBase apiRequest;
+			String authTokenUrl = baseUrl + "/1.1/oauth/token";
+			ArrayList<NameValuePair> params = new ArrayList<>();
+			params.add(new BasicNameValuePair("grant_type", "client_credentials"));
+			params.add(new BasicNameValuePair("client_id", clientId));
+			params.add(new BasicNameValuePair("client_secret", clientSecret));
+			HttpPost authTokenRequest = new HttpPost(authTokenUrl);
+			authTokenRequest.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+			String accessToken = "";
+			String tokenType = "";
+			try (CloseableHttpResponse response1 = httpclient.execute(authTokenRequest)) {
+				StatusLine status = response1.getStatusLine();
+				HttpEntity entity1 = response1.getEntity();
+				if (status.getStatusCode() == 200) {
+					String response = EntityUtils.toString(entity1);
+					JSONObject authData = new JSONObject(response);
+					tokenType = authData.getString("token_type");
+					accessToken = authData.getString("access_token");
+				}
+			}
+
+			JSONArray eventRegistrations = new JSONArray();
+			String apiRegistrationsURL = baseUrl + "/1.1/events/" + eventId + "/registrations?waitlist=1";
+			apiRequest = new HttpGet(apiRegistrationsURL);
+			apiRequest.addHeader("Authorization", tokenType + " " + accessToken);
+			try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+				StatusLine status = response1.getStatusLine();
+				HttpEntity entity1 = response1.getEntity();
+				if (status.getStatusCode() == 200) {
+					//LibCal returns an array of objects that have an array of registrants because they allow checking multiple eventIds at once
+					String response = EntityUtils.toString(entity1);
+					JSONArray eventRegArray = new JSONArray(response);
+					JSONObject response2 = eventRegArray.getJSONObject(0); //only checking one event at a time so only need first index
+					JSONArray registrants = response2.getJSONArray("registrants");
+					eventRegistrations.put(registrants);
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
+			}
+			return eventRegistrations;
+		} catch (Exception e) {
+			logEntry.incErrors("Error getting event registrations", e);
 		}
 		return null;
 	}
