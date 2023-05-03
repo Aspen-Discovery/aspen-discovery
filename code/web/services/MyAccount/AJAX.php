@@ -3112,6 +3112,7 @@ class MyAccount_AJAX extends JSON_Action {
 		foreach ($eventIds as $curEventId => $entry) {
 			if (array_key_exists($curEventId, $eventRecords)) {
 				$eventRecordDriver = $eventRecords[$curEventId];
+				$registration = UserAccount::getActiveUserObj()->isRegistered($entry->sourceId);
 				$events[$entry->sourceId] = [
 					'id' => $entry->id,
 					'sourceId' => $entry->sourceId,
@@ -3120,6 +3121,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'externalLink' => $eventRecordDriver->getExternalUrl(),
 					'location' => $entry->location,
 					'regRequired' => $entry->regRequired,
+					'isRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => false,
 				];
@@ -3132,6 +3134,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'externalLink' => null,
 				'location' => $entry->location,
 				'regRequired' => $entry->regRequired,
+				'isRegistered' => $registration,
 				'eventDate' => $entry->eventDate,
 				'pastEvent' => true,
 			];

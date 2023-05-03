@@ -63,6 +63,8 @@ class CommunicoIndexer {
 
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
+	private PreparedStatement addRegistrantStmt;
+
 
 	private ConcurrentUpdateSolrClient solrUpdateServer;
 	private boolean doFullReload = true;
@@ -97,6 +99,12 @@ class CommunicoIndexer {
 
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up statements ", e);
+		}
+
+		try {
+			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
+		} catch (Exception e) {
+			logEntry.incErrors("Error setting up registration statements ", e);
 		}
 
 		loadExistingEvents();
@@ -282,6 +290,39 @@ class CommunicoIndexer {
 					}
 				}
 
+				//Fetch registrations here and add to DB - for events that require registration ONLY
+				if (curEvent.getBoolean("registration")){
+					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
+
+					if (communicoEventRegistrants != null) {
+						for (int j = 0; j < communicoEventRegistrants.length(); j++) {
+							try {
+								JSONObject curRegistrant = communicoEventRegistrants.getJSONObject(j);
+
+								if (!curRegistrant.getString("barcode").isEmpty()){
+									try {
+										PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
+										getUserIdStmt.setString(1, curRegistrant.getString("barcode"));
+										ResultSet getUserIdRS = getUserIdStmt.executeQuery();
+										while (getUserIdRS.next()){
+											long userId = getUserIdRS.getLong("id");
+
+											addRegistrantStmt.setLong(1, userId);
+											addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
+											addRegistrantStmt.setLong(3, Long.parseLong("communico_" + settingsId + "_" + eventId));
+											addRegistrantStmt.setInt(4, 0);
+											addRegistrantStmt.executeUpdate();
+										}
+									} catch (SQLException e) {
+										logEntry.incErrors("Error adding registrant info to database " , e);
+									}
+								}
+							} catch (JSONException e) {
+								logEntry.incErrors("Error getting JSON information ", e);
+							}
+						}
+					}
+				}
 			} catch (JSONException e) {
 				logEntry.incErrors("Error getting JSON information ", e);
 			}
@@ -451,6 +492,33 @@ class CommunicoIndexer {
 			}
 		} catch (Exception e) {
 			logEntry.incErrors("Error getting events", e);
+		}
+		return null;
+	}
+
+	private JSONArray getRegistrations(Integer eventId) {
+		try {
+			JSONArray eventRegistrations = new JSONArray();
+			CloseableHttpClient httpclient = HttpClients.createDefault();
+
+			String apiRegistrationsURL = "https://api.communico.co/v3/attend/events" + eventId + "/registrants";
+			HttpGet apiRequest = new HttpGet(apiRegistrationsURL);
+			apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
+			try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
+				StatusLine status = response1.getStatusLine();
+				HttpEntity entity1 = response1.getEntity();
+				if (status.getStatusCode() == 200) {
+					String response = EntityUtils.toString(entity1);
+					JSONObject response2 = new JSONObject(response);
+					JSONArray registrants = response2.getJSONArray("entries");
+					eventRegistrations.put(registrants);
+				}
+			} catch (Exception e) {
+				logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
+			}
+			return eventRegistrations;
+		} catch(Exception e){
+			logEntry.incErrors("Error getting event registrations", e);
 		}
 		return null;
 	}
