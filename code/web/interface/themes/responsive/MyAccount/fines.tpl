@@ -60,7 +60,7 @@
 									<tr>
 										{if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											<td>
-												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}')" data-fine_id="{$fine.fineId}" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if !empty($showOutstanding)}{$fine.amountOutstandingVal}{else}0{/if}">
+												<input type="checkbox" checked class="selectedFine" name="selectedFine[{$fine.fineId}]" aria-label="Pay Fine {$fine.reason|escapeCSS}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}')" data-fine_id="{$fine.fineId}" data-fine_reason="{$fine.reason}" data-fine_type="{$fine.type}" data-fine_item_description="{$fine.message}" data-fine_item_barcode="{if isset($fine.barcode)}{$fine.barcode}{else}{/if}" data-fine_amt="{$fine.amountVal}" data-outstanding_amt="{if !empty($showOutstanding)}{$fine.amountOutstandingVal}{else}0{/if}">
 											</td>
 										{elseif ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 											<td></td>
