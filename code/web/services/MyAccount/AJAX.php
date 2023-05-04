@@ -3110,9 +3110,9 @@ class MyAccount_AJAX extends JSON_Action {
 		$eventRecords = $searchObject->getRecords(array_keys($eventIds));
 
 		foreach ($eventIds as $curEventId => $entry) {
+			$registration = UserAccount::getActiveUserObj()->isRegistered($entry->sourceId);
 			if (array_key_exists($curEventId, $eventRecords)) {
 				$eventRecordDriver = $eventRecords[$curEventId];
-				$registration = UserAccount::getActiveUserObj()->isRegistered($entry->sourceId);
 				$events[$entry->sourceId] = [
 					'id' => $entry->id,
 					'sourceId' => $entry->sourceId,
