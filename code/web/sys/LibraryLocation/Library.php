@@ -123,6 +123,7 @@ class Library extends DataObject {
 	public $aciSpeedpaySettingId;
 	public $invoiceCloudSettingId;
 	public $deluxeCertifiedPaymentsSettingId;
+	public $paypalPayflowSettingId;
 
 	public /** @noinspection PhpUnused */
 		$repeatSearchOption;
@@ -412,7 +413,8 @@ class Library extends DataObject {
 			'payPalSettingId',
 			'ebscohostSearchSettingId',
 			'invoiceCloudSettingId',
-			'deluxeCertifiedPaymentsSettingId'
+			'deluxeCertifiedPaymentsSettingId',
+			'paypalPayflowSettingId'
 		];
 	}
 
@@ -598,6 +600,16 @@ class Library extends DataObject {
 		$deluxeCertifiedPaymentsSettings[-1] = 'none';
 		while ($deluxeCertifiedPaymentsSetting->fetch()) {
 			$deluxeCertifiedPaymentsSettings[$deluxeCertifiedPaymentsSetting->id] = $deluxeCertifiedPaymentsSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/PayPalPayflowSetting.php';
+		$paypalPayflowSetting = new PayPalPayflowSetting();
+		$paypalPayflowSetting->orderBy('name');
+		$paypalPayflowSettings = [];
+		$paypalPayflowSetting->find();
+		$paypalPayflowSettings[-1] = 'none';
+		while ($paypalPayflowSetting->fetch()) {
+			$paypalPayflowSettings[$paypalPayflowSetting->id] = $paypalPayflowSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2245,7 +2257,8 @@ class Library extends DataObject {
 							7 => 'FIS WorldPay',
 							8 => 'ACI Speedpay',
 							9 => 'InvoiceCloud',
-							10 => 'Certified Payments by Deluxe'
+							10 => 'Certified Payments by Deluxe',
+							11 => 'PayPal Payflow'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2375,6 +2388,15 @@ class Library extends DataObject {
 						'values' => $deluxeCertifiedPaymentsSettings,
 						'label' => 'Certified Payments by Deluxe Settings',
 						'description' => 'The Certified Payments by Deluxe settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'paypalPayflowSettingId' => [
+						'property' => 'paypalPayflowSettingId',
+						'type' => 'enum',
+						'values' => $paypalPayflowSettings,
+						'label' => 'PayPal Payflow Settings',
+						'description' => 'The PayPal Payflow settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
