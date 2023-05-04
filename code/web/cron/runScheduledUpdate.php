@@ -43,33 +43,24 @@ if (count($updatesToRun) == 0) {
 							}
 						} else {
 							$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
-							if (exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult, $resultCode) === false) {
-								$updateSucceeded = false;
-								$scheduledUpdate->notes .= "FAILED: fetch origin failed $resultCode";
-							}
+							exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult, $resultCode);
 							foreach ($resetGitResult as $result) {
 								$scheduledUpdate->notes .= $result . "\n";
 							}
-							if ($updateSucceeded) {
+							if (!hasErrors($scheduledUpdate->notes)) {
 								$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
-								if (exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode) === false) {
-									$updateSucceeded = false;
-									$scheduledUpdate->notes .= "FAILED: reset hard failed $resultCode";
-								}
+								exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode) === false);
 								foreach ($resetGitResult as $result) {
 									$scheduledUpdate->notes .= $result . "\n";
 								}
 							}
 						}
 
-						if ($updateSucceeded) {
+						if (!hasErrors($scheduledUpdate->notes)) {
 							if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 								exec("cd c:\web\aspen-discovery; git pull origin $versionToUpdateTo", $gitResult);
 							} else {
-								if (exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult) === false) {
-									$updateSucceeded = false;
-									$scheduledUpdate->notes .= "FAILED: git pull failed $resultCode";
-								}
+								exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult) === false);
 							}
 							$scheduledUpdate->notes .= "Pulling branch $currentVersion$versionToUpdateTo\n";
 							foreach ($gitResult as $result) {
@@ -77,7 +68,7 @@ if (count($updatesToRun) == 0) {
 							}
 						}
 
-						if ($updateSucceeded) {
+						if (!hasErrors($scheduledUpdate->notes)) {
 							// run db maintenance
 							$scheduledUpdate->notes .= "Running database maintenance $currentVersion\n";
 							require_once ROOT_DIR . '/services/API/SystemAPI.php';
@@ -98,8 +89,7 @@ if (count($updatesToRun) == 0) {
 				}
 			}
 
-			$lowerNotes = strtolower($scheduledUpdate->notes);
-			if (!$updateSucceeded || (strpos($lowerNotes, 'fatal') !== false) || (strpos($lowerNotes, 'failed') !== false) || (strpos($lowerNotes, 'rejected') !== false)) {
+			if (hasErrors($scheduledUpdate->notes)) {
 				$scheduledUpdate->status = 'failed';
 			} else {
 				$scheduledUpdate->status = 'complete';
@@ -138,6 +128,15 @@ if (count($updatesToRun) == 0) {
 		}
 	}
 	console_log("Finished running " . count($updatesToRun) . " updates\n");
+}
+
+function hasErrors($notes) {
+	$lowerNotes = strtolower($notes);
+	if ((strpos($lowerNotes, 'fatal') !== false) || (strpos($lowerNotes, 'failed') !== false) || (strpos($lowerNotes, 'rejected') !== false)) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 function console_log($message, $prefix = '') {
