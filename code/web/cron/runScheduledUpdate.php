@@ -96,10 +96,9 @@ if (count($updatesToRun) == 0) {
 			}
 			$scheduledUpdate->dateRun = time();
 
-			//echo notes for debugging
-			echo ($scheduledUpdate->notes);
-
-			$scheduledUpdate->update();
+			if (!$scheduledUpdate->update()) {
+				echo("Could not update scheduled update " . $scheduledUpdate->getLastError());
+			}
 
 			if (!empty($scheduledUpdate->greenhouseId)) {
 				// update greenhouse if the update was scheduled from there
