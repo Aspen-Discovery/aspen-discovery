@@ -16,7 +16,7 @@ global $configArray;
 global $serverName;
 
 if (count($updatesToRun) == 0) {
-	console_log("no updates to run");
+	console_log("no updates to run\n");
 }else {
 	foreach ($updatesToRun as $id) {
 		//Load the actual item
@@ -36,9 +36,9 @@ if (count($updatesToRun) == 0) {
 						exec("cd /usr/local/aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
 					}
 
-					$scheduledUpdate->notes .= "Resetting git to branch $currentVersion<br/>";
+					$scheduledUpdate->notes .= "Resetting git to branch $currentVersion\n";
 					foreach ($resetGitResult as $result) {
-						$scheduledUpdate->notes .= $result . '<br/>';
+						$scheduledUpdate->notes .= $result . "\n";
 					}
 
 					if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
@@ -46,13 +46,13 @@ if (count($updatesToRun) == 0) {
 					} else {
 						exec("cd /usr/local/aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
 					}
-					$scheduledUpdate->notes .= "Pulling branch $currentVersion<br/>";
+					$scheduledUpdate->notes .= "Pulling branch $currentVersion\n";
 					foreach ($gitResult as $result) {
-						$scheduledUpdate->notes .= $result . '<br/>';
+						$scheduledUpdate->notes .= $result . "\n";
 					}
 
 					// run db maintenance
-					$scheduledUpdate->notes .= "Running database maintenance $currentVersion<br/>";
+					$scheduledUpdate->notes .= "Running database maintenance $currentVersion\n";
 					require_once ROOT_DIR . '/services/API/SystemAPI.php';
 					$systemAPI = new SystemAPI();
 					$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
@@ -63,10 +63,10 @@ if (count($updatesToRun) == 0) {
 					}
 				} else {
 					// invalid updateType
-					$scheduledUpdate->notes = 'FAILED: Invalid update type';
+					$scheduledUpdate->notes = "FAILED: Invalid update type\n";
 				}
 			} else {
-				$scheduledUpdate->notes = "FAILED: Must update to a version that is the same or newer than the current version of $currentVersion";
+				$scheduledUpdate->notes = "FAILED: Must update to a version that is the same or newer than the current version of $currentVersion\n";
 			}
 
 			$lowerNotes = strtolower($scheduledUpdate->notes);
@@ -105,7 +105,7 @@ if (count($updatesToRun) == 0) {
 			}
 		}
 	}
-	console_log("Finished running " . count($updatesToRun) . " updates");
+	console_log("Finished running " . count($updatesToRun) . " updates\n");
 }
 
 function console_log($message, $prefix = '') {
