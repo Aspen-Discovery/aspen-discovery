@@ -43,7 +43,7 @@ if (count($updatesToRun) == 0) {
 							}
 						} else {
 							$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
-							if (!exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult, $resultCode)) {
+							if (exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult, $resultCode) === false) {
 								$updateSucceeded = false;
 								$scheduledUpdate->notes .= "FAILED: fetch origin failed $resultCode";
 							}
@@ -52,7 +52,7 @@ if (count($updatesToRun) == 0) {
 							}
 							if ($updateSucceeded) {
 								$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
-								if (!exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode)) {
+								if (exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode) === false) {
 									$updateSucceeded = false;
 									$scheduledUpdate->notes .= "FAILED: reset hard failed $resultCode";
 								}
@@ -66,7 +66,7 @@ if (count($updatesToRun) == 0) {
 							if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 								exec("cd c:\web\aspen-discovery; git pull origin $versionToUpdateTo", $gitResult);
 							} else {
-								if (!exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult)) {
+								if (exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult) === false) {
 									$updateSucceeded = false;
 									$scheduledUpdate->notes .= "FAILED: git pull failed $resultCode";
 								}
