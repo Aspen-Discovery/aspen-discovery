@@ -116,7 +116,7 @@ class SpringshareLibCalIndexer {
 		HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
 		try {
 			PreparedStatement regStmt = aspenConn.prepareStatement("SELECT * from user_events_registrations WHERE sourceId = ?");
-			regStmt.setLong(1, Long.parseLong(sourceId));
+			regStmt.setString(1, sourceId);
 			ResultSet existingRegistrationsRS = regStmt.executeQuery();
 			while (existingRegistrationsRS.next()) {
 				EventRegistrations libcalRegistrations = new EventRegistrations(existingRegistrationsRS);
