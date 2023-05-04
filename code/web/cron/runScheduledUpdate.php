@@ -29,7 +29,7 @@ if (count($updatesToRun) == 0) {
 			if (!preg_match('/\d{2}\.\d{2}\.\d{2}/', $versionToUpdateTo)) {
 				$scheduledUpdate->notes = "FAILED: Bad version to update to $versionToUpdateTo \n";
 			}else{
-				if (str_replace('.', '', $versionToUpdateTo) >= str_replace('.', '', $currentVersion,)) {
+				if (str_replace('.', '', $versionToUpdateTo) >= str_replace('.', '', $currentVersion)) {
 					if ($scheduledUpdate->updateType === 'complete') {
 						$scheduledUpdate->notes .= "FAILED: Complete updates are not supported yet";
 					} elseif ($scheduledUpdate->updateType === 'patch') {
@@ -60,7 +60,7 @@ if (count($updatesToRun) == 0) {
 							if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 								exec("cd c:\web\aspen-discovery; git pull origin $versionToUpdateTo", $gitResult);
 							} else {
-								exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult) === false);
+								exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult);
 							}
 							$scheduledUpdate->notes .= "Pulling branch $currentVersion$versionToUpdateTo\n";
 							foreach ($gitResult as $result) {
@@ -130,7 +130,7 @@ if (count($updatesToRun) == 0) {
 	console_log("Finished running " . count($updatesToRun) . " updates\n");
 }
 
-function hasErrors($notes) {
+function hasErrors($notes) : bool {
 	$lowerNotes = strtolower($notes);
 	if ((strpos($lowerNotes, 'fatal') !== false) || (strpos($lowerNotes, 'failed') !== false) || (strpos($lowerNotes, 'rejected') !== false)) {
 		return true;
