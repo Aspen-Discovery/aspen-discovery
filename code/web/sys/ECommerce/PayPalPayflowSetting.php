@@ -6,7 +6,6 @@ class PayPalPayflowSetting extends DataObject {
 	public $id;
 	public $name;
 	public $sandboxMode;
-	public $layoutType;
 	public $partner;
 	public $vendor;
 	public $user;
@@ -37,18 +36,6 @@ class PayPalPayflowSetting extends DataObject {
 				'label' => 'Use PayPal Payflow Sandbox',
 				'description' => 'Whether or not to use PayPal Payflow in Sandbox mode',
 				'note' => 'This is for testing only! No funds will be received by the library when this box is checked.',
-			],
-			'layoutType' => [
-				'property' => 'layoutType',
-				'type' => 'enum',
-				'label' => 'Layout Type (Configured in Payflow)',
-				'description' => 'The layout type for the hosted checkout page as setup in Payflow.',
-				'default' => 'AB',
-				'values' => [
-					'AB' => 'A or B',
-					'C' => 'C'
-				],
-				'size' => 72,
 			],
 			'partner' => [
 				'property' => 'partner',
@@ -174,5 +161,35 @@ class PayPalPayflowSetting extends DataObject {
 			}
 			unset($this->_libraries);
 		}
+	}
+
+	public static function parsePayflowString(string $str) {
+		$out = [];
+		while(strlen($str) > 0) {
+			$loc = strpos($str, '=');
+			if($loc === FALSE) {
+				$str = "";
+				continue;
+			}
+
+			$subStr = substr($str, 0, $loc);
+			$str = substr($str, $loc + 1);
+
+			if(preg_match('/^(\w+)\[(\d+)]$/', $subStr, $matches)) {
+				$count = intval($matches[2]);
+				$out[$matches[1]] = substr($str, 0, $count);
+				$str = substr($str, $count + 1);
+			} else {
+				$count = strpos($str, '&');
+				if ($count === FALSE) {
+					$out[$subStr] = $str;
+					$str = '';
+				} else {
+					$out[$subStr] = substr($str, 0, $count);
+					$str = substr($str, $count + 1);
+				}
+			}
+		}
+		return $out;
 	}
 }

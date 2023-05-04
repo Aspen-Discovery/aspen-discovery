@@ -23,7 +23,6 @@ function getUpdates23_06_00(): array {
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					name VARCHAR(50) NOT NULL UNIQUE,
 					sandboxMode TINYINT(1) DEFAULT 0,
-					layoutType VARCHAR(2) DEFAULT "AB" NOT NULL,
 					partner VARCHAR(72) NOT NULL,
 					vendor VARCHAR(72) NOT NULL,
 					user VARCHAR(72) NOT NULL,
