@@ -53,6 +53,7 @@ class CommunicoIndexer {
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, CommunicoEvent> existingEvents = new HashMap<>();
+	private HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
 	private HashSet<String> librariesToShowFor = new HashSet<>();
 	private static CRC32 checksumCalculator = new CRC32();
 
@@ -64,6 +65,7 @@ class CommunicoIndexer {
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
 	private PreparedStatement addRegistrantStmt;
+	private PreparedStatement deleteRegistrantStmt;
 
 
 	private ConcurrentUpdateSolrClient solrUpdateServer;
@@ -103,6 +105,7 @@ class CommunicoIndexer {
 
 		try {
 			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
+			deleteRegistrantStmt = aspenConn.prepareStatement("DELETE FROM user_events_registrations WHERE userId = ? AND sourceId = ?");
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up registration statements ", e);
 		}
@@ -121,6 +124,20 @@ class CommunicoIndexer {
 			}
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing events for Communico " + name, e);
+		}
+	}
+
+	private void loadExistingRegistrations(String sourceId) {
+		try {
+			PreparedStatement regStmt = aspenConn.prepareStatement("SELECT * from user_events_registrations WHERE sourceId = ?");
+			regStmt.setLong(1, Long.parseLong(sourceId));
+			ResultSet existingRegistrationsRS = regStmt.executeQuery();
+			while (existingRegistrationsRS.next()) {
+				EventRegistrations communicoRegistrations = new EventRegistrations(existingRegistrationsRS);
+				existingRegistrations.put(communicoRegistrations.getUserId(), communicoRegistrations);
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading existing registrations for Communico " + name, e);
 		}
 	}
 
@@ -164,12 +181,13 @@ class CommunicoIndexer {
 						eventChanged = true;
 					}
 				}
+				String sourceId = "communico_" + settingsId + "_" + eventId;
 
 				if (doFullReload || !eventExists || eventChanged){
 					//Add the event to solr
 					try {
 						SolrInputDocument solrDocument = new SolrInputDocument();
-						solrDocument.addField("id", "communico_" + settingsId + "_" + eventId);
+						solrDocument.addField("id", sourceId);
 						solrDocument.addField("identifier", eventId);
 						solrDocument.addField("type", "event_communico");
 						solrDocument.addField("source", settingsId);
@@ -292,6 +310,7 @@ class CommunicoIndexer {
 
 				//Fetch registrations here and add to DB - for events that require registration ONLY
 				if (curEvent.getBoolean("registration")){
+					loadExistingRegistrations(sourceId);
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
 
 					if (communicoEventRegistrants != null) {
@@ -309,7 +328,7 @@ class CommunicoIndexer {
 
 											addRegistrantStmt.setLong(1, userId);
 											addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
-											addRegistrantStmt.setString(3,"communico_" + settingsId + "_" + eventId);
+											addRegistrantStmt.setString(3, sourceId);
 											addRegistrantStmt.executeUpdate();
 										}
 									} catch (SQLException e) {
@@ -319,6 +338,16 @@ class CommunicoIndexer {
 							} catch (JSONException e) {
 								logEntry.incErrors("Error getting JSON information ", e);
 							}
+						}
+					}
+
+					for(EventRegistrations registrantInfo : existingRegistrations.values()){
+						try {
+							deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
+							deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
+							deleteRegistrantStmt.executeUpdate();
+						}catch (SQLException e) {
+							logEntry.incErrors("Error deleting registration info ", e);
 						}
 					}
 				}
@@ -335,7 +364,7 @@ class CommunicoIndexer {
 				logEntry.incErrors("Error deleting event ", e);
 			}
 			try {
-				solrUpdateServer.deleteById("lc_" + settingsId + "_" + eventInfo.getExternalId());
+				solrUpdateServer.deleteById("communico_" + settingsId + "_" + eventInfo.getExternalId());
 			} catch (Exception e) {
 				logEntry.incErrors("Error deleting event by id ", e);
 			}
