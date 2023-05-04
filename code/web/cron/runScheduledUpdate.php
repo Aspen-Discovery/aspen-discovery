@@ -106,6 +106,9 @@ if (count($updatesToRun) == 0) {
 			}
 			$scheduledUpdate->dateRun = time();
 
+			//echo notes for debugging
+			echo ($scheduledUpdate->notes);
+
 			$scheduledUpdate->update();
 
 			if (!empty($scheduledUpdate->greenhouseId)) {
