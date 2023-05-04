@@ -813,8 +813,8 @@ color: {$bodyTextColor};
 
 {* Accessiblity *}
 {if $themeIsHighContrast}
-	body{ldelim}
-		filter: contrast(1.50);
+	html{ldelim}
+		filter: contrast(1.25);
 	{rdelim}
 
 	*{ldelim}
