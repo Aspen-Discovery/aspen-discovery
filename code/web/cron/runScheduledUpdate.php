@@ -26,7 +26,7 @@ if (count($updatesToRun) == 0) {
 			$versionToUpdateTo = $scheduledUpdate->updateToVersion;
 			$currentVersion = getGitBranch();
 
-			if ($currentVersion != escapeshellarg($currentVersion)) {
+			if (str_replace('.', '', $versionToUpdateTo) != escapeshellarg(str_replace('.', '', $versionToUpdateTo))) {
 				$scheduledUpdate->notes = "FAILED: Bad version to update to $versionToUpdateTo \n";
 			}else{
 				if (str_replace('.', '', $versionToUpdateTo) >= str_replace('.', '', $currentVersion,)) {
