@@ -12,8 +12,6 @@ function getUpdates23_05_00(): array {
 			]
 		], //sample*/
 
-		//mark
-		//kirstien
 		'drop_securityId_cp' => [
 			'title' => 'Drop securityId from Certified Payments',
 			'description' => 'Drop securityId from Certified Payments Settings table',
@@ -104,7 +102,6 @@ function getUpdates23_05_00(): array {
 			]
 		],
 		//add_greenhouse_id_scheduled_update
-		//kodi
 		'user_events_registrations' => [
 			'title' => 'User Event Registration Data',
 			'description' => 'Setup table to store event registration data for patrons',
@@ -120,6 +117,5 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//user_events_registrations
-		//other
 	];
 }
