@@ -334,4 +334,12 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			return false;
 		}
 	}
+
+	public function isRegisteredForEvent() {
+		if (UserAccount::isLoggedIn()) {
+			return UserAccount::getActiveUserObj()->isRegistered($this->getId());
+		}else{
+			return false;
+		}
+	}
 }

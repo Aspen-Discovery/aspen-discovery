@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/services/Admin/Admin.php';
 
 abstract class ObjectEditor extends Admin_Admin {
 	protected $activeObject;
+	protected $objectAction;
 
 	function launch() {
 		global $interface;
@@ -18,6 +19,8 @@ abstract class ObjectEditor extends Admin_Admin {
 			$user->update();
 		}
 
+		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
+		$this->objectAction = $objectAction;
 		$structure = $this->getObjectStructure($this->getContext());
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
@@ -41,7 +44,6 @@ abstract class ObjectEditor extends Admin_Admin {
 
 		//Define the structure of the object.
 		$interface->assign('structure', $structure);
-		$objectAction = isset($_REQUEST['objectAction']) ? $_REQUEST['objectAction'] : null;
 		$interface->assign('objectAction', $objectAction);
 		$customListActions = $this->customListActions();
 		$interface->assign('customListActions', $customListActions);
@@ -1027,7 +1029,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function getContext() : string {
-		return '';
+		return $this->objectAction ?? '';
 	}
 
 	public function canShareToCommunity() {

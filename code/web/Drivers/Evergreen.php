@@ -704,7 +704,124 @@ class Evergreen extends AbstractIlsDriver {
 	}
 
 	public function hasNativeReadingHistory(): bool {
-		return false;
+		return true;
+	}
+
+	/**
+	 * @param User $patron
+	 * @param int $page
+	 * @param int $recordsPerPage
+	 * @param string $sortOption
+	 * @return array
+	 * @throws Exception
+	 */
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
+		$historyActive = false;
+		$readingHistoryTitles = [];
+		$numTitles = 0;
+
+		$authToken = $this->getAPIAuthToken($patron, true);
+		if ($authToken != null) {
+			//Get a list of checkouts
+
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$params = [
+				'service' => 'open-ils.actor',
+				'method' => 'open-ils.actor.history.circ',
+				'param' => json_encode($authToken),
+			];
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $params);
+
+			ExternalRequestLogEntry::logRequest('evergreen.getReadingHistory', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), http_build_query($params), $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$circHistoryDecoded = json_decode($apiResponse);
+				foreach ($circHistoryDecoded->payload as $circEntry) {
+					$circEntryMapped = $this->mapEvergreenFields($circEntry->__p, $this->fetchIdl('auch'));
+
+					require_once ROOT_DIR . '/sys/User/Checkout.php';
+					$checkout = $this->loadCheckoutData($patron, $circEntryMapped['source_circ'], $authToken);
+					$curTitle = [];
+					$curTitle['id'] = $checkout->recordId;
+					$curTitle['shortId'] = $checkout->recordId;
+					$curTitle['recordId'] = $checkout->recordId;
+					$curTitle['title'] = $checkout->title;
+					$curTitle['author'] = $checkout->author;
+					$curTitle['format'] = $checkout->format;
+					$curTitle['checkout'] = $checkout->checkoutDate;
+					if (!empty($circEntryMapped['checkin_time'])) {
+						$curTitle['checkin'] = strtotime($circEntryMapped['checkin_time']);
+					} else {
+						$curTitle['checkin'] = null;
+					}
+					$readingHistoryTitles[] = $curTitle;
+					$numTitles++;
+				}
+			}
+		}
+
+		set_time_limit(20 * count($readingHistoryTitles));
+		$systemVariables = SystemVariables::getSystemVariables();
+		global $aspen_db;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		foreach ($readingHistoryTitles as $key => $historyEntry) {
+			//Get additional information from resources table
+			$historyEntry['ratingData'] = null;
+			$historyEntry['permanentId'] = null;
+			$historyEntry['linkUrl'] = null;
+			$historyEntry['coverUrl'] = null;
+			if (!empty($historyEntry['recordId'])) {
+				if ($systemVariables->storeRecordDetailsInDatabase) {
+					/** @noinspection SqlResolve */
+					$getRecordDetailsQuery = 'SELECT permanent_id, indexed_format.format FROM grouped_work_records 
+								  LEFT JOIN grouped_work ON groupedWorkId = grouped_work.id
+								  LEFT JOIN indexed_record_source ON sourceId = indexed_record_source.id
+								  LEFT JOIN indexed_format on formatId = indexed_format.id
+								  where source = ' . $aspen_db->quote($this->accountProfile->recordSource) . ' and recordIdentifier = ' . $aspen_db->quote($historyEntry['recordId']);
+					$results = $aspen_db->query($getRecordDetailsQuery, PDO::FETCH_ASSOC);
+					if ($results) {
+						$result = $results->fetch();
+						if ($result) {
+							$groupedWorkDriver = new GroupedWorkDriver($result['permanent_id']);
+							if ($groupedWorkDriver->isValid()) {
+								$historyEntry['ratingData'] = $groupedWorkDriver->getRatingData();
+								$historyEntry['permanentId'] = $groupedWorkDriver->getPermanentId();
+								$historyEntry['linkUrl'] = $groupedWorkDriver->getLinkUrl();
+								$historyEntry['coverUrl'] = $groupedWorkDriver->getBookcoverUrl('medium', true);
+								$historyEntry['format'] = $result['format'];
+								$historyEntry['title'] = $groupedWorkDriver->getTitle();
+								$historyEntry['author'] = $groupedWorkDriver->getPrimaryAuthor();
+							}
+						}
+					}
+				} else {
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver($this->accountProfile->recordSource . ':' . $historyEntry['recordId']);
+					if ($recordDriver->isValid()) {
+						$historyEntry['ratingData'] = $recordDriver->getRatingData();
+						$historyEntry['permanentId'] = $recordDriver->getPermanentId();
+						$historyEntry['linkUrl'] = $recordDriver->getGroupedWorkDriver()->getLinkUrl();
+						$historyEntry['coverUrl'] = $recordDriver->getBookcoverUrl('medium', true);
+						$historyEntry['format'] = $recordDriver->getFormats();
+						$historyEntry['author'] = $recordDriver->getPrimaryAuthor();
+					}
+					$recordDriver->__destruct();
+					$recordDriver = null;
+				}
+			}
+			$readingHistoryTitles[$key] = $historyEntry;
+		}
+
+		$numTitles = count($readingHistoryTitles);
+
+		return [
+			'historyActive' => $historyActive,
+			'titles' => $readingHistoryTitles,
+			'numTitles' => $numTitles,
+		];
 	}
 
 	/**
@@ -1701,7 +1818,7 @@ class Evergreen extends AbstractIlsDriver {
 	function fetchIdl($className): array {
 		global $memCache;
 		$idl = $memCache->get('evergreen_idl_' . $className);
-		if ($idl == false) {
+		if ($idl == false || isset($_REQUEST['reload'])) {
 			$evergreenUrl = $this->accountProfile->patronApiUrl . '/reports/fm_IDL.xml?class=' . $className;
 			$apiResponse = $this->apiCurlWrapper->curlGetPage($evergreenUrl);
 			$idl = [];
@@ -1941,5 +2058,133 @@ class Evergreen extends AbstractIlsDriver {
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Import Lists from the ILS
+	 *
+	 * @param User $patron
+	 * @return array - an array of results including the names of the lists that were imported as well as number of titles.
+	 */
+	function importListsFromIls($patron) {
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
+		$results = [
+			'totalTitles' => 0,
+			'totalLists' => 0,
+		];
+
+		$authToken = $this->getAPIAuthToken($patron, true);
+		if ($authToken != null) {
+			//Get a list of holds
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+
+			$getListsParams = 'service=open-ils.actor';
+			$getListsParams .= '&method=open-ils.actor.container.retrieve_by_class';
+			$getListsParams .= '&param=' . json_encode($authToken);
+			$getListsParams .= '&param=' . $patron->username;
+			$getListsParams .= '&param=' . json_encode('biblio');
+			$getListsParams .= '&param=' . json_encode('bookbag');
+			$getListsApiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getListsParams);
+
+			ExternalRequestLogEntry::logRequest('evergreen.getLists', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getListsParams, $this->apiCurlWrapper->getResponseCode(), $getListsApiResponse, []);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($getListsApiResponse);
+				if (isset($apiResponse->payload[0])) {
+					foreach ($apiResponse->payload[0] as $bookbagInfo) {
+						$bookBagInfoMapped = $this->mapEvergreenFields($bookbagInfo->__p, $this->fetchIdl('cbreb'));
+
+						$title = $bookBagInfoMapped['name'];
+
+						//Create the list (or find one that already exists)
+						$newList = new UserList();
+						$newList->user_id = $patron->id;
+						$newList->title = $title;
+						if (!$newList->find(true)) {
+							$newList->description = $bookBagInfoMapped['description'];
+							$newList->public = $bookBagInfoMapped['pub'] == 't';
+							$newList->insert();
+						} elseif ($newList->deleted == 1) {
+							$newList->removeAllListEntries(true);
+							$newList->deleted = 0;
+							$newList->update();
+						}
+
+						//Load titles on the list
+						$currentListTitles = $newList->getListTitles();
+
+						$getListContentsParams = 'service=open-ils.actor';
+						$getListContentsParams .= '&method=open-ils.actor.container.flesh';
+						$getListContentsParams .= '&param=' . json_encode($authToken);
+						$getListContentsParams .= '&param=' . json_encode('biblio');
+						$getListContentsParams .= '&param=' . $bookBagInfoMapped['id'];
+						$getListContentsApiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getListContentsParams);
+						ExternalRequestLogEntry::logRequest('evergreen.getListContents', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $getListContentsParams, $this->apiCurlWrapper->getResponseCode(), $getListContentsApiResponse, []);
+						if ($this->apiCurlWrapper->getResponseCode() == 200) {
+							$listContentsResponse = json_decode($getListContentsApiResponse);
+							if (isset($listContentsResponse->payload[0])) {
+								$bookBagInfoMapped = $this->mapEvergreenFields($listContentsResponse->payload[0]->__p, $this->fetchIdl('cbreb'));
+								foreach ($bookBagInfoMapped['items'] as $bookBagItem) {
+									$bookBagItemMapped = $this->mapEvergreenFields($bookBagItem->__p, $this->fetchIdl('cbrebi'));
+									$bibNumber = $bookBagItemMapped['target_biblio_record_entry'];
+									$createTime = $bookBagItemMapped['create_time'];
+
+									$primaryIdentifier = new GroupedWorkPrimaryIdentifier();
+									$groupedWork = new GroupedWork();
+									$primaryIdentifier->identifier = $bibNumber;
+									$primaryIdentifier->type = $this->accountProfile->recordSource;
+
+									if ($primaryIdentifier->find(true)) {
+										$groupedWork->id = $primaryIdentifier->grouped_work_id;
+										if ($groupedWork->find(true)) {
+											//Check to see if this title is already on the list.
+											$resourceOnList = false;
+											foreach ($currentListTitles as $currentTitle) {
+												if ($currentTitle->source == 'GroupedWork' && $currentTitle->sourceId == $groupedWork->permanent_id) {
+													$resourceOnList = true;
+													break;
+												}
+											}
+
+											if (!$resourceOnList) {
+												$listEntry = new UserListEntry();
+												$listEntry->source = 'GroupedWork';
+												$listEntry->sourceId = $groupedWork->permanent_id;
+												$listEntry->listId = $newList->id;
+												$listEntry->notes = '';
+												$listEntry->dateAdded = strtotime($createTime);
+												$listEntry->insert();
+												$currentListTitles[] = $listEntry;
+											}
+										} else {
+											if (!isset($results['errors'])) {
+												$results['errors'] = [];
+											}
+											$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+										}
+									} else {
+										//The title is not in the resources, add an error to the results
+										if (!isset($results['errors'])) {
+											$results['errors'] = [];
+										}
+										$results['errors'][] = "\"$bibNumber\" on list $title could not be found in the catalog and was not imported.";
+									}
+									$results['totalTitles']++;
+								}
+							}
+						}
+
+						$results['totalLists']++;
+					}
+				}
+			}
+		}
+
+		return $results;
 	}
 }

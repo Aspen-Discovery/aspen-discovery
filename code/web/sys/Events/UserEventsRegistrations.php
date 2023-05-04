@@ -2,16 +2,13 @@
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
-class UserEventsEntry extends DataObject {
-	public $__table = 'user_events_entry';
+class UserEventsRegistrations extends DataObject {
+	public $__table = 'user_events_registrations';
 	public $id;
 	public $userId;
+	public $barcode;
 	public $sourceId;
-	public $title;
-	public $eventDate;
-	public $dateAdded;
-	public $regRequired;
-	public $location;
+	public $waitlist;
 
 	public function getUniquenessFields(): array {
 		return [

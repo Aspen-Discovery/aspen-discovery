@@ -25,6 +25,7 @@ class ScheduledUpdate extends DataObject {
 			'pending' => 'Pending',
 			'canceled' => 'Canceled',
 			'failed' => 'Failed',
+			'complete' => 'Complete',
 		];
 
 		$releases = [];
@@ -50,7 +51,7 @@ class ScheduledUpdate extends DataObject {
 			}
 		}
 
-		return [
+		$structure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -79,6 +80,7 @@ class ScheduledUpdate extends DataObject {
 				'label' => 'Date Scheduled',
 				'description' => 'When the update was scheduled to run',
 				'required' => true,
+				'default' => time()
 			],
 			'status' => [
 				'property' => 'status',
@@ -86,7 +88,8 @@ class ScheduledUpdate extends DataObject {
 				'label' => 'Status',
 				'values' => $statuses,
 				'description' => 'The status of the update',
-				'default' => 'pending'
+				'default' => 'pending',
+				'readOnly' => true,
 			],
 //			'currentVersion' => [
 //				'property' => 'currentVersion',
@@ -127,6 +130,14 @@ class ScheduledUpdate extends DataObject {
 				'readOnly' => true,
 			],
 		];
+
+		if ($context == 'addNew') {
+			unset($structure['greenhouseId']);
+			unset($structure['status']);
+			unset($structure['dateRun']);
+			unset($structure['notes']);
+		}
+		return $structure;
 	}
 
 	public function getNumericColumnNames(): array {
