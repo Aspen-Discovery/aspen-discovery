@@ -113,9 +113,9 @@ public class EventsIndexerMain {
 				break;
 			}
 
-			//Pause 15 minutes before running the next export
+			//Pause 5 minutes before running the next export
 			try {
-				Thread.sleep(1000 * 60 * 15);
+				Thread.sleep(1000 * 60 * 5);
 			} catch (InterruptedException e) {
 				logger.info("Thread was interrupted");
 			}
