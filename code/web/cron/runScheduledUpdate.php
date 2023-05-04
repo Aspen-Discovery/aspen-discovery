@@ -99,7 +99,7 @@ if (count($updatesToRun) == 0) {
 			}
 
 			$lowerNotes = strtolower($scheduledUpdate->notes);
-			if ((strpos($lowerNotes, 'fatal') !== false) || (strpos($lowerNotes, 'failed') !== false) || (strpos($lowerNotes, 'rejected') !== false)) {
+			if (!$updateSucceeded || (strpos($lowerNotes, 'fatal') !== false) || (strpos($lowerNotes, 'failed') !== false) || (strpos($lowerNotes, 'rejected') !== false)) {
 				$scheduledUpdate->status = 'failed';
 			} else {
 				$scheduledUpdate->status = 'complete';
