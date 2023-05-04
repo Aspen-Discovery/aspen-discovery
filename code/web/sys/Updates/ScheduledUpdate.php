@@ -133,7 +133,7 @@ class ScheduledUpdate extends DataObject {
 
 		if ($context == 'addNew') {
 			unset($structure['greenhouseId']);
-			unset($structure['status']);
+			$structure['status']['type'] = 'hidden';
 			unset($structure['dateRun']);
 			unset($structure['notes']);
 		}
