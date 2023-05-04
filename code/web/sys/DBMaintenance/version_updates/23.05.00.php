@@ -63,6 +63,15 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//add_aspen_site_scheduled_update
+		'allow_long_scheduled_update_notes' => [
+			'title' => 'Allow long scheduled update notes',
+			'description' => 'Allow long scheduled update notes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update CHANGE column notes notes TEXT'
+			],
+		],
+		//allow_long_scheduled_update_notes
 		'add_opt_out_batch_updates' => [
 			'title' => 'Add option opt out of batch scheduled updates',
 			'description' => 'Adds column to opt-out of batch scheduled updates for an Aspen site',
