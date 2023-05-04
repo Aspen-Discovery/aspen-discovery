@@ -2349,7 +2349,7 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		/** @noinspection PhpBooleanCanBeSimplifiedInspection */
-		if (/**false &&*/ $this->getKohaVersion() >= 19.11) {
+		if (false & $this->getKohaVersion() >= 19.11) {
 			/** @noinspection PhpUnreachableStatementInspection */
 			$sourceId = null;
 			require_once ROOT_DIR . '/sys/User/Checkout.php';
