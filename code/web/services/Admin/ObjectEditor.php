@@ -1029,7 +1029,7 @@ abstract class ObjectEditor extends Admin_Admin {
 	}
 
 	public function getContext() : string {
-		return $this->objectAction;
+		return $this->objectAction ?? '';
 	}
 
 	public function canShareToCommunity() {
