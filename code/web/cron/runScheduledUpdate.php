@@ -27,12 +27,21 @@ foreach($updatesToRun as $id) {
 			if($scheduledUpdate->updateType === 'complete') {
 				$scheduledUpdate->notes .= "FAILED: Complete updates are not supported yet";
 			}else if($scheduledUpdate->updateType === 'patch') {
-				exec("cd /usr/local/aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
+				if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
+					exec("cd c:\web\aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
+				} else {
+					exec("cd /usr/local/aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
+				}
+
 				foreach($resetGitResult as $result) {
 					$scheduledUpdate->notes .= $result;
 				}
 
-				exec("cd /usr/local/aspen-discovery; sudo git pull origin $scheduledUpdate->updateToVersion", $gitResult);
+				if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
+					exec("cd c:\web\aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
+				}else {
+					exec("cd /usr/local/aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
+				}
 				foreach($gitResult as $result) {
 					$scheduledUpdate->notes .= $result;
 				}
