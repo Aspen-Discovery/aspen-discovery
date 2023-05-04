@@ -49,7 +49,7 @@ if (count($updatesToRun) == 0) {
 							}
 							if (!hasErrors($scheduledUpdate->notes)) {
 								$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
-								exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode) === false);
+								exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode);
 								foreach ($resetGitResult as $result) {
 									$scheduledUpdate->notes .= $result . "\n";
 								}
