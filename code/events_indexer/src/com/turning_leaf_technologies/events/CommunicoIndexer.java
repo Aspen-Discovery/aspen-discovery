@@ -3,16 +3,11 @@ package com.turning_leaf_technologies.events;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
-import org.apache.http.NameValuePair;
 import org.apache.http.StatusLine;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -36,7 +31,6 @@ import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.Date;
@@ -53,7 +47,6 @@ class CommunicoIndexer {
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, CommunicoEvent> existingEvents = new HashMap<>();
-	private HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
 	private HashSet<String> librariesToShowFor = new HashSet<>();
 	private static CRC32 checksumCalculator = new CRC32();
 
@@ -127,7 +120,8 @@ class CommunicoIndexer {
 		}
 	}
 
-	private void loadExistingRegistrations(String sourceId) {
+	private HashMap<Long, EventRegistrations> loadExistingRegistrations(String sourceId) {
+		HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
 		try {
 			PreparedStatement regStmt = aspenConn.prepareStatement("SELECT * from user_events_registrations WHERE sourceId = ?");
 			regStmt.setLong(1, Long.parseLong(sourceId));
@@ -139,6 +133,7 @@ class CommunicoIndexer {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing registrations for Communico " + name, e);
 		}
+		return existingRegistrations;
 	}
 
 	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -310,7 +305,6 @@ class CommunicoIndexer {
 
 				//Fetch registrations here and add to DB - for events that require registration ONLY
 				if (curEvent.getBoolean("registration")){
-					loadExistingRegistrations(sourceId);
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
 
 					if (communicoEventRegistrants != null) {
@@ -341,7 +335,7 @@ class CommunicoIndexer {
 						}
 					}
 
-					for(EventRegistrations registrantInfo : existingRegistrations.values()){
+					for(EventRegistrations registrantInfo : loadExistingRegistrations(sourceId).values()){
 						try {
 							deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
 							deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());

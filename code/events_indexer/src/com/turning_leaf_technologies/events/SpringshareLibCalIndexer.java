@@ -46,7 +46,6 @@ class SpringshareLibCalIndexer {
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, SpringshareLibCalEvent> existingEvents = new HashMap<>();
-	private HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
 	private HashSet<String> librariesToShowFor = new HashSet<>();
 	private static CRC32 checksumCalculator = new CRC32();
 
@@ -113,7 +112,8 @@ class SpringshareLibCalIndexer {
 		}
 	}
 
-	private void loadExistingRegistrations(String sourceId) {
+	private HashMap<Long, EventRegistrations> loadExistingRegistrations(String sourceId) {
+		HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
 		try {
 			PreparedStatement regStmt = aspenConn.prepareStatement("SELECT * from user_events_registrations WHERE sourceId = ?");
 			regStmt.setLong(1, Long.parseLong(sourceId));
@@ -125,6 +125,7 @@ class SpringshareLibCalIndexer {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing registrations for LibCal " + name, e);
 		}
+		return existingRegistrations;
 	}
 
 	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -344,7 +345,6 @@ class SpringshareLibCalIndexer {
 
 					//Fetch registrations here and add to DB - for events that require registration ONLY
 					if (curEvent.getBoolean("registration")){
-						loadExistingRegistrations(sourceId);
 						JSONArray libCalEvent = getRegistrations(Integer.valueOf(eventId));
 
 						if (libCalEvent != null) {
@@ -376,7 +376,7 @@ class SpringshareLibCalIndexer {
 							}
 						}
 
-						for(EventRegistrations registrantInfo : existingRegistrations.values()){
+						for(EventRegistrations registrantInfo : loadExistingRegistrations(sourceId).values()){
 							try {
 								deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
 								deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
