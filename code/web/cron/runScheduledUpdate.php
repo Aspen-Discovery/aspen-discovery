@@ -33,8 +33,9 @@ foreach($updatesToRun as $id) {
 					exec("cd /usr/local/aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
 				}
 
+				$scheduledUpdate->notes .= "Resetting git to branch $currentVersion<br/>";
 				foreach($resetGitResult as $result) {
-					$scheduledUpdate->notes .= $result;
+					$scheduledUpdate->notes .= $result . '<br/>';
 				}
 
 				if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
@@ -42,15 +43,17 @@ foreach($updatesToRun as $id) {
 				}else {
 					exec("cd /usr/local/aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
 				}
+				$scheduledUpdate->notes .= "Pulling branch $currentVersion<br/>";
 				foreach($gitResult as $result) {
-					$scheduledUpdate->notes .= $result;
+					$scheduledUpdate->notes .= $result. '<br/>';
 				}
 
 				// run db maintenance
+				$scheduledUpdate->notes .= "Running database maintenance $currentVersion<br/>";
 				require_once ROOT_DIR . '/services/API/SystemAPI.php';
 				$systemAPI = new SystemAPI();
 				$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
-				if (!$dbMaintenance['success'] || $dbMaintenance['success'] == 'false') {
+				if (!isset($dbMaintenance['success']) || $dbMaintenance['success'] == false) {
 					$message = $dbMaintenance['message'] ?? '';
 					$scheduledUpdate->status = 'failed';
 					$scheduledUpdate->notes .= $message;
