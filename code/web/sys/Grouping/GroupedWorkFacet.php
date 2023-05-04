@@ -82,7 +82,7 @@ class GroupedWorkFacet extends FacetSetting {
 				'property' => 'facetName',
 				'type' => 'enum',
 				'label' => 'Facet',
-				'values' => empty($availableFacets) ? self::getAvailableFacets() : $availableFacets,
+				'values' => self::getAvailableFacets(),
 				'description' => 'The facet to include',
 			],
 			'displayName' => [

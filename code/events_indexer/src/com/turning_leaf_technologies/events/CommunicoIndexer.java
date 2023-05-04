@@ -309,8 +309,7 @@ class CommunicoIndexer {
 
 											addRegistrantStmt.setLong(1, userId);
 											addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
-											addRegistrantStmt.setLong(3, Long.parseLong("communico_" + settingsId + "_" + eventId));
-											addRegistrantStmt.setInt(4, 0);
+											addRegistrantStmt.setString(3,"communico_" + settingsId + "_" + eventId);
 											addRegistrantStmt.executeUpdate();
 										}
 									} catch (SQLException e) {

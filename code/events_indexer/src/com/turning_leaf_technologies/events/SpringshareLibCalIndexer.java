@@ -344,8 +344,7 @@ class SpringshareLibCalIndexer {
 
 												addRegistrantStmt.setLong(1, userId);
 												addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
-												addRegistrantStmt.setLong(3, Long.parseLong("libcal_" + settingsId + "_" + eventId));
-												addRegistrantStmt.setInt(4, 0);
+												addRegistrantStmt.setString(3, "libcal_" + settingsId + "_" + eventId);
 												addRegistrantStmt.executeUpdate();
 											}
 										} catch (SQLException e) {
