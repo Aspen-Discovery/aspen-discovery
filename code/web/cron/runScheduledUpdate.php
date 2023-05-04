@@ -42,7 +42,7 @@ if (count($updatesToRun) == 0) {
 								$scheduledUpdate->notes .= $result . "\n";
 							}
 						} else {
-							$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
+							$scheduledUpdate->notes .= "Fetching all changes from git\n";
 							exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult, $resultCode);
 							foreach ($resetGitResult as $result) {
 								$scheduledUpdate->notes .= $result . "\n";
@@ -62,7 +62,7 @@ if (count($updatesToRun) == 0) {
 							} else {
 								exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult);
 							}
-							$scheduledUpdate->notes .= "Pulling branch $currentVersion$versionToUpdateTo\n";
+							$scheduledUpdate->notes .= "Pulling branch $currentVersion\n";
 							foreach ($gitResult as $result) {
 								$scheduledUpdate->notes .= $result . "\n";
 							}
@@ -75,8 +75,10 @@ if (count($updatesToRun) == 0) {
 							$systemAPI = new SystemAPI();
 							$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
 							if (!isset($dbMaintenance['success']) || $dbMaintenance['success'] == false) {
-								$message = $dbMaintenance['message'] ?? '';
 								$scheduledUpdate->status = 'failed';
+							}
+							if (isset($dbMaintenance['message'])) {
+								$message = $dbMaintenance['message'] ?? '';
 								$scheduledUpdate->notes .= $message;
 							}
 						}
