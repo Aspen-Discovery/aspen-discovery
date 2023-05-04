@@ -30,10 +30,21 @@ if (count($updatesToRun) == 0) {
 				if ($scheduledUpdate->updateType === 'complete') {
 					$scheduledUpdate->notes .= "FAILED: Complete updates are not supported yet";
 				} elseif ($scheduledUpdate->updateType === 'patch') {
+					//assume it works and update to false if there are issues.
+					$updateSucceeded = true;
 					if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
-						exec("cd c:\web\aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
+						exec("cd c:\web\aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion 2>&1", $resetGitResult);
 					} else {
-						exec("cd /usr/local/aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion", $resetGitResult);
+						if (!exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult)) {
+							$updateSucceeded = false;
+							$scheduledUpdate->notes .= 'FAILED: fetch origin failed';
+						}
+						if ($updateSucceeded) {
+							if (!exec("cd /usr/local/aspen-discovery; git reset --hard origin/$currentVersion 2>&1", $resetGitResult)) {
+								$updateSucceeded = false;
+								$scheduledUpdate->notes .= 'FAILED: reset hard failed';
+							}
+						}
 					}
 
 					$scheduledUpdate->notes .= "Resetting git to branch $currentVersion\n";
@@ -44,7 +55,7 @@ if (count($updatesToRun) == 0) {
 					if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
 						exec("cd c:\web\aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
 					} else {
-						exec("cd /usr/local/aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
+						exec("cd /usr/local/aspen-discovery; git pull origin $scheduledUpdate->updateToVersion 2>&1", $gitResult);
 					}
 					$scheduledUpdate->notes .= "Pulling branch $currentVersion\n";
 					foreach ($gitResult as $result) {
