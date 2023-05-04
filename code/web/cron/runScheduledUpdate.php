@@ -26,58 +26,76 @@ if (count($updatesToRun) == 0) {
 			$versionToUpdateTo = $scheduledUpdate->updateToVersion;
 			$currentVersion = getGitBranch();
 
-			if (str_replace('.', '', $versionToUpdateTo) >= str_replace('.', '', $currentVersion,)) {
-				if ($scheduledUpdate->updateType === 'complete') {
-					$scheduledUpdate->notes .= "FAILED: Complete updates are not supported yet";
-				} elseif ($scheduledUpdate->updateType === 'patch') {
-					//assume it works and update to false if there are issues.
-					$updateSucceeded = true;
-					if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
-						exec("cd c:\web\aspen-discovery; git fetch origin; git reset --hard origin/$currentVersion 2>&1", $resetGitResult);
-					} else {
-						if (!exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult)) {
-							$updateSucceeded = false;
-							$scheduledUpdate->notes .= 'FAILED: fetch origin failed';
-						}
-						if ($updateSucceeded) {
-							if (!exec("cd /usr/local/aspen-discovery; git reset --hard origin/$currentVersion 2>&1", $resetGitResult)) {
+			if ($currentVersion != escapeshellarg($currentVersion)) {
+				$scheduledUpdate->notes = "FAILED: Bad version to update to $versionToUpdateTo \n";
+			}else{
+				if (str_replace('.', '', $versionToUpdateTo) >= str_replace('.', '', $currentVersion,)) {
+					if ($scheduledUpdate->updateType === 'complete') {
+						$scheduledUpdate->notes .= "FAILED: Complete updates are not supported yet";
+					} elseif ($scheduledUpdate->updateType === 'patch') {
+						//assume it works and update to false if there are issues.
+						$updateSucceeded = true;
+						if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
+							exec("cd c:\web\aspen-discovery; git fetch origin; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult);
+							$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
+							foreach ($resetGitResult as $result) {
+								$scheduledUpdate->notes .= $result . "\n";
+							}
+						} else {
+							$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
+							if (!exec("cd /usr/local/aspen-discovery; git fetch origin", $resetGitResult, $resultCode)) {
 								$updateSucceeded = false;
-								$scheduledUpdate->notes .= 'FAILED: reset hard failed';
+								$scheduledUpdate->notes .= "FAILED: fetch origin failed $resultCode";
+							}
+							foreach ($resetGitResult as $result) {
+								$scheduledUpdate->notes .= $result . "\n";
+							}
+							if ($updateSucceeded) {
+								$scheduledUpdate->notes .= "Resetting git to branch $versionToUpdateTo\n";
+								if (!exec("cd /usr/local/aspen-discovery; git reset --hard origin/$versionToUpdateTo 2>&1", $resetGitResult, $resultCode)) {
+									$updateSucceeded = false;
+									$scheduledUpdate->notes .= "FAILED: reset hard failed $resultCode";
+								}
+								foreach ($resetGitResult as $result) {
+									$scheduledUpdate->notes .= $result . "\n";
+								}
 							}
 						}
-					}
 
-					$scheduledUpdate->notes .= "Resetting git to branch $currentVersion\n";
-					foreach ($resetGitResult as $result) {
-						$scheduledUpdate->notes .= $result . "\n";
-					}
+						if ($updateSucceeded) {
+							if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
+								exec("cd c:\web\aspen-discovery; git pull origin $versionToUpdateTo", $gitResult);
+							} else {
+								if (!exec("cd /usr/local/aspen-discovery; git pull origin $versionToUpdateTo 2>&1", $gitResult)) {
+									$updateSucceeded = false;
+									$scheduledUpdate->notes .= "FAILED: git pull failed $resultCode";
+								}
+							}
+							$scheduledUpdate->notes .= "Pulling branch $currentVersion$versionToUpdateTo\n";
+							foreach ($gitResult as $result) {
+								$scheduledUpdate->notes .= $result . "\n";
+							}
+						}
 
-					if (strcasecmp($configArray['System']['operatingSystem'], 'windows') == 0) {
-						exec("cd c:\web\aspen-discovery; git pull origin $scheduledUpdate->updateToVersion", $gitResult);
+						if ($updateSucceeded) {
+							// run db maintenance
+							$scheduledUpdate->notes .= "Running database maintenance $currentVersion\n";
+							require_once ROOT_DIR . '/services/API/SystemAPI.php';
+							$systemAPI = new SystemAPI();
+							$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
+							if (!isset($dbMaintenance['success']) || $dbMaintenance['success'] == false) {
+								$message = $dbMaintenance['message'] ?? '';
+								$scheduledUpdate->status = 'failed';
+								$scheduledUpdate->notes .= $message;
+							}
+						}
 					} else {
-						exec("cd /usr/local/aspen-discovery; git pull origin $scheduledUpdate->updateToVersion 2>&1", $gitResult);
-					}
-					$scheduledUpdate->notes .= "Pulling branch $currentVersion\n";
-					foreach ($gitResult as $result) {
-						$scheduledUpdate->notes .= $result . "\n";
-					}
-
-					// run db maintenance
-					$scheduledUpdate->notes .= "Running database maintenance $currentVersion\n";
-					require_once ROOT_DIR . '/services/API/SystemAPI.php';
-					$systemAPI = new SystemAPI();
-					$dbMaintenance = $systemAPI->runPendingDatabaseUpdates();
-					if (!isset($dbMaintenance['success']) || $dbMaintenance['success'] == false) {
-						$message = $dbMaintenance['message'] ?? '';
-						$scheduledUpdate->status = 'failed';
-						$scheduledUpdate->notes .= $message;
+						// invalid updateType
+						$scheduledUpdate->notes = "FAILED: Invalid update type\n";
 					}
 				} else {
-					// invalid updateType
-					$scheduledUpdate->notes = "FAILED: Invalid update type\n";
+					$scheduledUpdate->notes = "FAILED: Must update to a version that is the same or newer than the current version of $currentVersion\n";
 				}
-			} else {
-				$scheduledUpdate->notes = "FAILED: Must update to a version that is the same or newer than the current version of $currentVersion\n";
 			}
 
 			$lowerNotes = strtolower($scheduledUpdate->notes);
