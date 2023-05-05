@@ -1425,27 +1425,31 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			if ($activeRecordVariation != null) {
-				$items = $activeRecordVariation->getItems();
-				$allItemTypes = [];
+				$allowHoldItemTypeSelectionPref = $this->getKohaSystemPreference('AllowHoldItemTypeSelection', 0);
+				if ($allowHoldItemTypeSelectionPref == 1) {
+					//Check to see if item type
+					$items = $activeRecordVariation->getItems();
+					$allItemTypes = [];
 
-				$marcRecord = $recordDriver->getMarcRecord();
-				$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
-				foreach ($items as $recordItem) {
-					foreach ($marcItems as $marcItem) {
-						$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
-						if ($itemSubField->getData() == $recordItem->itemId) {
-							$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
-							if ($iTypeSubfield != null) {
-								$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
+					$marcRecord = $recordDriver->getMarcRecord();
+					$marcItems = $marcRecord->getFields($this->getIndexingProfile()->itemTag);
+					foreach ($items as $recordItem) {
+						foreach ($marcItems as $marcItem) {
+							$itemSubField = $marcItem->getSubfield($this->getIndexingProfile()->itemRecordNumber);
+							if ($itemSubField->getData() == $recordItem->itemId) {
+								$iTypeSubfield = $marcItem->getSubfield($this->getIndexingProfile()->iType);
+								if ($iTypeSubfield != null) {
+									$allItemTypes[$iTypeSubfield->getData()] = $iTypeSubfield->getData();
+								}
+								break;
 							}
-							break;
 						}
 					}
-				}
-				//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
-				//If there is just one, we can do an item type hold
-				if (count($allItemTypes) == 1) {
-					$holdParams['item_type'] = reset($allItemTypes);
+					//If there is more than one item type for the variation, we don't know what to place a hold on so just do bib level.
+					//If there is just one, we can do an item type hold
+					if (count($allItemTypes) == 1) {
+						$holdParams['item_type'] = reset($allItemTypes);
+					}
 				}
 			}
 
