@@ -52,6 +52,7 @@ class SpringshareLibCalIndexer {
 	private PreparedStatement addEventStmt;
 	private PreparedStatement deleteEventStmt;
 	private PreparedStatement addRegistrantStmt;
+	private PreparedStatement deleteRegistrantStmt;
 
 	private ConcurrentUpdateSolrClient solrUpdateServer;
 	//TODO: Update full reload based on settings
@@ -89,6 +90,7 @@ class SpringshareLibCalIndexer {
 
 		try {
 			addRegistrantStmt = aspenConn.prepareStatement("INSERT INTO user_events_registrations SET userId = ?, userBarcode = ?, sourceId = ?, waitlist = 0", Statement.RETURN_GENERATED_KEYS);
+			deleteRegistrantStmt = aspenConn.prepareStatement("DELETE FROM user_events_registrations WHERE userId = ? AND sourceId = ?");
 		} catch (Exception e) {
 			logEntry.incErrors("Error setting up registration statements ", e);
 		}
@@ -108,6 +110,22 @@ class SpringshareLibCalIndexer {
 		} catch (SQLException e) {
 			logEntry.incErrors("Error loading existing events for Springshare LibCal " + name, e);
 		}
+	}
+
+	private HashMap<Long, EventRegistrations> loadExistingRegistrations(String sourceId) {
+		HashMap<Long, EventRegistrations> existingRegistrations = new HashMap<>();
+		try {
+			PreparedStatement regStmt = aspenConn.prepareStatement("SELECT * from user_events_registrations WHERE sourceId = ?");
+			regStmt.setString(1, sourceId);
+			ResultSet existingRegistrationsRS = regStmt.executeQuery();
+			while (existingRegistrationsRS.next()) {
+				EventRegistrations libcalRegistrations = new EventRegistrations(existingRegistrationsRS);
+				existingRegistrations.put(libcalRegistrations.getUserId(), libcalRegistrations);
+			}
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading existing registrations for LibCal " + name, e);
+		}
+		return existingRegistrations;
 	}
 
 	private SimpleDateFormat dateParser = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
@@ -151,6 +169,7 @@ class SpringshareLibCalIndexer {
 						eventChanged = true;
 					}
 				}
+				String sourceId = "libcal_" + settingsId + "_" + eventId;
 
 				if (doFullReload || !eventExists || eventChanged){
 					//Add the event to solr
@@ -161,7 +180,7 @@ class SpringshareLibCalIndexer {
 							}
 						}
 						SolrInputDocument solrDocument = new SolrInputDocument();
-						solrDocument.addField("id", "libcal_" + settingsId + "_" + eventId);
+						solrDocument.addField("id", sourceId);
 						solrDocument.addField("identifier", eventId);
 						solrDocument.addField("type", "event_libcal");
 						solrDocument.addField("source", settingsId);
@@ -327,6 +346,7 @@ class SpringshareLibCalIndexer {
 					//Fetch registrations here and add to DB - for events that require registration ONLY
 					if (curEvent.getBoolean("registration")){
 						JSONArray libCalEvent = getRegistrations(Integer.valueOf(eventId));
+						HashMap<Long, EventRegistrations> registrationsForEvent = loadExistingRegistrations(sourceId);
 
 						if (libCalEvent != null) {
 							JSONArray libCalEventRegistrants = libCalEvent.getJSONArray(0);
@@ -341,11 +361,14 @@ class SpringshareLibCalIndexer {
 											ResultSet getUserIdRS = getUserIdStmt.executeQuery();
 											while (getUserIdRS.next()){
 												long userId = getUserIdRS.getLong("id");
-
-												addRegistrantStmt.setLong(1, userId);
-												addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
-												addRegistrantStmt.setString(3, "libcal_" + settingsId + "_" + eventId);
-												addRegistrantStmt.executeUpdate();
+												if (registrationsForEvent.containsKey(userId)){
+													registrationsForEvent.remove(userId);
+												}else{
+													addRegistrantStmt.setLong(1, userId);
+													addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
+													addRegistrantStmt.setString(3, sourceId);
+													addRegistrantStmt.executeUpdate();
+												}
 											}
 										} catch (SQLException e) {
 											logEntry.incErrors("Error adding registrant info to database " , e);
@@ -354,6 +377,16 @@ class SpringshareLibCalIndexer {
 								} catch (JSONException e) {
 									logEntry.incErrors("Error getting JSON information ", e);
 								}
+							}
+						}
+
+						for(EventRegistrations registrantInfo : registrationsForEvent.values()){
+							try {
+								deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
+								deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
+								deleteRegistrantStmt.executeUpdate();
+							}catch (SQLException e) {
+								logEntry.incErrors("Error deleting registration info ", e);
 							}
 						}
 					}
