@@ -307,8 +307,7 @@ class Greenhouse_AJAX extends Action {
 				$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
 				$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
 				if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
-					$now = new DateTime();
-					$runUpdateOn = $now->format('Y-m-d H:i');
+					time();
 				}
 				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 				$scheduledUpdate = new ScheduledUpdate();
@@ -328,8 +327,8 @@ class Greenhouse_AJAX extends Action {
 					'status' => $scheduledUpdate->status,
 					'greenhouseId' => $scheduledUpdate->id,
 				];
-				$response = $curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
-				if($response['success']) {
+				$response = json_decode($curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
+				if(!empty($response->success)) {
 					// update scheduled
 					return [
 						'success' => true,
@@ -346,7 +345,12 @@ class Greenhouse_AJAX extends Action {
 					];
 				} else {
 					// unable to schedule update
-					$scheduledUpdate->notes = $response['message'];
+					if (!empty($response->message)) {
+						$scheduledUpdate->notes = $response->message;
+					} else {
+						$scheduledUpdate->notes = "Did not get as successful response from the server, check that server has API access";
+					}
+					$scheduledUpdate->status = 'rejected';
 					$scheduledUpdate->update();
 					return [
 						'success' => false,
