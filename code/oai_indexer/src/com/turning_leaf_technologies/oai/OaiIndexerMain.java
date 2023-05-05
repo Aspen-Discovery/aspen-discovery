@@ -205,201 +205,207 @@ public class OaiIndexerMain {
 
 	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
 		if (!deleted) {
-			//Get the existing records for the collection
-			//Get existing records for the collection
-			OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
-
-			HashMap<String, ExistingOAIRecord> existingRecords = new HashMap<>();
-			if (!fullReload) {
-				//Only need to do this if we aren't doing a full reload since the full reload deletes everything
-				try {
-					//Use the ID rather than name in case the name changes.
-					updateServer.deleteByQuery("collection_id:\"" + collectionId + "\"");
-					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-				} catch (HttpSolrClient.RemoteSolrException rse) {
-					logger.error("Solr is not running properly, try restarting", rse);
-					System.exit(-1);
-				} catch (Exception e) {
-					logger.error("Error deleting from index", e);
-				}
-			}
-
-			//Load existing records from the database, so we can clean up later if needed.
 			try {
-				getExistingRecordsForCollection.setLong(1, collectionId);
-				ResultSet existingRecordsRS = getExistingRecordsForCollection.executeQuery();
-				while (existingRecordsRS.next()) {
-					ExistingOAIRecord existingRecord = new ExistingOAIRecord();
-					existingRecord.url = existingRecordsRS.getString("permanentUrl");
-					existingRecord.id = existingRecordsRS.getLong("id");
-					existingRecords.put(existingRecord.url, existingRecord);
+				//Get the existing records for the collection
+				//Get existing records for the collection
+				OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
+
+				HashMap<String, ExistingOAIRecord> existingRecords = new HashMap<>();
+				if (!fullReload) {
+					//Only need to do this if we aren't doing a full reload since the full reload deletes everything
+					try {
+						//Use the ID rather than name in case the name changes.
+						updateServer.deleteByQuery("collection_id:\"" + collectionId + "\"");
+						//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+					} catch (HttpSolrClient.RemoteSolrException rse) {
+						logger.error("Solr is not running properly, try restarting", rse);
+						System.exit(-1);
+					} catch (Exception e) {
+						logger.error("Error deleting from index", e);
+					}
 				}
-			} catch (Exception e) {
-				logger.error("Error loading records for collection " + collectionName, e);
-				return;
-			}
 
-			int numRecordsLoaded = 0;
-			int numRecordsSkipped = 0;
+				//Load existing records from the database, so we can clean up later if needed.
+				try {
+					getExistingRecordsForCollection.setLong(1, collectionId);
+					ResultSet existingRecordsRS = getExistingRecordsForCollection.executeQuery();
+					while (existingRecordsRS.next()) {
+						ExistingOAIRecord existingRecord = new ExistingOAIRecord();
+						existingRecord.url = existingRecordsRS.getString("permanentUrl");
+						existingRecord.id = existingRecordsRS.getLong("id");
+						existingRecords.put(existingRecord.url, existingRecord);
+					}
+				} catch (Exception e) {
+					logger.error("Error loading records for collection " + collectionName, e);
+					return;
+				}
 
-			TreeSet<String> allExistingCollectionSubjects = new TreeSet<>();
+				int numRecordsLoaded = 0;
+				int numRecordsSkipped = 0;
 
-			String[] oaiSets = setNames.split(",");
-			for (String oaiSet : oaiSets) {
-				logger.info("Loading set " + oaiSet);
-				//To improve performance, load records for a month at a time
-				GregorianCalendar now = new GregorianCalendar();
-				//Protocol was invented in 2002, so we are safe starting in 2000 to cover anything from OA version 1
-				for (int year = 2000; year <= now.get(GregorianCalendar.YEAR); year++) {
-					for (int month = 1; month <= 12; month++) {
-						boolean continueLoading = true;
-						String resumptionToken = null;
-						while (continueLoading) {
-							continueLoading = false;
+				TreeSet<String> allExistingCollectionSubjects = new TreeSet<>();
 
-							String oaiUrl;
-							if (resumptionToken != null) {
-								try {
-									oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
-								} catch (UnsupportedEncodingException e) {
-									logEntry.incErrors("Error encoding resumption token", e);
-									return;
-								}
-							} else {
-								oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc";
-								if (loadOneMonthAtATime) {
-									String startDate = year + "-" + String.format("%02d", month) + "-01";
-									String endDate = year + "-" + String.format("%02d", month + 1) + "-01";
-									if (month == 12) {
-										endDate = (year + 1) + "-01-01";
-									}
-									oaiUrl += "&from=" + startDate + "&until=" + endDate;
-								}
-								if (oaiSet.length() > 0) {
+				String[] oaiSets = setNames.split(",");
+				for (String oaiSet : oaiSets) {
+					logger.info("Loading set " + oaiSet);
+					//To improve performance, load records for a month at a time
+					GregorianCalendar now = new GregorianCalendar();
+					//Protocol was invented in 2002, so we are safe starting in 2000 to cover anything from OA version 1
+					for (int year = 2000; year <= now.get(GregorianCalendar.YEAR); year++) {
+						for (int month = 1; month <= 12; month++) {
+							boolean continueLoading = true;
+							String resumptionToken = null;
+							while (continueLoading) {
+								continueLoading = false;
+
+								String oaiUrl;
+								if (resumptionToken != null) {
 									try {
-										oaiUrl += "&set=" + URLEncoder.encode(oaiSet, "UTF8");
+										oaiUrl = baseUrl + "?verb=ListRecords&resumptionToken=" + URLEncoder.encode(resumptionToken, "UTF-8");
 									} catch (UnsupportedEncodingException e) {
 										logEntry.incErrors("Error encoding resumption token", e);
 										return;
 									}
-								}
-
-							}
-							try {
-								logger.info("Loading from " + oaiUrl);
-								HashMap<String, String> headers = new HashMap<>();
-								headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
-								headers.put("Accept-Encoding", "gzip");
-								headers.put("Accept-Language", "en-US");
-								headers.put("Pragma", "no-cache");
-								WebServiceResponse oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
-
-								DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-								factory.setValidating(false);
-								factory.setIgnoringElementContentWhitespace(true);
-								DocumentBuilder builder = factory.newDocumentBuilder();
-
-								byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
-								ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
-								String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
-								InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
-
-								Document doc = builder.parse(soapResponseInputSource);
-
-								Element docElement = doc.getDocumentElement();
-								//Normally we get list records, but if we are at the end of the list OAI may return an
-								//error rather than ListRecords (even though it gave us a resumption token)
-								NodeList listRecords = docElement.getElementsByTagName("ListRecords");
-								if (listRecords.getLength() > 0) {
-									Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
-									NodeList allRecords = listRecordsElement.getElementsByTagName("record");
-									for (int i = 0; i < allRecords.getLength(); i++) {
-										Node curRecordNode = allRecords.item(i);
-										if (curRecordNode instanceof Element) {
-											logEntry.incNumRecords();
-											Element curRecordElement = (Element) curRecordNode;
-											if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude)) {
-												numRecordsLoaded++;
-											} else {
-												numRecordsSkipped++;
-											}
+								} else {
+									oaiUrl = baseUrl + "?verb=ListRecords&metadataPrefix=oai_dc";
+									if (loadOneMonthAtATime) {
+										String startDate = year + "-" + String.format("%02d", month) + "-01";
+										String endDate = year + "-" + String.format("%02d", month + 1) + "-01";
+										if (month == 12) {
+											endDate = (year + 1) + "-01-01";
+										}
+										oaiUrl += "&from=" + startDate + "&until=" + endDate;
+									}
+									if (oaiSet.length() > 0) {
+										try {
+											oaiUrl += "&set=" + URLEncoder.encode(oaiSet, "UTF8");
+										} catch (UnsupportedEncodingException e) {
+											logEntry.incErrors("Error encoding resumption token", e);
+											return;
 										}
 									}
 
-									//Check to see if there are more records to load and if so continue
-									NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
-									if (resumptionTokens.getLength() > 0) {
-										Node resumptionTokenNode = resumptionTokens.item(0);
-										if (resumptionTokenNode instanceof Element) {
-											Element resumptionTokenElement = (Element) resumptionTokenNode;
-											resumptionToken = resumptionTokenElement.getTextContent();
-											if (resumptionToken.length() > 0) {
-												continueLoading = true;
+								}
+								try {
+									logger.info("Loading from " + oaiUrl);
+									HashMap<String, String> headers = new HashMap<>();
+									headers.put("Accept", "text/html,application/xhtml+xml,application/xml");
+									headers.put("Accept-Encoding", "gzip");
+									headers.put("Accept-Language", "en-US");
+									headers.put("Pragma", "no-cache");
+									WebServiceResponse oaiResponse = NetworkUtils.getURL(oaiUrl, logger, headers);
+
+									DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+									factory.setValidating(false);
+									factory.setIgnoringElementContentWhitespace(true);
+									DocumentBuilder builder = factory.newDocumentBuilder();
+
+									byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
+									ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
+									String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
+									InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
+
+									Document doc = builder.parse(soapResponseInputSource);
+
+									Element docElement = doc.getDocumentElement();
+									//Normally we get list records, but if we are at the end of the list OAI may return an
+									//error rather than ListRecords (even though it gave us a resumption token)
+									NodeList listRecords = docElement.getElementsByTagName("ListRecords");
+									if (listRecords.getLength() > 0) {
+										Element listRecordsElement = (Element) docElement.getElementsByTagName("ListRecords").item(0);
+										NodeList allRecords = listRecordsElement.getElementsByTagName("record");
+										for (int i = 0; i < allRecords.getLength(); i++) {
+											Node curRecordNode = allRecords.item(i);
+											if (curRecordNode instanceof Element) {
+												logEntry.incNumRecords();
+												Element curRecordElement = (Element) curRecordNode;
+												if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude)) {
+													numRecordsLoaded++;
+												} else {
+													numRecordsSkipped++;
+												}
+											}
+										}
+
+										//Check to see if there are more records to load and if so continue
+										NodeList resumptionTokens = listRecordsElement.getElementsByTagName("resumptionToken");
+										if (resumptionTokens.getLength() > 0) {
+											Node resumptionTokenNode = resumptionTokens.item(0);
+											if (resumptionTokenNode instanceof Element) {
+												Element resumptionTokenElement = (Element) resumptionTokenNode;
+												resumptionToken = resumptionTokenElement.getTextContent();
+												if (resumptionToken.length() > 0) {
+													continueLoading = true;
+												}
 											}
 										}
 									}
+								} catch (Exception e) {
+									logEntry.incErrors("Error parsing OAI data ", e);
 								}
-							} catch (Exception e) {
-								logEntry.incErrors("Error parsing OAI data ", e);
+								logEntry.saveResults();
 							}
-							logEntry.saveResults();
+							if (!loadOneMonthAtATime) {
+								break;
+							}
 						}
 						if (!loadOneMonthAtATime) {
 							break;
 						}
 					}
-					if (!loadOneMonthAtATime) {
-						break;
-					}
 				}
-			}
 
-			logEntry.addNote("Loaded " + numRecordsLoaded + " records from " + collectionName + ".");
-			if (numRecordsSkipped > 0) {
-				logEntry.addNote("Skipped " + numRecordsSkipped + " records from " + collectionName + ".");
-			}
+				logEntry.addNote("Loaded " + numRecordsLoaded + " records from " + collectionName + ".");
+				if (numRecordsSkipped > 0) {
+					logEntry.addNote("Skipped " + numRecordsSkipped + " records from " + collectionName + ".");
+				}
 
-			if (existingRecords.size() > 0) {
-				try {
-					ArrayList<Long> idsToDelete = new ArrayList<>();
-					for (ExistingOAIRecord existingOAIRecord : existingRecords.values()) {
-						if (!existingOAIRecord.processed) {
-							idsToDelete.add(existingOAIRecord.id);
+				if (existingRecords.size() > 0) {
+					try {
+						ArrayList<Long> idsToDelete = new ArrayList<>();
+						for (ExistingOAIRecord existingOAIRecord : existingRecords.values()) {
+							if (!existingOAIRecord.processed) {
+								idsToDelete.add(existingOAIRecord.id);
+							}
 						}
+						logEntry.addNote("Deleted " + idsToDelete.size() + " records from " + collectionName + ".");
+						for (Long idToDelete : idsToDelete) {
+							deleteOpenArchivesRecord.setLong(1, idToDelete);
+							deleteOpenArchivesRecord.executeUpdate();
+							logEntry.incDeleted();
+						}
+						//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+					} catch (HttpSolrClient.RemoteSolrException rse) {
+						logEntry.incErrors("Solr is not running properly, try restarting", rse);
+						System.exit(-1);
+					} catch (Exception e) {
+						logEntry.incErrors("Error deleting ids from index", e);
 					}
-					logEntry.addNote("Deleted " + idsToDelete.size() + " records from " + collectionName + ".");
-					for (Long idToDelete : idsToDelete) {
-						deleteOpenArchivesRecord.setLong(1, idToDelete);
-						deleteOpenArchivesRecord.executeUpdate();
-						logEntry.incDeleted();
-					}
-					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-				} catch (HttpSolrClient.RemoteSolrException rse) {
-					logEntry.incErrors("Solr is not running properly, try restarting", rse);
-					System.exit(-1);
-				} catch (Exception e) {
-					logEntry.incErrors("Error deleting ids from index", e);
 				}
-			}
 
-			//Now that we are done with all changes, commit them.
-			try {
-				updateServer.commit(true, true, false);
-			} catch (Exception e) {
-				logEntry.incErrors("Error in final commit", e);
-			}
+				//Now that we are done with all changes, commit them.
+				try {
+					updateServer.commit(true, true, false);
+				} catch (Exception e) {
+					logEntry.incErrors("Error in final commit", e);
+				}
 
-			//Update that we indexed the collection
-			try {
-				updateCollectionAfterIndexing.setLong(1, currentTime);
-				updateCollectionAfterIndexing.setString(2, String.join("\n", allExistingCollectionSubjects));
-				updateCollectionAfterIndexing.setLong(3, collectionId);
-				updateCollectionAfterIndexing.executeUpdate();
-			} catch (SQLException e) {
-				logEntry.incErrors("Error updating the last fetch time for collection", e);
-			}
+				//Update that we indexed the collection
+				try {
+					updateCollectionAfterIndexing.setLong(1, currentTime);
+					updateCollectionAfterIndexing.setString(2, String.join("\n", allExistingCollectionSubjects));
+					updateCollectionAfterIndexing.setLong(3, collectionId);
+					updateCollectionAfterIndexing.executeUpdate();
+				} catch (SQLException e) {
+					logEntry.incErrors("Error updating the last fetch time for collection", e);
+				}
 
-			logEntry.setFinished();
+				logEntry.setFinished();
+			}catch (Exception e) {
+				logger.error("Exception indexing oai collection", e);
+			}catch (Error e) {
+				logger.error("Error indexing oai collection", e);
+			}
 		}else{
 			//Clean up to be sure the index is cleared of old data
 			try {
