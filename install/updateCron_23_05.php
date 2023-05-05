@@ -2,15 +2,38 @@
 
 if (count($_SERVER['argv']) > 1) {
 	$serverName = $_SERVER['argv'][1];
-	$fhnd = fopen("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", 'a+');
-	fwrite($fhnd, "\n#########################\n");
-	fwrite($fhnd, "# Run Scheduled Updates #\n");
-	fwrite($fhnd, "#########################\n");
-	fwrite($fhnd, "*/5 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName\n");
+	//Check to see if the update already exists properly.
+	$fhnd = fopen("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", 'r');
+	if ($fhnd) {
+		$lines = [];
+		$insertUpdate = true;
+		$changeToRoot = false;
+		while (($line = fgets($fhnd)) !== false) {
+			if (strpos($line, 'runScheduledUpdate') > 0) {
+				$insertUpdate = false;
+				if (strpos($line, 'aspen ') > 0) {
+					$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName";
+				}else{
+					$lines[] = $line;
+				}
+			} else {
+				$lines[] = $line;
+			}
+		}
+		fclose($fhnd);
+		if ($insertUpdate) {
+			$lines[] = "#########################";
+			$lines[] = "# Run Scheduled Updates #";
+			$lines[] = "#########################";
+			$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName";
+		}
+		if ($changeToRoot || $insertUpdate) {
+			$newContent = implode("\n", $lines);
+			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
+		}
+	}
 
 } else {
-	echo 'Must provide servername as first file';
+	echo 'Must provide servername as first argument';
 	exit();
 }
-
-?>
