@@ -322,12 +322,12 @@ class CommunicoIndexer {
 											long userId = getUserIdRS.getLong("id");
 											if (registrationsForEvent.containsKey(userId)){
 												registrationsForEvent.remove(userId);
+											}else{
+												addRegistrantStmt.setLong(1, userId);
+												addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
+												addRegistrantStmt.setString(3, sourceId);
+												addRegistrantStmt.executeUpdate();
 											}
-
-											addRegistrantStmt.setLong(1, userId);
-											addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
-											addRegistrantStmt.setString(3, sourceId);
-											addRegistrantStmt.executeUpdate();
 										}
 									} catch (SQLException e) {
 										logEntry.incErrors("Error adding registrant info to database " , e);
