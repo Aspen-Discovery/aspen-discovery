@@ -64,11 +64,20 @@ function getUpdates23_05_00(): array {
 		],
 		//add_aspen_site_scheduled_update
 		'allow_long_scheduled_update_notes' => [
-			'title' => 'Allow long scheduled update notes',
+			'title' => 'Scheduled Update - Allow long scheduled update notes',
 			'description' => 'Allow long scheduled update notes',
 			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE aspen_site_scheduled_update CHANGE column notes notes TEXT'
+			],
+		],
+		//allow_long_scheduled_update_notes
+		'scheduled_update_remote_update' => [
+			'title' => 'Scheduled Update - Remote Update',
+			'description' => 'Add a flag to determine if the update is a remote update or for the local server',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update ADD column remoteUpdate TINYINT DEFAULT 0'
 			],
 		],
 		//allow_long_scheduled_update_notes
