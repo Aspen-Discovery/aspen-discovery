@@ -306,6 +306,7 @@ class CommunicoIndexer {
 				//Fetch registrations here and add to DB - for events that require registration ONLY
 				if (curEvent.getBoolean("registration")){
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
+					HashMap<Long, EventRegistrations> registrationsForEvent = loadExistingRegistrations(sourceId);
 
 					if (communicoEventRegistrants != null) {
 						for (int j = 0; j < communicoEventRegistrants.length(); j++) {
@@ -319,6 +320,9 @@ class CommunicoIndexer {
 										ResultSet getUserIdRS = getUserIdStmt.executeQuery();
 										while (getUserIdRS.next()){
 											long userId = getUserIdRS.getLong("id");
+											if (registrationsForEvent.containsKey(userId)){
+												registrationsForEvent.remove(userId);
+											}
 
 											addRegistrantStmt.setLong(1, userId);
 											addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
@@ -335,7 +339,7 @@ class CommunicoIndexer {
 						}
 					}
 
-					for(EventRegistrations registrantInfo : loadExistingRegistrations(sourceId).values()){
+					for(EventRegistrations registrantInfo : registrationsForEvent.values()){
 						try {
 							deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
 							deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
