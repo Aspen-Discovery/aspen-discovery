@@ -773,9 +773,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			if (strpos($field, 'owning_library') === 0 && isset($currentLibrary) && !is_null($currentLibrary)) {
 				$doInstitutionProcessing = true;
 			}
-			if (strpos($field, 'owning_location') === 0 && (!is_null($relatedLocationFacets) || !is_null($activeLocationFacet))) {
-				$doBranchProcessing = true;
-			} elseif (strpos($field, 'available_at') === 0) {
+			if (strpos($field, 'owning_location') === 0 || strpos($field, 'available_at') === 0) {
 				$doBranchProcessing = true;
 			}
 			// Should we translate values for the current facet?

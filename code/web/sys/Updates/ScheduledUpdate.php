@@ -74,6 +74,21 @@ class ScheduledUpdate extends DataObject {
 				'readOnly' => true,
 				'hideInLists' => true,
 			],
+			'updateType' => [
+				'property' => 'updateType',
+				'type' => 'enum',
+				'label' => 'Update Type',
+				'values' => $updateTypes,
+				'description' => 'The type of update (patch or complete)',
+			],
+			'updateToVersion' => [
+				'property' => 'updateToVersion',
+				'type' => 'enum',
+				'label' => 'Update to Version',
+				'values' => $eligibleReleases,
+				'description' => 'The version the update will upgrade to',
+				'required' => true,
+			],
 			'dateScheduled' => [
 				'property' => 'dateScheduled',
 				'type' => 'timestamp',
@@ -98,21 +113,6 @@ class ScheduledUpdate extends DataObject {
 //				'default' => $currentRelease,
 //				'readOnly' => true,
 //			],
-			'updateToVersion' => [
-				'property' => 'updateToVersion',
-				'type' => 'enum',
-				'label' => 'Update to Version',
-				'values' => $eligibleReleases,
-				'description' => 'The version the update will upgrade to',
-				'required' => true,
-			],
-			'updateType' => [
-				'property' => 'updateType',
-				'type' => 'enum',
-				'label' => 'Update Type',
-				'values' => $updateTypes,
-				'description' => 'The type of update (patch or complete)',
-			],
 			'dateRun' => [
 				'property' => 'dateRun',
 				'type' => 'timestamp',
@@ -133,7 +133,7 @@ class ScheduledUpdate extends DataObject {
 
 		if ($context == 'addNew') {
 			unset($structure['greenhouseId']);
-			unset($structure['status']);
+			$structure['status']['type'] = 'hidden';
 			unset($structure['dateRun']);
 			unset($structure['notes']);
 		}

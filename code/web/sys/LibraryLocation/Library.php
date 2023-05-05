@@ -4348,7 +4348,8 @@ class Library extends DataObject {
 			'showShareOnExternalSites' => $this->showShareOnExternalSites,
 			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit'),
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
-			'passwordLabel' => $this->loginFormPasswordLabel ?? 'Library Card Number'
+			'passwordLabel' => $this->loginFormPasswordLabel ?? 'Library Card Number',
+			'code' => $this->ilsCode,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
