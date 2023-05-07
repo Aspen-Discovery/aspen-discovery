@@ -7,4 +7,5 @@ class OpenArchivesRecord extends DataObject {
 	public $id;
 	public $sourceCollection;
 	public $permanentUrl;
+	public $lastSeen;
 }

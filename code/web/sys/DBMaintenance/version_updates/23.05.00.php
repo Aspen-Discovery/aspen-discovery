@@ -135,5 +135,13 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//user_events_registrations
+		'oai_record_lastSeen' => [
+			'title' => 'OAI Record Last Seen',
+			'description' => 'Add last seen date to open archive records',
+			'sql' => [
+				'ALTER TABLE open_archives_record ADD COLUMN lastSeen INT(11) DEFAULT 0',
+			],
+		],
+		//oai_record_lastSeen
 	];
 }
