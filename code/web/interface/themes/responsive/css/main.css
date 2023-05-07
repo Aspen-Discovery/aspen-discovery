@@ -9597,6 +9597,13 @@ a.browse-thumbnail-sorted.active {
   left: 0.5em;
   margin-right: -50%;
 }
+.modal-dialog.paymentModal {
+  width: 525px;
+}
+.modal-dialog.paymentModal .modal-content .modal-body {
+  height: 275px;
+  overflow: hidden;
+}
 /**
  * Additional Styling related to the help system
  */

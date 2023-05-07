@@ -4872,6 +4872,124 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	function createPayPalPayflowOrder() {
+		global $configArray;
+		global $interface;
+		global $activeLanguage;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('payflow');
+		} else {
+			$result = $this->createGenericOrder('payflow');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+
+			$bodyBackgroundColor = $interface->getVariable('bodyBackgroundColor');
+			$bodyTextColor = $interface->getVariable('bodyTextColor');
+			$defaultButtonBackgroundColor = $interface->getVariable('defaultButtonBackgroundColor');
+			$defaultButtonForegroundColor = $interface->getVariable('defaultButtonForegroundColor');
+
+			require_once ROOT_DIR . '/sys/ECommerce/PayPalPayflowSetting.php';
+			$payflowSettings = new PayPalPayflowSetting();
+			$payflowSettings->id = $paymentLibrary->paypalPayflowSettingId;
+			if (!$payflowSettings->find(true)) {
+				return [
+					'success' => false,
+					'message' => 'PayPal Payflow settings are not configured correctly for ' . $paymentLibrary->displayName,
+				];
+			}
+
+			$iframeUrl = 'https://payflowlink.paypal.com/';
+			$mode = 'LIVE';
+			$tokenRequestUrl = 'https://payflowpro.paypal.com/';
+			if ($payflowSettings->sandboxMode == 1 || $payflowSettings->sandboxMode == '1') {
+				$iframeUrl = 'https://pilot-payflowlink.paypal.com/';
+				$tokenRequestUrl = 'https://pilot-payflowpro.paypal.com/';
+				$mode = 'TEST';
+			}
+
+			//Create unique token
+			$uid = random_bytes(12);
+			$tokenId = bin2hex($uid);
+
+			//Get the access token
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payflowTokenRequest = new CurlWrapper();
+
+			$patron->loadContactInformation();
+			$postParams = [
+				'PARTNER' => $payflowSettings->partner,
+				'VENDOR' => $payflowSettings->vendor,
+				'USER' => $payflowSettings->user,
+				'PWD' => $payflowSettings->password,
+				'TRXTYPE' => 'S',
+				'CURRENCY' => 'USD',
+				'TEMPLATE' => 'MOBILE',
+				'AMT' => "$payment->totalPaid",
+				'CREATESECURETOKEN' => 'Y',
+				'SECURETOKENID' => $tokenId,
+				'RETURNURL' => $configArray['Site']['url'] . '/MyAccount/PayflowComplete',
+				'CANCELURL' => $configArray['Site']['url'] . '/MyAccount/PayflowCancelled',
+				'ERRORURL' => $configArray['Site']['url'] . '/MyAccount/PayflowComplete',
+				'SILENTPOSTURL' => $configArray['Site']['url'] . '/MyAccount/PayflowComplete',
+				'USER1' => $payment->id,
+				'USER2' => $_SESSION['activeUserId'],
+				'USER3' => $activeLanguage->code,
+				'PAGECOLLAPSEBGCOLOR' => $bodyBackgroundColor,
+				'PAGECOLLAPSETEXTCOLOR' => $bodyTextColor,
+				'PAGEBUTTONBGCOLOR' => $defaultButtonBackgroundColor,
+				'PAGEBUTTONTEXTCOLOR' => $defaultButtonForegroundColor,
+				'LABELTEXTCOLOR' => $bodyTextColor
+			];
+
+			foreach ($postParams as $index => $value) {
+				$paramList[] = $index . '[' . strlen($value) . ']=' . $value;
+			}
+
+			$params = implode('&', $paramList);
+
+			$tokenResults = $payflowTokenRequest->curlSendPage($tokenRequestUrl, 'POST', $params);
+			$tokenResults = PayPalPayflowSetting::parsePayflowString($tokenResults);
+			if ($tokenResults['RESULT'] != 0) {
+				return [
+					'success' => false,
+					'message' => 'Unable to authenticate with Payflow, please try again in a few minutes.',
+				];
+			} else {
+				$token = $tokenResults['SECURETOKEN'];
+				$tokenId = $tokenResults['SECURETOKENID'];
+			}
+
+			return [
+				'success' => true,
+				'paymentIframe' => "<iframe class='fulfillmentFrame' id='payflow-link-iframe' src='{$iframeUrl}/?SECURETOKEN={$token}&SECURETOKENID={$tokenId}' sandbox='allow-top-navigation allow-scripts allow-same-origin allow-forms allow-modals' border='0' frameborder='0' scrolling='no' allowtransparency='true'>\n</iframe>",
+			];
+		}
+	}
+
 	/** @noinspection PhpUnused */
 	function createACIOrder() {
 		$transactionType = $_REQUEST['type'];
