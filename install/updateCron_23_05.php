@@ -13,6 +13,7 @@ if (count($_SERVER['argv']) > 1) {
 				echo("Found runScheduled Update line\n");
 				$insertUpdate = false;
 				if (strpos($line, 'aspen ') > 0) {
+					$changeToRoot = true;
 					echo("- Need to convert to run as root\n");
 					$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName";
 				}else{
