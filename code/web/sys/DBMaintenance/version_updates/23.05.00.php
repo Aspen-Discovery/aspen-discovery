@@ -143,5 +143,12 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//oai_record_lastSeen
+		'only_allow_100_titles_per_collection_spotlight' => [
+			'title' => 'Only allow 100 titles per collection spotlight',
+			'description' => 'Only allow 100 titles per collection spotlight',
+			'sql' => [
+				'UPDATE collection_spotlights set numTitlesToShow = 100 where numTitlesToShow > 100',
+			],
+		]
 	];
 }
