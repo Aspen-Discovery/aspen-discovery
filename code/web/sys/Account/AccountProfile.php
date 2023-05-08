@@ -29,6 +29,7 @@ class AccountProfile extends DataObject {
 	public $domain;
 	public $staffUsername;
 	public $staffPassword;
+	public $overrideCode;
 	public /** @noinspection PhpUnused */
 		$apiVersion;
 	public $workstationId;
@@ -357,6 +358,14 @@ class AccountProfile extends DataObject {
 								'required' => false,
 							],
 						],
+					],
+					'overrideCode' => [
+						'property' => 'overrideCode',
+						'type' => 'storedPassword',
+						'label' => 'Override Code (Symphony only)',
+						'maxLength' => 50,
+						'description' => 'An Override Code to apply for some actions (i.e. PIN Resets)',
+						'required' => false,
 					],
 				],
 			],
