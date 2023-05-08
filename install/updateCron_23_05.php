@@ -15,7 +15,7 @@ if (count($_SERVER['argv']) > 1) {
 				if (strpos($line, 'aspen ') > 0) {
 					$changeToRoot = true;
 					//echo("- Need to convert to run as root\n");
-					$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName";
+					$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName\n";
 				}else{
 					$lines[] = $line;
 				}
@@ -26,14 +26,14 @@ if (count($_SERVER['argv']) > 1) {
 		fclose($fhnd);
 		if ($insertUpdate) {
 			//echo("- Inserting run scheduled update cron\n");
-			$lines[] = "#########################";
-			$lines[] = "# Run Scheduled Updates #";
-			$lines[] = "#########################";
-			$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName";
+			$lines[] = "#########################\n";
+			$lines[] = "# Run Scheduled Updates #\n";
+			$lines[] = "#########################\n";
+			$lines[] = "*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php $serverName\n";
 		}
 		if ($changeToRoot || $insertUpdate) {
 			//echo("- Writing new cron\n");
-			$newContent = implode("\n", $lines);
+			$newContent = implode("", $lines);
 			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
 		}
 	}else {
