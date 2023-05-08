@@ -258,7 +258,7 @@ class CommunicoIndexer {
 
 						solrDocument.addField("age_group", getNameStringsForKeyCommunico(curEvent, "ages"));
 						solrDocument.addField("program_type", getNameStringsForKeyCommunico(curEvent, "types"));
-						solrDocument.addField("internal_category", getNameStringsForKeyCommunico(curEvent, "searchTags"));
+						//solrDocument.addField("internal_category", getNameStringsForKeyCommunico(curEvent, "searchTags"));
 
 						solrDocument.addField("registration_required", curEvent.getBoolean("registration") ? "Yes" : "No");
 

@@ -279,19 +279,20 @@ class MaterialsRequestFormats extends DataObject {
 				$materialRequest->format = $previous->format;
 				$materialRequest->libraryId = $this->libraryId;
 				if ($materialRequest->count() > 0) {
-
-
 					$materialRequest = new MaterialsRequest();
-					$materialRequest->format = $this->format;
-					$materialRequest->whereAdd("`libraryId` = {$this->libraryId} AND `format`='{$previous->format}'");
-
-					if ($materialRequest->update(DB_DATAOBJECT_WHEREADD_ONLY)) {
-						return parent::update();
-
+					$materialRequest->format = $previous->format;
+					$materialRequest->libraryId = $this->libraryId;
+					$requestsToUpdate = $materialRequest->fetchAll('id');
+					foreach ($requestsToUpdate as $id) {
+						$materialRequest = new MaterialsRequest();
+						$materialRequest->id = $id;
+						if ($materialRequest->find(true)) {
+							$materialRequest->format = $this->format;
+							$materialRequest->update();
+						}
 					}
-				} else {
-					return parent::update();
 				}
+				return parent::update();
 			} else {
 				return parent::update();
 			}
