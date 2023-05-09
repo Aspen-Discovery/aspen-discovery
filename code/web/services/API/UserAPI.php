@@ -967,9 +967,16 @@ class UserAPI extends Action {
 				 */
 				foreach ($allHolds['available'] as $key => $hold) {
 					$holdsToReturn['available'][$key] = $hold->getArrayForAPIs();
+					$holdsToReturn['available'][$key]['statusMessage'] = $holdsToReturn['available'][$key]['status'];
 				}
 				foreach ($allHolds['unavailable'] as $key => $hold) {
 					$holdsToReturn['unavailable'][$key] = $hold->getArrayForAPIs();
+					$holdsToReturn['unavailable'][$key]['statusMessage'] = $holdsToReturn['unavailable'][$key]['status'];
+					if($holdsToReturn['unavailable'][$key]['frozen'] && $holdsToReturn['unavailable'][$key]['reactivateDate']) {
+						$reactivateDate = gmdate('M d, Y', $holdsToReturn['unavailable'][$key]['reactivateDate']);
+						$status = $holdsToReturn['unavailable'][$key]['status'];
+						$holdsToReturn['unavailable'][$key]['statusMessage'] = translate(['text' => "$status until %1%", 1 => $reactivateDate, 'isPublicFacing' => true]);
+					}
 				}
 				return [
 					'success' => true,
