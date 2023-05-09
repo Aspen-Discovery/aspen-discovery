@@ -7,6 +7,7 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
 $pendingUpdates = new ScheduledUpdate();
 $pendingUpdates->status = 'pending';
+$pendingUpdates->remoteUpdate = 0;
 $pendingUpdates->whereAdd('dateScheduled <= ' . time()); //Only get things where the scheduled time is before right now
 $pendingUpdates->orderBy('dateScheduled asc');
 //Load all of them once since we update them
@@ -107,7 +108,7 @@ if (count($updatesToRun) == 0) {
 				require_once ROOT_DIR . '/sys/SystemVariables.php';
 				$systemVariables = SystemVariables::getSystemVariables();
 				if (!empty($systemVariables)) {
-					$greenhouseUrl = $systemVariables->greenhouseUrl . '/Greenhouse/UpdateCenter/';
+					$greenhouseUrl = $systemVariables->greenhouseUrl;
 					require_once ROOT_DIR . '/sys/CurlWrapper.php';
 					$curl = new CurlWrapper();
 					$body = [
@@ -123,7 +124,7 @@ if (count($updatesToRun) == 0) {
 					$response = $curl->curlPostPage($greenhouseUrl . '/API/GreenhouseAPI?method=updateScheduledUpdate', $body);
 
 					//TODO: temp debugging
-					print_r($response);
+					//print_r($response);
 				}
 			}
 		}

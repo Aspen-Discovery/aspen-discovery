@@ -687,6 +687,7 @@ class GreenhouseAPI extends Action {
 		$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 		$scheduledUpdate->dateScheduled = $_REQUEST['dateScheduled'];
 		$scheduledUpdate->greenhouseId = $_REQUEST['greenhouseId'];
+		$scheduledUpdate->remoteUpdate = false;
 		if($scheduledUpdate->insert()) {
 			$result = [
 				'success' => true,

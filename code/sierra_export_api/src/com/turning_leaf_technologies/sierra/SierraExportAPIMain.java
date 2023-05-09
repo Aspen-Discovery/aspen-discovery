@@ -858,9 +858,10 @@ public class SierraExportAPIMain {
 				if (marcResults[0].has("httpStatus")){
 					if (marcResults[0].getInt("code") == 107) {
 						//This record was deleted
-						logger.debug("id " + id + " was deleted");
-						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), id);
-						getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), id);
+						String longId = ".b" + id + getCheckDigit(id);
+						logger.debug("id " + longId + " was deleted");
+						RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), longId);
+						getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), longId);
 						if (result.reindexWork) {
 							getGroupedWorkIndexer().processGroupedWork(result.permanentId);
 						} else if (result.deleteWork) {

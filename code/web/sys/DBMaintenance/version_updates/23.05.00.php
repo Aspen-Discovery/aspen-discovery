@@ -64,11 +64,20 @@ function getUpdates23_05_00(): array {
 		],
 		//add_aspen_site_scheduled_update
 		'allow_long_scheduled_update_notes' => [
-			'title' => 'Allow long scheduled update notes',
+			'title' => 'Scheduled Update - Allow long scheduled update notes',
 			'description' => 'Allow long scheduled update notes',
 			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE aspen_site_scheduled_update CHANGE column notes notes TEXT'
+			],
+		],
+		//allow_long_scheduled_update_notes
+		'scheduled_update_remote_update' => [
+			'title' => 'Scheduled Update - Remote Update',
+			'description' => 'Add a flag to determine if the update is a remote update or for the local server',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update ADD column remoteUpdate TINYINT DEFAULT 0'
 			],
 		],
 		//allow_long_scheduled_update_notes
@@ -126,5 +135,27 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//user_events_registrations
+		'oai_record_lastSeen' => [
+			'title' => 'OAI Record Last Seen',
+			'description' => 'Add last seen date to open archive records',
+			'sql' => [
+				'ALTER TABLE open_archives_record ADD COLUMN lastSeen INT(11) DEFAULT 0',
+			],
+		],
+		//oai_record_lastSeen
+		'only_allow_100_titles_per_collection_spotlight' => [
+			'title' => 'Only allow 100 titles per collection spotlight',
+			'description' => 'Only allow 100 titles per collection spotlight',
+			'sql' => [
+				'UPDATE collection_spotlights set numTitlesToShow = 100 where numTitlesToShow > 100',
+			],
+		], //only_allow_100_titles_per_collection_spotlight
+		'account_profile_overrideCode' => [
+			'title' => 'Account Profile Override Code',
+			'description' => 'Add an override code to account profiles',
+			'sql' => [
+				"ALTER TABLE account_profiles ADD COLUMN overrideCode VARCHAR(50) default ''",
+			],
+		], //account_profile_overrideCode
 	];
 }

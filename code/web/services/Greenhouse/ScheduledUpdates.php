@@ -34,7 +34,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 	}
 
 	function getDefaultSort(): string {
-		return 'id asc';
+		return 'dateScheduled desc, id desc';
 	}
 
 	function getObjectStructure($context = ''): array {
