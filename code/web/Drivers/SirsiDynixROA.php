@@ -1876,7 +1876,15 @@ class SirsiDynixROA extends HorizonAPI {
 
 		$webServiceURL = $this->getWebServiceURL();
 
-		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST');
+		if (!empty($this->accountProfile->overrideCode)) {
+			$additionalHeaders = [
+				'SD-Prompt-Return: USER_PRIVILEGE_OVRCD/' . $this->accountProfile->overrideCode
+			];
+		} else {
+			$additionalHeaders = [];
+		}
+
+		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST', $additionalHeaders);
 		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey == $patron->username) {
 			$patron->cat_password = $newPin;
 			$patron->lastLoginValidation = 0;
