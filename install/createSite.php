@@ -51,6 +51,7 @@ if (count($_SERVER['argv']) > 1){
 			$variables['ilsDriver'] = 'Koha';
 			$variables['ilsDBHost'] = $configArray['Koha']['DBHost'];
 			$variables['ilsDBName'] = $configArray['Koha']['DBName'];
+			$variables['ilsDBUser'] = $configArray['Koha']['DBUser'];
 			$variables['ilsDBPwd'] = $configArray['Koha']['DBPwd'];
 			$variables['ilsDBPort'] = $configArray['Koha']['DBPort'];
 			$variables['ilsDBTimezone'] = $configArray['Koha']['DBTimezone'];
