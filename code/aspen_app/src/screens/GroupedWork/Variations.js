@@ -6,17 +6,17 @@ import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getFirstRecord, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { getStatusIndicator } from './StatusIndicator';
-import {ActionButton} from '../../components/Action/ActionButton';
-import {decodeHTML, stripHTML} from '../../util/apiAuth';
-import {getTermFromDictionary} from '../../translations/TranslationService';
-import {confirmHold} from '../../util/api/circulation';
-import {refreshProfile} from '../../util/api/user';
+import { ActionButton } from '../../components/Action/ActionButton';
+import { decodeHTML, stripHTML } from '../../util/apiAuth';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { confirmHold } from '../../util/api/circulation';
+import { getPatronHolds, refreshProfile } from '../../util/api/user';
 
 export const Variations = (props) => {
      const route = useRoute();
@@ -26,6 +26,7 @@ export const Variations = (props) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { updateUser } = React.useContext(UserContext);
+     const { updateHolds } = React.useContext(HoldsContext);
      const [isLoading, setLoading] = React.useState(false);
      const [confirmingHold, setConfirmingHold] = React.useState(false);
      const [responseIsOpen, setResponseIsOpen] = React.useState(false);
@@ -69,70 +70,102 @@ export const Variations = (props) => {
      };
 
      const decodeMessage = (string) => {
-          return stripHTML(string)
-     }
+          return stripHTML(string);
+     };
 
      return (
-         <>{isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError(error, '') :
-             <>
-                  <FlatList data={Object.keys(data.variations)} renderItem={({ item }) => <Variation records={data.variations[item]} format={format} volumeInfo={data.volumeInfo} id={id} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>} />
-                  <Center>
-                       <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
-                            <AlertDialog.Content>
-                                 <AlertDialog.Header>{response?.title ? response.title : 'Unknown Error'}</AlertDialog.Header>
-                                 <AlertDialog.Body>{response?.message ? decodeMessage(response.message) : 'Unable to place hold for unknown error. Please contact the library.'}</AlertDialog.Body>
-                                 <AlertDialog.Footer>
-                                 <Button.Group space={3}>
-                                      {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                      <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{getTermFromDictionary(language, 'button_ok')}</Button>
-                                 </Button.Group>
-                            </AlertDialog.Footer>
-                            </AlertDialog.Content>
-                       </AlertDialog>
-                       <AlertDialog leastDestructiveRef={cancelHoldConfirmationRef} isOpen={holdConfirmationIsOpen} onClose={onHoldConfirmationClose}>
-                            <AlertDialog.Content>
-                                 <AlertDialog.Header>{holdConfirmationResponse?.title ? holdConfirmationResponse.title : 'Unknown Error'}</AlertDialog.Header>
-                                 <AlertDialog.Body>{holdConfirmationResponse?.message ? decodeMessage(holdConfirmationResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</AlertDialog.Body>
-                                 <AlertDialog.Footer>
-                                      <Button.Group space={3}>
-                                           <Button variant="outline" colorScheme="primary" ref={cancelHoldConfirmationRef} onPress={() => setHoldConfirmationIsOpen(false)}>{getTermFromDictionary(language, 'close_window')}</Button>
-                                           <Button
-                                               isLoading={confirmingHold}
-                                               isLoadingText="Placing hold..."
-                                               onPress={async () => {
-                                                    setConfirmingHold(true);
-                                                    await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async result => {
-                                                         setResponse(result);
+          <>
+               {isLoading || status === 'loading' || isFetching ? (
+                    loadingSpinner()
+               ) : status === 'error' ? (
+                    loadError(error, '')
+               ) : (
+                    <>
+                         <FlatList
+                              data={Object.keys(data.variations)}
+                              renderItem={({ item }) => (
+                                   <Variation
+                                        records={data.variations[item]}
+                                        format={format}
+                                        volumeInfo={data.volumeInfo}
+                                        id={id}
+                                        prevRoute={prevRoute}
+                                        setResponseIsOpen={setResponseIsOpen}
+                                        responseIsOpen={responseIsOpen}
+                                        onResponseClose={onResponseClose}
+                                        cancelResponseRef={cancelResponseRef}
+                                        response={response}
+                                        setResponse={setResponse}
+                                        setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
+                                        holdConfirmationIsOpen={holdConfirmationIsOpen}
+                                        onHoldConfirmationClose={onHoldConfirmationClose}
+                                        cancelHoldConfirmationRef={cancelHoldConfirmationRef}
+                                        holdConfirmationResponse={holdConfirmationResponse}
+                                        setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                   />
+                              )}
+                         />
+                         <Center>
+                              <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
+                                   <AlertDialog.Content>
+                                        <AlertDialog.Header>{response?.title ? response.title : 'Unknown Error'}</AlertDialog.Header>
+                                        <AlertDialog.Body>{response?.message ? decodeMessage(response.message) : 'Unable to place hold for unknown error. Please contact the library.'}</AlertDialog.Body>
+                                        <AlertDialog.Footer>
+                                             <Button.Group space={3}>
+                                                  {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
+                                                  <Button variant="outline" colorScheme="primary" onPress={() => setResponseIsOpen(false)}>
+                                                       {getTermFromDictionary(language, 'button_ok')}
+                                                  </Button>
+                                             </Button.Group>
+                                        </AlertDialog.Footer>
+                                   </AlertDialog.Content>
+                              </AlertDialog>
+                              <AlertDialog leastDestructiveRef={cancelHoldConfirmationRef} isOpen={holdConfirmationIsOpen} onClose={onHoldConfirmationClose}>
+                                   <AlertDialog.Content>
+                                        <AlertDialog.Header>{holdConfirmationResponse?.title ? holdConfirmationResponse.title : 'Unknown Error'}</AlertDialog.Header>
+                                        <AlertDialog.Body>{holdConfirmationResponse?.message ? decodeMessage(holdConfirmationResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}</AlertDialog.Body>
+                                        <AlertDialog.Footer>
+                                             <Button.Group space={3}>
+                                                  <Button variant="outline" colorScheme="primary" onPress={() => setHoldConfirmationIsOpen(false)}>
+                                                       {getTermFromDictionary(language, 'close_window')}
+                                                  </Button>
+                                                  <Button
+                                                       isLoading={confirmingHold}
+                                                       isLoadingText="Placing hold..."
+                                                       onPress={async () => {
+                                                            setConfirmingHold(true);
+                                                            await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async (result) => {
+                                                                 setResponse(result);
+                                                                 getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
+                                                                      updateHolds(result);
+                                                                 });
+                                                                 await refreshProfile(library.baseUrl).then((result) => {
+                                                                      updateUser(result);
+                                                                 });
 
-                                                         await refreshProfile(library.baseUrl).then((result) => {
-                                                              updateUser(result);
-                                                         });
-
-                                                         setHoldConfirmationIsOpen(false);
-                                                         setConfirmingHold(false);
-
-                                                         if (result) {
-                                                              console.log(result);
-                                                              setResponseIsOpen(true);
-                                                         }
-
-                                                    })
-                                           }
-                                           }>Yes, Place Hold</Button>
-                                      </Button.Group>
-                                 </AlertDialog.Footer>
-                            </AlertDialog.Content>
-                       </AlertDialog>
-                  </Center>
-             </>
-         }
-         </>
+                                                                 setHoldConfirmationIsOpen(false);
+                                                                 setConfirmingHold(false);
+                                                                 if (result) {
+                                                                      setResponseIsOpen(true);
+                                                                 }
+                                                            });
+                                                       }}>
+                                                       Yes, Place Hold
+                                                  </Button>
+                                             </Button.Group>
+                                        </AlertDialog.Footer>
+                                   </AlertDialog.Content>
+                              </AlertDialog>
+                         </Center>
+                    </>
+               )}
+          </>
      );
 };
 
 const Variation = (payload) => {
      const { language } = React.useContext(LanguageContext);
-     const {id, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, prevRoute, format, volumeInfo, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef} = payload;
+     const { id, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, prevRoute, format, volumeInfo, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef } = payload;
      const variation = payload.records;
      const actions = variation.actions;
      const source = variation.source;
@@ -163,9 +196,6 @@ const Variation = (payload) => {
           });
      };
 
-     console.log(variation.holdType);
-     console.log(holdTypeForFormat);
-
      return (
           <Box
                mt={5}
@@ -195,7 +225,40 @@ const Variation = (payload) => {
                          ) : null}
                     </VStack>
                     <Button.Group width="50%" justifyContent="center" alignItems="stretch" direction={_.size(variation.actions) > 1 ? 'column' : 'row'}>
-                         <FlatList data={actions} renderItem={({ item }) => <ActionButton language={language} groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={variation.id} variationId={variationId} holdTypeForFormat={holdTypeForFormat} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse}  setHoldConfirmationIsOpen={setHoldConfirmationIsOpen} holdConfirmationIsOpen={holdConfirmationIsOpen} onHoldConfirmationClose={onHoldConfirmationClose} cancelHoldConfirmationRef={cancelHoldConfirmationRef} holdConfirmationResponse={holdConfirmationResponse} setHoldConfirmationResponse={setHoldConfirmationResponse}/>} />
+                         <FlatList
+                              data={actions}
+                              renderItem={({ item }) => (
+                                   <ActionButton
+                                        language={language}
+                                        groupedWorkId={id}
+                                        recordId={recordId}
+                                        recordSource={source}
+                                        fullRecordId={variation.id}
+                                        variationId={variationId}
+                                        holdTypeForFormat={holdTypeForFormat}
+                                        title={title}
+                                        author={author}
+                                        publisher={publisher}
+                                        isbn={isbn}
+                                        oclcNumber={oclcNumber}
+                                        actions={item}
+                                        volumeInfo={volumeInfo}
+                                        prevRoute={prevRoute}
+                                        setResponseIsOpen={setResponseIsOpen}
+                                        responseIsOpen={responseIsOpen}
+                                        onResponseClose={onResponseClose}
+                                        cancelResponseRef={cancelResponseRef}
+                                        response={response}
+                                        setResponse={setResponse}
+                                        setHoldConfirmationIsOpen={setHoldConfirmationIsOpen}
+                                        holdConfirmationIsOpen={holdConfirmationIsOpen}
+                                        onHoldConfirmationClose={onHoldConfirmationClose}
+                                        cancelHoldConfirmationRef={cancelHoldConfirmationRef}
+                                        holdConfirmationResponse={holdConfirmationResponse}
+                                        setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                   />
+                              )}
+                         />
                     </Button.Group>
                </HStack>
                <Center mt={2}>
