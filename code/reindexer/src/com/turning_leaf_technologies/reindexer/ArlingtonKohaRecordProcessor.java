@@ -17,40 +17,40 @@ class ArlingtonKohaRecordProcessor extends KohaRecordProcessor {
 		super(indexer, profileType, dbConn, indexingProfileRS, logger, fullReindex);
 	}
 
-	@Override
-	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
-		//For Arlington we can load the literary forms based off of the location code:
-		// ??f?? = Fiction
-		// ??n?? = Non-Fiction
-		// ??x?? = Other
-		String literaryForm = null;
-		for (ItemInfo printItem : printItems){
-			String locationCode = printItem.getShelfLocationCode();
-			if (locationCode != null) {
-				literaryForm = getLiteraryFormForLocation(locationCode);
-				if (literaryForm != null){
-					break;
-				}
-			}
-		}
-		if (literaryForm == null){
-			literaryForm = "Other";
-		}
-		groupedWork.addLiteraryForm(literaryForm);
-		groupedWork.addLiteraryFormFull(literaryForm);
-	}
-
-	private String getLiteraryFormForLocation(String locationCode) {
-		String literaryForm = null;
-		if (locationCode.length() >= 2) {
-			if (locationCode.charAt(1) == 'F') {
-				literaryForm = "Fiction";
-			} else if (locationCode.charAt(1) == 'N') {
-				literaryForm = "Non Fiction";
-			}
-		}
-		return literaryForm;
-	}
+//	@Override
+//	protected void loadLiteraryForms(AbstractGroupedWorkSolr groupedWork, Record record, ArrayList<ItemInfo> printItems, String identifier) {
+//		//For Arlington we can load the literary forms based off of the location code:
+//		// ??f?? = Fiction
+//		// ??n?? = Non-Fiction
+//		// ??x?? = Other
+//		String literaryForm = null;
+//		for (ItemInfo printItem : printItems){
+//			String locationCode = printItem.getShelfLocationCode();
+//			if (locationCode != null) {
+//				literaryForm = getLiteraryFormForLocation(locationCode);
+//				if (literaryForm != null){
+//					break;
+//				}
+//			}
+//		}
+//		if (literaryForm == null){
+//			literaryForm = "Other";
+//		}
+//		groupedWork.addLiteraryForm(literaryForm);
+//		groupedWork.addLiteraryFormFull(literaryForm);
+//	}
+//
+//	private String getLiteraryFormForLocation(String locationCode) {
+//		String literaryForm = null;
+//		if (locationCode.length() >= 2) {
+//			if (locationCode.charAt(1) == 'F') {
+//				literaryForm = "Fiction";
+//			} else if (locationCode.charAt(1) == 'N') {
+//				literaryForm = "Non Fiction";
+//			}
+//		}
+//		return literaryForm;
+//	}
 
 	@Override
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
