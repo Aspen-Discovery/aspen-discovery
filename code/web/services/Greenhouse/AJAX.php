@@ -197,7 +197,7 @@ class Greenhouse_AJAX extends Action {
 						'isAdminFacing' => true,
 					]),
 					'modalBody' => $interface->fetch('Greenhouse/scheduleUpdateForm.tpl'),
-					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
+					'modalButtons' => '<span class="btn btn-primary" onclick="$(\'#scheduleUpdateForm\').submit();return false;">' . translate(['text' => 'Schedule', 'isAdminFacing' => true])  .'</span>',
 				];
 			}
 		} else {
@@ -305,10 +305,10 @@ class Greenhouse_AJAX extends Action {
 			$site->id = $_REQUEST['siteToUpdate'];
 			if($site->find(true)) {
 				$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
-				$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
-				if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
-					$now = new DateTime();
-					$runUpdateOn = $now->format('Y-m-d H:i');
+				if(empty($_REQUEST['runUpdateOn'])) {
+					$runUpdateOn = time();
+				}else{
+					$runUpdateOn = strtotime($_REQUEST['runUpdateOn']);
 				}
 				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 				$scheduledUpdate = new ScheduledUpdate();
@@ -317,7 +317,22 @@ class Greenhouse_AJAX extends Action {
 				$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
 				$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 				$scheduledUpdate->status = 'pending';
-				$scheduledUpdate->insert();
+				$scheduledUpdate->remoteUpdate = true;
+				if (!$scheduledUpdate->insert()) {
+					return [
+						'success' => false,
+						'title' => translate([
+							'text' => 'Schedule Update for %1%',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'Could not insert update within the greenhouse',
+							1 => $site->name,
+							'isAdminFacing' => true,
+						]),
+					];
+				}
 
 				require_once ROOT_DIR . '/sys/CurlWrapper.php';
 				$curl = new CurlWrapper();
@@ -328,8 +343,8 @@ class Greenhouse_AJAX extends Action {
 					'status' => $scheduledUpdate->status,
 					'greenhouseId' => $scheduledUpdate->id,
 				];
-				$response = $curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
-				if($response['success']) {
+				$response = json_decode($curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
+				if(!empty($response->success)) {
 					// update scheduled
 					return [
 						'success' => true,
@@ -346,7 +361,12 @@ class Greenhouse_AJAX extends Action {
 					];
 				} else {
 					// unable to schedule update
-					$scheduledUpdate->notes = $response['message'];
+					if (!empty($response->message)) {
+						$scheduledUpdate->notes = $response->message;
+					} else {
+						$scheduledUpdate->notes = "Did not get as successful response from the server, check that server has API access";
+					}
+					$scheduledUpdate->status = 'rejected';
 					$scheduledUpdate->update();
 					return [
 						'success' => false,

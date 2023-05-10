@@ -63,6 +63,24 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//add_aspen_site_scheduled_update
+		'allow_long_scheduled_update_notes' => [
+			'title' => 'Scheduled Update - Allow long scheduled update notes',
+			'description' => 'Allow long scheduled update notes',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update CHANGE column notes notes TEXT'
+			],
+		],
+		//allow_long_scheduled_update_notes
+		'scheduled_update_remote_update' => [
+			'title' => 'Scheduled Update - Remote Update',
+			'description' => 'Add a flag to determine if the update is a remote update or for the local server',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_site_scheduled_update ADD column remoteUpdate TINYINT DEFAULT 0'
+			],
+		],
+		//allow_long_scheduled_update_notes
 		'add_opt_out_batch_updates' => [
 			'title' => 'Add option opt out of batch scheduled updates',
 			'description' => 'Adds column to opt-out of batch scheduled updates for an Aspen site',
@@ -117,5 +135,13 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//user_events_registrations
+		'oai_record_lastSeen' => [
+			'title' => 'OAI Record Last Seen',
+			'description' => 'Add last seen date to open archive records',
+			'sql' => [
+				'ALTER TABLE open_archives_record ADD COLUMN lastSeen INT(11) DEFAULT 0',
+			],
+		],
+		//oai_record_lastSeen
 	];
 }

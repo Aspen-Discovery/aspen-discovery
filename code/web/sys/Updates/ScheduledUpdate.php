@@ -12,6 +12,7 @@ class ScheduledUpdate extends DataObject {
 	public $siteId;
 	public $greenhouseId;
 	public $currentVersion;
+	public $remoteUpdate;
 
 	public static function getObjectStructure($context = ''): array {
 		global $interface;
@@ -81,6 +82,14 @@ class ScheduledUpdate extends DataObject {
 				'values' => $updateTypes,
 				'description' => 'The type of update (patch or complete)',
 			],
+			'remoteUpdate' => [
+				'property' => 'remoteUpdate',
+				'type' => 'checkbox',
+				'label' => 'Remote Update',
+				'description' => 'Whether this update is scheduled on a remote server or this server',
+				'default' => 0,
+				'readOnly' => true
+			],
 			'updateToVersion' => [
 				'property' => 'updateToVersion',
 				'type' => 'enum',
@@ -134,6 +143,7 @@ class ScheduledUpdate extends DataObject {
 		if ($context == 'addNew') {
 			unset($structure['greenhouseId']);
 			$structure['status']['type'] = 'hidden';
+			unset($structure['remoteUpdate']);
 			unset($structure['dateRun']);
 			unset($structure['notes']);
 		}
@@ -144,7 +154,8 @@ class ScheduledUpdate extends DataObject {
 		return [
 			'id',
 			'siteId',
-			'greenhouseId'
+			'greenhouseId',
+			'remoteUpdate'
 		];
 	}
 }

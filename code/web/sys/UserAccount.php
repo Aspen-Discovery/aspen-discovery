@@ -865,6 +865,7 @@ class UserAccount {
 				return true;
 			}
 		}
+		return false;
 	}
 
 	static function has2FAEnabledForPType() {

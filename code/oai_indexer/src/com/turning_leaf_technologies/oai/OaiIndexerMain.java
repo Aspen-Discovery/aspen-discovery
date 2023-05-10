@@ -27,7 +27,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 public class OaiIndexerMain {
 	private static Logger logger;
@@ -41,7 +40,8 @@ public class OaiIndexerMain {
 
 	private static PreparedStatement getOpenArchiveCollections;
 	private static PreparedStatement addOpenArchivesRecord;
-	private static PreparedStatement getExistingRecordsForCollection;
+	private static PreparedStatement getExistingRecordForCollection;
+	private static PreparedStatement updateLastSeenForRecord;
 	private static PreparedStatement updateCollectionAfterIndexing;
 	private static PreparedStatement deleteOpenArchivesRecord;
 
@@ -96,8 +96,9 @@ public class OaiIndexerMain {
 			String databaseConnectionInfo = ConfigUtil.cleanIniValue(configIni.get("Database", "database_aspen_jdbc"));
 			aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 			getOpenArchiveCollections = aspenConn.prepareStatement("SELECT * FROM open_archives_collection ORDER BY name");
-			addOpenArchivesRecord = aspenConn.prepareStatement("INSERT INTO open_archives_record (sourceCollection, permanentUrl) VALUES (?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
-			getExistingRecordsForCollection = aspenConn.prepareStatement("SELECT id, permanentUrl from open_archives_record WHERE sourceCollection = ?");
+			addOpenArchivesRecord = aspenConn.prepareStatement("INSERT INTO open_archives_record (sourceCollection, permanentUrl, lastSeen) VALUES (?, ?, ?)", PreparedStatement.RETURN_GENERATED_KEYS);
+			getExistingRecordForCollection = aspenConn.prepareStatement("SELECT id, lastSeen from open_archives_record where sourceCollection = ? AND permanentUrl = ?");
+			updateLastSeenForRecord = aspenConn.prepareStatement("UPDATE open_archives_record set lastSeen = ? WHERE id = ?");
 			updateCollectionAfterIndexing = aspenConn.prepareStatement("UPDATE open_archives_collection SET lastFetched = ?, subjects = ? WHERE id = ?");
 			deleteOpenArchivesRecord = aspenConn.prepareStatement("DELETE FROM open_archives_record WHERE id = ?");
 		} catch (Exception e) {
@@ -205,11 +206,11 @@ public class OaiIndexerMain {
 
 	private static void extractAndIndexOaiCollection(String collectionName, long collectionId, boolean deleted, ArrayList<Pattern> subjectFilters, String baseUrl, String setNames, long currentTime, boolean loadOneMonthAtATime, HashSet<String> scopesToInclude) {
 		if (!deleted) {
+			long startTime = new Date().getTime() / 1000;
 			//Get the existing records for the collection
 			//Get existing records for the collection
 			OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
 
-			HashMap<String, ExistingOAIRecord> existingRecords = new HashMap<>();
 			if (!fullReload) {
 				//Only need to do this if we aren't doing a full reload since the full reload deletes everything
 				try {
@@ -222,21 +223,6 @@ public class OaiIndexerMain {
 				} catch (Exception e) {
 					logger.error("Error deleting from index", e);
 				}
-			}
-
-			//Load existing records from the database, so we can clean up later if needed.
-			try {
-				getExistingRecordsForCollection.setLong(1, collectionId);
-				ResultSet existingRecordsRS = getExistingRecordsForCollection.executeQuery();
-				while (existingRecordsRS.next()) {
-					ExistingOAIRecord existingRecord = new ExistingOAIRecord();
-					existingRecord.url = existingRecordsRS.getString("permanentUrl");
-					existingRecord.id = existingRecordsRS.getLong("id");
-					existingRecords.put(existingRecord.url, existingRecord);
-				}
-			} catch (Exception e) {
-				logger.error("Error loading records for collection " + collectionName, e);
-				return;
 			}
 
 			int numRecordsLoaded = 0;
@@ -301,7 +287,7 @@ public class OaiIndexerMain {
 
 								byte[] soapResponseByteArray = oaiResponse.getMessage().getBytes(StandardCharsets.UTF_8);
 								ByteArrayInputStream soapResponseByteArrayInputStream = new ByteArrayInputStream(soapResponseByteArray);
-								String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
+								//String contentEncoding = oaiResponse.getResponseHeaderValue("Content-Encoding");
 								InputSource soapResponseInputSource = new InputSource(soapResponseByteArrayInputStream);
 
 								Document doc = builder.parse(soapResponseInputSource);
@@ -318,7 +304,7 @@ public class OaiIndexerMain {
 										if (curRecordNode instanceof Element) {
 											logEntry.incNumRecords();
 											Element curRecordElement = (Element) curRecordNode;
-											if (indexElement(curRecordElement, existingRecords, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude)) {
+											if (indexElement(curRecordElement, collectionId, collectionName, subjectFilters, allExistingCollectionSubjects, logEntry, scopesToInclude, startTime)) {
 												numRecordsLoaded++;
 											} else {
 												numRecordsSkipped++;
@@ -359,27 +345,24 @@ public class OaiIndexerMain {
 				logEntry.addNote("Skipped " + numRecordsSkipped + " records from " + collectionName + ".");
 			}
 
-			if (existingRecords.size() > 0) {
-				try {
-					ArrayList<Long> idsToDelete = new ArrayList<>();
-					for (ExistingOAIRecord existingOAIRecord : existingRecords.values()) {
-						if (!existingOAIRecord.processed) {
-							idsToDelete.add(existingOAIRecord.id);
-						}
-					}
-					logEntry.addNote("Deleted " + idsToDelete.size() + " records from " + collectionName + ".");
-					for (Long idToDelete : idsToDelete) {
-						deleteOpenArchivesRecord.setLong(1, idToDelete);
-						deleteOpenArchivesRecord.executeUpdate();
-						logEntry.incDeleted();
-					}
-					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-				} catch (HttpSolrClient.RemoteSolrException rse) {
-					logEntry.incErrors("Solr is not running properly, try restarting", rse);
-					System.exit(-1);
-				} catch (Exception e) {
-					logEntry.incErrors("Error deleting ids from index", e);
+			//Records to delete
+			try {
+				PreparedStatement getRecordsToDeleteStmt =  aspenConn.prepareStatement("SELECT * from open_archives_record where lastSeen < " + startTime + " AND sourceCollection = " + collectionId, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+				ResultSet recordsToDeleteRS = getRecordsToDeleteStmt.executeQuery();
+				int numDeleted = 0;
+				while (recordsToDeleteRS.next()) {
+					deleteOpenArchivesRecord.setLong(1, recordsToDeleteRS.getLong("id"));
+					deleteOpenArchivesRecord.executeUpdate();
+					logEntry.incDeleted();
+					numDeleted++;
 				}
+				logEntry.incErrors("Deleted " + numDeleted + "records from the collection");
+				recordsToDeleteRS.close();
+			} catch (HttpSolrClient.RemoteSolrException rse) {
+				logEntry.incErrors("Solr is not running properly, try restarting", rse);
+				System.exit(-1);
+			} catch (SQLException e) {
+				logEntry.incErrors("Error deleting records that have not been seen since the start of indexing", e);
 			}
 
 			//Now that we are done with all changes, commit them.
@@ -439,7 +422,7 @@ public class OaiIndexerMain {
 		updateServer.setRequestWriter(new BinaryRequestWriter());
 	}
 
-	private static boolean indexElement(Element curRecordElement, HashMap<String, ExistingOAIRecord> existingRecords, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude) {
+	private static boolean indexElement(Element curRecordElement, Long collectionId, String collectionName, ArrayList<Pattern> subjectFilters, Set<String> collectionSubjects, OpenArchivesExtractLogEntry logEntry, HashSet<String> scopesToInclude, Long startTime) {
 		OAISolrRecord solrRecord = new OAISolrRecord();
 		solrRecord.setCollectionId(collectionId);
 		solrRecord.setCollectionName(collectionName);
@@ -596,20 +579,28 @@ public class OaiIndexerMain {
 					solrRecord.setCollectionId(collectionId);
 					solrRecord.setCollectionName(collectionName);
 					try {
-						if (existingRecords.containsKey(solrRecord.getIdentifier())) {
-							ExistingOAIRecord existingRecord = existingRecords.get(solrRecord.getIdentifier());
-							if (existingRecord.processed) {
+						//Check the database to see if this already exists
+						getExistingRecordForCollection.setLong(1, collectionId);
+						getExistingRecordForCollection.setString(2, solrRecord.getIdentifier());
+						ResultSet existingRecordRS = getExistingRecordForCollection.executeQuery();
+						if (existingRecordRS.next()) {
+							long lastSeen = existingRecordRS.getLong("lastSeen");
+							if (lastSeen >= startTime) {
 								logEntry.addNote("Record was already processed " + solrRecord.getIdentifier());
 								logEntry.incSkipped();
 							} else {
-								solrRecord.setId(Long.toString(existingRecord.id));
+								solrRecord.setId(existingRecordRS.getString("id"));
 								updateServer.add(solrRecord.getSolrDocument());
+								updateLastSeenForRecord.setLong(1, lastSeen);
+								updateLastSeenForRecord.setLong(2, existingRecordRS.getLong("id"));
+								updateLastSeenForRecord.executeUpdate();
 								addedToIndex = true;
 								logEntry.incUpdated();
 							}
 						} else {
 							addOpenArchivesRecord.setLong(1, collectionId);
 							addOpenArchivesRecord.setString(2, solrRecord.getIdentifier());
+							addOpenArchivesRecord.setLong(3, new Date().getTime() / 1000);
 							addOpenArchivesRecord.executeUpdate();
 							ResultSet rs = addOpenArchivesRecord.getGeneratedKeys();
 							if (rs.next()) {
@@ -618,7 +609,6 @@ public class OaiIndexerMain {
 								ExistingOAIRecord existingRecord = new ExistingOAIRecord();
 								existingRecord.id = rs.getLong(1);
 								existingRecord.url = solrRecord.getIdentifier();
-								existingRecords.put(solrRecord.getIdentifier(), existingRecord);
 								addedToIndex = true;
 							}
 							rs.close();
@@ -633,9 +623,6 @@ public class OaiIndexerMain {
 			logEntry.incErrors("Error adding document to solr server", e);
 		} catch (IOException e) {
 			logEntry.incErrors("I/O Error adding document to solr server", e);
-		}
-		if (addedToIndex && existingRecords.containsKey(solrRecord.getIdentifier())) {
-			existingRecords.get(solrRecord.getIdentifier()).processed = true;
 		}
 		return addedToIndex;
 	}
