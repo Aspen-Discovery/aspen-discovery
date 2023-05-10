@@ -1,20 +1,16 @@
 import _ from 'lodash';
 import * as Device from 'expo-device';
-import {useFocusEffect} from '@react-navigation/native';
-import {Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog} from 'native-base';
+import { useFocusEffect } from '@react-navigation/native';
+import { Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog } from 'native-base';
 import React from 'react';
-import {SafeAreaView} from 'react-native';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import {
-     deletePushToken,
-     getNotificationPreference,
-     registerForPushNotificationsAsync,
-     setNotificationPreference,
-} from '../../../components/Notifications';
-import {loadingSpinner} from '../../../components/loadingSpinner';
-import {reloadProfile} from '../../../util/api/user';
-import {PermissionsPrompt} from '../../../components/PermissionsPrompt';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { SafeAreaView } from 'react-native';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
+import { loadingSpinner } from '../../../components/loadingSpinner';
+import { reloadProfile } from '../../../util/api/user';
+import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import * as Notifications from 'expo-notifications';
 
 export const Settings_NotificationOptions = () => {
      const [isLoading, setLoading] = React.useState(true);
@@ -24,36 +20,30 @@ export const Settings_NotificationOptions = () => {
      const [notifySavedSearch, setNotifySavedSearch] = React.useState(false);
      const [notifyCustom, setNotifyCustom] = React.useState(false);
      const [notifyAccount, setNotifyAccount] = React.useState(false);
-     const {
-          user,
-          updateUser,
-          notificationSettings,
-          updateNotificationSettings,
-          expoToken,
-          aspenToken
-     } = React.useContext(UserContext);
-     const {library} = React.useContext(LibrarySystemContext);
+     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken, aspenToken } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
      const [toggled, setToggle] = React.useState(aspenToken);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
-     const {language} = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
 
      useFocusEffect(
-         React.useCallback(() => {
-              const update = async () => {
-                   if (expoToken) {
-                        if (aspenToken) {
-                             setToggle(true);
-                             await getPreferences();
-                        } else {
-                             setToggle(false);
-                        }
-                   }
-                   setLoading(false);
-              };
-              update().then(() => {
-                   return () => update();
-              });
-         }, [])
+          React.useCallback(() => {
+               const update = async () => {
+                    await createChannelsAndCategories();
+                    if (expoToken) {
+                         if (aspenToken) {
+                              setToggle(true);
+                              await getPreferences();
+                         } else {
+                              setToggle(false);
+                         }
+                    }
+                    setLoading(false);
+               };
+               update().then(() => {
+                    return () => update();
+               });
+          }, [])
      );
 
      const updateAspenToken = async () => {
@@ -89,12 +79,12 @@ export const Settings_NotificationOptions = () => {
      };
 
      const getPreferences = async () => {
-          if(_.isObject(notificationSettings)) {
+          if (_.isObject(notificationSettings)) {
                const currentPreferences = Object.values(notificationSettings);
                for await (const pref of currentPreferences) {
                     console.log(pref.option);
                     const i = _.findIndex(currentPreferences, ['option', pref.option]);
-                    const deviceSettings = _.filter(notificationSettings, {option: pref.option});
+                    const deviceSettings = _.filter(notificationSettings, { option: pref.option });
                     const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
                     if (result && i !== -1) {
                          let prevSettings = notificationSettings[i];
@@ -126,56 +116,35 @@ export const Settings_NotificationOptions = () => {
           return loadingSpinner();
      }
 
-     if(shouldRequestPermissions) {
-          return <PermissionsPrompt promptTitle='permissions_notifications_title' promptBody='permissions_notifications_body' setShouldRequestPermissions={setShouldRequestPermissions}/>
+     if (shouldRequestPermissions) {
+          return <PermissionsPrompt promptTitle="permissions_notifications_title" promptBody="permissions_notifications_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
      }
 
      return (
-         <SafeAreaView style={{flex: 1}}>
-              <Box flex={1} safeArea={5}>
-                   <HStack space={3} pb={5} alignItems="center" justifyContent="space-between">
-                        <Text bold>{getTermFromDictionary(language, 'notifications_allow')}</Text>
-                        <Switch
-                            onToggle={() => {
-                                 toggleSwitch();
-                                 updateAspenToken().then((r) => console.log(r));
-                            }}
-                            isChecked={toggled}
-                            isDisabled={allowNotifications}
-                        />
-                   </HStack>
-                   {toggled && !error ? <FlatList data={Object.keys(notificationSettings)}
-                                        renderItem={({item}) => <DisplayPreference data={notificationSettings[item]}
-                                                                                   notifySavedSearch={notifySavedSearch}
-                                                                                   setNotifySavedSearch={setNotifySavedSearch}
-                                                                                   notifyCustom={notifyCustom}
-                                                                                   setNotifyCustom={setNotifyCustom}
-                                                                                   notifyAccount={notifyAccount}
-                                                                                   setNotifyAccount={setNotifyAccount}/>}
-                                        keyExtractor={(item, index) => index.toString()}/> : null}
-              </Box>
-         </SafeAreaView>
+          <SafeAreaView style={{ flex: 1 }}>
+               <Box flex={1} safeArea={5}>
+                    <HStack space={3} pb={5} alignItems="center" justifyContent="space-between">
+                         <Text bold>{getTermFromDictionary(language, 'notifications_allow')}</Text>
+                         <Switch
+                              onToggle={() => {
+                                   toggleSwitch();
+                                   updateAspenToken().then((r) => console.log(r));
+                              }}
+                              isChecked={toggled}
+                              isDisabled={allowNotifications}
+                         />
+                    </HStack>
+                    {toggled && !error ? <FlatList data={Object.keys(notificationSettings)} renderItem={({ item }) => <DisplayPreference data={notificationSettings[item]} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />} keyExtractor={(item, index) => index.toString()} /> : null}
+               </Box>
+          </SafeAreaView>
      );
 };
 
 const DisplayPreference = (data) => {
-     const {
-          user,
-          updateUser,
-          notificationSettings,
-          updateNotificationSettings,
-          expoToken
-     } = React.useContext(UserContext);
-     const {library} = React.useContext(LibrarySystemContext);
+     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
      const preference = data.data;
-     const {
-          notifySavedSearch,
-          setNotifySavedSearch,
-          notifyCustom,
-          setNotifyCustom,
-          notifyAccount,
-          setNotifyAccount
-     } = data;
+     const { notifySavedSearch, setNotifySavedSearch, notifyCustom, setNotifyCustom, notifyAccount, setNotifyAccount } = data;
 
      let defaultToggleState = false;
      defaultToggleState = preference.allow === 1 || preference.allow === '1' || preference.allow === true;
@@ -213,17 +182,17 @@ const DisplayPreference = (data) => {
      };
 
      return (
-         <HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
-              <Text>{preference.label}</Text>
-              <Switch
-                  onToggle={() => {
-                       toggleSwitch();
-                       updatePreference(preference.option, preference.allow).then((r) => {
-                            console.log(r);
-                       });
-                  }}
-                  isChecked={toggled}
-              />
-         </HStack>
+          <HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
+               <Text>{preference.label}</Text>
+               <Switch
+                    onToggle={() => {
+                         toggleSwitch();
+                         updatePreference(preference.option, preference.allow).then((r) => {
+                              console.log(r);
+                         });
+                    }}
+                    isChecked={toggled}
+               />
+          </HStack>
      );
 };
