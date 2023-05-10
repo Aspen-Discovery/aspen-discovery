@@ -12,24 +12,27 @@ import { GLOBALS } from '../util/globals';
 import { popAlert, popToast } from './loadError';
 
 export async function registerForPushNotificationsAsync(url) {
-     console.log("url: " + url);
+     console.log('url: ' + url);
      let token = false;
      if (Device.isDevice) {
+          if (Platform.OS === 'android') {
+               await createChannelsAndCategories();
+          }
           const { status: existingStatus } = await Notifications.getPermissionsAsync();
+          console.log('status: ' + existingStatus);
           let finalStatus = existingStatus;
           if (existingStatus !== 'granted') {
-               const { status } = await Notifications.requestPermissionsAsync();
-               finalStatus = status;
+               if (Platform.OS !== 'android') {
+                    const { status } = await Notifications.requestPermissionsAsync();
+                    finalStatus = status;
+               }
           }
           if (finalStatus !== 'granted') {
                console.log('Failed to get push token for push notification!');
                return;
           }
-          if (Platform.OS === 'android') {
-               await createChannelsAndCategories();
-          }
           token = (await Notifications.getExpoPushTokenAsync()).data;
-          console.log("token: " + token);
+          console.log('token: ' + token);
           if (token) {
                await savePushToken(url, token);
           }
@@ -51,7 +54,7 @@ export async function savePushToken(url, pushToken) {
           auth: createAuthTokens(),
      });
      const response = await api.post('/UserAPI?method=saveNotificationPushToken', postBody);
-     console.log("saveNotificationPushToken: " + response);
+     console.log('saveNotificationPushToken: ' + response);
      if (response.ok) {
           if (response.data.result.success) {
                popAlert(response.data.result.title, response.data.result.message, 'success');
@@ -259,7 +262,7 @@ export async function setNotificationPreference(url, pushToken, type, value) {
      }
 }
 
-async function createChannelsAndCategories() {
+export async function createChannelsAndCategories() {
      const updatesChannelGroup = await getNotificationChannelGroup('updates');
      if (!updatesChannelGroup) {
           await createNotificationChannelGroup('updates', 'Updates');
