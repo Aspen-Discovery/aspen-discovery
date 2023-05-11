@@ -146,7 +146,7 @@ class OpenArchivesCollection extends DataObject {
 
 	public function update($context = '') {
 		//Allow last fetched to be overridden
-		if (!in_array('lastFetched', $this->_changedFields)) {
+		if (!empty($this->_changedFields) && !in_array('lastFetched', $this->_changedFields)) {
 			$this->lastFetched = 0;
 		}
 		$ret = parent::update();
