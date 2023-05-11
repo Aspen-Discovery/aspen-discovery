@@ -789,6 +789,7 @@ class UInterface extends Smarty {
 		// if using SSO, determine if it's available to only staff users or not
 		$ssoStaffOnly = false;
 		$bypassAspenLogin = false;
+		$bypassAspenPatronLogin = false;
 		$ssoService = null;
 		$samlEntityId = null;
 		$ssoSettingId = -1;
@@ -814,6 +815,7 @@ class UInterface extends Smarty {
 					$ssoStaffOnly = $ssoSettings->staffOnly;
 					$ssoService = $ssoSettings->service;
 					$bypassAspenLogin = $ssoSettings->bypassAspenLogin ?? true;
+					$bypassAspenPatronLogin = $ssoSettings->bypassAspenPatronLogin ?? false;
 					$samlEntityId = $ssoSettings->ssoEntityId;
 					$ssoIsEnabled = true;
 				}
@@ -826,6 +828,7 @@ class UInterface extends Smarty {
 		$this->assign('ssoStaffOnly', $ssoStaffOnly);
 		$this->assign('ssoService', $ssoService);
 		$this->assign('bypassAspenLogin', $bypassAspenLogin);
+		$this->assign('bypassAspenPatronLogin', $bypassAspenPatronLogin);
 		$this->assign('samlEntityId', $samlEntityId);
 
 		$loadRecaptcha = false;
