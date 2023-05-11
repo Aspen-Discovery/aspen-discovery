@@ -20,6 +20,8 @@ config/**
 !/app-configs/TEMPLATE_projectOwner.json
 !/app-configs/README.md
 /change.sh
+/startTestApp.sh
+/updateTestApps.sh
 /.tmp/*
 /google-services*.json
 /android/app/google-services*.json

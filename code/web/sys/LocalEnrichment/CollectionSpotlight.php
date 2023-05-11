@@ -127,6 +127,8 @@ class CollectionSpotlight extends DataObject {
 				'storeDb' => true,
 				'default' => 25,
 				'hideInLists' => true,
+				'min' => 1,
+				'max' => 100
 			],
 			'showTitle' => [
 				'property' => 'showTitle',

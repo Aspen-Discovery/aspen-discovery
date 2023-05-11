@@ -1,9 +1,9 @@
 import React from 'react';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { Button, Modal, Heading, FormControl, Select, CheckIcon } from 'native-base';
 import _ from 'lodash';
 import { completeAction } from '../../../screens/GroupedWork/Record';
-import { refreshProfile } from '../../../util/api/user';
+import { getPatronHolds, refreshProfile } from '../../../util/api/user';
 import { useQuery } from '@tanstack/react-query';
 import { SelectVolume } from './SelectVolume';
 import { HoldNotificationPreferences } from './HoldNotificationPreferences';
@@ -18,6 +18,7 @@ export const HoldPrompt = (props) => {
 
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { updateHolds } = React.useContext(HoldsContext);
 
      const { status, data, error, isFetching } = useQuery({
           queryKey: ['copies', id, language, library.baseUrl],
@@ -177,10 +178,11 @@ export const HoldPrompt = (props) => {
                                              setLoading(true);
                                              await completeAction(id, action, activeAccount, '', '', location, library.baseUrl, volume, holdType, holdNotificationPreferences, item).then(async (result) => {
                                                   setResponse(result);
-                                                  setShowModal(false);
                                                   if (result) {
-                                                       setResponseIsOpen(true);
                                                        if (result.success === true || result.success === 'true') {
+                                                            getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
+                                                                 updateHolds(result);
+                                                            });
                                                             await refreshProfile(library.baseUrl).then((profile) => {
                                                                  updateUser(profile);
                                                             });
@@ -200,6 +202,7 @@ export const HoldPrompt = (props) => {
                                                        }
 
                                                        setLoading(false);
+                                                       setShowModal(false);
                                                        if (result?.confirmationNeeded && result.confirmationNeeded) {
                                                             setHoldConfirmationIsOpen(true);
                                                        } else {
@@ -207,7 +210,6 @@ export const HoldPrompt = (props) => {
                                                        }
                                                   }
                                              });
-                                             setLoading(false);
                                         }}>
                                         {title}
                                    </Button>

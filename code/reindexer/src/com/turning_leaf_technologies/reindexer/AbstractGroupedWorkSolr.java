@@ -1037,10 +1037,9 @@ public abstract class AbstractGroupedWorkSolr {
 				if (!targetAudience.contains(target_audience)) {
 					if (targetAudience.contains("Unknown")) {
 						targetAudience.remove("Unknown");
-					} else //noinspection RedundantCollectionOperation
-						if (targetAudience.contains("Other")) {
-							targetAudience.remove("Other");
-						}
+					} else {
+						targetAudience.remove("Other");
+					}
 					targetAudience.add(target_audience);
 					targetAudiencesAsString = null;
 				}

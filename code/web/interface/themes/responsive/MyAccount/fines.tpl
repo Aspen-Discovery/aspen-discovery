@@ -93,9 +93,9 @@
 										{/if}
 										{if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
 											{if !empty($showOutstanding)}
-												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountOutstandingVal}" class="form-control amountToPay" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountOutstandingVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
 											{else}
-												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" class="form-control amountToPay" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
+												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> </td>
 											{/if}
 										{elseif $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
 											<td></td>
@@ -151,8 +151,6 @@
                                     {include file="MyAccount/invoiceCloudPayments.tpl"}
                                 {elseif $finePaymentType == 10}
                                     {include file="MyAccount/deluxeCertifiedPaymentsPayments.tpl"}
-                                {elseif $finePaymentType == 11}
-                                    {include file="MyAccount/paypalPayflowPayments.tpl"}
 								{/if}
 							{else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>
