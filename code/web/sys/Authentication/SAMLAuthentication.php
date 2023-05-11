@@ -313,7 +313,7 @@ class SAMLAuthentication{
 				$staffAttrValue = $this->config->samlStaffPTypeAttrValue;
 				$staffAttrValue = explode(",", $staffAttrValue);
 				$attrArray = strlen($staffAttr) > 0 ? $user[$staffAttr] : [];
-				if((isset($attrArray) && count($attrArray) == 1) || !empty(array_intersect($staffAttrValue, $attrArray))) {
+				if((isset($attrArray) && count($attrArray) == 1) || count(array_intersect($staffAttrValue, $attrArray))) {
 					$tmpUser['isStaffUser'] = true;
 					$tmpUser['staffPType'] = $this->config->samlStaffPType;
 				}
@@ -325,7 +325,7 @@ class SAMLAuthentication{
 				$studentAttrValue = $this->config->samlStudentPTypeAttrValue;
 				$studentAttrValue = explode(",", $studentAttrValue);
 				$attrArray = strlen($studentAttr) > 0 ? $user[$studentAttr] : [];
-				if((isset($attrArray) && count($attrArray) == 1) || !empty(array_intersect($studentAttrValue, $attrArray))) {
+				if((isset($attrArray) && count($attrArray) == 1) || count(array_intersect($studentAttrValue, $attrArray))) {
 					$tmpUser['isStudentUser'] = true;
 					$tmpUser['studentPType'] = $this->config->samlStudentPType;
 				}
