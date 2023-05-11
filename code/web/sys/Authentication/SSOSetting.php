@@ -688,6 +688,7 @@ class SSOSetting extends DataObject {
 								'label' => 'The value from the IdP attribute that determines if the user is a staff member',
 								'description' => 'The value from the IdP attribute defined in the previous field that determines if the user should be given the patron type for staff',
 								'size' => '512',
+								'note' => 'Use a comma to check for multiple possible values',
 								'hideInLists' => true,
 							],
 							'ssoStaffPType' => [

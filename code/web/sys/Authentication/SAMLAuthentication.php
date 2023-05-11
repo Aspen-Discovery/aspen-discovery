@@ -307,14 +307,11 @@ class SAMLAuthentication{
 			&& ($this->config->samlStaffPType != '-1' || $this->config->samlStaffPType != -1)) {
 				$staffAttr = $this->config->samlStaffPTypeAttr;
 				$staffAttrValue = $this->config->samlStaffPTypeAttrValue;
+				$staffAttrValue = explode(",", $staffAttrValue);
 				$attrArray = strlen($staffAttr) > 0 ? $user[$staffAttr] : [];
-				if(isset($attrArray) && count($attrArray) == 1) {
-					if(strlen($attrArray[0]) > 0) {
-						if($attrArray[0] == $staffAttrValue) {
-							$tmpUser['isStaffUser'] = true;
-							$tmpUser['staffPType'] = $this->config->samlStaffPType;
-						}
-					}
+				if((isset($attrArray) && count($attrArray) == 1) || !empty(array_intersect($staffAttrValue, $attrArray))) {
+					$tmpUser['isStaffUser'] = true;
+					$tmpUser['staffPType'] = $this->config->samlStaffPType;
 				}
 			}
 			$attrName = $this->config->$prop;
