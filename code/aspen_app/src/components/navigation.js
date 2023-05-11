@@ -17,20 +17,20 @@ import { enableScreens } from 'react-native-screens';
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
 
-import Login, {LoginScreen} from '../screens/Auth/Login';
+import Login, { LoginScreen } from '../screens/Auth/Login';
 import { GLOBALS } from '../util/globals';
 import { LIBRARY } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import { checkCachedUrl } from '../util/login';
 import LaunchStackNavigator from '../navigations/LaunchStackNavigator';
-import {BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider} from '../context/initialContext';
+import { BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider } from '../context/initialContext';
 import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
 import { navigationRef } from '../helpers/RootNavigator';
-import {updateAspenLiDABuild} from '../util/greenhouse';
-import {ResetExpiredPin} from '../screens/Auth/ResetExpiredPin';
-import {PermissionsPrompt} from './PermissionsPrompt';
+import { updateAspenLiDABuild } from '../util/greenhouse';
+import { ResetExpiredPin } from '../screens/Auth/ResetExpiredPin';
+import { PermissionsPrompt } from './PermissionsPrompt';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -74,7 +74,7 @@ Sentry.init({
      ],
 });
 
-Sentry.Native.setTag("patch", GLOBALS.appPatch);
+Sentry.Native.setTag('patch', GLOBALS.appPatch);
 
 export function App() {
      const primaryColor = useToken('colors', 'primary.base');
@@ -118,28 +118,32 @@ export function App() {
           {
                isLoading: true,
                isSignout: false,
-               userToken: null
+               userToken: null,
           }
      );
 
      React.useEffect(() => {
           const timer = setInterval(async () => {
                if (!__DEV__) {
-                    const update = await Updates.checkForUpdateAsync();
-                    if (update.isAvailable) {
-                         console.log('Found an update from Updates Listener...');
-                         try {
-                              console.log('Downloading update...');
-                              await Updates.fetchUpdateAsync().then(async (r) => {
-                                   console.log('Updating app...');
-                                   await Updates.reloadAsync();
-                              });
-                         } catch (e) {
-                              console.log(e);
+                    try {
+                         const update = await Updates.checkForUpdateAsync();
+                         if (update.isAvailable) {
+                              console.log('Found an update...');
+                              try {
+                                   console.log('Downloading update...');
+                                   await Updates.fetchUpdateAsync().then(async (r) => {
+                                        console.log('Updating app...');
+                                        await Updates.reloadAsync();
+                                   });
+                              } catch (e) {
+                                   console.log(e);
+                              }
                          }
+                    } catch (e) {
+                         // error checking for updates
                     }
                }
-          }, 15000);
+          }, 10000);
           return () => {
                clearInterval(timer);
           };
@@ -148,11 +152,11 @@ export function App() {
      React.useEffect(() => {
           const bootstrapAsync = async () => {
                console.log('Checking updates...');
-               if(Updates.manifest) {
+               if (Updates.manifest) {
                     await updateAspenLiDABuild(Updates.updateId, Updates.channel, Updates.createdAt);
-                    console.log('Update information sent to Greenhouse.')
+                    console.log('Update information sent to Greenhouse.');
                } else {
-                    console.log('No update to send to Greenhouse.')
+                    console.log('No update to send to Greenhouse.');
                }
 
                console.log('Checking existing session...');
@@ -218,7 +222,7 @@ export function App() {
                     await AsyncStorage.setItem('@userToken', userToken);
                     dispatch({
                          type: 'SIGN_IN',
-                         token: userToken
+                         token: userToken,
                     });
                },
                signOut: async () => {
@@ -247,115 +251,115 @@ export function App() {
                                              <BrowseCategoryProvider>
                                                   <GroupedWorkProvider>
                                                        <NavigationContainer
-                                                           theme={navigationTheme}
-                                                           ref={navigationRef}
-                                                           fallback={<Spinner />}
-                                                           linking={{
-                                                                prefixes: prefix,
-                                                                config: {
-                                                                     screens: {
-                                                                          Login: 'user/login',
-                                                                          LaunchStack: {
-                                                                               screens: {
-                                                                                    DrawerStack: {
-                                                                                         screens: {
-                                                                                              TabsNavigator: {
-                                                                                                   screens: {
-                                                                                                        AccountScreenTab: {
-                                                                                                             screens: {
-                                                                                                                  MySavedSearches: 'user/saved_searches',
-                                                                                                                  LoadSavedSearch: 'user/saved_search',
-                                                                                                                  MyLists: 'user/lists',
-                                                                                                                  MyList: 'user/list',
-                                                                                                                  MyLinkedAccounts: 'user/linked_accounts',
-                                                                                                                  MyHolds: 'user/holds',
-                                                                                                                  MyCheckouts: 'user/checkouts',
-                                                                                                                  MyPreferences: 'user/preferences',
-                                                                                                                  MyProfile: 'user',
-                                                                                                                  MyReadingHistory: 'user/reading_history',
-                                                                                                             },
-                                                                                                        },
-                                                                                                        LibraryCardTab: {
-                                                                                                             screens: {
-                                                                                                                  LibraryCard: 'user/library_card',
-                                                                                                             },
-                                                                                                        },
-                                                                                                        SearchTab: {
-                                                                                                             screens: {
-                                                                                                                  SearchResults: 'search',
-                                                                                                                  SearchByCategory: 'search/browse_category',
-                                                                                                                  SearchByAuthor: 'search/author',
-                                                                                                                  SearchByList: 'search/list',
-                                                                                                             },
-                                                                                                        },
-                                                                                                        HomeTab: {
-                                                                                                             screens: {
-                                                                                                                  HomeScreen: 'home',
-                                                                                                                  GroupedWorkScreen: 'search/grouped_work',
-                                                                                                             },
-                                                                                                        },
-                                                                                                   },
-                                                                                              },
-                                                                                         },
-                                                                                    },
-                                                                               },
-                                                                          },
-                                                                     },
-                                                                },
-                                                                async getInitialURL() {
-                                                                     let url = await Linking.getInitialURL();
+                                                            theme={navigationTheme}
+                                                            ref={navigationRef}
+                                                            fallback={<Spinner />}
+                                                            linking={{
+                                                                 prefixes: prefix,
+                                                                 config: {
+                                                                      screens: {
+                                                                           Login: 'user/login',
+                                                                           LaunchStack: {
+                                                                                screens: {
+                                                                                     DrawerStack: {
+                                                                                          screens: {
+                                                                                               TabsNavigator: {
+                                                                                                    screens: {
+                                                                                                         AccountScreenTab: {
+                                                                                                              screens: {
+                                                                                                                   MySavedSearches: 'user/saved_searches',
+                                                                                                                   LoadSavedSearch: 'user/saved_search',
+                                                                                                                   MyLists: 'user/lists',
+                                                                                                                   MyList: 'user/list',
+                                                                                                                   MyLinkedAccounts: 'user/linked_accounts',
+                                                                                                                   MyHolds: 'user/holds',
+                                                                                                                   MyCheckouts: 'user/checkouts',
+                                                                                                                   MyPreferences: 'user/preferences',
+                                                                                                                   MyProfile: 'user',
+                                                                                                                   MyReadingHistory: 'user/reading_history',
+                                                                                                              },
+                                                                                                         },
+                                                                                                         LibraryCardTab: {
+                                                                                                              screens: {
+                                                                                                                   LibraryCard: 'user/library_card',
+                                                                                                              },
+                                                                                                         },
+                                                                                                         SearchTab: {
+                                                                                                              screens: {
+                                                                                                                   SearchResults: 'search',
+                                                                                                                   SearchByCategory: 'search/browse_category',
+                                                                                                                   SearchByAuthor: 'search/author',
+                                                                                                                   SearchByList: 'search/list',
+                                                                                                              },
+                                                                                                         },
+                                                                                                         HomeTab: {
+                                                                                                              screens: {
+                                                                                                                   HomeScreen: 'home',
+                                                                                                                   GroupedWorkScreen: 'search/grouped_work',
+                                                                                                              },
+                                                                                                         },
+                                                                                                    },
+                                                                                               },
+                                                                                          },
+                                                                                     },
+                                                                                },
+                                                                           },
+                                                                      },
+                                                                 },
+                                                                 async getInitialURL() {
+                                                                      let url = await Linking.getInitialURL();
 
-                                                                     if (url != null) {
-                                                                          url = decodeURIComponent(url).replace(/\+/g, ' ');
-                                                                          url = url.replace('aspen-lida://', prefix);
-                                                                          return url;
-                                                                     }
+                                                                      if (url != null) {
+                                                                           url = decodeURIComponent(url).replace(/\+/g, ' ');
+                                                                           url = url.replace('aspen-lida://', prefix);
+                                                                           return url;
+                                                                      }
 
-                                                                     const response = await Notifications.getLastNotificationResponseAsync();
-                                                                     url = decodeURIComponent(response?.notification.request.content.data.url).replace(/\+/g, ' ');
-                                                                     url = url.replace('aspen-lida://', prefix);
-                                                                     return url;
-                                                                },
-                                                                subscribe(listener) {
-                                                                     const linkingSubscription = Linking.addEventListener('url', ({url}) => {
-                                                                          listener(url);
-                                                                     });
-                                                                     const subscription = Notifications.addNotificationResponseReceivedListener(response => {
-                                                                          const url = response.notification.request.content.data.url;
-                                                                          listener(url);
-                                                                     });
+                                                                      const response = await Notifications.getLastNotificationResponseAsync();
+                                                                      url = decodeURIComponent(response?.notification.request.content.data.url).replace(/\+/g, ' ');
+                                                                      url = url.replace('aspen-lida://', prefix);
+                                                                      return url;
+                                                                 },
+                                                                 subscribe(listener) {
+                                                                      const linkingSubscription = Linking.addEventListener('url', ({ url }) => {
+                                                                           listener(url);
+                                                                      });
+                                                                      const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+                                                                           const url = response.notification.request.content.data.url;
+                                                                           listener(url);
+                                                                      });
 
-                                                                     return () => {
-                                                                          subscription.remove();
-                                                                          linkingSubscription.remove();
-                                                                     };
-                                                                },
-                                                           }}>
+                                                                      return () => {
+                                                                           subscription.remove();
+                                                                           linkingSubscription.remove();
+                                                                      };
+                                                                 },
+                                                            }}>
                                                             <Stack.Navigator
-                                                                screenOptions={{
-                                                                     headerShown: false,
-                                                                }}
-                                                                name="RootNavigator">
+                                                                 screenOptions={{
+                                                                      headerShown: false,
+                                                                 }}
+                                                                 name="RootNavigator">
                                                                  {state.userToken === null ? (
-                                                                     // No token found, user isn't signed in
-                                                                     <Stack.Screen
-                                                                         name="Login"
-                                                                         component={LoginScreen}
-                                                                         options={{
-                                                                              headerShown: false,
-                                                                              animationTypeForReplace: state.isSignout ? 'pop' : 'push',
-                                                                         }}
-                                                                     />
+                                                                      // No token found, user isn't signed in
+                                                                      <Stack.Screen
+                                                                           name="Login"
+                                                                           component={LoginScreen}
+                                                                           options={{
+                                                                                headerShown: false,
+                                                                                animationTypeForReplace: state.isSignout ? 'pop' : 'push',
+                                                                           }}
+                                                                      />
                                                                  ) : (
-                                                                     // User is signed in
-                                                                     <Stack.Screen
-                                                                         name="LaunchStack"
-                                                                         component={LaunchStackNavigator}
-                                                                         options={{
-                                                                              animationEnabled: false,
-                                                                              header: () => null,
-                                                                         }}
-                                                                     />
+                                                                      // User is signed in
+                                                                      <Stack.Screen
+                                                                           name="LaunchStack"
+                                                                           component={LaunchStackNavigator}
+                                                                           options={{
+                                                                                animationEnabled: false,
+                                                                                header: () => null,
+                                                                           }}
+                                                                      />
                                                                  )}
                                                             </Stack.Navigator>
                                                        </NavigationContainer>
