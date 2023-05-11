@@ -143,5 +143,19 @@ function getUpdates23_05_00(): array {
 			],
 		],
 		//oai_record_lastSeen
+		'only_allow_100_titles_per_collection_spotlight' => [
+			'title' => 'Only allow 100 titles per collection spotlight',
+			'description' => 'Only allow 100 titles per collection spotlight',
+			'sql' => [
+				'UPDATE collection_spotlights set numTitlesToShow = 100 where numTitlesToShow > 100',
+			],
+		], //only_allow_100_titles_per_collection_spotlight
+		'account_profile_overrideCode' => [
+			'title' => 'Account Profile Override Code',
+			'description' => 'Add an override code to account profiles',
+			'sql' => [
+				"ALTER TABLE account_profiles ADD COLUMN overrideCode VARCHAR(50) default ''",
+			],
+		], //account_profile_overrideCode
 	];
 }

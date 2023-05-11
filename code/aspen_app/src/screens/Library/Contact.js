@@ -5,13 +5,14 @@ import * as WebBrowser from 'expo-web-browser';
 import { Box, Button, Center, Icon, Heading, Text, Divider } from 'native-base';
 import React, { Component } from 'react';
 import { showLocation } from 'react-native-map-link';
-import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
 import HoursAndLocation from './HoursAndLocation';
-import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { PATRON } from '../../util/loadPatron';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { GLOBALS } from '../../util/globals';
+import { PermissionsPrompt } from '../../components/PermissionsPrompt';
 
 export const ContactLibrary = () => {
      const { user } = React.useContext(UserContext);
@@ -38,13 +39,21 @@ export const ContactLibrary = () => {
      };
 
      const getDirections = async (locationLatitude, locationLongitude) => {
-          showLocation({
-               latitude: locationLatitude,
-               longitude: locationLongitude,
-               sourceLatitude: PATRON.coords.lat ?? 0,
-               sourceLongitude: PATRON.coords.long ?? 0,
-               googleForceLatLon: true,
-          });
+          if (PATRON.coords.lat && PATRON.coords.long && PATRON.coords.lat !== 0 && PATRON.coords.long !== 0) {
+               showLocation({
+                    latitude: locationLatitude,
+                    longitude: locationLongitude,
+                    sourceLatitude: PATRON.coords.lat,
+                    sourceLongitude: PATRON.coords.long,
+                    googleForceLatLon: true,
+               });
+          } else {
+               showLocation({
+                    latitude: locationLatitude,
+                    longitude: locationLongitude,
+                    googleForceLatLon: true,
+               });
+          }
      };
 
      return (

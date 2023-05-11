@@ -2,11 +2,11 @@ import moment from 'moment';
 import { Badge, Box, Text } from 'native-base';
 import React from 'react';
 
-import {LanguageContext, UserContext} from '../context/initialContext';
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { LanguageContext, UserContext } from '../context/initialContext';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const isOverdue = (overdue) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (overdue) {
           return (
                <Text>
@@ -56,7 +56,7 @@ export function getCleanTitle(title) {
 }
 
 export const getAuthor = (author) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (author) {
           let displayAuthor = author;
           const countComma = displayAuthor.split(',').length - 1;
@@ -78,32 +78,32 @@ export const getAuthor = (author) => {
 };
 
 export const getFormat = (format, source = null) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (format !== 'Unknown') {
-         if(source) {
-             if(source !== 'ils') {
-                 if(source === 'interlibrary_loan') {
-                     source = 'Interlibrary Loan';
-                 } else if (source === 'axis360') {
-                     source = 'Axis 360';
-                 } else if (source === 'cloudlibrary') {
-                     source = 'CloudLibrary';
-                 } else if (source === 'hoopla') {
-                     source = 'Hoopla';
-                 } else if (source === 'overdrive') {
-                     source = 'OverDrive'
-                 }
-                 return (
-                     <Text
-                         fontSize={{
-                             base: 'xs',
-                             lg: 'sm',
-                         }}>
-                         <Text bold>{getTermFromDictionary(language, 'format')}:</Text> {format} - {source}
-                     </Text>
-                 );
-             }
-         }
+          if (source) {
+               if (source !== 'ils') {
+                    if (source === 'interlibrary_loan') {
+                         source = 'Interlibrary Loan';
+                    } else if (source === 'axis360') {
+                         source = 'Axis 360';
+                    } else if (source === 'cloudlibrary') {
+                         source = 'CloudLibrary';
+                    } else if (source === 'hoopla') {
+                         source = 'Hoopla';
+                    } else if (source === 'overdrive') {
+                         source = 'OverDrive';
+                    }
+                    return (
+                         <Text
+                              fontSize={{
+                                   base: 'xs',
+                                   lg: 'sm',
+                              }}>
+                              <Text bold>{getTermFromDictionary(language, 'format')}:</Text> {format} - {source}
+                         </Text>
+                    );
+               }
+          }
           return (
                <Text
                     fontSize={{
@@ -118,9 +118,18 @@ export const getFormat = (format, source = null) => {
      }
 };
 
-export const getBadge = (status, frozen, available, source) => {
-    const { language } = React.useContext(LanguageContext);
+export const getBadge = (status, frozen, available, source, statusMessage) => {
+     const { language } = React.useContext(LanguageContext);
      if (frozen) {
+          if (statusMessage) {
+               return (
+                    <Text>
+                         <Badge colorScheme="yellow" rounded="4px" mt={-0.5}>
+                              {statusMessage}
+                         </Badge>
+                    </Text>
+               );
+          }
           return (
                <Text>
                     <Badge colorScheme="yellow" rounded="4px" mt={-0.5}>
@@ -141,20 +150,21 @@ export const getBadge = (status, frozen, available, source) => {
                </Text>
           );
      } else {
-          if(status) {
-              return (
-                  <Text>
-                      <Badge colorScheme="orange" rounded="4px" mt={-0.5}>
-                          {status}
-                      </Badge>
-                  </Text>
-              );
+          if (status) {
+               return (
+                    <Text>
+                         <Badge colorScheme="orange" rounded="4px" mt={-0.5}>
+                              {status}
+                         </Badge>
+                    </Text>
+               );
           }
-     } return null;
+     }
+     return null;
 };
 
 export const getStatus = (status, source) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (status) {
           if (source === 'vdx') {
                return (
@@ -173,19 +183,19 @@ export const getStatus = (status, source) => {
 };
 
 export const getType = (type) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (type && type !== 'ils') {
-         if(type === 'interlibrary_loan') {
-             type = getTermFromDictionary(language, 'interlibrary_loan');
-         } else if (type === 'axis360') {
-             type = getTermFromDictionary(language, 'axis360');
-         } else if (type === 'cloudlibrary') {
-             type = getTermFromDictionary(language, 'cloud_library');
-         } else if (type === 'hoopla') {
-             type = getTermFromDictionary(language, 'hoopla');
-         } else if (type === 'overdrive') {
-             type = getTermFromDictionary(language, 'overdrive')
-         }
+          if (type === 'interlibrary_loan') {
+               type = getTermFromDictionary(language, 'interlibrary_loan');
+          } else if (type === 'axis360') {
+               type = getTermFromDictionary(language, 'axis360');
+          } else if (type === 'cloudlibrary') {
+               type = getTermFromDictionary(language, 'cloud_library');
+          } else if (type === 'hoopla') {
+               type = getTermFromDictionary(language, 'hoopla');
+          } else if (type === 'overdrive') {
+               type = getTermFromDictionary(language, 'overdrive');
+          }
 
           return (
                <Text
@@ -202,7 +212,7 @@ export const getType = (type) => {
 };
 
 export const getOnHoldFor = (user) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (user) {
           return (
                <Text
@@ -218,7 +228,7 @@ export const getOnHoldFor = (user) => {
 };
 
 export const getCheckedOutTo = (props) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      const { user } = React.useContext(UserContext);
      const [checkedOutTo, setCheckedOutTo] = React.useState();
      if (user.id !== checkedOutTo) {
@@ -237,7 +247,7 @@ export const getCheckedOutTo = (props) => {
 };
 
 export const getDueDate = (date) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      const dueDate = moment.unix(date);
      const itemDueOn = moment(dueDate).format('MMM D, YYYY');
      return (
@@ -252,7 +262,7 @@ export const getDueDate = (date) => {
 };
 
 export const willAutoRenew = (props) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (props.autoRenew === 1) {
           return (
                <Box mt={1} p={0.5} bgColor="muted.100">
@@ -271,7 +281,7 @@ export const willAutoRenew = (props) => {
 };
 
 export const getPickupLocation = (location, source) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (location && source === 'ils') {
           return (
                <Text
@@ -288,19 +298,19 @@ export const getPickupLocation = (location, source) => {
 };
 
 export const getPosition = (position, available, length, holdPosition) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (position && !available && position !== 0 && position !== '0') {
-         if(length) {
-             return (
-                 <Text
-                     fontSize={{
-                         base: 'xs',
-                         lg: 'sm',
-                     }}>
-                     <Text bold>{getTermFromDictionary(language, 'hold_position')}:</Text> {holdPosition}
-                 </Text>
-             );
-         }
+          if (length) {
+               return (
+                    <Text
+                         fontSize={{
+                              base: 'xs',
+                              lg: 'sm',
+                         }}>
+                         <Text bold>{getTermFromDictionary(language, 'hold_position')}:</Text> {holdPosition}
+                    </Text>
+               );
+          }
           return (
                <Text
                     fontSize={{
@@ -316,7 +326,7 @@ export const getPosition = (position, available, length, holdPosition) => {
 };
 
 export const getExpirationDate = (expiration, available) => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      if (expiration && available) {
           const expirationDateUnix = moment.unix(expiration);
           let expirationDate = moment(expirationDateUnix).format('MMM D, YYYY');
@@ -335,18 +345,18 @@ export const getExpirationDate = (expiration, available) => {
 };
 
 export const getRenewalCount = (count, available = null) => {
-    const { language } = React.useContext(LanguageContext);
-    if(available) {
-        return (
-            <Text
-                fontSize={{
-                    base: 'xs',
-                    lg: 'sm',
-                }}>
-                <Text bold>{getTermFromDictionary(language, 'checkout_renewed')}:</Text> {count} of {available} times
-            </Text>
-        );
-    } else {
-        return null;
-    }
-}
+     const { language } = React.useContext(LanguageContext);
+     if (available) {
+          return (
+               <Text
+                    fontSize={{
+                         base: 'xs',
+                         lg: 'sm',
+                    }}>
+                    <Text bold>{getTermFromDictionary(language, 'checkout_renewed')}:</Text> {count} of {available} times
+               </Text>
+          );
+     } else {
+          return null;
+     }
+};
