@@ -42,6 +42,17 @@ function getUpdates23_06_00(): array {
 			],
 		],
 		// permissions_ecommerce_payflow
+		'add_sso_saml_student_attributes' => [
+			'title' => 'Add settings to setup student users with SSO',
+			'description' => 'Add settings to setup student users with SSO using SAML',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN samlStudentPTypeAttr VARCHAR(255) DEFAULT null',
+				'ALTER TABLE sso_setting ADD COLUMN samlStudentPTypeAttrValue VARCHAR(255) DEFAULT null',
+				'ALTER TABLE sso_setting ADD COLUMN samlStudentPType VARCHAR(30) DEFAULT null',
+			],
+		],
+		//add_sso_saml_student_attributes
 		//kodi
 		//other
 	];

@@ -58,6 +58,9 @@ class SSOSetting extends DataObject {
 	public $ssoLibraryIdAttr;
 	public $ssoLibraryIdFallback;
 	public $ssoCategoryIdAttr;
+	public $samlStudentPTypeAttr;
+	public $samlStudentPTypeAttrValue;
+	public $samlStudentPType;
 	public $samlStaffPTypeAttr;
 	public $samlStaffPTypeAttrValue;
 	public $samlStaffPType;
@@ -639,7 +642,7 @@ class SSOSetting extends DataObject {
 					'ssoCategoryIdSection' => [
 						'property' => 'ssoCategoryIdSection',
 						'type' => 'section',
-						'label' => 'Patron Type',
+						'label' => 'Default Patron Type',
 						'hideInLists' => true,
 						'note' => 'Users will also be granted any roles/permissions assigned to this patron type',
 						'renderAsHeading' => true,
@@ -663,6 +666,41 @@ class SSOSetting extends DataObject {
 								'description' => 'A value to be used in the event the IdP does not supply a category id attribute, this should be an id that is recognised by your LMS/ILS',
 								'hideInLists' => true,
 							],
+						],
+					],
+					'samlStudentSection' => [
+						'property' => 'samlStudentSection',
+						'type' => 'section',
+						'label' => 'Student Users',
+						'renderAsHeading' => true,
+						'showBottomBorder' => true,
+						'headingLevel' => 'h3',
+						'note' => 'Users will also be granted any roles/permissions assigned to this patron type',
+						'properties' => [
+							'samlStudentPTypeAttr' => [
+								'property' => 'samlStudentPTypeAttr',
+								'type' => 'text',
+								'label' => 'IdP attribute that determines if the user is a student',
+								'description' => 'The attribute that the IdP sends that Aspen should look at when determining if the user is a student',
+								'size' => '512',
+								'hideInLists' => true,
+							],
+							'samlStudentPTypeAttrValue' => [
+								'property' => 'samlStudentPTypeAttrValue',
+								'type' => 'text',
+								'label' => 'The value from the IdP attribute that determines if the user is a student',
+								'description' => 'The value from the IdP attribute defined in the previous field that determine sif the user should be given the patron type for students',
+								'size' => '512',
+								'note' => 'Use a comma to check for multiple possible values',
+								'hideInLists' => true,
+							],
+							'samlStudentPType' => [
+								'property' => 'samlStudentPType',
+								'type' => 'enum',
+								'values' => $ptypeListForStaff,
+								'label' => 'Patron type given to student users',
+								'hideInLists' => true,
+							]
 						],
 					],
 					'samlStaffSection' => [

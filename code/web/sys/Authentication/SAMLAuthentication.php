@@ -17,6 +17,7 @@ class SAMLAuthentication{
 	protected string $ilsUniqueAttribute = '';
 	protected string $uid;
 	protected bool $isStaffUser = false;
+	protected bool $isStudentUser = false;
 
 	protected bool $ssoAuthOnly = false;
 
@@ -302,7 +303,10 @@ class SAMLAuthentication{
 		$tmpUser = [];
 		$tmpUser['isStaffUser'] = false;
 		$tmpUser['staffPType'] = null;
+		$tmpUser['isStudentUser'] = false;
+		$tmpUser['studentPType'] = null;
 		foreach ($this->matchpoints as $prop => $content) {
+			// check if the user should be classified as staff or a student instead of a standard patron
 			if(!empty($this->config->samlStaffPTypeAttr) && !empty($this->config->samlStaffPTypeAttrValue)
 			&& ($this->config->samlStaffPType != '-1' || $this->config->samlStaffPType != -1)) {
 				$staffAttr = $this->config->samlStaffPTypeAttr;
@@ -314,6 +318,19 @@ class SAMLAuthentication{
 					$tmpUser['staffPType'] = $this->config->samlStaffPType;
 				}
 			}
+
+			if (!empty($this->config->samlStudentPTypeAttr) && !empty($this->config->samlStudentPTypeAttrValue)
+				&& ($this->config->samlStudentPType != '-1' || $this->config->samlStudentPType != -1)) {
+				$studentAttr = $this->config->samlStudentPTypeAttr;
+				$studentAttrValue = $this->config->samlStudentPTypeAttrValue;
+				$studentAttrValue = explode(",", $studentAttrValue);
+				$attrArray = strlen($studentAttr) > 0 ? $user[$studentAttr] : [];
+				if((isset($attrArray) && count($attrArray) == 1) || !empty(array_intersect($studentAttrValue, $attrArray))) {
+					$tmpUser['isStudentUser'] = true;
+					$tmpUser['studentPType'] = $this->config->samlStudentPType;
+				}
+			}
+
 			$attrName = $this->config->$prop;
 			$attrArray = (strlen($attrName) > 0 && array_key_exists($attrName, $user)) ? $user[$attrName] : [];
 			if(isset($attrArray) && count($attrArray) == 1) {
@@ -337,6 +354,7 @@ class SAMLAuthentication{
 		}
 
 		$this->isStaffUser = $tmpUser['isStaffUser'] ?? false;
+		$this->isStudentUser = $tmpUser['isStudentUser'] ?? false;
 
 		return $tmpUser;
 	}
@@ -350,7 +368,7 @@ class SAMLAuthentication{
 	private function setupILSUser($ssoArray) : array {
 		$ilsUser = [];
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		$ilsMapping = $catalogConnection->getLmsToSso($this->isStaffUser, $this->config->ssoUseGivenUserId, $this->config->ssoUseGivenUsername);
+		$ilsMapping = $catalogConnection->getLmsToSso($this->isStaffUser, $this->isStudentUser, $this->config->ssoUseGivenUserId, $this->config->ssoUseGivenUsername);
 
 		foreach($ilsMapping as $key => $mappings) {
 			$primaryAttr = $mappings['primary'];

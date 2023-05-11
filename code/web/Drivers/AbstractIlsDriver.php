@@ -456,7 +456,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	 *
 	 * @return array|bool
 	 */
-	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
+	public function lmsToSso($isStaffUser, $isStudentUser, $useGivenUserId, $useGivenCardnumber) {
 		return false;
 	}
 
