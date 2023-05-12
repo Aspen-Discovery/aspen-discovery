@@ -9,12 +9,12 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
-import {CheckoutsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import {getPatronCheckedOutItems, refreshProfile, reloadProfile} from '../../../util/api/user';
-import {getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew} from '../../../helpers/item';
+import { CheckoutsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { getPatronCheckedOutItems, refreshProfile, reloadProfile } from '../../../util/api/user';
+import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
-import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyCheckouts = () => {
      const navigation = useNavigation();
@@ -31,7 +31,7 @@ export const MyCheckouts = () => {
           overdrive: 'Filter by OverDrive',
           axis360: 'Filter by Axis 360',
           cloudlibrary: 'Filter by cloudLibrary',
-          all: 'Filter by All'
+          all: 'Filter by All',
      });
      const [checkoutsBy, setCheckoutBy] = React.useState({
           ils: 'Checked Out Titles for Physical Materials',
@@ -39,8 +39,8 @@ export const MyCheckouts = () => {
           overdrive: 'Checked Out Titles for OverDrive',
           axis360: 'Checked Out Titles for Axis 360',
           cloudlibrary: 'Checked Out Titles for cloudLibrary',
-          all: 'Checked Out Titles'
-     })
+          all: 'Checked Out Titles',
+     });
 
      const toggleSource = async (value) => {
           setSource(value);
@@ -51,15 +51,15 @@ export const MyCheckouts = () => {
                }
                if (!_.isNull(value)) {
                     if (value === 'ils') {
-                         navigation.setOptions({title: checkoutsBy.ils});
+                         navigation.setOptions({ title: checkoutsBy.ils });
                     } else if (value === 'overdrive') {
-                         navigation.setOptions({title: checkoutsBy.overdrive});
+                         navigation.setOptions({ title: checkoutsBy.overdrive });
                     } else if (value === 'cloud_library') {
-                         navigation.setOptions({title: checkoutsBy.cloudlibrary});
+                         navigation.setOptions({ title: checkoutsBy.cloudlibrary });
                     } else if (value === 'axis360') {
-                         navigation.setOptions({title: checkoutsBy.axis360});
+                         navigation.setOptions({ title: checkoutsBy.axis360 });
                     } else {
-                         navigation.setOptions({title: getTermFromDictionary(language, 'checked_out_titles')});
+                         navigation.setOptions({ title: getTermFromDictionary(language, 'checked_out_titles') });
                     }
                }
                setLoading(false);
@@ -69,62 +69,64 @@ export const MyCheckouts = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await getPatronCheckedOutItems(source, library.baseUrl, true, language).then(async (result) => {
-                         if (checkouts !== result) {
-                              updateCheckouts(result);
-                         }
-                         await getTranslationsWithValues('filter_by_source', 'Physical Materials', language, library.baseUrl).then(term => {
-                              let tmp = filterBy;
-                              tmp = _.set(tmp, 'ils', _.toString(term));
-                              setFilterBy(tmp);
-                         })
-                         await getTranslationsWithValues('filter_by_source', 'Hoopla', language, library.baseUrl).then(term => {
-                              let tmp = filterBy;
-                              tmp = _.set(tmp, 'hoopla', _.toString(term));
-                              setFilterBy(tmp);
-                         })
-                         await getTranslationsWithValues('filter_by_source', 'OverDrive', language, library.baseUrl).then(term => {
-                              let tmp = filterBy;
-                              tmp = _.set(tmp, 'overdrive', _.toString(term));
-                              setFilterBy(tmp);
-                         })
-                         await getTranslationsWithValues('filter_by_source', 'cloudLibrary', language, library.baseUrl).then(term => {
-                              let tmp = filterBy;
-                              tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
-                              setFilterBy(tmp);
-                         })
-                         await getTranslationsWithValues('filter_by_source', 'All', language, library.baseUrl).then(term => {
-                              let tmp = filterBy;
-                              tmp = _.set(tmp, 'all', _.toString(term));
-                              setFilterBy(tmp);
-                         })
-                         await getTranslationsWithValues('filter_by_source', 'Axis 360', language, library.baseUrl).then(term => {
-                              let tmp = filterBy;
-                              tmp = _.set(tmp, 'axis360', _.toString(term));
-                              setFilterBy(tmp);
-                         })
-                         await getTranslationsWithValues('checkouts_for_source', 'OverDrive', language, library.baseUrl).then(term => {
-                              let tmp = checkoutsBy;
-                              tmp = _.set(tmp, 'overdrive', _.toString(term));
-                              setCheckoutBy(tmp);
-                         })
-                         await getTranslationsWithValues('checkouts_for_source', 'Hoopla', language, library.baseUrl).then(term => {
-                              let tmp = checkoutsBy;
-                              tmp = _.set(tmp, 'hoopla', _.toString(term));
-                              setCheckoutBy(tmp);
-                         })
-                         await getTranslationsWithValues('checkouts_for_source', 'cloudLibrary', language, library.baseUrl).then(term => {
-                              let tmp = checkoutsBy;
-                              tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
-                              setCheckoutBy(tmp);
-                         })
-                         await getTranslationsWithValues('checkouts_for_source', 'Axis 360', language, library.baseUrl).then(term => {
-                              let tmp = checkoutsBy;
-                              tmp = _.set(tmp, 'axis360', _.toString(term));
-                              setCheckoutBy(tmp);
-                         })
-                         setLoading(false);
+                    if (!checkouts) {
+                         await getPatronCheckedOutItems(source, library.baseUrl, true, language).then(async (result) => {
+                              if (checkouts !== result) {
+                                   updateCheckouts(result);
+                              }
+                         });
+                    }
+                    await getTranslationsWithValues('filter_by_source', 'Physical Materials', language, library.baseUrl).then((term) => {
+                         let tmp = filterBy;
+                         tmp = _.set(tmp, 'ils', _.toString(term));
+                         setFilterBy(tmp);
                     });
+                    await getTranslationsWithValues('filter_by_source', 'Hoopla', language, library.baseUrl).then((term) => {
+                         let tmp = filterBy;
+                         tmp = _.set(tmp, 'hoopla', _.toString(term));
+                         setFilterBy(tmp);
+                    });
+                    await getTranslationsWithValues('filter_by_source', 'OverDrive', language, library.baseUrl).then((term) => {
+                         let tmp = filterBy;
+                         tmp = _.set(tmp, 'overdrive', _.toString(term));
+                         setFilterBy(tmp);
+                    });
+                    await getTranslationsWithValues('filter_by_source', 'cloudLibrary', language, library.baseUrl).then((term) => {
+                         let tmp = filterBy;
+                         tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
+                         setFilterBy(tmp);
+                    });
+                    await getTranslationsWithValues('filter_by_source', 'All', language, library.baseUrl).then((term) => {
+                         let tmp = filterBy;
+                         tmp = _.set(tmp, 'all', _.toString(term));
+                         setFilterBy(tmp);
+                    });
+                    await getTranslationsWithValues('filter_by_source', 'Axis 360', language, library.baseUrl).then((term) => {
+                         let tmp = filterBy;
+                         tmp = _.set(tmp, 'axis360', _.toString(term));
+                         setFilterBy(tmp);
+                    });
+                    await getTranslationsWithValues('checkouts_for_source', 'OverDrive', language, library.baseUrl).then((term) => {
+                         let tmp = checkoutsBy;
+                         tmp = _.set(tmp, 'overdrive', _.toString(term));
+                         setCheckoutBy(tmp);
+                    });
+                    await getTranslationsWithValues('checkouts_for_source', 'Hoopla', language, library.baseUrl).then((term) => {
+                         let tmp = checkoutsBy;
+                         tmp = _.set(tmp, 'hoopla', _.toString(term));
+                         setCheckoutBy(tmp);
+                    });
+                    await getTranslationsWithValues('checkouts_for_source', 'cloudLibrary', language, library.baseUrl).then((term) => {
+                         let tmp = checkoutsBy;
+                         tmp = _.set(tmp, 'cloudlibrary', _.toString(term));
+                         setCheckoutBy(tmp);
+                    });
+                    await getTranslationsWithValues('checkouts_for_source', 'Axis 360', language, library.baseUrl).then((term) => {
+                         let tmp = checkoutsBy;
+                         tmp = _.set(tmp, 'axis360', _.toString(term));
+                         setCheckoutBy(tmp);
+                    });
+                    setLoading(false);
                };
                update().then(() => {
                     return () => update();
@@ -158,7 +160,7 @@ export const MyCheckouts = () => {
                     updateUser(result);
                }
                setLoading(false);
-          })
+          });
      };
 
      const refreshCheckouts = async () => {
@@ -168,7 +170,7 @@ export const MyCheckouts = () => {
                     updateUser(result);
                }
                setLoading(false);
-          })
+          });
      };
 
      const actionButtons = () => {
@@ -202,20 +204,20 @@ export const MyCheckouts = () => {
                          </Button>
                          <FormControl w={175}>
                               <Select
-                                  name="holdSource"
-                                  selectedValue={source}
-                                  accessibilityLabel={getTermFromDictionary(language, 'filter_by_source_label')}
-                                  _selectedItem={{
-                                       bg: 'tertiary.300',
-                                       endIcon: <CheckIcon size="5"/>,
-                                  }}
-                                  onValueChange={(itemValue) => toggleSource(itemValue)}>
+                                   name="holdSource"
+                                   selectedValue={source}
+                                   accessibilityLabel={getTermFromDictionary(language, 'filter_by_source_label')}
+                                   _selectedItem={{
+                                        bg: 'tertiary.300',
+                                        endIcon: <CheckIcon size="5" />,
+                                   }}
+                                   onValueChange={(itemValue) => toggleSource(itemValue)}>
                                    <Select.Item label={filterBy.all + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
-                                   <Select.Item label={filterBy.ils + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1}/>
-                                   <Select.Item label={filterBy.overdrive + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2}/>
-                                   <Select.Item label={filterBy.hoopla + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3}/>
-                                   <Select.Item label={filterBy.cloudlibrary + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4}/>
-                                   <Select.Item label={filterBy.axis360 + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5}/>
+                                   <Select.Item label={filterBy.ils + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
+                                   <Select.Item label={filterBy.overdrive + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
+                                   <Select.Item label={filterBy.hoopla + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} />
+                                   <Select.Item label={filterBy.cloudlibrary + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} />
+                                   <Select.Item label={filterBy.axis360 + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} />
                               </Select>
                          </FormControl>
                     </HStack>
@@ -258,7 +260,7 @@ const Checkout = (props) => {
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
      const openGroupedWork = (item, title) => {
-          if(version >= '23.01.00') {
+          if (version >= '23.01.00') {
                navigateStack('AccountScreenTab', 'MyCheckout', {
                     id: item,
                     title: getCleanTitle(title),
@@ -282,7 +284,7 @@ const Checkout = (props) => {
      const [returning, setReturn] = useState(false);
      const [renewing, setRenew] = useState(false);
      const [isOpen, setIsOpen] = React.useState(false);
-     const [label, setAccessLabel] = React.useState('Access Online')
+     const [label, setAccessLabel] = React.useState('Access Online');
      const toggle = () => {
           setIsOpen(!isOpen);
      };
@@ -298,37 +300,37 @@ const Checkout = (props) => {
      let formatId;
      React.useEffect(() => {
           async function preloadTranslations() {
-               if(checkout?.checkoutSource) {
-                    if(checkout.checkoutSource === 'OverDrive') {
-                         if(checkout.overdriveRead === 1) {
+               if (checkout?.checkoutSource) {
+                    if (checkout.checkoutSource === 'OverDrive') {
+                         if (checkout.overdriveRead === 1) {
                               formatId = 'ebook-overdrive';
-                              await getTranslationsWithValues('checkout_read_online', 'OverDrive', language, library.baseUrl).then(term => {
+                              await getTranslationsWithValues('checkout_read_online', 'OverDrive', language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
-                              })
-                         } else if(checkout.overdriveListen === 1) {
+                              });
+                         } else if (checkout.overdriveListen === 1) {
                               formatId = 'audiobook-overdrive';
-                              await getTranslationsWithValues('checkout_listen_online', 'OverDrive', language, library.baseUrl).then(term => {
+                              await getTranslationsWithValues('checkout_listen_online', 'OverDrive', language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
-                              })
-                         } else if(checkout.overdriveVideo === 1) {
+                              });
+                         } else if (checkout.overdriveVideo === 1) {
                               formatId = 'video-streaming';
-                              await getTranslationsWithValues('checkout_watch_online', 'OverDrive', language, library.baseUrl).then(term => {
+                              await getTranslationsWithValues('checkout_watch_online', 'OverDrive', language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
-                              })
-                         } else if(checkout.overdriveMagazine === 1) {
+                              });
+                         } else if (checkout.overdriveMagazine === 1) {
                               formatId = 'magazine-overdrive';
-                              await getTranslationsWithValues('checkout_read_online', 'OverDrive', language, library.baseUrl).then(term => {
+                              await getTranslationsWithValues('checkout_read_online', 'OverDrive', language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
-                              })
+                              });
                          } else {
-                              await getTranslationsWithValues('checkout_access_online', 'OverDrive', language, library.baseUrl).then(term => {
+                              await getTranslationsWithValues('checkout_access_online', 'OverDrive', language, library.baseUrl).then((term) => {
                                    setAccessLabel(_.toString(term));
-                              })
+                              });
                          }
                     } else {
-                         await getTranslationsWithValues('checkout_access_online', checkout.checkoutSource, language, library.baseUrl).then(term => {
+                         await getTranslationsWithValues('checkout_access_online', checkout.checkoutSource, language, library.baseUrl).then((term) => {
                               setAccessLabel(_.toString(term));
-                         })
+                         });
                     }
                }
           }

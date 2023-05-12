@@ -6906,11 +6906,13 @@ class Koha extends AbstractIlsDriver {
 	 *
 	 * @return array|bool
 	 */
-	public function lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
+	public function lmsToSso($isStaffUser, $isStudentUser, $useGivenUserId, $useGivenCardnumber) {
 		$categoryId = 'ssoCategoryIdAttr';
 		$categoryIdFallback = 'ssoCategoryIdFallback';
 		if($isStaffUser) {
 			$categoryId = 'staffPType';
+		} elseif ($isStudentUser) {
+			$categoryId = 'studentPType';
 		}
 		return [
 			'userid' => [
