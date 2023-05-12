@@ -1,4 +1,4 @@
-import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
 import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
@@ -10,7 +10,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Actionsheet, Box, Button, Center, Icon, Pressable, Text, HStack, VStack, Image, Checkbox, useDisclose } from 'native-base';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { navigateStack } from '../../../helpers/RootNavigator';
-import {getTermFromDictionary, getTranslationsWithValues} from '../../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyHold = (props) => {
      const hold = props.data;
@@ -30,13 +30,13 @@ export const MyHold = (props) => {
 
      React.useEffect(() => {
           async function fetchTranslations() {
-               if(user.email) {
-                    await getTranslationsWithValues('hold_position_with_queue', [hold.position, hold.holdQueueLength], language, library.baseUrl).then(result => {
+               if (hold.holdQueueLength) {
+                    await getTranslationsWithValues('hold_position_with_queue', [hold.position, hold.holdQueueLength], language, library.baseUrl).then((result) => {
                          setHoldPosition(result);
                     });
                }
           }
-          fetchTranslations()
+          fetchTranslations();
      }, [language]);
 
      if (hold.canFreeze === true) {
@@ -58,7 +58,7 @@ export const MyHold = (props) => {
 
      if (!hold.available && hold.source !== 'ils') {
           canCancel = hold.cancelable;
-          if(hold.source === 'axis360') {
+          if (hold.source === 'axis360') {
                canCancel = true;
           }
      } else {
@@ -74,7 +74,7 @@ export const MyHold = (props) => {
      }
 
      const openGroupedWork = (item, title) => {
-          if(version >= '23.01.00') {
+          if (version >= '23.01.00') {
                navigateStack('AccountScreenTab', 'MyHold', {
                     id: item,
                     title: getCleanTitle(title),
@@ -115,11 +115,11 @@ export const MyHold = (props) => {
                     </VStack>
                );
           } else {
-               if(section === 'Pending') {
+               if (section === 'Pending') {
                     return (
-                        <Center>
-                             <Checkbox value={method + '|' + hold.recordId + '|' + hold.cancelId + '|' + hold.source + '|' + hold.userId} my={3} size="md" accessibilityLabel="Check item"/>
-                        </Center>
+                         <Center>
+                              <Checkbox value={method + '|' + hold.recordId + '|' + hold.cancelId + '|' + hold.source + '|' + hold.userId} my={3} size="md" accessibilityLabel="Check item" />
+                         </Center>
                     );
                }
           }
@@ -233,7 +233,7 @@ export const MyHold = (props) => {
                          {initializeLeftColumn()}
                          <VStack>
                               {getTitle(hold.title)}
-                              {getBadge(hold.status, hold.frozen, hold.available, hold.source)}
+                              {getBadge(hold.status, hold.frozen, hold.available, hold.source, hold.statusMessage ?? '')}
                               {getAuthor(hold.author)}
                               {getFormat(hold.format)}
                               {getType(hold.type)}
