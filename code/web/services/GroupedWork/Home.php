@@ -13,6 +13,7 @@ class GroupedWork_Home extends Action {
 		global $logger;
 
 		$id = strip_tags($_REQUEST['id']);
+		$_SESSION['returnToAction'] = $id;
 
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$this->recordDriver = new GroupedWorkDriver($id);

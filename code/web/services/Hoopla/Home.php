@@ -15,6 +15,7 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction {
 
 		$id = strip_tags($_REQUEST['id']);
 		$interface->assign('id', $id);
+		$_SESSION['returnToAction'] = $id;
 		$this->recordDriver = new HooplaRecordDriver($id);
 
 		if (!$this->recordDriver->isValid()) {
