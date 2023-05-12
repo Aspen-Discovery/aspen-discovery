@@ -193,8 +193,15 @@ AspenDiscovery.Record = (function(){
 			var holdType = $('#holdType');
 			if (holdType.length > 0){
 				params['holdType'] = holdType.val();
-				if ( holdType.val() === 'item' && selectedItem.length === 0){
+				if ( holdType.val() === 'item' && selectedItem.val().length === 0){
 					alert("Please select an item to place your hold on");
+					requestTitleButton.prop('disabled', false);
+					requestTitleButton.removeClass('disabled');
+					return false;
+				}else if ( holdType.val() === 'volume' && volume.val().length === 0){
+					alert("Please select a volume to place your hold on");
+					requestTitleButton.prop('disabled', false);
+					requestTitleButton.removeClass('disabled');
 					return false;
 				}
 			}else{
@@ -202,8 +209,10 @@ AspenDiscovery.Record = (function(){
 					params['holdType'] = 'bib';
 				}else{
 					params['holdType'] = 'item';
-					if (selectedItem.length === 0){
+					if (selectedItem.val().length === 0){
 						alert("Please select an item to place your hold on");
+						requestTitleButton.prop('disabled', false);
+						requestTitleButton.removeClass('disabled');
 						return false;
 					}
 				}
@@ -231,7 +240,7 @@ AspenDiscovery.Record = (function(){
 					}else{
 						AspenDiscovery.showMessage(data.title, data.message, false, data.autologout);
 						var existingButton = $("#onHoldAction" + id);
-						if (existingButton.length == 0) {
+						if (existingButton.length === 0) {
 							$(data.viewHoldsAction).insertBefore('#actionButton' + id);
 							$(data.viewHoldsAction).insertBefore('#relatedRecordactionButton' + id);
 						}
