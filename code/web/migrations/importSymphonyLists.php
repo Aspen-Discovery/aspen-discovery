@@ -26,6 +26,8 @@ if (!file_exists($exportPath)) {
 	$startTime = time();
 	if (file_exists($exportPath . "lists.txt")) {
 		importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
+	} else {
+		echo("Could not find lists.txt to import\n");
 	}
 }
 
@@ -44,7 +46,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 	//Skip the first row which is titles.
 	fgetcsv($listsfHnd);
-	while ($patronListRow = fgetcsv($listsfHnd, 0, ',')) {
+	while ($patronListRow = fgetcsv($listsfHnd, 0, '|')) {
 		$numImports++;
 
 		if (sizeof($patronListRow) != 10) {
