@@ -1770,8 +1770,8 @@ class Evergreen extends AbstractIlsDriver {
 
 		//Load notification preferences
 		$notificationPreferences = [];
-		if (!empty($user) && !empty($user->cat_password)) {
-			$authToken = $this->getAPIAuthToken($user, false);
+		if (!empty($user)) {
+			$authToken = $this->getAPIAuthToken($user, true);
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
 			$request = 'service=open-ils.actor&method=open-ils.actor.settings.retrieve.atomic';
 			$request .= '&param=' . json_encode([
