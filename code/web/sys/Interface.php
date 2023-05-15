@@ -790,6 +790,7 @@ class UInterface extends Smarty {
 		$ssoStaffOnly = false;
 		$bypassAspenLogin = false;
 		$bypassAspenPatronLogin = false;
+		$bypassLoginUrl = '';
 		$ssoService = null;
 		$samlEntityId = null;
 		$ssoSettingId = -1;
@@ -818,6 +819,14 @@ class UInterface extends Smarty {
 					$bypassAspenPatronLogin = $ssoSettings->bypassAspenPatronLogin ?? false;
 					$samlEntityId = $ssoSettings->ssoEntityId;
 					$ssoIsEnabled = true;
+					if($bypassAspenPatronLogin) {
+						if ($ssoSettings->service === 'oauth') {
+							$bypassLoginUrl = $configArray['Site']['url'] . '/init_oauth.php';
+						}
+						if ($ssoSettings->service === 'saml') {
+							$bypassLoginUrl = $configArray['Site']['url'] . '/Authentication/SAML2?init';
+						}
+					}
 				}
 			}
 		} catch (Exception $e) {
@@ -829,6 +838,7 @@ class UInterface extends Smarty {
 		$this->assign('ssoService', $ssoService);
 		$this->assign('bypassAspenLogin', $bypassAspenLogin);
 		$this->assign('bypassAspenPatronLogin', $bypassAspenPatronLogin);
+		$this->assign('bypassLoginUrl', $bypassLoginUrl);
 		$this->assign('samlEntityId', $samlEntityId);
 
 		$loadRecaptcha = false;

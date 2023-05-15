@@ -60,6 +60,8 @@ class Axis360_Home extends GroupedWorkSubRecordHomeAction {
 
 			$interface->assign('semanticData', json_encode($this->recordDriver->getSemanticData()));
 
+			$_SESSION['returnToAction'] = $this->id;
+
 			// Display Page
 			$this->display('full-record.tpl', $this->recordDriver->getTitle(), '', false);
 
