@@ -26,6 +26,8 @@ if (!file_exists($exportPath)) {
 	$startTime = time();
 	if (file_exists($exportPath . "lists.txt")) {
 		importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validRecords, $invalidRecords);
+	} else {
+		echo("Could not find lists.txt to import\n");
 	}
 }
 
@@ -36,6 +38,16 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
 	$listsfHnd = fopen($exportPath . "lists.txt", 'r');
 
+	$patronIdToBarcode = [];
+	if (file_exists($exportPath . "patron.lst")) {
+		$patronListHnd = fopen($exportPath . "patron.lst", 'r');
+		while ($patronRow = fgetcsv($patronListHnd, 0, '|')) {
+			$patronId = $patronRow[4];
+			$patronBarcode = $patronRow[5];
+			$patronIdToBarcode[$patronId] = $patronBarcode;
+		}
+	}
+
 	$numImports = 0;
 	$batchStartTime = time();
 	$existingLists = [];
@@ -44,7 +56,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 	//Skip the first row which is titles.
 	fgetcsv($listsfHnd);
-	while ($patronListRow = fgetcsv($listsfHnd, 0, ',')) {
+	while ($patronListRow = fgetcsv($listsfHnd, 0, '|')) {
 		$numImports++;
 
 		if (sizeof($patronListRow) != 10) {
@@ -53,7 +65,11 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		}
 		//Figure out the user for the list
 		$patronName = $patronListRow[0];
+		//Siris exports these incorrectly. The column is labelled as barcode, but it's really the user id
 		$userBarcode = $patronListRow[1];
+		if (array_key_exists($userBarcode, $patronIdToBarcode)) {
+			$userBarcode = $patronIdToBarcode[$userBarcode];
+		}
 		$userKey = $patronListRow[2];
 		$listName = $patronListRow[3];
 		$listId = $patronListRow[4];
