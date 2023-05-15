@@ -2291,9 +2291,11 @@ class SearchAPI extends Action {
 		global $timer;
 		global $configArray;
 
+		$searchType = $_REQUEST['type'] ?? 'catalog';
+
 		$results = [
 			'success' => false,
-			'type' => $_REQUEST['type'] ?? 'catalog',
+			'type' => $searchType,
 			'count' => 0,
 			'totalResults' => 0,
 			'lookfor' => $_REQUEST['lookfor'] ?? null,
@@ -2308,7 +2310,9 @@ class SearchAPI extends Action {
 			]),
 		];
 
-		if($_REQUEST['type'] == 'user_list') {
+		$includeSortList = $_REQUEST['includeSortList'] ?? true;
+
+		if($searchType == 'user_list') {
 			if(!isset($_REQUEST['id'])) {
 				return [
 					'success' => false,
@@ -2409,7 +2413,7 @@ class SearchAPI extends Action {
 			return $results;
 		}
 
-		if($_REQUEST['type'] == 'browse_category') {
+		if($searchType == 'browse_category') {
 			if(!isset($_REQUEST['id'])) {
 				return [
 					'success' => false,
@@ -2514,7 +2518,7 @@ class SearchAPI extends Action {
 		$timer->logTime('Setup Search');
 
 		// Process Search
-		if($_REQUEST['type'] == 'saved_search') {
+		if($searchType == 'saved_search') {
 			if(!isset($_REQUEST['id'])) {
 				return [
 					'success' => false,
@@ -2534,7 +2538,13 @@ class SearchAPI extends Action {
 		$searchResults = $searchObject->processSearch(false, true);
 		$timer->logTime('Process Search');
 
-		// 'Finish' the search... complete timers and log search history.
+		// get facets and sorting info
+		$appliedFacets = $searchObject->getFilterList();
+		if ($includeSortList) {
+			$sortList = $searchObject->getSortList();
+		}
+
+			// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
 
 		if ($searchObject->getResultTotal() < 1) {
@@ -2576,17 +2586,152 @@ class SearchAPI extends Action {
 					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
 					foreach ($relatedManifestations as $relatedManifestation) {
 						foreach ($relatedManifestation->getVariations() as $obj) {
-							if(!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+							if (!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
 								$format = $obj->manifestation->format;
 								$items[$recordKey]['itemList'][$format]['key'] = $i;
-								$items[$recordKey]['itemList'][$format]['name'] = translate(['text' => $format, 'isPublicFacing' => true]);
+								$items[$recordKey]['itemList'][$format]['name'] = translate([
+									'text' => $format,
+									'isPublicFacing' => true
+								]);
 								$i++;
 							};
 						}
 					}
 				}
 			}
+
+			// format facets and sorting options
+			global $interface;
+			$topFacetSet = $interface->getVariable('topFacetSet');
+			$facets = $interface->getVariable('sideFacetSet');
+			$options = [];
+			$index = 0;
+			if ($includeSortList) {
+				$i = 0;
+				$key = translate([
+					'text' => 'Sort By',
+					'isPublicFacing' => true,
+				]);
+				$options[$key]['key'] = 0;
+				$options[$key]['label'] = $key;
+				$options[$key]['field'] = 'sort_by';
+				$options[$key]['hasApplied'] = true;
+				$options[$key]['multiSelect'] = false;
+				foreach ($sortList as $value => $sort) {
+					$options[$key]['facets'][$i]['value'] = $value;
+					$options[$key]['facets'][$i]['display'] = translate([
+						'text' => $sort['desc'],
+						'isPublicFacing' => true,
+					]);
+					$options[$key]['facets'][$i]['field'] = 'sort_by';
+					$options[$key]['facets'][$i]['count'] = 0;
+					$options[$key]['facets'][$i]['isApplied'] = $sort['selected'];
+					$options[$key]['facets'][$i]['multiSelect'] = false;
+					$i++;
+				}
+			}
+
+			foreach ($facets as $facet) {
+				$index++;
+				$i = 0;
+				if ($facet['field_name'] == 'availability_toggle') {
+					$availabilityToggle = $topFacetSet['availability_toggle'];
+					$key = translate([
+						'text' => $availabilityToggle['label'],
+						'isPublicFacing' => true
+					]);
+					$options[$key]['key'] = $index;
+					$options[$key]['label'] = $key;
+					$options[$key]['field'] = $availabilityToggle['field_name'];
+					$options[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
+					$options[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
+					foreach ($availabilityToggle['list'] as $item) {
+						$options[$key]['facets'][$i]['value'] = $item['value'];
+						$options[$key]['facets'][$i]['display'] = translate([
+							'text' => $item['display'],
+							'isPublicFacing' => true
+						]);
+						$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$options[$key]['facets'][$i]['count'] = $item['count'];
+						$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						if (isset($item['multiSelect'])) {
+							$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						} else {
+							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+						}
+						$i++;
+					}
+				} else {
+					$key = translate([
+						'text' => $facet['label'],
+						'isPublicFacing' => true
+					]);
+					$options[$key]['key'] = $index;
+					$options[$key]['label'] = $key;
+					$options[$key]['field'] = $facet['field_name'];
+					$options[$key]['hasApplied'] = $facet['hasApplied'];
+					$options[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+					if (isset($facet['sortedList'])) {
+						foreach ($facet['sortedList'] as $item) {
+							$options[$key]['facets'][$i]['value'] = $item['value'];
+							$options[$key]['facets'][$i]['display'] = translate([
+								'text' => $item['display'],
+								'isPublicFacing' => true
+							]);;
+							$options[$key]['facets'][$i]['field'] = $facet['field_name'];
+							$options[$key]['facets'][$i]['count'] = $item['count'];
+							$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							if (isset($item['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							} else {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
+							$i++;
+						}
+					} else {
+						foreach ($facet['list'] as $item) {
+							$options[$key]['facets'][$i]['value'] = $item['value'];
+							$options[$key]['facets'][$i]['display'] = translate([
+								'text' => $item['display'],
+								'isPublicFacing' => true
+							]);
+							$options[$key]['facets'][$i]['field'] = $facet['field_name'];
+							$options[$key]['facets'][$i]['count'] = $item['count'];
+							$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+							if (isset($item['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+							} else {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
+							$i++;
+						}
+					}
+				}
+
+				if (array_key_exists($facet['label'], $appliedFacets)) {
+					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
+					$label = $facet['label'];
+					foreach($appliedFacets[$label] as $appliedFacet) {
+						if (!in_array($appliedFacet['display'], $options[$key]['facets'])) {
+							//$facet = $appliedFacets[$facet['label']][0];
+							$options[$key]['facets'][$i]['value'] = $appliedFacet['value'];
+							$options[$key]['facets'][$i]['display'] = translate([
+								'text' => $appliedFacet['display'],
+								'isPublicFacing' => true
+							]);
+							$options[$key]['facets'][$i]['field'] = $appliedFacet['field'];
+							$options[$key]['facets'][$i]['count'] = null;
+							$options[$key]['facets'][$i]['isApplied'] = true;
+							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$i++;
+						}
+					}
+				}
+			}
+
+
 			$results['items'] = $items;
+			$results['options'] = $options;
 			$results['success'] = true;
 			$results['time'] = round($searchObject->getTotalSpeed(), 2);
 			$results['title'] = translate([
@@ -2602,7 +2747,7 @@ class SearchAPI extends Action {
 			if ($results['page_current'] == $results['page_total']) {
 				$results['message'] = "end of results";
 			}
-			if($_REQUEST['type'] == 'saved_search') {
+			if($searchType == 'saved_search') {
 				$results['savedSearchId'] = $_REQUEST['searchId'];
 			}
 		}
