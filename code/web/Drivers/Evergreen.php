@@ -707,6 +707,15 @@ class Evergreen extends AbstractIlsDriver {
 		return true;
 	}
 
+	public function canLoadReadingHistoryInMasqueradeMode() : bool {
+		return false;
+	}
+
+
+	public function performsReadingHistoryUpdatesOfILS() : bool {
+		return false;
+	}
+
 	/**
 	 * @param User $patron
 	 * @param int $page
