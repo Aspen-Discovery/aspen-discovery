@@ -1,6 +1,7 @@
 import { Button } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
+import { useQueryClient } from '@tanstack/react-query';
 
 // custom components and helper files
 import { HoldsContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
@@ -9,6 +10,7 @@ import { getPatronHolds, refreshProfile } from '../../../util/api/user';
 import { HoldPrompt } from './HoldPrompt';
 
 export const PlaceHold = (props) => {
+     const queryClient = useQueryClient();
      const { id, type, volumeInfo, title, record, holdTypeForFormat, variationId, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, language } = props;
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -88,9 +90,7 @@ export const PlaceHold = (props) => {
                                              recordId: record ?? null,
                                         });
                                    }
-                                   getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
-                                        updateHolds(result);
-                                   });
+                                   queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
                                    await refreshProfile(library.baseUrl).then((result) => {
                                         updateUser(result);
                                    });

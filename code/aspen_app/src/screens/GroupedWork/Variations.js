@@ -1,7 +1,7 @@
 import { Center, HStack, VStack, Badge, Icon, Button, Box, Text, AlertDialog, FlatList } from 'native-base';
 import { useRoute } from '@react-navigation/native';
 import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
 
@@ -19,6 +19,7 @@ import { confirmHold } from '../../util/api/circulation';
 import { getPatronHolds, refreshProfile } from '../../util/api/user';
 
 export const Variations = (props) => {
+     const queryClient = useQueryClient();
      const route = useRoute();
      const id = route.params.id;
      const prevRoute = route.params.prevRoute;
@@ -136,9 +137,7 @@ export const Variations = (props) => {
                                                             setConfirmingHold(true);
                                                             await confirmHold(holdConfirmationResponse.recordId, holdConfirmationResponse.confirmationId, language, library.baseUrl).then(async (result) => {
                                                                  setResponse(result);
-                                                                 getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
-                                                                      updateHolds(result);
-                                                                 });
+                                                                 queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
                                                                  await refreshProfile(library.baseUrl).then((result) => {
                                                                       updateUser(result);
                                                                  });
