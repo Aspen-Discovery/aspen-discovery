@@ -962,8 +962,9 @@ public class SierraExportAPIMain {
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 			}else{
-				//This is already logged as an error, don't need to again
-				return false;
+				//Log this as an invalid record so we can continue, but return true so we don't log an error.
+				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API");
+				return true;
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error in updateMarcAndRegroupRecordId processing bib " + id + " from Sierra API", e);
