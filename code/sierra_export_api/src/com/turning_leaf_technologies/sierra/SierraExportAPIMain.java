@@ -831,12 +831,12 @@ public class SierraExportAPIMain {
 		final JSONObject[] marcResults = {null};
 		//noinspection CodeBlock2Expr
 		Thread getMarcResultsThread = new Thread(() -> {
-			marcResults[0] = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "/marc");
+			marcResults[0] = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "/marc", id);
 		});
 		final JSONObject[] fixedFieldResults = {null};
 		//noinspection CodeBlock2Expr
 		Thread fixedFieldThread = new Thread(() -> {
-			fixedFieldResults[0] = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields");
+			fixedFieldResults[0] = getMarcJSONFromSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/bibs/" + id + "?fields=fixedFields", id);
 		});
 		final JSONObject[] itemIds = {null};
 		//noinspection CodeBlock2Expr
@@ -962,8 +962,9 @@ public class SierraExportAPIMain {
 					getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
 				}
 			}else{
-				//This is already logged as an error, don't need to again
-				return false;
+				//Log this as an invalid record so we can continue, but return true so we don't log an error.
+				logEntry.incRecordsWithInvalidMarc("Record " + id + " could not be fetched from the API");
+				return true;
 			}
 		}catch (Exception e){
 			logEntry.incErrors("Error in updateMarcAndRegroupRecordId processing bib " + id + " from Sierra API", e);
@@ -1389,7 +1390,7 @@ public class SierraExportAPIMain {
 		return null;
 	}
 
-	private static JSONObject getMarcJSONFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl) {
+	private static JSONObject getMarcJSONFromSierraApiURL(SierraInstanceInformation sierraInstanceInformation, String baseUrl, String sierraUrl, String id) {
 		if (connectToSierraAPI(sierraInstanceInformation, baseUrl)){
 			//Connect to the API to get our token
 			HttpURLConnection conn;
@@ -1420,7 +1421,11 @@ public class SierraExportAPIMain {
 					}
 					//logger.debug("  Finished reading response");
 					rd.close();
-					return new JSONObject(response.toString());
+					try {
+						return new JSONObject(response.toString());
+					} catch (Exception e) {
+						logEntry.incRecordsWithInvalidMarc("Title had invalid JSON " + id);
+					}
 				} else {
 					// Get any errors
 					BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream(), StandardCharsets.UTF_8));
