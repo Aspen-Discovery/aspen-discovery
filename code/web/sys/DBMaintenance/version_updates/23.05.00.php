@@ -157,5 +157,13 @@ function getUpdates23_05_00(): array {
 				"ALTER TABLE account_profiles ADD COLUMN overrideCode VARCHAR(50) default ''",
 			],
 		], //account_profile_overrideCode
+		'remove_titleId2_index_from_axis360_title_availability' => [
+			'title' => 'Remove titleId2 index from axis360 title availability',
+			'description' => 'Remove titleId2 index from axis360 title availability',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE axis360_title_availability DROP INDEX titleId2'
+			]
+		], //remove_titleId2_index_from_axis360_title_availability
 	];
 }

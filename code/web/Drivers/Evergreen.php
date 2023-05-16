@@ -98,9 +98,12 @@ class Evergreen extends AbstractIlsDriver {
 				$curCheckout->sourceId = $mappedCheckout['target_copy'];
 				$curCheckout->userId = $patron->id;
 
-				$modsForCopy = $this->getModsForCopy($mappedCheckout['target_copy']);
+				$modsForCopy = null;
+				if (!empty($mappedCheckout['target_copy'])) {
+					$modsForCopy = $this->getModsForCopy($mappedCheckout['target_copy']);
 
-				$curCheckout->recordId = $modsForCopy['doc_id'];
+					$curCheckout->recordId = $modsForCopy['doc_id'];
+				}
 				$curCheckout->itemId = $mappedCheckout['target_copy'];
 
 				$curCheckout->dueDate = strtotime($mappedCheckout['due_date']);
@@ -114,14 +117,16 @@ class Evergreen extends AbstractIlsDriver {
 				$curCheckout->renewalId = $mappedCheckout['target_copy'];
 				$curCheckout->renewIndicator = $mappedCheckout['target_copy'];
 
-				$curCheckout->title = $modsForCopy['title'];
-				$curCheckout->author = $modsForCopy['author'];
-				$curCheckout->callNumber = reset($modsForCopy['call_numbers']);
+				if (!empty($modsForCopy)) {
+					$curCheckout->title = $modsForCopy['title'];
+					$curCheckout->author = $modsForCopy['author'];
+					$curCheckout->callNumber = reset($modsForCopy['call_numbers']);
 
-				require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
-				$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
-				if ($recordDriver->isValid()) {
-					$curCheckout->updateFromRecordDriver($recordDriver);
+					require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+					$recordDriver = new MarcRecordDriver((string)$curCheckout->recordId);
+					if ($recordDriver->isValid()) {
+						$curCheckout->updateFromRecordDriver($recordDriver);
+					}
 				}
 			}
 		}
@@ -132,7 +137,7 @@ class Evergreen extends AbstractIlsDriver {
 	 * Load mods data based on an item id
 	 *
 	 * @param int $copyId
-	 * @return string[]|null
+	 * @return []|null
 	 */
 	private function getModsForCopy(int $copyId): ?array {
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
@@ -705,6 +710,15 @@ class Evergreen extends AbstractIlsDriver {
 
 	public function hasNativeReadingHistory(): bool {
 		return true;
+	}
+
+	public function canLoadReadingHistoryInMasqueradeMode() : bool {
+		return false;
+	}
+
+
+	public function performsReadingHistoryUpdatesOfILS() : bool {
+		return false;
 	}
 
 	/**

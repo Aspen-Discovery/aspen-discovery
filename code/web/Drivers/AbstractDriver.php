@@ -4,6 +4,10 @@
 abstract class AbstractDriver {
 	public abstract function hasNativeReadingHistory(): bool;
 
+	public function canLoadReadingHistoryInMasqueradeMode() : bool {
+		return true;
+	}
+
 	public function performsReadingHistoryUpdatesOfILS() : bool {
 		return false;
 	}

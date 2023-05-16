@@ -308,34 +308,38 @@ class CommunicoIndexer {
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
 					HashMap<Long, EventRegistrations> registrationsForEvent = loadExistingRegistrations(sourceId);
 
+					HashSet<String> uniqueBarcodesRegistered = new HashSet<>();
 					if (communicoEventRegistrants != null) {
 						for (int j = 0; j < communicoEventRegistrants.length(); j++) {
 							try {
 								JSONObject curRegistrant = communicoEventRegistrants.getJSONObject(j);
 
 								if (!curRegistrant.getString("barcode").isEmpty()){
-									try {
-										PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
-										getUserIdStmt.setString(1, curRegistrant.getString("barcode"));
-										ResultSet getUserIdRS = getUserIdStmt.executeQuery();
-										while (getUserIdRS.next()){
-											long userId = getUserIdRS.getLong("id");
-											if (registrationsForEvent.containsKey(userId)){
-												registrationsForEvent.remove(userId);
-											}else{
-												addRegistrantStmt.setLong(1, userId);
-												addRegistrantStmt.setString(2, curRegistrant.getString("barcode"));
-												addRegistrantStmt.setString(3, sourceId);
-												addRegistrantStmt.executeUpdate();
-											}
-										}
-									} catch (SQLException e) {
-										logEntry.incErrors("Error adding registrant info to database " , e);
-									}
+									uniqueBarcodesRegistered.add(curRegistrant.getString("barcode"));
 								}
 							} catch (JSONException e) {
 								logEntry.incErrors("Error getting JSON information ", e);
 							}
+						}
+					}
+					for (String uniqueBarcodeRegistered : uniqueBarcodesRegistered) {
+						try {
+							PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
+							getUserIdStmt.setString(1, uniqueBarcodeRegistered);
+							ResultSet getUserIdRS = getUserIdStmt.executeQuery();
+							while (getUserIdRS.next()) {
+								long userId = getUserIdRS.getLong("id");
+								if (registrationsForEvent.containsKey(userId)) {
+									registrationsForEvent.remove(userId);
+								} else {
+									addRegistrantStmt.setLong(1, userId);
+									addRegistrantStmt.setString(2, uniqueBarcodeRegistered);
+									addRegistrantStmt.setString(3, sourceId);
+									addRegistrantStmt.executeUpdate();
+								}
+							}
+						} catch (SQLException e) {
+							logEntry.incErrors("Error adding registrant info to database ", e);
 						}
 					}
 
