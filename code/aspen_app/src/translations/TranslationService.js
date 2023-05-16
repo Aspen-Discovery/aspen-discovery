@@ -218,10 +218,16 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
           await getTranslationsWithValues('titles_on_hold_for_overdrive', 'OverDrive', language, url, true);
           await getTranslationsWithValues('titles_on_hold_for_cloud_library', 'cloudLibrary', language, url, true);
           await getTranslationsWithValues('titles_on_hold_for_axis_360', 'Axis 360', language, url, true);
+          await getTranslationsWithValues('checkouts_for_ils', 'Physical Materials', language, url, true);
+          await getTranslationsWithValues('checkouts_for_overdrive', 'OverDrive', language, url, true);
+          await getTranslationsWithValues('checkouts_for_hoopla', 'Hoopla', language, url, true);
+          await getTranslationsWithValues('checkouts_for_cloud_library', 'cloudLibrary', language, url, true);
+          await getTranslationsWithValues('checkouts_for_axis_360', 'Axis 360', language, url, true);
           await getTranslationsWithValues('filter_by_ils', 'Physical Materials', language, url, true);
           await getTranslationsWithValues('filter_by_overdrive', 'OverDrive', language, url, true);
           await getTranslationsWithValues('filter_by_cloud_library', 'cloudLibrary', language, url, true);
           await getTranslationsWithValues('filter_by_axis_360', 'Axis 360', language, url, true);
+          await getTranslationsWithValues('filter_by_hoopla', 'Hoopla', language, url, true);
           await getTranslationsWithValues('filter_by_all', 'All', language, url, true);
           await getTranslationsWithValues('sort_by_title', 'Title', language, url, true);
           await getTranslationsWithValues('sort_by_author', 'Author', language, url, true);
