@@ -33,6 +33,19 @@ export const DiscoverHomeScreen = () => {
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
+     useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (maxCategories === 9999) {
+                    setUnlimitedCategories(true);
+               }
+               updateBrowseCategories(data);
+               setLoading(false);
+          },
+     });
+
      useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
@@ -47,10 +60,27 @@ export const DiscoverHomeScreen = () => {
           onSuccess: (data) => updateCheckouts(data),
      });
 
+     useQuery(['lists', library.baseUrl, language], () => getLists(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateLists(data),
+     });
+
+     useQuery(['linked_accounts', library.baseUrl, language], () => getLinkedAccounts(user, cards, library), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               updateLinkedAccounts(data.accounts);
+               updateLibraryCards(data.cards);
+          },
+     });
+
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+                    /*await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
                          if (maxCategories === 9999) {
                               setUnlimitedCategories(true);
                          }
@@ -62,7 +92,6 @@ export const DiscoverHomeScreen = () => {
                          }
                     });
 
-                    /*
                     getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
                          if (holds !== result) {
                               updateHolds(result);
@@ -77,7 +106,7 @@ export const DiscoverHomeScreen = () => {
 
                     getILSMessages(library.baseUrl);
 
-                    getLists(library.baseUrl).then((result) => {
+                    /*getLists(library.baseUrl).then((result) => {
                          if (lists !== result) {
                               updateLists(result);
                          }
@@ -97,6 +126,8 @@ export const DiscoverHomeScreen = () => {
                               updateLibraryCards(result.cards);
                          }
                     });
+                    */
+
                     console.log('updated patron things');
                };
                update().then(() => {
