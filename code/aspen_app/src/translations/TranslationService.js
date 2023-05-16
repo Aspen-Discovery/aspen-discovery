@@ -147,7 +147,7 @@ export async function getTranslationsWithValues(key, values, language, url, addT
                     const translation = Object.values(response.data?.result?.translation);
                     const obj = {
                          [language]: {
-                              [key]: translation,
+                              [key]: translation[0],
                          },
                     };
                     translationsLibrary = _.merge(translationsLibrary, obj);
