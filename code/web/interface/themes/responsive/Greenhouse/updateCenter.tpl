@@ -119,7 +119,7 @@
 						<td>
 						{assign var='lastScheduledUpdate' value=$site->getLastScheduledUpdate()}
 							{if $lastScheduledUpdate['time'] !== 'Never'}
-								<a onclick="return AspenDiscovery.Admin.showScheduledUpdateDetails('{$lastScheduledUpdate['id']}');">{$lastScheduledUpdate['time']}</a>
+								<a onclick="return AspenDiscovery.Admin.showScheduledUpdateDetails('{$lastScheduledUpdate['id']}');">{$lastScheduledUpdate['time']|date_format:"%D %T"}</a>
 							{else}
 								{$lastScheduledUpdate['time']}
 							{/if}
@@ -127,7 +127,7 @@
 						<td>
 							{assign var='lastSuccessfulUpdate' value=$site->getLastSuccessfulUpdate()}
 							{if $lastSuccessfulUpdate['time'] !== 'Never'}
-                                <a onclick="return AspenDiscovery.Admin.showScheduledUpdateDetails('{$lastSuccessfulUpdate['id']}');">{$lastSuccessfulUpdate['time']}</a>
+                                <a onclick="return AspenDiscovery.Admin.showScheduledUpdateDetails('{$lastSuccessfulUpdate['id']}');">{$lastSuccessfulUpdate['time']|date_format:"%D %T"}</a>
                             {else}
                                 {$lastSuccessfulUpdate['time']}
                             {/if}

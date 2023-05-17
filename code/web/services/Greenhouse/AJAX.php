@@ -403,8 +403,9 @@ class Greenhouse_AJAX extends Action {
 			$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
 			$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
 			if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
-				$now = new DateTime();
-				$runUpdateOn = $now->format('Y-m-d H:i');
+				$runUpdateOn = time();
+			}else{
+				$runUpdateOn = strtotime($runUpdateOn);
 			}
 			foreach($sitesToUpdate as $site){
 				require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
@@ -415,7 +416,7 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate = new ScheduledUpdate();
 					$scheduledUpdate->updateType = $runType;
 					$scheduledUpdate->dateScheduled = $runUpdateOn;
-					$scheduledUpdate->siteId = $_REQUEST['siteToUpdate'];
+					$scheduledUpdate->siteId = $site;
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
 					$scheduledUpdate->insert();
@@ -430,11 +431,12 @@ class Greenhouse_AJAX extends Action {
 						'greenhouseId' => $scheduledUpdate->id,
 					];
 					$response = $curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
-					if($response['success']) {
+					$response = json_decode($response);
+					if($response->success) {
 						// update scheduled
 						$numSitesUpdated++;
 					} else {
-						$scheduledUpdate->notes = $response['message'];
+						$scheduledUpdate->notes = $response->message;
 						$scheduledUpdate->update();
 					}
 				}
