@@ -789,6 +789,8 @@ class UInterface extends Smarty {
 		// if using SSO, determine if it's available to only staff users or not
 		$ssoStaffOnly = false;
 		$bypassAspenLogin = false;
+		$bypassAspenPatronLogin = false;
+		$bypassLoginUrl = '';
 		$ssoService = null;
 		$samlEntityId = null;
 		$ssoSettingId = -1;
@@ -814,8 +816,17 @@ class UInterface extends Smarty {
 					$ssoStaffOnly = $ssoSettings->staffOnly;
 					$ssoService = $ssoSettings->service;
 					$bypassAspenLogin = $ssoSettings->bypassAspenLogin ?? true;
+					$bypassAspenPatronLogin = $ssoSettings->bypassAspenPatronLogin ?? false;
 					$samlEntityId = $ssoSettings->ssoEntityId;
 					$ssoIsEnabled = true;
+					if($bypassAspenPatronLogin) {
+						if ($ssoSettings->service === 'oauth') {
+							$bypassLoginUrl = $configArray['Site']['url'] . '/init_oauth.php';
+						}
+						if ($ssoSettings->service === 'saml') {
+							$bypassLoginUrl = $configArray['Site']['url'] . '/Authentication/SAML2?init';
+						}
+					}
 				}
 			}
 		} catch (Exception $e) {
@@ -826,6 +837,8 @@ class UInterface extends Smarty {
 		$this->assign('ssoStaffOnly', $ssoStaffOnly);
 		$this->assign('ssoService', $ssoService);
 		$this->assign('bypassAspenLogin', $bypassAspenLogin);
+		$this->assign('bypassAspenPatronLogin', $bypassAspenPatronLogin);
+		$this->assign('bypassLoginUrl', $bypassLoginUrl);
 		$this->assign('samlEntityId', $samlEntityId);
 
 		$loadRecaptcha = false;

@@ -71,6 +71,8 @@
 			Globals.requestFailedTitle = '{translate text="Request Failed" inAttribute=true isPublicFacing=true}';
 			Globals.requestFailedBody = '{translate text="There was an error with this AJAX Request." inAttribute=true isPublicFacing=true}';
 			Globals.rtl = {if $userLang->isRTL()}true{else}false{/if};
+			Globals.bypassAspenLoginForSSO = {if $bypassAspenPatronLogin}true{else}false{/if};
+			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
 			{literal}
 		});
 		{/literal}

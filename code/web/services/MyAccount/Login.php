@@ -21,6 +21,16 @@ class MyAccount_Login extends Action {
 		$followupAction = isset($_REQUEST['followupAction']) ? strip_tags($_REQUEST['followupAction']) : $action;
 		$followupModule = isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module;
 
+		$bypassAspenPatronLogin = $interface->getVariable('bypassAspenPatronLogin');
+		$ssoLoginUrl = $interface->getVariable('bypassLoginUrl');
+
+		if($bypassAspenPatronLogin && $ssoLoginUrl != '') {
+			$_SESSION['returnToModule'] = $followupModule;
+			$_SESSION['returnToAction'] = $followupAction;
+			header('Location: ' . $ssoLoginUrl, false);
+			die();
+		}
+
 		// We should never access this module directly -- this is called by other
 		// actions as a support function.  If accessed directly, just redirect to
 		// the MyAccount home page.
@@ -31,6 +41,7 @@ class MyAccount_Login extends Action {
 
 		// Don't go to the trouble if we're just logging in to the Home action
 		if (!($followupAction == 'Home' && $followupModule == 'MyAccount')) {
+
 			$interface->assign('followupModule', $followupModule);
 			$interface->assign('followupAction', $followupAction);
 

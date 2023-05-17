@@ -226,6 +226,8 @@ class Record_Home extends GroupedWorkSubRecordHomeAction {
 			$interface->assign('shortId', $this->id);
 		}
 
+		$_SESSION['returnToAction'] = $this->id;
+
 		// Retrieve User Search History
 		$this->lastSearch = isset($_SESSION['lastSearchURL']) ? $_SESSION['lastSearchURL'] : false;
 		$interface->assign('lastSearch', $this->lastSearch);

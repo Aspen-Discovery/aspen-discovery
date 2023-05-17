@@ -78,28 +78,32 @@ AspenDiscovery.Account = (function () {
 					AspenDiscovery.Account.ajaxCallback = null;
 				}
 			} else {
-				var multiStep = false;
-				var loginLink = false;
-				if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
-					multiStep = true;
+				if(Globals.bypassAspenLoginForSSO && Globals.ssoLoginUrl !== '') {
+					window.location = Globals.ssoLoginUrl + '&followupModule=' + Globals.activeModule + '&followupAction=' + Globals.activeAction;
+				} else {
+					var multiStep = false;
+					var loginLink = false;
+					if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
+						multiStep = true;
+					}
+					AspenDiscovery.Account.ajaxCallback = ajaxCallback;
+					AspenDiscovery.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
+					var dialogTitle = "Sign In";
+					if (trigger !== undefined && trigger !== null) {
+						dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
+						loginLink = trigger.data('login');
+					}
+					var dialogDestination = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
+					if (multiStep && !loginLink) {
+						dialogDestination += "&multiStep=true";
+					}
+					var modalDialog = $("#modalDialog");
+					$('.modal-body').html("Loading...");
+					$(".modal-content").load(dialogDestination);
+					$(".modal-title").text(dialogTitle);
+					modalDialog.removeClass('image-popup');
+					modalDialog.modal("show");
 				}
-				AspenDiscovery.Account.ajaxCallback = ajaxCallback;
-				AspenDiscovery.Account.closeModalOnAjaxSuccess = closeModalOnAjaxSuccess;
-				var dialogTitle = "Sign In";
-				if (trigger !== undefined && trigger !== null) {
-					dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
-					loginLink = trigger.data('login');
-				}
-				var dialogDestination = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
-				if (multiStep && !loginLink) {
-					dialogDestination += "&multiStep=true";
-				}
-				var modalDialog = $("#modalDialog");
-				$('.modal-body').html("Loading...");
-				$(".modal-content").load(dialogDestination);
-				$(".modal-title").text(dialogTitle);
-				modalDialog.removeClass('image-popup');
-				modalDialog.modal("show");
 			}
 			return false;
 		},

@@ -1369,8 +1369,8 @@ class CatalogConnection {
 	 *
 	 * @return array|bool
 	 */
-	public function getLmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber) {
-		return $this->driver->lmsToSso($isStaffUser, $useGivenUserId, $useGivenCardnumber);
+	public function getLmsToSso($isStaffUser, $isStudentUser, $useGivenUserId, $useGivenCardnumber) {
+		return $this->driver->lmsToSso($isStaffUser, $isStudentUser, $useGivenUserId, $useGivenCardnumber);
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {

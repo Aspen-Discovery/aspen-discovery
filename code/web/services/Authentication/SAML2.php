@@ -7,11 +7,21 @@ class Authentication_SAML2 extends Action {
 	 */
 	public function launch() {
 		global $configArray;
-		$returnTo = $configArray['Site']['url'] . '/MyAccount/Home';
+
 		if(isset($_GET['init'])) {
 			global $logger;
 			$logger->log('Starting SAML Authentication', Logger::LOG_ERROR);
 			$auth = new SAMLAuthentication();
+			$returnTo = $configArray['Site']['url'];
+			$followupAction = $_SESSION['returnToAction'] ?? strip_tags($_REQUEST['followupAction']);
+			$followupModule = $_SESSION['returnToModule'] ?? strip_tags($_REQUEST['followupModule']);
+			if($followupModule && $followupAction) {
+				$returnTo = $configArray['Site']['url'] . '/' . $followupModule . '/' . $followupAction;
+			}
+			unset($_SESSION['returnToAction']);
+			unset($_SESSION['returnToModule']);
+			unset($_REQUEST['followupAction']);
+			unset($_REQUEST['followupModule']);
 			$auth->login($returnTo);
 		} elseif(isset($_GET['acs'])) {
 			global $logger;
