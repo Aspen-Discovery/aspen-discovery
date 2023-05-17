@@ -28,6 +28,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $alwaysShowSearchResultsMainDetails;
 	public $alwaysFlagNewTitles;
 	public $showRelatedRecordLabels;
+	public $showEditionCovers;
 
 	//Contents of search
 	public $includeOutOfSystemExternalLinks;
@@ -234,6 +235,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 								'label' => 'Show Related Record Labels',
 								'description' => 'Turn on to show labels next to edition information in grouped works. Ex: Published, Physical Description, etc',
 								'default' => true,
+								'hideInLists' => true,
+							],
+							'showEditionCovers' => [
+								'property' => 'showEditionCovers',
+								'type' => 'checkbox',
+								'label' => 'Show Covers for Editions',
+								'description' => 'Turn on to show individual covers for each edition',
+								'default' => false,
 								'hideInLists' => true,
 							],
 						],
