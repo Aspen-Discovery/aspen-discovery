@@ -2179,9 +2179,9 @@ class GroupedWork_AJAX extends JSON_Action {
 			]),
 		];
 
-		$recordDriver = new GroupedWorkDriver($id);
+		$groupedWorkDriver = new GroupedWorkDriver($id);
 		$relatedManifestation = null;
-		foreach ($recordDriver->getRelatedManifestations() as $relatedManifestation) {
+		foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
 			if ($relatedManifestation->format == $selectedFormat) {
 				break;
 			}

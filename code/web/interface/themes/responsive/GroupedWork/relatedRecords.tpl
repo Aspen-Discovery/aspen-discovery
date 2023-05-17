@@ -3,7 +3,7 @@
 		<div class="row striped-{cycle values="odd,even"} {if !empty($promptAlternateEdition) && $index===0} danger{/if}" style="padding:8px">
 			{if !empty($showEditionCovers) && $showEditionCovers == 1}
 				<div class="col-tn-2 col-md-2 col-lg-2">
-					<img src="/bookcover.php?id={$relatedRecord->id}&size=small" class="img-thumbnail {$coverStyle}">
+					<img src="{$relatedRecord->getBookcoverUrl()}" class="img-thumbnail {$coverStyle}">
 				</div>
 			{/if}
 
