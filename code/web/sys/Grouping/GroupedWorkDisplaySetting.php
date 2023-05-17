@@ -243,6 +243,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 								'label' => 'Show Covers for Editions',
 								'description' => 'Turn on to show individual covers for each edition',
 								'default' => false,
+								'note' => 'Covers will only display if showing related record labels is unchecked',
 								'hideInLists' => true,
 							],
 						],
