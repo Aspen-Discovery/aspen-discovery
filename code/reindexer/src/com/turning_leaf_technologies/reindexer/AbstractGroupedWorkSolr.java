@@ -449,7 +449,7 @@ public abstract class AbstractGroupedWorkSolr {
 			if (updateTitle || forceUpdate) {
 				//Strip out anything in brackets unless that would cause us to show nothing
 				String tmpTitle = removeBracketsPattern.matcher(shortTitle).replaceAll("").trim();
-				if (shortTitle.length() > 0) {
+				if (tmpTitle.length() > 0) {
 					shortTitle = tmpTitle;
 				}
 				//Remove common formats
