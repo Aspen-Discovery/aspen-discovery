@@ -13,77 +13,122 @@ import { getPatronHolds, refreshProfile, reloadProfile } from '../../../util/api
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import { DisplayMessage } from '../../../components/Notifications';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 export const MyHolds = () => {
+     const queryClient = useQueryClient();
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
-     const { holds, updateHolds } = React.useContext(HoldsContext);
+     const { holds, updateHolds, pendingSortMethod, readySortMethod, updatePendingSortMethod, updateReadySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const [holdSource, setHoldSource] = React.useState('all');
-     const [readySort, setReadySort] = React.useState('expire');
-     const [pendingSort, setPendingSort] = React.useState('sortTitle');
      const [isLoading, setLoading] = React.useState(true);
      const [values, setGroupValues] = React.useState([]);
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
 
-     const toggleReadySort = async (value) => {
-          setReadySort(value);
-          setLoading(true);
-          await getPatronHolds(value, pendingSort, holdSource, library.baseUrl, true, language).then((result) => {
-               updateHolds(result);
+     const [sortBy, setSortBy] = React.useState({
+          title: 'Sort by Title',
+          author: 'Sort by Author',
+          format: 'Sort by Format',
+          status: 'Sort by Status',
+          date_placed: 'Sort by Date Placed',
+          position: 'Sort by Position',
+          pickup_location: 'Sort by Pickup Location',
+          library_account: 'Sort by Library Account',
+          expiration: 'Sort by Expiration Date',
+     });
+
+     useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+          onSuccess: (data) => {
+               updateHolds(data);
                setLoading(false);
-          });
+          },
+     });
+
+     const toggleReadySort = async (value) => {
+          updateReadySortMethod(value);
+          const sortedHolds = sortHolds(holds, pendingSortMethod, value);
+          queryClient.setQueryData(['holds', library.baseUrl, language], sortedHolds);
+          updateHolds(sortedHolds);
      };
 
      const togglePendingSort = async (value) => {
-          setPendingSort(value);
-          setLoading(true);
-          await getPatronHolds(readySort, value, holdSource, library.baseUrl, true, language).then((result) => {
-               updateHolds(result);
-               setLoading(false);
-          });
+          updatePendingSortMethod(value);
+          const sortedHolds = sortHolds(holds, value, readySortMethod);
+          queryClient.setQueryData(['holds', library.baseUrl, language], sortedHolds);
+          updateHolds(sortedHolds);
      };
 
      const toggleHoldSource = async (value) => {
           setHoldSource(value);
           setLoading(true);
-          await getPatronHolds(readySort, pendingSort, value, library.baseUrl, true, language).then((result) => {
-               updateHolds(result);
-               if (!_.isNull(value)) {
-                    if (value === 'ils') {
-                         navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_ils') });
-                    } else if (value === 'overdrive') {
-                         navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_overdrive') });
-                    } else if (value === 'cloud_library') {
-                         navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_cloud_library') });
-                    } else if (value === 'axis360') {
-                         navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_axis_360') });
-                    } else {
-                         navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
-                    }
+          if (!_.isNull(value)) {
+               if (value === 'ils') {
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_ils') });
+               } else if (value === 'overdrive') {
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_overdrive') });
+               } else if (value === 'cloud_library') {
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_cloud_library') });
+               } else if (value === 'axis360') {
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_axis_360') });
+               } else {
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
-               setLoading(false);
-          });
+          }
+          queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
      };
 
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    if (!holds) {
-                         await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl, true, language).then(async (result) => {
-                              if (holds !== result) {
-                                   updateHolds(result);
-                              }
-                         });
-                    }
-                    setLoading(false);
                     await getPickupLocations(library.baseUrl).then((result) => {
                          if (pickupLocations !== result) {
                               setPickupLocations(result);
                          }
                     });
+
+                    let tmp = sortBy;
+                    let term = '';
+
+                    term = getTermFromDictionary(language, 'sort_by_title');
+                    tmp = _.set(tmp, 'title', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_author');
+                    tmp = _.set(tmp, 'author', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_format');
+                    tmp = _.set(tmp, 'format', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_status');
+                    tmp = _.set(tmp, 'status', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_date_placed');
+                    tmp = _.set(tmp, 'date_placed', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_position');
+                    tmp = _.set(tmp, 'position', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_pickup_location');
+                    tmp = _.set(tmp, 'pickup_location', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_library_account');
+                    tmp = _.set(tmp, 'library_account', term);
+                    setSortBy(tmp);
+
+                    term = getTermFromDictionary(language, 'sort_by_expiration');
+                    tmp = _.set(tmp, 'expiration', term);
+                    setSortBy(tmp);
+
+                    setLoading(false);
                };
                update().then(() => {
                     return () => update();
@@ -106,12 +151,7 @@ export const MyHolds = () => {
      const resetGroup = async () => {
           setLoading(true);
           clearGroupValue();
-          await getPatronHolds(readySort, pendingSort, holdSource, library.baseUrl, true, language).then((result) => {
-               if (holds !== result) {
-                    updateHolds(result);
-               }
-               setLoading(false);
-          });
+          queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
           refreshProfile(library.baseUrl).then((result) => {
                updateUser(result);
           });
@@ -166,21 +206,21 @@ export const MyHolds = () => {
                                         <FormControl w={150}>
                                              <Select
                                                   name="sortBy"
-                                                  selectedValue={pendingSort}
+                                                  selectedValue={pendingSortMethod}
                                                   accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                                   _selectedItem={{
                                                        bg: 'tertiary.300',
                                                        endIcon: <CheckIcon size="5" />,
                                                   }}
                                                   onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_title')} value="sortTitle" key={0} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_author')} value="author" key={1} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_format')} value="format" key={2} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_status')} value="status" key={3} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_date_placed')} value="placed" key={4} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_position')} value="position" key={5} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_pickup_location')} value="location" key={6} />
-                                                  <Select.Item label={getTermFromDictionary(language, 'sort_by_library_account')} value="libraryAccount" key={7} />
+                                                  <Select.Item label={sortBy.title} value="sortTitle" key={0} />
+                                                  <Select.Item label={sortBy.author} value="author" key={1} />
+                                                  <Select.Item label={sortBy.format} value="format" key={2} />
+                                                  <Select.Item label={sortBy.status} value="status" key={3} />
+                                                  <Select.Item label={sortBy.date_placed} value="placed" key={4} />
+                                                  <Select.Item label={sortBy.position} value="position" key={5} />
+                                                  <Select.Item label={sortBy.pickup_location} value="location" key={6} />
+                                                  <Select.Item label={sortBy.library_account} value="libraryAccount" key={7} />
                                              </Select>
                                         </FormControl>
                                         <ManageSelectedHolds language={language} selectedValues={values} onAllDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
@@ -200,21 +240,21 @@ export const MyHolds = () => {
                                    <FormControl w={150}>
                                         <Select
                                              name="sortBy"
-                                             selectedValue={pendingSort}
+                                             selectedValue={pendingSortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                              _selectedItem={{
                                                   bg: 'tertiary.300',
                                                   endIcon: <CheckIcon size="5" />,
                                              }}
                                              onValueChange={(itemValue) => togglePendingSort(itemValue)}>
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_title')} value="sortTitle" key={0} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_author')} value="author" key={1} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_format')} value="format" key={2} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_status')} value="status" key={3} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_date_placed')} value="placed" key={4} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_position')} value="position" key={5} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_pickup_location')} value="location" key={6} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_library_account')} value="libraryAccount" key={7} />
+                                             <Select.Item label={sortBy.title} value="sortTitle" key={0} />
+                                             <Select.Item label={sortBy.author} value="author" key={1} />
+                                             <Select.Item label={sortBy.format} value="format" key={2} />
+                                             <Select.Item label={sortBy.status} value="status" key={3} />
+                                             <Select.Item label={sortBy.date_placed} value="placed" key={4} />
+                                             <Select.Item label={sortBy.position} value="position" key={5} />
+                                             <Select.Item label={sortBy.pickup_location} value="location" key={6} />
+                                             <Select.Item label={sortBy.library_account} value="libraryAccount" key={7} />
                                         </Select>
                                    </FormControl>
                                    <ManageAllHolds language={language} data={holds} onDateChange={handleDateChange} selectedReactivationDate={date} resetGroup={resetGroup} />
@@ -232,20 +272,20 @@ export const MyHolds = () => {
                                    <FormControl w={150}>
                                         <Select
                                              name="sortBy"
-                                             selectedValue={readySort}
+                                             selectedValue={readySortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
                                              _selectedItem={{
                                                   bg: 'tertiary.300',
                                                   endIcon: <CheckIcon size="5" />,
                                              }}
                                              onValueChange={(itemValue) => toggleReadySort(itemValue)}>
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_title')} value="sortTitle" key={0} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_author')} value="author" key={1} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_format')} value="format" key={2} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_expiration')} value="expire" key={3} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_date_placed')} value="placed" key={4} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_pickup_location')} value="location" key={5} />
-                                             <Select.Item label={getTermFromDictionary(language, 'sort_by_library_account')} value="libraryAccount" key={6} />
+                                             <Select.Item label={sortBy.title} value="sortTitle" key={0} />
+                                             <Select.Item label={sortBy.author} value="author" key={1} />
+                                             <Select.Item label={sortBy.format} value="format" key={2} />
+                                             <Select.Item label={sortBy.expiration} value="expire" key={3} />
+                                             <Select.Item label={sortBy.date_placed} value="placed" key={4} />
+                                             <Select.Item label={sortBy.pickup_location} value="location" key={5} />
+                                             <Select.Item label={sortBy.library_account} value="libraryAccount" key={6} />
                                         </Select>
                                    </FormControl>
                               </HStack>
@@ -333,7 +373,6 @@ export const MyHolds = () => {
                     return noHolds(title);
                }
           }
-
           return null;
      };
 
@@ -363,3 +402,49 @@ export const MyHolds = () => {
           </SafeAreaView>
      );
 };
+
+function sortHolds(holds, pendingSort, readySort) {
+     let sortedHolds = holds;
+     let holdsReady = [];
+     let holdsNotReady = [];
+
+     let pendingSortMethod = pendingSort;
+     if (pendingSort === 'sortTitle') {
+          pendingSortMethod = 'title';
+     } else if (pendingSort === 'libraryAccount') {
+          pendingSortMethod = 'user';
+     }
+
+     let readySortMethod = readySort;
+     if (readySort === 'sortTitle') {
+          readySortMethod = 'title';
+     } else if (readySort === 'libraryAccount') {
+          readySortMethod = 'user';
+     }
+
+     if (holds) {
+          if (holds[1].title === 'Pending') {
+               holdsNotReady = holds[1].data;
+               if (pendingSortMethod === 'position') {
+                    holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['desc']);
+               }
+               holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['asc']);
+          }
+
+          if (holds[0].title === 'Ready') {
+               holdsReady = holds[0].data;
+               holdsReady = _.orderBy(holdsReady, [readySortMethod], ['asc']);
+          }
+     }
+
+     return [
+          {
+               title: 'Ready',
+               data: holdsReady,
+          },
+          {
+               title: 'Pending',
+               data: holdsNotReady,
+          },
+     ];
+}

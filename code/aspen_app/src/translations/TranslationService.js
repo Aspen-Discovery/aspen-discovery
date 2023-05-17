@@ -147,7 +147,7 @@ export async function getTranslationsWithValues(key, values, language, url, addT
                     const translation = Object.values(response.data?.result?.translation);
                     const obj = {
                          [language]: {
-                              [key]: translation,
+                              [key]: translation[0],
                          },
                     };
                     translationsLibrary = _.merge(translationsLibrary, obj);
@@ -211,17 +211,27 @@ export async function getTranslatedTerm(language, url) {
 }
 
 export async function getTranslatedTermsForAllLanguages(languages, url) {
-     _.map(languages, async function (language) {
+     const languagesArray = [];
+     _.forEach(languages, function (value) {
+          languagesArray.push(value.code);
+     });
+     _.map(languagesArray, async function (language) {
           console.log('Getting translations for ' + language + '...');
           await getTranslatedTerm(language, url);
           await getTranslationsWithValues('titles_on_hold_for_ils', 'Physical Materials', language, url, true);
           await getTranslationsWithValues('titles_on_hold_for_overdrive', 'OverDrive', language, url, true);
           await getTranslationsWithValues('titles_on_hold_for_cloud_library', 'cloudLibrary', language, url, true);
           await getTranslationsWithValues('titles_on_hold_for_axis_360', 'Axis 360', language, url, true);
+          await getTranslationsWithValues('checkouts_for_ils', 'Physical Materials', language, url, true);
+          await getTranslationsWithValues('checkouts_for_overdrive', 'OverDrive', language, url, true);
+          await getTranslationsWithValues('checkouts_for_hoopla', 'Hoopla', language, url, true);
+          await getTranslationsWithValues('checkouts_for_cloud_library', 'cloudLibrary', language, url, true);
+          await getTranslationsWithValues('checkouts_for_axis_360', 'Axis 360', language, url, true);
           await getTranslationsWithValues('filter_by_ils', 'Physical Materials', language, url, true);
           await getTranslationsWithValues('filter_by_overdrive', 'OverDrive', language, url, true);
           await getTranslationsWithValues('filter_by_cloud_library', 'cloudLibrary', language, url, true);
           await getTranslationsWithValues('filter_by_axis_360', 'Axis 360', language, url, true);
+          await getTranslationsWithValues('filter_by_hoopla', 'Hoopla', language, url, true);
           await getTranslationsWithValues('filter_by_all', 'All', language, url, true);
           await getTranslationsWithValues('sort_by_title', 'Title', language, url, true);
           await getTranslationsWithValues('sort_by_author', 'Author', language, url, true);
@@ -233,6 +243,7 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
           await getTranslationsWithValues('sort_by_library_account', 'Library Account', language, url, true);
           await getTranslationsWithValues('sort_by_expiration', 'Expiration Date', language, url, true);
      });
+     return true;
 }
 
 export const getTermFromDictionary = (language = 'en', key, ellipsis = false) => {

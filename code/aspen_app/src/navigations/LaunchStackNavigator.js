@@ -2,13 +2,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
 import { LoadingScreen } from '../screens/Auth/Loading';
 import AccountDrawer from './drawer/DrawerNavigator';
-import {LibrarySystemContext, LibraryBranchContext, UserContext, BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext} from '../context/initialContext';
+import { LibrarySystemContext, LibraryBranchContext, UserContext, BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext } from '../context/initialContext';
 
 const LaunchStackNavigator = () => {
      const Stack = createNativeStackNavigator();
      return (
-         <LanguageContext.Consumer>
-              {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
+          <LanguageContext.Consumer>
+               {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
                     <LibrarySystemContext.Consumer>
                          {(library, version, url) => (
                               <LibraryBranchContext.Consumer>
@@ -18,7 +18,7 @@ const LaunchStackNavigator = () => {
                                                   <CheckoutsContext.Consumer>
                                                        {(checkouts) => (
                                                             <HoldsContext.Consumer>
-                                                                 {(holds) => (
+                                                                 {(holds, pendingSortMethod, readySortMethod, updatePendingSortMethod, updateReadySortMethod) => (
                                                                       <BrowseCategoryContext.Consumer>
                                                                            {(category, list, maxNum, updateMaxCategories) => (
                                                                                 <Stack.Navigator
@@ -54,7 +54,7 @@ const LaunchStackNavigator = () => {
                                                                                                },
                                                                                                checkoutsContext: checkouts,
                                                                                                holdsContext: holds,
-                                                                                               languageContext: { language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary }
+                                                                                               languageContext: { language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary },
                                                                                           }}
                                                                                      />
                                                                                 </Stack.Navigator>
@@ -70,8 +70,8 @@ const LaunchStackNavigator = () => {
                               </LibraryBranchContext.Consumer>
                          )}
                     </LibrarySystemContext.Consumer>
-              )}
-         </LanguageContext.Consumer>
+               )}
+          </LanguageContext.Consumer>
      );
 };
 

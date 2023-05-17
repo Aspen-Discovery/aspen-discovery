@@ -4,7 +4,7 @@ import { Button, Modal, Heading, FormControl, Select, CheckIcon } from 'native-b
 import _ from 'lodash';
 import { completeAction } from '../../../screens/GroupedWork/Record';
 import { getPatronHolds, refreshProfile } from '../../../util/api/user';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { SelectVolume } from './SelectVolume';
 import { HoldNotificationPreferences } from './HoldNotificationPreferences';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
@@ -12,6 +12,7 @@ import { getCopies } from '../../../util/api/item';
 import { SelectItem } from './SelectItem';
 
 export const HoldPrompt = (props) => {
+     const queryClient = useQueryClient();
      const { language, id, title, action, volumeInfo, holdTypeForFormat, variationId, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef } = props;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);
@@ -180,9 +181,7 @@ export const HoldPrompt = (props) => {
                                                   setResponse(result);
                                                   if (result) {
                                                        if (result.success === true || result.success === 'true') {
-                                                            getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
-                                                                 updateHolds(result);
-                                                            });
+                                                            queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
                                                             await refreshProfile(library.baseUrl).then((profile) => {
                                                                  updateUser(profile);
                                                             });

@@ -1,105 +1,82 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import _ from 'lodash';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
-import {BRANCH, formatDiscoveryVersion} from '../util/loadLibrary';
-import {PATRON} from '../util/loadPatron';
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
+import { PATRON } from '../util/loadPatron';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const ThemeContext = React.createContext({
      theme: [],
-     updateTheme: () => {
-     },
-     resetTheme: () => {
-     },
+     updateTheme: () => {},
+     resetTheme: () => {},
 });
 export const DiscoveryContext = React.createContext();
 export const UserContext = React.createContext({
-     updateUser: () => {
-     },
+     updateUser: () => {},
      user: [],
-     updateLinkedAccounts: () => {
-     },
+     updateLinkedAccounts: () => {},
      accounts: [],
-     updateLists: () => {
-     },
+     updateLists: () => {},
      lists: [],
-     updateLanguage: () => {
-     },
+     updateLanguage: () => {},
      language: [],
-     updatePickupLocations: () => {
-     },
+     updatePickupLocations: () => {},
      locations: [],
      cards: [],
-     updateCards: () => {
-     },
+     updateCards: () => {},
      notificationSettings: [],
-     updateNotificationSettings: () => {
-     },
+     updateNotificationSettings: () => {},
      expoToken: false,
      aspenToken: false,
-     resetUser: () => {
-     },
+     resetUser: () => {},
 });
 export const LibrarySystemContext = React.createContext({
-     updateLibrary: () => {
-     },
+     updateLibrary: () => {},
      library: [],
      version: '',
      url: '',
-     resetLibrary: () => {
-     },
+     resetLibrary: () => {},
 });
 export const LibraryBranchContext = React.createContext({
-     updateLocation: () => {
-     },
+     updateLocation: () => {},
      location: [],
-     resetLocation: () => {
-     },
+     resetLocation: () => {},
      scope: '',
-     updateScope: () => {
-     },
+     updateScope: () => {},
 });
 export const BrowseCategoryContext = React.createContext({
-     updateBrowseCategories: () => {
-     },
+     updateBrowseCategories: () => {},
      category: [],
-     updateBrowseCategoryList: () => {
-     },
+     updateBrowseCategoryList: () => {},
      list: [],
-     updateMaxCategories: () => {
-     },
+     updateMaxCategories: () => {},
      maxNum: 5,
-     resetBrowseCategories: () => {
-     },
+     resetBrowseCategories: () => {},
 });
 export const CheckoutsContext = React.createContext({
-     updateCheckouts: () => {
-     },
+     updateCheckouts: () => {},
      checkouts: [],
-     resetCheckouts: () => {
-     },
+     resetCheckouts: () => {},
 });
 export const HoldsContext = React.createContext({
-     updateHolds: () => {
-     },
+     updateHolds: () => {},
      holds: [],
-     resetHolds: () => {
-     },
+     resetHolds: () => {},
+     pendingSortMethod: 'sortTitle',
+     readySortMethod: 'expire',
+     updatePendingSortMethod: () => {},
+     updateReadySortMethod: () => {},
 });
 export const GroupedWorkContext = React.createContext({
-     updateGroupedWork: () => {
-     },
-     updateFormat: () => {
-     },
-     updateLanguage: () => {
-     },
+     updateGroupedWork: () => {},
+     updateFormat: () => {},
+     updateLanguage: () => {},
      groupedWork: [],
      format: [],
      language: [],
-     resetGroupedWork: () => {
-     },
-})
+     resetGroupedWork: () => {},
+});
 export const LanguageContext = React.createContext({
      updateLanguage: () => {},
      language: '',
@@ -108,9 +85,9 @@ export const LanguageContext = React.createContext({
      updateLanguages: () => {},
      updateDictionary: () => {},
      resetLanguage: () => {},
-})
+});
 
-export const ThemeProvider = ({children}) => {
+export const ThemeProvider = ({ children }) => {
      const [theme, setTheme] = useState([]);
 
      const updateTheme = (data) => {
@@ -122,18 +99,18 @@ export const ThemeProvider = ({children}) => {
      };
 
      return (
-         <ThemeContext.Provider
-             value={{
-                  theme,
-                  updateTheme,
-                  resetTheme,
-             }}>
-              {children}
-         </ThemeContext.Provider>
+          <ThemeContext.Provider
+               value={{
+                    theme,
+                    updateTheme,
+                    resetTheme,
+               }}>
+               {children}
+          </ThemeContext.Provider>
      );
 };
 
-export const DiscoveryProvider = ({children}) => {
+export const DiscoveryProvider = ({ children }) => {
      const [version, setVersion] = useState();
      const [url, setUrl] = useState();
 
@@ -147,19 +124,19 @@ export const DiscoveryProvider = ({children}) => {
      };
 
      return (
-         <DiscoveryContext.Provider
-             value={{
-                  version,
-                  url,
-                  updateVersion,
-                  updateUrl,
-             }}>
-              {children}
-         </DiscoveryContext.Provider>
+          <DiscoveryContext.Provider
+               value={{
+                    version,
+                    url,
+                    updateVersion,
+                    updateUrl,
+               }}>
+               {children}
+          </DiscoveryContext.Provider>
      );
 };
 
-export const LibrarySystemProvider = ({children}) => {
+export const LibrarySystemProvider = ({ children }) => {
      const [library, setLibrary] = useState();
      const [version, setVersion] = useState();
      const [url, setUrl] = useState();
@@ -187,20 +164,20 @@ export const LibrarySystemProvider = ({children}) => {
      };
 
      return (
-         <LibrarySystemContext.Provider
-             value={{
-                  library,
-                  version,
-                  url,
-                  updateLibrary,
-                  resetLibrary,
-             }}>
-              {children}
-         </LibrarySystemContext.Provider>
+          <LibrarySystemContext.Provider
+               value={{
+                    library,
+                    version,
+                    url,
+                    updateLibrary,
+                    resetLibrary,
+               }}>
+               {children}
+          </LibrarySystemContext.Provider>
      );
 };
 
-export const LibraryBranchProvider = ({children}) => {
+export const LibraryBranchProvider = ({ children }) => {
      const [location, setLocation] = useState();
      const [scope, setScope] = useState();
 
@@ -230,20 +207,20 @@ export const LibraryBranchProvider = ({children}) => {
      };
 
      return (
-         <LibraryBranchContext.Provider
-             value={{
-                  location,
-                  scope,
-                  updateLocation,
-                  resetLocation,
-                  updateScope,
-             }}>
-              {children}
-         </LibraryBranchContext.Provider>
+          <LibraryBranchContext.Provider
+               value={{
+                    location,
+                    scope,
+                    updateLocation,
+                    resetLocation,
+                    updateScope,
+               }}>
+               {children}
+          </LibraryBranchContext.Provider>
      );
 };
 
-export const UserProvider = ({children}) => {
+export const UserProvider = ({ children }) => {
      const [user, setUser] = useState();
      const [accounts, setLinkedAccounts] = useState();
      const [viewers, setLinkedViewerAccounts] = useState();
@@ -322,33 +299,33 @@ export const UserProvider = ({children}) => {
                     const device = Device.modelName;
                     if (_.find(data, _.matchesProperty('device', device))) {
                          console.log('Found settings for this device model');
-                         const deviceSettings = _.filter(data, {device: device});
+                         const deviceSettings = _.filter(data, { device: device });
                          const savedSearches = await getTermFromDictionary(language, 'saved_searches');
                          const alertsFromLibrary = await getTermFromDictionary(language, 'alerts_from_library');
                          const alertsAboutAccount = await getTermFromDictionary(language, 'alerts_about_account');
                          const settings = [];
                          settings.push(
-                             {
-                                  id: 0,
-                                  label: savedSearches,
-                                  option: 'notifySavedSearch',
-                                  description: null,
-                                  allow: deviceSettings[0].notifySavedSearch ?? 0,
-                             },
-                             {
-                                  id: 1,
-                                  label: alertsFromLibrary,
-                                  option: 'notifyCustom',
-                                  description: null,
-                                  allow: deviceSettings[0].notifyCustom ?? 0,
-                             },
-                             {
-                                  id: 2,
-                                  label: alertsAboutAccount,
-                                  option: 'notifyAccount',
-                                  description: null,
-                                  allow: deviceSettings[0].notifyAccount ?? 0,
-                             }
+                              {
+                                   id: 0,
+                                   label: savedSearches,
+                                   option: 'notifySavedSearch',
+                                   description: null,
+                                   allow: deviceSettings[0].notifySavedSearch ?? 0,
+                              },
+                              {
+                                   id: 1,
+                                   label: alertsFromLibrary,
+                                   option: 'notifyCustom',
+                                   description: null,
+                                   allow: deviceSettings[0].notifyCustom ?? 0,
+                              },
+                              {
+                                   id: 2,
+                                   label: alertsAboutAccount,
+                                   option: 'notifyAccount',
+                                   description: null,
+                                   allow: deviceSettings[0].notifyAccount ?? 0,
+                              }
                          );
                          setNotificationSettings(settings);
                          setExpoToken(deviceSettings[0]?.token ?? false);
@@ -371,36 +348,36 @@ export const UserProvider = ({children}) => {
      };
 
      return (
-         <UserContext.Provider
-             value={{
-                  user,
-                  updateUser,
-                  resetUser,
-                  lists,
-                  updateLists,
-                  accounts,
-                  updateLinkedAccounts,
-                  viewers,
-                  updateLinkedViewerAccounts,
-                  language,
-                  updateLanguage,
-                  locations,
-                  updatePickupLocations,
-                  readingHistory,
-                  updateReadingHistory,
-                  cards,
-                  updateLibraryCards,
-                  notificationSettings,
-                  updateNotificationSettings,
-                  expoToken,
-                  aspenToken,
-             }}>
-              {children}
-         </UserContext.Provider>
+          <UserContext.Provider
+               value={{
+                    user,
+                    updateUser,
+                    resetUser,
+                    lists,
+                    updateLists,
+                    accounts,
+                    updateLinkedAccounts,
+                    viewers,
+                    updateLinkedViewerAccounts,
+                    language,
+                    updateLanguage,
+                    locations,
+                    updatePickupLocations,
+                    readingHistory,
+                    updateReadingHistory,
+                    cards,
+                    updateLibraryCards,
+                    notificationSettings,
+                    updateNotificationSettings,
+                    expoToken,
+                    aspenToken,
+               }}>
+               {children}
+          </UserContext.Provider>
      );
 };
 
-export const BrowseCategoryProvider = ({children}) => {
+export const BrowseCategoryProvider = ({ children }) => {
      const [category, setCategories] = useState();
      const [list, setCategoryList] = useState();
      const [maxNum, setMaxCategories] = useState();
@@ -427,22 +404,22 @@ export const BrowseCategoryProvider = ({children}) => {
      };
 
      return (
-         <BrowseCategoryContext.Provider
-             value={{
-                  category,
-                  list,
-                  maxNum,
-                  updateBrowseCategories,
-                  updateBrowseCategoryList,
-                  updateMaxCategories,
-                  resetBrowseCategories,
-             }}>
-              {children}
-         </BrowseCategoryContext.Provider>
+          <BrowseCategoryContext.Provider
+               value={{
+                    category,
+                    list,
+                    maxNum,
+                    updateBrowseCategories,
+                    updateBrowseCategoryList,
+                    updateMaxCategories,
+                    resetBrowseCategories,
+               }}>
+               {children}
+          </BrowseCategoryContext.Provider>
      );
 };
 
-export const CheckoutsProvider = ({children}) => {
+export const CheckoutsProvider = ({ children }) => {
      const [checkouts, setCheckouts] = useState();
 
      const updateCheckouts = (data) => {
@@ -456,23 +433,35 @@ export const CheckoutsProvider = ({children}) => {
      };
 
      return (
-         <CheckoutsContext.Provider
-             value={{
-                  checkouts,
-                  updateCheckouts,
-                  resetCheckouts,
-             }}>
-              {children}
-         </CheckoutsContext.Provider>
+          <CheckoutsContext.Provider
+               value={{
+                    checkouts,
+                    updateCheckouts,
+                    resetCheckouts,
+               }}>
+               {children}
+          </CheckoutsContext.Provider>
      );
 };
 
-export const HoldsProvider = ({children}) => {
+export const HoldsProvider = ({ children }) => {
      const [holds, setHolds] = useState();
+     const [pendingSortMethod, setPendingSortMethod] = useState('sortTitle');
+     const [readySortMethod, setReadySortMethod] = useState('expire');
 
      const updateHolds = (data) => {
           setHolds(data);
           console.log('updated HoldsContext');
+     };
+
+     const updatePendingSortMethod = (data) => {
+          setPendingSortMethod(data);
+          console.log('updated pendingSortMethod');
+     };
+
+     const updateReadySortMethod = (data) => {
+          setReadySortMethod(data);
+          console.log('updated readySortMethod');
      };
 
      const resetHolds = () => {
@@ -481,18 +470,22 @@ export const HoldsProvider = ({children}) => {
      };
 
      return (
-         <HoldsContext.Provider
-             value={{
-                  holds,
-                  updateHolds,
-                  resetHolds,
-             }}>
-              {children}
-         </HoldsContext.Provider>
+          <HoldsContext.Provider
+               value={{
+                    holds,
+                    updateHolds,
+                    resetHolds,
+                    readySortMethod,
+                    pendingSortMethod,
+                    updateReadySortMethod,
+                    updatePendingSortMethod,
+               }}>
+               {children}
+          </HoldsContext.Provider>
      );
 };
 
-export const GroupedWorkProvider = ({children}) => {
+export const GroupedWorkProvider = ({ children }) => {
      const [groupedWork, setGroupedWork] = useState();
      const [format, setFormat] = useState();
      const [language, setLanguage] = useState();
@@ -503,68 +496,62 @@ export const GroupedWorkProvider = ({children}) => {
 
           const keys = _.keys(data.formats);
           setFormat(_.first(keys));
-          console.log("updated format in GroupedWorkContext");
+          console.log('updated format in GroupedWorkContext');
 
           setLanguage(data.language);
-          console.log("updated language in GroupedWorkContext");
-
-     }
+          console.log('updated language in GroupedWorkContext');
+     };
 
      const updateFormat = (data) => {
           setFormat(data);
-          console.log("updated format in GroupedWorkContext");
-     }
+          console.log('updated format in GroupedWorkContext');
+     };
 
      const updateLanguage = (data) => {
           setLanguage(data);
-          console.log("updated language in GroupedWorkContext");
-     }
+          console.log('updated language in GroupedWorkContext');
+     };
 
      const resetGroupedWork = () => {
           setGroupedWork([]);
           console.log('reset GroupedWorkContext');
-     }
+     };
 
-     return (
-         <GroupedWorkContext.Provider
-             value={{groupedWork, format, language, updateGroupedWork, updateFormat, updateLanguage, resetGroupedWork}}>
-              {children}
-         </GroupedWorkContext.Provider>
-     )
-}
+     return <GroupedWorkContext.Provider value={{ groupedWork, format, language, updateGroupedWork, updateFormat, updateLanguage, resetGroupedWork }}>{children}</GroupedWorkContext.Provider>;
+};
 
-export const LanguageProvider = ({children}) => {
+export const LanguageProvider = ({ children }) => {
      const [language, setLanguage] = useState();
      const [languages, setLanguages] = useState();
      const [dictionary, setDictionary] = useState();
 
      const updateLanguage = (data) => {
-          console.log("updated language to " + data + " in LanguageContext");
+          console.log('updated language to ' + data + ' in LanguageContext');
           PATRON.language = data;
           setLanguage(data);
      };
 
      const updateLanguages = (data) => {
-          console.log("updated available library languages in LanguageContext");
+          console.log('updated available library languages in LanguageContext');
           setLanguages(data);
      };
 
      const updateDictionary = (data) => {
-          console.log("updated dictionary in LanguageContext");
+          console.log('updated dictionary in LanguageContext');
           setDictionary(data);
-     }
+     };
 
      return (
-         <LanguageContext.Provider
-             value={{
-                  language,
-                  updateLanguage,
-                  languages,
-                  updateLanguages,
-                  dictionary,
-                  updateDictionary
-             }}>
-              {children}
-         </LanguageContext.Provider>
+          <LanguageContext.Provider
+               value={{
+                    language,
+                    updateLanguage,
+                    languages,
+                    updateLanguages,
+                    dictionary,
+                    updateDictionary,
+               }}>
+               {children}
+          </LanguageContext.Provider>
      );
 };
