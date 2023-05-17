@@ -1,5 +1,7 @@
 <?php
 require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
+
 
 /**
  * Settings for Communico integration
@@ -18,11 +20,15 @@ class CommunicoSetting extends DataObject {
 	public $password;
 
 	private $_libraries;
+	private $_locationMap;
+
 
 	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer Communico Settings'));
 
-		return [
+		$branchMapStructure = EventsBranchMapping::getObjectStructure($context);
+
+		$structure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -65,7 +71,31 @@ class CommunicoSetting extends DataObject {
 				'values' => $libraryList,
 				'hideInLists' => true,
 			],
+
+			'locationMappingSection' => [
+				'property' => 'locationMappingSection',
+				'type' => 'section',
+				'label' => 'Location Mapping',
+				'properties' => [
+					'locationMap' => [
+						'property' => 'locationMap',
+						'type' => 'oneToMany',
+						'label' => 'Location Map',
+						'description' => 'The mapping of library location names for Aspen and events.',
+						'keyThis' => 'id',
+						'subObjectType' => 'EventsBranchMapping',
+						'structure' => $branchMapStructure,
+						'storeDb' => true,
+						'sortable' => false,
+						'allowEdit' => false,
+						'canEdit' => false,
+						'canAddNew' => false,
+						'canDelete' => false,
+					],
+				],
+			],
 		];
+		return $structure;
 	}
 
 	/**
@@ -77,6 +107,7 @@ class CommunicoSetting extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
+			$this->saveLocationMap();
 		}
 		return $ret;
 	}
@@ -97,7 +128,9 @@ class CommunicoSetting extends DataObject {
 	public function __get($name) {
 		if ($name == "libraries") {
 			return $this->getLibraries();
-		} else {
+		} if ($name == "locationMap") {
+			return $this->getLocationMap();
+		}else {
 			return $this->_data[$name] ?? null;
 		}
 	}
@@ -132,6 +165,20 @@ class CommunicoSetting extends DataObject {
 		return $this->_libraries;
 	}
 
+	public function getLocationMap() {
+		if (!isset($this->_locationmap)) {
+			//Get the list of translation maps
+			$this->_locationmap = [];
+			$locationMap = new EventsBranchMapping();
+			$locationMap->orderBy('id');
+			$locationMap->find();
+			while ($locationMap->fetch()) {
+				$this->_locationMap[$locationMap->id] = clone($locationMap);
+			}
+		}
+		return $this->_locationMap;
+	}
+
 	public function saveLibraries() {
 		if (isset($this->_libraries) && is_array($this->_libraries)) {
 			$this->clearLibraries();
@@ -145,6 +192,20 @@ class CommunicoSetting extends DataObject {
 				$libraryEventSetting->insert();
 			}
 			unset($this->_libraries);
+		}
+	}
+
+	public function saveLocationMap() {
+		if (isset($this->_locationMap)) {
+			foreach ($this->_locationMap as $location) {
+				$locationMap = new EventsBranchMapping();
+				$locationMap->locationId = $location->locationId;
+				if ($locationMap->find(true)){
+					$locationMap->eventsLocation = $location->eventsLocation;
+					$locationMap->update();
+				}
+			}
+			unset($this->_locationMap);
 		}
 	}
 
