@@ -13446,8 +13446,8 @@ AspenDiscovery.ResultsList = (function(){
 					if (data.success) {
 						$(relatedRecordPopup).html(data.body);
 						relatedRecordPopup.slideDown();
-						$(relatedRecordBtn).addClass('hidden');
 					}
+					$(relatedRecordBtn).addClass('hidden');
 				});
 			}
 

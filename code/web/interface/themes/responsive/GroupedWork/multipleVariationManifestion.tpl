@@ -12,8 +12,8 @@
 					{translate text=$variation->label isPublicFacing=true}
 				</a>
 				<br>
-				<a href="#" onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS}','{$relatedManifestation->format|escapeCSS}','{$variation->id|escapeCSS}');">
-					<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{if $variation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
+				<a href="#" onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS}','{$relatedManifestation->format|escapeCSS}','{$variation->databaseId|escapeCSS}');">
+					<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->databaseId|escapeCSS}'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{if $variation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
 				</a>
 			</div>
 			<div class="col-tn-5 col-xs-8{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
@@ -41,21 +41,9 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}" style="display:none">
+			<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->databaseId|escapeCSS}" style="display:none">
 			</div>
 		</div>
 	{/foreach}
 </div>
 {/strip}
-{literal}
-<script type="text/javascript">
-var form = document.getElementById('dbMaintenanceForm');
-form.addEventListener('submit', submitDBMaintenance);
-function submitDBMaintenance() {
-    $('#startDBUpdates').prop('disabled', true);
-    $('#startDBUpdates').addClass('disabled');
-    $('#startDBUpdates .fa-spinner').removeClass('hidden');
-    return true;
-}
-</script>
-{/literal}
