@@ -12930,11 +12930,15 @@ AspenDiscovery.Record = (function(){
 					alert("Please select an item to place your hold on");
 					requestTitleButton.prop('disabled', false);
 					requestTitleButton.removeClass('disabled');
+					document.body.style.cursor = "pointer";
+					document.querySelector('.fa-spinner').classList.add('hidden');
 					return false;
 				}else if ( holdType.val() === 'volume' && volume.val().length === 0){
 					alert("Please select a volume to place your hold on");
 					requestTitleButton.prop('disabled', false);
 					requestTitleButton.removeClass('disabled');
+					document.body.style.cursor = "pointer";
+					document.querySelector('.fa-spinner').classList.add('hidden');
 					return false;
 				}
 			}else{
@@ -12946,6 +12950,8 @@ AspenDiscovery.Record = (function(){
 						alert("Please select an item to place your hold on");
 						requestTitleButton.prop('disabled', false);
 						requestTitleButton.removeClass('disabled');
+						document.body.style.cursor = "pointer";
+						document.querySelector('.fa-spinner').classList.add('hidden');
 						return false;
 					}
 				}

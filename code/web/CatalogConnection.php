@@ -322,35 +322,42 @@ class CatalogConnection {
 		}
 		if (!$offlineMode) {
 			if (!$patron->initialReadingHistoryLoaded) {
-				if ($this->driver->hasNativeReadingHistory()) {
-					//Load existing reading history from the ILS
-					$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
-					if ($result['numTitles'] > 0) {
-						foreach ($result['titles'] as $title) {
-							if ($title['permanentId'] != null) {
-								$userReadingHistoryEntry = new ReadingHistoryEntry();
-								$userReadingHistoryEntry->userId = $patron->id;
-								$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
-								$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
-								$userReadingHistoryEntry->sourceId = $title['recordId'];
-								$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
-								$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
-								$userReadingHistoryEntry->format = $title['format'];
-								$userReadingHistoryEntry->checkOutDate = $title['checkout'];
-								if (!empty($title['checkin'])) {
-									$userReadingHistoryEntry->checkInDate = $title['checkin'];
-								} else {
-									$userReadingHistoryEntry->checkInDate = null;
+				$okToLoadFromIls = true;
+				$masqueradeMode = UserAccount::isUserMasquerading();
+				if ($masqueradeMode){
+					$okToLoadFromIls = $this->driver->canLoadReadingHistoryInMasqueradeMode();
+				}
+				if ($okToLoadFromIls) {
+					if ($this->driver->hasNativeReadingHistory()) {
+						//Load existing reading history from the ILS
+						$result = $this->driver->getReadingHistory($patron, -1, -1, $sortOption);
+						if ($result['numTitles'] > 0) {
+							foreach ($result['titles'] as $title) {
+								if ($title['permanentId'] != null) {
+									$userReadingHistoryEntry = new ReadingHistoryEntry();
+									$userReadingHistoryEntry->userId = $patron->id;
+									$userReadingHistoryEntry->groupedWorkPermanentId = $title['permanentId'];
+									$userReadingHistoryEntry->source = $this->accountProfile->recordSource;
+									$userReadingHistoryEntry->sourceId = $title['recordId'];
+									$userReadingHistoryEntry->title = substr($title['title'], 0, 150);
+									$userReadingHistoryEntry->author = substr($title['author'], 0, 75);
+									$userReadingHistoryEntry->format = $title['format'];
+									$userReadingHistoryEntry->checkOutDate = $title['checkout'];
+									if (!empty($title['checkin'])) {
+										$userReadingHistoryEntry->checkInDate = $title['checkin'];
+									} else {
+										$userReadingHistoryEntry->checkInDate = null;
+									}
+									$userReadingHistoryEntry->deleted = 0;
+									$userReadingHistoryEntry->insert();
 								}
-								$userReadingHistoryEntry->deleted = 0;
-								$userReadingHistoryEntry->insert();
 							}
 						}
+						$timer->logTime("Finished loading native reading history");
 					}
-					$timer->logTime("Finished loading native reading history");
+					$patron->initialReadingHistoryLoaded = true;
+					$patron->update();
 				}
-				$patron->initialReadingHistoryLoaded = true;
-				$patron->update();
 			}
 			//Update the reading history based on titles that the patron currently has checked out if we are on the first page.
 			if ($page == 1 && empty($filter)) {

@@ -43,6 +43,8 @@ class AspenSiteCheck extends DataObject {
 			return $site->baseUrl . "/CloudLibrary/IndexingLog";
 		} elseif ($checkType == 'web_indexer' || $checkType == 'web_builder') {
 			return $site->baseUrl . "/Websites/IndexingLog";
+		} elseif ($checkType == 'events') {
+			return $site->baseUrl . "/Events/IndexingLog";
 		} elseif ($checkType == 'cron') {
 			return $site->baseUrl . "/Admin/CronLog";
 		} elseif ($checkType == 'nightly_index') {
