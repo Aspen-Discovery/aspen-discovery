@@ -6,19 +6,19 @@ import { useNavigation, useRoute, CommonActions } from '@react-navigation/native
 
 import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container, Center, Heading } from 'native-base';
 
-import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import { getAppliedFilters, getAvailableFacets, getSortList, SEARCH } from '../../util/search';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { getAppliedFilters, getAvailableFacets, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
 import AddToList from './AddToList';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
 import { SafeAreaView, ScrollView } from 'react-native';
-import {createAuthTokens, getHeaders, postData} from '../../util/apiAuth';
+import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import axios from 'axios';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getCleanTitle } from '../../helpers/item';
-import {navigate} from '../../helpers/RootNavigator';
-import {getTermFromDictionary, getTranslationsWithValues} from '../../translations/TranslationService';
+import { navigate } from '../../helpers/RootNavigator';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
 
 export const SearchResults = () => {
      const navigation = useNavigation();
@@ -38,8 +38,8 @@ export const SearchResults = () => {
      const type = useRoute().params.type ?? 'catalog';
      const id = useRoute().params.id ?? null;
 
-     if(term && (term !== storedTerm)) {
-          console.log("Search term changed. Clearing previous search options...");
+     if (term && term !== storedTerm) {
+          console.log('Search term changed. Clearing previous search options...');
           setStoredTerm(term);
           SEARCH.pendingFilters = [];
           SEARCH.sortMethod = 'relevance';
@@ -90,58 +90,58 @@ export const SearchResults = () => {
      };
 
      const Paging = () => {
-          if(data.totalPages > 1) {
+          if (data.totalPages > 1) {
                return (
-                   <Box
-                       safeArea={2}
-                       bgColor="coolGray.100"
-                       borderTopWidth="1"
-                       _dark={{
-                            borderColor: 'gray.600',
-                            bg: 'coolGray.700',
-                       }}
-                       borderColor="coolGray.200"
-                       flexWrap="nowrap"
-                       alignItems="center">
-                        <ScrollView horizontal>
-                             <Button.Group size="sm">
-                                  <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
-                                       {getTermFromDictionary(language, 'previous')}
-                                  </Button>
-                                  <Button
-                                      onPress={() => {
-                                           if (!isPreviousData && data.hasMore) {
-                                                console.log('Adding to page');
-                                                setPage(page + 1);
-                                           }
-                                      }}
-                                      isDisabled={isPreviousData || !data.hasMore}>
-                                       {getTermFromDictionary(language, 'next')}
-                                  </Button>
-                             </Button.Group>
-                        </ScrollView>
-                        <Text mt={2} fontSize="sm">
-                             {paginationLabel}
-                        </Text>
-                   </Box>
+                    <Box
+                         safeArea={2}
+                         bgColor="coolGray.100"
+                         borderTopWidth="1"
+                         _dark={{
+                              borderColor: 'gray.600',
+                              bg: 'coolGray.700',
+                         }}
+                         borderColor="coolGray.200"
+                         flexWrap="nowrap"
+                         alignItems="center">
+                         <ScrollView horizontal>
+                              <Button.Group size="sm">
+                                   <Button onPress={() => setPage(page - 1)} isDisabled={page === 1}>
+                                        {getTermFromDictionary(language, 'previous')}
+                                   </Button>
+                                   <Button
+                                        onPress={() => {
+                                             if (!isPreviousData && data.hasMore) {
+                                                  console.log('Adding to page');
+                                                  setPage(page + 1);
+                                             }
+                                        }}
+                                        isDisabled={isPreviousData || !data.hasMore}>
+                                        {getTermFromDictionary(language, 'next')}
+                                   </Button>
+                              </Button.Group>
+                         </ScrollView>
+                         <Text mt={2} fontSize="sm">
+                              {paginationLabel}
+                         </Text>
+                    </Box>
                );
           }
-          
+
           return null;
      };
 
      const NoResults = () => {
-         return (
-             <Center flex={1}>
-                  <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
-                  <Text bold w="75%" textAlign="center">
-                       {route.params?.term}
-                  </Text>
-                  <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                       {getTermFromDictionary(language, 'new_search_button')}
-                  </Button>
-             </Center>
-         )
+          return (
+               <Center flex={1}>
+                    <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
+                    <Text bold w="75%" textAlign="center">
+                         {route.params?.term}
+                    </Text>
+                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                         {getTermFromDictionary(language, 'new_search_button')}
+                    </Button>
+               </Center>
+          );
      };
 
      return (
@@ -168,7 +168,7 @@ const DisplayResult = (data) => {
      const { language } = React.useContext(LanguageContext);
 
      const handlePressItem = () => {
-          if(version >= '23.01.00') {
+          if (version >= '23.01.00') {
                navigate('ResultItem', {
                     id: item.key,
                     title: getCleanTitle(item.title),
@@ -181,7 +181,7 @@ const DisplayResult = (data) => {
                     title: getCleanTitle(item.title),
                     url: library.baseUrl,
                     userContext: user,
-                    libraryContext: library
+                    libraryContext: library,
                });
           }
      };
@@ -190,9 +190,9 @@ const DisplayResult = (data) => {
 
      function getFormat(n) {
           return (
-              <Badge key={n.key} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                   {n.name}
-              </Badge>
+               <Badge key={n.key} colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                    {n.name}
+               </Badge>
           );
      }
 
@@ -315,7 +315,7 @@ const CreateFilterButtonDefaults = () => {
                                              navigation: navigation,
                                              key: obj['field'],
                                              title: obj['label'],
-                                             facets: SEARCH.availableFacets.data[obj['label']].facets,
+                                             facets: SEARCH.availableFacets[obj['label']].facets,
                                              pendingUpdates: [],
                                              extra: obj,
                                         },
@@ -341,7 +341,7 @@ const CreateFilterButton = () => {
           return (
                <Button.Group size="sm" space={1} vertical variant="outline">
                     {_.map(appliedFacets, function (item, index, collection) {
-                         const cluster = _.filter(SEARCH.availableFacets.data, ['field', item[0]['field']]);
+                         const cluster = _.filter(SEARCH.availableFacets, ['field', item[0]['field']]);
                          let labels = '';
                          _.forEach(item, function (value, key) {
                               let label = value['display'];
@@ -398,6 +398,7 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
                type: type ?? 'catalog',
                id: id,
                language: language,
+               includeSortList: true,
           },
      });
 
@@ -405,16 +406,19 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
      if (data.result?.page_current === data.result?.page_total) {
           morePages = false;
      } else if (data.result?.page_total === 1) {
-          morePages= false;
+          morePages = false;
      }
 
      SEARCH.id = data?.result?.id ?? null;
      SEARCH.sortMethod = data?.result?.sort ?? '';
      SEARCH.term = data?.result?.lookfor ?? '';
+     SEARCH.availableFacets = data?.result?.options ?? [];
 
      await getSortList(url, language);
-     await getAvailableFacets(url, language);
+     await getAvailableFacetsKeys(url, language);
      await getAppliedFilters(url, language);
+
+     setDefaultFacets(data?.result?.options ?? []);
 
      return {
           results: data.result?.items ?? [],

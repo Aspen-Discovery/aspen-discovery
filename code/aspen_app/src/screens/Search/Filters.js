@@ -6,8 +6,8 @@ import { useNavigation, useNavigationState } from '@react-navigation/native';
 // custom components and helper files
 import { buildParamsForUrl, SEARCH } from '../../util/search';
 import { UnsavedChangesExit } from './UnsavedChanges';
-import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const FiltersScreen = () => {
      const navigation = useNavigation();
@@ -18,7 +18,7 @@ export const FiltersScreen = () => {
      const { language } = React.useContext(LanguageContext);
      const pendingFiltersFromParams = useNavigationState((state) => state.routes[0]['params']['pendingFilters']);
 
-     let facets = SEARCH.availableFacets.data ? Object.keys(SEARCH.availableFacets.data) : [];
+     let facets = SEARCH.availableFacets ? Object.keys(SEARCH.availableFacets) : [];
      let pendingFilters = SEARCH.pendingFilters ?? [];
 
      if (pendingFilters !== pendingFiltersFromParams) {
@@ -42,7 +42,7 @@ export const FiltersScreen = () => {
      };
 
      const appliedFacet = (cluster) => {
-          const facetData = _.filter(SEARCH.availableFacets.data, ['label', cluster]);
+          const facetData = _.filter(SEARCH.availableFacets, ['label', cluster]);
           const pendingFacets = _.filter(pendingFilters, ['field', facetData[0]['field']]);
           let text = '';
 
@@ -127,7 +127,7 @@ export const FiltersScreen = () => {
      };
 
      const openCluster = (cluster) => {
-          const obj = SEARCH.availableFacets.data[cluster];
+          const obj = SEARCH.availableFacets[cluster];
           navigation.navigate('Facet', {
                data: cluster,
                defaultValues: [],
