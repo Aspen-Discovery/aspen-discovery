@@ -6,8 +6,8 @@
 				{translate text=$relatedManifestation->format isPublicFacing=true}
 			</a>
 			<br>
-			<a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}');" aria-label="View Editions for {translate text=$relatedManifestation->format inAttribute=true}">
-				<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'>{if $relatedManifestation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
+			<a href="#" onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS}','{$relatedManifestation->format|escapeCSS}', '{$relatedManifestation->getFirstVariation()->databaseId|escapeCSS}');" aria-label="View Editions for {translate text=$relatedManifestation->format inAttribute=true}">
+				<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$relatedManifestation->getFirstVariation()->databaseId|escapeCSS}'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{if $relatedManifestation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
 			</a>
 		</div>
 		<div class="col-tn-8 col-xs-8{if empty($viewingCombinedResults)} col-md-5 col-lg-6{/if}">
@@ -37,8 +37,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}" style="display:none">
-			{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$relatedManifestation->getRelatedRecords() relatedManifestation=$relatedManifestation variationId=$relatedManifestation->getFirstVariation()->databaseId}
+		<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$relatedManifestation->getFirstVariation()->databaseId}" style="display:none">
 		</div>
 	</div>
 </div>

@@ -13431,10 +13431,30 @@ AspenDiscovery.ResultsList = (function(){
 			//relatedRecordPopup.toggleClass('hidden');
 			return false;
 
+		},
+
+		showRelatedManifestations: function(workId, format, variationId) {
+			var url = Globals.path + "/GroupedWork/AJAX?method=getRelatedManifestations&id=" + workId + "&format=" + format + "&variationId=" + variationId;
+			var relatedRecordPopup = $('#relatedRecordPopup_' + workId + '_' + format + '_' + variationId);
+			var relatedRecordBtn = $('#manifestation-toggle-text-' + workId + '_' + format + '_' + variationId + ' .fa-spinner');
+
+			if(relatedRecordPopup.is(":visible")) {
+				relatedRecordPopup.slideUp();
+			} else {
+				$(relatedRecordBtn).removeClass('hidden');
+				$.getJSON(url, function (data) {
+					if (data.success) {
+						$(relatedRecordPopup).html(data.body);
+						relatedRecordPopup.slideDown();
+						$(relatedRecordBtn).addClass('hidden');
+					}
+				});
+			}
+
+			return false;
 		}
 	};
 }(AspenDiscovery.ResultsList || {}));
-
 AspenDiscovery.Searches = (function(){
 	$(document).ready(function(){
 		AspenDiscovery.Searches.initAutoComplete({});
