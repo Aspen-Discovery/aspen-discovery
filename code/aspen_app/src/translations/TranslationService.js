@@ -211,7 +211,11 @@ export async function getTranslatedTerm(language, url) {
 }
 
 export async function getTranslatedTermsForAllLanguages(languages, url) {
-     _.map(languages, async function (language) {
+     const languagesArray = [];
+     _.forEach(languages, function (value) {
+          languagesArray.push(value.code);
+     });
+     _.map(languagesArray, async function (language) {
           console.log('Getting translations for ' + language + '...');
           await getTranslatedTerm(language, url);
           await getTranslationsWithValues('titles_on_hold_for_ils', 'Physical Materials', language, url, true);
@@ -239,6 +243,7 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
           await getTranslationsWithValues('sort_by_library_account', 'Library Account', language, url, true);
           await getTranslationsWithValues('sort_by_expiration', 'Expiration Date', language, url, true);
      });
+     return true;
 }
 
 export const getTermFromDictionary = (language = 'en', key, ellipsis = false) => {
