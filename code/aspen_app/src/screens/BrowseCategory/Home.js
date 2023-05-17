@@ -21,8 +21,7 @@ let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
-     const [loading, setLoading] = React.useState(true);
-     const navigation = useNavigation();
+     const [loading, setLoading] = React.useState(false);
      const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
@@ -33,10 +32,9 @@ export const DiscoverHomeScreen = () => {
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
-     useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
-          refetchInterval: 60 * 1000 * 30,
+     useQuery(['browse_categories', library.baseUrl], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
                if (maxCategories === 9999) {
                     setUnlimitedCategories(true);
@@ -77,64 +75,10 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    /*await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
-                         if (maxCategories === 9999) {
-                              setUnlimitedCategories(true);
-                         }
-
-                         if (category !== result) {
-                              setLoading(true);
-                              updateBrowseCategories(result);
-                              setLoading(false);
-                         }
-                    });
-
-                    getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
-                         if (holds !== result) {
-                              updateHolds(result);
-                         }
-                    }); */
-
-                    /*getPatronCheckedOutItems('all', library.baseUrl, true, language).then((result) => {
-                         if (checkouts !== result) {
-                              updateCheckouts(result);
-                         }
-                    }); */
-
-                    getILSMessages(library.baseUrl);
-
-                    /*getLists(library.baseUrl).then((result) => {
-                         if (lists !== result) {
-                              updateLists(result);
-                         }
-                    });
-
-                    getPickupLocations(library.baseUrl).then((result) => {
-                         if (locations !== result) {
-                              updatePickupLocations(result);
-                         }
-                    });
-
-                    getLinkedAccounts(user, cards, library).then((result) => {
-                         if (accounts !== result.accounts) {
-                              updateLinkedAccounts(result.accounts);
-                         }
-                         if (cards !== result.cards) {
-                              updateLibraryCards(result.cards);
-                         }
-                    });
-                    */
-
-                    console.log('updated patron things');
-               };
-               update().then(() => {
-                    return () => update();
-               });
-          }, [])
-     );
+     useQuery(['ils_messages', library.baseUrl, language], () => getILSMessages(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+     });
 
      const renderHeader = (title, key, user, url) => {
           return (
@@ -264,6 +208,7 @@ export const DiscoverHomeScreen = () => {
                await onRefreshCategories();
                await getBrowseCategoryListForUser().then((result) => {
                     updateBrowseCategoryList(result);
+                    queryClient.setQueryData(['browse_categories_list', library.baseUrl], result);
                     setLoading(false);
                });
           });
@@ -272,6 +217,7 @@ export const DiscoverHomeScreen = () => {
      const onRefreshCategories = async () => {
           setLoading(true);
           await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+               queryClient.setQueryData(['browse_categories', library.baseUrl], result);
                updateBrowseCategories(result);
                setLoading(false);
           });

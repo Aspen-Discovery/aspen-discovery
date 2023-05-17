@@ -10,78 +10,85 @@ import * as Sentry from 'sentry-expo';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // Access any @sentry/react-native exports via:
 // Sentry.Native.*
-import {LogBox} from 'react-native';
+import { LogBox } from 'react-native';
 
 import { enableScreens } from 'react-native-screens';
 
-import {SplashScreenNative} from './src/screens/Auth/SplashNative';
+import { SplashScreenNative } from './src/screens/Auth/SplashNative';
 
 enableScreens();
 
 // react query client instance
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+     defaultOptions: {
+          queries: {
+               staleTime: 60 * 1000 * 15,
+               cacheTime: 60 * 1000 * 15,
+          },
+     },
+});
 
 // Hide log error/warning popups in simulator (useful for demoing)
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
 
 export default function AppContainer() {
-    const [isLoading, setLoading] = React.useState(true);
-    const [aspenTheme, setAspenTheme] = React.useState([]);
-    const [colorMode, setColorMode] = React.useState(null);
-    const [statusBarColor, setStatusBarColor] = React.useState('light-content');
+     const [isLoading, setLoading] = React.useState(true);
+     const [aspenTheme, setAspenTheme] = React.useState([]);
+     const [colorMode, setColorMode] = React.useState(null);
+     const [statusBarColor, setStatusBarColor] = React.useState('light-content');
 
-    React.useEffect(() => {
-        const setupNativeBaseTheme = async () => {
-            try {
-                await AsyncStorage.getItem('@colorMode').then(async mode => {
-                    if (mode === 'light' || mode === 'dark') {
-                        setColorMode(mode);
-                    } else {
-                        setColorMode('light')
-                    }
-                });
-            } catch(e) {
-                // something went wrong (or the item didn't exist yet in storage)
-                // so just set it to the default: light
-                setColorMode('light');
-            }
+     React.useEffect(() => {
+          const setupNativeBaseTheme = async () => {
+               try {
+                    await AsyncStorage.getItem('@colorMode').then(async (mode) => {
+                         if (mode === 'light' || mode === 'dark') {
+                              setColorMode(mode);
+                         } else {
+                              setColorMode('light');
+                         }
+                    });
+               } catch (e) {
+                    // something went wrong (or the item didn't exist yet in storage)
+                    // so just set it to the default: light
+                    setColorMode('light');
+               }
 
-            if(colorMode) {
-                await createTheme(colorMode).then(async result => {
-                    setAspenTheme(result);
-                    if (result.colors?.primary['baseContrast'] === '#000000') {
-                        setStatusBarColor('dark-content');
-                    } else {
-                        setStatusBarColor('light-content');
-                    }
-                    await saveTheme(result);
-                });
+               if (colorMode) {
+                    await createTheme(colorMode).then(async (result) => {
+                         setAspenTheme(result);
+                         if (result.colors?.primary['baseContrast'] === '#000000') {
+                              setStatusBarColor('dark-content');
+                         } else {
+                              setStatusBarColor('light-content');
+                         }
+                         await saveTheme(result);
+                    });
 
-                setLoading(false);
-            }
-        };
-        setupNativeBaseTheme().then(() => {
-            return () => setupNativeBaseTheme();
-        })
-    }, [colorMode]);
+                    setLoading(false);
+               }
+          };
+          setupNativeBaseTheme().then(() => {
+               return () => setupNativeBaseTheme();
+          });
+     }, [colorMode]);
 
-    if(isLoading) {
-        return <SplashScreenNative/>
-    }
+     if (isLoading) {
+          return <SplashScreenNative />;
+     }
 
-    return (
-        <QueryClientProvider client={queryClient}>
-            <SSRProvider>
-                <Sentry.Native.TouchEventBoundary>
-                    <NativeBaseProvider theme={aspenTheme}>
-                        <StatusBar barStyle={statusBarColor} />
-                        <App />
-                    </NativeBaseProvider>
-                </Sentry.Native.TouchEventBoundary>
-            </SSRProvider>
-        </QueryClientProvider>
-    );
+     return (
+          <QueryClientProvider client={queryClient}>
+               <SSRProvider>
+                    <Sentry.Native.TouchEventBoundary>
+                         <NativeBaseProvider theme={aspenTheme}>
+                              <StatusBar barStyle={statusBarColor} />
+                              <App />
+                         </NativeBaseProvider>
+                    </Sentry.Native.TouchEventBoundary>
+               </SSRProvider>
+          </QueryClientProvider>
+     );
 }
 
 /*
