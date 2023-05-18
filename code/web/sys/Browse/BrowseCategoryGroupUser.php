@@ -36,16 +36,20 @@ class BrowseCategoryGroupUser extends DataObject {
 			$rolePermssions->permissionId = $permissionId;
 			$roleIds = $rolePermssions->fetchAll('roleId');
 
-			require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
-			$usersToRole = new UserRoles();
-			$usersToRole->whereAddIn('roleId', $roleIds, false);
-			$userIds = $usersToRole->fetchAll('userId');
+			if (count($roleIds) > 0) {
+				require_once ROOT_DIR . '/sys/Administration/UserRoles.php';
+				$usersToRole = new UserRoles();
+				$usersToRole->whereAddIn('roleId', $roleIds, false);
+				$userIds = $usersToRole->fetchAll('userId');
 
-			$user = new User;
-			$user->whereAddIn('id', $userIds, false);
-			$user->find();
-			while ($user->fetch()) {
-				$userIdList[$user->id] = "$user->displayName (" . $user->getBarcode() . ")";
+				if (count($userIds) > 0) {
+					$user = new User;
+					$user->whereAddIn('id', $userIds, false);
+					$user->find();
+					while ($user->fetch()) {
+						$userIdList[$user->id] = "$user->displayName (" . $user->getBarcode() . ")";
+					}
+				}
 			}
 		}
 
