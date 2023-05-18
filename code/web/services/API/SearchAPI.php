@@ -1939,6 +1939,7 @@ class SearchAPI extends Action {
 														'title' => $displayLabel,
 														'source' => $temp->source,
 														'isHidden' => $temp->isDismissed($appUser),
+														'sourceId' => $temp->sourceListId,
 														'records' => $records,
 													];
 													$formattedCategories[] = $categoryResponse;
