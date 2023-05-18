@@ -1,6 +1,7 @@
 <?php
 
 require_once 'Solr.php';
+require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
 
 class EventsSolrConnector extends Solr {
 	function __construct($host) {
@@ -43,7 +44,25 @@ class EventsSolrConnector extends Solr {
 	public function getBoostFactors($searchLibrary) {
 		$boostFactors = [];
 
-		$boostFactors[] = "boost";
+		if (UserAccount::isLoggedIn()) {
+			$userLocation =  UserAccount::getActiveUserObj()->getHomeLocation()->displayName;
+		}else {
+			$userLocation = $searchLibrary->displayName;
+		}
+
+		$locationMap = new EventsBranchMapping();
+		$locationMap->aspenLocation = $userLocation;
+		if ($locationMap->find(true)){
+			$locationName = $locationMap->eventsLocation;
+		}else{
+			$locationName = $userLocation;
+		}
+
+		if ($userLocation != null) {
+			$boostFactors[] = 'product(boost,termfreq(branch,' . urlencode($locationName). '))';
+		}else{
+			$boostFactors[] = "boost";
+		}
 
 		return $boostFactors;
 	}

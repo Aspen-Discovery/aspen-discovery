@@ -16,6 +16,8 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php';
 }
 require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
+require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
+
 
 class Location extends DataObject {
 	const DEFAULT_AUTOLOGOUT_TIME = 90;
@@ -1768,6 +1770,7 @@ class Location extends DataObject {
 			$this->saveCloudLibraryScopes();
 			$this->saveCoordinates();
 			$this->saveThemes();
+			$this->saveEventMapping();
 		}
 		return $ret;
 	}
@@ -1788,6 +1791,17 @@ class Location extends DataObject {
 			$this->saveCloudLibraryScopes();
 			$this->saveCoordinates();
 			$this->saveThemes();
+			$this->saveEventMapping();
+		}
+		return $ret;
+	}
+
+	public function delete($useWhere = false) {
+		$ret = parent::delete($useWhere);
+		if ($ret && !empty($this->id)) {
+			$locationMap = new EventsBranchMapping();
+			$locationMap->locationId = $this->locationId;
+			$locationMap->delete(true);
 		}
 		return $ret;
 	}
@@ -2281,6 +2295,23 @@ class Location extends DataObject {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
 			$this->saveOneToManyOptions($this->_themes, 'locationId');
 			unset($this->_themes);
+		}
+	}
+
+	public function saveEventMapping() {
+		$locationMap = new EventsBranchMapping();
+		$locationMap->locationId = $this->locationId;
+		if ($locationMap->find(true)){
+			if ($this->displayName != $locationMap->aspenLocation){ //only need to update if the location name changed
+				$locationMap->aspenLocation = $this->displayName;
+				$locationMap->update();
+			}
+		}else{ //insert new info if it's a new location
+			$locationMap->locationId = $this->locationId;
+			$locationMap->libraryId = $this->libraryId;
+			$locationMap->aspenLocation = $this->displayName;
+			$locationMap->eventsLocation = $this->displayName;
+			$locationMap->insert();
 		}
 	}
 
