@@ -76,6 +76,27 @@ function getUpdates23_06_00(): array {
 		],
 		//add_sso_saml_student_attributes
 		//kodi
+		'event_library_mapping' => [
+			'title' => 'Event Library Mapping',
+			'description' => 'Maps library branch names to the values in Aspen for Events relevancy',
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS `event_library_map_values` (
+				  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+				  `aspenLocation` varchar(255) NOT NULL,
+				  `eventsLocation` varchar(255) NOT NULL,
+				  `locationId` INT(11) NOT NULL,
+				  `libraryId` INT(11) NOT NULL,
+				  UNIQUE KEY (`locationId`)
+				)',
+			]
+		], //event_library_mapping
+		'event_library_mapping_values' => [
+			'title' => 'Event Library Mapping Values',
+			'description' => 'Populates event_library_map_values with existing information.',
+			'sql' => [
+				"INSERT INTO event_library_map_values(aspenLocation, eventsLocation, locationId, libraryId) SELECT displayName, displayName, locationId, libraryId FROM location ORDER BY locationId ASC",
+			]
+		], //event_library_mapping_values
 		//other
 	];
 }

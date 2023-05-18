@@ -22,5 +22,19 @@
 				{$searchError.error.msg}
 			</div>
 		{/if}
+
+		{if !empty($solrSearchDebug)}
+			<div id="solrSearchOptionsToggle" onclick="$('#solrSearchOptions').toggle()">{translate text="Show Search Options" isAdminFacing=true}</div>
+			<div id="solrSearchOptions" style="display:none">
+				<pre>{translate text="Search options" isPublicFacing=true} {$solrSearchDebug}</pre>
+			</div>
+		{/if}
+
+		{if !empty($solrLinkDebug)}
+			<div id='solrLinkToggle' onclick='$("#solrLink").toggle()'>{translate text="Show Solr Link" isAdminFacing=true}</div>
+			<div id='solrLink' style='display:none'>
+				<pre>{$solrLinkDebug}</pre>
+			</div>
+		{/if}
 	{/if}
 </div>
