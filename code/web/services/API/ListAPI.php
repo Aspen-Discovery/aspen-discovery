@@ -601,7 +601,7 @@ class ListAPI extends Action {
 			$titles = $list->getListRecords($startRecord, $numTitlesToShow, false, 'summary', null, $sort, $isLida);
 
 			foreach ($titles as $title) {
-				if ($title['source'] != "Events" && $isLida){ //if LiDA don't look at events
+				if ($isLida){ //if LiDA don't look at events - filtered out in getListEntries()
 					$imageUrl = $configArray['Site']['url'] . "/bookcover.php?id=" . $title['id'];
 					$smallImageUrl = $imageUrl . "&size=small";
 					$imageUrl .= "&size=medium";
