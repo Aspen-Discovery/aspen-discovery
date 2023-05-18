@@ -3127,6 +3127,7 @@ class User extends DataObject {
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, [
 			'Administer All Browse Categories',
 			'Administer Library Browse Categories',
+			'Administer Selected Browse Category Groups'
 		]);
 		$sections['local_enrichment']->addAction(new AdminAction('Collection Spotlights', 'Define basic information about how pages are displayed in Aspen Discovery.', '/Admin/CollectionSpotlights'), [
 			'Administer All Collection Spotlights',

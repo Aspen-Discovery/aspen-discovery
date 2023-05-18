@@ -54,14 +54,31 @@ class Browse_AJAX extends Action {
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
-			$browseCategories->whereAdd("sharing = 'everyone'");
-			if ($libraryId == -1) {
-				//For Aspen admin, show all categories
-				$browseCategories->whereAdd("sharing = 'library'", 'OR');
+			if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+				//Get a list of groups the user can edit
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupUser.php';
+				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
+				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
+				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+				$activeBrowseCategories = [];
+				foreach ($allowedGroups as $groupId) {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
+					$browseCategoryGroupEntry = new BrowseCategoryGroupEntry();
+					$browseCategoryGroupEntry->browseCategoryGroupId = $groupId;
+					$activeBrowseCategories = array_merge($activeBrowseCategories, $browseCategoryGroupEntry->fetchAll('browseCategoryId'));
+				}
+
+				$browseCategories->whereAddIn('id', $activeBrowseCategories, false);
 			} else {
-				$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$libraryId = $library == null ? -1 : $library->libraryId;
+				$browseCategories->whereAdd("sharing = 'everyone'");
+				if ($libraryId == -1) {
+					//For Aspen admin, show all categories
+					$browseCategories->whereAdd("sharing = 'library'", 'OR');
+				} else {
+					$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+				}
 			}
 			$browseCategories->find();
 			$browseCategoryList = [];
@@ -123,7 +140,6 @@ class Browse_AJAX extends Action {
 
 	/** @noinspection PhpUnused */
 	function updateBrowseCategory() {
-		global $library;
 		$textId = isset($_REQUEST['categoryName']) ? $_REQUEST['categoryName'] : '';
 
 		require_once ROOT_DIR . '/sys/Browse/BrowseCategory.php';
@@ -179,6 +195,11 @@ class Browse_AJAX extends Action {
 
 			return [
 				'success' => true,
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => "Could not find the selected browse category.",
 			];
 		}
 	}
@@ -326,15 +347,37 @@ class Browse_AJAX extends Action {
 
 			}
 
-			if ($searchLocation != null) {
-				$activeBrowseCategoryGroup = $searchLocation->getBrowseCategoryGroup();
+			if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+				//Add to the first browse category group the user can access
+				//Get a list of groups the user can edit
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupUser.php';
+				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
+				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
+				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+				$activeBrowseCategories = [];
+				foreach ($allowedGroups as $groupId) {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroup.php';
+
+					$activeBrowseCategoryGroup = new BrowseCategoryGroup();
+					$activeBrowseCategoryGroup->id = $groupId;
+					if ($activeBrowseCategoryGroup->find(true)) {
+						break;
+					}
+				}
 			} else {
-				//Always add to the active location
-				$activeBrowseCategoryGroup = $library->getBrowseCategoryGroup();
+				if ($searchLocation != null) {
+					$activeBrowseCategoryGroup = $searchLocation->getBrowseCategoryGroup();
+				} else {
+					//Always add to the active location
+					$activeBrowseCategoryGroup = $library->getBrowseCategoryGroup();
+				}
 			}
 
 			//Now add to the library/location
 			$addToHomePageEnabled = isset($_REQUEST['addToHomePage']) ? $_REQUEST['addToHomePage'] == 'true' : false;
+			if ($activeBrowseCategoryGroup == null) {
+				$addToHomePageEnabled = false;
+			}
 			if ($library && !$addAsSubCategoryOf && $addToHomePageEnabled) { // Only add main browse categories to the library carousel
 				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
 				$user = UserAccount::getActiveUserObj();

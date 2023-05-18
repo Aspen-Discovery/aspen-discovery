@@ -56,10 +56,27 @@ class SubBrowseCategories extends DataObject {
 		$browseCategories = new BrowseCategory();
 		$browseCategories->orderBy('label');
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$libraryId = $library == null ? -1 : $library->libraryId;
-			$browseCategories->whereAdd("sharing = 'everyone'");
-			$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+				//Get a list of groups the user can edit
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupUser.php';
+				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
+				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
+				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+				$activeBrowseCategories = [];
+				foreach ($allowedGroups as $groupId) {
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
+					$browseCategoryGroupEntry = new BrowseCategoryGroupEntry();
+					$browseCategoryGroupEntry->browseCategoryGroupId = $groupId;
+					$activeBrowseCategories = array_merge($activeBrowseCategories, $browseCategoryGroupEntry->fetchAll('browseCategoryId'));
+				}
+
+				$browseCategories->whereAddIn('id', $activeBrowseCategories, false);
+			} else {
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$libraryId = $library == null ? -1 : $library->libraryId;
+				$browseCategories->whereAdd("sharing = 'everyone'");
+				$browseCategories->whereAdd("sharing = 'library' AND libraryId = " . $libraryId, 'OR');
+			}
 			$browseCategories->find();
 
 			while ($browseCategories->fetch()) {

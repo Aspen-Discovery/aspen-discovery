@@ -103,29 +103,39 @@ class BrowseCategoryGroupEntry extends DataObject {
 	}
 
 	public function canActiveUserChangeSelection() {
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $library == null ? -1 : $library->libraryId;
-		$browseCatId = $this->getBrowseCategory()->libraryId;
-		if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
+		if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+			//Always allow since the only way they can get here is by editing a group they have access to
 			return true;
-		}else if ($browseCatId == $libraryId){
-			return UserAccount::userHasPermission('Administer Library Browse Categories');
+		} else {
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraryId = $library == null ? -1 : $library->libraryId;
+			$browseCatId = $this->getBrowseCategory()->libraryId;
+			if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
+				return true;
+			}else if ($browseCatId == $libraryId){
+				return UserAccount::userHasPermission('Administer Library Browse Categories');
+			}
 		}
 		return false;
 	}
 
 	public function canActiveUserDelete() {
-		return  UserAccount::userHasPermission('Administer All Browse Categories') ||  UserAccount::userHasPermission('Administer Library Browse Categories');
+		return  UserAccount::userHasPermission('Administer All Browse Categories') ||  UserAccount::userHasPermission('Administer Library Browse Categories') || UserAccount::userHasPermission('Administer Selected Browse Category Groups');
 	}
 
 	public function canActiveUserEdit() {
-		$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-		$libraryId = $library == null ? -1 : $library->libraryId;
-		$browseCatId = $this->getBrowseCategory()->libraryId;
-		if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
+		if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+			//Always allow since the only way they can get here is by editing a group they have access to
 			return true;
-		}else if ($browseCatId == $libraryId){
-			return UserAccount::userHasPermission('Administer Library Browse Categories');
+		} else {
+			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+			$libraryId = $library == null ? -1 : $library->libraryId;
+			$browseCatId = $this->getBrowseCategory()->libraryId;
+			if (($this->getBrowseCategory()->sharing == 'everyone') || (UserAccount::userHasPermission('Administer All Browse Categories'))) {
+				return true;
+			} elseif ($browseCatId == $libraryId) {
+				return UserAccount::userHasPermission('Administer Library Browse Categories');
+			}
 		}
 		return false;
 	}
