@@ -49,9 +49,9 @@
 								<td class="myAccountCell">
 									{if ($event.regRequired == 1)}
 										{if $event.externalLink != null && !($event.isRegistered)}
-											<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>{translate text=" Check Registration" isPublicFacing=true}</a>
+											<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>&nbsp{translate text=" Check Registration" isPublicFacing=true}</a>
 										{elseif $event.isRegistered}
-											<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>{translate text=" You Are Registered" isPublicFacing=true}</a>
+											<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>&nbsp{translate text=" You Are Registered" isPublicFacing=true}</a>
 										{else}
 											<span>{translate text="Event Has Passed" isPublicFacing=true}</span>
 										{/if}
