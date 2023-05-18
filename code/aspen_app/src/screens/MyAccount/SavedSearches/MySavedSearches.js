@@ -1,44 +1,54 @@
 import { Badge, Box, Center, FlatList, Pressable, Text, HStack, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import {fetchSavedSearches} from '../../../util/api/user';
-import {loadError} from '../../../components/loadError';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
-import {navigateStack} from '../../../helpers/RootNavigator';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { fetchSavedSearches, getSavedSearch } from '../../../util/api/user';
+import { loadError } from '../../../components/loadError';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getListTitles } from '../../../util/api/list';
 
 export const MySavedSearches = () => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['savedSearches', library.baseUrl], () => fetchSavedSearches(library.baseUrl), {
-          staleTime: 1000,
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_searches', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl), {
+          placeholderData: [],
+     });
+
+     useQueries({
+          queries: data.map((savedSearch) => {
+               return {
+                    queryKey: ['saved_search', savedSearch.id],
+                    queryFn: () => getSavedSearch(savedSearch.id, language, library.baseUrl),
+               };
+          }),
      });
 
      const Empty = () => {
           return (
-              <Center mt={5} mb={5}>
-                   <Text bold fontSize="lg">
-                        {getTermFromDictionary(language, 'saved_searches_empty')}
-                   </Text>
-              </Center>
+               <Center mt={5} mb={5}>
+                    <Text bold fontSize="lg">
+                         {getTermFromDictionary(language, 'saved_searches_empty')}
+                    </Text>
+               </Center>
           );
      };
 
      return (
-         <SafeAreaView style={{ flex: 1 }}>
-              <Box safeArea={2} h="100%">
-                   {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.searches} ListEmptyComponent={Empty} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
-              </Box>
-         </SafeAreaView>
-     )
-}
+          <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2} h="100%">
+                    <FlatList data={data} ListEmptyComponent={Empty} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+               </Box>
+          </SafeAreaView>
+     );
+};
 
 const Item = (data) => {
      const { language } = React.useContext(LanguageContext);
@@ -53,40 +63,42 @@ const Item = (data) => {
           navigateStack('AccountScreenTab', 'MySavedSearch', {
                id: item.id,
                details: item,
-               title: item.title
-          })
-     }
+               title: item.title,
+          });
+     };
 
      return (
-         <Pressable
-             onPress={() => {openSavedSearch()}}
-             borderBottomWidth="1"
-             _dark={{ borderColor: 'gray.600' }}
-             borderColor="coolGray.200"
-             pl="1"
-             pr="1"
-             py="2">
-              <HStack space={3} justifyContent="flex-start">
-                   <VStack space={1}>{/*<Image source={{uri: item.cover}} alt={item.title} size="lg" resizeMode="contain" />*/}</VStack>
-                   <VStack space={1} justifyContent="space-between" maxW="80%">
-                        <Box>
-                             <Text bold fontSize="md">
-                                  {item.title}{' '}
-                                  {hasNewResults === 1 ? (
-                                      <Badge mb="-0.5" colorScheme="warning">
-                                           {getTermFromDictionary(language, 'flag_updated')}
-                                      </Badge>
-                                  ) : null}
-                             </Text>
-                             <Text fontSize="9px" italic>
-                                  Created on {item.created}
-                             </Text>
-                        </Box>
-                   </VStack>
-              </HStack>
-         </Pressable>
+          <Pressable
+               onPress={() => {
+                    openSavedSearch();
+               }}
+               borderBottomWidth="1"
+               _dark={{ borderColor: 'gray.600' }}
+               borderColor="coolGray.200"
+               pl="1"
+               pr="1"
+               py="2">
+               <HStack space={3} justifyContent="flex-start">
+                    <VStack space={1}>{/*<Image source={{uri: item.cover}} alt={item.title} size="lg" resizeMode="contain" />*/}</VStack>
+                    <VStack space={1} justifyContent="space-between" maxW="80%">
+                         <Box>
+                              <Text bold fontSize="md">
+                                   {item.title}{' '}
+                                   {hasNewResults === 1 ? (
+                                        <Badge mb="-0.5" colorScheme="warning">
+                                             {getTermFromDictionary(language, 'flag_updated')}
+                                        </Badge>
+                                   ) : null}
+                              </Text>
+                              <Text fontSize="9px" italic>
+                                   Created on {item.created}
+                              </Text>
+                         </Box>
+                    </VStack>
+               </HStack>
+          </Pressable>
      );
-}
+};
 
 /*
 export default class MySavedSearches_Old extends Component {

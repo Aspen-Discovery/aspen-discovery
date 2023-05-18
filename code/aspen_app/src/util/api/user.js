@@ -163,7 +163,7 @@ export async function logoutUser(url) {
  * @param {boolean} refresh
  * @param {string} language
  **/
-export async function getPatronHolds(readySort='expire', pendingSort='sortTitle', holdSource = 'all', url, refresh = true, language = 'en') {
+export async function getPatronHolds(readySort = 'expire', pendingSort = 'sortTitle', holdSource = 'all', url, refresh = true, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -176,7 +176,7 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
                refreshHolds: refresh,
                unavailableSort: pendingSort,
                availableSort: readySort,
-               language
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=getPatronHolds', postBody);
@@ -187,14 +187,14 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
           let holdsNotReady = [];
 
           let pendingSortMethod = pendingSort;
-          if(pendingSort === 'sortTitle') {
+          if (pendingSort === 'sortTitle') {
                pendingSortMethod = 'title';
           } else if (pendingSort === 'libraryAccount') {
                pendingSortMethod = 'user';
           }
 
           let readySortMethod = readySort;
-          if(readySort === 'sortTitle') {
+          if (readySort === 'sortTitle') {
                readySortMethod = 'title';
           } else if (readySort === 'libraryAccount') {
                readySortMethod = 'user';
@@ -203,7 +203,7 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
           if (typeof allHolds !== 'undefined') {
                if (typeof allHolds.unavailable !== 'undefined') {
                     holdsNotReady = Object.values(allHolds.unavailable);
-                    if(pendingSortMethod === 'position') {
+                    if (pendingSortMethod === 'position') {
                          holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['desc']);
                     }
                     holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['asc']);
@@ -225,8 +225,8 @@ export async function getPatronHolds(readySort='expire', pendingSort='sortTitle'
                {
                     title: 'Pending',
                     data: holdsNotReady,
-               }
-          ]
+               },
+          ];
      } else {
           console.log(response);
           return {
@@ -255,7 +255,7 @@ export async function getPatronCheckedOutItems(source = 'all', url, refresh = tr
                source: source,
                linkedUsers: true,
                refreshCheckouts: refresh,
-               language
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=getPatronCheckedOutItems', postBody);
@@ -265,7 +265,7 @@ export async function getPatronCheckedOutItems(source = 'all', url, refresh = tr
           return items;
      } else {
           console.log(response);
-          return []
+          return [];
      }
 }
 
@@ -289,7 +289,7 @@ export async function showBrowseCategory(categoryId, patronId, url, language = '
           params: {
                browseCategoryId: categoryId,
                patronId: patronId,
-               language
+               language,
           },
      });
      const response = await discovery.post(`${endpoint.url}showBrowseCategory`, postBody);
@@ -318,7 +318,7 @@ export async function hideBrowseCategory(categoryId, patronId, url, language = '
           params: {
                browseCategoryId: categoryId,
                patronId: patronId,
-               language
+               language,
           },
      });
      const response = await discovery.post(`${endpoint.url}dismissBrowseCategory`, postBody);
@@ -349,8 +349,8 @@ export async function getLinkedAccounts(primaryUser, cards, library, language = 
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               language
-          }
+               language,
+          },
      });
      const response = await discovery.post('/UserAPI?method=getLinkedAccounts', postBody);
      if (response.ok) {
@@ -409,8 +409,8 @@ export async function getViewerAccounts(url, language = 'en') {
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               language
-          }
+               language,
+          },
      });
      const response = await discovery.post('/UserAPI?method=getViewers', postBody);
      if (response.ok) {
@@ -433,7 +433,7 @@ export async function getViewerAccounts(url, language = 'en') {
  * @param {string} url
  * @param {string} language
  **/
-export async function addLinkedAccount(username='', password='', url, language = 'en') {
+export async function addLinkedAccount(username = '', password = '', url, language = 'en') {
      const postBody = await postData();
      postBody.append('accountToLinkUsername', username);
      postBody.append('accountToLinkPassword', password);
@@ -443,8 +443,8 @@ export async function addLinkedAccount(username='', password='', url, language =
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               language
-          }
+               language,
+          },
      });
      const response = await discovery.post('/UserAPI?method=addAccountLink', postBody);
      if (response.ok) {
@@ -513,7 +513,7 @@ export async function removeViewerAccount(patronToRemove, url, language = 'en') 
           auth: createAuthTokens(),
           params: {
                idToRemove: patronToRemove,
-               language
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=removeViewerLink', postBody);
@@ -552,7 +552,7 @@ export async function saveLanguage(code, url, language = 'en') {
           auth: createAuthTokens(),
           params: {
                languageCode: code,
-               language
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=saveLanguage', postBody);
@@ -587,7 +587,7 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
                page: page,
                pageSize: pageSize,
                sort_by: sort,
-               language
+               language,
           },
      });
 
@@ -595,7 +595,7 @@ export async function fetchReadingHistory(page = 1, pageSize = 25, sort = 'check
 
      let data = [];
      let morePages = false;
-     if(response.ok) {
+     if (response.ok) {
           data = response.data;
           if (data.result?.page_current !== data.result?.page_total) {
                morePages = true;
@@ -626,10 +626,10 @@ export async function optIntoReadingHistory(url, language = 'en') {
           headers: getHeaders(endpoint.isPost),
           auth: createAuthTokens(),
           params: {
-               language
-          }
+               language,
+          },
      });
-     const response = await discovery.post("/UserAPI?method=optIntoReadingHistory", postBody);
+     const response = await discovery.post('/UserAPI?method=optIntoReadingHistory', postBody);
      if (response.ok) {
           return true;
      }
@@ -649,8 +649,8 @@ export async function optOutOfReadingHistory(url, language = 'en') {
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               language
-          }
+               language,
+          },
      });
      const response = await discovery.post('/UserAPI?method=optOutOfReadingHistory', postBody);
      if (response.ok) {
@@ -673,8 +673,8 @@ export async function deleteAllReadingHistory(url, language = 'en') {
           headers: getHeaders(true),
           auth: createAuthTokens(),
           params: {
-               language
-          }
+               language,
+          },
      });
      const response = await discovery.post('/UserAPI?method=deleteAllFromReadingHistory', postBody);
      if (response.ok) {
@@ -701,7 +701,7 @@ export async function deleteSelectedReadingHistory(item, url, language = 'en') {
           auth: createAuthTokens(),
           params: {
                selected: item,
-               language
+               language,
           },
      });
      const response = await discovery.post('/UserAPI?method=deleteSelectedFromReadingHistory', postBody);
@@ -729,22 +729,22 @@ export async function fetchSavedSearches(url, language = 'en') {
           auth: createAuthTokens(),
           params: {
                checkIfValid: false,
-               language
+               language,
           },
      });
 
      const response = await api.post('/ListAPI?method=getSavedSearchesForLiDA', postBody);
 
-     if(response.ok) {
-          return response.data.result
+     if (response.ok) {
+          return response.data.result.searches;
      }
 
      return {
           success: false,
           count: 0,
           countNewResults: 0,
-          searches: []
-     }
+          searches: [],
+     };
 }
 
 /**
@@ -763,12 +763,12 @@ export async function getSavedSearch(id, language = 'en', url) {
           params: {
                searchId: id,
                numTitles: 30,
-               language: language
+               language: language,
           },
      });
      const response = await api.post('/ListAPI?method=getSavedSearchTitles', postBody);
      if (response.ok) {
-         return response.data?.result ?? [];
+          return response.data?.result ?? [];
      } else {
           return [];
      }

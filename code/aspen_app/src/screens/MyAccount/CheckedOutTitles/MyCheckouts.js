@@ -5,7 +5,7 @@ import { ScrollView, Actionsheet, FormControl, Select, Box, Button, Center, Flat
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -18,13 +18,14 @@ import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyCheckouts = () => {
+     const isFetchingCheckouts = useIsFetching({ queryKey: ['checkouts'] });
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { language } = React.useContext(LanguageContext);
-     const [isLoading, setLoading] = React.useState(true);
+     const [isLoading, setLoading] = React.useState(false);
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
 
@@ -76,28 +77,40 @@ export const MyCheckouts = () => {
                     let term = '';
 
                     term = getTermFromDictionary(language, 'checkouts_for_all');
-                    tmp = _.set(tmp, 'all', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'all', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_ils');
-                    tmp = _.set(tmp, 'ils', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'ils', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_overdrive');
-                    tmp = _.set(tmp, 'overdrive', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'overdrive', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_hoopla');
-                    tmp = _.set(tmp, 'hoopla', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'hoopla', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_cloud_library');
-                    tmp = _.set(tmp, 'cloud_library', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'cloud_library', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_axis_360');
-                    tmp = _.set(tmp, 'axis_360', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'axis_360', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     setLoading(false);
                };
@@ -107,7 +120,7 @@ export const MyCheckouts = () => {
           }, [language])
      );
 
-     if (isLoading) {
+     if (isFetchingCheckouts) {
           return loadingSpinner();
      }
 

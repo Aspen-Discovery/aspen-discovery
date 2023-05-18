@@ -1,38 +1,48 @@
 import moment from 'moment';
-import { useFocusEffect } from '@react-navigation/native';
 import { Badge, Box, Center, FlatList, HStack, Image, Pressable, Text, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
+import { useQuery, useQueries } from '@tanstack/react-query';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import CreateList from './CreateList';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import { getLists } from '../../../util/api/list';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { getListDetails, getLists, getListTitles } from '../../../util/api/list';
 import { navigateStack } from '../../../helpers/RootNavigator';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const MyLists = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { lists, updateLists } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
-     const [loading, setLoading] = React.useState(true);
+     const [loading, setLoading] = React.useState(false);
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    await getLists(library.baseUrl).then((result) => {
-                         if (lists !== result) {
-                              updateLists(result);
-                         }
-                    });
-                    setLoading(false);
+     useQuery(['lists', library.baseUrl, language], () => getLists(library.baseUrl), {
+          onSuccess: (data) => {
+               updateLists(data);
+               setLoading(false);
+          },
+          placeholderData: [],
+     });
+
+     useQueries({
+          queries: lists.map((list) => {
+               return {
+                    queryKey: ['list', list.id],
+                    queryFn: () => getListTitles(list.id, library.baseUrl, 1, 25, 25, 'dateAdded'),
                };
-               update().then(() => {
-                    return () => update();
-               });
-          }, [])
-     );
+          }),
+     });
+
+     useQueries({
+          queries: lists.map((list) => {
+               return {
+                    queryKey: ['list-details', list.id],
+                    queryFn: () => getListDetails(list.id, library.baseUrl),
+               };
+          }),
+     });
 
      const handleOpenList = (item) => {
           navigateStack('AccountScreenTab', 'MyList', {
@@ -64,41 +74,41 @@ export const MyLists = () => {
           }
           if (item.id !== 'recommendations') {
                return (
-                   <Pressable
-                       onPress={() => {
-                            handleOpenList(item);
-                       }}
-                       borderBottomWidth="1"
-                       _dark={{borderColor: 'gray.600'}}
-                       borderColor="coolGray.200"
-                       pl="1"
-                       pr="1"
-                       py="2">
-                        <HStack space={3} justifyContent="flex-start">
-                             <VStack space={1}>
-                                  <Image source={{uri: item.cover}} alt={item.title} size="lg" resizeMode="contain"/>
-                                  <Badge mt={1}>{privacy}</Badge>
-                             </VStack>
-                             <VStack space={1} justifyContent="space-between" maxW="80%">
-                                  <Box>
-                                       <Text bold fontSize="md">
-                                            {item.title}
-                                       </Text>
-                                       {item.description ? (
-                                           <Text fontSize="xs" mb={2}>
-                                                {item.description}
-                                           </Text>
-                                       ) : null}
-                                       <Text fontSize="9px" italic>
-                                            {listLastUpdatedOn}
-                                       </Text>
-                                       <Text fontSize="9px" italic>
-                                            {numListItems}
-                                       </Text>
-                                  </Box>
-                             </VStack>
-                        </HStack>
-                   </Pressable>
+                    <Pressable
+                         onPress={() => {
+                              handleOpenList(item);
+                         }}
+                         borderBottomWidth="1"
+                         _dark={{ borderColor: 'gray.600' }}
+                         borderColor="coolGray.200"
+                         pl="1"
+                         pr="1"
+                         py="2">
+                         <HStack space={3} justifyContent="flex-start">
+                              <VStack space={1}>
+                                   <Image source={{ uri: item.cover }} alt={item.title} size="lg" resizeMode="contain" />
+                                   <Badge mt={1}>{privacy}</Badge>
+                              </VStack>
+                              <VStack space={1} justifyContent="space-between" maxW="80%">
+                                   <Box>
+                                        <Text bold fontSize="md">
+                                             {item.title}
+                                        </Text>
+                                        {item.description ? (
+                                             <Text fontSize="xs" mb={2}>
+                                                  {item.description}
+                                             </Text>
+                                        ) : null}
+                                        <Text fontSize="9px" italic>
+                                             {listLastUpdatedOn}
+                                        </Text>
+                                        <Text fontSize="9px" italic>
+                                             {numListItems}
+                                        </Text>
+                                   </Box>
+                              </VStack>
+                         </HStack>
+                    </Pressable>
                );
           }
      };
