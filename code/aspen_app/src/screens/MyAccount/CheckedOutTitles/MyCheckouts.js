@@ -38,7 +38,7 @@ export const MyCheckouts = () => {
           all: 'Checked Out Titles',
      });
 
-     useQuery(['checkouts', library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
+     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
                updateCheckouts(data);

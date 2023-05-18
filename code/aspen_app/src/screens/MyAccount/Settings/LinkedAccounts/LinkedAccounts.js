@@ -12,14 +12,14 @@ import { getTermFromDictionary } from '../../../../translations/TranslationServi
 import { getLists } from '../../../../util/api/list';
 
 export const MyLinkedAccounts = () => {
-     const isFetchingAccounts = useIsFetching({ queryKey: ['linked_accounts'] });
-     const isFetchingViewers = useIsFetching({ queryKey: ['viewer_accounts'] });
      const [loading, setLoading] = React.useState(false);
      const { user, accounts, viewers, cards, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const isFetchingAccounts = useIsFetching({ queryKey: ['linked_accounts', user.id] });
+     const isFetchingViewers = useIsFetching({ queryKey: ['viewer_accounts', user.id] });
 
-     useQuery(['linked_accounts', library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
+     useQuery(['linked_accounts', user.id, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
           onSuccess: (data) => {
                updateLinkedAccounts(data.accounts);
                updateLibraryCards(data.cards);
@@ -27,7 +27,7 @@ export const MyLinkedAccounts = () => {
           placeholderData: [],
      });
 
-     useQuery(['viewer_accounts', library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
+     useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
           onSuccess: (data) => {
                updateLinkedViewerAccounts(data);
           },
@@ -75,8 +75,8 @@ const Account = (data) => {
      const { language } = React.useContext(LanguageContext);
 
      const refreshLinkedAccounts = async () => {
-          queryClient.invalidateQueries({ queryKey: ['linked_accounts', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['viewer_accounts', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['linked_accounts', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['viewer_accounts', user.id, library.baseUrl, language] });
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
