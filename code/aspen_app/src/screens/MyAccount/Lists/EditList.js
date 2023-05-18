@@ -4,10 +4,11 @@ import React, { useState } from 'react';
 import _ from 'lodash';
 import { popAlert } from '../../../components/loadError';
 import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { clearListTitles, deleteList, editList, getListDetails, getLists } from '../../../util/api/list';
-import { reloadProfile } from '../../../util/api/user';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { navigateStack } from '../../../helpers/RootNavigator';
 
 const EditList = (props) => {
      const { data, listId } = props;
@@ -22,21 +23,12 @@ const EditList = (props) => {
      const [list, setList] = React.useState([]);
      const [isPublic, setPublic] = React.useState(data.public);
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    await getListDetails(data.id, library.baseUrl).then((result) => {
-                         if (list !== result) {
-                              setList(result);
-                         }
-                    });
-                    setLoading(false);
-               };
-               update().then(() => {
-                    return () => update();
-               });
-          }, [])
-     );
+     useQuery(['list-details', data.id], () => getListDetails(data.id, library.baseUrl), {
+          onSuccess: (data) => {
+               setList(data);
+               setLoading(false);
+          },
+     });
 
      return (
           <>
@@ -110,10 +102,11 @@ const EditList = (props) => {
 };
 
 const DeleteList = (props) => {
+     const queryClient = useQueryClient();
      const { listId } = props;
      const navigation = useNavigation();
      const { library } = React.useContext(LibrarySystemContext);
-     const { user, updateUser, lists, updateLists } = React.useContext(UserContext);
+     const { language } = React.useContext(LanguageContext);
      const [isOpen, setIsOpen] = React.useState(false);
      const [loading, setLoading] = useState(false);
      const onClose = () => setIsOpen(false);
@@ -141,25 +134,18 @@ const DeleteList = (props) => {
                                         onPress={() => {
                                              setLoading(true);
                                              deleteList(listId, library.baseUrl).then(async (res) => {
-                                                  reloadProfile(library.baseUrl).then((result) => {
-                                                       updateUser(result);
-                                                  });
-                                                  await getLists(library.baseUrl).then((result) => {
-                                                       if (lists !== result) {
-                                                            updateLists(result);
-                                                       }
-                                                  });
+                                                  queryClient.invalidateQueries({ queryKey: ['lists', library.baseUrl, language] });
+                                                  queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                                   setLoading(false);
                                                   let status = 'success';
+                                                  setIsOpen(!isOpen);
                                                   if (res.success === false) {
                                                        status = 'danger';
-                                                       setIsOpen(!isOpen);
                                                        popAlert('Unable to delete list', res.message, status);
                                                   } else {
                                                        popAlert('List deleted', res.message, status);
-                                                       navigation.navigate('AccountScreenTab', {
-                                                            screen: 'Lists',
-                                                            params: { libraryUrl: library.baseUrl },
+                                                       navigateStack('AccountScreenTab', 'MyLists', {
+                                                            libraryUrl: library.baseUrl,
                                                        });
                                                   }
                                              });

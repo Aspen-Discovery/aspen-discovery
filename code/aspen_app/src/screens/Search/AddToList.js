@@ -8,9 +8,9 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import { PATRON } from '../../util/loadPatron';
 import { addTitlesToList, createListFromTitle, getLists } from '../../util/api/list';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { refreshProfile } from '../../util/api/user';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const AddToList = (props) => {
      const item = props.itemId;
@@ -36,16 +36,11 @@ export const AddToList = (props) => {
      };
 
      const updateLastListUsed = async (id) => {
-          queryClient.invalidateQueries({ queryKey: ['myList', id] });
-          getLists(library.baseUrl).then((result) => {
-               console.log('updated patron.lists');
-               PATRON.lists = result;
-               PATRON.listLastUsed = id;
-               setListId(id);
-          });
-          await refreshProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          queryClient.invalidateQueries({ queryKey: ['list', id] });
+          queryClient.invalidateQueries({ queryKey: ['lists', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+          PATRON.listLastUsed = id;
+          setListId(id);
      };
 
      const SelectLists = () => {
@@ -77,7 +72,7 @@ export const AddToList = (props) => {
 
      const SmallButton = () => {
           return (
-               <Button size="sm" variant="ghost" colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1" />} onPress={toggleModal} style={{flex: 1, flexWrap: 'wrap'}}>
+               <Button size="sm" variant="ghost" colorScheme="tertiary" leftIcon={<Icon as={MaterialIcons} name="bookmark" size="xs" mr="-1" />} onPress={toggleModal} style={{ flex: 1, flexWrap: 'wrap' }}>
                     {getTermFromDictionary(language, 'add_to_list')}
                </Button>
           );
@@ -194,6 +189,7 @@ export const AddToList = (props) => {
                                                             setLoading(true);
                                                             addTitlesToList(listId, item, library.baseUrl).then((res) => {
                                                                  updateLastListUsed(listId);
+                                                                 queryClient.invalidateQueries({ queryKey: ['list', listId] });
                                                                  setLoading(false);
                                                                  setOpen(false);
                                                             });

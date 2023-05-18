@@ -2163,5 +2163,50 @@ class GroupedWork_AJAX extends JSON_Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function getRelatedManifestations() {
+		global $interface;
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$selectedFormat = urldecode($_REQUEST['format']);
+		$variationId = $_REQUEST['variationId'];
+
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'No related manifestations exist for this record',
+				'isPublicFacing' => 'true',
+			]),
+		];
+
+		$groupedWorkDriver = new GroupedWorkDriver($id);
+		$relatedManifestation = null;
+		foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
+			if ($relatedManifestation->format == $selectedFormat) {
+				break;
+			}
+		}
+
+		$variation = null;
+		foreach ($relatedManifestation->getVariations() as $variation) {
+			if($variation->databaseId == $variationId) {
+				break;
+			}
+		}
+
+		if($variation) {
+			$interface->assign('relatedRecords', $variation->getRelatedRecords());
+			$interface->assign('relatedManifestation', $relatedManifestation);
+			$interface->assign('variationId', $variation->databaseId);
+			$interface->assign('workId', $id);
+
+			$result = [
+				'success' => true,
+				'body' => $interface->fetch('GroupedWork/relatedRecords.tpl'),
+			];
+		}
+
+		return $result;
+	}
 
 }

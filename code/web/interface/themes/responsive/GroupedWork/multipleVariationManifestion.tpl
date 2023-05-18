@@ -8,12 +8,12 @@
 	{foreach from=$relatedManifestation->getVariations() item=variation}
 		<div class="row {if $variation->isHideByDefault()}hiddenManifestation_{$summId}{else} displayed striped-{cycle values="odd,even"}{/if}" {if $variation->isHideByDefault()}style="display: none"{/if}>
 			<div class="col-tn-4 col-xs-4{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-3{/if} manifestation-format">
-				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');"aria-label="{translate text="View Manifestations for %1% %2 of %3" 1=$relatedManifestation->format 2=$variation->label 3=$summTitle inAttribute=true isPublicFacing=true}">
+				<a class="btn btn-xs btn-primary btn-variation btn-wrap" href="{$variation->getUrl()}" onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS}','{$relatedManifestation->format|escapeCSS}','{$variation->databaseId|escapeCSS}');"aria-label="{translate text="View Manifestations for %1% %2 of %3" 1=$relatedManifestation->format 2=$variation->label 3=$summTitle inAttribute=true isPublicFacing=true}">
 					{translate text=$variation->label isPublicFacing=true}
 				</a>
 				<br>
-				<a href="#" onclick="return AspenDiscovery.ResultsList.toggleRelatedManifestations('{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}');">
-					<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}'>{if $variation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
+				<a href="#" onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS}','{$relatedManifestation->format|escapeCSS}','{$variation->databaseId|escapeCSS}');">
+					<span class="manifestation-toggle-text btn btn-xs btn-wrap btn-editions" id='manifestation-toggle-text-{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->databaseId|escapeCSS}'><i class='fas fa-spinner fa-spin hidden' role='status' aria-hidden='true'></i>&nbsp;{if $variation->getNumRelatedRecords() == 1}{translate text='Show Edition' isPublicFacing=true}{else}{translate text='Show Editions' isPublicFacing=true}{/if}</span>
 				</a>
 			</div>
 			<div class="col-tn-5 col-xs-8{if empty($viewingCombinedResults) || !$viewingCombinedResults} col-md-5 col-lg-6{/if}">
@@ -41,8 +41,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->id|escapeCSS}" style="display:none">
-				{include file="GroupedWork/relatedRecords.tpl" relatedRecords=$variation->getRelatedRecords() relatedManifestation=$relatedManifestation variationId=$variation->databaseId}
+			<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$variation->databaseId|escapeCSS}" style="display:none">
 			</div>
 		</div>
 	{/foreach}

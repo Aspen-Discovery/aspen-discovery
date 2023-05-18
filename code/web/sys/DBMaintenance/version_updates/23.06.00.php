@@ -75,6 +75,15 @@ function getUpdates23_06_00(): array {
 			],
 		],
 		//add_sso_saml_student_attributes
+		'add_show_edition_covers' => [
+			'title' => 'Add option to show edition covers',
+			'description' => 'Add option to show individual covers for each edition',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN showEditionCovers TINYINT(1) DEFAULT 0',
+			],
+		],
+		//add_show_edition_covers
 		//kodi
 		'event_library_mapping' => [
 			'title' => 'Event Library Mapping',

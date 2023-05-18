@@ -1,33 +1,28 @@
 import { Box, HStack, Switch, Text, FlatList } from 'native-base';
 import React from 'react';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 
 import { getBrowseCategoryListForUser, updateBrowseCategoryStatus } from '../../../util/loadPatron';
-import { BrowseCategoryContext, LibrarySystemContext } from '../../../context/initialContext';
+import { BrowseCategoryContext, LanguageContext, LibrarySystemContext } from '../../../context/initialContext';
 import { reloadBrowseCategories } from '../../../util/loadLibrary';
 import { loadingSpinner } from '../../../components/loadingSpinner';
+import { getPatronHolds } from '../../../util/api/user';
 
 export const Settings_BrowseCategories = () => {
-     const navigation = useNavigation();
+     const isFetchingBrowseCategories = useIsFetching({ queryKey: ['browse_categories_list'] });
      const [loading, setLoading] = React.useState(true);
      const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
      const { list, updateBrowseCategoryList } = React.useContext(BrowseCategoryContext);
 
-     React.useEffect(() => {
-          const update = navigation.addListener('focus', async () => {
-               await getBrowseCategoryListForUser(library.baseUrl).then((result) => {
-                    if (list !== result) {
-                         updateBrowseCategoryList(result);
-                    }
-               });
+     useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
+          onSuccess: (data) => {
+               updateBrowseCategoryList(data);
                setLoading(false);
-          });
-          return update;
-     }, [navigation]);
-
-     if (loading) {
-          return loadingSpinner();
-     }
+          },
+          placeholderData: [],
+     });
 
      return <FlatList keyExtractor={(item) => item.key} data={list} renderItem={({ item }) => <DisplayCategory data={item} />} />;
 };
@@ -116,6 +111,7 @@ export const Settings_BrowseCategories = () => {
  } */
 
 const DisplayCategory = (data) => {
+     const queryClient = useQueryClient();
      const category = data.data;
      console.log(category.isHidden);
      const [toggled, setToggle] = React.useState(!category.isHidden);
@@ -127,12 +123,8 @@ const DisplayCategory = (data) => {
           const key = category['key'] ?? category['sourceId'];
 
           await updateBrowseCategoryStatus(key, library.baseUrl).then(async (response) => {
-               await getBrowseCategoryListForUser(library.baseUrl).then((result) => {
-                    updateBrowseCategoryList(result);
-               });
-               await reloadBrowseCategories(maxNum, library.baseUrl).then((result) => {
-                    updateBrowseCategories(result);
-               });
+               queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl] });
+               queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl] });
           });
 
           console.log(key + ', ' + category['isHidden']);

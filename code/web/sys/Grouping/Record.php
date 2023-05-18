@@ -766,4 +766,13 @@ class Grouping_Record {
 	public function discardDriver() {
 		$this->_driver = null;
 	}
+
+	public function getBookcoverUrl() {
+		$bookcoverUrl = null;
+		$recordDriver = $this->getDriver();
+		if($recordDriver) {
+			$bookcoverUrl = $recordDriver->getBookcoverUrl('medium');
+		}
+		return $bookcoverUrl;
+	}
 }

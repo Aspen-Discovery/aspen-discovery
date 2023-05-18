@@ -14,7 +14,7 @@ import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
-import { getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds } from '../../util/api/user';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 let maxCategories = 5;
@@ -22,7 +22,7 @@ let maxCategories = 5;
 export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
      const [loading, setLoading] = React.useState(false);
-     const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -42,6 +42,7 @@ export const DiscoverHomeScreen = () => {
                updateBrowseCategories(data);
                setLoading(false);
           },
+          placeholderData: [],
      });
 
      useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
@@ -49,6 +50,7 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => updateHolds(data),
+          placeholderData: [],
      });
 
      useQuery(['checkouts', library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
@@ -56,6 +58,7 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => updateCheckouts(data),
+          placeholderData: [],
      });
 
      useQuery(['lists', library.baseUrl, language], () => getLists(library.baseUrl), {
@@ -63,9 +66,10 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => updateLists(data),
+          placeholderData: [],
      });
 
-     useQuery(['linked_accounts', library.baseUrl, language], () => getLinkedAccounts(user, cards, library), {
+     useQuery(['linked_accounts', library.baseUrl, language], () => getLinkedAccounts(user, cards, library, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -73,11 +77,48 @@ export const DiscoverHomeScreen = () => {
                updateLinkedAccounts(data.accounts);
                updateLibraryCards(data.cards);
           },
+          placeholderData: [],
+     });
+
+     useQuery(['viewer_accounts', library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               updateLinkedViewerAccounts(data);
+          },
+          placeholderData: [],
      });
 
      useQuery(['ils_messages', library.baseUrl, language], () => getILSMessages(library.baseUrl), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
+          placeholderData: [],
+     });
+
+     useQuery(['pickup_locations', library.baseUrl, language], () => getPickupLocations(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updatePickupLocations(data);
+          },
+     });
+
+     useQuery(['saved_searches', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          placeholderData: [],
+     });
+
+     useQuery(['reading_history', library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateReadingHistory(data);
+          },
      });
 
      const renderHeader = (title, key, user, url) => {
@@ -126,7 +167,7 @@ export const DiscoverHomeScreen = () => {
                          lg: 200,
                     }}
                     height={{
-                         base: 125,
+                         base: 150,
                          lg: 250,
                     }}>
                     {version >= '22.08.00' && isNew ? (
@@ -148,6 +189,7 @@ export const DiscoverHomeScreen = () => {
                               height: '100%',
                               borderRadius: 4,
                          }}
+                         resizeMode="cover"
                     />
                </Pressable>
           );
