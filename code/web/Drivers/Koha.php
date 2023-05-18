@@ -3754,6 +3754,7 @@ class Koha extends AbstractIlsDriver {
 		if ($type == 'selfReg') {
 			$passwordLabel = $library->loginFormPasswordLabel;
 			$passwordNotes = $library->selfRegistrationPasswordNotes;
+			$pinValidationRules = $this->getPasswordPinValidationRules();
 			$fields['passwordSection'] = [
 				'property' => 'passwordSection',
 				'type' => 'section',
@@ -3766,10 +3767,10 @@ class Koha extends AbstractIlsDriver {
 						'type' => 'password',
 						'label' => $passwordLabel,
 						'description' => $passwordNotes,
-						'minLength' => 3,
-						'maxLength' => 25,
+						'minLength' => $pinValidationRules['minLength'],
+						'maxLength' => $pinValidationRules['maxLength'],
 						'showConfirm' => false,
-						'required' => false,
+						'required' => true,
 						'showDescription' => true,
 						'autocomplete' => false,
 					],
@@ -3778,10 +3779,11 @@ class Koha extends AbstractIlsDriver {
 						'type' => 'password',
 						'label' => 'Confirm ' . $passwordLabel,
 						'description' => 'Reenter your PIN',
-						'minLength' => 3,
-						'maxLength' => 25,
+						'minLength' => $pinValidationRules['minLength'],
+						'maxLength' => $pinValidationRules['maxLength'],
 						'showConfirm' => false,
-						'required' => false,
+						'required' => true,
+						'showDescription' => false,
 						'autocomplete' => false,
 					],
 				],
