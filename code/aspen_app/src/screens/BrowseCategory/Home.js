@@ -45,7 +45,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
+     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -53,7 +53,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['checkouts', library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -61,7 +61,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['lists', library.baseUrl, language], () => getLists(library.baseUrl), {
+     useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -69,7 +69,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['linked_accounts', library.baseUrl, language], () => getLinkedAccounts(user, cards, library, language), {
+     useQuery(['linked_accounts', user.id, library.baseUrl, language], () => getLinkedAccounts(user, cards, library, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -80,7 +80,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['viewer_accounts', library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
+     useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -90,7 +90,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['ils_messages', library.baseUrl, language], () => getILSMessages(library.baseUrl), {
+     useQuery(['ils_messages', user.id, library.baseUrl, language], () => getILSMessages(library.baseUrl), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           placeholderData: [],
@@ -105,14 +105,14 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
-     useQuery(['saved_searches', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
+     useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
           placeholderData: [],
      });
 
-     useQuery(['reading_history', library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
+     useQuery(['reading_history', user.id, library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 30,
           refetchIntervalInBackground: true,
           placeholderData: [],

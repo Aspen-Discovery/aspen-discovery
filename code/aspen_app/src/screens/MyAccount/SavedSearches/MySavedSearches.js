@@ -18,14 +18,14 @@ export const MySavedSearches = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_searches', library.baseUrl, language], () => fetchSavedSearches(library.baseUrl), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl), {
           placeholderData: [],
      });
 
      useQueries({
           queries: data.map((savedSearch) => {
                return {
-                    queryKey: ['saved_search', savedSearch.id],
+                    queryKey: ['saved_search', savedSearch.id, user.id],
                     queryFn: () => getSavedSearch(savedSearch.id, language, library.baseUrl),
                };
           }),

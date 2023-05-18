@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import AddToList from '../../Search/AddToList';
-import { LanguageContext, LibrarySystemContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getCleanTitle } from '../../../helpers/item';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
@@ -19,10 +19,11 @@ import { getTermFromDictionary } from '../../../translations/TranslationService'
 export const MySavedSearch = () => {
      const route = useRoute();
      const id = route.params.id;
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_search', id], () => getSavedSearch(id, language, library.baseUrl), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_search', id, user.id], () => getSavedSearch(id, language, library.baseUrl), {
           staleTime: 1000,
           placeholderData: [],
      });

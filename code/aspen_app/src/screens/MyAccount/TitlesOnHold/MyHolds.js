@@ -41,7 +41,7 @@ export const MyHolds = () => {
           expiration: 'Sort by Expiration Date',
      });
 
-     useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateHolds(data);
                setLoading(false);

@@ -13,12 +13,13 @@ import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const MyLists = () => {
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { lists, updateLists } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const [loading, setLoading] = React.useState(false);
 
-     useQuery(['lists', library.baseUrl, language], () => getLists(library.baseUrl), {
+     useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
           onSuccess: (data) => {
                updateLists(data);
                setLoading(false);
@@ -29,7 +30,7 @@ export const MyLists = () => {
      useQueries({
           queries: lists.map((list) => {
                return {
-                    queryKey: ['list', list.id],
+                    queryKey: ['list', list.id, user.id],
                     queryFn: () => getListTitles(list.id, library.baseUrl, 1, 25, 25, 'dateAdded'),
                };
           }),
@@ -38,7 +39,7 @@ export const MyLists = () => {
      useQueries({
           queries: lists.map((list) => {
                return {
-                    queryKey: ['list-details', list.id],
+                    queryKey: ['list-details', list.id, user.id],
                     queryFn: () => getListDetails(list.id, library.baseUrl),
                };
           }),

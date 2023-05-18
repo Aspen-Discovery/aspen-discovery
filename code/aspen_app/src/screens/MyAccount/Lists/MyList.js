@@ -59,7 +59,7 @@ export const MyList = () => {
           fetchTranslations();
      }, [language]);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
           keepPreviousData: true,
      });
 

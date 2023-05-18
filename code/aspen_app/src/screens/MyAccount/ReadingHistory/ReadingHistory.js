@@ -34,7 +34,7 @@ export const MyReadingHistory = () => {
           last_used: 'Sort by Last Used',
      });
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['reading_history', library.baseUrl, page, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['reading_history', user.id, library.baseUrl, page, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {

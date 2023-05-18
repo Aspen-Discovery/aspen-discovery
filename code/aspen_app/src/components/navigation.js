@@ -14,6 +14,8 @@ import * as Updates from 'expo-updates';
 import { Spinner, useColorModeValue, useContrastText, useToken } from 'native-base';
 import React from 'react';
 import { enableScreens } from 'react-native-screens';
+import { useQueryClient } from '@tanstack/react-query';
+
 //import * as Sentry from '@sentry/react-native';
 import * as Sentry from 'sentry-expo';
 
@@ -78,6 +80,7 @@ Sentry.init({
 Sentry.Native.setTag('patch', GLOBALS.appPatch);
 
 export function App() {
+     const queryClient = useQueryClient();
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -228,6 +231,7 @@ export function App() {
                },
                signOut: async () => {
                     await RemoveData().then((res) => {
+                         queryClient.invalidateQueries({});
                          dispatch({ type: 'SIGN_OUT' });
                     });
                     console.log('Session ended.');
