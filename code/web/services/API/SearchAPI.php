@@ -2112,13 +2112,15 @@ class SearchAPI extends Action {
 			];
 		}
 
+		$isLida = $this->checkIfLiDA();
+
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceList = new UserList();
 		$sourceList->id = $id;
 		if ($sourceList->find(true)) {
 			$response['title'] = $sourceList->title;
 			$response['id'] = $sourceList->id;
-			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida);
 		}
 		$response['items'] = $records;
 
