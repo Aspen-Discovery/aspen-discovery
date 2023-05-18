@@ -10787,6 +10787,13 @@ a.browse-thumbnail-sorted.active {
   cursor: pointer;
   color: white;
 }
+#releaseNotes h3 {
+  text-decoration: underline;
+}
+#releaseNotes .settings {
+  margin-left: 60px;
+  font-size: smaller;
+}
 .staff-member {
   padding: 5px 10px;
   border: 1px solid #bbb;

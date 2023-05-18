@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
+require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupUser.php';
 require_once ROOT_DIR . '/sys/DB/LibraryLocationLinkedObject.php';
 
 class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
@@ -16,6 +17,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 
 	protected $_libraries;
 	protected $_locations;
+	protected $_additionalEditors;
 
 	public static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Browse Categories'));
@@ -25,7 +27,10 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 		unset($browseCategoryStructure['weight']);
 		unset($browseCategoryStructure['browseCategoryGroupId']);
 
-		return [
+		$browseCategoryUserStructure = BrowseCategoryGroupUser::getObjectStructure($context);
+		unset($browseCategoryUserStructure['browseCategoryGroupId']);
+
+		$objectStructure = [
 			'name' => [
 				'property' => 'name',
 				'type' => 'text',
@@ -77,6 +82,24 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 				'canDelete' => true,
 			],
 
+			'additionalEditors' => [
+				'property' => 'additionalEditors',
+				'type' => 'oneToMany',
+				'label' => 'Additional Users who can edit this group',
+				'description' => 'A list of users that can only edit specified browse category groups',
+				'keyThis' => 'id',
+				'keyOther' => 'browseCategoryGroupId',
+				'subObjectType' => 'BrowseCategoryGroupUser',
+				'structure' => $browseCategoryUserStructure,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'hideInLists' => true,
+			],
+
 			'libraries' => [
 				'property' => 'libraries',
 				'type' => 'multiSelect',
@@ -95,6 +118,14 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 				'values' => $locationList,
 			],
 		];
+
+		if (UserAccount::userHasPermission('Administer Selected Browse Category Groups') && !(UserAccount::userHasPermission('Administer All Browse Categories') || UserAccount::userHasPermission('Administer Library Browse Categories'))) {
+			unset($objectStructure['additionalEditors']);
+			unset($objectStructure['libraries']);
+			unset($objectStructure['locations']);
+		}
+
+		return $objectStructure;
 	}
 
 	/**
@@ -111,9 +142,25 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 			return $this->getLocations();
 		} elseif ($name == 'browseCategories') {
 			return $this->getBrowseCategories();
+		} elseif ($name == 'additionalEditors') {
+			return $this->getAdditionalEditors();
 		} else {
 			return $this->_data[$name] ?? null;
 		}
+	}
+
+	public function getAdditionalEditors() {
+		if (!isset($this->_additionalEditors) && $this->id) {
+			$this->_additionalEditors = [];
+			$browseCategoryUser = new BrowseCategoryGroupUser();
+			$browseCategoryUser->browseCategoryGroupId = $this->id;
+			$browseCategoryUser->find();
+			while ($browseCategoryUser->fetch()) {
+				$this->_additionalEditors[$browseCategoryUser->id] = clone($browseCategoryUser);
+			}
+			uasort($this->_additionalEditors, function ($a, $b) { return strcasecmp($a->getUserDisplayName(), $b->getUserDisplayName());});
+		}
+		return $this->_additionalEditors;
 	}
 
 	public function getBrowseCategories() {
@@ -175,6 +222,8 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 			$this->setLocations($value);
 		} elseif ($name == 'browseCategories') {
 			$this->_browseCategories = $value;
+		} elseif ($name == 'additionalEditors') {
+			$this->_additionalEditors = $value;
 		} else {
 			$this->_data[$name] = $value;
 		}
@@ -192,6 +241,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveBrowseCategories();
+			$this->saveAdditionalEditors();
 		}
 
 		return $ret;
@@ -208,8 +258,29 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 			$this->saveLibraries();
 			$this->saveLocations();
 			$this->saveBrowseCategories();
+			$this->saveAdditionalEditors();
 		}
 		return $ret;
+	}
+
+	public function saveAdditionalEditors() {
+		if (isset ($this->_additionalEditors) && is_array($this->_additionalEditors)) {
+			$uniqueUsers = [];
+			/**
+			 * @var int $browseCategoryGroupUserId
+			 * @var BrowseCategoryGroupUser $browseCategoryUser
+			 */
+			foreach ($this->_additionalEditors as $browseCategoryGroupUserId => $browseCategoryUser) {
+				if (in_array($browseCategoryUser->userId, $uniqueUsers)) {
+					$browseCategoryUser->delete();
+					unset($this->_additionalEditors[$browseCategoryGroupUserId]);
+				} else {
+					$uniqueUsers[] = $browseCategoryUser->userId;
+				}
+			}
+			$this->saveOneToManyOptions($this->_additionalEditors, 'browseCategoryGroupId');
+			unset($this->_additionalEditors);
+		}
 	}
 
 	public function saveBrowseCategories() {

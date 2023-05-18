@@ -47,9 +47,9 @@ class Events_Results extends ResultsAction {
 			$interface->assign('error', 'The Solr index is offline, please try your search again in a few minutes.');
 			$this->display('searchError.tpl', 'Error in Search', '');
 			return;
-		} elseif ($result instanceof AspenError) {
-			/** @var AspenError $result */
-			AspenError::raiseError($result->getMessage());
+		} elseif ($result instanceof AspenError || !empty($result['error'])) {
+			$this->display('searchError.tpl', 'Error in Search', '');
+			return;
 		}
 		$timer->logTime('Process Search');
 
