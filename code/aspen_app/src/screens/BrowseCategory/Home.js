@@ -4,89 +4,81 @@ import CachedImage from 'expo-cached-image';
 import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
-import {BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
-import {getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds} from '../../util/api/user';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds } from '../../util/api/user';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
-     const [loading, setLoading] = React.useState(true);
-     const navigation = useNavigation();
+     const queryClient = useQueryClient();
+     const [loading, setLoading] = React.useState(false);
      const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
-     const { holds, updateHolds } = React.useContext(HoldsContext);
+     const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
-                         if (maxCategories === 9999) {
-                              setUnlimitedCategories(true);
-                         }
+     useQuery(['browse_categories', library.baseUrl], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               if (maxCategories === 9999) {
+                    setUnlimitedCategories(true);
+               }
+               updateBrowseCategories(data);
+               setLoading(false);
+          },
+     });
 
-                         if (category !== result) {
-                              setLoading(true);
-                              updateBrowseCategories(result);
-                              setLoading(false);
-                         }
-                    });
+     useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, 'all', library.baseUrl, true, language), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateHolds(data),
+     });
 
-                    getPatronHolds('expire', 'sortTitle', 'all', library.baseUrl, true, language).then((result) => {
-                         if (holds !== result) {
-                              updateHolds(result);
-                         }
-                    });
+     useQuery(['checkouts', library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateCheckouts(data),
+     });
 
-                    getPatronCheckedOutItems('all', library.baseUrl, true, language).then((result) => {
-                         if (checkouts !== result) {
-                              updateCheckouts(result);
-                         }
-                    });
+     useQuery(['lists', library.baseUrl, language], () => getLists(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => updateLists(data),
+     });
 
-                    getILSMessages(library.baseUrl);
+     useQuery(['linked_accounts', library.baseUrl, language], () => getLinkedAccounts(user, cards, library), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               updateLinkedAccounts(data.accounts);
+               updateLibraryCards(data.cards);
+          },
+     });
 
-                    getLists(library.baseUrl).then((result) => {
-                         if(lists !== result) {
-                              updateLists(result);
-                         }
-                    });
-
-                    getPickupLocations(library.baseUrl).then((result) => {
-                         if (locations !== result) {
-                              updatePickupLocations(result);
-                         }
-                    });
-
-                    getLinkedAccounts(user, cards, library).then((result) => {
-                         if (accounts !== result.accounts) {
-                              updateLinkedAccounts(result.accounts);
-                         }
-                         if (cards !== result.cards) {
-                              updateLibraryCards(result.cards);
-                         }
-                    });
-                    console.log('updated patron things');
-               };
-               update().then(() => {
-                    return () => update();
-               });
-          }, [])
-     );
+     useQuery(['ils_messages', library.baseUrl, language], () => getILSMessages(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+     });
 
      const renderHeader = (title, key, user, url) => {
           return (
@@ -103,7 +95,7 @@ export const DiscoverHomeScreen = () => {
                               {title}
                          </Text>
                          <Button size="xs" colorScheme="trueGray" variant="ghost" onPress={() => onHideCategory(url, key)} startIcon={<Icon as={MaterialIcons} name="close" size="xs" mr={-1.5} />}>
-                              {getTermFromDictionary(language, "hide")}
+                              {getTermFromDictionary(language, 'hide')}
                          </Button>
                     </HStack>
                </Box>
@@ -154,9 +146,8 @@ export const DiscoverHomeScreen = () => {
                          style={{
                               width: '100%',
                               height: '100%',
-                              borderRadius: 4
+                              borderRadius: 4,
                          }}
-
                     />
                </Pressable>
           );
@@ -181,7 +172,7 @@ export const DiscoverHomeScreen = () => {
                          libraryContext: library,
                     });
                } else {
-                    if(version >= '23.01.00') {
+                    if (version >= '23.01.00') {
                          navigateStack('HomeTab', 'GroupedWorkScreen', {
                               id: key,
                               title: title,
@@ -193,8 +184,8 @@ export const DiscoverHomeScreen = () => {
                               title: title,
                               url: library.baseUrl,
                               userContext: user,
-                              libraryContext: library
-                         })
+                              libraryContext: library,
+                         });
                     }
                }
           } else {
@@ -217,6 +208,7 @@ export const DiscoverHomeScreen = () => {
                await onRefreshCategories();
                await getBrowseCategoryListForUser().then((result) => {
                     updateBrowseCategoryList(result);
+                    queryClient.setQueryData(['browse_categories_list', library.baseUrl], result);
                     setLoading(false);
                });
           });
@@ -225,6 +217,7 @@ export const DiscoverHomeScreen = () => {
      const onRefreshCategories = async () => {
           setLoading(true);
           await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
+               queryClient.setQueryData(['browse_categories', library.baseUrl], result);
                updateBrowseCategories(result);
                setLoading(false);
           });
@@ -263,7 +256,7 @@ export const DiscoverHomeScreen = () => {
                url: library.baseUrl,
                libraryContext: library,
                userContext: user,
-               language: language
+               language: language,
           });
      };
 
@@ -306,7 +299,7 @@ const ButtonOptions = (props) => {
                                    }, 5000);
                               }}
                               startIcon={<Icon as={MaterialIcons} name="schedule" size="sm" />}>
-                              {getTermFromDictionary(language, "browse_categories_load_all")}
+                              {getTermFromDictionary(language, 'browse_categories_load_all')}
                          </Button>
                     ) : null}
                     <Button
@@ -317,7 +310,7 @@ const ButtonOptions = (props) => {
                               onPressSettings(libraryUrl, patronId);
                          }}
                          startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                         {getTermFromDictionary(language, "browse_categories_manage")}
+                         {getTermFromDictionary(language, 'browse_categories_manage')}
                     </Button>
                     <Button
                          isLoading={refreshing}
@@ -332,7 +325,7 @@ const ButtonOptions = (props) => {
                               });
                          }}
                          startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                         {getTermFromDictionary(language, "browse_categories_refresh")}
+                         {getTermFromDictionary(language, 'browse_categories_refresh')}
                     </Button>
                </Box>
           );
@@ -347,7 +340,7 @@ const ButtonOptions = (props) => {
                          onPressSettings(libraryUrl, patronId);
                     }}
                     startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
-                    {getTermFromDictionary(language, "browse_categories_manage")}
+                    {getTermFromDictionary(language, 'browse_categories_manage')}
                </Button>
                <Button
                     size="md"
@@ -357,7 +350,7 @@ const ButtonOptions = (props) => {
                          onRefreshCategories(libraryUrl);
                     }}
                     startIcon={<Icon as={MaterialIcons} name="refresh" size="sm" />}>
-                    {getTermFromDictionary(language, "browse_categories_refresh")}
+                    {getTermFromDictionary(language, 'browse_categories_refresh')}
                </Button>
           </Box>
      );

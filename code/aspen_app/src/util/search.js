@@ -8,7 +8,7 @@ import { createAuthTokens, ENDPOINT, getHeaders, getResponseCode, postData } fro
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
 import { PATRON } from './loadPatron';
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const SEARCH = {
      term: null,
@@ -46,7 +46,7 @@ export async function searchResults(searchTerm, pageSize = 100, page, libraryUrl
                lookfor: searchTerm,
                pageSize,
                page,
-               language
+               language,
           },
           auth: createAuthTokens(),
      });
@@ -94,7 +94,7 @@ export async function getSearchResults(searchTerm, pageSize = 25, page, url, lan
           lookfor: searchTerm,
           pageSize,
           page,
-          language
+          language,
      });
      const response = getResponseCode(data);
      if (response.success) {
@@ -131,7 +131,7 @@ export async function getAppliedFilters(url, language) {
      });
      const data = await discovery.get(endpoint.url + 'getAppliedFilters', {
           id: SEARCH.id,
-          language: language
+          language: language,
      });
      const response = getResponseCode(data);
      if (response.success) {
@@ -157,7 +157,7 @@ export async function getSortList(url, language) {
           auth: createAuthTokens(),
           params: {
                id: SEARCH.id,
-               language: language
+               language: language,
           },
      });
      const data = await discovery.get(endpoint.url + 'getSortList');
@@ -179,7 +179,7 @@ export async function getAvailableFacets(url, language) {
           params: {
                includeSortList: true,
                id: SEARCH.id,
-               language: language
+               language: language,
           },
      });
      const data = await discovery.get(endpoint.url + 'getAvailableFacets');
@@ -203,6 +203,20 @@ export async function getAvailableFacets(url, language) {
      }
 }
 
+export function setDefaultFacets(facets) {
+     const defaultOptions = facets;
+     let i = 1;
+     let defaults = [];
+     _.map(defaultOptions, function (item, index, collection) {
+          if (i <= 5 && item['field'] !== 'sort_by') {
+               defaults = _.concat(defaults, item);
+               i++;
+          }
+     });
+     SEARCH.defaultFacets = defaults;
+     return defaults;
+}
+
 export async function searchAvailableFacets(facet, label, term, url, language) {
      const discovery = create({
           baseURL: url,
@@ -214,17 +228,19 @@ export async function searchAvailableFacets(facet, label, term, url, language) {
                id: SEARCH.id,
                facet,
                term,
-               language: language
+               language: language,
           },
      });
      const response = await discovery.get(endpoint.url + 'searchAvailableFacets');
      if (response.ok) {
           const data = response.data;
-          return data.result?.data[label] ?? {
-               key: 1,
-               field: facet,
-               facets: []
-          };
+          return (
+               data.result?.data[label] ?? {
+                    key: 1,
+                    field: facet,
+                    facets: [],
+               }
+          );
      } else {
           //console.log(response);
      }
@@ -243,7 +259,7 @@ export async function getAvailableFacetsKeys(url, language) {
           params: {
                includeSortList: true,
                id: SEARCH.id,
-               language: language
+               language: language,
           },
      });
      const data = await discovery.get(endpoint.url + 'getAvailableFacetsKeys');
@@ -282,7 +298,7 @@ export async function categorySearchResults(category, limit = 25, page, url, lan
                limit,
                id: category,
                page,
-               language
+               language,
           },
           auth: createAuthTokens(),
      });
@@ -308,7 +324,7 @@ export async function listofListSearchResults(searchId, limit = 25, page, url, l
                limit,
                id,
                page,
-               language
+               language,
           },
           auth: createAuthTokens(),
      });
@@ -334,7 +350,7 @@ export async function savedSearchResults(searchId, limit = 25, page, url, langua
                limit,
                id,
                page,
-               language
+               language,
           },
           auth: createAuthTokens(),
      });
@@ -414,14 +430,14 @@ export function buildParamsForUrl() {
  **/
 export function getFilterCluster(cluster, key, value) {
      if (cluster && key && value) {
-          return _.filter(SEARCH.availableFacets.data[cluster], [key, value]);
+          return _.filter(SEARCH.availableFacets[cluster], [key, value]);
      }
      return [];
 }
 
 export function formatOptions(cluster) {
      if (cluster) {
-          return _.castArray(SEARCH.availableFacets.data[cluster]);
+          return _.castArray(SEARCH.availableFacets[cluster]);
      }
      return [];
 }

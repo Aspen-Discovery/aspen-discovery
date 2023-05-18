@@ -43,7 +43,7 @@
 #############################################
 # New York Times Best seller Lists Updating #
 #############################################
-15 7 * * 0-1  aspen   php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
+15 7 * * 5  aspen   php /usr/local/aspen-discovery/code/web/cron/updateNYTLists.php {sitename}
 # update on Sundays and Mondays at 7:15
 
 ###########################
