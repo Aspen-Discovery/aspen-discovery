@@ -47,8 +47,10 @@ export default class SearchBySavedSearch extends Component {
 
           const params = this.props.route.params.url;
           const language = route.params?.language ?? 'en';
+          const prevRoute = route.params?.prevRoute ?? 'HomeScreen';
           this.setState({
                language: language,
+               prevRoute: prevRoute,
           });
 
           await getLists(libraryUrl);
@@ -253,13 +255,13 @@ export default class SearchBySavedSearch extends Component {
           const libraryContext = route.params?.libraryContext ?? [];
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
           if (version >= '23.01.00') {
-               navigateStack('SearchTab', 'SavedSearchResultItem', {
+               navigateStack('HomeTab', 'SavedSearchResultItem', {
                     id: item,
                     title: getCleanTitle(title),
                     url: library.baseUrl,
                });
           } else {
-               navigateStack('SearchTab', 'SavedSearchResultItem221200', {
+               navigateStack('HomeTab', 'SavedSearchResultItem221200', {
                     id: item,
                     title: getCleanTitle(title),
                     url: library.baseUrl,

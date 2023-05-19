@@ -13,7 +13,7 @@ import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatu
 import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
-import { navigateStack } from '../../helpers/RootNavigator';
+import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -21,6 +21,7 @@ let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
+     const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
      const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -31,6 +32,12 @@ export const DiscoverHomeScreen = () => {
      const version = formatDiscoveryVersion(library.discoveryVersion);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
+
+     navigation.setOptions({
+          headerLeft: () => {
+               return null;
+          },
+     });
 
      useQuery(['browse_categories', library.baseUrl], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
@@ -202,27 +209,29 @@ export const DiscoverHomeScreen = () => {
      const onPressItem = (key, type, title, version) => {
           if (version >= '22.07.00') {
                if (type === 'List' || type === 'list') {
-                    navigateStack('SearchTab', 'SearchByList', {
+                    navigateStack('HomeTab', 'SearchByList', {
                          id: key,
                          url: library.baseUrl,
                          title: title,
                          userContext: user,
                          libraryContext: library,
+                         prevRoute: 'HomeScreen',
                     });
                } else if (type === 'SavedSearch') {
-                    navigateStack('SearchTab', 'SearchBySavedSearch', {
+                    navigateStack('HomeTab', 'SearchBySavedSearch', {
                          id: key,
                          url: library.baseUrl,
                          title: title,
                          userContext: user,
                          libraryContext: library,
+                         prevRoute: 'HomeScreen',
                     });
                } else {
                     if (version >= '23.01.00') {
                          navigateStack('HomeTab', 'GroupedWorkScreen', {
                               id: key,
                               title: title,
-                              prevRoute: 'DiscoveryScreen',
+                              prevRoute: 'HomeScreen',
                          });
                     } else {
                          navigateStack('HomeTab', 'GroupedWorkScreen221200', {
@@ -231,6 +240,7 @@ export const DiscoverHomeScreen = () => {
                               url: library.baseUrl,
                               userContext: user,
                               libraryContext: library,
+                              prevRoute: 'HomeScreen',
                          });
                     }
                }
@@ -241,7 +251,7 @@ export const DiscoverHomeScreen = () => {
                     title: title,
                     userContext: user,
                     libraryContext: library,
-                    prevRoute: 'DiscoveryScreen',
+                    prevRoute: 'HomeScreen',
                });
           }
      };
@@ -300,7 +310,7 @@ export const DiscoverHomeScreen = () => {
           console.log('key > ' + key);
           console.log('source > ' + source);
 
-          navigateStack('SearchTab', screen, {
+          navigateStack('HomeTab', screen, {
                title: label,
                id: key,
                url: library.baseUrl,

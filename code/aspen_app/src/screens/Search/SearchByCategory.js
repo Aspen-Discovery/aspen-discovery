@@ -44,9 +44,11 @@ export default class SearchByCategory extends Component {
           const { navigation, route } = this.props;
           const libraryUrl = this.context.library.baseUrl;
           const language = route.params?.language ?? 'en';
+          const prevRoute = route.params?.prevRoute ?? 'HomeScreen';
 
           this.setState({
                language: language,
+               prevRoute: prevRoute,
           });
 
           await getLists(libraryUrl);
@@ -219,13 +221,13 @@ export default class SearchByCategory extends Component {
           const libraryContext = route.params.libraryContext;
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
           if (version >= '23.01.00') {
-               navigateStack('SearchTab', 'CategoryResultItem', {
+               navigateStack('HomeTab', 'CategoryResultItem', {
                     id: item,
                     url: url,
                     title: getCleanTitle(title),
                });
           } else {
-               navigateStack('SearchTab', 'CategoryResultItem221200', {
+               navigateStack('HomeTab', 'CategoryResultItem221200', {
                     id: item,
                     title: getCleanTitle(title),
                     url: url,

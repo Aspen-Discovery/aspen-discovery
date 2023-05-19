@@ -36,6 +36,8 @@ export const SearchResults = () => {
 
      let params = useRoute().params.pendingParams ?? [];
 
+     const prevRoute = useRoute().params.prevRoute ?? 'SearchHome';
+
      const type = useRoute().params.type ?? 'catalog';
      const id = useRoute().params.id ?? null;
 
