@@ -114,6 +114,7 @@ class WorkAPI extends Action {
 						$itemData['formats'][$format]['category'] = translate(['text' => $relatedManifestation->formatCategory, 'isPublicFacing' => true]);
 						$itemData['formats'][$format]['actions'] = $relatedManifestation->getActions();
 						$itemData['formats'][$format]['isAvailable'] = $relatedManifestation->isAvailable();
+						$itemData['formats'][$format]['numRelatedRecords'] = $relatedManifestation->getNumRelatedRecords();
 					};
 				}
 			}
