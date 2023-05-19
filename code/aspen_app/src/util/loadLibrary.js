@@ -1,15 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {create} from 'apisauce';
+import { create } from 'apisauce';
 import _ from 'lodash';
 import React from 'react';
 
 // custom components and helper files
-import {popToast} from '../components/loadError';
-import {createAuthTokens, getHeaders, postData} from './apiAuth';
-import {GLOBALS} from './globals';
-import {PATRON} from './loadPatron';
-import {RemoveData} from './logout';
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { popToast } from '../components/loadError';
+import { createAuthTokens, getHeaders, postData } from './apiAuth';
+import { GLOBALS } from './globals';
+import { PATRON } from './loadPatron';
+import { RemoveData } from './logout';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const LIBRARY = {
      url: '',
@@ -544,6 +544,10 @@ export function formatBrowseCategories(payload) {
                               } else {
                                    if (!_.isUndefined(category.listId)) {
                                         id = category.listId;
+                                   }
+
+                                   if (!_.isUndefined(category.sourceId)) {
+                                        id = category.sourceId;
                                    }
 
                                    let numNewTitles = 0;

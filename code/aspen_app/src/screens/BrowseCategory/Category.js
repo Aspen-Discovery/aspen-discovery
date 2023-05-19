@@ -5,12 +5,12 @@ import React from 'react';
 
 import { LibrarySystemContext } from '../../context/initialContext';
 import { SafeAreaView } from 'react-native';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const DisplayBrowseCategory = (props) => {
      const { language, id, user, renderRecords, libraryUrl, records, categoryLabel, categoryKey, loadMore, categorySource, discoveryVersion, onPressCategory, categoryList, hideCategory, isHidden } = props;
 
-     const hide = getTermFromDictionary(language, "hide");
+     const hide = getTermFromDictionary(language, 'hide');
      let key = categoryKey;
      if (id) {
           key = id;

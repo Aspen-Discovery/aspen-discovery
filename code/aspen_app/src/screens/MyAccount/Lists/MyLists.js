@@ -3,6 +3,7 @@ import { Badge, Box, Center, FlatList, HStack, Image, Pressable, Text, VStack } 
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { useQuery, useQueries } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -73,6 +74,7 @@ export const MyLists = () => {
           if (item.public === 1 || item.public === true || item.public === 'true') {
                privacy = getTermFromDictionary(language, 'public');
           }
+          const imageUrl = item.cover;
           if (item.id !== 'recommendations') {
                return (
                     <Pressable
@@ -87,7 +89,36 @@ export const MyLists = () => {
                          py="2">
                          <HStack space={3} justifyContent="flex-start">
                               <VStack space={1}>
-                                   <Image source={{ uri: item.cover }} alt={item.title} size="lg" resizeMode="contain" />
+                                   <CachedImage
+                                        cacheKey={item.id}
+                                        alt={item.title}
+                                        source={{
+                                             uri: `${imageUrl}`,
+                                             expiresIn: 86400,
+                                        }}
+                                        style={{
+                                             width: 100,
+                                             height: 150,
+                                             borderRadius: 4,
+                                        }}
+                                        resizeMode="cover"
+                                        placeholderContent={
+                                             <Box
+                                                  bg="warmGray.50"
+                                                  _dark={{
+                                                       bgColor: 'coolGray.800',
+                                                  }}
+                                                  width={{
+                                                       base: 100,
+                                                       lg: 200,
+                                                  }}
+                                                  height={{
+                                                       base: 150,
+                                                       lg: 250,
+                                                  }}
+                                             />
+                                        }
+                                   />
                                    <Badge mt={1}>{privacy}</Badge>
                               </VStack>
                               <VStack space={1} justifyContent="space-between" maxW="80%">

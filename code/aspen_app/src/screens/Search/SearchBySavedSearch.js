@@ -1,6 +1,7 @@
 import { CommonActions } from '@react-navigation/native';
 import { Center, Button, Box, Badge, Text, FlatList, Heading, Stack, HStack, VStack, Pressable, Image, Container } from 'native-base';
 import React, { Component } from 'react';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
@@ -12,8 +13,8 @@ import { getLists } from '../../util/api/list';
 import { LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
-import {formatDiscoveryVersion} from '../../util/loadLibrary';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export default class SearchBySavedSearch extends Component {
      constructor() {
@@ -47,8 +48,8 @@ export default class SearchBySavedSearch extends Component {
           const params = this.props.route.params.url;
           const language = route.params?.language ?? 'en';
           this.setState({
-               language: language
-          })
+               language: language,
+          });
 
           await getLists(libraryUrl);
           await this._fetchResults();
@@ -155,14 +156,35 @@ export default class SearchBySavedSearch extends Component {
                                         </Badge>
                                    </Container>
                               ) : null}
-                              <Image
-                                   source={{ uri: imageUrl }}
+                              <CachedImage
+                                   cacheKey={item.id}
                                    alt={item.title}
-                                   borderRadius="md"
-                                   size={{
-                                        base: '90px',
-                                        lg: '120px',
+                                   source={{
+                                        uri: `${imageUrl}`,
+                                        expiresIn: 86400,
                                    }}
+                                   style={{
+                                        width: 100,
+                                        height: 150,
+                                        borderRadius: 4,
+                                   }}
+                                   resizeMode="cover"
+                                   placeholderContent={
+                                        <Box
+                                             bg="warmGray.50"
+                                             _dark={{
+                                                  bgColor: 'coolGray.800',
+                                             }}
+                                             width={{
+                                                  base: 100,
+                                                  lg: 200,
+                                             }}
+                                             height={{
+                                                  base: 150,
+                                                  lg: 250,
+                                             }}
+                                        />
+                                   }
                               />
                               <Badge
                                    mt={1}
@@ -230,11 +252,11 @@ export default class SearchBySavedSearch extends Component {
           const { route } = this.props;
           const libraryContext = route.params?.libraryContext ?? [];
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
-          if(version >= '23.01.00') {
+          if (version >= '23.01.00') {
                navigateStack('SearchTab', 'SavedSearchResultItem', {
                     id: item,
                     title: getCleanTitle(title),
-                    url: library.baseUrl
+                    url: library.baseUrl,
                });
           } else {
                navigateStack('SearchTab', 'SavedSearchResultItem221200', {
