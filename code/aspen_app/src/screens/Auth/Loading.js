@@ -34,6 +34,7 @@ export const LoadingScreen = () => {
      const linkTo = useLinkTo();
      const navigation = useNavigation();
      const [progress, setProgress] = React.useState(0);
+     const [hasError, setHasError] = React.useState(false);
      const [hasUpdate, setHasUpdate] = React.useState(false);
      const [incomingUrl, setIncomingUrl] = React.useState('');
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
@@ -52,11 +53,6 @@ export const LoadingScreen = () => {
                setProgress(10);
                updateLanguages(data);
           },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
      });
 
      const { status: translationsQueryStatus, data: translationsQuery } = useQuery(['translations', LIBRARY.url], () => getTranslatedTermsForAllLanguages(languagesQuery, LIBRARY.url), {
@@ -66,11 +62,6 @@ export const LoadingScreen = () => {
                setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_1'));
                return true;
           },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
      });
 
      React.useEffect(() => {
@@ -97,26 +88,21 @@ export const LoadingScreen = () => {
                setProgress(30);
                updateLibrary(data);
           },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
      });
 
      const { status: userQueryStatus, data: userQuery } = useQuery(['user', LIBRARY.url, 'en'], () => reloadProfile(LIBRARY.url), {
           enabled: !!librarySystemQuery,
           onSuccess: (data) => {
-               setProgress(60);
-               updateUser(data);
-               updateLanguage(data.interfaceLanguage ?? 'en');
-               PATRON.language = data.interfaceLanguage ?? 'en';
-               setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
+               if (_.isUndefined(data) || _.isEmpty(data)) {
+                    setHasError(true);
+               } else {
+                    setProgress(60);
+                    updateUser(data);
+                    updateLanguage(data.interfaceLanguage ?? 'en');
+                    PATRON.language = data.interfaceLanguage ?? 'en';
+                    setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
+               }
           },
-          staleTime: 60 * 1000 * 15,
-          cacheTime: 60 * 1000 * 15,
-          refetchOnWindowFocus: false,
-          refetchOnMount: false,
      });
      const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
           enabled: !!userQuery,
@@ -132,11 +118,6 @@ export const LoadingScreen = () => {
                setProgress(80);
                updateBrowseCategoryList(data);
           },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
      });
 
      const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
@@ -145,14 +126,9 @@ export const LoadingScreen = () => {
                setProgress(100);
                updateLocation(data);
           },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
      });
 
-     if (librarySystemQueryStatus === 'error' || userQueryStatus === 'error' || browseCategoryQueryStatus === 'error' || browseCategoryListQueryStatus === 'error' || languagesQueryStatus === 'error' || libraryBranchQueryStatus === 'error' || translationsQueryStatus === 'error') {
+     if (hasError) {
           return <ForceLogout />;
      }
 
