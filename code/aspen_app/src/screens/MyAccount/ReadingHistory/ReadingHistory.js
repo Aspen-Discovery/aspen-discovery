@@ -18,6 +18,7 @@ import AddToList from '../../Search/AddToList';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyReadingHistory = () => {
+     const navigation = useNavigation();
      const queryClient = useQueryClient();
      const [isLoading, setLoading] = React.useState(false);
      const [page, setPage] = React.useState(1);
@@ -34,6 +35,12 @@ export const MyReadingHistory = () => {
           format: 'Sort by Format',
           last_used: 'Sort by Last Used',
      });
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['reading_history', user.id, library.baseUrl, page, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
           keepPreviousData: true,

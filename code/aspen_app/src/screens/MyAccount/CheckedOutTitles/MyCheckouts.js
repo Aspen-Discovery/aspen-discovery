@@ -39,6 +39,12 @@ export const MyCheckouts = () => {
           all: 'Checked Out Titles',
      });
 
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
+
      useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => {

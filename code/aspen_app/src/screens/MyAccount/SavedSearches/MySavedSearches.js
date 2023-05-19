@@ -1,5 +1,6 @@
 import { Badge, Box, Center, FlatList, Pressable, Text, HStack, VStack } from 'native-base';
 import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import _ from 'lodash';
@@ -14,9 +15,16 @@ import { navigateStack } from '../../../helpers/RootNavigator';
 import { getListTitles } from '../../../util/api/list';
 
 export const MySavedSearches = () => {
+     const navigation = useNavigation();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_searches', user.id, library.baseUrl, language], () => fetchSavedSearches(library.baseUrl), {
           placeholderData: [],
