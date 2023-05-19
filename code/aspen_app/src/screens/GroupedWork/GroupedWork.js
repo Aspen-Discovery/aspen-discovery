@@ -15,7 +15,7 @@ import { GroupedWorkContext, LanguageContext, LibrarySystemContext, UserContext 
 import { useRoute, useNavigation } from '@react-navigation/native';
 import loading from '../Auth/Loading';
 import { getGroupedWork } from '../../util/api/work';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueries } from '@tanstack/react-query';
 import Variations from './Variations';
 import { getLinkedAccounts } from '../../util/api/user';
 import { getPickupLocations } from '../../util/loadLibrary';
@@ -27,6 +27,7 @@ import { getProfile, PATRON } from '../../util/loadPatron';
 import Manifestation from './Manifestation';
 import { decodeHTML } from '../../util/apiAuth';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getFirstRecord, getRecords, getVariations } from '../../util/api/item';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -71,10 +72,10 @@ export const GroupedWorkScreen = () => {
 
      return (
           <ScrollView>
-               {isLoading || status === 'loading' || isFetching ? (
-                    <Box>{loadingSpinner('Fetching data...')}</Box>
+               {status === 'loading' || isFetching ? (
+                    <Box pt={50}>{loadingSpinner('Fetching data...')}</Box>
                ) : status === 'error' ? (
-                    <Box>{loadError(error, '')}</Box>
+                    <Box pt={50}>{loadError(error, '')}</Box>
                ) : (
                     <>
                          <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} />
@@ -88,7 +89,32 @@ export const GroupedWorkScreen = () => {
 const DisplayGroupedWork = (payload) => {
      const backgroundColor = useToken('colors', 'warmGray.200');
      const groupedWork = payload.data;
+     const route = useRoute();
+     const id = route.params.id;
      const { format } = React.useContext(GroupedWorkContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+
+     const formats = Object.keys(groupedWork.formats);
+     if (formats) {
+          useQueries({
+               queries: formats.map((format) => {
+                    return {
+                         queryKey: ['recordId', groupedWork.id, format, language, library.baseUrl],
+                         queryFn: () => getFirstRecord(id, format, language, library.baseUrl),
+                    };
+               }),
+          });
+     }
+
+     useQueries({
+          queries: formats.map((format) => {
+               return {
+                    queryKey: ['variation', groupedWork.id, format, language, library.baseUrl],
+                    queryFn: () => getVariations(id, format, language, library.baseUrl),
+               };
+          }),
+     });
 
      return (
           <Box safeArea={5} w="100%">
