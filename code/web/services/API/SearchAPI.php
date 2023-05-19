@@ -1424,6 +1424,22 @@ class SearchAPI extends Action {
 		$records = [];
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
 			$record = $suggestionData['titleInfo'];
+			$formats = [];
+			foreach($record['format'] as $format) {
+				$splitFormat = explode('#', $format);
+				if(!in_array($splitFormat[1], $formats)) {
+					$formats[] = $splitFormat[1];
+				}
+			}
+			$record['format'] = $formats;
+			$formatCategories = [];
+			foreach($record['format_category'] as $format) {
+				$splitFormat = explode('#', $format);
+				if(!in_array($splitFormat[1], $formatCategories)) {
+					$formatCategories[] = $splitFormat[1];
+				}
+			}
+			$record['format_category'] = $formatCategories;
 			unset($record['auth_author']);
 			unset($record['auth_authorStr']);
 			unset($record['callnumber-first-code']);

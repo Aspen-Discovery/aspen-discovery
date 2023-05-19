@@ -4,6 +4,7 @@ import { Badge, Box, FlatList, Container, Pressable, Text, Stack, HStack, VStack
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -87,7 +88,36 @@ const SavedSearch = (data) => {
                                    </Badge>
                               </Container>
                          ) : null}
-                         <Image source={{ uri: imageUrl }} alt={item.title} borderRadius="md" size="90px" />
+                         <CachedImage
+                              cacheKey={item.id}
+                              alt={item.title}
+                              source={{
+                                   uri: `${imageUrl}`,
+                                   expiresIn: 86400,
+                              }}
+                              style={{
+                                   width: 100,
+                                   height: 150,
+                                   borderRadius: 4,
+                              }}
+                              resizeMode="cover"
+                              placeholderContent={
+                                   <Box
+                                        bg="warmGray.50"
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: 100,
+                                             lg: 200,
+                                        }}
+                                        height={{
+                                             base: 150,
+                                             lg: 250,
+                                        }}
+                                   />
+                              }
+                         />
                          <Badge
                               mt={1}
                               _text={{

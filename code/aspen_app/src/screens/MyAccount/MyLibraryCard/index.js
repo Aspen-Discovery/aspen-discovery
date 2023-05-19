@@ -408,9 +408,8 @@ const OpenBarcode = (data) => {
                <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10} />}>
                     {getTermFromDictionary(language, 'open_barcode')}
                </Button>
-               <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{ opacity: 95 }}>
+               <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{ opacity: 75 }}>
                     <Modal.Content bgColor="white">
-                         <Modal.CloseButton />
                          <Modal.Body bgColor="white">
                               <Barcode value={barcodeValue} format={barcodeFormat} text={barcodeValue} onError={handleBarcodeError} />
                          </Modal.Body>

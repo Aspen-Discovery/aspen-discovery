@@ -150,6 +150,10 @@ export const DiscoverHomeScreen = () => {
                type = item.source;
           }
 
+          if (!_.isUndefined(item.recordtype)) {
+               type = item.recordtype;
+          }
+
           const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
 
           let isNew = false;
@@ -197,7 +201,7 @@ export const DiscoverHomeScreen = () => {
 
      const onPressItem = (key, type, title, version) => {
           if (version >= '22.07.00') {
-               if (type === 'List') {
+               if (type === 'List' || type === 'list') {
                     navigateStack('SearchTab', 'SearchByList', {
                          id: key,
                          url: library.baseUrl,
@@ -291,6 +295,10 @@ export const DiscoverHomeScreen = () => {
           } else if (source === 'SavedSearch') {
                screen = 'SearchBySavedSearch';
           }
+
+          console.log('label > ' + label);
+          console.log('key > ' + key);
+          console.log('source > ' + source);
 
           navigateStack('SearchTab', screen, {
                title: label,

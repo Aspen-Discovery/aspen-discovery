@@ -4,6 +4,7 @@ import { Box, Button, FlatList, HStack, Icon, Image, Pressable, Text, VStack, Sc
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -41,20 +42,28 @@ export const MyList = () => {
                let term = '';
 
                term = getTermFromDictionary(language, 'sort_by_title');
-               tmp = _.set(tmp, 'title', term);
-               setSortBy(tmp);
+               if (!term.includes('%1%')) {
+                    tmp = _.set(tmp, 'title', term);
+                    setSortBy(tmp);
+               }
 
                term = getTermFromDictionary(language, 'sort_by_date_added');
-               tmp = _.set(tmp, 'dateAdded', term);
-               setSortBy(tmp);
+               if (!term.includes('%1%')) {
+                    tmp = _.set(tmp, 'dateAdded', term);
+                    setSortBy(tmp);
+               }
 
                term = getTermFromDictionary(language, 'sort_by_recently_added');
-               tmp = _.set(tmp, 'recentlyAdded', term);
-               setSortBy(tmp);
+               if (!term.includes('%1%')) {
+                    tmp = _.set(tmp, 'recentlyAdded', term);
+                    setSortBy(tmp);
+               }
 
                term = getTermFromDictionary(language, 'sort_by_user_defined');
-               tmp = _.set(tmp, 'custom', term);
-               setSortBy(tmp);
+               if (!term.includes('%1%')) {
+                    tmp = _.set(tmp, 'custom', term);
+                    setSortBy(tmp);
+               }
           }
           fetchTranslations();
      }, [language]);
@@ -94,12 +103,43 @@ export const MyList = () => {
      }
 
      const queryClient = useQueryClient();
+
      const renderItem = (item) => {
+          const imageUrl = item.image;
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id, item.title)}>
                     <HStack space={3} justifyContent="flex-start" alignItems="flex-start">
                          <VStack w="25%">
-                              <Image source={{ uri: item.image }} alt={item.title} borderRadius="md" size="90px" />
+                              <CachedImage
+                                   cacheKey={item.id}
+                                   alt={item.title}
+                                   source={{
+                                        uri: `${imageUrl}`,
+                                        expiresIn: 86400,
+                                   }}
+                                   style={{
+                                        width: 100,
+                                        height: 150,
+                                        borderRadius: 4,
+                                   }}
+                                   resizeMode="cover"
+                                   placeholderContent={
+                                        <Box
+                                             bg="warmGray.50"
+                                             _dark={{
+                                                  bgColor: 'coolGray.800',
+                                             }}
+                                             width={{
+                                                  base: 100,
+                                                  lg: 200,
+                                             }}
+                                             height={{
+                                                  base: 150,
+                                                  lg: 250,
+                                             }}
+                                        />
+                                   }
+                              />
                               <Button
                                    onPress={() => {
                                         removeTitlesFromList(id, item.id, library.baseUrl).then(async () => {
