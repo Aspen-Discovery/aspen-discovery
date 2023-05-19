@@ -25,7 +25,7 @@
 									{if (in_array('Administer All Collection Spotlights', $userPermissions) || in_array('Administer Library Collection Spotlights', $userPermissions))}
 										&nbsp;&nbsp;<a href="#" class="button btn btn-sm btn-default listViewButton" id="FavCreateSpotlight" onclick="return AspenDiscovery.CollectionSpotlights.createSpotlightFromCourseReserve('{$courseReserve->id}')">{translate text='Create Spotlight' isAdminFacing=true}</a>
 									{/if}
-									{if (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions))}
+									{if (in_array('Administer All Browse Categories', $userPermissions) || in_array('Administer Library Browse Categories', $userPermissions) || in_array('Administer Selected Browse Category Groups', $userPermissions))}
 										<a href="#" id="FavHome" class="btn btn-sm btn-default listViewButton" onclick="return AspenDiscovery.CourseReserves.addToHomePage('{$courseReserve->id}')">{translate text='Add To Browse' isAdminFacing=true}</a>
 									{/if}
 								</div>

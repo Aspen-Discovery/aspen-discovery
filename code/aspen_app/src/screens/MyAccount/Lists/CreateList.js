@@ -4,11 +4,13 @@ import React, { useState } from 'react';
 
 import { popAlert } from '../../../components/loadError';
 import { createList, getLists } from '../../../util/api/list';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { reloadProfile } from '../../../util/api/user';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 const CreateList = () => {
+     const queryClient = useQueryClient();
      const { updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
@@ -82,12 +84,8 @@ const CreateList = () => {
                                                   if (!res.success) {
                                                        status = 'danger';
                                                   }
-                                                  await reloadProfile(library.baseUrl).then((result) => {
-                                                       updateUser(result);
-                                                  });
-                                                  await getLists(library.baseUrl).then((result) => {
-                                                       updateLists(result);
-                                                  });
+                                                  queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                  queryClient.invalidateQueries({ queryKey: ['lists', library.baseUrl, language] });
                                                   toggle();
                                                   popAlert(getTermFromDictionary(language, 'list_created'), res.message, status);
                                              });

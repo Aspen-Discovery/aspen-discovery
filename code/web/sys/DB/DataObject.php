@@ -181,7 +181,7 @@ abstract class DataObject {
 	 * @param string? $fieldName
 	 * @param string? $fieldValue
 	 * @param bool $lowerCaseKey - Forces the key to be lower cased
-	 * @return DataObject[]
+	 * @return []
 	 */
 	public function fetchAll($fieldName = null, $fieldValue = null, $lowerCaseKey = false): array {
 		$this->__fetchingFromDB = true;

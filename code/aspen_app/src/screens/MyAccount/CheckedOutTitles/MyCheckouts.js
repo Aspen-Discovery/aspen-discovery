@@ -5,7 +5,8 @@ import { ScrollView, Actionsheet, FormControl, Select, Box, Button, Center, Flat
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -18,13 +19,14 @@ import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyCheckouts = () => {
+     const isFetchingCheckouts = useIsFetching({ queryKey: ['checkouts'] });
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { language } = React.useContext(LanguageContext);
-     const [isLoading, setLoading] = React.useState(true);
+     const [isLoading, setLoading] = React.useState(false);
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
 
@@ -37,7 +39,7 @@ export const MyCheckouts = () => {
           all: 'Checked Out Titles',
      });
 
-     useQuery(['checkouts', library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
+     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
                updateCheckouts(data);
@@ -76,28 +78,40 @@ export const MyCheckouts = () => {
                     let term = '';
 
                     term = getTermFromDictionary(language, 'checkouts_for_all');
-                    tmp = _.set(tmp, 'all', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'all', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_ils');
-                    tmp = _.set(tmp, 'ils', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'ils', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_overdrive');
-                    tmp = _.set(tmp, 'overdrive', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'overdrive', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_hoopla');
-                    tmp = _.set(tmp, 'hoopla', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'hoopla', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_cloud_library');
-                    tmp = _.set(tmp, 'cloud_library', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'cloud_library', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'checkouts_for_axis_360');
-                    tmp = _.set(tmp, 'axis_360', term);
-                    setCheckoutBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'axis_360', term);
+                         setCheckoutBy(tmp);
+                    }
 
                     setLoading(false);
                };
@@ -107,7 +121,7 @@ export const MyCheckouts = () => {
           }, [language])
      );
 
-     if (isLoading) {
+     if (isFetchingCheckouts) {
           return loadingSpinner();
      }
 
@@ -326,17 +340,40 @@ const Checkout = (props) => {
           renewMessage = checkout.renewError;
      }
 
+     const imageUrl = checkout.coverUrl;
+
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
-                    <Image
-                         source={{ uri: checkout.coverUrl }}
-                         borderRadius="md"
-                         size={{
-                              base: '80px',
-                              lg: '120px',
-                         }}
+                    <CachedImage
+                         cacheKey={checkout.groupedWorkId}
                          alt={checkout.title}
+                         source={{
+                              uri: `${imageUrl}`,
+                              expiresIn: 86400,
+                         }}
+                         style={{
+                              width: 100,
+                              height: 150,
+                              borderRadius: 4,
+                         }}
+                         resizeMode="cover"
+                         placeholderContent={
+                              <Box
+                                   bg="warmGray.50"
+                                   _dark={{
+                                        bgColor: 'coolGray.800',
+                                   }}
+                                   width={{
+                                        base: 100,
+                                        lg: 200,
+                                   }}
+                                   height={{
+                                        base: 150,
+                                        lg: 250,
+                                   }}
+                              />
+                         }
                     />
                     <VStack>
                          {getTitle(checkout.title)}

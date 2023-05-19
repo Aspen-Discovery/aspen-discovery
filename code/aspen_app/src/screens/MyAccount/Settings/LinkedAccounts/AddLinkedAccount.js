@@ -1,14 +1,16 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Button, Center, Modal, FormControl, Input, Icon } from 'native-base';
 import React, { useState, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../../context/initialContext';
-import {reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount} from '../../../../util/api/user';
-import {getTermFromDictionary} from '../../../../translations/TranslationService';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../../context/initialContext';
+import { reloadProfile, getLinkedAccounts, getViewerAccounts, addLinkedAccount } from '../../../../util/api/user';
+import { getTermFromDictionary } from '../../../../translations/TranslationService';
 
 // custom components and helper files
 
 const AddLinkedAccount = () => {
+     const queryClient = useQueryClient();
      const { user, accounts, viewers, cards, updateUser, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
@@ -28,22 +30,9 @@ const AddLinkedAccount = () => {
      };
 
      const refreshLinkedAccounts = async () => {
-          await getLinkedAccounts(user, cards, library, language).then((result) => {
-               if (accounts !== result.accounts) {
-                    updateLinkedAccounts(result.accounts);
-               }
-               if(cards !== result.cards) {
-                    updateLibraryCards(result.cards);
-               }
-          });
-          await getViewerAccounts(library.baseUrl, language).then((result) => {
-               if (viewers !== result) {
-                    updateLinkedViewerAccounts(result);
-               }
-          });
-          reloadProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          queryClient.invalidateQueries({ queryKey: ['linked_accounts', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['viewer_accounts', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
      return (

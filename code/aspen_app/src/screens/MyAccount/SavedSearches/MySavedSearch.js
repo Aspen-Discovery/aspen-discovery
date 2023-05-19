@@ -4,46 +4,47 @@ import { Badge, Box, FlatList, Container, Pressable, Text, Stack, HStack, VStack
 import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import AddToList from '../../Search/AddToList';
-import {LanguageContext, LibrarySystemContext} from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getCleanTitle } from '../../../helpers/item';
-import {formatDiscoveryVersion} from '../../../util/loadLibrary';
-import {getSavedSearch} from '../../../util/api/user';
-import {loadError} from '../../../components/loadError';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+import { getSavedSearch } from '../../../util/api/user';
+import { loadError } from '../../../components/loadError';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const MySavedSearch = () => {
      const route = useRoute();
      const id = route.params.id;
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['savedSearch', id, language, library.baseUrl], () => getSavedSearch(id, language, library.baseUrl), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_search', id, user.id], () => getSavedSearch(id, language, library.baseUrl), {
           staleTime: 1000,
+          placeholderData: [],
      });
 
      const Empty = () => {
           return (
-              <Center mt={5} mb={5}>
-                   <Text bold fontSize="lg">
-                        {getTermFromDictionary(language, 'no_results_found')}
-                   </Text>
-              </Center>
+               <Center mt={5} mb={5}>
+                    <Text bold fontSize="lg">
+                         {getTermFromDictionary(language, 'no_results_found')}
+                    </Text>
+               </Center>
           );
      };
 
      return (
-         <SafeAreaView style={{ flex: 1 }}>
-              <Box safeArea={2}>
-                   {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data} ListEmptyComponent={Empty} renderItem={({ item }) => <SavedSearch data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
-              </Box>
-         </SafeAreaView>
-     )
-}
+          <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2}>{status === 'error' ? loadError('Error', '') : <FlatList data={data} ListEmptyComponent={Empty} renderItem={({ item }) => <SavedSearch data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}</Box>
+          </SafeAreaView>
+     );
+};
 
 const SavedSearch = (data) => {
      const item = data.data;
@@ -62,7 +63,7 @@ const SavedSearch = (data) => {
 
      const openGroupedWork = () => {
           const version = formatDiscoveryVersion(library.discoveryVersion);
-          if(version >= '23.01.00') {
+          if (version >= '23.01.00') {
                navigateStack('AccountScreenTab', 'SavedSearchItem', {
                     id: item.id,
                     title: getCleanTitle(item.title),
@@ -74,68 +75,97 @@ const SavedSearch = (data) => {
                     url: library.baseUrl,
                });
           }
-     }
+     };
 
      return (
-         <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => openGroupedWork()}>
-              <HStack space={3} justifyContent="flex-start" alignItems="flex-start">
-                   <VStack maxW="30%">
-                        {isNew ? (
-                            <Container zIndex={1}>
-                                 <Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{ fontSize: 9 }}>
-                                      {getTermFromDictionary(language, 'flag_new')}
-                                 </Badge>
-                            </Container>
-                        ) : null}
-                        <Image source={{ uri: imageUrl }} alt={item.title} borderRadius="md" size="90px" />
-                        <Badge
-                            mt={1}
-                            _text={{
-                                 fontSize: 10,
-                                 color: 'coolGray.600',
-                            }}
-                            bgColor="warmGray.200"
-                            _dark={{
-                                 bgColor: 'coolGray.900',
-                                 _text: { color: 'warmGray.400' },
-                            }}>
-                             {item.language}
-                        </Badge>
-                        <AddToList item={item.id} libraryUrl={library.baseUrl} />
-                   </VStack>
+          <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => openGroupedWork()}>
+               <HStack space={3} justifyContent="flex-start" alignItems="flex-start">
+                    <VStack maxW="30%">
+                         {isNew ? (
+                              <Container zIndex={1}>
+                                   <Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{ fontSize: 9 }}>
+                                        {getTermFromDictionary(language, 'flag_new')}
+                                   </Badge>
+                              </Container>
+                         ) : null}
+                         <CachedImage
+                              cacheKey={item.id}
+                              alt={item.title}
+                              source={{
+                                   uri: `${imageUrl}`,
+                                   expiresIn: 86400,
+                              }}
+                              style={{
+                                   width: 100,
+                                   height: 150,
+                                   borderRadius: 4,
+                              }}
+                              resizeMode="cover"
+                              placeholderContent={
+                                   <Box
+                                        bg="warmGray.50"
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: 100,
+                                             lg: 200,
+                                        }}
+                                        height={{
+                                             base: 150,
+                                             lg: 250,
+                                        }}
+                                   />
+                              }
+                         />
+                         <Badge
+                              mt={1}
+                              _text={{
+                                   fontSize: 10,
+                                   color: 'coolGray.600',
+                              }}
+                              bgColor="warmGray.200"
+                              _dark={{
+                                   bgColor: 'coolGray.900',
+                                   _text: { color: 'warmGray.400' },
+                              }}>
+                              {item.language}
+                         </Badge>
+                         <AddToList item={item.id} libraryUrl={library.baseUrl} />
+                    </VStack>
 
-                   <VStack w="65%">
-                        <Text
-                            _dark={{ color: 'warmGray.50' }}
-                            color="coolGray.800"
-                            bold
-                            fontSize={{
-                                 base: 'sm',
-                                 lg: 'md',
-                            }}>
-                             {item.title}
-                        </Text>
-                        {item.author ? (
-                            <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800" fontSize="xs">
-                                 {getTermFromDictionary(language, 'by')} {item.author}
-                            </Text>
-                        ) : null}
-                        {item.format ? (
-                            <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
-                                 {formats.map((format, i) => {
-                                      return (
-                                          <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
-                                               {format}
-                                          </Badge>
-                                      );
-                                 })}
-                            </Stack>
-                        ) : null}
-                   </VStack>
-              </HStack>
-         </Pressable>
-     )
-}
+                    <VStack w="65%">
+                         <Text
+                              _dark={{ color: 'warmGray.50' }}
+                              color="coolGray.800"
+                              bold
+                              fontSize={{
+                                   base: 'sm',
+                                   lg: 'md',
+                              }}>
+                              {item.title}
+                         </Text>
+                         {item.author ? (
+                              <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800" fontSize="xs">
+                                   {getTermFromDictionary(language, 'by')} {item.author}
+                              </Text>
+                         ) : null}
+                         {item.format ? (
+                              <Stack mt={1.5} direction="row" space={1} flexWrap="wrap">
+                                   {formats.map((format, i) => {
+                                        return (
+                                             <Badge colorScheme="secondary" mt={1} variant="outline" rounded="4px" _text={{ fontSize: 12 }}>
+                                                  {format}
+                                             </Badge>
+                                        );
+                                   })}
+                              </Stack>
+                         ) : null}
+                    </VStack>
+               </HStack>
+          </Pressable>
+     );
+};
 
 function getFormats(data) {
      let formats = [];

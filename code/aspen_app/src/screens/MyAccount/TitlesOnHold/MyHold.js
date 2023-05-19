@@ -11,6 +11,7 @@ import { Actionsheet, Box, Button, Center, Icon, Pressable, Text, HStack, VStack
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import CachedImage from 'expo-cached-image';
 
 export const MyHold = (props) => {
      const hold = props.data;
@@ -95,17 +96,39 @@ export const MyHold = (props) => {
      };
 
      const initializeLeftColumn = () => {
+          const imageUrl = hold.coverUrl;
           if (hold.coverUrl && hold.source !== 'vdx') {
                return (
                     <VStack>
-                         <Image
-                              source={{ uri: hold.coverUrl }}
-                              borderRadius="md"
-                              size={{
-                                   base: '80px',
-                                   lg: '120px',
-                              }}
+                         <CachedImage
+                              cacheKey={hold.groupedWorkId}
                               alt={hold.title}
+                              source={{
+                                   uri: `${imageUrl}`,
+                                   expiresIn: 86400,
+                              }}
+                              style={{
+                                   width: 100,
+                                   height: 150,
+                                   borderRadius: 4,
+                              }}
+                              resizeMode="cover"
+                              placeholderContent={
+                                   <Box
+                                        bg="warmGray.50"
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: 100,
+                                             lg: 200,
+                                        }}
+                                        height={{
+                                             base: 150,
+                                             lg: 250,
+                                        }}
+                                   />
+                              }
                          />
                          {(hold.allowFreezeHolds || canCancel) && allowLinkedAccountAction && section === 'Pending' ? (
                               <Center>

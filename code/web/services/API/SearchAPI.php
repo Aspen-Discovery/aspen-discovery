@@ -1424,6 +1424,22 @@ class SearchAPI extends Action {
 		$records = [];
 		foreach ($suggestions as $suggestedItemId => $suggestionData) {
 			$record = $suggestionData['titleInfo'];
+			$formats = [];
+			foreach($record['format'] as $format) {
+				$splitFormat = explode('#', $format);
+				if(!in_array($splitFormat[1], $formats)) {
+					$formats[] = $splitFormat[1];
+				}
+			}
+			$record['format'] = $formats;
+			$formatCategories = [];
+			foreach($record['format_category'] as $format) {
+				$splitFormat = explode('#', $format);
+				if(!in_array($splitFormat[1], $formatCategories)) {
+					$formatCategories[] = $splitFormat[1];
+				}
+			}
+			$record['format_category'] = $formatCategories;
 			unset($record['auth_author']);
 			unset($record['auth_authorStr']);
 			unset($record['callnumber-first-code']);
@@ -1939,6 +1955,7 @@ class SearchAPI extends Action {
 														'title' => $displayLabel,
 														'source' => $temp->source,
 														'isHidden' => $temp->isDismissed($appUser),
+														'sourceId' => $temp->sourceListId,
 														'records' => $records,
 													];
 													$formattedCategories[] = $categoryResponse;
@@ -2112,13 +2129,15 @@ class SearchAPI extends Action {
 			];
 		}
 
+		$isLida = $this->checkIfLiDA();
+
 		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 		$sourceList = new UserList();
 		$sourceList->id = $id;
 		if ($sourceList->find(true)) {
 			$response['title'] = $sourceList->title;
 			$response['id'] = $sourceList->id;
-			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize);
+			$records = $sourceList->getBrowseRecordsRaw(($pageToLoad - 1) * $pageSize, $pageSize, $isLida);
 		}
 		$response['items'] = $records;
 

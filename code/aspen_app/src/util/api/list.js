@@ -266,10 +266,10 @@ export async function removeTitlesFromList(listId, title, url) {
      }
 }
 
-export async function deleteList(listId, libraryUrl) {
+export async function deleteList(listId, url) {
      const postBody = await postData();
      const api = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),

@@ -242,6 +242,9 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
           await getTranslationsWithValues('sort_by_pickup_location', 'Pickup Location', language, url, true);
           await getTranslationsWithValues('sort_by_library_account', 'Library Account', language, url, true);
           await getTranslationsWithValues('sort_by_expiration', 'Expiration Date', language, url, true);
+          await getTranslationsWithValues('sort_by_date_added', 'Date Added', language, url, true);
+          await getTranslationsWithValues('sort_by_recently_added', 'Recently Added', language, url, true);
+          await getTranslationsWithValues('sort_by_user_defined', 'User Defined', language, url, true);
      });
      return true;
 }

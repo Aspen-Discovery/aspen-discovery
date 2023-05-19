@@ -32,8 +32,18 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
-			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-			$object->id = $library->browseCategoryGroupId;
+			if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+				//Get a list of groups the user can edit
+				require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupUser.php';
+				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
+				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
+				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+
+				$object->whereAddIn('id', $allowedGroups, false);
+			} else {
+				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+				$object->id = $library->browseCategoryGroupId;
+			}
 		}
 		$object->find();
 		$list = [];
@@ -79,6 +89,7 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		return UserAccount::userHasPermission([
 			'Administer All Browse Categories',
 			'Administer Library Browse Categories',
+			'Administer Selected Browse Category Groups',
 		]);
 	}
 
@@ -99,15 +110,31 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 	function getNumObjects(): int {
 		if ($this->_numObjects == null) {
 			if (!UserAccount::userHasPermission('Administer All Browse Categories')) {
-				/** @var DataObject $object */
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$libraryId = $library == null ? -1 : $library->libraryId;
-				$objectType = $this->getObjectType();
-				$object = new $objectType();
-				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
-				$object->id = $library->browseCategoryGroupId;
-				$this->applyFilters($object);
-				$this->_numObjects = $object->count();
+				if (UserAccount::userHasPermission('Administer Selected Browse Category Groups')) {
+					//Get a list of groups the user can edit
+					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupUser.php';
+					$browseCategoryGroupUser = new BrowseCategoryGroupUser();
+					$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
+					$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+
+					/** @var DataObject $object */
+					$objectType = $this->getObjectType();
+					$object = new $objectType();
+					$this->applyFilters($object);
+					$object->whereAddIn('id', $allowedGroups, false);
+					$this->_numObjects = $object->count();
+				} else {
+					//Administer Library Browse Categories
+					/** @var DataObject $object */
+					$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+					$libraryId = $library == null ? -1 : $library->libraryId;
+					$objectType = $this->getObjectType();
+					$object = new $objectType();
+					$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
+					$object->id = $library->browseCategoryGroupId;
+					$this->applyFilters($object);
+					$this->_numObjects = $object->count();
+				}
 			} elseif (UserAccount::userHasPermission('Administer All Browse Categories')) {
 				/** @var DataObject $object */
 				$objectType = $this->getObjectType();

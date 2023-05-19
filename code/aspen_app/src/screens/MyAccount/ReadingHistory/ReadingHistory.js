@@ -1,19 +1,21 @@
 import React from 'react';
 import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { Box, VStack, Button, Text, ScrollView, FlatList, Pressable, HStack, Image, InfoIcon, Center, AlertDialog, Icon, Actionsheet, Alert, CheckIcon, FormControl, Select } from 'native-base';
 import { ListItem } from '@rneui/themed';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import CachedImage from 'expo-cached-image';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../context/initialContext';
-import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, getPatronCheckedOutItems, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { SafeAreaView } from 'react-native';
 import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
 import { loadError } from '../../../components/loadError';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import AddToList from '../../Search/AddToList';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyReadingHistory = () => {
      const queryClient = useQueryClient();
@@ -26,10 +28,65 @@ export const MyReadingHistory = () => {
      const url = library.baseUrl;
      const pageSize = 25;
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['readingHistory', library.baseUrl, page, pageSize, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
+     const [sortBy, setSortBy] = React.useState({
+          title: 'Sort by Title',
+          author: 'Sort by Author',
+          format: 'Sort by Format',
+          last_used: 'Sort by Last Used',
+     });
+
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['reading_history', user.id, library.baseUrl, page, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
           keepPreviousData: true,
           staleTime: 1000,
+          onSuccess: (data) => {
+               updateReadingHistory(data);
+          },
+          onSettle: (data) => setLoading(false),
      });
+
+     const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
+          queryKey: ['totalPages', url, page, language],
+          queryFn: () => getTranslationsWithValues('page_of_page', [page, data.totalPages], language, library.baseUrl),
+          enabled: !!data,
+     });
+
+     useFocusEffect(
+          React.useCallback(() => {
+               const update = async () => {
+                    let tmp = checkoutsBy;
+                    let term = '';
+
+                    term = getTermFromDictionary(language, 'sort_by_title');
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'title', term);
+                         setSortBy(tmp);
+                    }
+
+                    term = getTermFromDictionary(language, 'sort_by_author');
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'author', term);
+                         setSortBy(tmp);
+                    }
+
+                    term = getTermFromDictionary(language, 'sort_by_format');
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'format', term);
+                         setSortBy(tmp);
+                    }
+
+                    term = getTermFromDictionary(language, 'sort_by_last_used');
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'last_used', term);
+                         setSortBy(tmp);
+                    }
+
+                    setLoading(false);
+               };
+               update().then(() => {
+                    return () => update();
+               });
+          }, [language])
+     );
 
      const [isOpen, setIsOpen] = React.useState(false);
      const onClose = () => setIsOpen(false);
@@ -46,10 +103,8 @@ export const MyReadingHistory = () => {
      const optIn = async () => {
           setOptingIn(true);
           await optIntoReadingHistory(library.baseUrl);
-          await reloadProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
-          queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+          queryClient.invalidateQueries({ queryKey: ['reading_history'] });
           setOptingIn(false);
      };
 
@@ -57,10 +112,8 @@ export const MyReadingHistory = () => {
           setOptingOut(true);
           await optOutOfReadingHistory(library.baseUrl);
           await deleteAllReadingHistory(library.baseUrl);
-          await reloadProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
-          queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+          queryClient.invalidateQueries({ queryKey: ['reading_history'] });
           setIsOpen(false);
           setOptingOut(false);
      };
@@ -68,10 +121,8 @@ export const MyReadingHistory = () => {
      const deleteAll = async () => {
           setDeleting(true);
           await deleteAllReadingHistory(library.baseUrl);
-          await reloadProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
-          queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+          queryClient.invalidateQueries({ queryKey: ['user'] });
+          queryClient.invalidateQueries({ queryKey: ['reading_history'] });
           setDeleteAllIsOpen(false);
           setDeleting(false);
      };
@@ -147,11 +198,10 @@ export const MyReadingHistory = () => {
                                              endIcon: <CheckIcon size="5" />,
                                         }}
                                         onValueChange={(itemValue) => setSort(itemValue)}>
-                                        {/* TODO: Translate with variable */}
-                                        <Select.Item label="Sort By Title" value="title" key={0} />
-                                        <Select.Item label="Sort By Author" value="author" key={1} />
-                                        <Select.Item label="Sort By Last Used" value="checkedOut" key={2} />
-                                        <Select.Item label="Sort By Format" value="format" key={3} />
+                                        <Select.Item label={sortBy.title} value="title" key={0} />
+                                        <Select.Item label={sortBy.author} value="author" key={1} />
+                                        <Select.Item label={sortBy.last_used} value="checkedOut" key={2} />
+                                        <Select.Item label={sortBy.format} value="format" key={3} />
                                    </Select>
                               </FormControl>
                               <Button.Group size="sm" variant="solid" colorScheme="danger">
@@ -244,8 +294,7 @@ export const MyReadingHistory = () => {
                               </Button.Group>
                          </ScrollView>
                          <Text mt={2} fontSize="sm">
-                              {/* TODO: Translate with variable */}
-                              Page {page} of {data?.totalPages}
+                              {paginationLabel}
                          </Text>
                     </Box>
                );
@@ -265,7 +314,7 @@ export const MyReadingHistory = () => {
                ) : (
                     <>
                          {getActionButtons()}
-                         {isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
+                         {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
                     </>
                )}
           </SafeAreaView>
@@ -298,33 +347,46 @@ const Item = (data) => {
      const deleteFromHistory = async (item) => {
           await deleteSelectedReadingHistory(item, library.baseUrl).then(async (result) => {
                if (result) {
-                    await refreshProfile(library.baseUrl).then((result) => {
-                         updateUser(result);
-                    });
-                    queryClient.invalidateQueries({ queryKey: ['readingHistory'] });
+                    queryClient.invalidateQueries({ queryKey: ['user'] });
+                    queryClient.invalidateQueries({ queryKey: ['reading_history'] });
                }
           });
      };
 
+     const imageUrl = library.baseUrl + item.coverUrl;
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%" justifyContent="flex-start" alignItems="flex-start">
                     <VStack maxW="30%">
-                         <Image
-                              source={{ uri: library.baseUrl + item.coverUrl }}
-                              borderRadius="md"
-                              fallbackSource={{
-                                   bgColor: 'warmGray.50',
-                              }}
-                              bg="warmGray.50"
-                              _dark={{
-                                   bgColor: 'coolGray.800',
-                              }}
-                              size={{
-                                   base: '90px',
-                                   lg: '120px',
-                              }}
+                         <CachedImage
+                              cacheKey={item.permanentId}
                               alt={item.title}
+                              source={{
+                                   uri: `${imageUrl}`,
+                                   expiresIn: 86400,
+                              }}
+                              style={{
+                                   width: 100,
+                                   height: 150,
+                                   borderRadius: 4,
+                              }}
+                              resizeMode="cover"
+                              placeholderContent={
+                                   <Box
+                                        bg="warmGray.50"
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: 100,
+                                             lg: 200,
+                                        }}
+                                        height={{
+                                             base: 150,
+                                             lg: 250,
+                                        }}
+                                   />
+                              }
                          />
                          <AddToList itemId={item.permanentId} btnStyle="sm" />
                     </VStack>

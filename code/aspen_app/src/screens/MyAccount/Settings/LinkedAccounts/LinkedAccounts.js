@@ -1,41 +1,38 @@
 import { useNavigation } from '@react-navigation/native';
-
+import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 import { Box, Divider, HStack, Button, Text, Heading, FlatList, ScrollView } from 'native-base';
 import React from 'react';
 
 import { DisplayMessage } from '../../../../components/Notifications';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
 import AddLinkedAccount from './AddLinkedAccount';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../../context/initialContext';
 import { getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount, reloadProfile } from '../../../../util/api/user';
-import {getTermFromDictionary} from '../../../../translations/TranslationService';
+import { getTermFromDictionary } from '../../../../translations/TranslationService';
+import { getLists } from '../../../../util/api/list';
 
 export const MyLinkedAccounts = () => {
-     const navigation = useNavigation();
-     const [loading, setLoading] = React.useState(true);
+     const [loading, setLoading] = React.useState(false);
      const { user, accounts, viewers, cards, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const isFetchingAccounts = useIsFetching({ queryKey: ['linked_accounts', user.id] });
+     const isFetchingViewers = useIsFetching({ queryKey: ['viewer_accounts', user.id] });
 
-     React.useEffect(() => {
-          const update = navigation.addListener('focus', async () => {
-               await getLinkedAccounts(user, cards, library, language).then((result) => {
-                    if (accounts !== result.accounts) {
-                         updateLinkedAccounts(result.accounts);
-                    }
-                    if(cards !== result.cards) {
-                         updateLibraryCards(result.cards);
-                    }
-               });
-               await getViewerAccounts(library.baseUrl, language).then((result) => {
-                    if (viewers !== result) {
-                         updateLinkedViewerAccounts(result);
-                    }
-               });
-               setLoading(false);
-          })
-          return update;
-     }, [navigation])
+     useQuery(['linked_accounts', user.id, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
+          onSuccess: (data) => {
+               updateLinkedAccounts(data.accounts);
+               updateLibraryCards(data.cards);
+          },
+          placeholderData: [],
+     });
+
+     useQuery(['viewer_accounts', user.id, library.baseUrl, language], () => getViewerAccounts(library.baseUrl, language), {
+          onSuccess: (data) => {
+               updateLinkedViewerAccounts(data);
+          },
+          placeholderData: [],
+     });
 
      const Empty = () => {
           return (
@@ -45,12 +42,12 @@ export const MyLinkedAccounts = () => {
           );
      };
 
-     if (loading) {
+     /*if (isFetchingAccounts || isFetchingViewers) {
           return loadingSpinner();
-     }
+     }*/
 
      return (
-         <ScrollView p={5} flex={1}>
+          <ScrollView p={5} flex={1}>
                <DisplayMessage type="info" message={getTermFromDictionary(language, 'linked_info_message')} />
                <Heading fontSize="lg" pb={2}>
                     {getTermFromDictionary(language, 'linked_additional_accounts')}
@@ -64,11 +61,12 @@ export const MyLinkedAccounts = () => {
                </Heading>
                <Text>{getTermFromDictionary(language, 'linked_following_accounts_can_view')}</Text>
                <FlatList data={viewers} renderItem={({ item }) => <Account account={item} type="viewer" />} ListEmptyComponent={Empty} keyExtractor={(item, index) => index.toString()} />
-         </ScrollView>
+          </ScrollView>
      );
 };
 
 const Account = (data) => {
+     const queryClient = useQueryClient();
      const account = data.account;
      const type = data.type;
      const [isRemoving, setIsRemoving] = React.useState(false);
@@ -77,22 +75,9 @@ const Account = (data) => {
      const { language } = React.useContext(LanguageContext);
 
      const refreshLinkedAccounts = async () => {
-          await getLinkedAccounts(user, cards, library, language).then((result) => {
-               if (accounts !== result.accounts) {
-                    updateLinkedAccounts(result.accounts);
-               }
-               if(cards !== result.cards) {
-                    updateLibraryCards(result.cards);
-               }
-          });
-          await getViewerAccounts(library.baseUrl, language).then((result) => {
-               if (viewers !== result) {
-                    updateLinkedViewerAccounts(result);
-               }
-          });
-          reloadProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          queryClient.invalidateQueries({ queryKey: ['linked_accounts', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['viewer_accounts', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
      const removeAccount = async () => {

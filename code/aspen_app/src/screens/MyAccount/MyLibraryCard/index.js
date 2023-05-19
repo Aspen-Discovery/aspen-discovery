@@ -10,6 +10,7 @@ import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'reac
 import { Dimensions } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import * as Brightness from 'expo-brightness';
+import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -21,6 +22,7 @@ import { getTermFromDictionary, getTranslationsWithValues } from '../../../trans
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 
 export const MyLibraryCard = () => {
+     const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [isLoading, setLoading] = React.useState(true);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
@@ -45,37 +47,17 @@ export const MyLibraryCard = () => {
         )
     } */
 
-     useFocusEffect(
-          React.useCallback(() => {
-               const update = async () => {
-                    await getLinkedAccounts(user, cards, library).then(async (result) => {
-                         if (accounts !== result.accounts) {
-                              updateLinkedAccounts(result.accounts);
-                         }
-                         if (cards !== result.cards) {
-                              updateLibraryCards(result.cards);
-                         }
-
-                         //setNumCards(_.size(result.cards));
-                         setLoading(false);
-                    });
-               };
-               update().then(() => {
-                    return () => update();
-               });
-          }, [])
-     );
+     useQuery(['linked_accounts', user.id, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
+          onSuccess: (data) => {
+               updateLinkedAccounts(data.accounts);
+               updateLibraryCards(data.cards);
+          },
+          placeholderData: [],
+     });
 
      React.useEffect(() => {
           const updateAccounts = navigation.addListener('focus', async () => {
-               await getLinkedAccounts(user, cards, library).then(async (result) => {
-                    if (accounts !== result.accounts) {
-                         updateLinkedAccounts(result.accounts);
-                    }
-                    if (cards !== result.cards) {
-                         updateLibraryCards(result.cards);
-                    }
-               });
+               queryClient.invalidateQueries({ queryKey: ['linked_accounts', library.baseUrl, language] });
           });
           const brightenScreen = navigation.addListener('focus', async () => {
                const { status } = await Brightness.getPermissionsAsync();
@@ -170,9 +152,9 @@ export const MyLibraryCard = () => {
         changeScreenOrientation(!isLandscape)
     } */
 
-     if (isLoading) {
+     /*if (isLoading) {
           return loadingSpinner();
-     }
+     }*/
 
      //MaterialCommunityIcons = phone-rotate-landscape
      return (
@@ -426,9 +408,8 @@ const OpenBarcode = (data) => {
                <Button variant="ghost" onPress={() => toggleModal()} startIcon={<Icon as={MaterialCommunityIcons} name="barcode-scan" size={10} />}>
                     {getTermFromDictionary(language, 'open_barcode')}
                </Button>
-               <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{ opacity: 95 }}>
+               <Modal isOpen={showModal} onClose={() => toggleModal()} size="xl" _backdrop={{ opacity: 75 }}>
                     <Modal.Content bgColor="white">
-                         <Modal.CloseButton />
                          <Modal.Body bgColor="white">
                               <Barcode value={barcodeValue} format={barcodeFormat} text={barcodeValue} onError={handleBarcodeError} />
                          </Modal.Body>

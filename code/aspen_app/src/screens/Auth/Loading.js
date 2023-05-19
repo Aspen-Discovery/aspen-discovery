@@ -103,7 +103,7 @@ export const LoadingScreen = () => {
           refetchOnWindowFocus: false,
           refetchOnMount: false,
      });
-     const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url], () => getBrowseCategoryListForUser(LIBRARY.url), {
+     const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url, 'en'], () => getBrowseCategoryListForUser(LIBRARY.url), {
           enabled: !!browseCategoryQuery,
           onSuccess: (data) => {
                setProgress(50);

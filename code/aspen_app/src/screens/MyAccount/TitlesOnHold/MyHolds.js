@@ -13,9 +13,10 @@ import { getPatronHolds, refreshProfile, reloadProfile } from '../../../util/api
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import { DisplayMessage } from '../../../components/Notifications';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 
 export const MyHolds = () => {
+     const isFetchingHolds = useIsFetching({ queryKey: ['holds'] });
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
@@ -23,7 +24,7 @@ export const MyHolds = () => {
      const { holds, updateHolds, pendingSortMethod, readySortMethod, updatePendingSortMethod, updateReadySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const [holdSource, setHoldSource] = React.useState('all');
-     const [isLoading, setLoading] = React.useState(true);
+     const [isLoading, setLoading] = React.useState(false);
      const [values, setGroupValues] = React.useState([]);
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
@@ -40,7 +41,7 @@ export const MyHolds = () => {
           expiration: 'Sort by Expiration Date',
      });
 
-     useQuery(['holds', library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateHolds(data);
                setLoading(false);
@@ -93,40 +94,59 @@ export const MyHolds = () => {
                     let term = '';
 
                     term = getTermFromDictionary(language, 'sort_by_title');
-                    tmp = _.set(tmp, 'title', term);
-                    setSortBy(tmp);
+
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'title', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_author');
-                    tmp = _.set(tmp, 'author', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'author', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_format');
-                    tmp = _.set(tmp, 'format', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'format', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_status');
-                    tmp = _.set(tmp, 'status', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'status', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_date_placed');
-                    tmp = _.set(tmp, 'date_placed', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'date_placed', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_position');
-                    tmp = _.set(tmp, 'position', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'position', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_pickup_location');
-                    tmp = _.set(tmp, 'pickup_location', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'pickup_location', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_library_account');
-                    tmp = _.set(tmp, 'library_account', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'library_account', term);
+                         setSortBy(tmp);
+                    }
 
                     term = getTermFromDictionary(language, 'sort_by_expiration');
-                    tmp = _.set(tmp, 'expiration', term);
-                    setSortBy(tmp);
+                    if (!term.includes('%1%')) {
+                         tmp = _.set(tmp, 'expiration', term);
+                         setSortBy(tmp);
+                    }
 
                     setLoading(false);
                };
@@ -136,7 +156,7 @@ export const MyHolds = () => {
           }, [language])
      );
 
-     if (isLoading) {
+     if (isFetchingHolds) {
           return loadingSpinner();
      }
 
