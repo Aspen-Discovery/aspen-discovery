@@ -188,7 +188,7 @@ export const MyHolds = () => {
      const noHolds = (title) => {
           if (title === 'Pending') {
                return (
-                    <Center mt={5} mb={5}>
+                    <Center safeArea={2}>
                          <Text bold fontSize="lg">
                               {getTermFromDictionary(language, 'pending_holds_none')}
                          </Text>
@@ -196,7 +196,7 @@ export const MyHolds = () => {
                );
           } else {
                return (
-                    <Center mt={5} mb={5}>
+                    <Center safeArea={2}>
                          <Text bold fontSize="lg">
                               {getTermFromDictionary(language, 'holds_ready_for_pickup_none')}
                          </Text>
