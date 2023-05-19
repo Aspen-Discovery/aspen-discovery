@@ -767,11 +767,11 @@ class Grouping_Record {
 		$this->_driver = null;
 	}
 
-	public function getBookcoverUrl() {
+	public function getBookcoverUrl($size) {
 		$bookcoverUrl = null;
 		$recordDriver = $this->getDriver();
 		if($recordDriver) {
-			$bookcoverUrl = $recordDriver->getBookcoverUrl('medium');
+			$bookcoverUrl = $recordDriver->getBookcoverUrl($size);
 		}
 		return $bookcoverUrl;
 	}

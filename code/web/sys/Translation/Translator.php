@@ -281,11 +281,13 @@ class Translator {
 			$returnString .= ' Translation metadata not set properly';
 		}
 		return $returnString;
-	}/**
- * @param string $phrase
- * @param Language $activeLanguage
- * @return array
- */
+	}
+
+	/**
+	 * @param string $phrase
+	 * @param Language $activeLanguage
+	 * @return array
+	 */
 	public function getCommunityTranslation(string $phrase, $activeLanguage): array {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
