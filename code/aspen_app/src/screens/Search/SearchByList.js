@@ -4,6 +4,7 @@ import axios from 'axios';
 import { SafeAreaView } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRoute } from '@react-navigation/native';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
@@ -58,7 +59,6 @@ const DisplayResult = (data) => {
      if (item.recordtype) {
           recordType = item.recordtype;
      }
-     console.log(recordType);
      const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + recordType;
 
      const handlePressItem = () => {
@@ -94,21 +94,35 @@ const DisplayResult = (data) => {
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
                     <VStack maxW="30%">
-                         <Image
-                              source={{ uri: imageUrl }}
-                              fallbackSource={{
-                                   bgColor: 'warmGray.50',
-                              }}
+                         <CachedImage
+                              cacheKey={item.id}
                               alt={item.title_display}
-                              bg="warmGray.50"
-                              _dark={{
-                                   bgColor: 'coolGray.800',
+                              source={{
+                                   uri: `${imageUrl}`,
+                                   expiresIn: 86400,
                               }}
-                              borderRadius="md"
-                              size={{
-                                   base: '100px',
-                                   lg: '120px',
+                              style={{
+                                   width: 100,
+                                   height: 150,
+                                   borderRadius: 4,
                               }}
+                              resizeMode="cover"
+                              placeholderContent={
+                                   <Box
+                                        bg="warmGray.50"
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: 100,
+                                             lg: 200,
+                                        }}
+                                        height={{
+                                             base: 150,
+                                             lg: 250,
+                                        }}
+                                   />
+                              }
                          />
                          {item.language ? (
                               <Badge

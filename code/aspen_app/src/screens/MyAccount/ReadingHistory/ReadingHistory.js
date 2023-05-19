@@ -5,6 +5,7 @@ import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { Box, VStack, Button, Text, ScrollView, FlatList, Pressable, HStack, Image, InfoIcon, Center, AlertDialog, Icon, Actionsheet, Alert, CheckIcon, FormControl, Select } from 'native-base';
 import { ListItem } from '@rneui/themed';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import CachedImage from 'expo-cached-image';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
@@ -352,25 +353,40 @@ const Item = (data) => {
           });
      };
 
+     const imageUrl = library.baseUrl + item.coverUrl;
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%" justifyContent="flex-start" alignItems="flex-start">
                     <VStack maxW="30%">
-                         <Image
-                              source={{ uri: library.baseUrl + item.coverUrl }}
-                              borderRadius="md"
-                              fallbackSource={{
-                                   bgColor: 'warmGray.50',
-                              }}
-                              bg="warmGray.50"
-                              _dark={{
-                                   bgColor: 'coolGray.800',
-                              }}
-                              size={{
-                                   base: '90px',
-                                   lg: '120px',
-                              }}
+                         <CachedImage
+                              cacheKey={item.permanentId}
                               alt={item.title}
+                              source={{
+                                   uri: `${imageUrl}`,
+                                   expiresIn: 86400,
+                              }}
+                              style={{
+                                   width: 100,
+                                   height: 150,
+                                   borderRadius: 4,
+                              }}
+                              resizeMode="cover"
+                              placeholderContent={
+                                   <Box
+                                        bg="warmGray.50"
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: 100,
+                                             lg: 200,
+                                        }}
+                                        height={{
+                                             base: 150,
+                                             lg: 250,
+                                        }}
+                                   />
+                              }
                          />
                          <AddToList itemId={item.permanentId} btnStyle="sm" />
                     </VStack>

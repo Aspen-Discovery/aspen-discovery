@@ -156,9 +156,6 @@ export const DiscoverHomeScreen = () => {
 
           const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + type.toLowerCase();
 
-          if (type === 'list') {
-               console.log(imageUrl);
-          }
           let isNew = false;
           if (typeof item.isNew !== 'undefined') {
                isNew = item.isNew;
@@ -298,6 +295,10 @@ export const DiscoverHomeScreen = () => {
           } else if (source === 'SavedSearch') {
                screen = 'SearchBySavedSearch';
           }
+
+          console.log('label > ' + label);
+          console.log('key > ' + key);
+          console.log('source > ' + source);
 
           navigateStack('SearchTab', screen, {
                title: label,

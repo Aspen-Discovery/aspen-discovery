@@ -2,6 +2,7 @@ import { CommonActions } from '@react-navigation/native';
 import { Center, Button, Box, Badge, Text, FlatList, Heading, Stack, HStack, VStack, Pressable, Image } from 'native-base';
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
@@ -12,8 +13,8 @@ import { AddToList } from './AddToList';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getCleanTitle } from '../../helpers/item';
-import {formatDiscoveryVersion, LIBRARY} from '../../util/loadLibrary';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { formatDiscoveryVersion, LIBRARY } from '../../util/loadLibrary';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export default class SearchByCategory extends Component {
      constructor() {
@@ -45,8 +46,8 @@ export default class SearchByCategory extends Component {
           const language = route.params?.language ?? 'en';
 
           this.setState({
-               language: language
-          })
+               language: language,
+          });
 
           await getLists(libraryUrl);
           this._getLastListUsed();
@@ -135,14 +136,35 @@ export default class SearchByCategory extends Component {
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title_display)}>
                     <HStack space={3}>
                          <VStack maxW="30%">
-                              <Image
-                                   source={{ uri: imageUrl }}
+                              <CachedImage
+                                   cacheKey={item.id}
                                    alt={item.title_display}
-                                   borderRadius="md"
-                                   size={{
-                                        base: '90px',
-                                        lg: '120px',
+                                   source={{
+                                        uri: `${imageUrl}`,
+                                        expiresIn: 86400,
                                    }}
+                                   style={{
+                                        width: 100,
+                                        height: 150,
+                                        borderRadius: 4,
+                                   }}
+                                   resizeMode="cover"
+                                   placeholderContent={
+                                        <Box
+                                             bg="warmGray.50"
+                                             _dark={{
+                                                  bgColor: 'coolGray.800',
+                                             }}
+                                             width={{
+                                                  base: 100,
+                                                  lg: 200,
+                                             }}
+                                             height={{
+                                                  base: 150,
+                                                  lg: 250,
+                                             }}
+                                        />
+                                   }
                               />
                               <Badge
                                    mt={1}
@@ -196,7 +218,7 @@ export default class SearchByCategory extends Component {
           const { route } = this.props;
           const libraryContext = route.params.libraryContext;
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
-          if(version >= '23.01.00') {
+          if (version >= '23.01.00') {
                navigateStack('SearchTab', 'CategoryResultItem', {
                     id: item,
                     url: url,

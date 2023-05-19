@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -339,17 +340,40 @@ const Checkout = (props) => {
           renewMessage = checkout.renewError;
      }
 
+     const imageUrl = checkout.coverUrl;
+
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
-                    <Image
-                         source={{ uri: checkout.coverUrl }}
-                         borderRadius="md"
-                         size={{
-                              base: '80px',
-                              lg: '120px',
-                         }}
+                    <CachedImage
+                         cacheKey={checkout.groupedWorkId}
                          alt={checkout.title}
+                         source={{
+                              uri: `${imageUrl}`,
+                              expiresIn: 86400,
+                         }}
+                         style={{
+                              width: 100,
+                              height: 150,
+                              borderRadius: 4,
+                         }}
+                         resizeMode="cover"
+                         placeholderContent={
+                              <Box
+                                   bg="warmGray.50"
+                                   _dark={{
+                                        bgColor: 'coolGray.800',
+                                   }}
+                                   width={{
+                                        base: 100,
+                                        lg: 200,
+                                   }}
+                                   height={{
+                                        base: 150,
+                                        lg: 250,
+                                   }}
+                              />
+                         }
                     />
                     <VStack>
                          {getTitle(checkout.title)}
