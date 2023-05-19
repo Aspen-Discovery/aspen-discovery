@@ -62,10 +62,10 @@ public class EvolveExportMain {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
-			/*String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
 			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
 				extractSingleWork = true;
-			}*/
+			}
 
 		} else {
 			serverName = args[0];
@@ -257,9 +257,35 @@ public class EvolveExportMain {
 	}
 
 	private static int updateBibFromEvolve(@SuppressWarnings("unused") String singleWorkId) {
-		//String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ITEM=" + CA.... + "|Marc=Yes";
-		//String getChangedHoldingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CATALOGITEM=" + CA....;
-		logEntry.incErrors("Cannot extract Single Works from Evolve.");
+		String patronLoginUrl = baseUrl + "/Authenticate";
+		@SuppressWarnings("SpellCheckingInspection")
+		String patronLoginBody = "{\"APPTYPE\":\"CATALOG\",\"Token\":\"" + integrationToken + "\",\"Login\":\"" + staffUsername + "\",\"Pwd\":\"" + staffPassword + "\"}";
+		WebServiceResponse loginResponse = NetworkUtils.postToURL(patronLoginUrl, patronLoginBody, "application/json", null, logger);
+		if (loginResponse.isSuccess()) {
+			JSONArray loginResponseData = loginResponse.getJSONResponseAsArray();
+			JSONObject firstResponse = loginResponseData.getJSONObject(0);
+			String accessToken = firstResponse.getString("LoginToken");
+
+			String getBibUrl = baseUrl + "/CatalogSearch/Token=" + accessToken + "|ITEM=" + singleWorkId + "|Marc=Yes";
+			WebServiceResponse getBibsResponse = NetworkUtils.getURL(getBibUrl, logger);
+			if (getBibsResponse.isSuccess()) {
+				MarcFactory marcFactory = MarcFactory.newInstance();
+
+				String rawMessage = getBibsResponse.getMessage();
+				try {
+					JSONArray responseAsArray = new JSONArray(rawMessage);
+					logEntry.addNote(" Found " + responseAsArray.length() + " bibs to update");
+					for (int i = 0; i < responseAsArray.length(); i++) {
+						JSONObject curRow = responseAsArray.getJSONObject(i);
+						processMarcForEvolveBibRecord(marcFactory, accessToken, curRow);
+					}
+				} catch (JSONException e) {
+					logEntry.incErrors("Error parsing JSON from getting single bib data");
+				}
+			} else {
+				logEntry.incErrors("Did not get a successful response loading bib " + singleWorkId + " from Evolve");
+			}
+		}
 		return 0;
 	}
 
@@ -343,78 +369,7 @@ public class EvolveExportMain {
 								//We can't get the Marc record for an individual MARC, so we will load what we have and edit the correct item or insert it if we can't find it.
 								Record marcRecord = getGroupedWorkIndexer().loadMarcRecordFromDatabase(indexingProfile.getName(), bibId, logEntry);
 								if (marcRecord != null) {
-									//String itemBarcode = curItem.getString("Barcode");
-									List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
-
-									@SuppressWarnings("WrapperTypeMayBePrimitive")
-									Double holdingId = curItem.getDouble("HoldingID");
-									String holdingIdString = Integer.toString(holdingId.intValue());
-
-									boolean isExistingItem = false;
-									try {
-										for (DataField existingItemField : existingItemFields) {
-											Subfield existingRecordNumberSubfield = existingItemField.getSubfield(indexingProfile.getItemRecordNumberSubfield());
-											if (existingRecordNumberSubfield == null) {
-												//Just skip this item
-											} else {
-												if (StringUtils.equals(existingRecordNumberSubfield.getData(), holdingIdString)) {
-													isExistingItem = true;
-													if (curItem.isNull("Barcode")) {
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
-													} else {
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
-													}
-													MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
-													if (curItem.isNull("CallNumber")){
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
-													}else{
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
-													}
-													if (curItem.isNull("DueDate")) {
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
-													} else {
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
-													}
-													if (curItem.isNull("Location")) {
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
-													} else {
-														MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
-													}
-													break;
-												}
-											}
-										}
-										if (!isExistingItem) {
-											//Add a new field for the item
-											DataField newItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), holdingIdString, marcFactory);
-											MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
-											if (curItem.isNull("CallNumber")){
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
-											}else{
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
-											}
-											if (curItem.isNull("Barcode")) {
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
-											}else{
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
-											}
-											if (curItem.isNull("DueDate")) {
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
-											} else {
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
-											}
-											if (curItem.isNull("Location")) {
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
-											}else {
-												MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
-											}
-
-											marcRecord.addVariableField(newItemField);
-										}
-									} catch (Exception e) {
-										logEntry.incErrors("Error updating item field", e);
-									}
+									updateBibWithEvolveHolding(marcFactory, curItem, marcRecord);
 									logEntry.incUpdated();
 									//Save the MARC record
 									getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibId, marcRecord);
@@ -455,95 +410,7 @@ public class EvolveExportMain {
 						for (int i = 0; i < responseAsArray.length(); i++) {
 							numProcessed++;
 							JSONObject curRow = responseAsArray.getJSONObject(i);
-							String rawMarc = curRow.getString("MARC");
-							try {
-								MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
-								if (reader.hasNext()) //noinspection GrazieInspection
-								{
-									String bibId = curRow.getString("ID");
-									Record marcRecord;
-									try {
-										marcRecord = reader.next();
-									} catch (Exception e){
-										logEntry.incInvalidRecords(bibId);
-										//logEntry.incErrors("Error loading marc record for bib " + bibId);
-										continue;
-									}
-
-									List<ControlField> controlFields = marcRecord.getControlFields();
-									ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
-									for (ControlField controlField : controlFieldsCopy) {
-										if (controlField.getData().startsWith("\u001f")) {
-											marcRecord.removeVariableField(controlField);
-											controlField.setData(controlField.getData().replaceAll("\u001f", ""));
-											marcRecord.addVariableField(controlField);
-										}
-									}
-									//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
-									DataField field950 = marcFactory.newDataField("950", ' ', ' ');
-									field950.addSubfield(marcFactory.newSubfield('a', bibId));
-									field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
-									marcRecord.addVariableField(field950);
-									//Also load holdings from the API
-									String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
-									WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
-									if (getHoldingsResponse.isSuccess()) {
-										JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
-										if (holdingsData != null) {
-											for (int j = 0; j < holdingsData.length(); j++) {
-												JSONObject holding = holdingsData.getJSONObject(j);
-												DataField field852 = marcFactory.newDataField("852", ' ', ' ');
-												double holdingId = holding.getDouble("HoldingID");
-												String formattedHoldingId = Double.toString(holdingId);
-												if (formattedHoldingId.indexOf('.') > 0) {
-													formattedHoldingId = formattedHoldingId.substring(0, formattedHoldingId.indexOf('.'));
-												}
-												field852.addSubfield(marcFactory.newSubfield('c', formattedHoldingId));
-												field852.addSubfield(marcFactory.newSubfield('h', holding.getString("CallNumber")));
-												field852.addSubfield(marcFactory.newSubfield('a', holding.getString("Location")));
-												field852.addSubfield(marcFactory.newSubfield('k', holding.getString("Collection")));
-												if (!holding.isNull("DueDate")) {
-													field852.addSubfield(marcFactory.newSubfield('e', holding.getString("DueDate")));
-												}
-												field852.addSubfield(marcFactory.newSubfield('y', holding.getString("Form")));
-												field852.addSubfield(marcFactory.newSubfield('d', holding.getString("Status")));
-
-												//TODO: Add these once the API returns them
-												//p - barcode
-												//q - Cost
-												//f - Created date time
-												//g - Last scan date
-
-												marcRecord.addVariableField(field852);
-											}
-										}
-									}
-
-									//Save the MARC record
-									RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
-									if (bibliographicRecordId != null) {
-										GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
-										if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
-											logEntry.incAdded();
-										} else {
-											logEntry.incUpdated();
-										}
-
-										//Regroup the record
-										String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
-										if (groupedWorkId != null) {
-											//Reindex the record
-											getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
-										}
-									}
-									if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
-										getGroupedWorkIndexer().commitChanges();
-										logEntry.saveResults();
-									}
-								}
-							} catch (Exception e) {
-								logEntry.incErrors("Error parsing marc record", e);
-							}
+							processMarcForEvolveBibRecord(marcFactory, accessToken, curRow);
 						}
 					} catch (JSONException e) {
 						logEntry.incErrors("Error parsing JSON from getting changed bib data");
@@ -587,6 +454,151 @@ public class EvolveExportMain {
 
 		return numProcessed;
 
+	}
+
+	private static void updateBibWithEvolveHolding(MarcFactory marcFactory, JSONObject curItem, Record marcRecord) {
+		//String itemBarcode = curItem.getString("Barcode");
+		List<DataField> existingItemFields = marcRecord.getDataFields(indexingProfile.getItemTagInt());
+
+		@SuppressWarnings("WrapperTypeMayBePrimitive")
+		Double holdingId = curItem.getDouble("HoldingID");
+		String holdingIdString = Integer.toString(holdingId.intValue());
+
+		boolean isExistingItem = false;
+		try {
+			for (DataField existingItemField : existingItemFields) {
+				Subfield existingRecordNumberSubfield = existingItemField.getSubfield(indexingProfile.getItemRecordNumberSubfield());
+				if (existingRecordNumberSubfield == null) {
+					//Just skip this item
+				} else {
+					if (StringUtils.equals(existingRecordNumberSubfield.getData(), holdingIdString)) {
+						isExistingItem = true;
+						if (curItem.isNull("Barcode")) {
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
+						} else {
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+						}
+						MarcUtil.setSubFieldData(existingItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
+						if (curItem.isNull("CallNumber")){
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
+						}else{
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+						}
+						if (curItem.isNull("DueDate")) {
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+						} else {
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+						}
+						if (curItem.isNull("Location")) {
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
+						} else {
+							MarcUtil.setSubFieldData(existingItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+						}
+						break;
+					}
+				}
+			}
+			if (!isExistingItem) {
+				//Add a new field for the item
+				DataField newItemField = marcFactory.newDataField(indexingProfile.getItemTag(), ' ', ' ');
+				MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemRecordNumberSubfield(), holdingIdString, marcFactory);
+				MarcUtil.setSubFieldData(newItemField, indexingProfile.getItemStatusSubfield(), curItem.getString("CircStatus"), marcFactory);
+				if (curItem.isNull("CallNumber")){
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), "", marcFactory);
+				}else{
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCallNumberSubfield(), curItem.getString("CallNumber"), marcFactory);
+				}
+				if (curItem.isNull("Barcode")) {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), "", marcFactory);
+				}else{
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getBarcodeSubfield(), curItem.getString("Barcode"), marcFactory);
+				}
+				if (curItem.isNull("DueDate")) {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), "", marcFactory);
+				} else {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDueDateSubfield(), curItem.getString("DueDate"), marcFactory);
+				}
+				if (curItem.isNull("Location")) {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
+				}else {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+				}
+
+				marcRecord.addVariableField(newItemField);
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Error updating item field", e);
+		}
+	}
+
+	private static void processMarcForEvolveBibRecord(MarcFactory marcFactory, String accessToken, JSONObject curRow) {
+		String rawMarc = curRow.getString("MARC");
+		try {
+			MarcReader reader = new MarcPermissiveStreamReader(new ByteArrayInputStream(rawMarc.getBytes(StandardCharsets.UTF_8)), true, false, "UTF-8");
+			if (reader.hasNext()) //noinspection GrazieInspection
+			{
+				String bibId = curRow.getString("ID");
+				Record marcRecord;
+				try {
+					marcRecord = reader.next();
+				} catch (Exception e){
+					logEntry.incInvalidRecords(bibId);
+					//logEntry.incErrors("Error loading marc record for bib " + bibId);
+					return;
+				}
+
+				List<ControlField> controlFields = marcRecord.getControlFields();
+				ArrayList<ControlField> controlFieldsCopy = new ArrayList<>(controlFields);
+				for (ControlField controlField : controlFieldsCopy) {
+					if (controlField.getData().startsWith("\u001f")) {
+						marcRecord.removeVariableField(controlField);
+						controlField.setData(controlField.getData().replaceAll("\u001f", ""));
+						marcRecord.addVariableField(controlField);
+					}
+				}
+				//The MARC data we get from the Evolve API does not include the bib number. Add that as the 950.
+				DataField field950 = marcFactory.newDataField("950", ' ', ' ');
+				field950.addSubfield(marcFactory.newSubfield('a', bibId));
+				field950.addSubfield(marcFactory.newSubfield('b', "Evolve"));
+				marcRecord.addVariableField(field950);
+				//Also load holdings from the API
+				String holdingsUrl = baseUrl + "/Holding/Token=" + accessToken + "|CatalogItem=" + bibId;
+				WebServiceResponse getHoldingsResponse = NetworkUtils.getURL(holdingsUrl, logger);
+				if (getHoldingsResponse.isSuccess()) {
+					JSONArray holdingsData = getHoldingsResponse.getJSONResponseAsArray();
+					if (holdingsData != null) {
+						for (int j = 0; j < holdingsData.length(); j++) {
+							JSONObject holding = holdingsData.getJSONObject(j);
+							updateBibWithEvolveHolding(marcFactory, holding, marcRecord);
+						}
+					}
+				}
+
+				//Save the MARC record
+				RecordIdentifier bibliographicRecordId = getRecordGroupingProcessor().getPrimaryIdentifierFromMarcRecord(marcRecord, indexingProfile);
+				if (bibliographicRecordId != null) {
+					GroupedWorkIndexer.MarcStatus saveMarcResult = getGroupedWorkIndexer().saveMarcRecordToDatabase(indexingProfile, bibliographicRecordId.getIdentifier(), marcRecord);
+					if (saveMarcResult == GroupedWorkIndexer.MarcStatus.NEW) {
+						logEntry.incAdded();
+					} else {
+						logEntry.incUpdated();
+					}
+
+					//Regroup the record
+					String groupedWorkId = getRecordGroupingProcessor().processMarcRecord(marcRecord, true, null, getGroupedWorkIndexer());
+					if (groupedWorkId != null) {
+						//Reindex the record
+						getGroupedWorkIndexer().processGroupedWork(groupedWorkId);
+					}
+				}
+				if (logEntry.getNumProducts() > 0 && logEntry.getNumProducts() % 250 == 0) {
+					getGroupedWorkIndexer().commitChanges();
+					logEntry.saveResults();
+				}
+			}
+		} catch (Exception e) {
+			logEntry.incErrors("Error parsing marc record", e);
+		}
 	}
 
 	private static void disconnectDatabase() {
