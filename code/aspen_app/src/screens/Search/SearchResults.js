@@ -201,8 +201,6 @@ const DisplayResult = (data) => {
 
      const imageUrl = item.image;
 
-     console.log(item);
-
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
