@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
 import { ForceLogout } from './ForceLogout';
 import { UpdateAvailable } from './UpdateAvailable';
-import { getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
+import { getTermFromDictionary, getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
 import { reloadProfile } from '../../util/api/user';
 import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
 import { getLocationInfo } from '../../util/api/location';
@@ -33,7 +33,6 @@ export const LoadingScreen = () => {
      const linkingUrl = Linking.useURL();
      const linkTo = useLinkTo();
      const navigation = useNavigation();
-     const [loadingText, setLoadingText] = React.useState('The oldest library in the world dates from the seventh century BC.');
      const [progress, setProgress] = React.useState(0);
      const [hasUpdate, setHasUpdate] = React.useState(false);
      const [incomingUrl, setIncomingUrl] = React.useState('');
@@ -44,6 +43,35 @@ export const LoadingScreen = () => {
      const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
+
+     const [loadingText, setLoadingText] = React.useState('');
+
+     const { status: languagesQueryStatus, data: languagesQuery } = useQuery(['languages', LIBRARY.url], () => getLibraryLanguages(LIBRARY.url), {
+          enabled: !!LIBRARY.url,
+          onSuccess: (data) => {
+               setProgress(10);
+               updateLanguages(data);
+          },
+          staleTime: 60 * 1000 * 30,
+          cacheTime: 60 * 1000 * 30,
+          refetchOnWindowFocus: false,
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+     });
+
+     const { status: translationsQueryStatus, data: translationsQuery } = useQuery(['translations', LIBRARY.url], () => getTranslatedTermsForAllLanguages(languagesQuery, LIBRARY.url), {
+          enabled: !!languagesQuery,
+          onSuccess: (data) => {
+               updateDictionary(translationsLibrary);
+               setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_1'));
+               return true;
+          },
+          staleTime: 60 * 1000 * 30,
+          cacheTime: 60 * 1000 * 30,
+          refetchOnWindowFocus: false,
+          refetchInterval: 60 * 1000 * 30,
+          refetchIntervalInBackground: true,
+     });
 
      React.useEffect(() => {
           const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -66,7 +94,7 @@ export const LoadingScreen = () => {
 
      const { status: librarySystemQueryStatus, data: librarySystemQuery } = useQuery(['library_system', LIBRARY.url], () => getLibraryInfo(LIBRARY.url), {
           onSuccess: (data) => {
-               setProgress(10);
+               setProgress(30);
                updateLibrary(data);
           },
           staleTime: 60 * 1000 * 30,
@@ -79,60 +107,30 @@ export const LoadingScreen = () => {
      const { status: userQueryStatus, data: userQuery } = useQuery(['user', LIBRARY.url, 'en'], () => reloadProfile(LIBRARY.url), {
           enabled: !!librarySystemQuery,
           onSuccess: (data) => {
-               setProgress(30);
+               setProgress(60);
                updateUser(data);
                updateLanguage(data.interfaceLanguage ?? 'en');
                PATRON.language = data.interfaceLanguage ?? 'en';
+               setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
           },
           staleTime: 60 * 1000 * 15,
           cacheTime: 60 * 1000 * 15,
           refetchOnWindowFocus: false,
           refetchOnMount: false,
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
      });
      const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
           enabled: !!userQuery,
           onSuccess: (data) => {
-               setProgress(40);
+               setProgress(70);
                updateBrowseCategories(data);
                updateMaxCategories(5);
           },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchOnMount: false,
      });
      const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url, 'en'], () => getBrowseCategoryListForUser(LIBRARY.url), {
           enabled: !!browseCategoryQuery,
           onSuccess: (data) => {
-               setProgress(50);
+               setProgress(80);
                updateBrowseCategoryList(data);
-               setLoadingText('One of the most overdue library books in the world was returned after 122 years.');
-          },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
-     });
-     const { status: languagesQueryStatus, data: languagesQuery } = useQuery(['languages', LIBRARY.url], () => getLibraryLanguages(LIBRARY.url), {
-          enabled: !!browseCategoryListQuery,
-          onSuccess: (data) => {
-               setProgress(60);
-               updateLanguages(data);
-          },
-          staleTime: 60 * 1000 * 30,
-          cacheTime: 60 * 1000 * 30,
-          refetchOnWindowFocus: false,
-          refetchInterval: 60 * 1000 * 30,
-          refetchIntervalInBackground: true,
-     });
-     const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
-          enabled: !!languagesQuery,
-          onSuccess: (data) => {
-               setProgress(70);
-               updateLocation(data);
           },
           staleTime: 60 * 1000 * 30,
           cacheTime: 60 * 1000 * 30,
@@ -141,12 +139,11 @@ export const LoadingScreen = () => {
           refetchIntervalInBackground: true,
      });
 
-     const { status: translationsQueryStatus, data: translationsQuery } = useQuery(['translations', LIBRARY.url], () => getTranslatedTermsForAllLanguages(languagesQuery, LIBRARY.url), {
-          enabled: !!libraryBranchQuery,
+     const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
+          enabled: !!browseCategoryListQuery,
           onSuccess: (data) => {
-               setProgress(90);
-               updateDictionary(translationsLibrary);
-               return true;
+               setProgress(100);
+               updateLocation(data);
           },
           staleTime: 60 * 1000 * 30,
           cacheTime: 60 * 1000 * 30,
