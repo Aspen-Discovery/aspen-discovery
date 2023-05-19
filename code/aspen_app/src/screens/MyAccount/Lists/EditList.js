@@ -11,8 +11,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { navigateStack } from '../../../helpers/RootNavigator';
 
 const EditList = (props) => {
+     const queryClient = useQueryClient();
      const { data, listId } = props;
      const navigation = useNavigation();
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { lists, updateLists } = React.useContext(UserContext);
@@ -89,6 +91,8 @@ const EditList = (props) => {
                                                        navigation.setOptions({ title: title });
                                                   }
                                                   setShowModal(false);
+                                                  queryClient.invalidateQueries({ queryKey: ['list-details', data.id, library.baseUrl, language] });
+                                                  queryClient.invalidateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
                                              });
                                         }}>
                                         {getTermFromDictionary(language, 'save')}
@@ -105,6 +109,7 @@ const DeleteList = (props) => {
      const queryClient = useQueryClient();
      const { listId } = props;
      const navigation = useNavigation();
+     const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const [isOpen, setIsOpen] = React.useState(false);
@@ -134,7 +139,7 @@ const DeleteList = (props) => {
                                         onPress={() => {
                                              setLoading(true);
                                              deleteList(listId, library.baseUrl).then(async (res) => {
-                                                  queryClient.invalidateQueries({ queryKey: ['lists', library.baseUrl, language] });
+                                                  queryClient.invalidateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
                                                   queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                                   setLoading(false);
                                                   let status = 'success';
@@ -149,47 +154,6 @@ const DeleteList = (props) => {
                                                        });
                                                   }
                                              });
-                                        }}>
-                                        Delete
-                                   </Button>
-                              </Button.Group>
-                         </AlertDialog.Footer>
-                    </AlertDialog.Content>
-               </AlertDialog>
-          </Center>
-     );
-};
-
-const ClearList = (props) => {
-     const { navigation, listId } = props;
-     const { library } = React.useContext(LibrarySystemContext);
-     const [isOpen, setIsOpen] = React.useState(false);
-     const [loading, setLoading] = useState(false);
-     const onClose = () => setIsOpen(false);
-     const cancelRef = React.useRef(null);
-
-     return (
-          <Center>
-               <Button onPress={() => setIsOpen(!isOpen)} startIcon={<Icon as={MaterialIcons} name="delete" size="xs" />}>
-                    Delete All Items
-               </Button>
-               <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
-                    <AlertDialog.Content>
-                         <AlertDialog.CloseButton />
-                         <AlertDialog.Header>Delete All Items</AlertDialog.Header>
-                         <AlertDialog.Body>This will remove all data relating to Alex. This action cannot be reversed. Deleted data can not be recovered.</AlertDialog.Body>
-                         <AlertDialog.Footer>
-                              <Button.Group space={2}>
-                                   <Button variant="unstyled" colorScheme="coolGray" onPress={onClose} ref={cancelRef}>
-                                        Cancel
-                                   </Button>
-                                   <Button
-                                        isLoading={loading}
-                                        isLoadingText="Deleting..."
-                                        colorScheme="danger"
-                                        onPress={() => {
-                                             setLoading(true);
-                                             clearListTitles(listId, library.baseUrl).then((r) => setLoading(false));
                                         }}>
                                         Delete
                                    </Button>

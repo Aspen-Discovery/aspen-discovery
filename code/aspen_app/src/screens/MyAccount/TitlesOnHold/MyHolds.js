@@ -177,10 +177,8 @@ export const MyHolds = () => {
      const resetGroup = async () => {
           setLoading(true);
           clearGroupValue();
-          queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
-          refreshProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
      const handleDateChange = (date) => {

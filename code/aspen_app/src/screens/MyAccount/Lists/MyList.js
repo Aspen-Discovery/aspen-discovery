@@ -108,8 +108,8 @@ export const MyList = () => {
           const imageUrl = item.image;
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id, item.title)}>
-                    <HStack space={3} justifyContent="flex-start" alignItems="flex-start">
-                         <VStack w="25%">
+                    <HStack space={3}>
+                         <VStack maxW="35%">
                               <CachedImage
                                    cacheKey={item.id}
                                    alt={item.title}
@@ -257,7 +257,7 @@ export const MyList = () => {
                     loadError('Error', '')
                ) : (
                     <>
-                         <Box safeArea={2} pb={10}>
+                         <Box style={{ paddingBottom: 100 }}>
                               {getActionButtons()}
                               <FlatList data={data.listTitles} ListFooterComponent={Paging} renderItem={({ item }) => renderItem(item, library.baseUrl)} keyExtractor={(item, index) => index.toString()} />
                          </Box>

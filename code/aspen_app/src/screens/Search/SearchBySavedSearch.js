@@ -150,7 +150,7 @@ export default class SearchBySavedSearch extends Component {
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library, item.title)}>
                     <HStack space={3}>
-                         <VStack maxW="30%">
+                         <VStack maxW="35%">
                               {isNew ? (
                                    <Container zIndex={1}>
                                         <Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{ fontSize: 9 }}>

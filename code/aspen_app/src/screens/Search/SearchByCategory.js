@@ -137,7 +137,7 @@ export default class SearchByCategory extends Component {
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title_display)}>
                     <HStack space={3}>
-                         <VStack maxW="30%">
+                         <VStack maxW="35%">
                               <CachedImage
                                    cacheKey={item.id}
                                    alt={item.title_display}
