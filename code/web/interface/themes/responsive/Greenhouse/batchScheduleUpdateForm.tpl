@@ -6,7 +6,7 @@
             <div class="col-sm-8">
                 <select name="updateToVersion" id="updateToVersion" class="form-control" aria-label="{translate text="Update to Version" isAdminFacing=true}">
                     {foreach from=$releases item=release}
-                        <option value="{$release.id}">{$release.version} ({$release.date})</option>
+                        <option value="{$release.version}">{$release.version} ({$release.date})</option>
                     {/foreach}
                 </select>
             </div>
