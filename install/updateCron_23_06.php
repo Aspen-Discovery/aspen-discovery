@@ -7,13 +7,9 @@ if (count($_SERVER['argv']) > 1) {
 	if ($fhnd) {
 		$lines = [];
 		$insertUpdate = true;
-		$changeToRoot = false;
 		while (($line = fgets($fhnd)) !== false) {
 			if (strpos($line, 'updateCommunityTranslations') > 0) {
 				$insertUpdate = false;
-				if (strpos($line, 'aspen ') > 0) {
-					$changeToRoot = true;
-				}
 			}
 		}
 		fclose($fhnd);
@@ -23,8 +19,7 @@ if (count($_SERVER['argv']) > 1) {
 			$lines[] = "#########################\n";
 			$lines[] = "15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php $serverName\n";
 		}
-		if ($changeToRoot || $insertUpdate) {
-			//echo("- Writing new cron\n");
+		if ($insertUpdate) {
 			$newContent = implode('', $lines);
 			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
 		}
