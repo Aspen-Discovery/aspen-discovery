@@ -1365,8 +1365,9 @@ function trackSpammyRequest() {
 			$ipAddress->ip = IPAddress::getClientIP();
 			if (!$ipAddress->find(true)) {
 				$ipAddress->calcIpRange();
+				$ipAddress->insert();
 			}
-			$ipAddress->blockedForSpam = true;
+			$ipAddress->blockedForSpam = 1;
 			$ipAddress->update();
 		}
 		$usageByIPAddress->update();
