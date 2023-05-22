@@ -11,6 +11,7 @@
 					<th>{translate text="Blocked API Requests" isAdminFacing=true}</th>
 					<th>{translate text="Login Attempts" isAdminFacing=true}</th>
 					<th>{translate text="Failed Logins" isAdminFacing=true}</th>
+					<th>{translate text="Num Spammy Requests" isAdminFacing=true}</th>
 					<th>{translate text="Last Request" isAdminFacing=true}</th>
 				</tr>
 			</thead>
@@ -23,6 +24,7 @@
 						<td>{$ipStats->numBlockedApiRequests|number_format}</td>
 						<td>{$ipStats->numLoginAttempts|number_format}</td>
 						<td>{$ipStats->numFailedLoginAttempts|number_format}</td>
+						<td>{$ipStats->numSpammyRequests|number_format}</td>
 						<td>{$ipStats->lastRequest|date_format:"%D %T"}</td>
 					</tr>
 				{/foreach}
