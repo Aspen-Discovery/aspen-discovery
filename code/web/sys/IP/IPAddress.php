@@ -11,6 +11,7 @@ class IPAddress extends DataObject {
 	public $isOpac;                   //tinyint(1)
 	public $defaultLogMeOutAfterPlacingHoldOn;
 	public $blockAccess;
+	public $blockedForSpam;
 	public $allowAPIAccess;
 	public $showDebuggingInformation;
 	public $logTimingInformation;
@@ -83,6 +84,13 @@ class IPAddress extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Block Access from this IP',
 				'description' => 'Traffic from this IP will not be allowed to use Aspen.',
+				'default' => false,
+			],
+			'blockedForSpam' => [
+				'property' => 'blockedForSpam',
+				'type' => 'checkbox',
+				'label' => 'IP Blocked due to SPAM',
+				'description' => 'Traffic from this IP has been blocked from using Aspen due to SPAM traffic.',
 				'default' => false,
 			],
 			'allowAPIAccess' => [
@@ -337,7 +345,7 @@ class IPAddress extends DataObject {
 		$clientIP = IPAddress::getClientIP();
 		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 		if (!empty($ipInfo)) {
-			return $ipInfo->blockAccess;
+			return $ipInfo->blockAccess || $ipInfo->blockedForSpam;
 		} else {
 			return false;
 		}
