@@ -46,8 +46,8 @@ class LoadPreferredPickupLocations extends Admin_Admin {
 				while ($preferredPickupLocationRow = fgetcsv($preferredPickupLocationFileHnd)) {
 					if (count($preferredPickupLocationRow) >= 4) {
 						$userBarcode = $preferredPickupLocationRow[1];
-						$homeLibraryCode = $preferredPickupLocationRow[2];
-						$preferredPickupLocationCode = $preferredPickupLocationRow[3];
+						$preferredPickupLocationCode = $preferredPickupLocationRow[2];
+						$homeLibraryCode = $preferredPickupLocationRow[3];
 						if ($homeLibraryCode != $preferredPickupLocationCode) {
 							$user = new User();
 							$user->cat_username = $userBarcode;

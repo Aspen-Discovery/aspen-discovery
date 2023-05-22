@@ -15,7 +15,7 @@
     {else}
 		<div class="row">
 			<div class="col-xs-12">
-				<div class="alert alert-info">{translate text="This tool can be used to preload preferred pickup locations during migration.  A CSV File must be provided where the second column is the barcode, the third is the home location, and the fourth is the preferred pickup location." isAdminFacing=true}</div>
+				<div class="alert alert-info">{translate text="This tool can be used to preload preferred pickup locations during migration.  A CSV File must be provided where the second column is the barcode, the third is the preferred pickup location, and the fourth is the home location." isAdminFacing=true}</div>
 			</div>
 		</div>
 		<form enctype="multipart/form-data" id='loadPreferredPickupLocationForm' method="post" role="form" aria-label="{translate text="Preferred Pickup Location Form" isAdminFacing=true inAttribute=true}">
@@ -29,7 +29,7 @@
 					<input type="text" class="form-control" id="selected-file-label" readonly>
 				</div>
 			</div>
-			<small id="preferredPickupLocationFileHelp" class="form-text text-muted">{translate text="A CSV file should be uploaded where the second column is the barcode, the third is the home location, and the fourth is the preferred pickup location." isAdminFacing=true}</small>
+			<small id="preferredPickupLocationFileHelp" class="form-text text-muted">{translate text="A CSV file should be uploaded where the second column is the barcode, the third is the preferred pickup location, and the fourth is the home location." isAdminFacing=true}</small>
 			</div>
 			<div class="form-group">
 				<button type="submit" name="submit" value="mapBiblios" class="btn btn-primary">{translate text="Load Preferred Pickup Locations" isAdminFacing=true}</button>
