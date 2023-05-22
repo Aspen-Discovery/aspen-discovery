@@ -1294,10 +1294,12 @@ function checkForMaliciouslyFormattedParameters(): void {
 		}
 	}
 	if (isset($_REQUEST['action'])) {
-		if (is_array($_REQUEST['action'])) {
-			$isMaliciousUrl = true;
-		} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['action'])) {
-			$isMaliciousUrl = true;
+		if ($_REQUEST['module'] != 'fonts') {
+			if (is_array($_REQUEST['action'])) {
+				$isMaliciousUrl = true;
+			} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['action'])) {
+				$isMaliciousUrl = true;
+			}
 		}
 	}
 	if (isset($_REQUEST['followupAction'])) {
