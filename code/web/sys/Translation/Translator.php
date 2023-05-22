@@ -179,29 +179,17 @@ class Translator {
 								$defaultTranslation = $defaultText;
 								$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
 							} else {
-								//Check the community content server to see if there is a translation there
-								$translatedInCommunity = false;
-								if ($activeLanguage->code != 'en') {
-									$translationResponse = $this->getCommunityTranslation($phrase, $activeLanguage);
-									if ($translationResponse['isTranslatedInCommunity']) {
-										$translation->translated = 1;
-										$defaultTranslation = $translationResponse['translation'];
-									}
-								}
-								if (!$translatedInCommunity) {
-									//We don't have a translation in the database, load a default from the ini file if possible
-									$this->loadTranslationsFromIniFile();
-									if (isset($this->words[$phrase])) {
-										$defaultTranslation = $this->words[$phrase];
-										$translation->translated = 1;
+								$this->loadTranslationsFromIniFile();
+								if (isset($this->words[$phrase])) {
+									$defaultTranslation = $this->words[$phrase];
+									$translation->translated = 1;
+								} else {
+									$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
+									//Nothing in the ini, just return default
+									if ($this->debug) {
+										$defaultTranslation = "translate_index_not_found($phrase)";
 									} else {
-										$translation->translated = ($activeLanguage->id == 1) ? 1 : 0;
-										//Nothing in the ini, just return default
-										if ($this->debug) {
-											$defaultTranslation = "translate_index_not_found($phrase)";
-										} else {
-											$defaultTranslation = $phrase;
-										}
+										$defaultTranslation = $phrase;
 									}
 								}
 							}
@@ -215,23 +203,6 @@ class Translator {
 						} elseif ($defaultTextChanged) {
 							$translation->needsReview = 1;
 							$translation->update();
-						}
-
-						//If we haven't gotten a translation, check community for a translation, but only once a day.
-						try {
-							$now = time();
-							if (!$translation->translated && ($translation->lastCheckInCommunity < ($now - 24 * 60 * 60) || isset($_REQUEST['reload']))) {
-								$translationResponse = $this->getCommunityTranslation($phrase, $activeLanguage);
-								if ($translationResponse['isTranslatedInCommunity']) {
-									$translation->translated = 1;
-									$translation->translation = trim($translationResponse['translation']);
-								} else {
-									$translation->lastCheckInCommunity = $now;
-								}
-								$translation->update();
-							}
-						}catch (Exception $e) {
-							//This will happen before last check in community is set.
 						}
 
 						if ($translationMode) {
