@@ -38,7 +38,7 @@ foreach ($notifications as $notification) {
 				} else {
 					require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 					$body['data'] = [
-						'url' => urlencode(AppSetting::getDeepLinkByName($notificationToSend->deepLinkPath, $notificationToSend->deepLinkId ?? '')),
+						'url' => urlencode(LocationSetting::getDeepLinkByName($notificationToSend->deepLinkPath, $notificationToSend->deepLinkId ?? '')),
 					];
 				}
 
