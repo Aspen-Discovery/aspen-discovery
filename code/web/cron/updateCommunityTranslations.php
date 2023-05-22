@@ -9,7 +9,7 @@ require_once ROOT_DIR . '/sys/Translation/Translation.php';
 $allTranslationTerms = new TranslationTerm();
 $translationTerms = array_filter($allTranslationTerms->fetchAll('id'));
 $allLanguages = new Language();
-$languages = array_filter($allLanguages->fetchAll('code'));
+$languages = array_filter($allLanguages->fetchAll('id'));
 $numUpdated = 0;
 
 foreach($languages as $languageId) {
