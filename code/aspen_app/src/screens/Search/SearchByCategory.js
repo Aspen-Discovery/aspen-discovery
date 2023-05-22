@@ -44,9 +44,11 @@ export default class SearchByCategory extends Component {
           const { navigation, route } = this.props;
           const libraryUrl = this.context.library.baseUrl;
           const language = route.params?.language ?? 'en';
+          const prevRoute = route.params?.prevRoute ?? 'HomeScreen';
 
           this.setState({
                language: language,
+               prevRoute: prevRoute,
           });
 
           await getLists(libraryUrl);
@@ -135,7 +137,7 @@ export default class SearchByCategory extends Component {
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, url, item.title_display)}>
                     <HStack space={3}>
-                         <VStack maxW="30%">
+                         <VStack maxW="35%">
                               <CachedImage
                                    cacheKey={item.id}
                                    alt={item.title_display}
@@ -219,13 +221,13 @@ export default class SearchByCategory extends Component {
           const libraryContext = route.params.libraryContext;
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
           if (version >= '23.01.00') {
-               navigateStack('SearchTab', 'CategoryResultItem', {
+               navigateStack('HomeTab', 'CategoryResultItem', {
                     id: item,
                     url: url,
                     title: getCleanTitle(title),
                });
           } else {
-               navigateStack('SearchTab', 'CategoryResultItem221200', {
+               navigateStack('HomeTab', 'CategoryResultItem221200', {
                     id: item,
                     title: getCleanTitle(title),
                     url: url,

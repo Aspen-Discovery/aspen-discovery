@@ -41,6 +41,12 @@ export const MyHolds = () => {
           expiration: 'Sort by Expiration Date',
      });
 
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
+
      useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateHolds(data);
@@ -171,10 +177,8 @@ export const MyHolds = () => {
      const resetGroup = async () => {
           setLoading(true);
           clearGroupValue();
-          queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
-          refreshProfile(library.baseUrl).then((result) => {
-               updateUser(result);
-          });
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
 
      const handleDateChange = (date) => {
@@ -184,7 +188,7 @@ export const MyHolds = () => {
      const noHolds = (title) => {
           if (title === 'Pending') {
                return (
-                    <Center mt={5} mb={5}>
+                    <Center safeArea={2}>
                          <Text bold fontSize="lg">
                               {getTermFromDictionary(language, 'pending_holds_none')}
                          </Text>
@@ -192,7 +196,7 @@ export const MyHolds = () => {
                );
           } else {
                return (
-                    <Center mt={5} mb={5}>
+                    <Center safeArea={2}>
                          <Text bold fontSize="lg">
                               {getTermFromDictionary(language, 'holds_ready_for_pickup_none')}
                          </Text>

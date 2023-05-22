@@ -11,7 +11,7 @@ import { getTermFromDictionary } from '../../../translations/TranslationService'
 
 const CreateList = () => {
      const queryClient = useQueryClient();
-     const { updateUser } = React.useContext(UserContext);
+     const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { updateLists } = React.useContext(UserContext);
@@ -85,7 +85,7 @@ const CreateList = () => {
                                                        status = 'danger';
                                                   }
                                                   queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-                                                  queryClient.invalidateQueries({ queryKey: ['lists', library.baseUrl, language] });
+                                                  queryClient.invalidateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
                                                   toggle();
                                                   popAlert(getTermFromDictionary(language, 'list_created'), res.message, status);
                                              });

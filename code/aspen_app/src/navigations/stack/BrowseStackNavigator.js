@@ -4,11 +4,15 @@ import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 
 import { DiscoverHomeScreen } from '../../screens/BrowseCategory/Home';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
-import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
-import {BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
+import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { Editions } from '../../screens/GroupedWork/Editions';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import SearchByCategory from '../../screens/Search/SearchByCategory';
+import { SearchResultsForList } from '../../screens/Search/SearchByList';
+import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
+import { CommonActions } from '@react-navigation/native';
 
 const BrowseStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -20,74 +24,62 @@ const BrowseStackNavigator = () => {
                screenOptions={({ navigation, route }) => ({
                     headerShown: true,
                     headerBackTitleVisible: false,
-                    headerLeft: () => {
-                         if (route.name !== 'HomeScreen') {
-                              return (
-                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                        <ChevronLeftIcon size={6} color="primary.baseContrast" />
-                                   </Pressable>
-                              );
-                         } else {
-                              return null;
-                         }
-                    },
                })}>
-               <Stack.Group>
-                    <Stack.Screen
-                         name="HomeScreen"
-                         component={DiscoverHomeScreen}
-                         options={{
-                              title: getTermFromDictionary(language, 'nav_discover'),
-                         }}
-                         initialParams={{
-                              libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
-                              locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
-                              userContext: JSON.stringify(React.useContext(UserContext)),
-                              browseCategoriesContext: JSON.stringify(React.useContext(BrowseCategoryContext)),
-                         }}
-                    />
-                    <Stack.Screen
-                         name="GroupedWorkScreen"
-                         component={GroupedWorkScreen}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
-                         initialParams={{ prevRoute: 'DiscoveryScreen' }}
-                    />
-                    <Stack.Screen
-                         name="CopyDetails"
-                         component={WhereIsIt}
-                         options={({ navigation }) => ({
-                              title: getTermFromDictionary(language, 'where_is_it'),
-                              headerShown: true,
-                              presentation: 'modal',
-                              headerLeft: () => {
-                                   return <></>;
-                              },
-                              headerRight: () => (
-                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                        <CloseIcon color="primary.baseContrast" size={5} />
-                                   </Pressable>
-                              ),
-                         })}
-                    />
-                   <Stack.Screen
-                       name="CreateVDXRequest"
-                       component={CreateVDXRequest}
-                       options={({ navigation }) => ({
-                           title: getTermFromDictionary(language, 'ill_request_title'),
-                           presentation: 'modal',
-                           headerLeft: () => {
-                               return <></>;
-                           },
-                           headerRight: () => (
-                               <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+               <Stack.Screen
+                    name="HomeScreen"
+                    component={DiscoverHomeScreen}
+                    options={{
+                         title: getTermFromDictionary(language, 'nav_discover'),
+                    }}
+                    initialParams={{
+                         libraryContext: JSON.stringify(React.useContext(LibrarySystemContext)),
+                         locationContext: JSON.stringify(React.useContext(LibraryBranchContext)),
+                         userContext: JSON.stringify(React.useContext(UserContext)),
+                         browseCategoriesContext: JSON.stringify(React.useContext(BrowseCategoryContext)),
+                    }}
+               />
+               <Stack.Screen
+                    name="GroupedWorkScreen"
+                    component={GroupedWorkScreen}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+                    initialParams={{ prevRoute: 'HomeScreen' }}
+               />
+               <Stack.Screen
+                    name="CopyDetails"
+                    component={WhereIsIt}
+                    options={({ navigation }) => ({
+                         title: getTermFromDictionary(language, 'where_is_it'),
+                         headerShown: true,
+                         presentation: 'modal',
+                         headerLeft: () => {
+                              return <></>;
+                         },
+                         headerRight: () => (
+                              <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
                                    <CloseIcon color="primary.baseContrast" size={5} />
-                               </Pressable>
-                           ),
-                       })}
-                   />
-               </Stack.Group>
+                              </Pressable>
+                         ),
+                    })}
+               />
+               <Stack.Screen
+                    name="CreateVDXRequest"
+                    component={CreateVDXRequest}
+                    options={({ navigation }) => ({
+                         title: getTermFromDictionary(language, 'ill_request_title'),
+                         presentation: 'modal',
+                         headerLeft: () => {
+                              return <></>;
+                         },
+                         headerRight: () => (
+                              <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                   <CloseIcon color="primary.baseContrast" size={5} />
+                              </Pressable>
+                         ),
+                    })}
+               />
+
                <Stack.Screen
                     name="EditionsModal"
                     component={EditionsModal}
@@ -96,22 +88,100 @@ const BrowseStackNavigator = () => {
                          presentation: 'modal',
                     }}
                />
-              <Stack.Group>
-                  <Stack.Screen
-                      name="GroupedWorkScreen221200"
-                      component={GroupedWork221200}
-                      options={({ route }) => ({
-                          title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                      })}
-                  />
-              </Stack.Group>
+
+               <Stack.Screen
+                    name="GroupedWorkScreen221200"
+                    component={GroupedWork221200}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+               />
+
+               <Stack.Screen
+                    name="SearchByCategory"
+                    component={SearchByCategory}
+                    options={({ route }) => ({
+                         title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.title,
+                    })}
+               />
+               <Stack.Screen
+                    name="CategoryResultItem"
+                    component={GroupedWorkScreen}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+                    initialParams={{ prevRoute: 'SearchResults' }}
+               />
+               <Stack.Screen
+                    name="CategoryResultItem221200"
+                    component={GroupedWork221200}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+               />
+
+               <Stack.Screen
+                    name="SearchByList"
+                    component={SearchResultsForList}
+                    options={({ route }) => ({
+                         title: route.params?.title ? getTermFromDictionary(language, 'results_for') + ' ' + route.params.title : getTermFromDictionary(language, 'search_results'),
+                    })}
+               />
+               <Stack.Screen
+                    name="ListResults"
+                    component={SearchResultsForList}
+                    options={({ route }) => ({
+                         title: route.params?.title ? getTermFromDictionary(language, 'results_for') + ' ' + route.params.title : getTermFromDictionary(language, 'search_results'),
+                    })}
+               />
+               <Stack.Screen
+                    name="ListResultItem"
+                    component={GroupedWorkScreen}
+                    options={({ route }) => ({
+                         title: route.params?.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+                    initialParams={{ prevRoute: 'SearchResults' }}
+               />
+               <Stack.Screen
+                    name="ListResultItem221200"
+                    component={GroupedWork221200}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+               />
+
+               <Stack.Screen
+                    name="SearchBySavedSearch"
+                    component={SearchBySavedSearch}
+                    options={({ route }) => ({
+                         title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.title,
+                         libraryContext: React.useContext(LibrarySystemContext),
+                         locationContext: React.useContext(LibraryBranchContext),
+                         userContext: React.useContext(UserContext),
+                    })}
+               />
+               <Stack.Screen
+                    name="SavedSearchResultItem"
+                    component={GroupedWorkScreen}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+                    initialParams={{ prevRoute: 'SearchResults' }}
+               />
+               <Stack.Screen
+                    name="SavedSearchResultItem221200"
+                    component={GroupedWork221200}
+                    options={({ route }) => ({
+                         title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                    })}
+               />
           </Stack.Navigator>
      );
 };
 
 const EditionsStack = createStackNavigator();
 export const EditionsModal = () => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      return (
           <EditionsStack.Navigator
                id="EditionsStack"

@@ -18,6 +18,7 @@ import AddToList from '../../Search/AddToList';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 
 export const MyReadingHistory = () => {
+     const navigation = useNavigation();
      const queryClient = useQueryClient();
      const [isLoading, setLoading] = React.useState(false);
      const [page, setPage] = React.useState(1);
@@ -34,6 +35,12 @@ export const MyReadingHistory = () => {
           format: 'Sort by Format',
           last_used: 'Sort by Last Used',
      });
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['reading_history', user.id, library.baseUrl, page, sort], () => fetchReadingHistory(page, pageSize, sort, library.baseUrl), {
           keepPreviousData: true,
@@ -353,10 +360,10 @@ const Item = (data) => {
           });
      };
 
-     const imageUrl = library.baseUrl + item.coverUrl;
+     const imageUrl = library.baseUrl + encodeURI(item.coverUrl);
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
-               <HStack space={3} maxW="75%" justifyContent="flex-start" alignItems="flex-start">
+               <HStack space={3}>
                     <VStack maxW="30%">
                          <CachedImage
                               cacheKey={item.permanentId}
@@ -390,7 +397,7 @@ const Item = (data) => {
                          />
                          <AddToList itemId={item.permanentId} btnStyle="sm" />
                     </VStack>
-                    <VStack>
+                    <VStack w="65%">
                          {getTitle(item.title)}
                          {getAuthor(item.author)}
                          {getFormat(item.format)}

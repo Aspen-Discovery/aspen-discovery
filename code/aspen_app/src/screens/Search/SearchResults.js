@@ -36,6 +36,8 @@ export const SearchResults = () => {
 
      let params = useRoute().params.pendingParams ?? [];
 
+     const prevRoute = useRoute().params.prevRoute ?? 'SearchHome';
+
      const type = useRoute().params.type ?? 'catalog';
      const id = useRoute().params.id ?? null;
 
@@ -199,12 +201,10 @@ const DisplayResult = (data) => {
 
      const imageUrl = item.image;
 
-     console.log(item);
-
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
-                    <VStack maxW="30%">
+                    <VStack maxW="35%">
                          <CachedImage
                               cacheKey={item.key}
                               alt={item.title}

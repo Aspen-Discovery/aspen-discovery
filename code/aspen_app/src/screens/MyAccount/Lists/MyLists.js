@@ -4,6 +4,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
@@ -14,11 +15,18 @@ import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const MyLists = () => {
+     const navigation = useNavigation();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { lists, updateLists } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const [loading, setLoading] = React.useState(false);
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
 
      useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
           onSuccess: (data) => {

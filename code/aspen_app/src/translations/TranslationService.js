@@ -210,6 +210,18 @@ export async function getTranslatedTerm(language, url) {
      }
 }
 
+/**
+ * Returns translation of terms used in Aspen LiDA for the given language
+ * @param {array} terms
+ * @param {string} language
+ * @param {string} url
+ **/
+async function getTranslatedTermWithValues(terms, language, url) {
+     _.map(terms, async function (term) {
+          await getTranslationsWithValues(term.key, term.value, language, url, true);
+     });
+}
+
 export async function getTranslatedTermsForAllLanguages(languages, url) {
      const languagesArray = [];
      _.forEach(languages, function (value) {
@@ -218,33 +230,128 @@ export async function getTranslatedTermsForAllLanguages(languages, url) {
      _.map(languagesArray, async function (language) {
           console.log('Getting translations for ' + language + '...');
           await getTranslatedTerm(language, url);
-          await getTranslationsWithValues('titles_on_hold_for_ils', 'Physical Materials', language, url, true);
-          await getTranslationsWithValues('titles_on_hold_for_overdrive', 'OverDrive', language, url, true);
-          await getTranslationsWithValues('titles_on_hold_for_cloud_library', 'cloudLibrary', language, url, true);
-          await getTranslationsWithValues('titles_on_hold_for_axis_360', 'Axis 360', language, url, true);
-          await getTranslationsWithValues('checkouts_for_ils', 'Physical Materials', language, url, true);
-          await getTranslationsWithValues('checkouts_for_overdrive', 'OverDrive', language, url, true);
-          await getTranslationsWithValues('checkouts_for_hoopla', 'Hoopla', language, url, true);
-          await getTranslationsWithValues('checkouts_for_cloud_library', 'cloudLibrary', language, url, true);
-          await getTranslationsWithValues('checkouts_for_axis_360', 'Axis 360', language, url, true);
-          await getTranslationsWithValues('filter_by_ils', 'Physical Materials', language, url, true);
-          await getTranslationsWithValues('filter_by_overdrive', 'OverDrive', language, url, true);
-          await getTranslationsWithValues('filter_by_cloud_library', 'cloudLibrary', language, url, true);
-          await getTranslationsWithValues('filter_by_axis_360', 'Axis 360', language, url, true);
-          await getTranslationsWithValues('filter_by_hoopla', 'Hoopla', language, url, true);
-          await getTranslationsWithValues('filter_by_all', 'All', language, url, true);
-          await getTranslationsWithValues('sort_by_title', 'Title', language, url, true);
-          await getTranslationsWithValues('sort_by_author', 'Author', language, url, true);
-          await getTranslationsWithValues('sort_by_format', 'Format', language, url, true);
-          await getTranslationsWithValues('sort_by_status', 'Status', language, url, true);
-          await getTranslationsWithValues('sort_by_date_placed', 'Date Placed', language, url, true);
-          await getTranslationsWithValues('sort_by_position', 'Position', language, url, true);
-          await getTranslationsWithValues('sort_by_pickup_location', 'Pickup Location', language, url, true);
-          await getTranslationsWithValues('sort_by_library_account', 'Library Account', language, url, true);
-          await getTranslationsWithValues('sort_by_expiration', 'Expiration Date', language, url, true);
-          await getTranslationsWithValues('sort_by_date_added', 'Date Added', language, url, true);
-          await getTranslationsWithValues('sort_by_recently_added', 'Recently Added', language, url, true);
-          await getTranslationsWithValues('sort_by_user_defined', 'User Defined', language, url, true);
+
+          const titlesOnHold = [
+               {
+                    key: 'titles_on_hold_for_ils',
+                    value: getTermFromDictionary(language, 'physical_materials'),
+               },
+               {
+                    key: 'titles_on_hold_for_overdrive',
+                    value: getTermFromDictionary(language, 'overdrive'),
+               },
+               {
+                    key: 'titles_on_hold_for_cloud_library',
+                    value: getTermFromDictionary(language, 'cloud_library'),
+               },
+               {
+                    key: 'titles_on_hold_for_axis_360',
+                    value: getTermFromDictionary(language, 'axis_360'),
+               },
+          ];
+          const checkouts = [
+               {
+                    key: 'checkouts_for_ils',
+                    value: getTermFromDictionary(language, 'physical_materials'),
+               },
+               {
+                    key: 'checkouts_for_overdrive',
+                    value: getTermFromDictionary(language, 'overdrive'),
+               },
+               {
+                    key: 'checkouts_for_hoopla',
+                    value: getTermFromDictionary(language, 'hoopla'),
+               },
+               {
+                    key: 'checkouts_for_cloud_library',
+                    value: getTermFromDictionary(language, 'cloud_library'),
+               },
+               {
+                    key: 'checkouts_for_axis_360',
+                    value: getTermFromDictionary(language, 'axis_360'),
+               },
+          ];
+          const filterBy = [
+               {
+                    key: 'filter_by_ils',
+                    value: getTermFromDictionary(language, 'physical_materials'),
+               },
+               {
+                    key: 'filter_by_overdrive',
+                    value: getTermFromDictionary(language, 'overdrive'),
+               },
+               {
+                    key: 'filter_by_hoopla',
+                    value: getTermFromDictionary(language, 'hoopla'),
+               },
+               {
+                    key: 'filter_by_cloud_library',
+                    value: getTermFromDictionary(language, 'cloud_library'),
+               },
+               {
+                    key: 'filter_by_axis_360',
+                    value: getTermFromDictionary(language, 'axis_360'),
+               },
+               {
+                    key: 'filter_by_all',
+                    value: getTermFromDictionary(language, 'all'),
+               },
+          ];
+          const sortBy = [
+               {
+                    key: 'sort_by_title',
+                    value: getTermFromDictionary(language, 'title'),
+               },
+               {
+                    key: 'sort_by_author',
+                    value: getTermFromDictionary(language, 'author'),
+               },
+               {
+                    key: 'sort_by_format',
+                    value: getTermFromDictionary(language, 'format'),
+               },
+               {
+                    key: 'sort_by_status',
+                    value: getTermFromDictionary(language, 'status'),
+               },
+               {
+                    key: 'sort_by_date_placed',
+                    value: getTermFromDictionary(language, 'date_placed'),
+               },
+               {
+                    key: 'sort_by_position',
+                    value: getTermFromDictionary(language, 'position'),
+               },
+               {
+                    key: 'sort_by_pickup_location',
+                    value: getTermFromDictionary(language, 'pickup_location'),
+               },
+               {
+                    key: 'sort_by_library_account',
+                    value: getTermFromDictionary(language, 'library_account'),
+               },
+               {
+                    key: 'sort_by_expiration',
+                    value: getTermFromDictionary(language, 'expiration'),
+               },
+               {
+                    key: 'sort_by_date_added',
+                    value: getTermFromDictionary(language, 'date_added'),
+               },
+               {
+                    key: 'sort_by_recently_added',
+                    value: getTermFromDictionary(language, 'recently_added'),
+               },
+               {
+                    key: 'sort_by_user_defined',
+                    value: getTermFromDictionary(language, 'user_defined'),
+               },
+          ];
+
+          await getTranslatedTermWithValues(titlesOnHold, language, url);
+          await getTranslatedTermWithValues(checkouts, language, url);
+          await getTranslatedTermWithValues(filterBy, language, url);
+          await getTranslatedTermWithValues(sortBy, language, url);
      });
      return true;
 }

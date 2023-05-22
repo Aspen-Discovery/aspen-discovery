@@ -10,7 +10,9 @@ import React, { Component } from 'react';
 import { userContext } from '../../../context/user';
 import { LibrarySystemContext } from '../../../context/initialContext';
 import { LanguageContext } from '../../../context/initialContext';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { SEARCH } from '../../../util/search';
+import { UnsavedChangesExit } from '../../Search/UnsavedChanges';
 
 export default class Preferences extends Component {
      static contextType = userContext;
@@ -47,6 +49,7 @@ export default class Preferences extends Component {
      }
 
      componentDidMount = async () => {
+          const { navigation } = this.props;
           if (Constants.isDevice) {
                const expoToken = (await Notifications.getExpoPushTokenAsync()).data;
                if (expoToken) {
@@ -61,6 +64,11 @@ export default class Preferences extends Component {
                     }
                }
           }
+
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+
           this.setState({
                isLoading: false,
           });
@@ -202,12 +210,13 @@ export default class Preferences extends Component {
                <>
                     <LibrarySystemContext.Consumer>
                          {(library) => (
-                             <LanguageContext.Consumer>
-                                  {(language) => (
-                                       <Box flex={1} safeArea={3}>
-                                            <FlatList data={this.state.defaultMenuItems} renderItem={({item}) => this.renderItem(item, user.id, library, language.language)} keyExtractor={(item, index) => index.toString()}/>
-                                       </Box>)}
-                             </LanguageContext.Consumer>
+                              <LanguageContext.Consumer>
+                                   {(language) => (
+                                        <Box flex={1} safeArea={3}>
+                                             <FlatList data={this.state.defaultMenuItems} renderItem={({ item }) => this.renderItem(item, user.id, library, language.language)} keyExtractor={(item, index) => index.toString()} />
+                                        </Box>
+                                   )}
+                              </LanguageContext.Consumer>
                          )}
                     </LibrarySystemContext.Consumer>
                </>

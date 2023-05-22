@@ -12,12 +12,19 @@ import { getTermFromDictionary } from '../../../../translations/TranslationServi
 import { getLists } from '../../../../util/api/list';
 
 export const MyLinkedAccounts = () => {
+     const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
      const { user, accounts, viewers, cards, updateLinkedAccounts, updateLinkedViewerAccounts, updateLibraryCards } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const isFetchingAccounts = useIsFetching({ queryKey: ['linked_accounts', user.id] });
      const isFetchingViewers = useIsFetching({ queryKey: ['viewer_accounts', user.id] });
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
 
      useQuery(['linked_accounts', user.id, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
           onSuccess: (data) => {
