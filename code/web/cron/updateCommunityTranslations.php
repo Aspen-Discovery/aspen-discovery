@@ -2,38 +2,44 @@
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../bootstrap_aspen.php';
 
-require_once ROOT_DIR . '/sys/Translation/Translation.php';
+require_once ROOT_DIR . '/sys/Translation/TranslationTerm.php';
 require_once ROOT_DIR . '/sys/Translation/Language.php';
+require_once ROOT_DIR . '/sys/Translation/Translation.php';
 
-$allTranslations = new Translation();
-$translations = array_filter($allTranslations->fetchAll('id'));
-
+$allTranslationTerms = new TranslationTerm();
+$translationTerms = array_filter($allTranslationTerms->fetchAll('id'));
+$allLanguages = new Language();
+$languages = array_filter($allLanguages->fetchAll('code'));
 $numUpdated = 0;
 
-foreach($translations as $translationToUpdate) {
-	$translation = new Translation();
-	$translation->id = $translationToUpdate;
-	if($translation->find(true)) {
-		$language = new Language();
-		$language->id = $translation->languageId;
-		if($language->find(true)) {
-			try {
-				$now = time();
-				if (!$translation->translated) {
-					$translationResponse = getCommunityTranslation($translation->translation, $language->code);
-					if ($translationResponse['isTranslatedInCommunity']) {
-						$translation->translated = 1;
-						$translation->translation = trim($translationResponse['translation']);
-					} else {
-						$translation->lastCheckInCommunity = $now;
+foreach($languages as $languageId) {
+	$language = new Language();
+	$language->id = $languageId;
+	if($language->find(true)) {
+		if($language->code != 'en' || $language->code != 'pig' || $language->code != 'ubb') {
+			foreach($translationTerms as $translationTermId) {
+				$translation = new Translation();
+				$translation->termId = $translationTermId;
+				$translation->languageId = $language->id;
+				if(!$translation->find(true)) {
+					try {
+						$now = time();
+						$translationResponse = getCommunityTranslation($translation->translation, $language->code);
+						if ($translationResponse['isTranslatedInCommunity']) {
+							$translation->translated = 1;
+							$translation->translation = trim($translationResponse['translation']);
+						} else {
+							$translation->lastCheckInCommunity = $now;
+						}
+						$translation->update();
+						$numUpdated++;
+					} catch (Exception $e) {
+						// This will happen before last check in community is set.
 					}
-					$translation->update();
-					$numUpdated++;
+				} else {
+					// Translation already exists
 				}
-			} catch (Exception $e) {
-				// This will happen before last check in community is set.
 			}
-
 		}
 	}
 }
