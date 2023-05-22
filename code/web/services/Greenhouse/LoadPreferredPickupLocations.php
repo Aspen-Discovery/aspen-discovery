@@ -59,7 +59,7 @@ class LoadPreferredPickupLocations extends Admin_Admin {
 									continue;
 								}
 							}
-							if (array_key_exists($preferredPickupLocationCode, $locationCodeToIdMap)) {
+							if (array_key_exists($preferredPickupLocationCode, $locationCodeToIdMap) && array_key_exists($preferredPickupLocationCode, $homeLibraryCode)) {
 								$user->homeLocationId = $locationCodeToIdMap[$homeLibraryCode];
 								$user->pickupLocationId = $locationCodeToIdMap[$preferredPickupLocationCode];
 								$user->update();
