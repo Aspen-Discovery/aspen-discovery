@@ -959,17 +959,17 @@ class User extends DataObject {
 			'description' => 'A list of roles that the user has.',
 		];
 
-		if ($context == '') {
-			unset($structure['username']);
-			unset($structure['password']);
-			unset($structure['email']);
-		} elseif ($context == 'development') {
+		if ($context == 'development') {
 			$structure['firstname']['type'] = 'text';
 			$structure['lastname']['type'] = 'text';
 			unset($structure['homeLibraryName']);
 			unset($structure['homeLocation']);
 			unset($structure['barcode']);
 			unset($structure['roles']);
+		} else {
+			unset($structure['username']);
+			unset($structure['password']);
+			unset($structure['email']);
 		}
 
 		return $structure;

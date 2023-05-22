@@ -27,6 +27,7 @@ class Admin_UsageByIP extends Admin_Dashboard {
 		$usageByIP->selectAdd('SUM(numBlockedApiRequests) AS numBlockedApiRequests');
 		$usageByIP->selectAdd('SUM(numLoginAttempts) AS numLoginAttempts');
 		$usageByIP->selectAdd('SUM(numFailedLoginAttempts) AS numFailedLoginAttempts');
+		$usageByIP->selectAdd('SUM(numSpammyRequests) AS numSpammyRequests');
 		$usageByIP->selectAdd('MAX(lastRequest) AS lastRequest');
 
 		$usageByIP->orderBy('lastRequest DESC');
