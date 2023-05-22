@@ -1376,6 +1376,9 @@ function trackSpammyRequest() {
 			$ipAddress = new IPAddress();
 			$ipAddress->ip = IPAddress::getClientIP();
 			if (!$ipAddress->find(true)) {
+				$ipAddress->locationid = -1;
+				$ipAddress->location = 'Spam IP';
+				$ipAddress->isOpac = 0;
 				$ipAddress->calcIpRange();
 				$ipAddress->insert();
 			}
