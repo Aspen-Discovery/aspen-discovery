@@ -18,26 +18,32 @@ foreach($languages as $languageId) {
 	if($language->find(true)) {
 		if($language->code != 'en' || $language->code != 'pig' || $language->code != 'ubb') {
 			foreach($translationTerms as $translationTermId) {
-				$translation = new Translation();
-				$translation->termId = $translationTermId;
-				$translation->languageId = $language->id;
-				if(!$translation->find(true)) {
-					try {
-						$now = time();
-						$translationResponse = getCommunityTranslation($translation->translation, $language->code);
-						if ($translationResponse['isTranslatedInCommunity']) {
-							$translation->translated = 1;
-							$translation->translation = trim($translationResponse['translation']);
+				$term = new TranslationTerm();
+				$term->id = $translationTermId;
+				if($term->find(true)) {
+					if($term->isMetadata === 0) {
+						$translation = new Translation();
+						$translation->termId = $translationTermId;
+						$translation->languageId = $language->id;
+						if(!$translation->find(true)) {
+							try {
+								$now = time();
+								$translationResponse = getCommunityTranslation($translation->translation, $language->code);
+								if ($translationResponse['isTranslatedInCommunity']) {
+									$translation->translated = 1;
+									$translation->translation = trim($translationResponse['translation']);
+								} else {
+									$translation->lastCheckInCommunity = $now;
+								}
+								$translation->update();
+								$numUpdated++;
+							} catch (Exception $e) {
+								// This will happen before last check in community is set.
+							}
 						} else {
-							$translation->lastCheckInCommunity = $now;
+							// Translation already exists
 						}
-						$translation->update();
-						$numUpdated++;
-					} catch (Exception $e) {
-						// This will happen before last check in community is set.
 					}
-				} else {
-					// Translation already exists
 				}
 			}
 		}
