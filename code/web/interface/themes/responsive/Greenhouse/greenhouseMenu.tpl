@@ -70,6 +70,7 @@
 							<div class="adminMenuLink "><a href="/Greenhouse/UpdateKohaBorrowerNumbers">{translate text="Update Koha Borrower Numbers" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/MergeDuplicateBarcodes">{translate text="Merge Duplicate Barcodes" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/MapBiblioNumbers">{translate text="Map Biblio Numbers" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/LoadPreferredPickupLocations">{translate text="Load Preferred Pickup Locations" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/ClearAspenData">{translate text="Clear Aspen Data" isAdminFacing=true}</a></div>
 						</div>
 					</div>
