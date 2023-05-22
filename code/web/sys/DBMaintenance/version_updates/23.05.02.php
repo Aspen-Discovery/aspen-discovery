@@ -13,8 +13,8 @@ function getUpdates23_05_02(): array {
 		], //sample*/
 
 		'track_spammy_urls_by_ip' => [
-			'title' => 'Increase Length of New Materials Request Column',
-			'description' => 'Increase Length of New Materials Request Column',
+			'title' => 'Add tracking of spammy search terms by IP',
+			'description' => 'Add tracking of spammy search terms by IP',
 			'continueOnError' => false,
 			'sql' => [
 				'ALTER TABLE usage_by_ip_address ADD COLUMN numSpammyRequests INT DEFAULT 0',
