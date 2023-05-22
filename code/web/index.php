@@ -1293,6 +1293,13 @@ function checkForMaliciouslyFormattedParameters(): void {
 			$isMaliciousUrl = true;
 		}
 	}
+	if (isset($_REQUEST['action'])) {
+		if (is_array($_REQUEST['action'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['action'])) {
+			$isMaliciousUrl = true;
+		}
+	}
 	if (isset($_REQUEST['followupAction'])) {
 		if (is_array($_REQUEST['followupAction'])) {
 			$isMaliciousUrl = true;
@@ -1318,6 +1325,11 @@ function checkForMaliciouslyFormattedParameters(): void {
 		if (is_array($_REQUEST['author'])) {
 			$isMaliciousUrl = true;
 		} elseif (isSpammySearchTerm($_REQUEST['author'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['id'])) {
+		if (isSpammySearchTerm($_REQUEST['id'])) {
 			$isMaliciousUrl = true;
 		}
 	}
