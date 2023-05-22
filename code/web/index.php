@@ -1297,7 +1297,7 @@ function checkForMaliciouslyFormattedParameters(): void {
 		if ($_REQUEST['module'] != 'fonts') {
 			if (is_array($_REQUEST['action'])) {
 				$isMaliciousUrl = true;
-			} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['action'])) {
+			} elseif (!preg_match_all('/^[a-zA-Z0-9.-]+$/', $_REQUEST['action'])) {
 				$isMaliciousUrl = true;
 			}
 		}
