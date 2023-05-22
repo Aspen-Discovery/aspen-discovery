@@ -14,7 +14,7 @@ import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts } from '../../util/api/user';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 let maxCategories = 5;
