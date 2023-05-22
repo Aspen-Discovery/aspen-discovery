@@ -14,6 +14,7 @@ class UsageByIPAddress extends DataObject {
 	public $lastRequest;
 	public $numLoginAttempts;
 	public $numFailedLoginAttempts;
+	public $numSpammyRequests;
 
 	public function getUniquenessFields(): array {
 		return [

@@ -247,6 +247,7 @@ if (isset($_REQUEST['lookfor'])) {
 				$interface->assign('action', 'Handle404');
 				$module = 'Error';
 				$action = 'Handle404';
+				trackSpammyRequest();
 				require_once ROOT_DIR . "/services/Error/Handle404.php";
 			}
 			if (preg_match('~(https|mailto|http):/{0,2}~i', $searchTerm)) {
@@ -273,6 +274,7 @@ if (isset($_REQUEST['lookfor'])) {
 			$interface->assign('action', 'Handle404');
 			$module = 'Error';
 			$action = 'Handle404';
+			trackSpammyRequest();
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 		}
 		// Basic Search
@@ -306,6 +308,7 @@ if (isset($_REQUEST['filter'])) {
 				$interface->assign('action', 'Handle404');
 				$module = 'Error';
 				$action = 'Handle404';
+				trackSpammyRequest();
 				require_once ROOT_DIR . "/services/Error/Handle404.php";
 			}
 		}
@@ -316,6 +319,7 @@ if (isset($_REQUEST['filter'])) {
 			$interface->assign('action', 'Handle404');
 			$module = 'Error';
 			$action = 'Handle404';
+			trackSpammyRequest();
 			require_once ROOT_DIR . "/services/Error/Handle404.php";
 		}
 	}
@@ -328,6 +332,7 @@ foreach ($_REQUEST as $parameter => $value) {
 		$interface->assign('action', 'Handle404');
 		$module = 'Error';
 		$action = 'Handle404';
+		trackSpammyRequest();
 		require_once ROOT_DIR . "/services/Error/Handle404.php";
 	}else if (strpos($parameter, 'bool') === 0) {
 		if (is_array($value)) {
@@ -342,6 +347,7 @@ foreach ($_REQUEST as $parameter => $value) {
 					$interface->assign('action', 'Handle404');
 					$module = 'Error';
 					$action = 'Handle404';
+					trackSpammyRequest();
 					require_once ROOT_DIR . "/services/Error/Handle404.php";
 				}
 			}
@@ -356,6 +362,7 @@ foreach ($_REQUEST as $parameter => $value) {
 				$interface->assign('action', 'Handle404');
 				$module = 'Error';
 				$action = 'Handle404';
+				trackSpammyRequest();
 				require_once ROOT_DIR . "/services/Error/Handle404.php";
 			}
 		}
@@ -1243,6 +1250,8 @@ function isSpammySearchTerm($lookfor): bool {
 		return true;
 	} elseif (strpos($lookfor, 'current_database') !== false) {
 		return true;
+	} elseif (strpos($lookfor, 'response.write') !== false) {
+		return true;
 	}
 	$termWithoutTags = strip_tags($lookfor);
 	if ($termWithoutTags != $lookfor) {
@@ -1339,7 +1348,18 @@ function checkForMaliciouslyFormattedParameters(): void {
 		}
 	}
 	if ($isMaliciousUrl) {
+		trackSpammyRequest();
 		header("Location: /Error/Handle404");
 		exit();
+	}
+}
+
+function trackSpammyRequest() {
+	global $usageByIPAddress;
+	$usageByIPAddress->numSpammyRequests++;
+	if ($usageByIPAddress->id) {
+		$usageByIPAddress->update();
+	} else {
+		$usageByIPAddress->insert();
 	}
 }
