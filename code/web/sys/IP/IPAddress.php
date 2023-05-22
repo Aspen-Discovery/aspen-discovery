@@ -345,7 +345,7 @@ class IPAddress extends DataObject {
 		$clientIP = IPAddress::getClientIP();
 		$ipInfo = IPAddress::getIPAddressForIP($clientIP);
 		if (!empty($ipInfo)) {
-			return $ipInfo->blockAccess;
+			return $ipInfo->blockAccess || $ipInfo->blockedForSpam;
 		} else {
 			return false;
 		}

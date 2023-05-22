@@ -1358,6 +1358,17 @@ function trackSpammyRequest() {
 	global $usageByIPAddress;
 	$usageByIPAddress->numSpammyRequests++;
 	if ($usageByIPAddress->id) {
+		if ($usageByIPAddress->numSpammyRequests > 5) {
+			//Automatically block the IP address
+			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
+			$ipAddress = new IPAddress();
+			$ipAddress->ip = IPAddress::getClientIP();
+			if (!$ipAddress->find(true)) {
+				$ipAddress->calcIpRange();
+			}
+			$ipAddress->blockedForSpam = true;
+			$ipAddress->update();
+		}
 		$usageByIPAddress->update();
 	} else {
 		$usageByIPAddress->insert();
