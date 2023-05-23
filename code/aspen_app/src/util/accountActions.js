@@ -11,7 +11,7 @@ import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAut
 import { GLOBALS } from './globals';
 import { getBrowseCategories, LIBRARY } from './loadLibrary';
 import { getPatronBrowseCategories, PATRON } from './loadPatron';
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 export async function isLoggedIn(pathUrl) {
      const postBody = await postData();
@@ -175,7 +175,7 @@ export async function returnCheckout(userId, id, source, overDriveId = null, url
 export async function viewOnlineItem(userId, id, source, accessOnlineUrl, url) {
      const postBody = await postData();
 
-     if (source === 'hoopla') {
+     if (source === 'hoopla' || source === 'cloud_library') {
           const api = create({
                baseURL: url + '/API',
                timeout: GLOBALS.timeoutFast,
