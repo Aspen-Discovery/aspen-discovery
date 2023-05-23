@@ -1286,24 +1286,24 @@ function checkForMaliciouslyFormattedParameters(): void {
 			$isMaliciousUrl = true;
 		}
 	}
-	if (isset($_REQUEST['method'])) {
-		if (is_array($_REQUEST['method'])) {
-			$isMaliciousUrl = true;
-		//This is a little broader than we need to deal with post migration URLS where an old catalog gets redirected to Aspen
-		} elseif (!preg_match_all('/^[a-zA-Z0-9.~_+-]*$/', $_REQUEST['method'])) {
-			$isMaliciousUrl = true;
-		}
-	}
-	if (isset($_REQUEST['action'])) {
-		if ($_REQUEST['module'] != 'fonts') {
-			if (is_array($_REQUEST['action'])) {
-				$isMaliciousUrl = true;
-			//This is a little broader than we need to deal with post migration URLS where an old catalog gets redirected to Aspen
-			} elseif (!preg_match_all('/^[a-zA-Z0-9.~_+-]+$/', $_REQUEST['action'])) {
-				$isMaliciousUrl = true;
-			}
-		}
-	}
+//	if (isset($_REQUEST['method'])) {
+//		if (is_array($_REQUEST['method'])) {
+//			$isMaliciousUrl = true;
+//		//This is a little broader than we need to deal with post migration URLS where an old catalog gets redirected to Aspen
+//		} elseif (!preg_match_all('/^[a-zA-Z0-9.~_+-]*$/', $_REQUEST['method'])) {
+//			$isMaliciousUrl = true;
+//		}
+//	}
+//	if (isset($_REQUEST['action'])) {
+//		if ($_REQUEST['module'] != 'fonts') {
+//			if (is_array($_REQUEST['action'])) {
+//				$isMaliciousUrl = true;
+//			//This is a little broader than we need to deal with post migration URLS where an old catalog gets redirected to Aspen
+//			} elseif (!preg_match_all('/^[a-zA-Z0-9.~_+-]+$/', $_REQUEST['action'])) {
+//				$isMaliciousUrl = true;
+//			}
+//		}
+//	}
 	if (isset($_REQUEST['followupAction'])) {
 		if (is_array($_REQUEST['followupAction'])) {
 			$isMaliciousUrl = true;
