@@ -1374,7 +1374,7 @@ function trackSpammyRequest() {
 	global $usageByIPAddress;
 	$usageByIPAddress->numSpammyRequests++;
 	if ($usageByIPAddress->id) {
-		if ($usageByIPAddress->numSpammyRequests > 5) {
+		if ($usageByIPAddress->numSpammyRequests > 10) {
 			//Automatically block the IP address
 			require_once ROOT_DIR . '/sys/IP/IPAddress.php';
 			$ipAddress = new IPAddress();
