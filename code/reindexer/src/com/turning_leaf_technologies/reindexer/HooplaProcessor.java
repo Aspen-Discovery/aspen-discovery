@@ -254,7 +254,7 @@ class HooplaProcessor {
 								groupedWork.addTargetAudienceFull("Adult");
 							}
 						}
-					} else {
+					} else if (!foundAudience) {
 						groupedWork.addTargetAudience("Adult");
 						groupedWork.addTargetAudienceFull("Adult");
 					}
