@@ -47,8 +47,10 @@ export default class SearchBySavedSearch extends Component {
 
           const params = this.props.route.params.url;
           const language = route.params?.language ?? 'en';
+          const prevRoute = route.params?.prevRoute ?? 'HomeScreen';
           this.setState({
                language: language,
+               prevRoute: prevRoute,
           });
 
           await getLists(libraryUrl);
@@ -148,7 +150,7 @@ export default class SearchBySavedSearch extends Component {
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => this.onPressItem(item.id, library, item.title)}>
                     <HStack space={3}>
-                         <VStack maxW="30%">
+                         <VStack maxW="35%">
                               {isNew ? (
                                    <Container zIndex={1}>
                                         <Badge colorScheme="warning" shadow={1} mb={-3} ml={-1} _text={{ fontSize: 9 }}>
@@ -253,13 +255,13 @@ export default class SearchBySavedSearch extends Component {
           const libraryContext = route.params?.libraryContext ?? [];
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
           if (version >= '23.01.00') {
-               navigateStack('SearchTab', 'SavedSearchResultItem', {
+               navigateStack('HomeTab', 'SavedSearchResultItem', {
                     id: item,
                     title: getCleanTitle(title),
                     url: library.baseUrl,
                });
           } else {
-               navigateStack('SearchTab', 'SavedSearchResultItem221200', {
+               navigateStack('HomeTab', 'SavedSearchResultItem221200', {
                     id: item,
                     title: getCleanTitle(title),
                     url: library.baseUrl,

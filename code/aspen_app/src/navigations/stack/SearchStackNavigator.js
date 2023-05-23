@@ -4,19 +4,19 @@ import { ChevronLeftIcon, CloseIcon, Pressable } from 'native-base';
 import React from 'react';
 import { enableScreens } from 'react-native-screens';
 
-import {GroupedWork221200, GroupedWorkScreen} from '../../screens/GroupedWork/GroupedWork';
+import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import Facet from '../../screens/Search/Facet';
 import { FiltersScreen } from '../../screens/Search/Filters';
-import {LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {SearchHome} from '../../screens/Search/Search';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { SearchHome } from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
 import SearchByCategory from '../../screens/Search/SearchByCategory';
-import {SearchResultsForList} from '../../screens/Search/SearchByList';
+import { SearchResultsForList } from '../../screens/Search/SearchByList';
 import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
-import {CreateVDXRequest} from '../../screens/GroupedWork/CreateVDXRequest';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 enableScreens();
 
@@ -28,9 +28,8 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                id="SearchNavigator"
                initialRouteName="SearchScreen"
                screenOptions={({ navigation, route }) => ({
-                   headerShown: true,
-                   headerBackTitleVisible: false,
-
+                    headerShown: true,
+                    headerBackTitleVisible: false,
                })}>
                <Stack.Group>
                     <Stack.Screen
@@ -44,7 +43,7 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          name="SearchResults"
                          component={SearchResults}
                          options={({ route }) => ({
-                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.term,
+                              title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.term,
                               params: {
                                    pendingParams: [],
                               },
@@ -58,97 +57,15 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          })}
                          initialParams={{ prevRoute: 'SearchResults' }}
                     />
-                   <Stack.Screen
-                       name="ResultItem221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
-               </Stack.Group>
-               <Stack.Group>
                     <Stack.Screen
-                         name="SearchByCategory"
-                         component={SearchByCategory}
-                         options={({ route }) => ({
-                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
-                         })}
-                    />
-                    <Stack.Screen
-                         name="CategoryResultItem"
-                         component={GroupedWorkScreen}
+                         name="ResultItem221200"
+                         component={GroupedWork221200}
                          options={({ route }) => ({
                               title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                          })}
-                         initialParams={{ prevRoute: 'SearchResults' }}
                     />
-                   <Stack.Screen
-                       name="CategoryResultItem221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
                </Stack.Group>
 
-               <Stack.Group>
-                    <Stack.Screen
-                         name="SearchByList"
-                         component={SearchResultsForList}
-                         options={({ route }) => ({
-                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
-                         })}
-                    />
-                    <Stack.Screen
-                         name="ListResults"
-                         component={SearchResultsForList}
-                         options={({ route }) => ({
-                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
-                         })}
-                    />
-                    <Stack.Screen
-                         name="ListResultItem"
-                         component={GroupedWorkScreen}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
-                         initialParams={{ prevRoute: 'SearchResults' }}
-                    />
-                   <Stack.Screen
-                       name="ListResultItem221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
-               </Stack.Group>
-               <Stack.Group>
-                    <Stack.Screen
-                         name="SearchBySavedSearch"
-                         component={SearchBySavedSearch}
-                         options={({ route }) => ({
-                              title: getTermFromDictionary(language, 'results_for') + " " + route.params.title,
-                              libraryContext: React.useContext(LibrarySystemContext),
-                              locationContext: React.useContext(LibraryBranchContext),
-                              userContext: React.useContext(UserContext),
-                         })}
-                    />
-                    <Stack.Screen
-                         name="SavedSearchResultItem"
-                         component={GroupedWorkScreen}
-                         options={({ route }) => ({
-                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                         })}
-                         initialParams={{ prevRoute: 'SearchResults' }}
-                    />
-                   <Stack.Screen
-                       name="SavedSearchResultItem221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
-               </Stack.Group>
                <Stack.Screen
                     name="CopyDetails"
                     component={WhereIsIt}
@@ -182,29 +99,29 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          presentation: 'modal',
                     }}
                />
-              <Stack.Screen
-                  name="CreateVDXRequest"
-                  component={CreateVDXRequest}
-                  options={({ navigation }) => ({
-                      title: getTermFromDictionary(language, 'ill_request_title'),
-                      presentation: 'modal',
-                      headerLeft: () => {
-                          return <></>;
-                      },
-                      headerRight: () => (
-                          <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon size={5} color="primary.baseContrast" />
-                          </Pressable>
-                      ),
-                  })}
-              />
+               <Stack.Screen
+                    name="CreateVDXRequest"
+                    component={CreateVDXRequest}
+                    options={({ navigation }) => ({
+                         title: getTermFromDictionary(language, 'ill_request_title'),
+                         presentation: 'modal',
+                         headerLeft: () => {
+                              return <></>;
+                         },
+                         headerRight: () => (
+                              <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                   <CloseIcon size={5} color="primary.baseContrast" />
+                              </Pressable>
+                         ),
+                    })}
+               />
           </Stack.Navigator>
      );
 };
 
 const FilterModalStack = createNativeStackNavigator();
 const FilterModal = () => {
-    const { language } = React.useContext(LanguageContext);
+     const { language } = React.useContext(LanguageContext);
      return (
           <FilterModalStack.Navigator
                id="SearchFilters"

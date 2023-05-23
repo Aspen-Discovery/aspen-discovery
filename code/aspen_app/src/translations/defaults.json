@@ -361,6 +361,7 @@
   "cloud_library": "cloudLibrary",
   "hoopla": "Hoopla",
   "overdrive": "OverDrive",
+  "physical_materials": "Physical Materials",
   "specific_item": "Specific Item",
   "select_item": "Select an Item",
   "alerts_from_library": "Alerts from your library",

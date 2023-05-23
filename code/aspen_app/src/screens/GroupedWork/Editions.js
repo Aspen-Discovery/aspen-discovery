@@ -10,10 +10,10 @@ import { loadingSpinner } from '../../components/loadingSpinner';
 import { getRecords } from '../../util/api/item';
 import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import {getStatusIndicator} from './StatusIndicator';
-import {ActionButton} from '../../components/Action/ActionButton';
-import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getStatusIndicator } from './StatusIndicator';
+import { ActionButton } from '../../components/Action/ActionButton';
+import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const Editions = () => {
      const navigation = useNavigation();
@@ -60,33 +60,39 @@ export const Editions = () => {
      }
 
      return (
-         <Box safeArea={5}>
-              {isLoading || status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', ''):
-                  <>
-                       <FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />
-                       <Center>
-                            <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
-                                 <AlertDialog.Content>
-                                      <AlertDialog.Header>{response?.title}</AlertDialog.Header>
-                                      <AlertDialog.Body>{response?.message}</AlertDialog.Body>
-                                      <AlertDialog.Footer>
-                                           <Button.Group space={3}>
-                                            {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
-                                            <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>{getTermFromDictionary(language, 'button_ok')}</Button>
-                                       </Button.Group>
-                                      </AlertDialog.Footer>
-                                 </AlertDialog.Content>
-                            </AlertDialog>
-                       </Center>
-                  </>
-              }
-         </Box>
+          <Box safeArea={5}>
+               {isFetching ? (
+                    loadingSpinner()
+               ) : status === 'error' ? (
+                    loadError('Error', '')
+               ) : (
+                    <>
+                         <FlatList data={Object.keys(data.records)} renderItem={({ item }) => <Edition records={data.records[item]} id={id} format={format} volumeInfo={volumeInfo} prevRoute={prevRoute} />} />
+                         <Center>
+                              <AlertDialog leastDestructiveRef={cancelResponseRef} isOpen={responseIsOpen} onClose={onResponseClose}>
+                                   <AlertDialog.Content>
+                                        <AlertDialog.Header>{response?.title}</AlertDialog.Header>
+                                        <AlertDialog.Body>{response?.message}</AlertDialog.Body>
+                                        <AlertDialog.Footer>
+                                             <Button.Group space={3}>
+                                                  {response?.action ? <Button onPress={() => handleNavigation(response.action)}>{response.action}</Button> : null}
+                                                  <Button variant="outline" colorScheme="primary" ref={cancelResponseRef} onPress={() => setResponseIsOpen(false)}>
+                                                       {getTermFromDictionary(language, 'button_ok')}
+                                                  </Button>
+                                             </Button.Group>
+                                        </AlertDialog.Footer>
+                                   </AlertDialog.Content>
+                              </AlertDialog>
+                         </Center>
+                    </>
+               )}
+          </Box>
      );
 };
 
 const Edition = (payload) => {
      const { language } = React.useContext(LanguageContext);
-     const {response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef} = payload;
+     const { response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = payload;
      const prevRoute = payload.prevRoute;
      const records = payload.records;
      const id = payload.id;
@@ -124,7 +130,7 @@ const Edition = (payload) => {
                <HStack justifyContent="space-between" alignItems="center" space={2} flex={1}>
                     <VStack space={1} maxW="40%" flex={1} justifyContent="center">
                          <Text fontSize="xs">
-                              <Text bold>{records.publicationDate}</Text> {records.publisher}. {records.edition} {records.physical} {closedCaptioned === "1" ? (<Icon as={MaterialIcons} name="closed-caption" size="sm" mb={-1}/>) : null}
+                              <Text bold>{records.publicationDate}</Text> {records.publisher}. {records.edition} {records.physical} {closedCaptioned === '1' ? <Icon as={MaterialIcons} name="closed-caption" size="sm" mb={-1} /> : null}
                          </Text>
                          <VStack space={1}>
                               <Badge colorScheme={statusIndicator.indicator} rounded="4px" _text={{ fontSize: 10 }}>
@@ -138,7 +144,10 @@ const Edition = (payload) => {
                          </VStack>
                     </VStack>
                     <Button.Group direction={_.size(records.actions) > 1 ? 'column' : 'row'} width="50%" justifyContent="center" alignItems="stretch">
-                         <FlatList data={actions} renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />} />
+                         <FlatList
+                              data={actions}
+                              renderItem={({ item }) => <ActionButton groupedWorkId={id} recordId={recordId} recordSource={source} fullRecordId={fullRecordId} title={title} author={author} publisher={publisher} isbn={isbn} oclcNumber={oclcNumber} actions={item} volumeInfo={volumeInfo} prevRoute={prevRoute} setResponseIsOpen={setResponseIsOpen} responseIsOpen={responseIsOpen} onResponseClose={onResponseClose} cancelResponseRef={cancelResponseRef} response={response} setResponse={setResponse} />}
+                         />
                     </Button.Group>
                </HStack>
           </Box>

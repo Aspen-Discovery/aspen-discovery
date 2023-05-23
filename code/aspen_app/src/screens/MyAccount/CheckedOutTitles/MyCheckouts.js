@@ -39,6 +39,12 @@ export const MyCheckouts = () => {
           all: 'Checked Out Titles',
      });
 
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
+
      useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
@@ -63,7 +69,7 @@ export const MyCheckouts = () => {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
           }
-          useQuery(['checkouts', library.baseUrl, language], () => getPatronCheckedOutItems(value, library.baseUrl, true, language), {
+          useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(value, library.baseUrl, true, language), {
                onSuccess: (data) => {
                     updateCheckouts(data);
                },
@@ -142,22 +148,14 @@ export const MyCheckouts = () => {
 
      const reloadCheckouts = async () => {
           setLoading(true);
-          await reloadProfile(library.baseUrl).then((result) => {
-               if (user !== result) {
-                    updateUser(result);
-               }
-          });
-          queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language] });
      };
 
      const refreshCheckouts = async () => {
           setLoading(true);
-          await reloadProfile(library.baseUrl).then((result) => {
-               if (user !== result) {
-                    updateUser(result);
-               }
-          });
-          queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language] });
      };
 
      const actionButtons = () => {

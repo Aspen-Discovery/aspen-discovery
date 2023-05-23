@@ -9,11 +9,11 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
-import { getBrowseCategoryListForUser, getILSMessages, updateBrowseCategoryStatus } from '../../util/loadPatron';
+import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
-import { navigateStack } from '../../helpers/RootNavigator';
+import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -21,8 +21,9 @@ let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
+     const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
-     const { user, locations, accounts, cards, lists, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -32,7 +33,13 @@ export const DiscoverHomeScreen = () => {
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
-     useQuery(['browse_categories', library.baseUrl], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
+     navigation.setOptions({
+          headerLeft: () => {
+               return null;
+          },
+     });
+
+     useQuery(['browse_categories', library.baseUrl, language], () => reloadBrowseCategories(maxCategories, library.baseUrl), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
@@ -66,6 +73,18 @@ export const DiscoverHomeScreen = () => {
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => updateLists(data),
+          placeholderData: [],
+     });
+
+     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               updateUser(data);
+               updateLanguage(data.interfaceLanguage ?? 'en');
+               PATRON.language = data.interfaceLanguage ?? 'en';
+          },
           placeholderData: [],
      });
 
@@ -118,6 +137,15 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
           onSuccess: (data) => {
                updateReadingHistory(data);
+          },
+     });
+
+     useQuery(['browse_categories_list', library.baseUrl, language], () => getBrowseCategoryListForUser(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          placeholderData: [],
+          onSuccess: (data) => {
+               updateBrowseCategoryList(data);
           },
      });
 
@@ -186,7 +214,7 @@ export const DiscoverHomeScreen = () => {
                          alt={item.title_display}
                          source={{
                               uri: `${imageUrl}`,
-                              expiresIn: 86400,
+                              expiresIn: 3600,
                          }}
                          style={{
                               width: '100%',
@@ -202,27 +230,29 @@ export const DiscoverHomeScreen = () => {
      const onPressItem = (key, type, title, version) => {
           if (version >= '22.07.00') {
                if (type === 'List' || type === 'list') {
-                    navigateStack('SearchTab', 'SearchByList', {
+                    navigateStack('HomeTab', 'SearchByList', {
                          id: key,
                          url: library.baseUrl,
                          title: title,
                          userContext: user,
                          libraryContext: library,
+                         prevRoute: 'HomeScreen',
                     });
                } else if (type === 'SavedSearch') {
-                    navigateStack('SearchTab', 'SearchBySavedSearch', {
+                    navigateStack('HomeTab', 'SearchBySavedSearch', {
                          id: key,
                          url: library.baseUrl,
                          title: title,
                          userContext: user,
                          libraryContext: library,
+                         prevRoute: 'HomeScreen',
                     });
                } else {
                     if (version >= '23.01.00') {
                          navigateStack('HomeTab', 'GroupedWorkScreen', {
                               id: key,
                               title: title,
-                              prevRoute: 'DiscoveryScreen',
+                              prevRoute: 'HomeScreen',
                          });
                     } else {
                          navigateStack('HomeTab', 'GroupedWorkScreen221200', {
@@ -231,6 +261,7 @@ export const DiscoverHomeScreen = () => {
                               url: library.baseUrl,
                               userContext: user,
                               libraryContext: library,
+                              prevRoute: 'HomeScreen',
                          });
                     }
                }
@@ -241,7 +272,7 @@ export const DiscoverHomeScreen = () => {
                     title: title,
                     userContext: user,
                     libraryContext: library,
-                    prevRoute: 'DiscoveryScreen',
+                    prevRoute: 'HomeScreen',
                });
           }
      };
@@ -250,30 +281,24 @@ export const DiscoverHomeScreen = () => {
 
      const onHideCategory = async (url, category) => {
           setLoading(true);
-          await updateBrowseCategoryStatus(category).then(async (response) => {
-               await onRefreshCategories();
-               await getBrowseCategoryListForUser().then((result) => {
-                    updateBrowseCategoryList(result);
-                    queryClient.setQueryData(['browse_categories_list', library.baseUrl], result);
-                    setLoading(false);
-               });
-          });
+          await updateBrowseCategoryStatus(category);
+          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
      };
 
-     const onRefreshCategories = async () => {
+     const onRefreshCategories = () => {
           setLoading(true);
-          await reloadBrowseCategories(maxCategories, library.baseUrl).then((result) => {
-               queryClient.setQueryData(['browse_categories', library.baseUrl], result);
-               updateBrowseCategories(result);
-               setLoading(false);
-          });
+          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
      };
 
      const onLoadAllCategories = () => {
+          setLoading(true);
           maxCategories = 9999;
           updateMaxCategories(9999);
           setUnlimitedCategories(true);
-          onRefreshCategories();
+          queryClient.invalidateQueries({ queryKey: ['browse_categories', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
      };
 
      const onPressSettings = (url, patronId) => {
@@ -296,11 +321,7 @@ export const DiscoverHomeScreen = () => {
                screen = 'SearchBySavedSearch';
           }
 
-          console.log('label > ' + label);
-          console.log('key > ' + key);
-          console.log('source > ' + source);
-
-          navigateStack('SearchTab', screen, {
+          navigateStack('HomeTab', screen, {
                title: label,
                id: key,
                url: library.baseUrl,

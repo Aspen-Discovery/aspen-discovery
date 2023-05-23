@@ -7,7 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 // custom components and helper files
 import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { getFirstRecord, getVariations } from '../../util/api/item';
+import { getFirstRecord, getRecords, getVariations } from '../../util/api/item';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
@@ -16,7 +16,7 @@ import { ActionButton } from '../../components/Action/ActionButton';
 import { decodeHTML, stripHTML } from '../../util/apiAuth';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { confirmHold } from '../../util/api/circulation';
-import { getPatronHolds, refreshProfile } from '../../util/api/user';
+import { getPatronCheckedOutItems, getPatronHolds, refreshProfile } from '../../util/api/user';
 
 export const Variations = (props) => {
      const queryClient = useQueryClient();
@@ -163,6 +163,7 @@ export const Variations = (props) => {
 };
 
 const Variation = (payload) => {
+     const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { id, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, prevRoute, format, volumeInfo, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef } = payload;
      const variation = payload.records;
@@ -179,6 +180,10 @@ const Variation = (payload) => {
 
      let fullRecordId = _.split(variation.id, ':');
      const recordId = _.toString(fullRecordId[1]);
+
+     useQuery(['records', id, source, format, language, library.baseUrl], () => getRecords(id, format, source, language, library.baseUrl), {
+          placeholderData: [],
+     });
 
      const handleOnPress = () => {
           navigate('CopyDetails', { id: id, format: format, prevRoute: prevRoute, type: 'groupedWork', recordId: null });

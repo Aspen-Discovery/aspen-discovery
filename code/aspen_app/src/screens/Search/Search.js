@@ -5,11 +5,11 @@ import { Box, Button, Center, FlatList, FormControl, HStack, Icon, Input, Text }
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native';
 
-import {formatDiscoveryVersion} from '../../util/loadLibrary';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getDefaultFacets } from '../../util/search';
-import {LanguageContext, LibrarySystemContext} from '../../context/initialContext';
-import {navigate} from '../../helpers/RootNavigator';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
+import { navigate } from '../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const SearchHome = () => {
      const [searchTerm, setSearchTerm] = React.useState('');
@@ -20,7 +20,7 @@ export const SearchHome = () => {
 
      React.useEffect(() => {
           async function preloadDefaultFacets() {
-               if(discoveryVersion >= '22.11.00') {
+               if (discoveryVersion >= '22.11.00') {
                     await getDefaultFacets(language);
                }
           }
@@ -29,45 +29,45 @@ export const SearchHome = () => {
 
      const clearText = () => {
           setSearchTerm('');
-     }
+     };
 
      const search = async () => {
-          navigate('SearchResults', {term: searchTerm, type: 'catalog'});
+          navigate('SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'SearchHome' });
           clearText();
-     }
+     };
 
      return (
-         <SafeAreaView>
-              <Box safeArea={5}>
-                   <FormControl>
-                        <Input variant="filled" autoCapitalize="none" onChangeText={(term) => setSearchTerm(term)} status="info" placeholder={getTermFromDictionary(language, 'search')} clearButtonMode="always" onSubmitEditing={search} value={searchTerm} size="xl" />
-                   </FormControl>
-                   {quickSearchNum > 0 ? (
-                       <Box>
-                            <Center>
-                                 <Text mt={8} mb={2} fontSize="xl" bold>
-                                      {getTermFromDictionary(language, 'quick_searches')}
-                                 </Text>
-                            </Center>
-                            <FlatList data={_.sortBy(library.quickSearches, ['weight', 'label'])} keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => <QuickSearch data={item} />} />
-                       </Box>
-                   ) : null}
-              </Box>
-         </SafeAreaView>
-     )
-}
+          <SafeAreaView>
+               <Box safeArea={5}>
+                    <FormControl>
+                         <Input variant="filled" autoCapitalize="none" onChangeText={(term) => setSearchTerm(term)} status="info" placeholder={getTermFromDictionary(language, 'search')} clearButtonMode="always" onSubmitEditing={search} value={searchTerm} size="xl" />
+                    </FormControl>
+                    {quickSearchNum > 0 ? (
+                         <Box>
+                              <Center>
+                                   <Text mt={8} mb={2} fontSize="xl" bold>
+                                        {getTermFromDictionary(language, 'quick_searches')}
+                                   </Text>
+                              </Center>
+                              <FlatList data={_.sortBy(library.quickSearches, ['weight', 'label'])} keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => <QuickSearch data={item} />} />
+                         </Box>
+                    ) : null}
+               </Box>
+          </SafeAreaView>
+     );
+};
 
 const QuickSearch = (data) => {
      const quickSearch = data.data;
      return (
-         <Button
-             mb={3}
-             onPress={() =>
-                 navigate('SearchResults', {
-                      term: quickSearch.searchTerm,
-                 })
-             }>
-              {quickSearch.label}
-         </Button>
+          <Button
+               mb={3}
+               onPress={() =>
+                    navigate('SearchResults', {
+                         term: quickSearch.searchTerm,
+                    })
+               }>
+               {quickSearch.label}
+          </Button>
      );
-}
+};

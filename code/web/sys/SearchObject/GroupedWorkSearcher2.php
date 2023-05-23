@@ -793,6 +793,7 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 				$currentSettings['display'] = $translate ? translate([
 					'text' => $facetValue,
 					'isPublicFacing' => true,
+					'isMetadata' => true
 				]) : $facetValue;
 				$currentSettings['count'] = $facet[1];
 				$currentSettings['isApplied'] = false;
