@@ -1101,6 +1101,7 @@ class GroupedWork_AJAX extends JSON_Action {
 					$id = $_REQUEST['id'];
 					$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
 					$recordId = $_REQUEST['recordId'] ?? $id;
+					$uploadOption = $_REQUEST['uploadOption'];
 
 					if($recordType !== 'grouped_work') {
 						$id = $recordId;
@@ -1108,44 +1109,70 @@ class GroupedWork_AJAX extends JSON_Action {
 
 					global $configArray;
 					$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-					$fileType = $uploadedFile["type"];
-					if ($fileType == 'image/png') {
-						if (copy($uploadedFile["tmp_name"], $destFullPath)) {
+					require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
+
+					if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
+						$res = formatImageUpload($uploadedFile, $destFullPath);
+						if ($res) {
+							$id = $_REQUEST['id'];
+							$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+							$res = formatImageUpload($uploadedFile, $destFullPath);
+							$result = $res;
+						}else{
+							$result = $res;
+						}
+					}elseif ($uploadOption == 'all'){ //update image for all records in grouped work
+						$res = formatImageUpload($uploadedFile, $destFullPath);
+						if ($res) {
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$id = $_REQUEST['id'];
+							$recordDriver = new GroupedWorkDriver($id);
+							$relatedRecords = $recordDriver->getRelatedRecords(true);
+
+							foreach ($relatedRecords as $record) {
+								$id = substr(strstr($record->id, ':'), 1);
+								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+								$res = formatImageUpload($uploadedFile, $destFullPath);
+								if ($res){
+									continue;
+								}else{
+									$result = $res;
+								}
+							}
 							$result['success'] = true;
+						} else {
+							$result = $res;
 						}
-					} elseif ($fileType == 'image/gif') {
-						$imageResource = @imagecreatefromgif($uploadedFile["tmp_name"]);
-						if (!$imageResource) {
-							$result['message'] = translate([
-								'text' => 'Unable to process this image, please try processing in an image editor and reloading',
-								'isAdminFacing' => true,
-							]);
-						} elseif (@imagepng($imageResource, $destFullPath, 9)) {
+					}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
+						$res = formatImageUpload($uploadedFile, $destFullPath);
+						if ($res) {
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+							$id = $_REQUEST['id'];
+							$recordDriver = new GroupedWorkDriver($id);
+							$relatedRecords = $recordDriver->getRelatedRecords(true);
+
+							foreach ($relatedRecords as $record) {
+								$hasDefaultCover = new BookCoverInfo;
+								$hasDefaultCover->id = $record->id;
+								$hasDefaultCover->imageSource = 'default';
+								if ($hasDefaultCover->find(true)){
+									$id = substr(strstr($record->id, ':'), 1);
+									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+									$res = formatImageUpload($uploadedFile, $destFullPath);
+									if ($res){
+										continue;
+									}else{
+										$result = $res;
+									}
+								}
+							}
 							$result['success'] = true;
+						} else {
+							$result = $res;
 						}
-					} elseif ($fileType == 'image/jpg' || $fileType == 'image/jpeg') {
-						$imageResource = @imagecreatefromjpeg($uploadedFile["tmp_name"]);
-						if (!$imageResource) {
-							$result['message'] = translate([
-								'text' => 'Unable to process this image, please try processing in an image editor and reloading',
-								'isAdminFacing' => true,
-							]);
-						} elseif (@imagepng($imageResource, $destFullPath, 9)) {
-							$result['success'] = true;
-						}
-					} else {
-						$result['message'] = translate([
-							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-							'isAdminFacing' => true,
-						]);
-					}
-					if ($result['success'] == true) {
-						try {
-							chgrp($destFullPath, 'aspen_apache');
-							chmod($destFullPath, 0775);
-						} catch (Exception $e) {
-							//Just ignore errors
-						}
+					}else{ //only updating grouped work or individual bib cover
+						$result = formatImageUpload($uploadedFile, $destFullPath);
 					}
 				}
 			} else {
@@ -1234,6 +1261,7 @@ class GroupedWork_AJAX extends JSON_Action {
 			$id = $_REQUEST['id'];
 			$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
 			$recordId = $_REQUEST['recordId'] ?? $id;
+			$uploadOption = $_REQUEST['uploadOption'];
 
 			if($recordType !== 'grouped_work') {
 				$id = $recordId;
@@ -1242,14 +1270,96 @@ class GroupedWork_AJAX extends JSON_Action {
 			$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if ($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
-				$upload = file_put_contents($destFullPath, file_get_contents($url));
-				if ($upload) {
-					$result['success'] = true;
-				} else {
-					$result['message'] = translate([
-						'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-						'isAdminFacing' => true,
-					]);
+				if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
+					$upload = file_put_contents($destFullPath, file_get_contents($url));
+					if ($upload) {
+						$id = $_REQUEST['id'];
+						$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+						$upload = file_put_contents($destFullPath, file_get_contents($url));
+						if ($upload){
+							$result['success'] = true;
+						} else {
+							$result['message'] = translate([
+								'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+								'isAdminFacing' => true,
+							]);
+						}
+					} else {
+						$result['message'] = translate([
+							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+							'isAdminFacing' => true,
+						]);
+					}
+				}elseif ($uploadOption == 'all'){ //update image for all records in grouped work
+					$upload = file_put_contents($destFullPath, file_get_contents($url));
+					if ($upload) {
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$id = $_REQUEST['id'];
+						$recordDriver = new GroupedWorkDriver($id);
+						$relatedRecords = $recordDriver->getRelatedRecords(true);
+
+						foreach ($relatedRecords as $record) {
+							$id = substr(strstr($record->id, ':'), 1);
+							$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+							$upload = file_put_contents($destFullPath, file_get_contents($url));
+							if ($upload){
+								continue;
+							}else{
+								$result['message'] = translate([
+									'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+									'isAdminFacing' => true,
+								]);
+							}
+						}
+					} else {
+						$result['message'] = translate([
+							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+							'isAdminFacing' => true,
+						]);
+					}
+				}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
+					$upload = file_put_contents($destFullPath, file_get_contents($url));
+					if ($upload) {
+						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+						$id = $_REQUEST['id'];
+						$recordDriver = new GroupedWorkDriver($id);
+						$relatedRecords = $recordDriver->getRelatedRecords(true);
+
+						foreach ($relatedRecords as $record) {
+							$hasDefaultCover = new BookCoverInfo;
+							$hasDefaultCover->id = $record->id;
+							$hasDefaultCover->imageSource = 'default';
+							if ($hasDefaultCover->find(true)){
+								$id = substr(strstr($record->id, ':'), 1);
+								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+								$upload = file_put_contents($destFullPath, file_get_contents($url));
+								if ($upload){
+									continue;
+								}else{
+									$result['message'] = translate([
+										'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+										'isAdminFacing' => true,
+									]);
+								}
+							}
+						}
+					} else {
+						$result['message'] = translate([
+							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+							'isAdminFacing' => true,
+						]);
+					}
+				}else{ //only updating grouped work or individual bib cover
+					$upload = file_put_contents($destFullPath, file_get_contents($url));
+
+					if ($upload) {
+						$result['success'] = true;
+					} else {
+						$result['message'] = translate([
+							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+							'isAdminFacing' => true,
+						]);
+					}
 				}
 			}
 		} else {
