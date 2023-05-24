@@ -399,7 +399,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCover: function (groupedWorkId, recordType, recordId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId;
+			var uploadOption = $('#uploadOption').val();
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId + '&uploadOption=' + uploadOption;
 			var uploadCoverData = new FormData($("#uploadCoverForm")[0]);
 			$.ajax({
 				url: url,
@@ -426,7 +427,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCoverByURL: function (groupedWorkId, recordType, recordId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId;
+			var uploadOption = $('#uploadOption').val();
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId + '&uploadOption=' + uploadOption;
 			var uploadCoverData = new FormData($("#uploadCoverFormByURL")[0]);
 			$.ajax({
 				url: url,
