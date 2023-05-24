@@ -65,6 +65,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private String orderRecordsStatusesToInclude;
 	private boolean hideOrderRecordsForBibsWithPhysicalItems;
 	private int orderRecordsToSuppressByDate;
+	private boolean checkSierraMatTypeForFormat;
 
 	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -154,6 +155,8 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.orderRecordsStatusesToInclude = indexingProfileRS.getString("orderRecordsStatusesToInclude");
 		this.hideOrderRecordsForBibsWithPhysicalItems = indexingProfileRS.getBoolean("hideOrderRecordsForBibsWithPhysicalItems");
 		this.orderRecordsToSuppressByDate = indexingProfileRS.getInt("orderRecordsToSuppressByDate");
+
+		this.checkSierraMatTypeForFormat = indexingProfileRS.getBoolean("checkSierraMatTypeForFormat");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {

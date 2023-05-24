@@ -260,8 +260,59 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 						return true;
 					}
 				}
+
+				if (checkSierraMatTypeForFormat) {
+					Subfield matTypeSubfield = sierraFixedField.getSubfield(exportFieldMapping.getMaterialTypeSubfield());
+					if (matTypeSubfield != null) {
+						String formatValue = matTypeSubfield.getData();
+						if (formatsToSuppress.contains(formatValue.toUpperCase())){
+							updateRecordSuppression(true, new StringBuilder().append("Bib record is suppressed due to Material Type suppressed in format table").append(formatValue), identifier);
+							return true;
+						}
+					}
+				}
 			}
 		}
 		return super.isBibSuppressed(record, identifier);
+	}
+
+	/**
+	 * Determine Record Format(s)
+	 */
+	public void loadPrintFormatInformation(RecordInfo recordInfo, Record record, boolean hasChildRecords) {
+		boolean formatLoaded = false;
+		if (exportFieldMapping != null) {
+			if (checkSierraMatTypeForFormat) {
+				DataField sierraFixedField = record.getDataField(exportFieldMapping.getFixedFieldDestinationFieldInt());
+				if (sierraFixedField != null) {
+					Subfield matTypeSubfield = sierraFixedField.getSubfield(exportFieldMapping.getMaterialTypeSubfield());
+					if (matTypeSubfield != null) {
+						String formatValue = matTypeSubfield.getData().trim();
+						if (hasTranslation("format", formatValue)) {
+							formatLoaded = true;
+							recordInfo.addFormat(translateValue("format", formatValue, recordInfo.getRecordIdentifier()));
+							recordInfo.addFormatCategory(translateValue("format_category", formatValue, recordInfo.getRecordIdentifier()));
+							String formatBoost = null;
+							if (hasTranslation("format_boost", formatValue)) {
+								formatBoost = translateValue("format_boost", formatValue, recordInfo.getRecordIdentifier());
+							}
+							try {
+								if (formatBoost != null && formatBoost.length() > 0) {
+									recordInfo.setFormatBoost(Integer.parseInt(formatBoost));
+								}
+							} catch (Exception e) {
+								if (!unhandledFormatBoosts.contains(formatValue)) {
+									unhandledFormatBoosts.add(formatValue);
+									logger.warn("Could not get boost for format " + formatValue);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		if (!formatLoaded) {
+			super.loadPrintFormatInformation(recordInfo, record, hasChildRecords);
+		}
 	}
 }
