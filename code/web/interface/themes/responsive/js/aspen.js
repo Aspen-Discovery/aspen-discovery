@@ -5280,6 +5280,14 @@ var AspenDiscovery = (function(){
 				}
 			).fail(AspenDiscovery.ajaxFail);
 			return false;
+		},
+
+		limitMarkdownField: function (mdeControl, characterLimit) {
+			characterCount = mdeControl.value().length
+
+			if (characterCount > characterLimit) {
+				mdeControl.value(mdeControl.value().substring(0, characterLimit))
+			}
 		}
 	}
 
