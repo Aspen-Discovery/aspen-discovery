@@ -131,10 +131,10 @@ const SelectYourLibraryModal = (payload) => {
           if (!_.isEmpty(query)) {
                haystack = allLibraries;
           }
-
           if (!isCommunity) {
                haystack = libraries;
           }
+
 
           if (!isCommunity) {
                return _.filter(haystack, function (branch) {

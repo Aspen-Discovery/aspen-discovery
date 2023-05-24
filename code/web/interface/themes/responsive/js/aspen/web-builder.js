@@ -325,7 +325,9 @@ AspenDiscovery.WebBuilder = function () {
 								// noinspection JSUnresolvedFunction
 								var newTab = window.open("", '_blank');
 								if (newTab==null) {
-									return ;
+									//Couldn't open a new tab, just use this one
+									location.assign(data.url);
+									//return ;
 								}
 								newTab.location.href = data.url
 							} else {
@@ -348,7 +350,8 @@ AspenDiscovery.WebBuilder = function () {
 							// noinspection JSUnresolvedFunction
 							var newTab = window.open("", '_blank');
 							if (newTab==null) {
-								return ;
+								location.assign(data.url);
+								//return ;
 							}
 							newTab.location.href = data.url
 						} else {

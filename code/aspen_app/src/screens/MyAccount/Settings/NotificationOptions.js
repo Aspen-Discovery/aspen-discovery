@@ -79,6 +79,7 @@ export const Settings_NotificationOptions = () => {
      };
 
      const getPreferences = async () => {
+          setLoading(true);
           if (_.isObject(notificationSettings)) {
                const currentPreferences = Object.values(notificationSettings);
                for await (const pref of currentPreferences) {
@@ -110,6 +111,7 @@ export const Settings_NotificationOptions = () => {
                     }
                }
           }
+          setLoading(false);
      };
 
      if (isLoading) {
@@ -134,7 +136,7 @@ export const Settings_NotificationOptions = () => {
                               isDisabled={allowNotifications}
                          />
                     </HStack>
-                    {toggled && !error ? <FlatList data={Object.keys(notificationSettings)} renderItem={({ item }) => <DisplayPreference data={notificationSettings[item]} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />} keyExtractor={(item, index) => index.toString()} /> : null}
+                    {toggled && !error && _.isObject(notificationSettings) ? <FlatList data={Object.keys(notificationSettings)} renderItem={({ item }) => <DisplayPreference data={notificationSettings[item]} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />} keyExtractor={(item, index) => index.toString()} /> : null}
                </Box>
           </SafeAreaView>
      );
