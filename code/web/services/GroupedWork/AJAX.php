@@ -2210,6 +2210,12 @@ class GroupedWork_AJAX extends JSON_Action {
 		$bookcoverInfo = new BookCoverInfo();
 
 		$id = $_REQUEST['id'];
+		$recordType = $_REQUEST['recordType'] ?? 'grouped_work';
+		$recordId = $_REQUEST['recordId'] ?? $id;
+
+		if($recordType !== 'grouped_work') {
+			$id = $recordId;
+		}
 		$bookcoverInfo->recordId = $id;
 		if ($bookcoverInfo->find(true)) {
 			global $configArray;
