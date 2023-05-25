@@ -122,6 +122,7 @@ class IndexingProfile extends DataObject {
 	public /** @noinspection PhpUnused */
 		$bCode3sToSuppress;
 	public $format;
+	public $useSierraMatTypeForFormat;
 	public /** @noinspection PhpUnused */
 		$eContentDescriptor;
 	public /** @noinspection PhpUnused */
@@ -177,6 +178,8 @@ class IndexingProfile extends DataObject {
 	public $orderRecordsStatusesToInclude;
 	public $hideOrderRecordsForBibsWithPhysicalItems;
 	public $orderRecordsToSuppressByDate;
+
+	public $checkSierraMatTypeForFormat;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -1169,6 +1172,14 @@ class IndexingProfile extends DataObject {
 				'label' => 'Sierra Settings',
 				'hideInLists' => true,
 				'properties' => [
+					'checkSierraMatTypeForFormat' => [
+						'property' => 'checkSierraMatTypeForFormat',
+						'hiddenByDefault' => true,
+						'type' => 'checkbox',
+						'label' => 'Check Sierra Material Type during format determination',
+						'description' => 'If selected, the bib Material Type from Sierra will be checked before checking bib level formats.',
+						'default' => false,
+					],
 					'orderRecordsStatusesToInclude' => [
 						'property' => 'orderRecordsStatusesToInclude',
 						'hiddenByDefault' => true,
@@ -1184,7 +1195,6 @@ class IndexingProfile extends DataObject {
 						'hiddenByDefault' => true,
 						'type' => 'checkbox',
 						'label' => 'Hide Order Records for bibs with physical items',
-						'maxLength' => 20,
 						'description' => 'If selected, any bib that has physical items will not show order records.',
 						'default' => false,
 					],

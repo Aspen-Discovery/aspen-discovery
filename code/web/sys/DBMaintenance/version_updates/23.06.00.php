@@ -34,6 +34,14 @@ function getUpdates23_06_00(): array {
 				'ALTER TABLE browse_category_group_users ADD UNIQUE (browseCategoryGroupId, userId)',
 			]
 		], //add_selected_users_to_browse_category_groups
+		'indexing_profile_add_check_sierra_mat_type_for_format' => [
+			'title' => 'Indexing Profile Add Check Sierra Material Type for Format',
+			'description' => 'Indexing Profile Add Check Sierra Material Type for Format',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE indexing_profiles add column checkSierraMatTypeForFormat TINYINT DEFAULT 0'
+			]
+		], //indexing_profile_add_check_sierra_mat_type_for_format
 
 		//kirstien
 		'add_ecommerce_payflow_settings' => [

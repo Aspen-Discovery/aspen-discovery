@@ -1413,7 +1413,7 @@ class Evergreen extends AbstractIlsDriver {
 					$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
 
 					/** @noinspection PhpUnnecessaryLocalVariableInspection */
-					$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, '');
+					$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, null);
 					return $user;
 				}
 			}
@@ -1452,8 +1452,39 @@ class Evergreen extends AbstractIlsDriver {
 			$user->displayName = '';
 		}
 
+		//The user might have logged in with their username, make sure to set the card
+		$staffUserInfo = $this->getStaffUserInfo();
+
+		if (!is_object($userData['card'])){
+			if ($staffUserInfo['userValid']) {
+				//Get details for the card
+				//Lookup the patron type
+				$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+				$headers = [
+					'Content-Type: application/x-www-form-urlencoded',
+				];
+				$this->apiCurlWrapper->addCustomHeaders($headers, false);
+				$request = 'service=open-ils.pcrud&method=open-ils.pcrud.retrieve.ac';
+				$request .= '&param=' . json_encode($staffUserInfo['authToken']);
+				$request .= '&param=' . json_encode($userData['card']);
+				$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+				if ($this->apiCurlWrapper->getResponseCode() == 200) {
+					$apiResponse = json_decode($apiResponse);
+					if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
+						$cardInfo = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('ac'));
+						$username = $cardInfo['barcode'];
+					}
+				}
+			}
+		} else {
+			$cardInfo = $this->mapEvergreenFields($userData['card']->__p, $this->fetchIdl('ac'));
+			$username = $cardInfo['barcode'];
+		}
 		$user->cat_username = $username;
-		$user->cat_password = $password;
+		if (!empty($password)) {
+			$user->cat_password = $password;
+		}
 		$user->email = $userData['email'];
 		if (!empty($userData['day_phone'])) {
 			$user->phone = $userData['day_phone'];
@@ -1464,7 +1495,6 @@ class Evergreen extends AbstractIlsDriver {
 		}
 
 		$numericPtype = $userData['profile'];
-		$staffUserInfo = $this->getStaffUserInfo();
 		$user->patronType = $userData['profile'];
 		if ($staffUserInfo['userValid']) {
 			//Lookup the patron type

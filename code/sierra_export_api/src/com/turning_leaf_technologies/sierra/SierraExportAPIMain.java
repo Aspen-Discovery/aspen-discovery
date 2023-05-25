@@ -1070,11 +1070,21 @@ public class SierraExportAPIMain {
 						String fieldTag = curVarField.getString("fieldTag");
 						StringBuilder allFieldContent = new StringBuilder();
 						JSONArray subfields = null;
+						String marcTag = "";
+						if (curVarField.has("marcTag")) {
+							marcTag = curVarField.getString("marcTag");
+						}
 						if (curVarField.has("subfields")){
 							subfields = curVarField.getJSONArray("subfields");
-							for (int k = 0; k < subfields.length(); k++){
+							for (int k = 0; k < subfields.length(); k++) {
 								JSONObject subfield = subfields.getJSONObject(k);
-								allFieldContent.append(subfield.getString("content"));
+								if (marcTag.equals("856")) {
+									if (subfield.getString("tag").equals("u")) {
+										allFieldContent.append(subfield.getString("content"));
+									}
+								} else {
+									allFieldContent.append(subfield.getString("content"));
+								}
 							}
 						}else{
 							allFieldContent.append(curVarField.getString("content"));
