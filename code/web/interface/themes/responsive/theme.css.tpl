@@ -319,149 +319,6 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	background-color: transparent;
 {rdelim}
 
-{if !empty($buttonRadius)}
-.btn{ldelim}
-    border-radius: {$buttonRadius};
-{rdelim}
-{/if}
-
-{if !empty($smallButtonRadius)}
-.btn-sm{ldelim}
-    border-radius: {$smallButtonRadius};
-{rdelim}
-{/if}
-
-.btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited,.btn-default a,.btn-default a:visited{ldelim}
-    background-color: {$defaultButtonBackgroundColor};
-    color: {$defaultButtonForegroundColor};
-    border-color: {$defaultButtonBorderColor};
-{rdelim}
-
-.btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus{ldelim}
-    background-color: {$defaultButtonHoverBackgroundColor};
-    color: {$defaultButtonHoverForegroundColor};
-    border-color: {$defaultButtonHoverBorderColor};
-{rdelim}
-
-.btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
-    background-color: {$defaultButtonHoverBackgroundColor}70;
-    color: {$defaultButtonHoverForegroundColor};
-    border-color: {$defaultButtonBorderColor};
-{rdelim}
-
-.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
-    background-color: {$primaryButtonBackgroundColor};
-    color: {$primaryButtonForegroundColor};
-    border-color: {$primaryButtonBorderColor};
-{rdelim}
-
-.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
-    background-color: {$primaryButtonHoverBackgroundColor};
-    color: {$primaryButtonHoverForegroundColor};
-    border-color: {$primaryButtonHoverBorderColor};
-{rdelim}
-
-.btn-action,.btn-action:visited,a.btn-action,a.btn-action:visited{ldelim}
-    background-color: {$actionButtonBackgroundColor};
-    color: {$actionButtonForegroundColor};
-    border-color: {$actionButtonBorderColor};
-{rdelim}
-
-.btn-action:hover, .btn-action:focus, .btn-action:active, .btn-action.active, .open .dropdown-toggle.btn-action{ldelim}
-    background-color: {$actionButtonHoverBackgroundColor};
-    color: {$actionButtonHoverForegroundColor};
-    border-color: {$actionButtonHoverBorderColor};
-{rdelim}
-
-.btn-info,.btn-info:visited,a.btn-info,a.btn-info:visited{ldelim}
-    background-color: {$infoButtonBackgroundColor};
-    color: {$infoButtonForegroundColor};
-    border-color: {$infoButtonBorderColor};
-{rdelim}
-
-.btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active, .open .dropdown-toggle.btn-info{ldelim}
-    background-color: {$infoButtonHoverBackgroundColor};
-    color: {$infoButtonHoverForegroundColor};
-    border-color: {$infoButtonHoverBorderColor};
-{rdelim}
-
-.btn-tools,.btn-tools:visited,a.btn-tools,a.btn-tools:visited{ldelim}
-    background-color: {$toolsButtonBackgroundColor};
-    color: {$toolsButtonForegroundColor};
-    border-color: {$toolsButtonBorderColor};
-{rdelim}
-
-.btn-tools:hover, .btn-tools:focus, .btn-tools:active, .btn-tools.active, .open .dropdown-toggle.btn-tools{ldelim}
-    background-color: {$toolsButtonHoverBackgroundColor};
-    color: {$toolsButtonHoverForegroundColor};
-    border-color: {$toolsButtonHoverBorderColor};
-{rdelim}
-
-.btn-warning,.btn-warning:visited,a.btn-warning,a.btn-warning:visited{ldelim}
-    background-color: {$warningButtonBackgroundColor};
-    color: {$warningButtonForegroundColor};
-    border-color: {$warningButtonBorderColor};
-{rdelim}
-
-.btn-warning:hover, .btn-warning:focus, .btn-warning:active, .btn-warning.active, .open .dropdown-toggle.btn-warning{ldelim}
-    background-color: {$warningButtonHoverBackgroundColor};
-    color: {$warningButtonHoverForegroundColor};
-    border-color: {$warningButtonHoverBorderColor};
-{rdelim}
-
-.label-warning{ldelim}
-    background-color: {$warningButtonBackgroundColor};
-    color: {$warningButtonForegroundColor};
-{rdelim}
-
-.btn-danger,.btn-danger:visited,a.btn-danger,a.btn-danger:visited{ldelim}
-    background-color: {$dangerButtonBackgroundColor};
-    color: {$dangerButtonForegroundColor};
-    border-color: {$dangerButtonBorderColor};
-{rdelim}
-
-.btn-danger:hover, .btn-danger:focus, .btn-danger:active, .btn-danger.active, .open .dropdown-toggle.btn-danger{ldelim}
-    background-color: {$dangerButtonHoverBackgroundColor};
-    color: {$dangerButtonHoverForegroundColor};
-    border-color: {$dangerButtonHoverBorderColor};
-{rdelim}
-
-.label-danger{ldelim}
-    background-color: {$dangerButtonBackgroundColor};
-    color: {$dangerButtonForegroundColor};
-{rdelim}
-
-.btn-editions,.btn-editions:visited{ldelim}
-    background-color: {$editionsButtonBackgroundColor};
-    color: {$editionsButtonForegroundColor};
-    border-color: {$editionsButtonBorderColor};
-{rdelim}
-
-.btn-editions:hover, .btn-editions:focus, .btn-editions:active, .btn-editions.active{ldelim}
-    background-color: {$editionsButtonHoverBackgroundColor};
-    color: {$editionsButtonHoverForegroundColor};
-    border-color: {$editionsButtonHoverBorderColor};
-{rdelim}
-
-.badge{ldelim}
-    background-color: {$badgeBackgroundColor};
-    color: {$badgeForegroundColor};
-    {if (!empty($badgeBorderRadius))}
-    border-radius: {$badgeBorderRadius};
-    {/if}
-{rdelim}
-
-#myAccountPanel .label{ldelim}
-	font-size: 10px;
-    min-width: 10px;
-    padding: 3px 7px;
-    {if (!empty($badgeBorderRadius))}
-    border-radius: {$badgeBorderRadius};
-    {else}
-    border-radius: 10px;
-    {/if}
-{rdelim}
-
 {* Alerts *}
 .alert-info{ldelim}
     background-color: {$infoButtonBackgroundColor};
@@ -499,6 +356,151 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 #system-message-header {ldelim}
 	background-color: {$pageBackgroundColor};
 	color: {$bodyTextColor};
+{rdelim}
+
+{* Buttons *}
+{if !empty($buttonRadius)}
+.btn{ldelim}
+    border-radius: {$buttonRadius};
+{rdelim}
+{/if}
+
+{if !empty($smallButtonRadius)}
+.btn-sm{ldelim}
+    border-radius: {$smallButtonRadius};
+{rdelim}
+{/if}
+
+.btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited,.btn-default a,.btn-default a:visited{ldelim}
+    background-color: {$defaultButtonBackgroundColor};
+    color: {$defaultButtonForegroundColor} !important;
+    border-color: {$defaultButtonBorderColor};
+{rdelim}
+
+.btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus{ldelim}
+    background-color: {$defaultButtonHoverBackgroundColor};
+    color: {$defaultButtonHoverForegroundColor} !important;
+    border-color: {$defaultButtonHoverBorderColor};
+{rdelim}
+
+.btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
+    background-color: {$defaultButtonHoverBackgroundColor}70;
+    color: {$defaultButtonHoverForegroundColor} !important;
+    border-color: {$defaultButtonBorderColor};
+{rdelim}
+
+.btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
+    background-color: {$primaryButtonBackgroundColor};
+    color: {$primaryButtonForegroundColor} !important;
+    border-color: {$primaryButtonBorderColor};
+{rdelim}
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
+    background-color: {$primaryButtonHoverBackgroundColor};
+    color: {$primaryButtonHoverForegroundColor} !important;
+    border-color: {$primaryButtonHoverBorderColor};
+{rdelim}
+
+.btn-action,.btn-action:visited,a.btn-action,a.btn-action:visited{ldelim}
+    background-color: {$actionButtonBackgroundColor};
+    color: {$actionButtonForegroundColor} !important;
+    border-color: {$actionButtonBorderColor};
+{rdelim}
+
+.btn-action:hover, .btn-action:focus, .btn-action:active, .btn-action.active, .open .dropdown-toggle.btn-action{ldelim}
+    background-color: {$actionButtonHoverBackgroundColor};
+    color: {$actionButtonHoverForegroundColor} !important;
+    border-color: {$actionButtonHoverBorderColor};
+{rdelim}
+
+.btn-info,.btn-info:visited,a.btn-info,a.btn-info:visited{ldelim}
+    background-color: {$infoButtonBackgroundColor};
+    color: {$infoButtonForegroundColor} !important;
+    border-color: {$infoButtonBorderColor};
+{rdelim}
+
+.btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active, .open .dropdown-toggle.btn-info{ldelim}
+    background-color: {$infoButtonHoverBackgroundColor};
+    color: {$infoButtonHoverForegroundColor} !important;
+    border-color: {$infoButtonHoverBorderColor};
+{rdelim}
+
+.btn-tools,.btn-tools:visited,a.btn-tools,a.btn-tools:visited{ldelim}
+    background-color: {$toolsButtonBackgroundColor};
+    color: {$toolsButtonForegroundColor} !important;
+    border-color: {$toolsButtonBorderColor};
+{rdelim}
+
+.btn-tools:hover, .btn-tools:focus, .btn-tools:active, .btn-tools.active, .open .dropdown-toggle.btn-tools{ldelim}
+    background-color: {$toolsButtonHoverBackgroundColor};
+    color: {$toolsButtonHoverForegroundColor} !important;
+    border-color: {$toolsButtonHoverBorderColor};
+{rdelim}
+
+.btn-warning,.btn-warning:visited,a.btn-warning,a.btn-warning:visited{ldelim}
+    background-color: {$warningButtonBackgroundColor};
+    color: {$warningButtonForegroundColor} !important;
+    border-color: {$warningButtonBorderColor};
+{rdelim}
+
+.btn-warning:hover, .btn-warning:focus, .btn-warning:active, .btn-warning.active, .open .dropdown-toggle.btn-warning{ldelim}
+    background-color: {$warningButtonHoverBackgroundColor};
+    color: {$warningButtonHoverForegroundColor} !important;
+    border-color: {$warningButtonHoverBorderColor};
+{rdelim}
+
+.label-warning{ldelim}
+    background-color: {$warningButtonBackgroundColor};
+    color: {$warningButtonForegroundColor};
+{rdelim}
+
+.btn-danger,.btn-danger:visited,a.btn-danger,a.btn-danger:visited{ldelim}
+    background-color: {$dangerButtonBackgroundColor};
+    color: {$dangerButtonForegroundColor} !important;
+    border-color: {$dangerButtonBorderColor};
+{rdelim}
+
+.btn-danger:hover, .btn-danger:focus, .btn-danger:active, .btn-danger.active, .open .dropdown-toggle.btn-danger{ldelim}
+    background-color: {$dangerButtonHoverBackgroundColor};
+    color: {$dangerButtonHoverForegroundColor} !important;
+    border-color: {$dangerButtonHoverBorderColor};
+{rdelim}
+
+.label-danger{ldelim}
+    background-color: {$dangerButtonBackgroundColor};
+    color: {$dangerButtonForegroundColor};
+{rdelim}
+
+.btn-editions,.btn-editions:visited{ldelim}
+    background-color: {$editionsButtonBackgroundColor};
+    color: {$editionsButtonForegroundColor} !important;
+    border-color: {$editionsButtonBorderColor};
+{rdelim}
+
+.btn-editions:hover, .btn-editions:focus, .btn-editions:active, .btn-editions.active{ldelim}
+    background-color: {$editionsButtonHoverBackgroundColor};
+    color: {$editionsButtonHoverForegroundColor} !important;
+    border-color: {$editionsButtonHoverBorderColor};
+{rdelim}
+
+{* Badges/Labels *}
+.badge{ldelim}
+    background-color: {$badgeBackgroundColor};
+    color: {$badgeForegroundColor};
+    {if (!empty($badgeBorderRadius))}
+    border-radius: {$badgeBorderRadius};
+    {/if}
+{rdelim}
+
+#myAccountPanel .label{ldelim}
+	font-size: 10px;
+    min-width: 10px;
+    padding: 3px 7px;
+    {if (!empty($badgeBorderRadius))}
+    border-radius: {$badgeBorderRadius};
+    {else}
+    border-radius: 10px;
+    {/if}
 {rdelim}
 
 {* Forms/Inputs *}
