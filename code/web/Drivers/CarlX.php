@@ -2407,7 +2407,7 @@ EOT;
 		return false;
 	}
 
-	public function completeFinePayment(User $user, UserPayment $payment): bool {
+	public function completeFinePayment(User $user, UserPayment $payment) {
 		return false;
 	}
 }
