@@ -83,7 +83,7 @@ class FineAPI extends Action {
 							$user = new User();
 							$user->id = $payment->userId;
 							if ($user->find(true)) {
-								return $user->completeFinePayment($user, $payment);
+								return $user->completeFinePayment($payment);
 							} else {
 								$success = false;
 								$message = 'MSB Payment ' . $msb["PaymentReference"] . 'failed with Invalid Patron';
