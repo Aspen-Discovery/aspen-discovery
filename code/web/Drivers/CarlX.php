@@ -1535,12 +1535,6 @@ class CarlX extends AbstractIlsDriver {
 		$request->SearchType = 'Patron ID';
 		$request->SearchID = $user->cat_username; // TODO: Question: barcode/pin check
 		$request->Modifiers = '';
-global $logger;
-$message = "get search by patron id request:\n";
-$message .= print_r($request, true);
-$message .= "something on the end\n";
-$level = Logger::LOG_DEBUG;
-$logger->log($message,$level);
 		return $request;
 	}
 
