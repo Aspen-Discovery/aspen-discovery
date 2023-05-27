@@ -117,14 +117,15 @@ class Nashville extends CarlX {
     protected function updateNonResident(User $user): array {
         global $logger;
 		$patronId = $user->cat_username;
-        $request = $this->getSearchbyPatronIdRequest($user);
-        $request->Patron = new stdClass();
+//        $request = $this->getSearchbyPatronIdRequest($user);
+		$request = new stdClass();
+		$request->SearchType = 'Patron ID';
+		$request->SearchID = $user->cat_username; // TODO: Question: barcode/pin check
+		$request->Modifiers = '';
+		$request->Patron = new stdClass();
         $request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
         $result = $this->doSoapRequest('updatePatron', $request);
-$message = "UpdatePatron Result:\n";
-$message .= print_r($result, true);
-$level = Logger::LOG_DEBUG;
-$logger->log($message,$level);
+$logger->log("Result of updatePatron\r\n" . print_r($result, true), Logger::LOG_DEBUG);
 		if ($result) {
             $success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
             if (!$success) {
