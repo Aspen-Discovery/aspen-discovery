@@ -120,7 +120,7 @@ class Nashville extends CarlX {
         $request = $this->getSearchbyPatronIdRequest($user);
         $request->Patron = new stdClass();
         $request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
-        $result = $this->doSoapRequest('UpdatePatron', $request);
+        $result = $this->doSoapRequest('updatePatron', $request);
 $message = "UpdatePatron Result:\n";
 $message .= print_r($result, true);
 $level = Logger::LOG_DEBUG;
