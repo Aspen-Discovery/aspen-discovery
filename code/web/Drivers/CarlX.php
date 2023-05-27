@@ -1530,11 +1530,17 @@ class CarlX extends AbstractIlsDriver {
 	 * @param $user
 	 * @return stdClass
 	 */
-	protected function getSearchbyPatronIdRequest(User $user) {
+	protected function getSearchbyPatronIdRequest(User $user): stdClass {
 		$request = new stdClass();
 		$request->SearchType = 'Patron ID';
 		$request->SearchID = $user->cat_username; // TODO: Question: barcode/pin check
 		$request->Modifiers = '';
+global $logger;
+$message = "get search by patron id request:\n";
+$message .= print_r($request);
+$message .= "something on the end\n";
+$level = Logger::LOG_DEBUG;
+$logger->log($message,$level);
 		return $request;
 	}
 
