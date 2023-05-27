@@ -24,7 +24,7 @@ class Nashville extends CarlX {
         'NR' => '01', // NR = Non Resident, a juke to identify Nashville non resident account fees
     ];
 
-	public function completeFinePayment(User $user, UserPayment $payment): array {
+	public function completeFinePayment(User $patron, UserPayment $payment): array {
 		global $logger;
 		global $serverName;
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
@@ -32,8 +32,8 @@ class Nashville extends CarlX {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		$accountLinesPaid = explode(',', $payment->finesPaid);
-		$user->id = $payment->userId;
-		$patronId = $user->cat_username;
+		$patron->id = $payment->userId;
+		$patronId = $patron->cat_username;
 		$allPaymentsSucceed = true;
 		foreach ($accountLinesPaid as $line) {
 			// MSB Payments are in the form of fineId|paymentAmount
@@ -76,7 +76,7 @@ class Nashville extends CarlX {
 			} else {
 				$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
 				if ($feeType == 'NR') {
-					$this->updateNonResident($user);
+					$this->updateNonResident($patron);
 				}
 			}
 		}
@@ -120,6 +120,10 @@ class Nashville extends CarlX {
         $request = $this->getSearchbyPatronIdRequest($user);
         $request->Patron = new stdClass();
         $request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
+$message = "UpdatePatron Request:\n";
+$message .= print_r($request);
+$level = Logger::LOG_DEBUG;
+$logger->log($message,$level);
         $result = $this->doSoapRequest('UpdatePatron', $request);
         if ($result) {
             $success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;

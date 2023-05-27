@@ -2407,7 +2407,7 @@ EOT;
 		return false;
 	}
 
-	public function completeFinePayment(User $user, UserPayment $payment) {
+	public function completeFinePayment(User $patron, UserPayment $payment) {
 		return false;
 	}
 }
