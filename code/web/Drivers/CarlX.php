@@ -1537,7 +1537,7 @@ class CarlX extends AbstractIlsDriver {
 		$request->Modifiers = '';
 global $logger;
 $message = "get search by patron id request:\n";
-$message .= print_r($request);
+$message .= print_r($request, true);
 $message .= "something on the end\n";
 $level = Logger::LOG_DEBUG;
 $logger->log($message,$level);
