@@ -120,11 +120,12 @@ class Nashville extends CarlX {
 //        $request = $this->getSearchbyPatronIdRequest($user);
 		$request = new stdClass();
 		$request->SearchType = 'Patron ID';
-		$request->SearchID = $user->cat_username; // TODO: Question: barcode/pin check
-		$request->Modifiers = '';
+		$request->SearchID = $user->cat_username;
 		$request->Patron = new stdClass();
         $request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
-        $result = $this->doSoapRequest('updatePatron', $request);
+		$request->Modifiers = '';
+$logger->log("Request updatePatron\r\n" . print_r($request, true), Logger::LOG_DEBUG);
+		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 $logger->log("Result of updatePatron\r\n" . print_r($result, true), Logger::LOG_DEBUG);
 		if ($result) {
             $success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
