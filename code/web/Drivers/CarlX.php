@@ -557,7 +557,7 @@ class CarlX extends AbstractIlsDriver {
 			$freeze = true;
 			$freezeReactivationDate = $unavailableHoldViaSIP['freezeReactivationDate'];
 		}
-        return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
+		return $this->placeHoldViaSIP($patron, $holdId, $newPickupLocation, null, 'update', $queuePosition, $freeze, $freezeReactivationDate);
 	}
 
 	public function getCheckouts(User $patron): array {
@@ -740,7 +740,7 @@ class CarlX extends AbstractIlsDriver {
 			if (isset($_REQUEST['zip'])) {
 				$request->Patron->Addresses->Address->PostalCode = $_REQUEST['zip'];
 				$patron->_zip = $_REQUEST['zip'];
-            }
+			}
 			if (isset($_REQUEST['emailReceiptFlag']) && ($_REQUEST['emailReceiptFlag'] == 'yes' || $_REQUEST['emailReceiptFlag'] == 'on')) {
 				// if set check & on check must be combined because checkboxes/radios don't report 'offs'
 				$request->Patron->EmailReceiptFlag = 1;
@@ -921,7 +921,7 @@ class CarlX extends AbstractIlsDriver {
 				$birthDate = trim($_REQUEST['birthDate']);
 				$date = strtotime(str_replace('-', '/', $birthDate));
 			}
-            $address = trim(strtoupper($_REQUEST['address']));
+			$address = trim(strtoupper($_REQUEST['address']));
 			$city = trim(strtoupper($_REQUEST['city']));
 			$state = trim(strtoupper($_REQUEST['state']));
 			$zip = trim($_REQUEST['zip']);
@@ -1280,11 +1280,11 @@ class CarlX extends AbstractIlsDriver {
 		];
 	}
 
-	public function performsReadingHistoryUpdatesOfILS() : bool {
+	public function performsReadingHistoryUpdatesOfILS(): bool {
 		return true;
 	}
 
-	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
+	public function doReadingHistoryAction(User $patron, string $action, array $selectedTitles): void {
 		if ($action == 'optIn' || $action == 'optOut') {
 			$request = $this->getSearchbyPatronIdRequest($patron);
 			if (!isset ($request->Patron)) {
@@ -1444,7 +1444,7 @@ class CarlX extends AbstractIlsDriver {
 	 */
 	private function getPatronTransactions(User $user) {
 		$request = $this->getSearchbyPatronIdRequest($user);
-        return $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		return $this->doSoapRequest('getPatronTransactions', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
 	}
 
 	public function getPhoneTypeList() {
@@ -2131,9 +2131,9 @@ EOT;
 		} elseif ($showOverdueOnly == 'overdue') {
 			$statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
 		}
-        if ($showOverdueOnly == 'checkedOut' || $showOverdueOnly == 'overdue') {
-            /** @noinspection SqlResolve */
-            $sql = <<<EOT
+		if ($showOverdueOnly == 'checkedOut' || $showOverdueOnly == 'overdue') {
+			/** @noinspection SqlResolve */
+			$sql = <<<EOT
                     select
                       patronbranch.branchcode AS Home_Lib_Code
                       , patronbranch.branchname AS Home_Lib
@@ -2183,8 +2183,8 @@ EOT;
                       , item_v.cn
                       , bbibmap_v.title
 EOT;
-        } elseif ($showOverdueOnly == 'fees') {
-            $sql = <<<EOT
+		} elseif ($showOverdueOnly == 'fees') {
+			$sql = <<<EOT
                 -- school fees report CarlX sql
                 with p as ( -- first gather patrons of the requested branch
                     select
@@ -2230,7 +2230,7 @@ EOT;
                     , r.callnumber
                     , r.title
 EOT;
-        }
+		}
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
 		// oci_set_prefetch($stid, 1000);
@@ -2404,6 +2404,10 @@ EOT;
 	}
 
 	public function showDateInFines(): bool {
+		return false;
+	}
+
+	public function completeFinePayment(User $user, UserPayment $payment): bool {
 		return false;
 	}
 }
