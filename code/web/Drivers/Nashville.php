@@ -79,7 +79,7 @@ class Nashville extends CarlX {
 				} else {
 					$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
                     if ($feeType == 'NR') {
-                        $this->updateNonResident($patronId);
+                        $this->updateNonResident($user);
                     }
 				}
 			}
@@ -122,9 +122,10 @@ class Nashville extends CarlX {
 	}
 
     // Following successful online payment, update Patron with new Expiration Date
-    protected function updateNonResident($patronId): array {
+    protected function updateNonResident(User $user): array {
         global $logger;
-        $request = $this->getSearchbyPatronIdRequest($patronId);
+		$patronId = $user->cat_username;
+        $request = $this->getSearchbyPatronIdRequest($user);
         $request->Patron = new stdClass();
         $request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
         $result = $this->doSoapRequest('UpdatePatron', $request);
