@@ -6,22 +6,36 @@ if (count($_SERVER['argv']) > 1) {
 	$fhnd = fopen("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", 'r');
 	if ($fhnd) {
 		$lines = [];
-		$insertUpdate = true;
+		$insertUpdateTranslations = true;
+		$insertYumUpdate = true;
 		while (($line = fgets($fhnd)) !== false) {
 			if (strpos($line, 'updateCommunityTranslations') > 0) {
-				$insertUpdate = false;
-			} else {
-				$lines[] = $line;
+				$insertUpdateTranslations = false;
+			} elseif (strpos($line, 'yum -y update') > 0) {
+				$insertYumUpdate = false;
 			}
+			$lines[] = $line;
 		}
 		fclose($fhnd);
-		if ($insertUpdate) {
-			$lines[] = "#########################\n";
+		if ($insertUpdateTranslations) {
+			$lines[] = "######################################\n";
 			$lines[] = "# Update Translations from Community #\n";
-			$lines[] = "#########################\n";
+			$lines[] = "######################################\n";
 			$lines[] = "15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php $serverName\n";
 		}
-		if ($insertUpdate) {
+		if ($insertYumUpdate) {
+			//check to see if we are on centos
+			$osInformation = getOSInformation();
+			if ($osInformation != null) {
+				if ($osInformation['id'] == 'centos' || $osInformation['id'] == 'rhel') {
+					$lines[] = "#########################\n";
+					$lines[] = "# Update the system     #\n";
+					$lines[] = "#########################\n";
+					$lines[] = "21 45 * * * root yum -y update; apachectl graceful\n";
+				}
+			}
+		}
+		if ($insertUpdateTranslations || $insertYumUpdate) {
 			$newContent = implode('', $lines);
 			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
 		}
@@ -32,4 +46,28 @@ if (count($_SERVER['argv']) > 1) {
 } else {
 	echo 'Must provide servername as first argument';
 	exit();
+}
+
+function getOSInformation()
+{
+	if (false == function_exists("shell_exec") || false == is_readable("/etc/os-release")) {
+		return null;
+	}
+
+	$os         = shell_exec('cat /etc/os-release');
+	$listIds    = preg_match_all('/.*=/', $os, $matchListIds);
+	$listIds    = $matchListIds[0];
+
+	$listVal    = preg_match_all('/=.*/', $os, $matchListVal);
+	$listVal    = $matchListVal[0];
+
+	array_walk($listIds, function(&$v, $k){
+		$v = strtolower(str_replace('=', '', $v));
+	});
+
+	array_walk($listVal, function(&$v, $k){
+		$v = preg_replace('/=|"/', '', $v);
+	});
+
+	return array_combine($listIds, $listVal);
 }
