@@ -10,6 +10,8 @@ if (count($_SERVER['argv']) > 1) {
 		while (($line = fgets($fhnd)) !== false) {
 			if (strpos($line, 'updateCommunityTranslations') > 0) {
 				$insertUpdate = false;
+			} else {
+				$lines[] = $line;
 			}
 		}
 		fclose($fhnd);
