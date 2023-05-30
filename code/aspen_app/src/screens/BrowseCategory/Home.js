@@ -214,7 +214,7 @@ export const DiscoverHomeScreen = () => {
                          alt={item.title_display}
                          source={{
                               uri: `${imageUrl}`,
-                              expiresIn: 1,
+                              expiresIn: 3600,
                          }}
                          style={{
                               width: '100%',
