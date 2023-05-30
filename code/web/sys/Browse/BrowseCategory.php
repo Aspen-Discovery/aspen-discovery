@@ -474,6 +474,9 @@ class BrowseCategory extends BaseBrowsable {
 						if ($this->isDismissed($user)) {
 							return false;
 						}
+						if($this->allUserListsDismissed()) {
+							return false;
+						}
 					}
 					return true;
 				}
@@ -533,6 +536,27 @@ class BrowseCategory extends BaseBrowsable {
 
 			if($this->getNumSubCategories() > 0) {
 				if ($count == $this->getNumSubCategories()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	function allUserListsDismissed() {
+		$count = 0;
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$allUserLists = $user->getLists();
+			foreach($allUserLists as $userList) {
+				if($userList->isDismissed()) {
+					$count++;
+				}
+			}
+
+			if($count > 0) {
+				if($count == $user->getNumLists()) {
 					return true;
 				}
 			}
