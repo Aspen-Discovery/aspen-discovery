@@ -22,8 +22,8 @@ enableScreens();
 const queryClient = new QueryClient({
      defaultOptions: {
           queries: {
-               staleTime: 60 * 1000 * 15,
-               cacheTime: 60 * 1000 * 15,
+               staleTime: 1000 * 60 * 60 * 24,
+               cacheTime: 1000 * 60 * 60 * 24,
           },
      },
 });
