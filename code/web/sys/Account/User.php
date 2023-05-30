@@ -3123,6 +3123,7 @@ class User extends DataObject {
 		$browseCategoryGroupsAction->addSubAction(new AdminAction('Browse Categories', 'Define browse categories shown on the library home page.', '/Admin/BrowseCategories'), [
 			'Administer All Browse Categories',
 			'Administer Library Browse Categories',
+			'Administer Selected Browse Category Groups'
 		]);
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, [
 			'Administer All Browse Categories',
