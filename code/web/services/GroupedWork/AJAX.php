@@ -1172,7 +1172,20 @@ class GroupedWork_AJAX extends JSON_Action {
 							$result = $res;
 						}
 					}else{ //only updating grouped work or individual bib cover
-						$result = formatImageUpload($uploadedFile, $destFullPath);
+						if($recordType == 'grouped_work') {
+							if (formatImageUpload($uploadedFile, $destFullPath)) {
+								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+								$recordDriver = new GroupedWorkDriver($id);
+								$relatedRecords = $recordDriver->getRelatedRecords(true);
+								if (sizeof($relatedRecords) == 1) {
+									$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
+									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+									$result = formatImageUpload($uploadedFile, $destFullPath);
+								}
+							}
+						} else {
+							$result = formatImageUpload($uploadedFile, $destFullPath);
+						}
 					}
 				}
 			} else {
@@ -1352,13 +1365,39 @@ class GroupedWork_AJAX extends JSON_Action {
 				}else{ //only updating grouped work or individual bib cover
 					$upload = file_put_contents($destFullPath, file_get_contents($url));
 
-					if ($upload) {
-						$result['success'] = true;
-					} else {
-						$result['message'] = translate([
-							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-							'isAdminFacing' => true,
-						]);
+					if($recordType == 'grouped_work') {
+						if ($upload){
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$recordDriver = new GroupedWorkDriver($id);
+							$relatedRecords = $recordDriver->getRelatedRecords(true);
+							if (sizeof($relatedRecords) == 1){
+								$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
+								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
+								$upload = file_put_contents($destFullPath, file_get_contents($url));
+								if ($upload){
+									$result['success'] = true;
+								}else{
+									$result['message'] = translate([
+										'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+										'isAdminFacing' => true,
+									]);
+								}
+							}
+						}else {
+							$result['message'] = translate([
+								'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+								'isAdminFacing' => true,
+							]);
+						}
+					}else{
+						if ($upload) {
+							$result['success'] = true;
+						} else {
+							$result['message'] = translate([
+								'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+								'isAdminFacing' => true,
+							]);
+						}
 					}
 				}
 			}
