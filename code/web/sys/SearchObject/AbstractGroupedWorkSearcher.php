@@ -555,15 +555,17 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 
 		$baseUrl = $configArray['Site']['url'];
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$id = $result['response']['docs'][$i]['id'];
-			$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
-			if ($groupedWorkDriver->isValid) {
-				$image = $groupedWorkDriver->getBookcoverUrl('medium', true);
-				$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
-				$result['response']['docs'][$i]['rss_description'] = $description;
+		if (!empty($result)){
+			for ($i = 0; $i < count($result['response']['docs']); $i++) {
+				$id = $result['response']['docs'][$i]['id'];
+				$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
+				if ($groupedWorkDriver->isValid) {
+					$image = $groupedWorkDriver->getBookcoverUrl('medium', true);
+					$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
+					$result['response']['docs'][$i]['rss_description'] = $description;
+				}
 			}
 		}
 

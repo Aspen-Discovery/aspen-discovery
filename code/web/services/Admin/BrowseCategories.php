@@ -77,6 +77,7 @@ class Admin_BrowseCategories extends ObjectEditor {
 		return UserAccount::userHasPermission([
 			'Administer All Browse Categories',
 			'Administer Library Browse Categories',
+			'Administer Selected Browse Category Groups'
 		]);
 	}
 
