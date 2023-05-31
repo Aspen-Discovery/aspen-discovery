@@ -13,11 +13,11 @@ import { useFocusEffect, useLinkTo } from '@react-navigation/native';
 import { showILSMessage } from '../../components/Notifications';
 import { AuthContext } from '../../components/navigation';
 import { UseColorMode } from '../../themes/theme';
-import {getTermFromDictionary, getTranslationsWithValues, LanguageSwitcher} from '../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues, LanguageSwitcher } from '../../translations/TranslationService';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { reloadProfile } from '../../util/api/user';
 import { getILSMessages } from '../../util/loadPatron';
-import {LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
 
 Notifications.setNotificationHandler({
@@ -37,7 +37,7 @@ export const DrawerContent = () => {
      const [notifications, setNotifications] = React.useState([]);
      const [messages, setILSMessages] = React.useState([]);
      const { language } = React.useContext(LanguageContext);
-     const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion) ?? "23.03.00";
+     const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion) ?? '23.03.00';
 
      React.useEffect(() => {
           const subscription = Notifications.addNotificationReceivedListener((notification) => {
@@ -101,18 +101,18 @@ export const DrawerContent = () => {
      const [finesSummary, setFinesSummary] = React.useState('');
      React.useEffect(() => {
           async function fetchTranslations() {
-               await getTranslationsWithValues('accounts_have_fines', user.fines ?? 0, language, library.baseUrl).then(result => {
+               await getTranslationsWithValues('accounts_have_fines', user.fines ?? 0, language, library.baseUrl).then((result) => {
                     setFinesSummary(_.toString(result));
                });
           }
-          fetchTranslations()
+          fetchTranslations();
      }, [language]);
 
      const displayFinesAlert = () => {
           if (user.finesVal) {
                if (user.finesVal > 0.01) {
                     let message = 'Your accounts have ' + user.fines + ' in fines.';
-                    if(finesSummary) {
+                    if (finesSummary) {
                          message = finesSummary;
                     }
                     return showILSMessage('warning', message);
@@ -185,9 +185,7 @@ const UserProfileOverview = () => {
      const { language } = React.useContext(LanguageContext);
 
      let icon;
-     if (!_.isNull(library.logoApp)) {
-          icon = library.logoApp;
-     } else if (!_.isUndefined(library.favicon)) {
+     if (!_.isUndefined(library.favicon)) {
           icon = library.favicon;
      } else {
           icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Constants.manifest.ios.icon;
@@ -231,12 +229,12 @@ const Checkouts = () => {
      const [checkoutSummary, setCheckoutSummary] = React.useState('');
      React.useEffect(() => {
           async function fetchTranslations() {
-               await getTranslationsWithValues('checkouts_overdue_summary', user.numOverdue ?? 0, language, library.baseUrl).then(result => {
+               await getTranslationsWithValues('checkouts_overdue_summary', user.numOverdue ?? 0, language, library.baseUrl).then((result) => {
                     console.log(result);
                     setCheckoutSummary(result);
                });
           }
-          fetchTranslations()
+          fetchTranslations();
      }, [language]);
 
      return (
@@ -254,7 +252,7 @@ const Checkouts = () => {
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
                     <VStack w="100%">
                          <Text fontWeight="500">
-                              {getTermFromDictionary(language, "checked_out_titles")} {user ? <Text bold>({user.numCheckedOut})</Text> : null}
+                              {getTermFromDictionary(language, 'checked_out_titles')} {user ? <Text bold>({user.numCheckedOut})</Text> : null}
                          </Text>
                     </VStack>
                </HStack>
@@ -277,11 +275,11 @@ const Holds = () => {
      const [holdSummary, setHoldSummary] = React.useState('');
      React.useEffect(() => {
           async function fetchTranslations() {
-               await getTranslationsWithValues('num_holds_ready_for_pickup', user.numHoldsAvailable ?? 0, language, library.baseUrl).then(result => {
+               await getTranslationsWithValues('num_holds_ready_for_pickup', user.numHoldsAvailable ?? 0, language, library.baseUrl).then((result) => {
                     setHoldSummary(result);
                });
           }
-          fetchTranslations()
+          fetchTranslations();
      }, [language]);
 
      return (
@@ -299,7 +297,7 @@ const Holds = () => {
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
                     <VStack w="100%">
                          <Text fontWeight="500">
-                              {getTermFromDictionary(language, "titles_on_hold")} {user ? <Text bold>({user.numHolds})</Text> : null}
+                              {getTermFromDictionary(language, 'titles_on_hold')} {user ? <Text bold>({user.numHolds})</Text> : null}
                          </Text>
                     </VStack>
                </HStack>
@@ -336,7 +334,7 @@ const UserLists = () => {
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">
                               <Text fontWeight="500">
-                                   {getTermFromDictionary(language, "my_lists")} {user ? <Text bold>({user.numLists})</Text> : null}
+                                   {getTermFromDictionary(language, 'my_lists')} {user ? <Text bold>({user.numLists})</Text> : null}
                               </Text>
                          </VStack>
                     </HStack>
@@ -358,7 +356,7 @@ const UserLists = () => {
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
                     <VStack w="100%">
-                         <Text fontWeight="500">{getTermFromDictionary(language, "my_lists")}</Text>
+                         <Text fontWeight="500">{getTermFromDictionary(language, 'my_lists')}</Text>
                     </VStack>
                </HStack>
           </Pressable>
@@ -374,11 +372,11 @@ const SavedSearches = () => {
      const [savedSearchSummary, setSavedSearchSummary] = React.useState('');
      React.useEffect(() => {
           async function fetchTranslations() {
-               await getTranslationsWithValues('num_saved_searches_with_updates', user.numSavedSearchesNew ?? 0, language, library.baseUrl).then(result => {
+               await getTranslationsWithValues('num_saved_searches_with_updates', user.numSavedSearchesNew ?? 0, language, library.baseUrl).then((result) => {
                     setSavedSearchSummary(result);
                });
           }
-          fetchTranslations()
+          fetchTranslations();
      }, [language]);
 
      if (version >= '22.08.00') {
@@ -397,7 +395,7 @@ const SavedSearches = () => {
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">
                               <Text fontWeight="500">
-                                   {getTermFromDictionary(language, "saved_searches")} {user ? <Text bold>({user.numSavedSearches})</Text> : null}
+                                   {getTermFromDictionary(language, 'saved_searches')} {user ? <Text bold>({user.numSavedSearches})</Text> : null}
                               </Text>
                          </VStack>
                     </HStack>
@@ -437,7 +435,7 @@ const ReadingHistory = () => {
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">
                               <Text fontWeight="500">
-                                   {getTermFromDictionary(language, "reading_history")} <Text bold>({user.numReadingHistory ?? 0})</Text>
+                                   {getTermFromDictionary(language, 'reading_history')} <Text bold>({user.numReadingHistory ?? 0})</Text>
                               </Text>
                          </VStack>
                     </HStack>
@@ -464,7 +462,7 @@ const UserProfile = () => {
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                    <Text fontWeight="500">{getTermFromDictionary(language, "profile")}</Text>
+                    <Text fontWeight="500">{getTermFromDictionary(language, 'profile')}</Text>
                </HStack>
           </Pressable>
      );
@@ -490,7 +488,7 @@ const LinkedAccounts = () => {
                     <HStack space="1" alignItems="center">
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <Text fontWeight="500">
-                              {getTermFromDictionary(language, "linked_accounts")} <Text bold>({user.numLinkedAccounts ?? 0})</Text>
+                              {getTermFromDictionary(language, 'linked_accounts')} <Text bold>({user.numLinkedAccounts ?? 0})</Text>
                          </Text>
                     </HStack>
                </Pressable>
@@ -516,7 +514,7 @@ const UserPreferences = () => {
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                    <Text fontWeight="500">{getTermFromDictionary(language, "preferences")}</Text>
+                    <Text fontWeight="500">{getTermFromDictionary(language, 'preferences')}</Text>
                </HStack>
           </Pressable>
      );
@@ -563,7 +561,7 @@ function LogOutButton() {
 
      return (
           <Button size="md" colorScheme="secondary" onPress={signOut} leftIcon={<Icon as={MaterialIcons} name="logout" size="xs" />}>
-               {getTermFromDictionary(language, "logout")}
+               {getTermFromDictionary(language, 'logout')}
           </Button>
      );
 }
