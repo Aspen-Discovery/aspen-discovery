@@ -2598,6 +2598,13 @@ class User extends DataObject {
 		return $rating->count();
 	}
 
+	function getNumLists() {
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$lists = new UserList();
+		$lists->user_id = $this->id;
+		return $lists->count();
+	}
+
 	function getNumNotInterested() {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
 		$obj = new NotInterested();
