@@ -83,7 +83,9 @@ class Browse_AJAX extends Action {
 			$browseCategories->find();
 			$browseCategoryList = [];
 			while ($browseCategories->fetch()) {
-				$browseCategoryList[] = clone $browseCategories;
+				if ($browseCategories->canActiveUserEdit()) {
+					$browseCategoryList[] = clone $browseCategories;
+				}
 			}
 		} elseif (UserAccount::userHasPermission('Administer All Browse Categories')) {
 			$browseCategories->find();
