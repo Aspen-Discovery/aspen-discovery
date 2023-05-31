@@ -91,8 +91,10 @@ class BrowseCategory extends BaseBrowsable {
 					$subCategory->orderBy('weight');
 					$subCategory->find();
 					while ($subCategory->fetch()) {
-						$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
-						$this->_subBrowseCategories[$subCategory->id]->_source = "browseCategory";
+						if(!$subCategory->isDismissed()) {
+							$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
+							$this->_subBrowseCategories[$subCategory->id]->_source = "browseCategory";
+						}
 					}
 				}
 			} else {
@@ -101,12 +103,21 @@ class BrowseCategory extends BaseBrowsable {
 				$subCategory->orderBy('weight');
 				$subCategory->find();
 				while ($subCategory->fetch()) {
-					$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
-					$this->_subBrowseCategories[$subCategory->id]->_source = "browseCategory";
+					if(!$subCategory->isDismissed()) {
+						$this->_subBrowseCategories[$subCategory->id] = clone($subCategory);
+						$this->_subBrowseCategories[$subCategory->id]->_source = "browseCategory";
+					}
 				}
 			}
 		}
 		return $this->_subBrowseCategories;
+	}
+
+	public function getNumSubCategories() {
+		require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
+		$subBrowseCategory = new SubBrowseCategories();
+		$subBrowseCategory->browseCategoryId = $this->id;
+		return $subBrowseCategory->count();
 	}
 
 	public function __get($name) {
@@ -463,6 +474,9 @@ class BrowseCategory extends BaseBrowsable {
 						if ($this->isDismissed($user)) {
 							return false;
 						}
+						if($this->allUserListsDismissed()) {
+							return false;
+						}
 					}
 					return true;
 				}
@@ -484,6 +498,10 @@ class BrowseCategory extends BaseBrowsable {
 				if ($this->isDismissed($user)) {
 					return false;
 				}
+
+				if($this->allSubCategoriesDismissed($user)) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -499,6 +517,51 @@ class BrowseCategory extends BaseBrowsable {
 				return true;
 			}
 		}
+		return false;
+	}
+
+	function allSubCategoriesDismissed($user) {
+		$count = 0;
+		if (!empty($user)) {
+			$subCategories = $this->getSubCategories();
+			foreach($subCategories as $subCategory) {
+				$subBrowseCategory = new BrowseCategory();
+				$subBrowseCategory->id = $subCategory->subCategoryId;
+				if($subBrowseCategory->find(true)) {
+					if($subBrowseCategory->isDismissed($user)) {
+						$count++;
+					}
+				}
+			}
+
+			if($this->getNumSubCategories() > 0) {
+				if ($count == $this->getNumSubCategories()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	function allUserListsDismissed() {
+		$count = 0;
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			$allUserLists = $user->getLists();
+			foreach($allUserLists as $userList) {
+				if($userList->isDismissed()) {
+					$count++;
+				}
+			}
+
+			if($count > 0) {
+				if($count == $user->getNumLists()) {
+					return true;
+				}
+			}
+		}
+
 		return false;
 	}
 

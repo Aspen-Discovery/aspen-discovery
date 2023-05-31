@@ -47,12 +47,12 @@ export const MyHolds = () => {
           });
      }, [navigation]);
 
-     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+     /*useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateHolds(data);
                setLoading(false);
           },
-     });
+     });*/
 
      const toggleReadySort = async (value) => {
           updateReadySortMethod(value);

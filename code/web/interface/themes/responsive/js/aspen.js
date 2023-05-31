@@ -10113,7 +10113,8 @@ AspenDiscovery.Browse = (function(){
 
 						var dismissButton = $('.selected-browse-dismiss');
 						dismissButton.removeAttr('onclick');
-						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
+						var thisCategoryToDismiss = data.subCategoryTextId || categoryTextId;
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ thisCategoryToDismiss +'")');
 
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
@@ -10365,7 +10366,6 @@ AspenDiscovery.Browse = (function(){
 
 	}
 }(AspenDiscovery.Browse || {}));
-
 AspenDiscovery.CloudLibrary = (function () {
 	return {
 		cancelHold: function (patronId, id) {
@@ -11239,7 +11239,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCover: function (groupedWorkId, recordType, recordId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId;
+			var uploadOption = $('#uploadOption').val();
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId + '&uploadOption=' + uploadOption;
 			var uploadCoverData = new FormData($("#uploadCoverForm")[0]);
 			$.ajax({
 				url: url,
@@ -11266,7 +11267,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCoverByURL: function (groupedWorkId, recordType, recordId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId;
+			var uploadOption = $('#uploadOption').val();
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId + '&uploadOption=' + uploadOption;
 			var uploadCoverData = new FormData($("#uploadCoverFormByURL")[0]);
 			$.ajax({
 				url: url,
