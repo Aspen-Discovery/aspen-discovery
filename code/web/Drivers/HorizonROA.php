@@ -389,7 +389,9 @@ abstract class HorizonROA extends AbstractIlsDriver {
 					$user->update();
 				} else {
 					$user->created = date('Y-m-d');
-					$user->insert();
+					if (!$user->insert()) {
+						return null;
+					}
 				}
 				$timer->logTime("patron logged in successfully");
 				return $user;

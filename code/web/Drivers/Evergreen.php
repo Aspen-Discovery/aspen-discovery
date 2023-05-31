@@ -1427,7 +1427,7 @@ class Evergreen extends AbstractIlsDriver {
 		return false;
 	}
 
-	private function loadPatronInformation($userData, $username, $password): User {
+	private function loadPatronInformation($userData, $username, $password): ?User {
 		$user = new User();
 		$user->username = $userData['id'];
 		if ($user->find(true)) {
@@ -1551,7 +1551,9 @@ class Evergreen extends AbstractIlsDriver {
 
 		if ($insert) {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		} else {
 			$user->update();
 		}

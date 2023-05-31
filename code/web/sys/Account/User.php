@@ -844,6 +844,9 @@ class User extends DataObject {
 	}
 
 	function insert($context = '') {
+		if ($this->firstname === null) {
+			$this->firstname = '';
+		}
 		if ($context == 'development') {
 			$this->source = 'development';
 			$this->homeLocationId = 0;
@@ -2349,13 +2352,17 @@ class User extends DataObject {
 		if ($catalogDriver != null) {
 			//Check to see if it's enabled by home library
 			$homeLibrary =  $this->getHomeLibrary();
-			if ($homeLibrary->enableReadingHistory) {
-				//Check to see if it's enabled by PType
-				$patronType = $this->getPTypeObj();
-				if (!empty($patronType)) {
-					return $patronType->enableReadingHistory;
+			if (!empty($homeLibrary)) {
+				if ($homeLibrary->enableReadingHistory) {
+					//Check to see if it's enabled by PType
+					$patronType = $this->getPTypeObj();
+					if (!empty($patronType)) {
+						return $patronType->enableReadingHistory;
+					} else {
+						return true;
+					}
 				} else {
-					return true;
+					return false;
 				}
 			} else {
 				return false;
