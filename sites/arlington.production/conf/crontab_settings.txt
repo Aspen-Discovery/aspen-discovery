@@ -45,7 +45,7 @@
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * *    root    /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh arlington.production aspen 2>&1 >/dev/null
+10 0 * * *    root    php /usr/local/aspen-discovery/code/web/cron/backupAspen.php arlington.production
 
 #############################################
 # New York Times Best seller Lists Updating #
@@ -64,3 +64,23 @@
 00 22 * * *    aspen    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar arlington.production
 
 00 01 * * *    root    certbot renew
+
+#########################
+# Update Saved Searches #
+#########################
+0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php arlington.production
+
+#########################
+# Fetch Notification Receipts #
+#########################
+0 11 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php arlington.production
+
+#############################
+# Refresh SAML SSO metadata #
+#############################
+00 05  * * * aspen php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php arlington.production
+
+#########################
+# Send Custom LiDA Notifications #
+#########################
+*/15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php arlington.production
