@@ -37,8 +37,35 @@
 
 				<div class="row">
 					{* Hide in mobile view *}
-					<div class="result-value hidden-xs col-sm-12" id="descriptionValue{$id|escape}">
+					<div class="result-value hidden-xs col-sm-8" id="descriptionValue{$id|escape}">
 						{$description|highlight|truncate_html:450:"..."}
+					</div>
+
+					<div class="col-sm-4" style="display:flex; justify-content:center;">
+						{if $recordDriver->inEvents()}
+							{if $recordDriver->isRegistrationRequired()}
+								<div class="btn-group btn-group-vertical btn-block">
+									{if $recordDriver->isRegisteredForEvent()}
+										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="You Are Registered" isPublicFacing=true}</a>
+									{else}
+										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
+									{/if}
+									<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
+								</div>
+								<br>
+							{else}
+								<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
+							{/if}
+						{else}
+							{if $recordDriver->isRegistrationRequired()}
+								<a class="btn btn-sm btn-action btn-wrap" style="width:100%" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+									<i class="fas fa-external-link-alt"></i>
+									{translate text=" Add to Your Events and Register" isPublicFacing=true}
+								</a>
+							{else}
+								<a class="btn btn-sm btn-action btn-wrap" style="width:100%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+							{/if}
+						{/if}
 					</div>
 				</div>
 			{/if}
