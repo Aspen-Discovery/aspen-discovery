@@ -77,7 +77,7 @@
 			<br>
 			<br>
 		</div>
-		{if empty($recordDriver->getEventCoverUrl()) || empty($recordDriver->getAudiences())}
+		{if empty($recordDriver->getEventCoverUrl())}
 			<div class="col-sm-8 col-sm-offset-4">
 				{$recordDriver->getDescription()}
 			</div>
