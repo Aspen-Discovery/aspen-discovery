@@ -1076,11 +1076,11 @@ class GroupedWork_AJAX extends JSON_Action {
 			'success' => false,
 			'title' => translate([
 				'text' => 'Uploading custom cover',
-				'isPublicFacing' => 'true',
+				'isPublicFacing' => true,
 			]),
 			'message' => translate([
 				'text' => 'Sorry your cover could not be uploaded',
-				'isAdminFacing=true',
+				'isAdminFacing' => true,
 			]),
 		];
 		if (UserAccount::isLoggedIn() && (UserAccount::userHasPermission('Upload Covers'))) {
@@ -1142,6 +1142,10 @@ class GroupedWork_AJAX extends JSON_Action {
 								}
 							}
 							$result['success'] = true;
+							$result['message'] = translate([
+								'text' => 'Your cover has been uploaded successfully',
+								'isAdminFacing' => true,
+							]);
 						} else {
 							$result = $res;
 						}
@@ -1171,6 +1175,10 @@ class GroupedWork_AJAX extends JSON_Action {
 								}
 							}
 							$result['success'] = true;
+							$result['message'] = translate([
+								'text' => 'Your cover has been uploaded successfully',
+								'isAdminFacing' => true,
+							]);
 						} else {
 							$result = $res;
 						}
