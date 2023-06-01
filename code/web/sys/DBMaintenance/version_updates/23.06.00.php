@@ -12,7 +12,6 @@ function getUpdates23_06_00(): array {
 			]
 		], //sample*/
 
-		//mark
 		'add_administer_selected_browse_category_groups' => [
 			'title' => 'Add Administer Selected Browse Category Groups Permission',
 			'description' => 'Add Administer Selected Browse Category Groups Permission',
@@ -43,7 +42,6 @@ function getUpdates23_06_00(): array {
 			]
 		], //indexing_profile_add_check_sierra_mat_type_for_format
 
-		//kirstien
 		'add_ecommerce_payflow_settings' => [
 			'title' => 'Add eCommerce vendor PayPal Payflow',
 			'description' => 'Create tables to store settings for PayPal Payflow',
@@ -92,7 +90,6 @@ function getUpdates23_06_00(): array {
 			],
 		],
 		//add_show_edition_covers
-		//kodi
 		'event_library_mapping' => [
 			'title' => 'Event Library Mapping',
 			'description' => 'Maps library branch names to the values in Aspen for Events relevancy',
@@ -114,6 +111,5 @@ function getUpdates23_06_00(): array {
 				"INSERT INTO event_library_map_values(aspenLocation, eventsLocation, locationId, libraryId) SELECT displayName, displayName, locationId, libraryId FROM location ORDER BY locationId ASC",
 			]
 		], //event_library_mapping_values
-		//other
 	];
 }
