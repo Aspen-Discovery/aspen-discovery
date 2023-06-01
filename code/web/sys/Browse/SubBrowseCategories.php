@@ -62,6 +62,9 @@ class SubBrowseCategories extends DataObject {
 				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
 				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
 				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+				if (count($allowedGroups) == 0) {
+					return [];
+				}
 				$activeBrowseCategories = [];
 				foreach ($allowedGroups as $groupId) {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
