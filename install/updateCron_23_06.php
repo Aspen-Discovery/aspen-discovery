@@ -7,12 +7,9 @@ if (count($_SERVER['argv']) > 1) {
 	if ($fhnd) {
 		$lines = [];
 		$insertUpdateTranslations = true;
-		$insertYumUpdate = true;
 		while (($line = fgets($fhnd)) !== false) {
 			if (strpos($line, 'updateCommunityTranslations') > 0) {
 				$insertUpdateTranslations = false;
-			} elseif (strpos($line, 'yum -y update') > 0) {
-				$insertYumUpdate = false;
 			}
 			$lines[] = $line;
 		}
@@ -23,19 +20,7 @@ if (count($_SERVER['argv']) > 1) {
 			$lines[] = "######################################\n";
 			$lines[] = "15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php $serverName\n";
 		}
-		if ($insertYumUpdate) {
-			//check to see if we are on centos
-			$osInformation = getOSInformation();
-			if ($osInformation != null) {
-				if ($osInformation['id'] == 'centos' || $osInformation['id'] == 'rhel') {
-					$lines[] = "#########################\n";
-					$lines[] = "# Update the system     #\n";
-					$lines[] = "#########################\n";
-					$lines[] = "21 45 * * * root /usr/bin/yum -y update; apachectl graceful\n";
-				}
-			}
-		}
-		if ($insertUpdateTranslations || $insertYumUpdate) {
+		if ($insertUpdateTranslations) {
 			$newContent = implode('', $lines);
 			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
 		}

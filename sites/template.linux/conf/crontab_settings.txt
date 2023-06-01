@@ -93,8 +93,3 @@
 # Update Translations from Community #
 #########################
 15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php {sitename}
-
-#########################
-# Update the system     #
-#########################
-21 45 * * * root yum -y update; apachectl graceful
