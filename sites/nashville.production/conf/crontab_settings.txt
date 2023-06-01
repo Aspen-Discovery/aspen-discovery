@@ -76,3 +76,28 @@
 # SIDELOADED ECONTENT MARC triggered HERE (and commented out in full_update.sh)
 0 22 * * *    aspen    cd /usr/local/aspen-discovery/code/cron; ./sideload.sh nashville.production
 
+#########################
+# Update Saved Searches #
+#########################
+0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php nashville.production
+
+#########################
+# Fetch Notification Receipts #
+#########################
+0 11 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php nashville.production
+
+#############################
+# Refresh SAML SSO metadata #
+#############################
+00 05  * * * aspen php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php nashville.production
+
+#########################
+# Send Custom LiDA Notifications #
+#########################
+*/15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php nashville.production
+
+#########################
+# Run Scheduled Updates #
+#########################
+# Nashville does not want ByWater-scheduled updates as of 2023 06 01
+#*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php nashville.production
