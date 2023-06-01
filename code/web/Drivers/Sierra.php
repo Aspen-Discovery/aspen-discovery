@@ -1104,7 +1104,9 @@ class Sierra extends Millennium {
 			$user->update();
 		} else {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		}
 		return $user;
 	}
@@ -1179,7 +1181,9 @@ class Sierra extends Millennium {
 			$user->update();
 		} else {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		}
 
 		return $user;

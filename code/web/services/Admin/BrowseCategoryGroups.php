@@ -38,7 +38,9 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
 				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
 				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
-
+				if (count($allowedGroups) == 0) {
+					return [];
+				}
 				$object->whereAddIn('id', $allowedGroups, false);
 			} else {
 				$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
@@ -121,6 +123,9 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 					$objectType = $this->getObjectType();
 					$object = new $objectType();
 					$this->applyFilters($object);
+					if (empty($allowedGroups)) {
+						return 0;
+					}
 					$object->whereAddIn('id', $allowedGroups, false);
 					$this->_numObjects = $object->count();
 				} else {

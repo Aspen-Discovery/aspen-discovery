@@ -1484,7 +1484,7 @@ class Millennium extends AbstractIlsDriver {
 	 * @param $password
 	 * @return User
 	 */
-	private function createPatronFromPatronDump(array $patronDump, $password): User {
+	private function createPatronFromPatronDump(array $patronDump, $password): ?User {
 		global $configArray;
 		$userExistsInDB = false;
 
@@ -1596,7 +1596,9 @@ class Millennium extends AbstractIlsDriver {
 			$user->update();
 		} else {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		}
 		return $user;
 	}
