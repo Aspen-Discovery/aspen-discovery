@@ -45,7 +45,11 @@ class EventsSolrConnector extends Solr {
 		$boostFactors = [];
 
 		if (UserAccount::isLoggedIn()) {
-			$userLocation =  UserAccount::getActiveUserObj()->getHomeLocation()->displayName;
+			if (UserAccount::getActiveUserObj()->getHomeLocation() != null) {
+				$userLocation = UserAccount::getActiveUserObj()->getHomeLocation()->displayName;
+			} else {
+				$userLocation = $searchLibrary->displayName;
+			}
 		}else {
 			$userLocation = $searchLibrary->displayName;
 		}
