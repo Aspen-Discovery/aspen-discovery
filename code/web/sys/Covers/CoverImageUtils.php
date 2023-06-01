@@ -95,7 +95,7 @@ function _clip($value, $lower, $upper) {
 	}
 }
 
-function formatImageUpload($uploadedFile, $destFullPath, $id){
+function formatImageUpload($uploadedFile, $destFullPath, $id, $recordType){
 	$fileType = $uploadedFile["type"];
 	if ($fileType == 'image/png') {
 		if (copy($uploadedFile["tmp_name"], $destFullPath)) {
@@ -131,6 +131,7 @@ function formatImageUpload($uploadedFile, $destFullPath, $id){
 	if ($result['success'] == true) {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = $recordType;
 		$bookCoverInfo->recordId = $id;
 		if($bookCoverInfo->find(true)) {
 			$bookCoverInfo->imageSource = "upload";
