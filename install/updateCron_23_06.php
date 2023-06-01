@@ -31,7 +31,7 @@ if (count($_SERVER['argv']) > 1) {
 					$lines[] = "#########################\n";
 					$lines[] = "# Update the system     #\n";
 					$lines[] = "#########################\n";
-					$lines[] = "21 45 * * * root yum -y update; apachectl graceful\n";
+					$lines[] = "21 45 * * * root /usr/bin/yum -y update; apachectl graceful\n";
 				}
 			}
 		}
