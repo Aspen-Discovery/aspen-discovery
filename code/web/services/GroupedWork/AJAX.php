@@ -1112,17 +1112,18 @@ class GroupedWork_AJAX extends JSON_Action {
 					require_once ROOT_DIR . '/sys/Covers/CoverImageUtils.php';
 
 					if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
-						$res = formatImageUpload($uploadedFile, $destFullPath);
+						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						if ($res) {
 							$id = $_REQUEST['id'];
+							$recordType = 'grouped_work';
 							$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-							$res = formatImageUpload($uploadedFile, $destFullPath);
+							$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 							$result = $res;
 						}else{
 							$result = $res;
 						}
 					}elseif ($uploadOption == 'all'){ //update image for all records in grouped work
-						$res = formatImageUpload($uploadedFile, $destFullPath);
+						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						if ($res) {
 							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 							$id = $_REQUEST['id'];
@@ -1131,8 +1132,9 @@ class GroupedWork_AJAX extends JSON_Action {
 
 							foreach ($relatedRecords as $record) {
 								$id = substr(strstr($record->id, ':'), 1);
+								$recordType = $record->source;
 								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-								$res = formatImageUpload($uploadedFile, $destFullPath);
+								$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 								if ($res){
 									continue;
 								}else{
@@ -1144,7 +1146,7 @@ class GroupedWork_AJAX extends JSON_Action {
 							$result = $res;
 						}
 					}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
-						$res = formatImageUpload($uploadedFile, $destFullPath);
+						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						if ($res) {
 							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
@@ -1158,8 +1160,9 @@ class GroupedWork_AJAX extends JSON_Action {
 								$hasDefaultCover->imageSource = 'default';
 								if ($hasDefaultCover->find(true)){
 									$id = substr(strstr($record->id, ':'), 1);
+									$recordType = $record->source;
 									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-									$res = formatImageUpload($uploadedFile, $destFullPath);
+									$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 									if ($res){
 										continue;
 									}else{
@@ -1173,18 +1176,19 @@ class GroupedWork_AJAX extends JSON_Action {
 						}
 					}else{ //only updating grouped work or individual bib cover
 						if($recordType == 'grouped_work') {
-							if (formatImageUpload($uploadedFile, $destFullPath)) {
+							if (formatImageUpload($uploadedFile, $destFullPath, $id, $recordType)) {
 								require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 								$recordDriver = new GroupedWorkDriver($id);
 								$relatedRecords = $recordDriver->getRelatedRecords(true);
 								if (sizeof($relatedRecords) == 1) {
 									$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
+									$recordType = $relatedRecords[0]->source;
 									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-									$result = formatImageUpload($uploadedFile, $destFullPath);
+									$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 								}
 							}
 						} else {
-							$result = formatImageUpload($uploadedFile, $destFullPath);
+							$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						}
 					}
 				}
@@ -1287,9 +1291,26 @@ class GroupedWork_AJAX extends JSON_Action {
 					$upload = file_put_contents($destFullPath, file_get_contents($url));
 					if ($upload) {
 						$id = $_REQUEST['id'];
+						$recordType = 'grouped_work';
 						$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 						$upload = file_put_contents($destFullPath, file_get_contents($url));
 						if ($upload){
+							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+							$bookCoverInfo = new BookCoverInfo();
+							$bookCoverInfo->recordType = $recordType;
+							$bookCoverInfo->recordId = $id;
+							if ($bookCoverInfo->find(true)) {
+								$bookCoverInfo->imageSource = 'upload';
+								$bookCoverInfo->thumbnailLoaded = 0;
+								$bookCoverInfo->mediumLoaded = 0;
+								$bookCoverInfo->largeLoaded = 0;
+								if ($bookCoverInfo->update()) {
+									$result['message'] = translate([
+										'text' => 'Your cover has been uploaded successfully',
+										'isAdminFacing' => true,
+									]);
+								}
+							}
 							$result['success'] = true;
 						} else {
 							$result['message'] = translate([
@@ -1313,10 +1334,26 @@ class GroupedWork_AJAX extends JSON_Action {
 
 						foreach ($relatedRecords as $record) {
 							$id = substr(strstr($record->id, ':'), 1);
+							$recordType = $record->source;
 							$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 							$upload = file_put_contents($destFullPath, file_get_contents($url));
 							if ($upload){
-								continue;
+								require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+								$bookCoverInfo = new BookCoverInfo();
+								$bookCoverInfo->recordType = $recordType;
+								$bookCoverInfo->recordId = $id;
+								if ($bookCoverInfo->find(true)) {
+									$bookCoverInfo->imageSource = 'upload';
+									$bookCoverInfo->thumbnailLoaded = 0;
+									$bookCoverInfo->mediumLoaded = 0;
+									$bookCoverInfo->largeLoaded = 0;
+									if ($bookCoverInfo->update()) {
+										$result['message'] = translate([
+											'text' => 'Your cover has been uploaded successfully',
+											'isAdminFacing' => true,
+										]);
+									}
+								}
 							}else{
 								$result['message'] = translate([
 									'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
@@ -1344,10 +1381,26 @@ class GroupedWork_AJAX extends JSON_Action {
 							$hasDefaultCover->imageSource = 'default';
 							if ($hasDefaultCover->find(true)){
 								$id = substr(strstr($record->id, ':'), 1);
+								$recordType = $record->source;
 								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 								$upload = file_put_contents($destFullPath, file_get_contents($url));
 								if ($upload){
-									continue;
+									require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+									$bookCoverInfo = new BookCoverInfo();
+									$bookCoverInfo->recordType = $recordType;
+									$bookCoverInfo->recordId = $id;
+									if ($bookCoverInfo->find(true)) {
+										$bookCoverInfo->imageSource = 'upload';
+										$bookCoverInfo->thumbnailLoaded = 0;
+										$bookCoverInfo->mediumLoaded = 0;
+										$bookCoverInfo->largeLoaded = 0;
+										if ($bookCoverInfo->update()) {
+											$result['message'] = translate([
+												'text' => 'Your cover has been uploaded successfully',
+												'isAdminFacing' => true,
+											]);
+										}
+									}
 								}else{
 									$result['message'] = translate([
 										'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
@@ -1372,10 +1425,28 @@ class GroupedWork_AJAX extends JSON_Action {
 							$relatedRecords = $recordDriver->getRelatedRecords(true);
 							if (sizeof($relatedRecords) == 1){
 								$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
+								$recordType = $relatedRecords[0]->source;
 								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 								$upload = file_put_contents($destFullPath, file_get_contents($url));
 								if ($upload){
 									$result['success'] = true;
+
+									require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+									$bookCoverInfo = new BookCoverInfo();
+									$bookCoverInfo->recordType = $recordType;
+									$bookCoverInfo->recordId = $id;
+									if ($bookCoverInfo->find(true)) {
+										$bookCoverInfo->imageSource = 'upload';
+										$bookCoverInfo->thumbnailLoaded = 0;
+										$bookCoverInfo->mediumLoaded = 0;
+										$bookCoverInfo->largeLoaded = 0;
+										if ($bookCoverInfo->update()) {
+											$result['message'] = translate([
+												'text' => 'Your cover has been uploaded successfully',
+												'isAdminFacing' => true,
+											]);
+										}
+									}
 								}else{
 									$result['message'] = translate([
 										'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
