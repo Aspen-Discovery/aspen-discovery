@@ -38,7 +38,7 @@
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * *    root    /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh {sitename} aspen 2>&1 >/dev/null
+10 0 * * *    root    php /usr/local/aspen-discovery/code/web/cron/backupAspen.php {sitename}
 
 #############################################
 # New York Times Best seller Lists Updating #
@@ -83,3 +83,13 @@
 # Send Custom LiDA Notifications #
 #########################
 */15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php {sitename}
+
+#########################
+# Run Scheduled Updates #
+#########################
+*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php {sitename}
+
+#########################
+# Update Translations from Community #
+#########################
+15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php {sitename}

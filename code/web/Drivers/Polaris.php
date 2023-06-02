@@ -1041,7 +1041,9 @@ class Polaris extends AbstractIlsDriver {
 				}
 
 				$user->created = date('Y-m-d');
-				$user->insert();
+				if (!$user->insert()) {
+					return null;
+				}
 			}
 			return $user;
 		} else {

@@ -5303,7 +5303,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 
 						$label = explode('_', $hiddenCategory->browseCategoryId);
-						$id = $label[3];
+						$id = $label[3] ?? $hiddenCategory->browseCategoryId;
 						$searchEntry = new SearchEntry();
 						$searchEntry->id = $id;
 						if ($searchEntry->find(true)) {
@@ -5325,7 +5325,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 
 						$label = explode('_', $hiddenCategory->browseCategoryId);
-						$id = $label[3];
+						$id = $label[3] ?? $hiddenCategory->browseCategoryId;
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 						$sourceList = new UserList();
 						$sourceList->id = $id;
@@ -5343,8 +5343,19 @@ class MyAccount_AJAX extends JSON_Action {
 						$browseCategory = new BrowseCategory();
 						$browseCategory->textId = $hiddenCategory->browseCategoryId;
 						if ($browseCategory->find(true)) {
+							$parentLabel = "";
+							require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
+							$subBrowseCategory = new SubBrowseCategories();
+							$subBrowseCategory->subCategoryId = $browseCategory->id;
+							if($subBrowseCategory->find(true)) {
+								$parentCategory = new BrowseCategory();
+								$parentCategory->id = $subBrowseCategory->browseCategoryId;
+								if($parentCategory->find(true)) {
+									$parentLabel = $parentCategory->label . ': ';
+								}
+							}
 							$category['id'] = $browseCategory->textId;
-							$category['name'] = $browseCategory->label;
+							$category['name'] = $parentLabel . $browseCategory->label;
 							$category['description'] = $browseCategory->description;
 							$categories[] = $category;
 						}

@@ -95,6 +95,67 @@ function _clip($value, $lower, $upper) {
 	}
 }
 
+function formatImageUpload($uploadedFile, $destFullPath, $id, $recordType){
+	$fileType = $uploadedFile["type"];
+	if ($fileType == 'image/png') {
+		if (copy($uploadedFile["tmp_name"], $destFullPath)) {
+			$result['success'] = true;
+		}
+	} elseif ($fileType == 'image/gif') {
+		$imageResource = @imagecreatefromgif($uploadedFile["tmp_name"]);
+		if (!$imageResource) {
+			$result['message'] = translate([
+				'text' => 'Unable to process this image, please try processing in an image editor and reloading',
+				'isAdminFacing' => true,
+			]);
+		} elseif (@imagepng($imageResource, $destFullPath, 9)) {
+			$result['success'] = true;
+		}
+	} elseif ($fileType == 'image/jpg' || $fileType == 'image/jpeg') {
+		$imageResource = @imagecreatefromjpeg($uploadedFile["tmp_name"]);
+		if (!$imageResource) {
+			$result['message'] = translate([
+				'text' => 'Unable to process this image, please try processing in an image editor and reloading',
+				'isAdminFacing' => true,
+			]);
+		} elseif (@imagepng($imageResource, $destFullPath, 9)) {
+			$result['success'] = true;
+		}
+	} else {
+		$result['message'] = translate([
+			'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
+			'isAdminFacing' => true,
+		]);
+	}
+
+	if ($result['success'] == true) {
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = $recordType;
+		$bookCoverInfo->recordId = $id;
+		if($bookCoverInfo->find(true)) {
+			$bookCoverInfo->imageSource = "upload";
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			if($bookCoverInfo->update()) {
+				$result['message'] = translate([
+					'text' => 'Your cover has been uploaded successfully',
+					'isAdminFacing' => true,
+				]);
+			}
+		}
+		try {
+			chgrp($destFullPath, 'aspen_apache');
+			chmod($destFullPath, 0775);
+		} catch (Exception $e) {
+			//Just ignore errors
+		}
+	}
+
+	return $result;
+}
+
 function resizeImage($originalPath, $newPath, $maxWidth, $maxHeight) {
 	global $logger;
 	[

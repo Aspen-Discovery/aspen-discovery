@@ -1585,7 +1585,7 @@ class UserAPI extends Action {
 	function renewAll(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$result = $user->renewAll();
+			$result = $user->renewAll(true);
 			$message = array_merge([$result['Renewed'] . ' of ' . $result['Total'] . ' titles were renewed'], $result['message']);
 			for ($i = 0; $i < $result['Renewed']; $i++) {
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';

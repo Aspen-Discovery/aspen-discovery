@@ -62,6 +62,9 @@ class SubBrowseCategories extends DataObject {
 				$browseCategoryGroupUser = new BrowseCategoryGroupUser();
 				$browseCategoryGroupUser->userId = UserAccount::getActiveUserId();
 				$allowedGroups = $browseCategoryGroupUser->fetchAll('browseCategoryGroupId');
+				if (count($allowedGroups) == 0) {
+					return [];
+				}
 				$activeBrowseCategories = [];
 				foreach ($allowedGroups as $groupId) {
 					require_once ROOT_DIR . '/sys/Browse/BrowseCategoryGroupEntry.php';
@@ -127,5 +130,25 @@ class SubBrowseCategories extends DataObject {
 				$this->subCategoryId = $subCategoryObj->id;
 			}
 		}
+	}
+
+	function isDismissed(): bool {
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			require_once ROOT_DIR . '/sys/Browse/BrowseCategoryDismissal.php';
+			$browseCategoryDismissal = new BrowseCategoryDismissal();
+			$browseCategoryDismissal->browseCategoryId = $this->subCategoryId;
+			$browseCategoryDismissal->userId = $user->id;
+			if ($browseCategoryDismissal->find(true)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	function getNumSubCategories() {
+		$subCategory = new SubBrowseCategories();
+		$subCategory->browseCategoryId = $this->browseCategoryId;
+		return $subCategory->count();
 	}
 }

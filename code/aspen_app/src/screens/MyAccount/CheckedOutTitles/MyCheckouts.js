@@ -45,13 +45,14 @@ export const MyCheckouts = () => {
           });
      }, [navigation]);
 
-     useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
+     /*useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
           notifyOnChangeProps: ['data'],
           onSuccess: (data) => {
                updateCheckouts(data);
           },
           onSettle: (data) => setLoading(false),
      });
+      */
 
      const toggleSource = async (value) => {
           setSource(value);

@@ -844,6 +844,9 @@ class User extends DataObject {
 	}
 
 	function insert($context = '') {
+		if ($this->firstname === null) {
+			$this->firstname = '';
+		}
 		if ($context == 'development') {
 			$this->source = 'development';
 			$this->homeLocationId = 0;
@@ -2349,13 +2352,17 @@ class User extends DataObject {
 		if ($catalogDriver != null) {
 			//Check to see if it's enabled by home library
 			$homeLibrary =  $this->getHomeLibrary();
-			if ($homeLibrary->enableReadingHistory) {
-				//Check to see if it's enabled by PType
-				$patronType = $this->getPTypeObj();
-				if (!empty($patronType)) {
-					return $patronType->enableReadingHistory;
+			if (!empty($homeLibrary)) {
+				if ($homeLibrary->enableReadingHistory) {
+					//Check to see if it's enabled by PType
+					$patronType = $this->getPTypeObj();
+					if (!empty($patronType)) {
+						return $patronType->enableReadingHistory;
+					} else {
+						return true;
+					}
 				} else {
-					return true;
+					return false;
 				}
 			} else {
 				return false;
@@ -2596,6 +2603,13 @@ class User extends DataObject {
 		$rating->whereAdd("userId = {$this->id}");
 		$rating->whereAdd('rating > 0'); // Some entries are just reviews (and therefore have a default rating of -1)
 		return $rating->count();
+	}
+
+	function getNumLists() {
+		require_once ROOT_DIR . '/sys/UserLists/UserList.php';
+		$lists = new UserList();
+		$lists->user_id = $this->id;
+		return $lists->count();
 	}
 
 	function getNumNotInterested() {
@@ -3123,6 +3137,7 @@ class User extends DataObject {
 		$browseCategoryGroupsAction->addSubAction(new AdminAction('Browse Categories', 'Define browse categories shown on the library home page.', '/Admin/BrowseCategories'), [
 			'Administer All Browse Categories',
 			'Administer Library Browse Categories',
+			'Administer Selected Browse Category Groups'
 		]);
 		$sections['local_enrichment']->addAction($browseCategoryGroupsAction, [
 			'Administer All Browse Categories',

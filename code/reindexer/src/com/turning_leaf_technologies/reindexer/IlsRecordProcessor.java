@@ -84,6 +84,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char orderCopiesSubfield;
 	private char orderStatusSubfield;
 
+	protected boolean checkSierraMatTypeForFormat;
+
 	private boolean index856Links;
 
 	protected boolean hideOrderRecordsForBibsWithPhysicalItems;
@@ -276,6 +278,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			processRecordLinking = indexingProfileRS.getBoolean("processRecordLinking");
 
 			includePersonalAndCorporateNamesInTopics = indexingProfileRS.getBoolean("includePersonalAndCorporateNamesInTopics");
+
+			checkSierraMatTypeForFormat = indexingProfileRS.getBoolean("checkSierraMatTypeForFormat");
 
 			loadHoldsStmt = dbConn.prepareStatement("SELECT ilsId, numHolds from ils_hold_summary where ilsId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			addTranslationMapValueStmt = dbConn.prepareStatement("INSERT INTO translation_map_values (translationMapId, value, translation) VALUES (?, ?, ?)");
@@ -935,7 +939,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private SimpleDateFormat dateAddedFormatter = null;
 	private SimpleDateFormat dateAddedFormatter2 = null;
 	private SimpleDateFormat lastCheckInFormatter = null;
-	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
+	protected final HashSet<String> unhandledFormatBoosts = new HashSet<>();
 	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, StringBuilder suppressionNotes) {
 		if (dateAddedFormatter == null){
 			dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);

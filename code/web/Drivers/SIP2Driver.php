@@ -119,7 +119,7 @@ abstract class SIP2Driver extends AbstractIlsDriver {
 	 * @param string $password The user's ILS password
 	 * @param array $patronInfoResponse The user's ILS password
 	 * @param array $info An array of user information
-	 * @return  User
+	 * @return  User|AspenError
 	 * @access  public
 	 */
 	private function loadPatronInformation($info, $username, $password, $patronInfoResponse) {
@@ -202,7 +202,9 @@ abstract class SIP2Driver extends AbstractIlsDriver {
 
 		if ($insert) {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		} else {
 			$user->update();
 		}

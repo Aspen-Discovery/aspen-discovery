@@ -28,6 +28,10 @@
 	{elseif $property.type == 'markdown'}
 		<script type="text/javascript">
 			$(document).ready(function(){ldelim}
+				var characterLimit{$propName} = $("#{$propName}").prop('maxlength');
+				if (characterLimit{$propName} === undefined) {
+					characterLimit{$propName} = 0;
+				}
 				var simplemde{$propName} = new SimpleMDE({ldelim}
 					element: $("#{$propName}")[0],
 					toolbar: ["heading-1", "heading-2", "heading-3", "heading-smaller", "heading-bigger", "|",
@@ -35,8 +39,25 @@
 						"quote", "unordered-list", "ordered-list", "|",
 						"link", "image", {ldelim}name:"uploadImage", action:function (){ldelim} return AspenDiscovery.WebBuilder.getUploadImageForm('{$propName}'){rdelim},className: "fa fa-upload",title: "Upload Image"{rdelim}, "|",
 						"preview", "guide"],
+					status: [ {
+						className: "chars",
+						defaultValue: function(el) {
+							if (characterLimit{$propName} > 0) {
+								el.innerHTML = "0 / " + characterLimit{$propName};
+							}
+						},
+						onUpdate: function(el) {
+							if (characterLimit{$propName} > 0) {
+								el.innerHTML = simplemde{$propName}.value().length + " / "+characterLimit{$propName};
+								AspenDiscovery.limitMarkdownField(simplemde{$propName}, characterLimit{$propName});
+							}
+						}
+					}]
 				{rdelim});
 				AspenDiscovery.WebBuilder.editors['{$propName}'] = simplemde{$propName};
+				if (characterLimit{$propName} > 0) {
+					AspenDiscovery.limitMarkdownField(simplemde{$propName}, characterLimit{$propName});
+				}
 			{rdelim});
 		</script>
 	{/if}

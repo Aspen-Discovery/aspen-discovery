@@ -2164,13 +2164,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				$recordFromIndex = $groupedWorkDriver->getRelatedRecord($this->getIdWithSource());
 				if ($recordFromIndex != null) {
 					//Check if there are different variations we need to add to $this->holdings
-					if (!empty($recordFromIndex->recordVariations)) {
+					//Records with parents never get their variations set to avoid updating
+					if (!empty($recordFromIndex->recordVariations) && (!$recordFromIndex->hasParentRecord)) {
 						$holdings = [];
 						foreach ($recordFromIndex->recordVariations as $variation){
 							$allVariationRecords = $variation->getRecords();
 							foreach($allVariationRecords as $recordToShow){
 								if ($recordToShow->databaseId == $recordFromIndex->databaseId){
-									//getItemDetails needs an object not an array, return the first object in the array since only one record should be attached anywya
+									//getItemDetails needs an object not an array, return the first object in the array since only one record should be attached anyway
 									$holdings = array_merge($recordToShow->getItemDetails(), $holdings);
 								}
 							}
