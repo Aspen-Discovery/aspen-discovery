@@ -440,7 +440,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		$escapedId = htmlentities($recordDriver->getPermanentId()); // escape for html
 		$buttonLabel = translate([
-			'text' => 'Add to list',
+			'text' => 'Add to List',
 			'isPublicFacing' => true,
 		]);
 
