@@ -933,6 +933,110 @@ class UInterface extends Smarty {
 			return false;
 		}
 	}
+
+	public function resetActiveTheme($userId) {
+		global $library;
+		$preferredTheme = $library->theme;
+		$user = new User();
+		$user->id = $userId;
+		if($user->find(true)) {
+			if($user->preferredTheme !== '-1' || $user->preferredTheme !== -1) {
+				$preferredTheme = $user->preferredTheme;
+			}
+		}
+
+		$theme = new Theme();
+		$theme->id = $preferredTheme;
+		if ($theme->find(true)) {
+			$allAppliedThemes = $theme->getAllAppliedThemes();
+			$primaryTheme = $theme;
+			$this->appliedTheme = $primaryTheme;
+			$this->assign('activeThemeId', $primaryTheme->id);
+			//Get extended theme info
+			if ($theme->extendsTheme) {
+				$this->assign('extendedTheme', $theme->extendsTheme);
+			}
+
+			$this->assign('parentTheme', $theme->getParentTheme());
+			$this->assign('fullWidthTheme', $theme->fullWidth);
+			$this->assign('coverStyle', $theme->coverStyle);
+
+			$browseCategoryLayoutStyle = 'masonry';
+			if ($theme->browseImageLayout == 1) {
+				$browseCategoryLayoutStyle = 'grid';
+			}
+
+			$this->assign('browseStyle', $browseCategoryLayoutStyle);
+
+			//Get Logo
+			$logoName = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!empty($theme->logoName)) {
+					$logoName = $theme->logoName;
+					break;
+				}
+			}
+			if (!empty($logoName)) {
+				$this->assign('responsiveLogo', '/files/original/' . $logoName);
+			} else {
+				if (isset($configArray['Site']['responsiveLogo'])) {
+					$this->assign('responsiveLogo', $configArray['Site']['responsiveLogo']);
+				}
+			}
+
+			//Get Footer Logo
+			$footerLogo = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!empty($theme->footerLogo)) {
+					$footerLogo = $theme->footerLogo;
+					break;
+				}
+			}
+			if ($footerLogo) {
+				$this->assign('footerLogo', '/files/original/' . $footerLogo);
+			}
+
+			$footerLogoLink = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!empty($theme->footerLogoLink)) {
+					$footerLogoLink = $theme->footerLogoLink;
+					break;
+				}
+			}
+			if ($footerLogo) {
+				$this->assign('footerLogoLink', $footerLogoLink);
+			}
+
+			$footerLogoAlt = $theme->footerLogoAlt;
+			if ($footerLogoAlt) {
+				$this->assign('footerLogoAlt', $footerLogoAlt);
+			}
+
+			//Get favicon
+			$favicon = null;
+			foreach ($allAppliedThemes as $theme) {
+				if (!empty($theme->favicon)) {
+					$favicon = $theme->favicon;
+					break;
+				}
+			}
+			if ($favicon) {
+				$this->assign('favicon', '/files/original/' . $favicon);
+			}
+
+			$themeCss = $primaryTheme->generatedCss;
+			$this->assign('themeCss', $themeCss);
+			$this->assign('primaryThemeObject', $primaryTheme);
+			$this->assign('bodyBackgroundColor', $primaryTheme->bodyBackgroundColor);
+			$this->assign('bodyTextColor', $primaryTheme->bodyTextColor);
+			$this->assign('primaryBackgroundColor', $primaryTheme->primaryBackgroundColor);
+			$this->assign('primaryForegroundColor', $primaryTheme->primaryForegroundColor);
+			$this->assign('secondaryBackgroundColor', $primaryTheme->secondaryBackgroundColor);
+			$this->assign('secondaryForegroundColor', $primaryTheme->secondaryForegroundColor);
+			$this->assign('tertiaryBackgroundColor', $primaryTheme->tertiaryBackgroundColor);
+			$this->assign('tertiaryForegroundColor', $primaryTheme->tertiaryForegroundColor);
+		}
+	}
 }
 
 function translate($params) {

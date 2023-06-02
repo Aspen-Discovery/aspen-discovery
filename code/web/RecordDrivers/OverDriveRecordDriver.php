@@ -839,7 +839,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$previewLinks[] = $item->sampleUrl_1;
 				$actions[] = [
 					'title' => translate([
-						'text' => 'Preview ' . $item->sampleSource_1,
+						'text' => 'Preview ' . ucwords($item->sampleSource_1),
 						'isPublicFacing' => true,
 						'isAdminEnteredData' => true,
 					]),
@@ -855,7 +855,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 				$previewLinks[] = $item->sampleUrl_2;
 				$actions[] = [
 					'title' => translate([
-						'text' => 'Preview ' . $item->sampleSource_2,
+						'text' => 'Preview ' . ucwords($item->sampleSource_2),
 						'isPublicFacing' => true,
 						'isAdminEnteredData' => true,
 					]),

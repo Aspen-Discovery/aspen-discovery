@@ -9,9 +9,9 @@
 			{/if}
 		{else}
 			{if $curLabel == 'Unrated'}
-				<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)} ({$thisFacet.count}){/if}</div>
+				<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}{translate text=$thisFacet.display isPublicFacing=true}{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))} ({$thisFacet.count}){/if}</div>
 			{else}
-				<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}<img src="/images/{$curLabel}.png" alt="{translate text=$curLabel inAttribute=true isPublicFacing=true} &amp; Up" title="{translate text=$curLabel inAttribute=true isPublicFacing=true} &amp; Up"/>{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && !$thisFacet.countIsApproximate)} ({if !empty($thisFacet.count)}{$thisFacet.count}{else}0{/if}){/if}</div>
+				<div class="facetValue">{if $thisFacet.url !=null}<a href="{$thisFacet.url|escape}">{/if}<img src="/images/{$curLabel}.png" alt="{translate text=$curLabel inAttribute=true isPublicFacing=true} &amp; Up" title="{translate text=$curLabel inAttribute=true isPublicFacing=true} &amp; Up"/>{if $thisFacet.url !=null}</a>{/if}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))} ({if !empty($thisFacet.count)}{$thisFacet.count}{else}0{/if}){/if}</div>
 			{/if}
 		{/if}
 	{else}

@@ -1325,6 +1325,13 @@ function checkForMaliciouslyFormattedParameters(): void {
 			$isMaliciousUrl = true;
 		}
 	}
+	if (isset($_REQUEST['size'])) {
+		if (is_array($_REQUEST['size'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-z]*$/', $_REQUEST['size'])) {
+			$isMaliciousUrl = true;
+		}
+	}
 	if (isset($_REQUEST['author'])) {
 		if (is_array($_REQUEST['author'])) {
 			$isMaliciousUrl = true;
