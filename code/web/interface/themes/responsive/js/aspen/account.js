@@ -1347,6 +1347,16 @@ AspenDiscovery.Account = (function () {
 				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
 				params.settingId = $(finesFormId + " input[name=settingId]").val();
 			}
+
+			if(paymentType === 'PayPalPayflow') {
+				params.billingFirstName = $(finesFormId + " input[name=billingFirstName]").val();
+				params.billingLastName = $(finesFormId + " input[name=billingLastName]").val();
+				params.billingAddress = $(finesFormId + " input[name=billingStreet]").val();
+				params.billingCity = $(finesFormId + " input[name=billingCity]").val();
+				params.billingState = $(finesFormId + " input[name=billingState]").val();
+				params.billingZip = $(finesFormId + " input[name=billingZip]").val();
+			}
+
 			$(finesFormId + " .selectedFine:checked").each(
 				function () {
 					var name = $(this).attr('name');
@@ -1390,6 +1400,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentRequestUrl;
 						} else if (paymentType === 'CertifiedPaymentsByDeluxe') {
 							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'PayPalPayflow') {
+							orderInfo = response.paymentIframe;
 						}
 					}
 				}
@@ -1438,6 +1450,8 @@ AspenDiscovery.Account = (function () {
 				// Do nothing; there was an error that should be displayed
 			} else {
 				window.location.href = url;
+				$(".ils-available-holds-placeholder").html(summary.numAvailableHolds);
+				$(".ils-available-holds").show();
 			}
 		},
 
@@ -1496,6 +1510,22 @@ AspenDiscovery.Account = (function () {
 				// Do nothing; there was an error that should be displayed
 			} else {
 				window.location.href = url;
+			}
+		},
+
+		createPayPalPayflowOrder: function (userId, transactionType) {
+			var result = this.createGenericOrder('#fines' + userId, 'PayPalPayflow', transactionType);
+			if (result === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				$("#myModalLabel").html('Pay with PayPal');
+				$(".modal-body").html(result);
+				$('.modal-buttons').html('');
+				$('.modal-dialog').addClass('paymentModal');
+				$("#modalDialog").modal('show');
+				$("#modalDialog").on('hide.bs.modal', function(){
+					location.reload();
+				})
 			}
 		},
 
