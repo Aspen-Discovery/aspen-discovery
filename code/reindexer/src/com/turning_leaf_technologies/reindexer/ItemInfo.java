@@ -573,7 +573,7 @@ public class ItemInfo{
 				locationOwnedNames.add(curScope.getFacetLabel());
 			}else if (scope.isLibraryOwned()){
 				libraryOwnedScopes.append(curScope.getId()).append("~");
-				libraryOwnedNames.add(curScope.getFacetLabel());
+				libraryOwnedNames.add(curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel());
 			}else {
 				recordsIncludedScopes.append(curScope.getId()).append("~");
 			}
