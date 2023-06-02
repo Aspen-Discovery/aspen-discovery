@@ -401,7 +401,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 									addAvailableAt(owningName, availableAtForScope, availableAtByFormatForScope, formatsForItem);
 								}
 							}
-							owningLibrariesForScope.add(curScope.getFacetLabel());
+							owningLibrariesForScope.add(curScope.isLibraryScope() ? curScope.getFacetLabel() : curScope.getLibraryScope().getFacetLabel());
 							//For owning locations, add all locations within the library that own it
 							owningLocationsForScope.addAll(curItem.getLocationOwnedNames());
 						}
