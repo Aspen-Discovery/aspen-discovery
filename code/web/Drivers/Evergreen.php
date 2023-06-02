@@ -1275,7 +1275,7 @@ class Evergreen extends AbstractIlsDriver {
 				$evgUserObj = $this->mapEvergreenFields($evgUser, $this->fetchIdl('au'));
 				$lastXactId = $evgUserObj['last_xact_id'];
 			} else {
-				$result['message'] = "Error {$apiResponse->payload[0]->textcode} updating your payment, please visit the library with your receipt.";
+				$result['message'] = "Error {$apiResponse->payload[0]->textcode} loading user to update payment, please visit the library with your receipt.";
 				$logger->log('Unable to fetch patron from Evergreen while completing fine payment', Logger::LOG_ERROR);
 				return $result;
 			}
