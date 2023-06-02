@@ -3089,11 +3089,14 @@ class MyAccount_AJAX extends JSON_Action {
 		$event->userId = UserAccount::getActiveUserId();
 		if ($eventsFilter == 'past') {
 			$event->whereAdd("eventDate < $curTime");
+			$event->orderBy('eventDate DESC');
 		}
-		if ($eventsFilter == 'upcoming') {
+		elseif ($eventsFilter == 'upcoming') {
 			$event->whereAdd("eventDate >= $curTime");
+			$event->orderBy('eventDate ASC');
+		}else{
+			$event->orderBy('eventDate DESC');
 		}
-		$event->orderBy('eventDate ASC');
 		$event->limit(($page - 1) * $pageSize, $pageSize);
 		$event->find();
 		$events = [];
