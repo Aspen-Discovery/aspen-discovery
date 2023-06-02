@@ -102,7 +102,7 @@ class LocationSetting extends DataObject {
 
 	public function saveLocations() {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$locationList = Location::getLocationList(UserAccount::userHasPermission('Administer Aspen LiDA Settings'));
+			$locationList = Location::getLocationList(false);
 			foreach ($locationList as $locationId => $displayName) {
 				$location = new Location();
 				$location->locationId = $locationId;
