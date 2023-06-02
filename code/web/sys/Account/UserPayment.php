@@ -211,6 +211,7 @@ class UserPayment extends DataObject {
 					$troutD = $queryParams['TROUTD'];
 					$authCode = $queryParams['AUTHCODE'];
 					$ccNumber = $queryParams['CCNUMBER'];
+					$userPayment->transactionId = $troutD;
 					if ($amountPaid != $userPayment->totalPaid) {
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
