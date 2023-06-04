@@ -29,6 +29,8 @@ class SystemVariables extends DataObject {
 	public $appScheme;
 	public $googleBucket;
 	public $trackIpAddresses;
+	public $allowScheduledUpdates;
+	public $doQuickUpdates;
 
 	static function getObjectStructure($context = ''): array {
 		return [
@@ -93,6 +95,30 @@ class SystemVariables extends DataObject {
 				'description' => 'Currency code to use when formatting money',
 				'required' => true,
 				'default' => 'USD',
+			],
+			'updatesSection' => [
+				'property' => 'updatesSection',
+				'type' => 'section',
+				'label' => 'Updates Settings',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'allowScheduledUpdates' => [
+						'property' => 'allowScheduledUpdates',
+						'type' => 'checkbox',
+						'label' => 'Allow Scheduled Updates',
+						'description' => 'Whether or not scheduled updates can be done on the server',
+						'default' => true,
+					],
+					'doQuickUpdates' => [
+						'property' => 'doQuickUpdates',
+						'type' => 'checkbox',
+						'label' => 'Do Quick Updates',
+						'description' => 'Whether or not quick updates should be performed.',
+						'note' => 'This should only be selected if there are multiple sites installed on the server. If there are multiple sites on the server, only one site on a server should not do quick updates.',
+						'default' => false,
+					],
+				]
 			],
 			'indexingSection' => [
 				'property' => 'indexingSection',

@@ -12,9 +12,9 @@ if [ -z "$2" ]
 fi
 
 service crond stop
+pkill java
 
-sudo yum -y update
-sudo apachectl graceful
+yum -y update
 
 cd /usr/local/aspen-discovery
 git pull origin $2
@@ -24,27 +24,23 @@ if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
   /usr/local/aspen-discovery/install/upgrade_$2.sh $1
 fi
 
-sudo chown aspen:aspen_apache /data/aspen-discovery/$1
-sudo chmod 775 /data/aspen-discovery/$1
+chown aspen:aspen_apache /data/aspen-discovery/$1
+chmod 775 /data/aspen-discovery/$1
 
 echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver
 
-pkill java
-sudo service mysqld restart
-apachectl restart
 cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files.sh $1
+
+service mysqld restart
+apachectl graceful
 
 cd /usr/local/aspen-discovery
 git gc
 
 service crond start
-
-if [ -f "/usr/local/aspen-discovery/install/upgrade_complete_$2.sh" ]; then
-  /usr/local/aspen-discovery/install/upgrade_complete_$2.sh $1
-fi
 
 echo "Upgrade completed."
 

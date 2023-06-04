@@ -1,5 +1,7 @@
 #!/bin/sh
 
+git config --global --add safe.directory /usr/local/aspen-discovery
+
 #Expects to be installed on Debian 10 Buster or later
 #Run as sudo ./installer_debian.sh
 apt-get update
