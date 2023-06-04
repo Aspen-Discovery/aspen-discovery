@@ -163,7 +163,7 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate) {
 	}
 	if (isset($dbMaintenance['message'])) {
 		$message = $dbMaintenance['message'] ?? '';
-		$scheduledUpdate->notes .= $message;
+		$scheduledUpdate->notes .= $message . "\n";
 	}
 }
 
