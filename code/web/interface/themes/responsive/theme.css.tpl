@@ -372,79 +372,79 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {/if}
 
 .btn-default,.btn-default:visited,a.btn-default,a.btn-default:visited,.btn-default a,.btn-default a:visited{ldelim}
-    background-color: {$defaultButtonBackgroundColor};
+    background-color: {$defaultButtonBackgroundColor} !important;
     color: {$defaultButtonForegroundColor} !important;
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
 .btn-default:hover, .btn-default:focus, .btn-default a:hover, .btn-default a:focus{ldelim}
-    background-color: {$defaultButtonHoverBackgroundColor};
+    background-color: {$defaultButtonHoverBackgroundColor} !important;
     color: {$defaultButtonHoverForegroundColor} !important;
     border-color: {$defaultButtonHoverBorderColor};
 {rdelim}
 
 .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default{ldelim}
-    background-color: {$defaultButtonHoverBackgroundColor}70;
+    background-color: {$defaultButtonHoverBackgroundColor}70 !important;
     color: {$defaultButtonHoverForegroundColor} !important;
     border-color: {$defaultButtonBorderColor};
 {rdelim}
 
 .btn-primary,.btn-primary:visited,a.btn-primary,a.btn-primary:visited{ldelim}
-    background-color: {$primaryButtonBackgroundColor};
+    background-color: {$primaryButtonBackgroundColor} !important;
     color: {$primaryButtonForegroundColor} !important;
     border-color: {$primaryButtonBorderColor};
 {rdelim}
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
-    background-color: {$primaryButtonHoverBackgroundColor};
+    background-color: {$primaryButtonHoverBackgroundColor} !important;
     color: {$primaryButtonHoverForegroundColor} !important;
     border-color: {$primaryButtonHoverBorderColor};
 {rdelim}
 
 .btn-action,.btn-action:visited,a.btn-action,a.btn-action:visited{ldelim}
-    background-color: {$actionButtonBackgroundColor};
+    background-color: {$actionButtonBackgroundColor} !important;
     color: {$actionButtonForegroundColor} !important;
     border-color: {$actionButtonBorderColor};
 {rdelim}
 
 .btn-action:hover, .btn-action:focus, .btn-action:active, .btn-action.active, .open .dropdown-toggle.btn-action{ldelim}
-    background-color: {$actionButtonHoverBackgroundColor};
+    background-color: {$actionButtonHoverBackgroundColor} !important;
     color: {$actionButtonHoverForegroundColor} !important;
     border-color: {$actionButtonHoverBorderColor};
 {rdelim}
 
 .btn-info,.btn-info:visited,a.btn-info,a.btn-info:visited{ldelim}
-    background-color: {$infoButtonBackgroundColor};
+    background-color: {$infoButtonBackgroundColor} !important;
     color: {$infoButtonForegroundColor} !important;
     border-color: {$infoButtonBorderColor};
 {rdelim}
 
 .btn-info:hover, .btn-info:focus, .btn-info:active, .btn-info.active, .open .dropdown-toggle.btn-info{ldelim}
-    background-color: {$infoButtonHoverBackgroundColor};
+    background-color: {$infoButtonHoverBackgroundColor} !important;
     color: {$infoButtonHoverForegroundColor} !important;
     border-color: {$infoButtonHoverBorderColor};
 {rdelim}
 
 .btn-tools,.btn-tools:visited,a.btn-tools,a.btn-tools:visited{ldelim}
-    background-color: {$toolsButtonBackgroundColor};
+    background-color: {$toolsButtonBackgroundColor} !important;
     color: {$toolsButtonForegroundColor} !important;
     border-color: {$toolsButtonBorderColor};
 {rdelim}
 
 .btn-tools:hover, .btn-tools:focus, .btn-tools:active, .btn-tools.active, .open .dropdown-toggle.btn-tools{ldelim}
-    background-color: {$toolsButtonHoverBackgroundColor};
+    background-color: {$toolsButtonHoverBackgroundColor} !important;
     color: {$toolsButtonHoverForegroundColor} !important;
     border-color: {$toolsButtonHoverBorderColor};
 {rdelim}
 
 .btn-warning,.btn-warning:visited,a.btn-warning,a.btn-warning:visited{ldelim}
-    background-color: {$warningButtonBackgroundColor};
+    background-color: {$warningButtonBackgroundColor} !important;
     color: {$warningButtonForegroundColor} !important;
     border-color: {$warningButtonBorderColor};
 {rdelim}
 
 .btn-warning:hover, .btn-warning:focus, .btn-warning:active, .btn-warning.active, .open .dropdown-toggle.btn-warning{ldelim}
-    background-color: {$warningButtonHoverBackgroundColor};
+    background-color: {$warningButtonHoverBackgroundColor} !important;
     color: {$warningButtonHoverForegroundColor} !important;
     border-color: {$warningButtonHoverBorderColor};
 {rdelim}
@@ -455,13 +455,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 .btn-danger,.btn-danger:visited,a.btn-danger,a.btn-danger:visited{ldelim}
-    background-color: {$dangerButtonBackgroundColor};
+    background-color: {$dangerButtonBackgroundColor} !important;
     color: {$dangerButtonForegroundColor} !important;
     border-color: {$dangerButtonBorderColor};
 {rdelim}
 
 .btn-danger:hover, .btn-danger:focus, .btn-danger:active, .btn-danger.active, .open .dropdown-toggle.btn-danger{ldelim}
-    background-color: {$dangerButtonHoverBackgroundColor};
+    background-color: {$dangerButtonHoverBackgroundColor} !important;
     color: {$dangerButtonHoverForegroundColor} !important;
     border-color: {$dangerButtonHoverBorderColor};
 {rdelim}
@@ -472,13 +472,13 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 .btn-editions,.btn-editions:visited{ldelim}
-    background-color: {$editionsButtonBackgroundColor};
+    background-color: {$editionsButtonBackgroundColor} !important;
     color: {$editionsButtonForegroundColor} !important;
     border-color: {$editionsButtonBorderColor};
 {rdelim}
 
 .btn-editions:hover, .btn-editions:focus, .btn-editions:active, .btn-editions.active{ldelim}
-    background-color: {$editionsButtonHoverBackgroundColor};
+    background-color: {$editionsButtonHoverBackgroundColor} !important;
     color: {$editionsButtonHoverForegroundColor} !important;
     border-color: {$editionsButtonHoverBorderColor};
 {rdelim}
