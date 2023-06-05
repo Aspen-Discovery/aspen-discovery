@@ -207,12 +207,14 @@ export const MyHolds = () => {
 
      const refreshHolds = async () => {
           setLoading(true);
-          await reloadProfile(library.baseUrl).then((result) => {
-               if (user !== result) {
-                    updateUser(result);
-               }
-               setLoading(false);
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+          useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+               onSuccess: (data) => {
+                    updateHolds(data);
+               },
           });
+          setLoading(false);
      };
 
      const actionButtons = (section) => {
