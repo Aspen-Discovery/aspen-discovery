@@ -171,6 +171,9 @@ public class SierraExportAPIMain {
 						logEntry.incErrors("Error regrouping all records", e);
 					}
 
+					//Get a list of all active bibs so we can see what needs to be deleted.
+					checkForDeletedBibsInSierra(sierraInstanceInformation, sierraConn);
+
 					//Load MARC record changes
 					getBibsAndItemUpdatesFromSierra(sierraInstanceInformation, sierraConn);
 				}
@@ -282,6 +285,51 @@ public class SierraExportAPIMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void checkForDeletedBibsInSierra(SierraInstanceInformation sierraInstanceInformation, Connection sierraConn) {
+		try {
+			HashSet<String> allBibsInSierra = new HashSet<>();
+			PreparedStatement getAllBibsStmt = sierraConn.prepareStatement("SELECT record_type_code, record_num FROM sierra_view.bib_record LEFT JOIN sierra_view.record_metadata ON sierra_view.bib_record.record_id = sierra_view.record_metadata.id WHERE record_type_code = 'b' AND is_suppressed = FALSE;", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet getAllBibsRS = getAllBibsStmt.executeQuery();
+			while (getAllBibsRS.next()) {
+				String shortId = getAllBibsRS.getString("record_num");
+				String longId = ".b" + shortId + getCheckDigit(shortId);
+				allBibsInSierra.add(longId);
+			}
+			getAllBibsRS.close();
+			getAllBibsStmt.close();
+
+			HashSet<String> bibsToDelete = new HashSet<>();
+			HashSet<String> allBibsInAspen = getRecordGroupingProcessor().loadExistingActiveIds(logEntry);
+			if (allBibsInAspen != null) {
+				for (String bibId : allBibsInAspen) {
+					if (!allBibsInSierra.contains(bibId)) {
+						//This bib has been deleted
+						bibsToDelete.add(bibId);
+					} else {
+						//Remove it just to make future lookups faster
+						allBibsInSierra.remove(bibId);
+					}
+				}
+
+				logEntry.addNote("Deleting " + bibsToDelete.size() + " bibs that no longer exist in Sierra.");
+				for (String bibToDelete : bibsToDelete) {
+					getGroupedWorkIndexer().markIlsRecordAsDeleted(indexingProfile.getName(), bibToDelete);
+					RemoveRecordFromWorkResult result = getRecordGroupingProcessor().removeRecordFromGroupedWork(indexingProfile.getName(), bibToDelete);
+					if (result.reindexWork) {
+						getGroupedWorkIndexer().processGroupedWork(result.permanentId);
+					} else if (result.deleteWork) {
+						//Delete the work from solr and the database
+						getGroupedWorkIndexer().deleteRecord(result.permanentId);
+					}
+					logEntry.incDeleted();
+				}
+			}
+		}catch (Exception e) {
+			logEntry.incErrors("Error checking Sierra for deleted bibs");
+		}
+		logEntry.saveResults();
 	}
 
 	private static void disconnectDatabase() {

@@ -12,6 +12,7 @@ if [ -z "$2" ]
 fi
 
 service cron stop
+pkill java
 
 git config --global --add safe.directory /usr/local/aspen-discovery
 cd /usr/local/aspen-discovery
@@ -26,8 +27,7 @@ echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver
 
-pkill java
-sudo service mysqld restart
+service mysqld restart
 apachectl restart
 cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files_debian.sh $1
@@ -36,10 +36,6 @@ cd /usr/local/aspen-discovery
 git gc
 
 service cron start
-
-if [ -f "/usr/local/aspen-discovery/install/upgrade_complete_debian_$2.sh" ]; then
-  /usr/local/aspen-discovery/install/upgrade_complete_debian_$2.sh
-fi
 
 echo "Upgrade completed."
 
