@@ -1122,6 +1122,10 @@ class GroupedWork_AJAX extends JSON_Action {
 						}else{
 							$result = $res;
 						}
+						$result['message'] = translate([
+							'text' => 'Your cover has been uploaded successfully',
+							'isAdminFacing' => true,
+						]);
 					}elseif ($uploadOption == 'all'){ //update image for all records in grouped work
 						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						if ($res) {
@@ -1148,6 +1152,10 @@ class GroupedWork_AJAX extends JSON_Action {
 							]);
 						} else {
 							$result = $res;
+							$result['message'] = translate([
+								'text' => 'Your cover has been uploaded successfully',
+								'isAdminFacing' => true,
+							]);
 						}
 					}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
 						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
@@ -1181,6 +1189,10 @@ class GroupedWork_AJAX extends JSON_Action {
 							]);
 						} else {
 							$result = $res;
+							$result['message'] = translate([
+								'text' => 'Your cover has been uploaded successfully',
+								'isAdminFacing' => true,
+							]);
 						}
 					}else{ //only updating grouped work or individual bib cover
 						if($recordType == 'grouped_work') {
@@ -1193,10 +1205,28 @@ class GroupedWork_AJAX extends JSON_Action {
 									$recordType = $relatedRecords[0]->source;
 									$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
 									$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+									if ($result['success'] = true){
+										$result['message'] = translate([
+											'text' => 'Your cover has been uploaded successfully',
+											'isAdminFacing' => true,
+										]);
+									}
+								}else{
+									$result['success'] = true;
+									$result['message'] = translate([
+										'text' => 'Your cover has been uploaded successfully',
+										'isAdminFacing' => true,
+									]);
 								}
 							}
 						} else {
 							$result = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
+							if ($result['success'] = true){
+								$result['message'] = translate([
+									'text' => 'Your cover has been uploaded successfully',
+									'isAdminFacing' => true,
+								]);
+							}
 						}
 					}
 				}
