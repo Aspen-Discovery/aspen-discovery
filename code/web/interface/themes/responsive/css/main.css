@@ -3835,6 +3835,37 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav-tabs {
   border-bottom: 1px solid #ddd;
 }
+.nav-tabs > a.collectionSpotlightTabs {
+  position: relative;
+  display: block;
+  float: left;
+  margin-bottom: -1px;
+  margin-left: 2px;
+  line-height: 1.42857143;
+  border: 1px solid transparent;
+  border-radius: 4px 4px 0 0;
+  padding: 10px 15px;
+}
+.nav-tabs > a.collectionSpotlightTabs:hover {
+  text-decoration: none;
+  background-color: #eeeeee;
+}
+.nav-tabs > a.collectionSpotlightTabs[aria-selected='true'] {
+  color: #555555;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
+  cursor: default;
+}
+.nav-tabs > a.collectionSpotlightTabs.active,
+.nav-tabs > a.collectionSpotlightTabs.active:hover,
+.nav-tabs > a.collectionSpotlightTabs.active:focus {
+  color: #555555;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
+  cursor: default;
+}
 .nav-tabs > li {
   float: left;
   margin-bottom: -1px;
