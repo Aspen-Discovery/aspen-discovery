@@ -111,5 +111,51 @@ function getUpdates23_06_00(): array {
 				"INSERT INTO event_library_map_values(aspenLocation, eventsLocation, locationId, libraryId) SELECT displayName, displayName, locationId, libraryId FROM location ORDER BY locationId ASC",
 			]
 		], //event_library_mapping_values
+		'ticket_trends' => [
+			'title' => 'Ticket Trends',
+			'description' => 'Create new tables to store ticket trends',
+			'continueOnError' => true,
+			'sql' => [
+				"DROP TABLE ticket_stats",
+				"CREATE TABLE IF NOT EXISTS ticket_trend_bugs_by_severity (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					year int(11) NOT NULL,
+					month int(2) NOT NULL,
+					day int(2) NOT NULL,
+					severity VARCHAR(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+					count int(11) DEFAULT 0,
+					UNIQUE KEY uniqueness (year,month,day,severity)   
+				)",
+				"CREATE TABLE IF NOT EXISTS ticket_trend_by_partner (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					year int(11) NOT NULL,
+					month int(2) NOT NULL,
+					day int(2) NOT NULL,
+					requestingPartner int(11) DEFAULT NULL,
+					queue varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+					count int(11) DEFAULT 0,
+					UNIQUE KEY uniqueness (year,month,day,requestingPartner, queue)   
+				)",
+				"CREATE TABLE IF NOT EXISTS ticket_trend_by_queue (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					year int(11) NOT NULL,
+					month int(2) NOT NULL,
+					day int(2) NOT NULL,
+					queue varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+					count int(11) DEFAULT 0,
+					UNIQUE KEY uniqueness (year,month,day, queue)   
+				)",
+				"CREATE TABLE IF NOT EXISTS ticket_trend_by_component (
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					year int(11) NOT NULL,
+					month int(2) NOT NULL,
+					day int(2) NOT NULL,
+					component varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL, 
+					queue varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+					count int(11) DEFAULT 0,
+					UNIQUE KEY uniqueness (year,month,day, component, queue)   
+				)",
+			]
+		]
 	];
 }
