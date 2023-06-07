@@ -155,11 +155,11 @@ public class GenealogyCleanup implements IProcessHandler {
 			processLog.incErrors("Skipping importing people because no importFile was specified.");
 			return;
 		}
-		String genealogyUrl = configIni.get("Genealogy", "url");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
-			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
-			return;
-		}
+//		String genealogyUrl = configIni.get("Genealogy", "url");
+//		if (genealogyUrl == null || genealogyUrl.length() == 0) {
+//			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
+//			return;
+//		}
 		
 		//Prepare statements
 		PreparedStatement st1;
