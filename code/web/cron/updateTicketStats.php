@@ -350,7 +350,7 @@ if ($loadHistoricDataForTicketsByPartner) {
 		$ticketStat->year = date('Y');
 		$ticketStat->month = date('n');
 		$ticketStat->day = date('j');
-		$ticketStat->requestingPartner = $ticketSeverity->name;
+		$ticketStat->requestingPartner = $aspenSite->id;
 
 		if ($ticketStat->find(true)) {
 			$ticketStat->count = $numTickets;
