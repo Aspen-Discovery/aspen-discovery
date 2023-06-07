@@ -16,20 +16,24 @@ require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 $ticketStat = new TicketTrendByQueue();
 $numExistingStats = $ticketStat->count();
 $loadHistoricDataForTicketsByQueue = $numExistingStats == 0;
+$ticketStat = null;
 
 $ticketStat = new TicketTrendBugsBySeverity();
 $numExistingStats = $ticketStat->count();
 $loadHistoricDataForBugsBySeverity = $numExistingStats == 0;
+$ticketStat = null;
 
 $ticketStat = new TicketTrendByPartner();
 $numExistingStats = $ticketStat->count();
 $loadHistoricDataForTicketsByPartner = $numExistingStats == 0;
+$ticketStat = null;
 
 //Tickets by Queue
 if ($loadHistoricDataForTicketsByQueue) {
 	//Clear old data
 	$ticketStat = new TicketTrendByQueue();
 	$ticketStat->delete(true);
+	$ticketStat = null;
 
 	//Start with Mark's first Day at ByWater when tickets started getting entered
 	$startDate = strtotime('2020-10-29');
@@ -109,7 +113,10 @@ if ($loadHistoricDataForTicketsByQueue) {
 			$ticketStat->count = $numTickets;
 			$ticketStat->insert();
 		}
+		$ticketStat = null;
+		$ticketQuery = null;
 	}
+	$ticketQueues = null;
 }
 
 // Bugs by severity
@@ -117,6 +124,7 @@ if ($loadHistoricDataForBugsBySeverity) {
 	//Clear old data
 	$ticketStat = new TicketTrendBugsBySeverity();
 	$ticketStat->delete(true);
+	$ticketStat = null;
 
 	$severitiesToLoad = [];
 	$severitiesToLoad[] = null;
@@ -125,6 +133,7 @@ if ($loadHistoricDataForBugsBySeverity) {
 	while ($ticketSeverity->fetch()) {
 		$severitiesToLoad[] = $ticketSeverity->name;
 	}
+	$ticketSeverity = null;
 
 	//Start with Mark's first Day at ByWater when tickets started getting entered
 	$startDate = strtotime('2020-10-29');
@@ -221,13 +230,16 @@ if ($loadHistoricDataForBugsBySeverity) {
 			$ticketStat->insert();
 		}
 		$ticketQuery = null;
+		$ticketStat = null;
 	}
+	$ticketSeverity = null;
 }
 //Tickets by Partner
 if ($loadHistoricDataForTicketsByPartner) {
 	//Clear old data
 	$ticketStat = new TicketTrendByPartner();
 	$ticketStat->delete(true);
+	$ticketStat = null;
 
 	$aspenSite = new AspenSite();
 	$aspenSite->siteType = "0";
@@ -238,6 +250,7 @@ if ($loadHistoricDataForTicketsByPartner) {
 	while ($aspenSite->fetch()){
 		$partners[] = $aspenSite->id;
 	}
+	$aspenSite = null;
 
 	//Start with Mark's first Day at ByWater when tickets started getting entered
 	$startDate = strtotime('2020-10-29');
@@ -346,7 +359,10 @@ if ($loadHistoricDataForTicketsByPartner) {
 			$ticketStat->count = $numTickets;
 			$ticketStat->insert();
 		}
+		$ticketStat = null;
+		$ticketQuery = null;
 	}
+	$aspenSite = null;
 }
 
 
