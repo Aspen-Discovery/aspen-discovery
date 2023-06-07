@@ -381,6 +381,14 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		thirdPartyCoverToggle: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=thirdPartyCoverToggle&recordType=' + recordType + '&recordId=' + recordId;
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage("Success", data.message, true, true);
+			});
+			return false;
+		},
+
 		clearUploadedCover: function (groupedWorkId, recordType, recordId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUploadedCover&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){

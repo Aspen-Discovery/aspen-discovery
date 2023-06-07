@@ -16,6 +16,7 @@ class BookCoverInfo extends DataObject {
 	public $mediumLoaded;
 	public $largeLoaded;
 	public $uploadedImage;
+	public $disallowThirdPartyCover;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -26,6 +27,7 @@ class BookCoverInfo extends DataObject {
 			'mediumLoaded',
 			'largeLoaded',
 			'uploadedImage',
+			'disallowThirdPartyCover',
 		];
 	}
 
