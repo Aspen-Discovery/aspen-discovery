@@ -1126,37 +1126,6 @@ class GroupedWork_AJAX extends JSON_Action {
 							'text' => 'Your cover has been uploaded successfully',
 							'isAdminFacing' => true,
 						]);
-					}elseif ($uploadOption == 'all'){ //update image for all records in grouped work
-						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-						if ($res) {
-							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-							$id = $_REQUEST['id'];
-							$recordDriver = new GroupedWorkDriver($id);
-							$relatedRecords = $recordDriver->getRelatedRecords(true);
-
-							foreach ($relatedRecords as $record) {
-								$id = substr(strstr($record->id, ':'), 1);
-								$recordType = $record->source;
-								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-								$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
-								if ($res){
-									continue;
-								}else{
-									$result = $res;
-								}
-							}
-							$result['success'] = true;
-							$result['message'] = translate([
-								'text' => 'Your cover has been uploaded successfully',
-								'isAdminFacing' => true,
-							]);
-						} else {
-							$result = $res;
-							$result['message'] = translate([
-								'text' => 'Your cover has been uploaded successfully',
-								'isAdminFacing' => true,
-							]);
-						}
 					}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
 						$res = formatImageUpload($uploadedFile, $destFullPath, $id, $recordType);
 						if ($res) {
@@ -1355,49 +1324,6 @@ class GroupedWork_AJAX extends JSON_Action {
 								'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
 								'isAdminFacing' => true,
 							]);
-						}
-					} else {
-						$result['message'] = translate([
-							'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-							'isAdminFacing' => true,
-						]);
-					}
-				}elseif ($uploadOption == 'all'){ //update image for all records in grouped work
-					$upload = file_put_contents($destFullPath, file_get_contents($url));
-					if ($upload) {
-						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-						$id = $_REQUEST['id'];
-						$recordDriver = new GroupedWorkDriver($id);
-						$relatedRecords = $recordDriver->getRelatedRecords(true);
-
-						foreach ($relatedRecords as $record) {
-							$id = substr(strstr($record->id, ':'), 1);
-							$recordType = $record->source;
-							$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-							$upload = file_put_contents($destFullPath, file_get_contents($url));
-							if ($upload){
-								require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
-								$bookCoverInfo = new BookCoverInfo();
-								$bookCoverInfo->recordType = $recordType;
-								$bookCoverInfo->recordId = $id;
-								if ($bookCoverInfo->find(true)) {
-									$bookCoverInfo->imageSource = 'upload';
-									$bookCoverInfo->thumbnailLoaded = 0;
-									$bookCoverInfo->mediumLoaded = 0;
-									$bookCoverInfo->largeLoaded = 0;
-									if ($bookCoverInfo->update()) {
-										$result['message'] = translate([
-											'text' => 'Your cover has been uploaded successfully',
-											'isAdminFacing' => true,
-										]);
-									}
-								}
-							}else{
-								$result['message'] = translate([
-									'text' => 'Incorrect image type.  Please upload a PNG, GIF, or JPEG',
-									'isAdminFacing' => true,
-								]);
-							}
 						}
 					} else {
 						$result['message'] = translate([

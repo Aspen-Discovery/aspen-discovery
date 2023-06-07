@@ -20,7 +20,6 @@
 					{if $recordType == "grouped_work"}
 						<option value="alldefault">{translate text="Also Apply to All Records in Grouped Work with Default Covers" isAdminFacing=true}</option>
 						<option value="groupedwork">{translate text="Apply to Grouped Work Only" isAdminFacing=true}</option>
-						<option value="all">{translate text="Also Apply to All Records in Grouped Work" isAdminFacing=true}</option>
 					{else}
 						<option value="andgrouped">{translate text="Also Apply to Grouped Work" isAdminFacing=true}</option>
 						<option value="recordonly">{translate text="Apply to This Record Only" isAdminFacing=true}</option>
