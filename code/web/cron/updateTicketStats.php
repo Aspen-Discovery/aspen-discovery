@@ -13,9 +13,17 @@ require_once ROOT_DIR . '/sys/Support/TicketTrendByQueue.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
 //Whether to load historic data, this is off by default, but can be used to populate the DB as best possible.
-$loadHistoricDataForTicketsByQueue = false;
-$loadHistoricDataForBugsBySeverity = false;
-$loadHistoricDataForTicketsByPartner = true;
+$ticketStat = new TicketTrendByQueue();
+$numExistingStats = $ticketStat->count();
+$loadHistoricDataForTicketsByQueue = $numExistingStats == 0;
+
+$ticketStat = new TicketTrendBugsBySeverity();
+$numExistingStats = $ticketStat->count();
+$loadHistoricDataForBugsBySeverity = $numExistingStats == 0;
+
+$ticketStat = new TicketTrendByPartner();
+$numExistingStats = $ticketStat->count();
+$loadHistoricDataForTicketsByPartner = $numExistingStats == 0;
 
 //Tickets by Queue
 if ($loadHistoricDataForTicketsByQueue) {
