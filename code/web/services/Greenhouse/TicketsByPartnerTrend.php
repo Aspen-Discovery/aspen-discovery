@@ -16,6 +16,7 @@ class TicketsByPartnerTrend extends Admin_Admin {
 		$aspenSite = new AspenSite();
 		$aspenSite->siteType = "0";
 		$aspenSite->whereAdd('implementationStatus <> 0 AND implementationStatus <> 4');
+		$aspenSite->orderBy('name ASC');
 		$partnerNames = [];
 		$aspenSite->find();
 		while ($aspenSite->fetch()) {
@@ -23,7 +24,6 @@ class TicketsByPartnerTrend extends Admin_Admin {
  			$dataSeries[$aspenSite->name] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 		}
 		$dataSeries['Not Set'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
-		$dataSeries['Total'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
 
 		$ticketTrend = new TicketTrendByPartner();
 		$ticketTrend->orderBy('year, month, day');
@@ -57,7 +57,6 @@ class TicketsByPartnerTrend extends Admin_Admin {
 					}
 				}
 				$dataSeries[$partnerName]['data'][$curPeriod] = $ticketTrend->count;
-				$dataSeries['Total']['data'][$curPeriod] += $ticketTrend->count;
 			}
 		}
 
