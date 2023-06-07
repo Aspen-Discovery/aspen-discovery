@@ -40,7 +40,7 @@ class VdxForm extends DataObject {
 				'type' => 'textarea',
 				'label' => 'Intro Text',
 				'description' => 'Introductory Text to be displayed at the top of the form',
-				'maxLength' => 50,
+				'maxLength' => 5000,
 			],
 			'showAuthor' => [
 				'property' => 'showAuthor',
@@ -77,7 +77,7 @@ class VdxForm extends DataObject {
 				'type' => 'textarea',
 				'label' => 'Fee Information Text',
 				'description' => 'Text to be displayed to give additional information about the fees charged.',
-				'maxLength' => 50,
+				'maxLength' => 5000,
 			],
 			'showCatalogKey' => [
 				'property' => 'showCatalogKey',
