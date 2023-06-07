@@ -6,26 +6,28 @@
 		</div>
 
 		<h2>{translate text="Raw Data" isAdminFacing=true}</h2>
-		<table class="table table-striped table-bordered">
-			<thead>
-				<tr>
-					<th>{translate text="Date" isAdminFacing=true}</th>
-					{foreach from=$dataSeries key=seriesLabel item=seriesData}
-						<th>{if !empty($translateDataSeries)}{translate text=$seriesLabel isAdminFacing=true}{else}{$seriesLabel}{/if}</th>
-					{/foreach}
-				</tr>
-			</thead>
-			<tbody>
-				{foreach from=$columnLabels item=label}
+		<div class="adminTableRegion fixed-height-table">
+			<table class="adminTable table table-responsive table-striped table-bordered table-condensed smallText table-sticky">
+				<thead>
 					<tr>
-						<td>{if !empty($translateColumnLabels)}{translate text=$label isAdminFacing=true}{else}{$label}{/if}</td>
-						{foreach from=$dataSeries item=seriesData}
-							<td>{if (empty($seriesData.data.$label))}0{else}{$seriesData.data.$label|number_format}{/if}</td>
+						<th>{translate text="Date" isAdminFacing=true}</th>
+						{foreach from=$dataSeries key=seriesLabel item=seriesData}
+							<th>{if !empty($translateDataSeries)}{translate text=$seriesLabel isAdminFacing=true}{else}{$seriesLabel}{/if}</th>
 						{/foreach}
 					</tr>
-				{/foreach}
-			</tbody>
-		</table>
+				</thead>
+				<tbody>
+					{foreach from=$columnLabels item=label}
+						<tr>
+							<td>{if !empty($translateColumnLabels)}{translate text=$label isAdminFacing=true}{else}{$label}{/if}</td>
+							{foreach from=$dataSeries item=seriesData}
+								<td>{if (empty($seriesData.data.$label))}0{else}{$seriesData.data.$label|number_format}{/if}</td>
+							{/foreach}
+						</tr>
+					{/foreach}
+				</tbody>
+			</table>
+		</div>
 	</div>
 {/strip}
 {literal}

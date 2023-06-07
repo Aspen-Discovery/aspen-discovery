@@ -207,7 +207,7 @@ class IndexingProfile extends DataObject {
 			'checkRecordForLargePrint',
 			'regroupAllRecords',
 			'runFullUpdate',
-			'evergreenOgUnitSchema',
+			'evergreenOrgUnitSchema',
 		];
 	}
 
