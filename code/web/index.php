@@ -1392,9 +1392,10 @@ function trackSpammyRequest() {
 				$ipAddress->isOpac = 0;
 				$ipAddress->calcIpRange();
 				$ipAddress->insert();
+			} else if (!$ipAddress->isOpac && $ipAddress->locationid == -1) {
+				$ipAddress->blockedForSpam = 1;
+				$ipAddress->update();
 			}
-			$ipAddress->blockedForSpam = 1;
-			$ipAddress->update();
 		}
 		$usageByIPAddress->update();
 	} else {
