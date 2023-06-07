@@ -58,6 +58,8 @@ if ($loadHistoricDataForTicketsByQueue) {
 				$ticketStat->count = $numTickets;
 				$ticketStat->insert();
 			}
+			$ticketStat = null;
+			$ticketQuery = null;
 
 			//Closed tickets
 			$ticketQuery = new Ticket();
@@ -79,6 +81,8 @@ if ($loadHistoricDataForTicketsByQueue) {
 				$ticketStat->count = $numTickets;
 				$ticketStat->insert();
 			}
+			$ticketStat = null;
+			$ticketQuery = null;
 		}
 	}
 } else {
@@ -156,6 +160,8 @@ if ($loadHistoricDataForBugsBySeverity) {
 				$ticketStat->count = $numTickets;
 				$ticketStat->insert();
 			}
+			$ticketStat = null;
+			$ticketQuery = null;
 
 			//Closed tickets
 			$ticketQuery = new Ticket();
@@ -186,6 +192,8 @@ if ($loadHistoricDataForBugsBySeverity) {
 				$ticketStat->count = $numTickets;
 				$ticketStat->insert();
 			}
+			$ticketStat = null;
+			$ticketQuery = null;
 		}
 	}
 }else {
@@ -212,6 +220,7 @@ if ($loadHistoricDataForBugsBySeverity) {
 			$ticketStat->count = $numTickets;
 			$ticketStat->insert();
 		}
+		$ticketQuery = null;
 	}
 }
 //Tickets by Partner
@@ -263,6 +272,8 @@ if ($loadHistoricDataForTicketsByPartner) {
 			}
 			$partnersFound[$ticketQuery->requestingPartner] = $ticketQuery->requestingPartner;
 		}
+		$ticketStat = null;
+		$ticketQuery = null;
 
 		//Closed tickets
 		$ticketQuery = new Ticket();
@@ -291,6 +302,8 @@ if ($loadHistoricDataForTicketsByPartner) {
 			}
 			$partnersFound[$ticketQuery->requestingPartner] = $ticketQuery->requestingPartner;
 		}
+		$ticketStat = null;
+		$ticketQuery = null;
 
 		//Set 0's for this day for any partners that were not found:
 		foreach ($partners as $partnerId) {
@@ -304,6 +317,7 @@ if ($loadHistoricDataForTicketsByPartner) {
 					$ticketStat->count = 0;
 					$ticketStat->insert();
 				}
+				$ticketStat = null;
 			}
 		}
 	}
