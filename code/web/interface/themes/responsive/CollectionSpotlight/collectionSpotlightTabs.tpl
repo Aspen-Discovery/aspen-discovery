@@ -1,5 +1,5 @@
 {strip}
-<div id="collectionSpotlight{$collectionSpotlight->id}" class="{if count($collectionSpotlight->lists) > 1}ui-tabs {/if}collectionSpotlight {$collectionSpotlight->style}">
+<div id="collectionSpotlight{$collectionSpotlight->id}" class="tabs {if count($collectionSpotlight->lists) > 1}ui-tabs {/if}collectionSpotlight {$collectionSpotlight->style}">
 	{if count($collectionSpotlight->lists) > 1}
 		{if !isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs'}
 			{*Display Title Scroller Header*}
@@ -19,9 +19,7 @@
 				{foreach from=$collectionSpotlight->lists item=list name=spotlightList}
 					{assign var="active" value=$smarty.foreach.spotlightList.first}
 					{if $list->displayFor == 'all' || ($list->displayFor == 'loggedIn' && $loggedIn) || ($list->displayFor == 'notLoggedIn' && !$loggedIn)}
-					<li {if !empty($active)}class="active"{/if}>
-						<a id="spotlightTab{$list->id}" href="#tab-{$list->id}" role="tab" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}" data-url="{$list->fullListLink()}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true}</a>
-					</li>
+						<a id="spotlightTab{$list->id}" class="collectionSpotlightTabs{if !empty($active)} active{/if}" aria-controls="tab-{$list->id}" role="tab" tabIndex="{$smarty.foreach.spotlightList.index}" {if !empty($active)}aria-selected="true"{else}aria-selected="false"{/if} href="#tab-{$list->id}" data-toggle="tab" data-index="{$smarty.foreach.spotlightList.index}" data-carouselid="{$list->id}" data-url="{$list->fullListLink()}">{translate text=$list->name isPublicFacing=true isAdminEnteredData=true}</a>
 					{/if}
 				{/foreach}
 			</ul>
@@ -182,6 +180,10 @@
 
 			$(document).ready(function(){ldelim}
 				{if count($collectionSpotlight->lists) > 1 && (!isset($collectionSpotlight->listDisplayType) || $collectionSpotlight->listDisplayType == 'tabs')}
+				var tablists = document.querySelectorAll('[role=tablist]');
+                for (var i = 0; i < tablists.length; i++) {ldelim}
+                    new TabsSwitcher(tablists[i]);
+                {rdelim}
 				$('#collectionSpotlight{$collectionSpotlight->id} a[data-toggle="tab"]').on('shown.bs.tab', function (e) {ldelim}
 					$('#collectionSpotlightCarousel' + $(e.target).data('carouselid')).jcarousel('reload');
 				{rdelim});

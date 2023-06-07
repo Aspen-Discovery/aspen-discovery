@@ -53,3 +53,4 @@ aspen/web-builder.js
 aspen/websites.js
 aspen/wikipedia.js
 aspen/indexing-profile.js
+aspen/tab-switcher.js

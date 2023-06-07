@@ -17,9 +17,11 @@ AspenDiscovery.CollectionSpotlights = (function(){
 				if (data.success) {
 					//Create an unordered list for display
 					var html = '<ul>';
+					var i = 1;
 
 					$.each(data.titles, function() {
 						html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+						i++;
 					});
 
 					html += '</ul>';

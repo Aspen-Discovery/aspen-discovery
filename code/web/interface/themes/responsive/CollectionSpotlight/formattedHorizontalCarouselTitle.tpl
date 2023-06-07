@@ -1,6 +1,6 @@
 {strip}
 	<div id="scrollerTitle{$listName}{$key}" class="carouselScrollerTitle">
-		<a href="{$titleURL}">
+		<a href="{$titleURL}" tabindex="1">
 			<div class="carouselScrollerTitleImage">
 				<img src="{$imageUrl}" class="scrollerTitleCover" alt="{translate text="%1% Cover" 1=$title isPublicFacing=true inAttribute=true}" aria-hidden="true"/>
 			</div>
