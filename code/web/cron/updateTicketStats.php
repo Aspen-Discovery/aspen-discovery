@@ -12,7 +12,7 @@ require_once ROOT_DIR . '/sys/Support/TicketTrendByPartner.php';
 require_once ROOT_DIR . '/sys/Support/TicketTrendByQueue.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
-//Whether or not to load historic data, this is off by default, but can be used to populate the DB as best possible.
+//Whether to load historic data, this is off by default, but can be used to populate the DB as best possible.
 $loadHistoricDataForTicketsByQueue = false;
 $loadHistoricDataForBugsBySeverity = false;
 $loadHistoricDataForTicketsByPartner = true;
@@ -23,58 +23,53 @@ if ($loadHistoricDataForTicketsByQueue) {
 	$ticketStat = new TicketTrendByQueue();
 	$ticketStat->delete(true);
 
-	$oldestTicket = new Ticket();
-	$oldestTicket->orderBy('dateCreated asc');
-	$oldestTicket->limit(0, 1);
-	if ($oldestTicket->find(true)){
-		$startDate = date('Y-m-d', $oldestTicket->dateCreated);
-		$startDate = strtotime($startDate);
-		$endDate = time();
-		for ($tmpDate = $startDate; $tmpDate < $endDate; $tmpDate += 24 * 60 * 60) {
-			$nextDay = $tmpDate + 24 * 60 * 60;
-			$ticketQueues = new TicketQueueFeed();
-			$ticketQueues->find();
-			while ($ticketQueues->fetch()) {
-				//Open tickets
-				$ticketQuery = new Ticket();
-				$ticketQuery->queue = $ticketQueues->name;
-				$ticketQuery->whereAdd("status <> 'Closed'");
-				$ticketQuery->whereAdd("dateCreated <= $tmpDate");
-				$numTickets = $ticketQuery->count();
-				$ticketStat = new TicketTrendByQueue();
-				$ticketStat->year = date('Y', $tmpDate);
-				$ticketStat->month = date('n', $tmpDate);
-				$ticketStat->day = date('j', $tmpDate);
-				$ticketStat->queue = $ticketQueues->name;
+	//Start with Mark's first Day at ByWater when tickets started getting entered
+	$startDate = strtotime('2020-10-29');
+	$endDate = time();
+	for ($tmpDate = $startDate; $tmpDate < $endDate; $tmpDate += 24 * 60 * 60) {
+		$nextDay = $tmpDate + 24 * 60 * 60;
+		$ticketQueues = new TicketQueueFeed();
+		$ticketQueues->find();
+		while ($ticketQueues->fetch()) {
+			//Open tickets
+			$ticketQuery = new Ticket();
+			$ticketQuery->queue = $ticketQueues->name;
+			$ticketQuery->whereAdd("status <> 'Closed'");
+			$ticketQuery->whereAdd("dateCreated <= $tmpDate");
+			$numTickets = $ticketQuery->count();
+			$ticketStat = new TicketTrendByQueue();
+			$ticketStat->year = date('Y', $tmpDate);
+			$ticketStat->month = date('n', $tmpDate);
+			$ticketStat->day = date('j', $tmpDate);
+			$ticketStat->queue = $ticketQueues->name;
 
-				if ($ticketStat->find(true)) {
-					$ticketStat->count = $numTickets;
-					$ticketStat->update();
-				} else {
-					$ticketStat->count = $numTickets;
-					$ticketStat->insert();
-				}
+			if ($ticketStat->find(true)) {
+				$ticketStat->count = $numTickets;
+				$ticketStat->update();
+			} else {
+				$ticketStat->count = $numTickets;
+				$ticketStat->insert();
+			}
 
-				//Closed tickets
-				$ticketQuery = new Ticket();
-				$ticketQuery->queue = $ticketQueues->name;
-				$ticketQuery->whereAdd("status = 'Closed'");
-				$ticketQuery->whereAdd("dateCreated <= $tmpDate");
-				$ticketQuery->whereAdd("dateClosed >= $nextDay");
-				$numTickets = $ticketQuery->count();
-				$ticketStat = new TicketTrendByQueue();
-				$ticketStat->year = date('Y', $tmpDate);
-				$ticketStat->month = date('n', $tmpDate);
-				$ticketStat->day = date('j', $tmpDate);
-				$ticketStat->queue = $ticketQueues->name;
+			//Closed tickets
+			$ticketQuery = new Ticket();
+			$ticketQuery->queue = $ticketQueues->name;
+			$ticketQuery->whereAdd("status = 'Closed'");
+			$ticketQuery->whereAdd("dateCreated <= $tmpDate");
+			$ticketQuery->whereAdd("dateClosed >= $nextDay");
+			$numTickets = $ticketQuery->count();
+			$ticketStat = new TicketTrendByQueue();
+			$ticketStat->year = date('Y', $tmpDate);
+			$ticketStat->month = date('n', $tmpDate);
+			$ticketStat->day = date('j', $tmpDate);
+			$ticketStat->queue = $ticketQueues->name;
 
-				if ($ticketStat->find(true)) {
-					$ticketStat->count = $ticketStat->count + $numTickets;
-					$ticketStat->update();
-				} else {
-					$ticketStat->count = $numTickets;
-					$ticketStat->insert();
-				}
+			if ($ticketStat->find(true)) {
+				$ticketStat->count = $ticketStat->count + $numTickets;
+				$ticketStat->update();
+			} else {
+				$ticketStat->count = $numTickets;
+				$ticketStat->insert();
 			}
 		}
 	}
@@ -119,75 +114,69 @@ if ($loadHistoricDataForBugsBySeverity) {
 		$severitiesToLoad[] = $ticketSeverity->name;
 	}
 
-	$oldestTicket = new Ticket();
-	$oldestTicket->queue = 'Bugs';
-	$oldestTicket->orderBy('dateCreated asc');
-	$oldestTicket->limit(0, 1);
-	if ($oldestTicket->find(true)){
-		$startDate = date('Y-m-d', $oldestTicket->dateCreated);
-		$startDate = strtotime($startDate);
-		$endDate = time();
-		for ($tmpDate = $startDate; $tmpDate < $endDate; $tmpDate += 24 * 60 * 60) {
-			$nextDay = $tmpDate + 24 * 60 * 60;
-			foreach ($severitiesToLoad as $severity) {
-				//Open tickets
-				$ticketQuery = new Ticket();
-				$ticketQuery->queue = 'Bugs';
-				if ($severity == null) {
-					$ticketQuery->whereAdd('severity IS NULL');
-				} else {
-					$ticketQuery->severity = $severity;
-				}
-				$ticketQuery->whereAdd("status <> 'Closed'");
-				$ticketQuery->whereAdd("dateCreated <= $tmpDate");
-				$numTickets = $ticketQuery->count();
-				$ticketStat = new TicketTrendBugsBySeverity();
-				$ticketStat->year = date('Y', $tmpDate);
-				$ticketStat->month = date('n', $tmpDate);
-				$ticketStat->day = date('j', $tmpDate);
-				if ($severity == null) {
-					$ticketStat->severity = 'Not Set';
-				} else {
-					$ticketStat->severity = $severity;
-				}
+	//Start with Mark's first Day at ByWater when tickets started getting entered
+	$startDate = strtotime('2020-10-29');
+	$endDate = time();
+	for ($tmpDate = $startDate; $tmpDate < $endDate; $tmpDate += 24 * 60 * 60) {
+		$nextDay = $tmpDate + 24 * 60 * 60;
+		foreach ($severitiesToLoad as $severity) {
+			//Open tickets
+			$ticketQuery = new Ticket();
+			$ticketQuery->queue = 'Bugs';
+			if ($severity == null) {
+				$ticketQuery->whereAdd('severity IS NULL');
+			} else {
+				$ticketQuery->severity = $severity;
+			}
+			$ticketQuery->whereAdd("status <> 'Closed'");
+			$ticketQuery->whereAdd("dateCreated <= $tmpDate");
+			$numTickets = $ticketQuery->count();
+			$ticketStat = new TicketTrendBugsBySeverity();
+			$ticketStat->year = date('Y', $tmpDate);
+			$ticketStat->month = date('n', $tmpDate);
+			$ticketStat->day = date('j', $tmpDate);
+			if ($severity == null) {
+				$ticketStat->severity = 'Not Set';
+			} else {
+				$ticketStat->severity = $severity;
+			}
 
-				if ($ticketStat->find(true)) {
-					$ticketStat->count = $numTickets;
-					$ticketStat->update();
-				} else {
-					$ticketStat->count = $numTickets;
-					$ticketStat->insert();
-				}
+			if ($ticketStat->find(true)) {
+				$ticketStat->count = $numTickets;
+				$ticketStat->update();
+			} else {
+				$ticketStat->count = $numTickets;
+				$ticketStat->insert();
+			}
 
-				//Closed tickets
-				$ticketQuery = new Ticket();
-				$ticketQuery->queue = 'Bugs';
-				if ($severity == null) {
-					$ticketQuery->whereAdd('severity IS NULL');
-				} else {
-					$ticketQuery->severity = $severity;
-				}
-				$ticketQuery->whereAdd("status = 'Closed'");
-				$ticketQuery->whereAdd("dateCreated <= $tmpDate");
-				$ticketQuery->whereAdd("dateClosed >= $nextDay");
-				$numTickets = $ticketQuery->count();
-				$ticketStat = new TicketTrendBugsBySeverity();
-				$ticketStat->year = date('Y', $tmpDate);
-				$ticketStat->month = date('n', $tmpDate);
-				$ticketStat->day = date('j', $tmpDate);
-				if ($severity == null) {
-					$ticketStat->severity = 'Not Set';
-				} else {
-					$ticketStat->severity = $severity;
-				}
+			//Closed tickets
+			$ticketQuery = new Ticket();
+			$ticketQuery->queue = 'Bugs';
+			if ($severity == null) {
+				$ticketQuery->whereAdd('severity IS NULL');
+			} else {
+				$ticketQuery->severity = $severity;
+			}
+			$ticketQuery->whereAdd("status = 'Closed'");
+			$ticketQuery->whereAdd("dateCreated <= $tmpDate");
+			$ticketQuery->whereAdd("dateClosed >= $nextDay");
+			$numTickets = $ticketQuery->count();
+			$ticketStat = new TicketTrendBugsBySeverity();
+			$ticketStat->year = date('Y', $tmpDate);
+			$ticketStat->month = date('n', $tmpDate);
+			$ticketStat->day = date('j', $tmpDate);
+			if ($severity == null) {
+				$ticketStat->severity = 'Not Set';
+			} else {
+				$ticketStat->severity = $severity;
+			}
 
-				if ($ticketStat->find(true)) {
-					$ticketStat->count = $ticketStat->count + $numTickets;
-					$ticketStat->update();
-				} else {
-					$ticketStat->count = $numTickets;
-					$ticketStat->insert();
-				}
+			if ($ticketStat->find(true)) {
+				$ticketStat->count = $ticketStat->count + $numTickets;
+				$ticketStat->update();
+			} else {
+				$ticketStat->count = $numTickets;
+				$ticketStat->insert();
 			}
 		}
 	}
@@ -232,68 +221,79 @@ if ($loadHistoricDataForTicketsByPartner) {
 	while ($aspenSite->fetch()){
 		$partners[] = $aspenSite->id;
 	}
-	$oldestTicket = new Ticket();
-	$oldestTicket->orderBy('dateCreated asc');
-	$oldestTicket->limit(0, 1);
-	if ($oldestTicket->find(true)){
-		$startDate = date('Y-m-d', $oldestTicket->dateCreated);
-		$startDate = strtotime($startDate);
-		$endDate = time();
-		for ($tmpDate = $startDate; $tmpDate < $endDate; $tmpDate += 24 * 60 * 60) {
-			$nextDay = $tmpDate + 24 * 60 * 60;
-			foreach ($partners as $partner) {
-				//Open tickets
-				$ticketQuery = new Ticket();
-				if ($partner == null) {
-					$ticketQuery->whereAdd('requestingPartner IS NULL');
-				} else {
-					$ticketQuery->requestingPartner = $partner;
-				}
-				$ticketQuery->whereAdd("status <> 'Closed'");
-				$ticketQuery->whereAdd("dateCreated <= $tmpDate");
-				$numTickets = $ticketQuery->count();
-				$ticketStat = new TicketTrendByPartner();
-				$ticketStat->year = date('Y', $tmpDate);
-				$ticketStat->month = date('n', $tmpDate);
-				$ticketStat->day = date('j', $tmpDate);
-				if ($partner == null) {
-					$ticketStat->requestingPartner = null;
-				} else {
-					$ticketStat->requestingPartner = $partner;
-				}
-				if ($ticketStat->find(true)) {
-					$ticketStat->count = $numTickets;
-					$ticketStat->update();
-				} else {
-					$ticketStat->count = $numTickets;
-					$ticketStat->insert();
-				}
 
-				//Closed tickets
-				$ticketQuery = new Ticket();
-				if ($partner == null) {
-					$ticketQuery->whereAdd('requestingPartner IS NULL');
-				} else {
-					$ticketQuery->requestingPartner = $partner;
-				}
-				$ticketQuery->whereAdd("status = 'Closed'");
-				$ticketQuery->whereAdd("dateCreated <= $tmpDate");
-				$ticketQuery->whereAdd("dateClosed >= $nextDay");
-				$numTickets = $ticketQuery->count();
+	//Start with Mark's first Day at ByWater when tickets started getting entered
+	$startDate = strtotime('2020-10-29');
+	$endDate = time();
+	for ($tmpDate = $startDate; $tmpDate < $endDate; $tmpDate += 24 * 60 * 60) {
+		$nextDay = $tmpDate + 24 * 60 * 60;
+
+		//Open tickets
+		$ticketQuery = new Ticket();
+		$ticketQuery->whereAdd("status <> 'Closed'");
+		$ticketQuery->whereAdd("dateCreated <= $tmpDate");
+		$ticketQuery->groupBy('requestingPartner');
+		$ticketQuery->selectAdd();
+		$ticketQuery->selectAdd('count(*) as numTickets');
+		$ticketQuery->selectAdd('requestingPartner');
+		$ticketQuery->find();
+		$partnersFound = [];
+		while ($ticketQuery->fetch()) {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$numTickets = $ticketQuery->numTickets;
+			$ticketStat = new TicketTrendByPartner();
+			$ticketStat->year = date('Y', $tmpDate);
+			$ticketStat->month = date('n', $tmpDate);
+			$ticketStat->day = date('j', $tmpDate);
+			$ticketStat->requestingPartner = $ticketQuery->requestingPartner;
+			if ($ticketStat->find(true)) {
+				$ticketStat->count = $numTickets;
+				$ticketStat->update();
+			} else {
+				$ticketStat->count = $numTickets;
+				$ticketStat->insert();
+			}
+			$partnersFound[$ticketQuery->requestingPartner] = $ticketQuery->requestingPartner;
+		}
+
+		//Closed tickets
+		$ticketQuery = new Ticket();
+		$ticketQuery->whereAdd("status = 'Closed'");
+		$ticketQuery->whereAdd("dateCreated <= $tmpDate");
+		$ticketQuery->whereAdd("dateClosed >= $nextDay");
+		$ticketQuery->groupBy('requestingPartner');
+		$ticketQuery->selectAdd();
+		$ticketQuery->selectAdd('count(*) as numTickets');
+		$ticketQuery->selectAdd('requestingPartner');
+		$ticketQuery->find();
+		while ($ticketQuery->fetch()) {
+			/** @noinspection PhpUndefinedFieldInspection */
+			$numTickets = $ticketQuery->numTickets;
+			$ticketStat = new TicketTrendByPartner();
+			$ticketStat->year = date('Y', $tmpDate);
+			$ticketStat->month = date('n', $tmpDate);
+			$ticketStat->day = date('j', $tmpDate);
+			$ticketStat->requestingPartner = $ticketQuery->requestingPartner;
+			if ($ticketStat->find(true)) {
+				$ticketStat->count = $numTickets;
+				$ticketStat->update();
+			} else {
+				$ticketStat->count = $numTickets;
+				$ticketStat->insert();
+			}
+			$partnersFound[$ticketQuery->requestingPartner] = $ticketQuery->requestingPartner;
+		}
+
+		//Set 0's for this day for any partners that were not found:
+		foreach ($partners as $partnerId) {
+			if (!in_array($partnerId, $partnersFound)) {
 				$ticketStat = new TicketTrendByPartner();
 				$ticketStat->year = date('Y', $tmpDate);
 				$ticketStat->month = date('n', $tmpDate);
 				$ticketStat->day = date('j', $tmpDate);
-				if ($partner == null) {
-					$ticketStat->requestingPartner = null;
-				} else {
-					$ticketStat->requestingPartner = $partner;
-				}
-				if ($ticketStat->find(true)) {
-					$ticketStat->count = $numTickets;
-					$ticketStat->update();
-				} else {
-					$ticketStat->count = $numTickets;
+				$ticketStat->requestingPartner = $partnerId;
+				if (!$ticketStat->find(true)) {
+					$ticketStat->count = 0;
 					$ticketStat->insert();
 				}
 			}
@@ -306,22 +306,23 @@ if ($loadHistoricDataForTicketsByPartner) {
 	$aspenSite->whereAdd('implementationStatus <> 0 AND implementationStatus <> 4');
 	$aspenSite->find();
 	while ($aspenSite->fetch()) {
-		$ticketQueues = new TicketQueueFeed();
-		$ticketQueues->find();
-		while ($ticketQueues->fetch()) {
-			$ticketStat = new TicketTrendByPartner();
-			$ticketStat->year = date('Y');
-			$ticketStat->month = date('n');
-			$ticketStat->day = date('j');
-			$ticketStat->severity = $ticketSeverity->name;
+		$ticketQuery = new Ticket();
+		$ticketQuery->requestingPartner = $aspenSite->id;
+		$ticketQuery->whereAdd("status <> 'Closed'");
+		$numTickets = $ticketQuery->count();
 
-			if ($ticketStat->find(true)) {
-				$ticketStat->count = $numTickets;
-				$ticketStat->update();
-			} else {
-				$ticketStat->count = $numTickets;
-				$ticketStat->insert();
-			}
+		$ticketStat = new TicketTrendByPartner();
+		$ticketStat->year = date('Y');
+		$ticketStat->month = date('n');
+		$ticketStat->day = date('j');
+		$ticketStat->requestingPartner = $ticketSeverity->name;
+
+		if ($ticketStat->find(true)) {
+			$ticketStat->count = $numTickets;
+			$ticketStat->update();
+		} else {
+			$ticketStat->count = $numTickets;
+			$ticketStat->insert();
 		}
 	}
 }

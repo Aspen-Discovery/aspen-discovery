@@ -60,7 +60,6 @@
 							<div class="adminMenuLink "><a href="/Greenhouse/BugsBySeverityAndComponent">{translate text="Active Bugs by Severity" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/BugsBySeverityTrend">{translate text="Trend of Active Bugs by Severity" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByPartner">{translate text="Active Tickets By Partner" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByPartnerTrend">{translate text="Trend of Active Tickets by Partner" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Component" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponentTrend">{translate text="Trend of Active Tickets by Component" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/PartnerPriorities">{translate text="Partner Priorities" isAdminFacing=true}</a></div>
