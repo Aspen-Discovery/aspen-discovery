@@ -82,6 +82,7 @@ class SAMLAuthentication{
 				'security' => [
 					'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 					'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
+					'requestedAuthnContext' => false,
 				],
 				/*'contactPerson' => [
 					'technical' => [

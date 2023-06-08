@@ -33,7 +33,7 @@ export const LoginScreen = () => {
      const [showModal, setShowModal] = React.useState(false);
      const [query, setQuery] = React.useState('');
      let isCommunity = true;
-     if (!_.includes(GLOBALS.slug, 'aspen-lida')) {
+     if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           isCommunity = false;
      }
 
@@ -43,7 +43,6 @@ export const LoginScreen = () => {
           React.useCallback(() => {
                const bootstrapAsync = async () => {
                     await getPermissions().then((result) => {
-                         console.log(result);
                          if (result.success === false && result.status === 'undetermined' && GLOBALS.releaseChannel !== 'DEV') {
                               setShouldRequestPermissions(true);
                          }
@@ -60,7 +59,7 @@ export const LoginScreen = () => {
                          }
                     });
 
-                    if (_.includes(GLOBALS.slug, 'aspen-lida')) {
+                    if (_.includes(GLOBALS.slug, 'aspen-lida') && GLOBALS.slug !== 'aspen-lida-bws') {
                          await fetchAllLibrariesFromGreenhouse().then((result) => {
                               if (result.success) {
                                    setAllLibraries(result.libraries);
@@ -134,7 +133,6 @@ const SelectYourLibraryModal = (payload) => {
           if (!isCommunity) {
                haystack = libraries;
           }
-
 
           if (!isCommunity) {
                return _.filter(haystack, function (branch) {

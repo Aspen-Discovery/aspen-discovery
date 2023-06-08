@@ -101,3 +101,7 @@
 #########################
 # Nashville does not want ByWater-scheduled updates as of 2023 06 01
 #*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php nashville.production
+######################################
+# Update Translations from Community #
+######################################
+15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php nashville.production

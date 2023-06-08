@@ -257,7 +257,7 @@ class CarlX extends AbstractIlsDriver {
 		return $renew_result;
 	}
 
-	private $genericResponseSOAPCallOptions = [
+	protected $genericResponseSOAPCallOptions = [
 		'connection_timeout' => 1,
 		'features' => SOAP_SINGLE_ELEMENT_ARRAYS | SOAP_WAIT_ONE_WAY_CALLS,
 		'trace' => 1,

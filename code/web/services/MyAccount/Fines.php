@@ -191,6 +191,7 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				// Certified Payments by Deluxe
 				if($userLibrary->finePaymentType == 10) {
 					global $library;
 					require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';

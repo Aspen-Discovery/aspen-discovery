@@ -11,10 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 	private final int recordNumberTagInt;
@@ -623,6 +620,28 @@ public abstract class BaseMarcRecordGrouper extends RecordGroupingProcessor {
 			logEntry.incErrors("Error getting number of existing titles for " + baseSettings.getName(), e);
 			logEntry.addNote("Error getting number of existing titles for " + baseSettings.getName() + " " + e);
 			return 0;
+		}
+	}
+
+	public HashSet<String> loadExistingActiveIds(BaseIndexingLogEntry logEntry) {
+		try {
+			//Clear previous records if we load multiple times
+			HashSet<String> existingRecords = new HashSet<>();
+			PreparedStatement getAllExistingRecordsStmt = dbConn.prepareStatement("SELECT ilsId FROM ils_records where source = ? and deleted = 0;");
+			getAllExistingRecordsStmt.setString(1, baseSettings.getName());
+			ResultSet allRecordsRS = getAllExistingRecordsStmt.executeQuery();
+			int numDeletedTitles = 0;
+			while (allRecordsRS.next()) {
+				existingRecords.add(allRecordsRS.getString("ilsId"));
+			}
+			allRecordsRS.close();
+			getAllExistingRecordsStmt.close();
+			logEntry.addNote("There are " + existingRecords.size() + " records that have already been loaded " + numDeletedTitles + " are deleted, and " + (existingRecords.size() - numDeletedTitles) + " are active");
+			return existingRecords;
+		} catch (SQLException e) {
+			logEntry.incErrors("Error loading existing titles", e);
+			logEntry.addNote("Error loading existing titles" + e);
+			return null;
 		}
 	}
 
