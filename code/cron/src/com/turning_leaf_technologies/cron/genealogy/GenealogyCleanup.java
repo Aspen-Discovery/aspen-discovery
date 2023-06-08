@@ -325,7 +325,6 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertMarriageStmt.executeUpdate();
 									// System.out.println("  Added second marriage");
 								}
-								insertMarriageStmt.close();
 
 								// delete existing obits and enter new
 
@@ -367,7 +366,6 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added third obit");
 								}
-								insertObitStmt.close();
 							}
 
 							personExistsRs.close();
@@ -379,9 +377,15 @@ public class GenealogyCleanup implements IProcessHandler {
 							processLog.incErrors("Error checking if person exists ", e);
 							processLog.addNote(st1.toString());
 						}
-						st1.close();
 					}
 				}
+				st1.close();
+				updatePersonStatement.close();
+				insertPersonStatement.close();
+				insertMarriageStmt.close();
+				insertObitStmt.close();
+				deleteMarriagesStatement.close();
+				deleteObitsStatement.close();
 			} catch (FileNotFoundException e) {
 				processLog.incErrors("Could not find the file to import", e);
 			} catch (IOException e) {
