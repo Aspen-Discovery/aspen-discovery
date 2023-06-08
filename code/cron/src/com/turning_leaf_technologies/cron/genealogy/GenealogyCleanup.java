@@ -325,7 +325,6 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertMarriageStmt.executeUpdate();
 									// System.out.println("  Added second marriage");
 								}
-								insertMarriageStmt.close();
 
 								// delete existing obits and enter new
 
@@ -367,7 +366,6 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added third obit");
 								}
-								insertObitStmt.close();
 							}
 
 							personExistsRs.close();
