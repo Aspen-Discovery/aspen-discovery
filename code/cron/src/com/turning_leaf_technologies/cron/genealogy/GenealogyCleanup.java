@@ -155,11 +155,11 @@ public class GenealogyCleanup implements IProcessHandler {
 			processLog.incErrors("Skipping importing people because no importFile was specified.");
 			return;
 		}
-		String genealogyUrl = configIni.get("Genealogy", "url");
-		if (genealogyUrl == null || genealogyUrl.length() == 0) {
-			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
-			return;
-		}
+//		String genealogyUrl = configIni.get("Genealogy", "url");
+//		if (genealogyUrl == null || genealogyUrl.length() == 0) {
+//			processLog.addNote("Unable to get url for genealogy in GenealogyCleanup section.  Please specify genealogyIndex key.");
+//			return;
+//		}
 		
 		//Prepare statements
 		PreparedStatement st1;
@@ -325,7 +325,6 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertMarriageStmt.executeUpdate();
 									// System.out.println("  Added second marriage");
 								}
-								insertMarriageStmt.close();
 
 								// delete existing obits and enter new
 
@@ -367,7 +366,6 @@ public class GenealogyCleanup implements IProcessHandler {
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added third obit");
 								}
-								insertObitStmt.close();
 							}
 
 							personExistsRs.close();
@@ -379,9 +377,15 @@ public class GenealogyCleanup implements IProcessHandler {
 							processLog.incErrors("Error checking if person exists ", e);
 							processLog.addNote(st1.toString());
 						}
-						st1.close();
 					}
 				}
+				st1.close();
+				updatePersonStatement.close();
+				insertPersonStatement.close();
+				insertMarriageStmt.close();
+				insertObitStmt.close();
+				deleteMarriagesStatement.close();
+				deleteObitsStatement.close();
 			} catch (FileNotFoundException e) {
 				processLog.incErrors("Could not find the file to import", e);
 			} catch (IOException e) {

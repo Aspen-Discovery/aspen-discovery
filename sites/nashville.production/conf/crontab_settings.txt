@@ -51,7 +51,7 @@
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-50 21 * * *     root    cd /usr/local/aspen-discovery/code/cron/; bash nightly_mysql_dump.sh nashville.production aspen
+50 21 * * *     root    php /usr/local/aspen-discovery/code/web/cron/backupAspen.php nashville.production
 
 #############################################
 # New York Times Best seller Lists Updating #

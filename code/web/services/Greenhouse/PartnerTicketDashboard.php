@@ -149,6 +149,43 @@ class Greenhouse_PartnerTicketDashboard extends Admin_Admin{
 		}
 		$interface->assign('openImplementationTickets', $openImplementation);
 
+		//Load ticket trend
+		$dataSeries = [];
+		$columnLabels = [];
+		require_once ROOT_DIR . '/sys/Utils/GraphingUtils.php';
+
+		$dataSeries['Open Tickets'] = GraphingUtils::getDataSeriesArray(count($dataSeries));
+
+		require_once ROOT_DIR . '/sys/Support/TicketTrendByPartner.php';
+		$ticketTrend = new TicketTrendByPartner();
+		$ticketTrend->orderBy('year, month, day');
+		$ticketTrend->requestingPartner = $selectedSite;
+		$ticketTrend->find();
+		$lastPeriod = null;
+		$foundOpenTickets = false;
+		while ($ticketTrend->fetch()) {
+			$curPeriod = "{$ticketTrend->month}-{$ticketTrend->day}-{$ticketTrend->year}";
+			if ($lastPeriod == null) {
+				$lastPeriod = $curPeriod;
+			}
+			if ($foundOpenTickets || $ticketTrend->count > 0) {
+				if (!$foundOpenTickets && $curPeriod != $lastPeriod) {
+					$columnLabels[] = $lastPeriod;
+					$dataSeries['Open Tickets']['data'][$lastPeriod] = 0;
+				}
+				$foundOpenTickets = true;
+				if (!in_array($curPeriod, $columnLabels)) {
+					$columnLabels[] = $curPeriod;
+				}
+				$dataSeries['Open Tickets']['data'][$curPeriod] = $ticketTrend->count;
+			}
+		}
+
+		$interface->assign('columnLabels', $columnLabels);
+		$interface->assign('dataSeries', $dataSeries);
+		$interface->assign('translateDataSeries', true);
+		$interface->assign('translateColumnLabels', false);
+
 		$this->display('partnerTicketDashboard.tpl', 'Partner Ticket Dashboard', 'Development/development-sidebar.tpl');
 	}
 
