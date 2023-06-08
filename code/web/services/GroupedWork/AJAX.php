@@ -2279,6 +2279,81 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function thirdPartyCoverToggle() {
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		$id = $_REQUEST['id'];
+		$recordDriver = new GroupedWorkDriver($id);
+
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookcoverInfo = new BookCoverInfo();
+		$bookcoverInfo->recordType = 'grouped_work';
+		$bookcoverInfo->recordId = $id;
+
+		if ($bookcoverInfo->find(true)) {
+			if ($bookcoverInfo->disallowThirdPartyCover == 0){
+				$bookcoverInfo->disallowThirdPartyCover = 1;
+				$result['message'] = translate([
+					'text' => 'Covers for this work will no longer be pulled from a third party.',
+					'isAdminFacing' => true,
+				]);
+			}else{
+				$bookcoverInfo->disallowThirdPartyCover = 0;
+				$result['message'] = translate([
+					'text' => 'Covers for this work will be pulled from a third party if one is available.',
+					'isAdminFacing' => true,
+				]);
+			}
+			$bookcoverInfo->thumbnailLoaded = 0;
+			$bookcoverInfo->mediumLoaded = 0;
+			$bookcoverInfo->largeLoaded = 0;
+			$bookcoverInfo->imageSource = '';
+			$bookcoverInfo->update();
+			$result['success'] = true;
+
+			$relatedRecords = $recordDriver->getRelatedRecords(true);
+			foreach ($relatedRecords as $record) {
+				$bookCoverInfo = new BookCoverInfo();
+				if (strpos($record->id, ':') > 0) {
+					[
+						$source,
+						$recordId,
+					] = explode(':', $record->id);
+					$bookCoverInfo->recordType = $source;
+					$bookCoverInfo->recordId = $recordId;
+				} else {
+					$bookCoverInfo->recordType = $record->source;
+					$bookCoverInfo->recordId = $record->id;
+				}
+
+				if ($bookCoverInfo->find(true)) {
+					//Force the image source to be determined again unless the user uploaded a cover.
+					if ($bookCoverInfo->disallowThirdPartyCover == 0){
+						$bookCoverInfo->disallowThirdPartyCover = 1;
+					}else{
+						$bookCoverInfo->disallowThirdPartyCover = 0;
+					}
+					if ($bookCoverInfo->imageSource != "upload") {
+						$bookCoverInfo->imageSource = '';
+					}
+					$bookCoverInfo->thumbnailLoaded = 0;
+					$bookCoverInfo->mediumLoaded = 0;
+					$bookCoverInfo->largeLoaded = 0;
+					$bookCoverInfo->update();
+				}
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'Unable to find book cover information for this record.',
+					'isAdminFacing' => true,
+				]),
+			];
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function clearUploadedCover() {
 		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 		$bookcoverInfo = new BookCoverInfo();

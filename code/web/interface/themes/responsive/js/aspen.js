@@ -5846,7 +5846,7 @@ AspenDiscovery.Account = (function () {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
-				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin')) {
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin') || (action === "SelfReg")) {
 					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;
@@ -11248,6 +11248,14 @@ AspenDiscovery.GroupedWork = (function(){
 					return AspenDiscovery.GroupedWork.showReviewForm(trigger, id);
 				}, false);
 			}
+			return false;
+		},
+
+		thirdPartyCoverToggle: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=thirdPartyCoverToggle&recordType=' + recordType + '&recordId=' + recordId;
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage("Success", data.message, true, true);
+			});
 			return false;
 		},
 
