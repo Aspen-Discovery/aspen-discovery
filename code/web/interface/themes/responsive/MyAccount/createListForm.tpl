@@ -32,7 +32,7 @@
 				</div>
 			</div>
 		</div>
-		{if in_array('Include Lists In Search Results', $userPermissions)}
+		{if !empty($userPermissions) && in_array('Include Lists In Search Results', $userPermissions)}
 			<div class="form-group" id="searchableRow" style="display: none">
 				<label for="searchable" class="col-sm-3 control-label">{translate text="Show in search results" isPublicFacing=true}</label>
 				<div class="col-sm-9">
