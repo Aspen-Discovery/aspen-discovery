@@ -117,7 +117,7 @@ class UserAPI extends Action {
 
 	/**
 	 *
-	 * Returns whether or not a user is currently logged in based on session information.
+	 * Returns whether a user is currently logged in based on session information.
 	 * This method is only useful from VuFind itself or from files which can share cookies
 	 * with the VuFind server.
 	 *
@@ -2657,7 +2657,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2685,7 +2685,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2743,7 +2743,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2768,7 +2768,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2794,7 +2794,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2822,7 +2822,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2848,7 +2848,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();

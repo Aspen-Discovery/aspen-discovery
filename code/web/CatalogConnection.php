@@ -228,6 +228,10 @@ class CatalogConnection {
 		$timer->logTime("Updated Additional Runtime information for user " . $user->id);
 	}
 
+	public function getRegistrationCapabilities() : array {
+		return $this->driver->getRegistrationCapabilities();
+	}
+
 	/**
 	 * @param $nameFromUser  string
 	 * @param $nameFromIls   string

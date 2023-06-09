@@ -558,4 +558,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function showDateInFines(): bool {
 		return false;
 	}
+
+	public function getRegistrationCapabilities() : array {
+		return [
+			'lookupAccountByEmail' => true,
+			'lookupAccountByPhone' => false,
+			'basicRegistration' => true,
+			'forgottenPin' => $this->getForgotPasswordType() != 'none'
+		];
+	}
 }
