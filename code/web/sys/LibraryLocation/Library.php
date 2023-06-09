@@ -130,7 +130,7 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$repeatInOnlineCollection;
 	public /** @noinspection PhpUnused */
-		$repeatInProspector;
+		$repeatInInnReach;
 	public /** @noinspection PhpUnused */
 		$repeatInWorldCat;
 	public $overDriveScopeId;
@@ -145,11 +145,9 @@ class Library extends DataObject {
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
 	public $showAdvancedSearchbox;
-	public $enableProspectorIntegration;
+	public $enableInnReachIntegration;
 	public /** @noinspection PhpUnused */
-		$showProspectorResultsAtEndOfSearch;
-	public /** @noinspection PhpUnused */
-		$prospectorCode;
+		$showInnReachResultsAtEndOfSearch;
 	public /** @noinspection PhpUnused */
 		$enableGenealogy;
 	public $showHoldCancelDate;
@@ -2980,41 +2978,34 @@ class Library extends DataObject {
 						'size' => '200',
 					],
 
-					'prospectorSection' => [
-						'property' => 'prospectorSection',
+					'innReachSection' => [
+						'property' => 'innReachSection',
 						'type' => 'section',
-						'label' => 'Prospector',
+						'label' => 'INN-Reach',
 						'hideInLists' => true,
 						'helpLink' => '',
 						'properties' => [
-							'repeatInProspector' => [
-								'property' => 'repeatInProspector',
+							'repeatInInnReach' => [
+								'property' => 'repeatInInnReach',
 								'type' => 'checkbox',
-								'label' => 'Repeat In Prospector',
-								'description' => 'Turn on to allow repeat search in Prospector functionality.',
+								'label' => 'Repeat In INN-Reach',
+								'description' => 'Turn on to allow repeat search in INN-Reach functionality.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
-							'prospectorCode' => [
-								'property' => 'prospectorCode',
-								'type' => 'text',
-								'label' => 'Prospector Code',
-								'description' => 'The code used to identify this location within Prospector. Leave blank if items for this location are not in Prospector.',
-								'hideInLists' => true,
-							],
-							'enableProspectorIntegration' => [
-								'property' => 'enableProspectorIntegration',
+							'enableInnReachIntegration' => [
+								'property' => 'enableInnReachIntegration',
 								'type' => 'checkbox',
-								'label' => 'Enable Prospector Integration',
-								'description' => 'Whether or not Prospector Integrations should be displayed for this library.',
+								'label' => 'Enable INN-Reach Integration',
+								'description' => 'Whether or not INN-Reach Integrations should be displayed for this library.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
-							'showProspectorResultsAtEndOfSearch' => [
-								'property' => 'showProspectorResultsAtEndOfSearch',
+							'showInnReachResultsAtEndOfSearch' => [
+								'property' => 'showInnReachResultsAtEndOfSearch',
 								'type' => 'checkbox',
-								'label' => 'Show Prospector Results At End Of Search',
-								'description' => 'Whether or not Prospector Search Results should be shown at the end of search results.',
+								'label' => 'Show INN-Reach Results At End Of Search',
+								'description' => 'Whether or not INN-Reach Search Results should be shown at the end of search results.',
 								'hideInLists' => true,
 								'default' => 0,
 							],

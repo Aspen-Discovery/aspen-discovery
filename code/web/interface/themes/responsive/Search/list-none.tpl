@@ -97,9 +97,9 @@
 			</script>
 		{/if}
 
-		{if !empty($showProspectorLink)}
-			{* Prospector Results *}
-			<div id='prospectorSearchResultsPlaceholder'></div>
+		{if !empty($showInnReachLink)}
+			{* INN-Reach Results *}
+			<div id='innReachSearchResultsPlaceholder'></div>
 			{* javascript call for content at bottom of page*}
 		{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
 			{include file="Search/interLibraryLoanSearch.tpl"}
@@ -152,8 +152,8 @@
 
 	<script type="text/javascript">
 		$(function(){ldelim}
-			{if !empty($showProspectorLink)}
-			AspenDiscovery.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
+			{if !empty($showInnReachLink)}
+			AspenDiscovery.InterLibraryLoan.getInnReachResults(5, {$innReachSavedSearchId});
 			{/if}
 			{if !empty($showDplaLink)}
 			AspenDiscovery.DPLA.getDPLAResults("{$lookfor|escapeCSS}");

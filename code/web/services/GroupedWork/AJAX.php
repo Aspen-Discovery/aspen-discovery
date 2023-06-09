@@ -919,8 +919,8 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getProspectorInfo() {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+	function getInnReachInfo() {
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
@@ -934,7 +934,7 @@ class GroupedWork_AJAX extends JSON_Action {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 
-		$prospector = new Prospector();
+		$innReach = new InnReach();
 
 		$searchTerms = [
 			[
@@ -949,11 +949,11 @@ class GroupedWork_AJAX extends JSON_Action {
 			];
 		}
 
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
+		$innReachResults = $innReach->getTopSearchResults($searchTerms, 10);
+		$interface->assign('innReachResults', $innReachResults['records']);
 
 		return [
-			'numTitles' => count($prospectorResults),
+			'numTitles' => count($innReachResults),
 			'formattedData' => $interface->fetch('GroupedWork/ajax-innreach.tpl'),
 		];
 	}

@@ -1,31 +1,29 @@
 <?php
 /**
- * Handles integration with Prospector
+ * Handles integration with INN-Reach
  */
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
-class Prospector {
+class InnReach {
 	/**
-	 * Load search results from Prospector using the encore interface.
-	 * If $prospectorRecordDetails are provided, will sort the existing result to the
-	 * top and tag it as being the record.
+	 * Load search results from INN-Reach using the encore interface.
 	 **/
 	function getTopSearchResults($searchTerms, $maxResults) {
-		$prospectorUrl = $this->getSearchLink($searchTerms);
-		//Load the HTML from Prospector
+		$innReachUrl = $this->getSearchLink($searchTerms);
+		//Load the HTML from INN-Reach
 		$req = new CurlWrapper();
-		$prospectorInfo = $req->curlGetPage($prospectorUrl);
+		$innReachInfo = $req->curlGetPage($innReachUrl);
 
 		//Get the total number of results
-		if (preg_match('/<span class="noResultsHideMessage">.*?(\d+) - (\d+) of (\d+).*?<\/span>/s', $prospectorInfo, $summaryInfo)) {
+		if (preg_match('/<span class="noResultsHideMessage">.*?(\d+) - (\d+) of (\d+).*?<\/span>/s', $innReachInfo, $summaryInfo)) {
 			$firstResult = $summaryInfo[1];
 			$lastResult = $summaryInfo[2];
 			$numberOfResults = $summaryInfo[3];
 
 			//Parse the information to get the titles from the page
-			preg_match_all('/gridBrowseCol2(.*?)bibLocations/si', $prospectorInfo, $titleInfo, PREG_SET_ORDER);
-			$prospectorTitles = [];
+			preg_match_all('/gridBrowseCol2(.*?)bibLocations/si', $innReachInfo, $titleInfo, PREG_SET_ORDER);
+			$innReachTitles = [];
 			for ($matchi = 0; $matchi < count($titleInfo); $matchi++) {
 				$curTitleInfo = [];
 				//Extract the title and bid from the titleTitleInfo
@@ -40,7 +38,12 @@ class Prospector {
 				if (preg_match('/<span class="title">.*?<a.*?href.*?__R(.*?)__.*?>\\s*(.*?)\\s*<\/a>.*?<\/span>/s', $titleTitleInfo, $titleMatches)) {
 					$curTitleInfo['id'] = $titleMatches[1];
 					//Create the link to the title in Encore
-					$curTitleInfo['link'] = "http://encore.coalliance.org/iii/encore/record/C__R" . urlencode($curTitleInfo['id']) . "__Orightresult?lang=eng&amp;suite=def";
+					global $library;
+					$baseUrl = $library->interLibraryLoanUrl;
+					if (substr($baseUrl, -1, 1) == '/') {
+						$baseUrl = substr($baseUrl, 0, strlen($baseUrl) -1);
+					}
+					$curTitleInfo['link'] = "$baseUrl/iii/encore/record/C__R" . urlencode($curTitleInfo['id']) . "__Orightresult?lang=eng&amp;suite=def";
 					$curTitleInfo['title'] = strip_tags($titleMatches[2]);
 				} else {
 					//Couldn't load information, skip to the next one.
@@ -86,15 +89,15 @@ class Prospector {
 					}
 				}
 
-				$prospectorTitles[] = $curTitleInfo;
+				$innReachTitles[] = $curTitleInfo;
 			}
 
-			$prospectorTitles = array_slice($prospectorTitles, 0, $maxResults, true);
+			$innReachTitles = array_slice($innReachTitles, 0, $maxResults, true);
 			return [
 				'firstRecord' => $firstResult,
 				'lastRecord' => $lastResult,
 				'resultTotal' => $numberOfResults,
-				'records' => $prospectorTitles,
+				'records' => $innReachTitles,
 			];
 		} else {
 			return [
@@ -154,13 +157,17 @@ class Prospector {
 				}
 			}
 		}
-		//Setup the link to Prospector (search classic)
-		//$prospectorUrl = "http://prospector.coalliance.org/search/?searchtype=X&searcharg=" . urlencode($search) . "&Da=&Db=&SORT=R";
-		//Fix prospector url issue
+		//Setup the link to INN-Reach
 		$search = str_replace('+', '%20', urlencode(str_replace('/', '', $search)));
 		// Handle special exception: ? character in the search must be encoded specially
 		$search = str_replace('%3F', 'Pw%3D%3D', $search);
-		$prospectorUrl = "http://encore.coalliance.org/iii/encore/search/C__S" . $search . "__Orightresult__U1?lang=eng&amp;suite=def";
-		return $prospectorUrl;
+		global $library;
+
+		$baseUrl = $library->interLibraryLoanUrl;
+		if (substr($baseUrl, -1, 1) == '/') {
+			$baseUrl = substr($baseUrl, 0, strlen($baseUrl) -1);
+		}
+
+		return "$baseUrl/iii/encore/search/C__S" . $search . "__Orightresult__U1?lang=eng&amp;suite=def";
 	}
 }

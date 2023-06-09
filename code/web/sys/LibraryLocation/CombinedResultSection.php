@@ -33,8 +33,9 @@ abstract class CombinedResultSection extends DataObject {
 		if (array_key_exists('Open Archives', $enabledModules)) {
 			$validResultSources['open_archives'] = 'Open Archives';
 		}
-		if ($configArray['Content']['Prospector']) {
-			$validResultSources['prospector'] = 'Prospector';
+		global $library;
+		if ($library->enableInnReachIntegration) {
+			$validResultSources['innReach'] = 'INN-Reach';
 		}
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$validResultSources['websites'] = 'Website Search';
@@ -113,16 +114,16 @@ abstract class CombinedResultSection extends DataObject {
 			return "/Lists/Results?lookfor=$searchTerm&searchSource=lists";
 		} elseif ($this->source == 'open_archives') {
 			return "/OpenArchives/Results?lookfor=$searchTerm&searchSource=open_archives";
-		} elseif ($this->source == 'prospector') {
-			require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
-			$prospector = new Prospector();
+		} elseif ($this->source == 'innReach') {
+			require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
+			$innReach = new InnReach();
 			$search = [
 				[
 					'lookfor' => $searchTerm,
 					'index' => $searchType,
 				],
 			];
-			return $prospector->getSearchLink($search);
+			return $innReach->getSearchLink($search);
 		} elseif ($this->source == 'websites') {
 			return "/Websites/Results?lookfor=$searchTerm&searchSource=websites";
 		} else {

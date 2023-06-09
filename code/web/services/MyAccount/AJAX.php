@@ -625,7 +625,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]);;
 			} else {
-				//MDN 9/20/2015 The recordId can be empty for Prospector holds
+				//MDN 9/20/2015 The recordId can be empty for INN-Reach holds
 				if (empty($_REQUEST['cancelId']) && empty($_REQUEST['recordId'])) {
 					$result['message'] = translate([
 						'text' => 'Information about the hold to be cancelled was not provided.',
@@ -770,7 +770,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]);;
 			} else {
-				//MDN 9/20/2015 The recordId can be empty for Prospector holds
+				//MDN 9/20/2015 The recordId can be empty for INN-Reach holds
 				if (empty($_REQUEST['requestId']) || !isset($_REQUEST['cancelId'])) {
 					$result['message'] = translate([
 						'text' => 'Information about the requests to be cancelled was not provided.',

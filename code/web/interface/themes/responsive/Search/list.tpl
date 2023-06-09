@@ -88,9 +88,9 @@
 
 	{include file="Search/spellingSuggestions.tpl"}
 
-	{if !empty($showProspectorLink)}
-		{* Prospector Results *}
-		<div id='prospectorSearchResultsPlaceholder'></div>
+	{if !empty($showInnReachLink)}
+		{* INN-Reach Results *}
+		<div id='innReachSearchResultsPlaceholder'></div>
 		{* javascript call for content at bottom of page*}
 	{elseif !empty($interLibraryLoanName) && !empty($interLibraryLoanUrl)}
 		{include file="Search/interLibraryLoanSearch.tpl"}
@@ -158,8 +158,8 @@
 			$('#home-page-search').show();  {*// Always show the searchbox for search results in mobile views.*}
 		{rdelim}
 
-		{if !empty($showProspectorLink)}
-		AspenDiscovery.Prospector.getProspectorResults(5, {$prospectorSavedSearchId});
+		{if !empty($showInnReachLink)}
+		AspenDiscovery.InterLibraryLoan.getInnReachResults(5, {$innReachSavedSearchId});
 		{/if}
 
 		{if !empty($showDplaLink)}
