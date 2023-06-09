@@ -2358,7 +2358,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		global $interface;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
-		$selectedFormat = urldecode($_REQUEST['format']);
+		$selectedFormat = $_REQUEST['format'];
 		$variationId = $_REQUEST['variationId'];
 
 		$result = [
@@ -2371,29 +2371,34 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		$groupedWorkDriver = new GroupedWorkDriver($id);
 		$relatedManifestation = null;
-		foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
-			if ($relatedManifestation->format == $selectedFormat) {
+		$foundManifestation = false;
+		$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+		foreach ($relatedManifestations as $relatedManifestation) {
+			if (preg_replace('/[^a-zA-Z0-9_-]/', '_', $relatedManifestation->format) == $selectedFormat) {
+				$foundManifestation = true;
 				break;
 			}
 		}
 
-		$variation = null;
-		foreach ($relatedManifestation->getVariations() as $variation) {
-			if($variation->databaseId == $variationId) {
-				break;
+		if ($foundManifestation) {
+			$variation = null;
+			foreach ($relatedManifestation->getVariations() as $variation) {
+				if ($variation->databaseId == $variationId) {
+					break;
+				}
 			}
-		}
 
-		if($variation) {
-			$interface->assign('relatedRecords', $variation->getRelatedRecords());
-			$interface->assign('relatedManifestation', $relatedManifestation);
-			$interface->assign('variationId', $variation->databaseId);
-			$interface->assign('workId', $id);
+			if ($variation != null) {
+				$interface->assign('relatedRecords', $variation->getRelatedRecords());
+				$interface->assign('relatedManifestation', $relatedManifestation);
+				$interface->assign('variationId', $variation->databaseId);
+				$interface->assign('workId', $id);
 
-			$result = [
-				'success' => true,
-				'body' => $interface->fetch('GroupedWork/relatedRecords.tpl'),
-			];
+				$result = [
+					'success' => true,
+					'body' => $interface->fetch('GroupedWork/relatedRecords.tpl'),
+				];
+			}
 		}
 
 		return $result;
