@@ -3,7 +3,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import { ScrollView, Actionsheet, FormControl, Select, Box, Button, Center, FlatList, Icon, Pressable, Text, HStack, VStack, CheckIcon, Image } from 'native-base';
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native';
+import { Platform, SafeAreaView } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
@@ -190,6 +190,7 @@ export const MyCheckouts = () => {
                          </Button>
                          <FormControl w={175}>
                               <Select
+                                   isReadOnly={Platform.OS === 'android'}
                                    name="holdSource"
                                    selectedValue={source}
                                    accessibilityLabel={getTermFromDictionary(language, 'filter_by_source_label')}
