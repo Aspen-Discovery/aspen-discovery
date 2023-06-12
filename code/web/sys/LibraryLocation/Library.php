@@ -34,7 +34,7 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 }
 
-if(file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
 }
 
@@ -414,7 +414,7 @@ class Library extends DataObject {
 			'ebscohostSearchSettingId',
 			'invoiceCloudSettingId',
 			'deluxeCertifiedPaymentsSettingId',
-			'paypalPayflowSettingId'
+			'paypalPayflowSettingId',
 		];
 	}
 
@@ -464,7 +464,7 @@ class Library extends DataObject {
 		$accountProfileOptions = [];
 		$accountProfile->find();
 		while ($accountProfile->fetch()) {
-			if($accountProfile->name !== 'admin') {
+			if ($accountProfile->name !== 'admin') {
 				$accountProfileOptions[$accountProfile->id] = $accountProfile->name;
 			}
 		}
@@ -472,7 +472,7 @@ class Library extends DataObject {
 		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 		$novelist = new NovelistSetting();
 		$availableNovelistSettings = [
-			'-1' => 'None'
+			'-1' => 'None',
 		];
 		$novelist->orderBy('profile');
 		$novelist->find();
@@ -829,36 +829,14 @@ class Library extends DataObject {
 				'editPermissions' => ['Library Domain Settings'],
 				'default' => true,
 			],
-            'generateSitemap' => [
-                'property' => 'generateSitemap',
-                'type' => 'checkbox',
-                'label' => 'Generate Sitemap',
-                'description' => 'Whether or not a sitemap should be generated for the library.',
-                'hideInLists' => true,
-                'permissions' => ['Library Domain Settings'],
-            ],
-            'displaySection' => [
-                'property' => 'displaySection',
-                'type' => 'section',
-                'label' => 'System Message (Legacy Version)',
-                'hideInLists' => true,
-                'properties' => [
-			        'systemMessage' => [
-			        	'property' => 'systemMessage',
-				        'type' => 'html',
-			        	'label' => 'System Message (Legacy Version)',
-			        	'description' => 'A message to be displayed at the top of the screen',
-                        'note' => 'This is a legacy setting. For more options and features, use <a href="/Admin/SystemMessages">System Messages</a> under Local Catalog Enrichment.',
-				        'size' => '80',
-			        	'maxLength' => '512',
-			        	'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>",
-			        	'hideInLists' => true,
-			        	'permissions' => ['Library Theme Configuration'],
-                        ],
-                    ],
+			'generateSitemap' => [
+				'property' => 'generateSitemap',
+				'type' => 'checkbox',
+				'label' => 'Generate Sitemap',
+				'description' => 'Whether or not a sitemap should be generated for the library.',
+				'hideInLists' => true,
+				'permissions' => ['Library Domain Settings'],
 			],
-
-
 			// Basic Display //
 			'displaySection' => [
 				'property' => 'displaySection',
@@ -871,7 +849,7 @@ class Library extends DataObject {
 						'type' => 'oneToMany',
 						'label' => 'Themes',
 						'description' => 'The themes which can be used for the library',
-                        'note' => 'Tip: sort your primary theme to the top of this list. Other themes assigned to this library will be available as additional Display options.',
+						'note' => 'Tip: sort your primary theme to the top of this list. Other themes assigned to this library will be available as additional Display options.',
 						'keyThis' => 'libraryId',
 						'keyOther' => 'libraryId',
 						'subObjectType' => 'LibraryTheme',
@@ -906,7 +884,7 @@ class Library extends DataObject {
 						'type' => 'textarea',
 						'label' => 'Additional CSS',
 						'description' => 'Extra CSS to apply to the site.  Will apply to all pages.',
-                        'note' => 'This is a legacy setting. To customize with CSS, head to your <a href="/Admin/Themes">Theme</a> settings.',
+						'note' => 'This is a legacy setting. To customize with CSS, head to your <a href="/Admin/Themes">Theme</a> settings.',
 						'hideInLists' => true,
 						'permissions' => ['Library Theme Configuration'],
 					],
@@ -927,6 +905,18 @@ class Library extends DataObject {
 						'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 						'hideInLists' => true,
 						'editPermissions' => ['Library Theme Configuration'],
+					],
+					'systemMessage' => [
+						'property' => 'systemMessage',
+						'type' => 'html',
+						'label' => 'System Message (Legacy Version)',
+						'description' => 'A message to be displayed at the top of the screen',
+						'note' => 'This is a legacy setting. For more options and features, use <a href="/Admin/SystemMessages">System Messages</a> under Local Catalog Enrichment.',
+						'size' => '80',
+						'maxLength' => '512',
+						'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>",
+						'hideInLists' => true,
+						'permissions' => ['Library Theme Configuration'],
 					],
 				],
 			],
@@ -1337,7 +1327,7 @@ class Library extends DataObject {
 						'property' => 'showMessagingSettings',
 						'type' => 'checkbox',
 						'label' => 'Show Messaging Settings',
-                        'note' => 'Applies to Koha and Symphony Only',
+						'note' => 'Applies to Koha and Symphony Only',
 						'description' => 'Whether or not the user should be able to view their messaging settings.',
 
 						'hideInLists' => true,
@@ -1374,7 +1364,7 @@ class Library extends DataObject {
 						'property' => 'displayHoldsOnCheckout',
 						'type' => 'checkbox',
 						'label' => 'Display if patron checkouts have holds on them',
-                        'note' => 'Applies to Koha Only',
+						'note' => 'Applies to Koha Only',
 						'description' => 'Whether or not patrons can see if checked out items have holds on them.',
 						'hideInLists' => true,
 						'permissions' => ['Library ILS Connection'],
@@ -1579,7 +1569,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Allow Patrons to Update Their Name',
 								'description' => 'Whether or not patrons should be able to update their name in their profile.',
-                                'note' => 'Applies to Koha Only',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 1,
 								'readOnly' => false,
@@ -1601,7 +1591,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Allow Patrons to Update Their Date of Birth',
 								'description' => 'Whether or not patrons should be able to update their date of birth in their profile.',
-                                'note' => 'Applies to Koha Only',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 								'readOnly' => false,
@@ -1657,7 +1647,7 @@ class Library extends DataObject {
 								'property' => 'bypassReviewQueueWhenUpdatingProfile',
 								'type' => 'checkbox',
 								'label' => 'Bypass Review Queue When Updating Profile',
-                                'note' => 'Applies to Koha Only',
+								'note' => 'Applies to Koha Only',
 								'description' => 'Enabling this will allow patron account modifications to bypass the review queue in Koha. Updates will be applied to the user account automatically without needing approval.',
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1707,7 +1697,7 @@ class Library extends DataObject {
 								],
 								'label' => 'City / State Field (Symphony Only)',
 								'description' => 'The field from which to load and update city and state.',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1931,7 +1921,7 @@ class Library extends DataObject {
 								],
 								'label' => 'Hold Placed At',
 								'description' => 'Determines how the hold placed at value should be set when placing holds',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -1940,11 +1930,11 @@ class Library extends DataObject {
 								'type' => 'enum',
 								'values' => [
 									'SYSTEM' => 'System',
-									'GROUP' => 'Group'
+									'GROUP' => 'Group',
 								],
 								'label' => 'Hold Range',
 								'description' => 'The hold range to use when placing holds in Symphony',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 								'default' => 'SYSTEM',
 							],
 							'systemHoldNote' => [
@@ -1952,7 +1942,7 @@ class Library extends DataObject {
 								'type' => 'text',
 								'label' => 'System Hold Note',
 								'description' => 'A note to automatically add when placing a hold',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'maxLength' => 50,
 								'default' => '',
@@ -1962,7 +1952,7 @@ class Library extends DataObject {
 								'type' => 'text',
 								'label' => 'System Hold Note Masquerade',
 								'description' => 'A note to automatically add when placing a hold when a librarian is Masquerading and places a hold',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'maxLength' => 50,
 								'default' => '',
@@ -2072,7 +2062,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show OPAC Notes',
 								'description' => 'Whether or not OPAC/Web Notes from the ILS should be shown',
-                                'note' => 'Applies to Koha Only',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2081,7 +2071,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Borrower Notes',
 								'description' => 'Whether or not Borrower Messages from the ILS should be shown',
-                                'note' => 'Applies to Koha Only',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2090,7 +2080,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Debarment Notes',
 								'description' => 'Whether or not Debarment Messages from the ILS should be shown',
-                                'note' => 'Applies to Koha Only',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2143,28 +2133,28 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Self Registration requires Phone Number',
 								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 							],
 							'selfRegRequireEmail' => [
 								'property' => 'selfRegRequireEmail',
 								'type' => 'checkbox',
 								'label' => 'Self Registration requires Email',
 								'description' => 'Whether or not email is required when self registering. Symphony Only.',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 							],
 							'promptForParentInSelfReg' => [
 								'property' => 'promptForParentInSelfReg',
 								'type' => 'checkbox',
 								'label' => 'Prompt For Parent Information',
 								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 							],
 							'promptForSMSNoticesInSelfReg' => [
 								'property' => 'promptForSMSNoticesInSelfReg',
 								'type' => 'checkbox',
 								'label' => 'Prompt For SMS Notices',
 								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 							],
 							'useAllCapsWhenSubmittingSelfRegistration' => [
 								'property' => 'useAllCapsWhenSubmittingSelfRegistration',
@@ -2222,7 +2212,7 @@ class Library extends DataObject {
 								'type' => 'text',
 								'label' => 'Self Registration Profile',
 								'description' => 'The Profile to use during self registration (Symphony Only).',
-                                'note' => 'Applies to Symphony Only',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 'SELFREG',
 							],
@@ -2248,7 +2238,7 @@ class Library extends DataObject {
 								'type' => 'integer',
 								'label' => 'Masquerade Mode Automatic Timeout Length',
 								'description' => 'The length of time before an idle user\'s Masquerade session automatically ends in seconds.',
-                                'note' => 'Enter the length of time in seconds.',
+								'note' => 'Enter the length of time in seconds.',
 								'size' => '8',
 								'hideInLists' => true,
 								'max' => 240,
@@ -2290,7 +2280,7 @@ class Library extends DataObject {
 							8 => 'ACI Speedpay',
 							9 => 'InvoiceCloud',
 							10 => 'Certified Payments by Deluxe',
-							11 => 'PayPal Payflow'
+							11 => 'PayPal Payflow',
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2312,7 +2302,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Fine Payment Order by type',
 						'description' => 'The order in which fines should be paid, separated with pipes |',
-                        'note' => 'Separate values with pipes. Example: Fines|Lost|Overdue',
+						'note' => 'Separate values with pipes. Example: Fines|Lost|Overdue',
 						'hideInLists' => true,
 						'default' => 'default',
 						'size' => 80,
@@ -2447,7 +2437,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Symphony Payment Type',
 						'description' => 'Payment type to use when adding transactions to Symphony.',
-                        'note' => 'Applies to Symphony Only',
+						'note' => 'Applies to Symphony Only',
 						'hideInLists' => true,
 						'default' => '',
 						'maxLength' => 8,
@@ -2820,7 +2810,7 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Send email to library when Materials Requests are created',
 						'description' => 'Whether or not an email should be sent out when a new Materials Request has been created.',
-                        'note' => 'Applies to Aspen Request System Only',
+						'note' => 'Applies to Aspen Request System Only',
 						'hideInLists' => true,
 					],
 					'materialsRequestNewEmail' => [
@@ -2828,7 +2818,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Email to receive notifications for new Materials Requests',
 						'description' => 'The email address that will receive emails when a patron creates a new Materials Request.',
-                        'note' => 'Applies to Aspen Request System Only',
+						'note' => 'Applies to Aspen Request System Only',
 						'maxLength' => 125,
 						'hideInLists' => true,
 					],
@@ -2837,7 +2827,7 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Send an email to staff when they are assigned a Materials Request',
 						'description' => 'Whether or not staff are notified when assigned a Materials Request',
-                        'note' => 'Applies to Aspen Request System Only',
+						'note' => 'Applies to Aspen Request System Only',
 						'hideInLists' => true,
 					],
 					'allowDeletingILSRequests' => [
@@ -3455,7 +3445,7 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-				]
+				],
 			],
 		];
 
@@ -3469,7 +3459,7 @@ class Library extends DataObject {
 			if ($accountProfile->ils == 'sierra' || $accountProfile->ils == 'millennium') {
 				$hasCourseReserves = true;
 				$hasScoping = true;
-			}elseif ($accountProfile->ils == 'koha') {
+			} elseif ($accountProfile->ils == 'koha') {
 				$isKoha = true;
 			}
 		}
@@ -3527,7 +3517,7 @@ class Library extends DataObject {
 
 	static $searchLibrary = [];
 
-	static function hasEventSettings() : bool {
+	static function hasEventSettings(): bool {
 		global $enabledModules;
 		global $library;
 
@@ -3820,7 +3810,7 @@ class Library extends DataObject {
 	public function update($context = '') {
 		//Make sure we have no other default libraries since
 		if ($this->isDefault == 1 && $this->_changedFields != null) {
-			if(in_array('isDefault', $this->_changedFields)) {
+			if (in_array('isDefault', $this->_changedFields)) {
 				$library = new Library();
 				$library->isDefault = 1;
 				$library->find();
@@ -4012,6 +4002,7 @@ class Library extends DataObject {
 		$allThemes = $this->getThemes();
 		return reset($allThemes);
 	}
+
 	/**
 	 * @return LibraryTheme[]|null
 	 */
@@ -4434,7 +4425,7 @@ class Library extends DataObject {
 			$activeTheme = reset($allThemes);
 			$theme = new Theme();
 			$theme->id = $activeTheme->id;
-			if($theme->find(true)) {
+			if ($theme->find(true)) {
 				$theme->applyDefaults();
 				if ($theme->logoName) {
 					$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
