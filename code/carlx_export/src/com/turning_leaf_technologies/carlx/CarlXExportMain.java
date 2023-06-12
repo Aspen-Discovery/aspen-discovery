@@ -38,6 +38,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.crypto.Data;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -402,7 +403,16 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
-							//TODO: Remove all 949n (Item notes from the marc record). Will attempt to remove from the export, if that can't be done we will strip them out here.
+							//Remove all 949n Item notes from the marc record because CARL.X can include the patron identifier in the notes
+							List<DataField> itemFields = curBib.getDataFields(indexingProfile.getItemTag());
+							for (DataField itemField : itemFields) {
+								List <Subfield> subfields = itemField.getSubfields();
+								for (Subfield subfield : subfields) {
+									if (subfield.getCode() == 'n') {
+										itemField.removeSubfield(subfield);
+									}
+								}
+							}
 
 							GroupedWorkIndexer.MarcStatus marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {

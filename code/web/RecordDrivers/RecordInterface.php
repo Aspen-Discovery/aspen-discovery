@@ -118,7 +118,7 @@ abstract class RecordInterface {
 
 	public function getBaseMoreDetailsOptions($isbn) {
 		global $interface;
-		global $configArray;
+		global $library;
 		global $timer;
 		$hasSyndeticsUnbound = false;
 		require_once ROOT_DIR . '/sys/Enrichment/SyndeticsSetting.php';
@@ -158,10 +158,10 @@ abstract class RecordInterface {
 		];
 
 		$timer->logTime('Loaded More Like This');
-		if ($interface->getVariable('enableProspectorIntegration')) {
-			$moreDetailsOptions['prospector'] = [
-				'label' => 'More Copies In Prospector',
-				'body' => '<div id="inProspectorPlaceholder">Loading Prospector Copies...</div>',
+		if ($interface->getVariable('enableInnReachIntegration')) {
+			$moreDetailsOptions['innReach'] = [
+				'label' => 'More Copies In ' . $library->interLibraryLoanName,
+				'body' => '<div id="inInnReachlaceholder">' . translate(['text'=>"Loading $library->interLibraryLoanName Copies...", 'isPublicFacing'=> true]) . '</div>',
 				'hideByDefault' => false,
 			];
 		}
@@ -285,7 +285,7 @@ abstract class RecordInterface {
 			'links' => 'Links',
 			'moreLikeThis' => 'More Like This',
 			'otherEditions' => 'Other Editions and Formats',
-			'prospector' => 'Prospector',
+			'innReach' => 'INN-Reach',
 			'tableOfContents' => 'Table of Contents  (MARC/Syndetics/ContentCafe)',
 			'excerpt' => 'Excerpt (Syndetics/ContentCafe)',
 			'authornotes' => 'Author Notes (Syndetics/ContentCafe)',
@@ -318,7 +318,7 @@ abstract class RecordInterface {
 			'moreLikeThis' => 'open',
 			'syndeticsUnbound' => 'open',
 			'otherEditions' => 'closed',
-			'prospector' => 'closed',
+			'innReach' => 'closed',
 			'links' => 'closed',
 			'tableOfContents' => 'closed',
 			'excerpt' => 'closed',

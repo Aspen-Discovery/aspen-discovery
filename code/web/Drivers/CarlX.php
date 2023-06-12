@@ -119,6 +119,10 @@ class CarlX extends AbstractIlsDriver {
 							}
 						}
 						if (isset($location)) {
+							$homeLocationChanged = false;
+							if ($user->homeLocationId != $location->locationId) {
+								$homeLocationChanged = true;
+							}
 							$user->homeLocationId = $location->locationId;
 							if (empty($user->myLocation1Id)) {
 								$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
@@ -126,6 +130,11 @@ class CarlX extends AbstractIlsDriver {
 
 							if (empty($user->myLocation2Id)) {
 								$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+							}
+							if ($homeLocationChanged) {
+								//reset the patrons preferred pickup location to their new home library
+								$user->pickupLocationId = $user->homeLocationId;
+								$user->rememberHoldPickupLocation = 0;
 							}
 						}
 					}

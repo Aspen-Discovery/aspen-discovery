@@ -6,7 +6,7 @@ require_once ROOT_DIR . '/sys/Support/TicketTrendBugsBySeverity.php';
 class BugsBySeverityTrend extends Admin_Admin {
 	function launch() {
 		global $interface;
-		$title = 'Bugs by Severity Trend';
+		$title = 'Trend of Active Bugs by Severity';
 
 		$dataSeries = [];
 		$columnLabels = [];

@@ -516,7 +516,7 @@ class BookCoverProcessor {
 
 	private function getCoverFromProvider() {
 		// Update to allow retrieval of covers based on upc
-		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
+		if ((!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) && !$this->bookCoverInfo->disallowThirdPartyCover) {
 			$this->log("Looking for picture based on isbn and upc.", Logger::LOG_NOTICE);
 
 			//TODO: Allow these to be sorted
