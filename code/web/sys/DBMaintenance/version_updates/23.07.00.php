@@ -12,18 +12,17 @@ function getUpdates23_07_00(): array {
 			]
 		], //sample*/
 		//mark
-		'rename_prospector_to_innreach' => [
+		'rename_prospector_to_innreach2' => [
 			'title' => 'Rename Prospector Integration to INN-Reach',
 			'description' => 'Rename Prospector Integration to INN-Reach',
 			'continueOnError' => true,
 			'sql' => [
-				'ALTER TABLE library RENAME COLUMN repeatInProspector TO repeatInInnReach',
-				'ALTER TABLE location RENAME COLUMN repeatInProspector TO repeatInInnReach',
+				'ALTER TABLE library CHANGE COLUMN repeatInProspector repeatInInnReach TINYINT DEFAULT 0',
 				'ALTER TABLE library DROP COLUMN prospectorCode',
-				'ALTER TABLE library RENAME COLUMN showProspectorResultsAtEndOfSearch TO showInnReachResultsAtEndOfSearch',
-				'ALTER TABLE library RENAME COLUMN enableProspectorIntegration TO enableInnReachIntegration',
+				'ALTER TABLE library CHANGE COLUMN showProspectorResultsAtEndOfSearch showInnReachResultsAtEndOfSearch TINYINT DEFAULT 1',
+				'ALTER TABLE library CHANGE COLUMN enableProspectorIntegration enableInnReachIntegration TINYINT(4) NOT NULL DEFAULT 0',
 			],
-		], //rename_prospector_to_innreach
+		], //rename_prospector_to_innreach2
 
 		//kirstien
 
