@@ -85,8 +85,24 @@ class API_RegistrationAPI extends Action {
 		];
 	}
 
-	function lookupAccountByEmail() {
-
+	function lookupAccountByEmail() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if (isset($_REQUEST['email'])) {
+			$email = $_REQUEST['email'];
+			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'The email supplied was not valid.', 'isPublicFacing' => true])
+				];
+			} else {
+				return $catalog->lookupAccountByEmail($email);
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'email was not supplied', 'isPublicFacing' => true])
+			];
+		}
 	}
 
 	function lookupAccountByPhoneNumber() {

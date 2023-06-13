@@ -561,10 +561,17 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 
 	public function getRegistrationCapabilities() : array {
 		return [
-			'lookupAccountByEmail' => true,
+			'lookupAccountByEmail' => false,
 			'lookupAccountByPhone' => false,
 			'basicRegistration' => true,
 			'forgottenPin' => $this->getForgotPasswordType() != 'none'
+		];
+	}
+
+	public function lookupAccountByEmail(string $email) : array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'This ILS does not support looking up accounts by email.', 'isPublicFacing' => true])
 		];
 	}
 }

@@ -233,6 +233,64 @@ class CatalogConnection {
 	}
 
 	/**
+	 * Check to see if an account exists within the ILS for the given email and if so email the patron with the barcode.
+	 * The email should be pre-validated when calling this method.
+	 * @param string $email - The email address to look for
+	 * @return array
+	 */
+	public function lookupAccountByEmail($email) : array {
+		if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'The email supplied was not valid.', 'isPublicFacing' => true])
+			];
+		} else {
+			$cardsByEmail = $this->driver->lookupAccountByEmail($email);
+			if ($cardsByEmail['success']) {
+				//We won't return the card itself, instead we'll email the list to the patron's email
+				require_once ROOT_DIR . '/sys/Email/Mailer.php';
+				$eMailer = new Mailer();
+				$accountInfo = '';
+				foreach ($cardsByEmail['accountInformation'] as $cardInfo) {
+					$accountInfo .= $cardInfo['name'] . ' - ' . $cardInfo['cardNumber'] . "\n";
+				}
+				$body = translate([
+					'text' => "You recently requested your account information. Based on the email entered, the following barcodes were found.\n\n%1%\nIf you did not request this information, please contact the library.",
+					'isPublicFacing' => true,
+					1 => $accountInfo
+				]);
+
+
+				$result = $eMailer->send($email, translate([
+					'text' => "Your library account",
+					'isPublicFacing' => true,
+				]), $body);
+				if ($result) {
+					return [
+						'success' => true,
+						'message' => translate([
+							'text' => 'An email containing your library card was sent to %1%.',
+							'isPublicFacing' => true,
+							1 => $email
+						])
+					];
+				} else {
+					return [
+						'success' => false,
+						'message' => translate([
+							'text' => 'We could not send your barcode to %1%, please contact the library to retrieve your library card.',
+							'isPublicFacing' => true,
+							1 => $email
+						])
+					];
+				}
+			} else {
+				return $cardsByEmail;
+			}
+		}
+	}
+
+	/**
 	 * @param $nameFromUser  string
 	 * @param $nameFromIls   string
 	 * @return boolean

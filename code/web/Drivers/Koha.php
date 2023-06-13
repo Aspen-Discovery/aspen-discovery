@@ -408,10 +408,11 @@ class Koha extends AbstractIlsDriver {
 			$itemNumber = $curRow['itemnumber'];
 
 			//Check to see if there is a volume for the checkout
-			/** @noinspection SqlResolve */
 			if ($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
 				$volumeSql = "SELECT description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id = $itemNumber";
 			} else {
+				/** @noinspection SqlResolve */
 				$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
 			}
 			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
@@ -1171,8 +1172,8 @@ class Koha extends AbstractIlsDriver {
 			$readingHistoryTitles = [];
 
 			//Borrowed from C4:Members.pm
-			/** @noinspection SqlResolve */
 			if($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
 				$readingHistoryTitleSql = "SELECT issues.*,issues.renewals_count AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM issues
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
@@ -1187,6 +1188,7 @@ class Koha extends AbstractIlsDriver {
 				LEFT JOIN biblioitems ON items.biblioitemnumber=biblioitems.biblioitemnumber
 				WHERE borrowernumber='" . mysqli_escape_string($this->dbConnection, $patron->username) . "';";
 			} else {
+				/** @noinspection SqlResolve */
 				$readingHistoryTitleSql = "SELECT issues.*,issues.renewals AS renewals,items.renewals AS totalrenewals,items.timestamp AS itemstimestamp,biblio.biblionumber,biblio.title, author, iType
 				FROM issues
 				LEFT JOIN items on items.itemnumber=issues.itemnumber
@@ -2458,10 +2460,11 @@ class Koha extends AbstractIlsDriver {
 			}
 		} else {
 			$this->initDatabaseConnection();
-			/** @noinspection SqlResolve */
 			if($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
 				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals_count from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
 			} else {
+				/** @noinspection SqlResolve */
 				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->username) . "' AND issues.itemnumber = {$itemId} limit 1";
 			}
 
@@ -5462,10 +5465,11 @@ class Koha extends AbstractIlsDriver {
 			$languages = explode(',', $languages);
 			foreach($languages as $language) {
 				$languageLocale = explode('-', $language);
-				/** @noinspection SqlResolve */
 				if(array_key_exists(1, $languageLocale)) {
+					/** @noinspection SqlResolve */
 					$languageSql = "SELECT subtag, lang, description FROM language_descriptions where subtag = '$languageLocale[0]' AND lang = '$languageLocale[1]'";
 				} else {
+					/** @noinspection SqlResolve */
 					$languageSql = "SELECT subtag, lang, description FROM language_descriptions where subtag = '$languageLocale[0]' AND lang = '$languageLocale[0]'";
 				}
 				$languageRS = mysqli_query($this->dbConnection, $languageSql);
@@ -7042,5 +7046,48 @@ class Koha extends AbstractIlsDriver {
 
 	public function showDateInFines(): bool {
 		return false;
+	}
+
+	public function getRegistrationCapabilities() : array {
+		return [
+			'lookupAccountByEmail' => true,
+			'lookupAccountByPhone' => false,
+			'basicRegistration' => true,
+			'forgottenPin' => $this->getForgotPasswordType() != 'none'
+		];
+	}
+
+	public function lookupAccountByEmail(string $email) : array {
+		$this->initDatabaseConnection();
+		if ($this->dbConnection != null) {
+			/** @noinspection SqlResolve */
+			$sql = "SELECT firstname, middle_name, surname, cardnumber FROM borrowers where email = '" . mysqli_escape_string($this->dbConnection, $email) . "';";
+			$results = mysqli_query($this->dbConnection, $sql);
+			$cardNumbers = [];
+			if ($results !== false && $results != null) {
+				while ($curRow = $results->fetch_assoc()) {
+					$cardNumbers[] = [
+						'cardNumber' => $curRow['cardnumber'],
+						'name' => trim(trim($curRow['firstname'] . ' ' . $curRow['middle_name']) . ' ' . $curRow['surname']),
+					];
+				}
+			}
+			if (count($cardNumbers) == 0) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'No account was found for that email.', 'isPublicFacing' => true])
+				];
+			} else {
+				return [
+					'success' => true,
+					'accountInformation' => $cardNumbers
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Could not connect to ILS, please try again later.', 'isPublicFacing' => true])
+			];
+		}
 	}
 }
