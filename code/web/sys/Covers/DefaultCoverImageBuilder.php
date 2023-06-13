@@ -12,6 +12,7 @@ class DefaultCoverImageBuilder {
 	private $authorFont;
 	private $backgroundColor;
 	private $foregroundColor;
+	private $defaultCoverImage;
 
 	public function __construct($invertColors = false) {
 		global $interface;
@@ -62,6 +63,9 @@ class DefaultCoverImageBuilder {
 					$this->backgroundColor = $this->foregroundColor;
 					$this->foregroundColor = $tmpColor;
 				}
+				if (!empty($theme->defaultCover)) {
+					$this->defaultCoverImage = ROOT_DIR . '/files/original/' . $theme->defaultCover;
+				}
 			}
 		}
 
@@ -98,7 +102,7 @@ class DefaultCoverImageBuilder {
 	public function getCover($title, $author, $filename) {
 		$this->setForegroundAndBackgroundColors($title, $author);
 		//Create the background image
-		$imageCanvas = imagecreate($this->imageWidth, $this->imageHeight);
+		$imageCanvas = imagecreatetruecolor($this->imageWidth, $this->imageHeight);
 		imagesx($imageCanvas);
 		imagesy($imageCanvas);
 
@@ -113,11 +117,39 @@ class DefaultCoverImageBuilder {
 		imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->topMargin, $backgroundColor);
 
 		$artworkHeight = $this->drawArtwork($imageCanvas, $backgroundColor, $foregroundColor, $title);
-
 		$this->drawText($imageCanvas, $title, $author, $artworkHeight);
+
+		if (!empty($this->defaultCoverImage)){
+			$artworkStartY = $this->imageHeight - $this->imageWidth;
+			$imageInfo = getimagesize($this->defaultCoverImage);
+			$originalHeight = $imageInfo[0];
+			$originalWidth = $imageInfo[1];
+			$width = $originalWidth;
+			$height = $originalHeight;
+			$imageRatio = $originalHeight / $originalWidth;
+			$rectRatio = $artworkHeight / $this->imageWidth;
+			if ($imageRatio < $rectRatio){
+				$width = $this->imageWidth;
+				$height = ($width * $originalHeight) / $originalWidth;
+			}
+			if ($rectRatio < $imageRatio) {
+				$height = $artworkHeight;
+				$width = ($height * $originalWidth) / $originalHeight;
+			}
+			if ($imageInfo['mime'] == "image/jpeg" || $imageInfo['mime'] == "image/jpg") {
+				$uploadedImage = imagecreatefromjpeg($this->defaultCoverImage);
+			}else{
+				$uploadedImage = imagecreatefrompng($this->defaultCoverImage);
+			}
+			$uploadedResized = imagescale($uploadedImage, $width, $height);
+			imagecopyresampled($imageCanvas, $uploadedResized, 0, $artworkStartY, 0, 0, $this->imageWidth, $artworkHeight, $width, $height);
+		}
 
 		imagepng($imageCanvas, $filename);
 		imagedestroy($imageCanvas);
+		if (!empty($uploadedImage)){
+			imagedestroy($uploadedImage);
+		}
 	}
 
 	private function drawText($imageCanvas, $title, $author, $artworkHeight) {
@@ -174,12 +206,11 @@ class DefaultCoverImageBuilder {
 			$x = $grid_x * $gridSize + $artworkStartX;
 			$y = $grid_y * $gridSize + $artworkStartY;
 
-			if ($y < $this->imageHeight) {
+			if ($y < $this->imageHeight && empty($this->defaultCoverImage)) {
 				//Draw the artwork background
 				imagefilledrectangle($imageCanvas, $x, $y, $x + $gridSize, $y + $gridSize, $backgroundColor);
 				$this->drawShape($imageCanvas, $backgroundColor, $foregroundColor, $char, $x, $y, $gridSize);
 			}
-
 		}
 		return ($gridCount - $rowsToSkip) * $gridSize;
 	}
