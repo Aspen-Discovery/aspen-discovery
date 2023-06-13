@@ -1,8 +1,7 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import _ from 'lodash';
-import { Box, Button, Center, FlatList, FormControl, HStack, Icon, Input, Text } from 'native-base';
-import React, { Component } from 'react';
+import { Box, Button, Center, FlatList, FormControl, Input, Text } from 'native-base';
+import React from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native';
 
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
@@ -12,11 +11,18 @@ import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const SearchHome = () => {
+     const navigation = useNavigation();
      const [searchTerm, setSearchTerm] = React.useState('');
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const discoveryVersion = formatDiscoveryVersion(library.discoveryVersion) ?? '22.10.00';
      const quickSearchNum = _.size(library.quickSearches);
+
+     React.useLayoutEffect(() => {
+          navigation.setOptions({
+               headerLeft: () => <Box />,
+          });
+     }, [navigation]);
 
      React.useEffect(() => {
           async function preloadDefaultFacets() {
