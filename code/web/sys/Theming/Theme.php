@@ -10,6 +10,7 @@ class Theme extends DataObject {
 	public $extendsTheme;
 	public $logoName;
 	public $favicon;
+	public $defaultCover;
 	public $logoApp;
 	public $fullWidth;
 
@@ -589,6 +590,16 @@ class Theme extends DataObject {
 				'thumbWidth' => 180,
 				'maxWidth' => 512,
 				'maxHeight' => 512,
+				'hideInLists' => true,
+			],
+			'defaultCover' => [
+				'property' => 'defaultCover',
+				'type' => 'image',
+				'label' => 'Background Image for Default Covers (280x280)',
+				'description' => 'A background image for default covers (.jpg or .png only)',
+				'required' => false,
+				'maxWidth' => 280,
+				'maxHeight' => 280,
 				'hideInLists' => true,
 			],
 			'coverStyle' => [

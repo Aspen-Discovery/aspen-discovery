@@ -35,6 +35,13 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE bookcover_info ADD COLUMN disallowThirdPartyCover TINYINT(1) DEFAULT 0',
 			],
 		], //add_disallow_third_party_covers
+		'theme_cover_default_image' => [
+			'title' => 'Theme - Set default image for cover images',
+			'description' => 'Update theme table to have default values for the default cover image',
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN defaultCover VARCHAR(100) default ''",
+			],
+		], //theme_cover_default_image
 
 		//other
 	];
