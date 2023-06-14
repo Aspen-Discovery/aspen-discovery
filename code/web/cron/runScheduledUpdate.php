@@ -120,9 +120,6 @@ if (count($updatesToRun) == 0) {
  * @return void
  */
 function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate): void{
-	if ($operatingSystem == 'linux') {
-		executeCommand("Stopping java", "pkill java", $scheduledUpdate);
-	}
 	updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
 }
 
