@@ -1705,7 +1705,22 @@ class BookCoverProcessor {
 		if ($ebscohostRecordDriver->isValid()) {
 			$title = $ebscohostRecordDriver->getTitle();
 			$author = $ebscohostRecordDriver->getAuthor();
-			$coverBuilder->getCover($title, $author, $this->cacheFile);
+			$idParts = explode(':', $id);
+			$db = $idParts[0];
+
+			$ebscohostdb = new EBSCOhostDatabase();
+			$ebscohostdb->shortName = $db;
+			$ebscohostdb->find();
+			while ($ebscohostdb->fetch()) {
+				$image = $ebscohostdb->logo;
+			}
+			if (empty($image)) {
+				$coverBuilder->getCover($title, $author, $this->cacheFile);
+			} else {
+				$image = ROOT_DIR . '/files/original/' . $image;
+				$coverBuilder->getCover($title, $author, $this->cacheFile, $image);
+			}
+
 			return $this->processImageURL('default_ebscohost', $this->cacheFile, false);
 		} else {
 			return false;
