@@ -136,11 +136,9 @@ class DefaultCoverImageBuilder {
 				$height = $artworkHeight;
 				$width = ($height * $originalWidth) / $originalHeight;
 			}
-			if ($imageInfo['mime'] == "image/jpeg" || $imageInfo['mime'] == "image/jpg") {
-				$uploadedImage = imagecreatefromjpeg($this->defaultCoverImage);
-			}else{
-				$uploadedImage = imagecreatefrompng($this->defaultCoverImage);
-			}
+
+			$uploadedImage = imagecreatefromstring(file_get_contents($this->defaultCoverImage));
+
 			$uploadedResized = imagescale($uploadedImage, $width, $height);
 			imagecopyresampled($imageCanvas, $uploadedResized, 0, $artworkStartY, 0, 0, $this->imageWidth, $artworkHeight, $width, $height);
 		}
