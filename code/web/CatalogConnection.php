@@ -290,6 +290,14 @@ class CatalogConnection {
 		}
 	}
 
+	public function getBasicRegistrationForm() : array {
+		return $this->driver->getBasicRegistrationForm();
+	}
+
+	public function processBasicRegistrationForm() : array {
+		return $this->driver->processBasicRegistrationForm();
+	}
+
 	/**
 	 * @param $nameFromUser  string
 	 * @param $nameFromIls   string

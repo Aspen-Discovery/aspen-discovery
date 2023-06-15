@@ -110,18 +110,49 @@ class API_RegistrationAPI extends Action {
 	}
 
 	function getBasicRegistrationForm() {
-
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->getBasicRegistrationForm();
 	}
 
 	function processBasicRegistrationForm() {
-
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->processBasicRegistrationForm();
 	}
 
-	function getForgotPinType() {
+	function getForgotPasswordType() {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		$forgotPasswordType = $catalog->getForgotPasswordType();
+		$labels = [
+			'emailResetLink' => 'Reset my PIN/Password',
+			'emailAspenResetLink' => 'Start PIN/Password Reset',
+			'none' => '',
+			'emailPin' => 'Recover PIN/Password'
 
+		];
+		global $configArray;
+		$resetPasswordLink = '';
+
+
+		switch ($forgotPasswordType) {
+			case 'emailAspenResetLink':
+				$resetPasswordLink = $configArray['Site']['url'] . '/MyAccount/InitiateResetPin';
+				break;
+			case 'emailResetLink':
+				$resetPasswordLink = $configArray['Site']['url'] . '/MyAccount/EmailResetPin';
+				break;
+			case 'emailPin':
+				$resetPasswordLink = $configArray['Site']['url'] . '/MyAccount/EmailPin';
+				break;
+		}
+		return [
+			'success' => true,
+			'forgotPasswordType' => $forgotPasswordType,
+			'label' => translate(['text' => $labels[$forgotPasswordType], 'isPublicFacing' => true, 'inAttribute' => true]),
+			'resetPasswordLink' => $resetPasswordLink,
+		];
 	}
 
-	function initiatePinReset() {
+	function initiatePasswordReset() {
 
 	}
 }
