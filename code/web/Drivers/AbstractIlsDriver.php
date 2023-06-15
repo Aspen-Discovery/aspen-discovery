@@ -564,7 +564,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 			'lookupAccountByEmail' => false,
 			'lookupAccountByPhone' => false,
 			'basicRegistration' => true,
-			'forgottenPin' => $this->getForgotPasswordType() != 'none'
+			'forgottenPassword' => $this->getForgotPasswordType() != 'none'
 		];
 	}
 
