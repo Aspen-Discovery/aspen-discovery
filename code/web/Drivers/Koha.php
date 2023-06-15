@@ -7063,7 +7063,7 @@ class Koha extends AbstractIlsDriver {
 			'lookupAccountByEmail' => true,
 			'lookupAccountByPhone' => false,
 			'basicRegistration' => true,
-			'forgottenPin' => $this->getForgotPasswordType() != 'none'
+			'forgottenPassword' => $this->getForgotPasswordType() != 'none'
 		];
 	}
 
