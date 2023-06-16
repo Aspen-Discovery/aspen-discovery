@@ -52,14 +52,31 @@ public class HooplaExportMain {
 	private static final CRC32 checksumCalculator = new CRC32();
 
 	public static void main(String[] args){
+		boolean extractSingleWork = false;
+		String singleWorkId = null;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
+			String extractSingleWorkResponse = AspenStringUtils.getInputFromCommandLine("Process a single work? (y/N)");
+			if (extractSingleWorkResponse.equalsIgnoreCase("y")) {
+				extractSingleWork = true;
+			}
 		} else {
 			serverName = args[0];
+			if (args.length > 1){
+				if (args[1].equalsIgnoreCase("singleWork") || args[1].equalsIgnoreCase("singleRecord")){
+					extractSingleWork = true;
+					if (args.length > 2) {
+						singleWorkId = args[2];
+					}
+				}
+			}
+		}
+		if (extractSingleWork && singleWorkId == null) {
+			singleWorkId = AspenStringUtils.getInputFromCommandLine("Enter the id of the title to extract");
 		}
 
 		String processName = "hoopla_export";
@@ -91,7 +108,13 @@ public class HooplaExportMain {
 			loadExistingTitles();
 
 			//Do work here
-			exportHooplaData();
+			boolean updatesRun;
+			if (singleWorkId == null) {
+				updatesRun = exportHooplaData();
+			} else {
+				exportSingleHooplaTitle(singleWorkId);
+				updatesRun = true;
+			}
 			int numChanges = logEntry.getNumChanges();
 
 			processRecordsToReload(logEntry);
@@ -119,6 +142,22 @@ public class HooplaExportMain {
 
 			//Mark that indexing has finished
 			logEntry.setFinished();
+
+			if (!updatesRun) {
+				//delete the log entry
+				try {
+					PreparedStatement deleteLogEntryStmt = aspenConn.prepareStatement("DELETE from hoopla_export_log WHERE id = " + logEntry.getLogEntryId());
+					deleteLogEntryStmt.executeUpdate();
+				} catch (SQLException e) {
+					logger.error("Could not delete log export ", e);
+				}
+
+			}
+
+			if (extractSingleWork) {
+				disconnectDatabase(aspenConn);
+				break;
+			}
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
@@ -284,7 +323,8 @@ public class HooplaExportMain {
 		logEntry = new HooplaExtractLogEntry(aspenConn, logger);
 	}
 
-	private static void exportHooplaData() {
+	private static boolean exportHooplaData() {
+		boolean updatesRun = false;
 		try{
 			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from hoopla_settings");
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
@@ -314,10 +354,10 @@ public class HooplaExportMain {
 					Date now = new Date();
 					String curHourUTC = f.format(now);
 					if (curHourUTC.equals("01")){
-						//Set last update time to 25 hours ago
+						//Set last update time to 32 hours ago (go bigger to get more updates)
 						Calendar nowCal = GregorianCalendar.getInstance();
 						nowCal.setTime(now);
-						nowCal.add(Calendar.HOUR, -25);
+						nowCal.add(Calendar.HOUR, -32);
 						long twentyFiveHoursAgo = nowCal.getTimeInMillis() / 1000;
 						if (twentyFiveHoursAgo < lastUpdate){
 							lastUpdate = twentyFiveHoursAgo;
@@ -328,6 +368,8 @@ public class HooplaExportMain {
 					}
 				}
 
+				updatesRun = true;
+
 				if (isRegroupAllRecords) {
 					regroupAllRecords(aspenConn, settingsId, getGroupedWorkIndexer(), logEntry);
 				}
@@ -335,7 +377,7 @@ public class HooplaExportMain {
 				String accessToken = getAccessToken(apiUsername, apiPassword);
 				if (accessToken == null) {
 					logEntry.incErrors("Could not load access token");
-					return;
+					return true;
 				}
 
 				//Formulate the first call depending on if we are doing a full reload or not
@@ -370,9 +412,10 @@ public class HooplaExportMain {
 
 						int numTries = 0;
 						while (startToken != null) {
-							url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
 							if (!doFullReload && lastUpdate > 0) {
-								url += "&startTime=" + lastUpdate;
+								url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startTime=" + lastUpdate + "&startToken=" + startToken;
+							}else {
+								url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content?startToken=" + startToken;
 							}
 							response = NetworkUtils.getURL(url, logger, headers);
 							if (response.isSuccess()){
@@ -430,8 +473,57 @@ public class HooplaExportMain {
 		}catch (Exception e){
 			logEntry.incErrors("Error exporting hoopla data", e);
 		}
+		return updatesRun;
 	}
 
+	private static void exportSingleHooplaTitle(String singleWorkId) {
+		try{
+			logEntry.addNote("Doing extract of single work " + singleWorkId);
+			logEntry.saveResults();
+			PreparedStatement getSettingsStmt = aspenConn.prepareStatement("SELECT * from hoopla_settings");
+			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
+			int numSettings = 0;
+			while (getSettingsRS.next()) {
+				numSettings++;
+				hooplaAPIBaseURL = getSettingsRS.getString("apiUrl");
+				String apiUsername = getSettingsRS.getString("apiUsername");
+				String apiPassword = getSettingsRS.getString("apiPassword");
+				String hooplaLibraryId = getSettingsRS.getString("libraryId");
+
+				String accessToken = getAccessToken(apiUsername, apiPassword);
+				if (accessToken == null) {
+					logEntry.incErrors("Could not load access token");
+					return;
+				}
+
+				String url = hooplaAPIBaseURL + "/api/v1/libraries/" + hooplaLibraryId + "/content";
+				long numericSingleWorkId = Long.parseLong(singleWorkId);
+				url += "?limit=1&startToken=" + (numericSingleWorkId - 1);
+				HashMap<String, String> headers = new HashMap<>();
+				headers.put("Authorization", "Bearer " + accessToken);
+				headers.put("Content-Type", "application/json");
+				headers.put("Accept", "application/json");
+				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
+				if (!response.isSuccess()){
+					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
+				}else {
+					JSONObject responseJSON = new JSONObject(response.getMessage());
+					if (responseJSON.has("titles")) {
+						JSONArray responseTitles = responseJSON.getJSONArray("titles");
+						if (responseTitles != null && responseTitles.length() > 0) {
+							updateTitlesInDB(responseTitles, false);
+							logEntry.saveResults();
+						}
+					}
+				}
+			}
+			if (numSettings == 0){
+				logger.error("Unable to find settings for Hoopla, please add settings to the database");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error exporting hoopla data", e);
+		}
+	}
 
 	private static void updateTitlesInDB(JSONArray responseTitles, boolean doFullReload) {
 		logEntry.incNumProducts(responseTitles.length());
