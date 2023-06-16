@@ -13,7 +13,7 @@ import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCateg
 import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
-import { navigate, navigateStack } from '../../helpers/RootNavigator';
+import { navigateStack } from '../../helpers/RootNavigator';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -23,6 +23,7 @@ export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
+     const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
