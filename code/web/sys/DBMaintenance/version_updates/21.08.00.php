@@ -284,7 +284,7 @@ function getUpdates21_08_00(): array {
 				'UPDATE grouped_work_facet SET displayNamePlural="Format Categories" WHERE displayName="Format Category"',
 				'UPDATE grouped_work_facet SET displayNamePlural="Available?" WHERE displayName="Available?"',
 				'UPDATE grouped_work_facet SET displayNamePlural="Fiction / Non-Fiction" WHERE displayName="Fiction / Non-Fiction"',
-				'UPDATE grouped_work_facet SET displayNamePlural="Readling Levels" WHERE displayName="Reading Level"',
+				'UPDATE grouped_work_facet SET displayNamePlural="Reading Levels" WHERE displayName="Reading Level"',
 				'UPDATE grouped_work_facet SET displayNamePlural="Available Now At" WHERE displayName="Available Now At"',
 				'UPDATE grouped_work_facet SET displayNamePlural="eContent Collections" WHERE displayName="eContent Collection"',
 				'UPDATE grouped_work_facet SET displayNamePlural="Formats" WHERE displayName="Format"',
