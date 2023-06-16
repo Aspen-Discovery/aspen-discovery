@@ -72,7 +72,7 @@ class Report_CollectionReport extends Admin_Admin {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#circulation_reports', 'Circulation Reports');
-		$breadcrumbs[] = new Breadcrumb('', 'Collection Report');
+		$breadcrumbs[] = new Breadcrumb('', 'Collection Reports');
 		return $breadcrumbs;
 	}
 
