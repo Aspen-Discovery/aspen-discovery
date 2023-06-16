@@ -37,7 +37,7 @@ function getUpdates23_07_00(): array {
 		], //add_disallow_third_party_covers
 
 		//other
-		'reporting_permissions' => [
+		'collection_report_permissions' => [
 			'title' => 'Reporting permissions',
 			'description' => 'Create permissions for collection reports',
 			'continueOnError' => true,
@@ -49,6 +49,6 @@ function getUpdates23_07_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='school library staff'), (SELECT id from permissions where name='View Location Collection Reports'))",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='school library staff'), (SELECT id from permissions where name='View All Collection Reports'))",
 			],
-		],
+		], //collection_report_permissions
 	];
 }
