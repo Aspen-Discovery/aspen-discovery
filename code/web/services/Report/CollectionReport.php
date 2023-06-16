@@ -27,7 +27,7 @@ class Report_CollectionReport extends Admin_Admin {
 		$interface->assign('selectedLocation', $selectedLocation);
 // OTHER FORM VARIABLES
 		$now = time();
-		$data = CatalogFactory::getCatalogConnectionInstance()->getStudentReportData($selectedLocation, $now);
+		$data = CatalogFactory::getCatalogConnectionInstance()->getCollectionReportData($selectedLocation, $now);
 		$interface->assign('reportData', $data);
 		$interface->assign('reportDateTime', date("Y-m-d\TH:i:sO", $now));
 
