@@ -12,10 +12,12 @@ class MyAccount_Logout extends Action {
 			$ssoSettings->id = $library->ssoSettingId;
 			if ($ssoSettings->find(true)) {
 				if($ssoSettings->service == 'saml') {
-					UserAccount::logout();
-					session_write_close();
-					header('Location: ' . $ssoSettings->ssoSPLogoutUrl);
-					die();
+					if ($ssoSettings->ssoSPLogoutUrl) {
+						UserAccount::logout();
+						session_write_close();
+						header('Location: ' . $ssoSettings->ssoSPLogoutUrl);
+						die();
+					}
 				} else {
 					if ($ssoSettings->ssoSPLogoutUrl) {
 						$_REQUEST['return'] = $ssoSettings->ssoSPLogoutUrl;
