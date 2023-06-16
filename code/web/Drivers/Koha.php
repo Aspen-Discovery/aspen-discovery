@@ -7195,7 +7195,7 @@ class Koha extends AbstractIlsDriver {
 		return $baseForm;
 	}
 
-	public function processBasicRegistrationForm() : array {
+	public function processBasicRegistrationForm(bool $addressValidated) : array {
 		if ($this->getKohaVersion() < 20.05) {
 			return [
 				'success' => false,
@@ -7232,12 +7232,33 @@ class Koha extends AbstractIlsDriver {
 			$postVariables = $this->setPostField($postVariables, 'email', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostField($postVariables, 'phone', $library->useAllCapsWhenUpdatingProfile);
 
-			//TODO: Allow defining the category to be defined for both validated and unvalidated regsitrations
-			$postVariables['category_id'] = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
-			//TODO: Define the home library for the patron
-			$locations = $library->getLocations();
-			$defaultLocation = reset($locations);
-			$postVariables['library_id'] = $defaultLocation->code;
+			$pTypeToSet = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');;
+			if ($addressValidated) {
+				if ($library->thirdPartyPTypeAddressValidated != -1) {
+					$pTypeToSet = $library->thirdPartyPTypeAddressValidated;
+				}
+			} else {
+				if ($library->thirdPartyPTypeAddressNotValidated != -1) {
+					$pTypeToSet = $library->thirdPartyPTypeAddressNotValidated;
+				}
+			}
+			$postVariables['category_id'] = $pTypeToSet;
+
+			//Get the home library for the patron
+			$patronHomeLocation = null;
+			if ($library->thirdPartyRegistrationLocation != -1) {
+				$location = new Location();
+				$location->locationId = $library->thirdPartyRegistrationLocation;
+				if ($location->find(true)) {
+					$patronHomeLocation = $location->code;
+				}
+			}
+			if ($patronHomeLocation == null) {
+				$locations = $library->getLocations();
+				$patronHomeLocation = reset($locations);
+				$patronHomeLocation = $patronHomeLocation->code;
+			}
+			$postVariables['library_id'] = $patronHomeLocation;
 
 			$result = $this->postSelfRegistrationToKoha($postVariables);
 

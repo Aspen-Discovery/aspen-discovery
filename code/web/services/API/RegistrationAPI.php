@@ -36,7 +36,7 @@ class API_RegistrationAPI extends Action {
 					'lookupAccountByPhoneNumber',
 					'getBasicRegistrationForm',
 					'processBasicRegistrationForm',
-					'getForgotPinType',
+					'getForgotPasswordType',
 					'initiatePinReset',
 				])) {
 					header("Cache-Control: max-age=10800");
@@ -116,7 +116,15 @@ class API_RegistrationAPI extends Action {
 
 	function processBasicRegistrationForm() {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
-		return $catalog->processBasicRegistrationForm();
+		$addressValidated = false;
+		if (isset($_REQUEST['addressValidated'])) {
+			if ($_REQUEST['addressValidated'] == 'on') {
+				$addressValidated = true;
+			}else{
+				$addressValidated = boolval($_REQUEST['addressValidated']);
+			}
+		}
+		return $catalog->processBasicRegistrationForm($addressValidated);
 	}
 
 	function getForgotPasswordType() {

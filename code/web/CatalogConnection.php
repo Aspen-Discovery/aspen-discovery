@@ -294,8 +294,8 @@ class CatalogConnection {
 		return $this->driver->getBasicRegistrationForm();
 	}
 
-	public function processBasicRegistrationForm() : array {
-		return $this->driver->processBasicRegistrationForm();
+	public function processBasicRegistrationForm(bool $addressValidated) : array {
+		return $this->driver->processBasicRegistrationForm($addressValidated);
 	}
 
 	/**

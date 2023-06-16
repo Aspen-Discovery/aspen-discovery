@@ -560,11 +560,15 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	}
 
 	public function getRegistrationCapabilities() : array {
+		$forgotPasswordType = $this->getForgotPasswordType();
+		//This can change if both email and name are required to initiate
+		$canInitiatePasswordType = $forgotPasswordType != 'none';
 		return [
 			'lookupAccountByEmail' => false,
 			'lookupAccountByPhone' => false,
-			'basicRegistration' => true,
-			'forgottenPassword' => $this->getForgotPasswordType() != 'none'
+			'basicRegistration' => false,
+			'forgottenPassword' => $forgotPasswordType != 'none',
+			'initiatePasswordReset' => $canInitiatePasswordType
 		];
 	}
 
@@ -615,7 +619,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 					'required' => true,
 				],
 				'lastname' => [
-					'property' => 'lastName',
+					'property' => 'lastname',
 					'type' => 'text',
 					'label' => translate(['text'=>'Last Name', 'isPublicFacing'=>true, 'inAttribute'=>true]),
 					'maxLength' => 60,
@@ -669,7 +673,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public function processBasicRegistrationForm() : array {
+	public function processBasicRegistrationForm(bool $addressValidated) : array {
 		return [
 			'success' => false,
 			'messages' => ['Cannot process basic registration forms with this ILS.'],

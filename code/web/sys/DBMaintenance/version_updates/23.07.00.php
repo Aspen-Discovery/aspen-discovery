@@ -23,6 +23,26 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE library CHANGE COLUMN enableProspectorIntegration enableInnReachIntegration TINYINT(4) NOT NULL DEFAULT 0',
 			],
 		], //rename_prospector_to_innreach2
+		'third_party_registration' => [
+			'title' => 'Third Party Registration',
+			'description' => 'Configuration of Third Party Registration ',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableThirdPartyRegistration TINYINT DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN thirdPartyRegistrationLocation INT(11) DEFAULT -1',
+				'ALTER TABLE library ADD COLUMN thirdPartyPTypeAddressValidated INT(11) DEFAULT -1',
+				'ALTER TABLE library ADD COLUMN thirdPartyPTypeAddressNotValidated INT(11) DEFAULT -1',
+				"UPDATE permissions set name = 'Library Registration', description = 'Configure Library fields related to how Self Registration and Third Party Registration is configured in Aspen.' WHERE name = 'Library Self Registration'",
+			],
+		], //third_party_registration
+		'update_collection_spotlight_number_of_titles' => [
+			'title' => 'Update Collection Spotlight Minimum Number of Titles',
+			'description' => 'Update Collection Spotlight Minimum Number of Titles',
+			'continueOnError' => true,
+			'sql' => [
+				'update collection_spotlights set numTitlesToShow = 25 where numTitlesToShow = 0;',
+			],
+		], //update_collection_spotlight_number_of_titles
 
 		//kirstien
 

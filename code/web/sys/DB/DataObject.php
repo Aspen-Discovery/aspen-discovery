@@ -1167,4 +1167,8 @@ abstract class DataObject {
 		$this->unsetUniquenessFields();
 	}
 
+	public function updateStructureForEditingObject($structure) : array {
+		return $structure;
+	}
+
 }
