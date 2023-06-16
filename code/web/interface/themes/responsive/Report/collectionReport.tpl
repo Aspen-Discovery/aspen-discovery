@@ -1,7 +1,7 @@
 {strip}
 	<div id="main-content" class="col-md-12">
 		<div class="doNotPrint">
-			<h1>School Overdue Report</h1>
+			<h1>Collection Report</h1>
 			{if isset($errors)}
 				{foreach from=$errors item=error}
 					<div class="error">{$error}</div>
@@ -10,12 +10,6 @@
 			<form class="form form-inline">
 
 				{html_options name=location options=$locationLookupList selected=$selectedLocation class="form-control input-sm"}
-
-				<select name="showOverdueOnly" id="showOverdueOnly" class="form-control input-sm">
-					<option value="overdue" {if $showOverdueOnly == "overdue"}selected="selected"{/if}>Overdue Items</option>
-					<option value="checkedOut" {if $showOverdueOnly == "checkedOut"}selected="selected"{/if}>All Checked Out</option>
-					<option value="fees" {if $showOverdueOnly == "fees"}selected="selected"{/if}>Fees</option>
-				</select>
 				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
 				&nbsp;
@@ -29,23 +23,20 @@
 		</div>
 {literal}
 <style type="text/css">
-	div.P_TYPE {
-		width: 1in !important;
-	}
-	table#ReportTable {
+	table#reportTable {
 		width: 7in;
 		margin-left: 0;
 		margin-right: auto;
 		font: inherit;
 		border: 0;
 	}
-	table#ReportTable .hideit {
+	table#reportTable .hideit {
 		display: none;
 	}
-	table#ReportTable thead {
+	table#reportTable thead {
 		display: table !important;
 	}
-	table#ReportTable tbody tr td {
+	table#reportTable tbody tr td {
 		border: 0;
 	}
 
@@ -68,13 +59,13 @@
 		div#system-message-header {
 			display: none !important;
 		}
-		table#studentReportTable {
+		table#reportTable {
 			margin: 0in;
 		}
-		table#studentReportTable .displayScreen {
+		table#reportTable .displayScreen {
 			display: none;
 		}
-		table#studentReportTable thead {
+		table#reportTable thead {
 			display: none !important;
 		}
 		/* Chromium + Safari */
@@ -88,73 +79,53 @@
 </style>
 {/literal}
 
-		<table id="studentReportTable">
+		<table id="reportTable">
 			<thead>
 				<tr>
-					<th class="filter-select filter-onlyAvail">Grade</th>
-					<th class="filter-select filter-onlyAvail">Homeroom</th>
-					<th class="sorter-false">Student ID</th>
-					<th class="filter">Student Name</th>
-					<th class="sorter-false">Notice</th>
+					<th class="filter">Item</th>
+					<th class="filter">BID</th>
+					<th class="filter">Title</th>
+					<th class="filter">Author</th>
+					<th class="filter">PubDate</th>
+					<th class="filter">Price</th>
+					<th class="filter-select filter-onlyAvail">Location</th>
+					<th class="filter-select filter-onlyAvail">Media</th>
+					<th class="filter">Call Number</th>
+					<th class="filter">Last Returned</th>
+					<th class="filter">Cumulative Circ</th>
+					<th class="filter">Barcode</th>
+					<th class="filter">Created</th>
+					<th class="filter">Status</th>
+					<th class="filter">Status Date</th>
 				<tr>
 			</thead>
 			<tbody>
 {assign var=previousPatron value=0}
-{foreach from=$reportData item=dataRow name=overdueData}
-	{if empty($smarty.foreach.overdueData.first)}
-	{if $dataRow.P_BARCODE != $previousPatron}
-		{if $smarty.foreach.overdueData.index > 0}</div></div></td></tr>{/if}
+{foreach from=$reportData item=dataRow name=data}
 				<tr class="overdueSlipContainer">
-					<td class="hideit">{$dataRow.GRD_LVL|replace:' student':''|replace:'MNPS School Librar':'0.0 MNPS School Librar'|replace:'MNPS Staff':'0.1 MNPS Staff'|replace:'Pre-K':'0.2 Pre-K'|replace:'Kindergar':'0.3 Kindergar'|replace:'First':'1 First'|replace:'Second':'2 Second'|replace:'Third':'3 Third'|replace:'Fourth':'4 Fourth'|replace:'Fifth':'5 Fifth'|replace:'Sixth':'6 Sixth'|replace:'Seventh':'7 Seventh'|replace:'Eighth':'8 Eighth'|replace:'Ninth':'9 Ninth'|replace:'Tenth':'10 Tenth'|replace:'Eleventh':'11 Eleventh'|replace:'Twelfth':'12 Twelfth'|regex_replace:'/^.*no LL delivery/':'13 no LL delivery'|replace:'MNPS 18+':'13 MNPS 18+'}</td>
-					<td class="hideit">{$dataRow.HOME_ROOM|lower|capitalize:true}</td>
-					<td class="hideit">{$dataRow.P_BARCODE}</td>
-					<td class="hideit">{$dataRow.PATRON_NAME}</td>
-					<td>
-						<div class="overdueSlip">
-							<div class="patronHeader">
-								<div class="P_TYPE">{$dataRow.GRD_LVL|replace:' student':''}</div>
-								<div class="HOME_ROOM">{$dataRow.HOME_ROOM|lower|capitalize:true}</div>
-								<div class="PATRON_NAME">{$dataRow.PATRON_NAME|upper}</div>
-								<div class="P_BARCODE">{$dataRow.P_BARCODE}</div>
-							</div>
-							<div class="overdueRecordTable">
-								<div class="overdueRecordTableMessage">
-									The items below are
-									{if $showOverdueOnly == "overdue"}&nbsp;overdue
-									{elseif $showOverdueOnly == "checkedOut"}&nbsp;checked out
-									{elseif $showOverdueOnly == "fees"}&nbsp;billed{/if}
-									.&nbsp;
-									Please return them to your library. This notice was created {$reportDateTime}<br>
-									Check your account online at https://school.library.nashville.org/
-								</div>
-								<div class="overdueRecord">
-                                        				<div class="SYSTEM">SYSTEM</div>
-                                        				<div class="ITEM_ID">BARCODE</div>
-                                        				<div class="CALL_NUMBER">CALL NUMBER</div>
-                                        				<div class="TITLE">TITLE</div>
-                                        				<div class="DUE_DATE">DUE DATE</div>
-									<div class="PRICE">{if $showOverdueOnly == "overdue" || $showOverdueOnly == "checkedOut"}PRICE{elseif $showOverdueOnly == "fees"}OWED{/if}</div>
-								</div>
-		{assign var=previousPatron value=$dataRow.P_BARCODE}
-	{/if}
-								<div class="overdueRecord">
-									<div class="SYSTEM">{$dataRow.SYSTEM|replace:"1":"NPL"|replace:"2":"MNPS"}</div>
-					                                <div class="ITEM_ID">{$dataRow.ITEM}</div>
-									<div class="CALL_NUMBER">{$dataRow.CALL_NUMBER}</div>
-									<div class="TITLE">{$dataRow.TITLE|regex_replace:"/ *\/ *$/":""}</div>
-									<div class="DUE_DATE">{$dataRow.DUE_DATE}</div>
-									<div class="PRICE">{$dataRow.OWED|regex_replace:"/^ *0\.00$/":"10.00"}</div>
-								</div>	
-	{/if}
-{/foreach}
-					</td>
+					<td class="ITEM">{$dataRow.ITEM}</td>
+					<td class="BID">{$dataRow.BID}</td>
+					<td class="TITLE">{$dataRow.TITLE}</td>
+					<td class="AUTHOR">{$dataRow.AUTHOR}</td>
+					<td class="PUBDATE">{$dataRow.PUBDATE}</td>
+					<td class="PRICE">{$dataRow.PRICE}</td>
+					<td class="LOCATION">{$dataRow.LOCATION}</td>
+					<td class="MEDIA">{$dataRow.MEDIA}</td>
+					<td class="CALLNUMBER">{$dataRow.CALLNUMBER}</td>
+					<td class="LASTRETURNED">{$dataRow.LASTRETURNED}</td>
+					<td class="CIRC">{$dataRow.CIRC}</td>
+					<td class="BARCODE">{$dataRow.BARCODE}</td>
+					<td class="CREATED">{$dataRow.CREATED}</td>
+					<td class="STATUS">{$dataRow.STATUS}</td>
+					<td class="STATUSDATE">{$dataRow.STATUSDATE}</td>
 				</tr>
+{/foreach}
 			</tbody>
 		</table>
 		<script type="text/javascript">
 			{literal}
 				$(document).ready(function(){
-					$('#studentReportTable').tablesorter({
+					$('#reportTable').tablesorter({
 						widgets: ["filter"],
 						widgetOptions: {
 							filter_hideFilters : false,

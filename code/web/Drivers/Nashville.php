@@ -474,6 +474,7 @@ class Nashville extends CarlX {
 
 	public function getCollectionReportData($location, $date): array {
 		$this->initDatabaseConnection();
+		$preparedLocation = mysqli_escape_string($this->dbConnection, $location);
 		$sql = <<<EOT
 			-- get the almost-whole enchilada (on shelf, charged, missing, lost, damaged, in processing; NOT withdrawn) for an owning branch
 			
@@ -481,7 +482,7 @@ class Nashville extends CarlX {
 				select
 					*
 				from item_v i
-				where i.branch = "$location"
+				where i.branch = "$preparedLocation"
 			), r as (
 				select
 					r.refid
