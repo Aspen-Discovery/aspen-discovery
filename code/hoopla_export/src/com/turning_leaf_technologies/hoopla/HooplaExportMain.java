@@ -452,20 +452,30 @@ public class HooplaExportMain {
 					}
 				}
 
-				if (doFullReload){
+				//Delete records from Hoopla, but not if we have errors
+				if (doFullReload && !logEntry.hasErrors()){
 					deleteItems();
 				}
 
 				//Set the extract time
-				PreparedStatement updateSettingsStmt;
+				PreparedStatement updateSettingsStmt = null;
 				if (doFullReload){
-					updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set lastUpdateOfAllRecords = ? where id = ?");
+					if (!logEntry.hasErrors()) {
+						updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set lastUpdateOfAllRecords = ? where id = ?");
+					} else {
+						//force another full update
+						PreparedStatement reactiveFullUpdateStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set runFullUpdate = 1 where id = ?");
+						reactiveFullUpdateStmt.setLong(1, settingsId);
+						reactiveFullUpdateStmt.executeUpdate();
+					}
 				}else{
 					updateSettingsStmt = aspenConn.prepareStatement("UPDATE hoopla_settings set lastUpdateOfChangedRecords = ? where id = ?");
 				}
-				updateSettingsStmt.setLong(1, startTimeForLogging);
-				updateSettingsStmt.setLong(2, settingsId);
-				updateSettingsStmt.executeUpdate();
+				if (updateSettingsStmt != null) {
+					updateSettingsStmt.setLong(1, startTimeForLogging);
+					updateSettingsStmt.setLong(2, settingsId);
+					updateSettingsStmt.executeUpdate();
+				}
 			}
 			if (numSettings == 0){
 				logger.error("Unable to find settings for Hoopla, please add settings to the database");
