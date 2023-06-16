@@ -7,7 +7,6 @@ class MyAccount_Logout extends Action {
 	public function launch() {
 		if(UserAccount::isLoggedInViaSSO()) {
 			global $library;
-			global $configArray;
 			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 			$ssoSettings = new SSOSetting();
 			$ssoSettings->id = $library->ssoSettingId;
