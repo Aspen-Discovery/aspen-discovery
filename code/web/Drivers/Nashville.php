@@ -474,14 +474,14 @@ class Nashville extends CarlX {
 
 	public function getCollectionReportData($location, $date): array {
 		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
 		$sql = <<<EOT
 			-- get the almost-whole enchilada (on shelf, charged, missing, lost, damaged, in processing; NOT withdrawn) for an owning branch
-			
 			with i as (
 				select
 					*
 				from item_v i
-				where i.branch = "$location"
+				where i.branch = '$location'
 			), r as (
 				select
 					r.refid

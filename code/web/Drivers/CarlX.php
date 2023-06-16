@@ -2195,6 +2195,7 @@ EOT;
                       , bbibmap_v.title
 EOT;
         } elseif ($showOverdueOnly == 'fees') {
+			/** @noinspection SqlResolve */
             $sql = <<<EOT
                 -- school fees report CarlX sql
                 with p as ( -- first gather patrons of the requested branch
