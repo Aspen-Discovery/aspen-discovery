@@ -22,7 +22,7 @@ class Authentication_SAML2 extends Action {
 			unset($_SESSION['returnToModule']);
 			unset($_REQUEST['followupAction']);
 			unset($_REQUEST['followupModule']);
-			$auth->login($returnTo);
+			$auth->login($returnTo, [], true);
 		} elseif(isset($_GET['acs'])) {
 			global $logger;
 			$logger->log('Completing SAML Authentication', Logger::LOG_ERROR);
@@ -108,11 +108,7 @@ class Authentication_SAML2 extends Action {
 					die();
 				}
 			} catch (Exception $e) {
-				$errorMessage = 'Could not initialize authentication';
-				require_once ROOT_DIR . '/services/MyAccount/Login.php';
-				$launchAction = new MyAccount_Login();
-				$launchAction->launch('Could not initialize authentication');
-				exit();
+				header('Location: /Search/Home');
 			}
 		} else {
 			header('Location: /Search/Home');

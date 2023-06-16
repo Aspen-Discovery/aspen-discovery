@@ -7,12 +7,20 @@ class MyAccount_Logout extends Action {
 	public function launch() {
 		if(UserAccount::isLoggedInViaSSO()) {
 			global $library;
+			global $configArray;
 			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 			$ssoSettings = new SSOSetting();
 			$ssoSettings->id = $library->ssoSettingId;
 			if ($ssoSettings->find(true)) {
 				if ($ssoSettings->ssoSPLogoutUrl) {
 					$_REQUEST['return'] = $ssoSettings->ssoSPLogoutUrl;
+				} else {
+					if($ssoSettings->service == 'saml') {
+						UserAccount::logout();
+						session_write_close();
+						header('Location: ' . $ssoSettings->ssoSPLogoutUrl);
+						die();
+					}
 				}
 			}
 		}
