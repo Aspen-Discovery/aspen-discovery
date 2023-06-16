@@ -8,7 +8,7 @@ class CarlX extends AbstractIlsDriver {
 	public $catalogWsdl;
 
 	private $soapClient;
-	private $dbConnection;
+	protected $dbConnection;
 
 	public function __construct($accountProfile) {
 		parent::__construct($accountProfile);
