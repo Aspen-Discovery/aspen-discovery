@@ -527,7 +527,6 @@ class Nashville extends CarlX {
 				*
 			from ix
 			order by Location, CallNumber
-			;
 EOT;
 		$stid = oci_parse($this->dbConnection, $sql);
 		// consider using oci_set_prefetch to improve performance
