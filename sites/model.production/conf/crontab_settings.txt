@@ -45,7 +45,7 @@
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * *    root    /php /usr/local/aspen-discovery/code/web/cron/backupAspen.php model.production
+10 0 * * *    root    php /usr/local/aspen-discovery/code/web/cron/backupAspen.php model.production
 
 #############################################
 # New York Times Best seller Lists Updating #
