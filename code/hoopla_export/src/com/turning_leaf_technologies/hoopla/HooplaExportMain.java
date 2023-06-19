@@ -395,7 +395,7 @@ public class HooplaExportMain {
 				headers.put("Accept", "application/json");
 				WebServiceResponse response = NetworkUtils.getURL(url, logger, headers);
 				if (!response.isSuccess()){
-					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage());
+					logEntry.incErrors("Could not get titles from " + url + " " + response.getMessage() + " " + response.getResponseCode());
 				}else {
 					JSONObject responseJSON = new JSONObject(response.getMessage());
 					if (responseJSON.has("titles")) {
@@ -432,12 +432,13 @@ public class HooplaExportMain {
 									startToken = null;
 								}
 							}else{
-								if (response.getResponseCode() == 401 || response.getResponseCode() == 504){
+								if (response.getResponseCode() == 401 || response.getResponseCode() == 504 || response.getResponseCode() == 503){
 									numTries++;
 									if (numTries >= 3){
 										logEntry.incErrors("Error loading data from " + url + " " + response.getResponseCode() + " " + response.getMessage());
 										startToken = null;
 									}else{
+										Thread.sleep(1000 * 60 * 2); //Wait for 2 minutes before trying again
 										accessToken = getAccessToken(apiUsername, apiPassword);
 										headers.put("Authorization", "Bearer " + accessToken);
 									}
@@ -657,20 +658,33 @@ public class HooplaExportMain {
 			logger.error("Please set HooplaAPIUser and HooplaAPIPassword in settings");
 			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIPassword in settings");
 			return null;
-		}
-		String getTokenUrl = hooplaAPIBaseURL + "/v2/token";
-		WebServiceResponse response = NetworkUtils.postToURL(getTokenUrl, null, "application/json", null, logger, username + ":" + password);
-		if (response.isSuccess()){
-			try {
-				JSONObject responseJSON = new JSONObject(response.getMessage());
-				return responseJSON.getString("access_token");
-			} catch (JSONException e) {
-				logEntry.addNote("Could not parse JSON for token " + response.getMessage());
-				logger.error("Could not parse JSON for token " + response.getMessage(), e);
-				return null;
+		} else {
+			int numTries = 1;
+			while (numTries <= 3) {
+				numTries++;
+				String getTokenUrl = hooplaAPIBaseURL + "/v2/token";
+				WebServiceResponse response = NetworkUtils.postToURL(getTokenUrl, null, "application/json", null, logger, username + ":" + password);
+				if (response.isSuccess()) {
+					try {
+						JSONObject responseJSON = new JSONObject(response.getMessage());
+						return responseJSON.getString("access_token");
+					} catch (JSONException e) {
+						if (numTries == 3) {
+							logEntry.addNote("Could not parse JSON for token " + response.getMessage());
+							logger.error("Could not parse JSON for token " + response.getMessage(), e);
+							return null;
+						} else {
+							try {
+								Thread.sleep(1000 * 60 * 2);
+							} catch (InterruptedException ex) {
+								logEntry.incErrors("Thread was interrupted while sleeping");
+							}
+						}
+					}
+				}
 			}
-		}else{
-			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIPassword in settings");
+
+			logEntry.addNote("Could not get access token in 3 tries");
 			return null;
 		}
 	}
