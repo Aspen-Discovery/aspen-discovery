@@ -37,7 +37,8 @@ class API_RegistrationAPI extends Action {
 					'getBasicRegistrationForm',
 					'processBasicRegistrationForm',
 					'getForgotPasswordType',
-					'initiatePinReset',
+					'initiatePasswordResetByEmail',
+					'initiatePasswordResetByBarcode',
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -76,7 +77,8 @@ class API_RegistrationAPI extends Action {
 		return [];
 	}
 
-	function getRegistrationCapabilities() {
+	/** @noinspection PhpUnused */
+	function getRegistrationCapabilities() : array {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		$catalogRegistrationCapabilities = $catalog->getRegistrationCapabilities();
 		return [
@@ -85,6 +87,7 @@ class API_RegistrationAPI extends Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
 	function lookupAccountByEmail() : array {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		if (isset($_REQUEST['email'])) {
@@ -105,16 +108,22 @@ class API_RegistrationAPI extends Action {
 		}
 	}
 
-	function lookupAccountByPhoneNumber() {
-
+	/** @noinspection PhpUnused */
+	function lookupAccountByPhoneNumber() : array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'This method is not currently available', 'isPublicFacing' => true])
+		];
 	}
 
-	function getBasicRegistrationForm() {
+	/** @noinspection PhpUnused */
+	function getBasicRegistrationForm() : array {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		return $catalog->getBasicRegistrationForm();
 	}
 
-	function processBasicRegistrationForm() {
+	/** @noinspection PhpUnused */
+	function processBasicRegistrationForm() : array {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		$addressValidated = false;
 		if (isset($_REQUEST['addressValidated'])) {
@@ -127,7 +136,8 @@ class API_RegistrationAPI extends Action {
 		return $catalog->processBasicRegistrationForm($addressValidated);
 	}
 
-	function getForgotPasswordType() {
+	/** @noinspection PhpUnused */
+	function getForgotPasswordType() : array {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		$forgotPasswordType = $catalog->getForgotPasswordType();
 		$labels = [
@@ -160,7 +170,15 @@ class API_RegistrationAPI extends Action {
 		];
 	}
 
-	function initiatePasswordReset() {
+	/** @noinspection PhpUnused */
+	function initiatePasswordResetByEmail() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->initiatePasswordResetByEmail();
+	}
 
+	/** @noinspection PhpUnused */
+	function initiatePasswordResetByBarcode() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->initiatePasswordResetByBarcode();
 	}
 }

@@ -568,7 +568,8 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 			'lookupAccountByPhone' => false,
 			'basicRegistration' => false,
 			'forgottenPassword' => $forgotPasswordType != 'none',
-			'initiatePasswordReset' => $canInitiatePasswordType
+			'initiatePasswordResetByEmail' => false,
+			'initiatePasswordResetByBarcode' => $canInitiatePasswordType
 		];
 	}
 
@@ -677,6 +678,20 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return [
 			'success' => false,
 			'messages' => ['Cannot process basic registration forms with this ILS.'],
+		];
+	}
+
+	public function initiatePasswordResetByEmail() : array {
+		return [
+			'success' => false,
+			'message' => ['Cannot initiate Password Reset by Email for this ILS.'],
+		];
+	}
+
+	public function initiatePasswordResetByBarcode() : array {
+		return [
+			'success' => false,
+			'message' => ['Cannot initiate Password Reset by Barcode for this ILS.'],
 		];
 	}
 }

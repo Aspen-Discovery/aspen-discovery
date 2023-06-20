@@ -3102,8 +3102,8 @@ class Koha extends AbstractIlsDriver {
 		];
 
 		$catalogUrl = $this->accountProfile->vendorOpacUrl;
-		$username = strip_tags($_REQUEST['username']);
-		$email = strip_tags($_REQUEST['email']);
+		$username = isset($_REQUEST['username']) ? strip_tags($_REQUEST['username']) : '';
+		$email = isset($_REQUEST['email']) ? strip_tags($_REQUEST['email']) : '';
 		$postVariables = [
 			'koha_login_context' => 'opac',
 			'username' => $username,
@@ -7063,7 +7063,9 @@ class Koha extends AbstractIlsDriver {
 			'lookupAccountByEmail' => true,
 			'lookupAccountByPhone' => false,
 			'basicRegistration' => true,
-			'forgottenPassword' => $this->getForgotPasswordType() != 'none'
+			'forgottenPassword' => $this->getForgotPasswordType() != 'none',
+			'initiatePasswordResetByEmail' => true,
+			'initiatePasswordResetByBarcode' => true
 		];
 	}
 
@@ -7266,5 +7268,23 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
+	public function initiatePasswordResetByBarcode() : array {
+		$_REQUEST['username'] = $_REQUEST['barcode'];
+		unset($_REQUEST['email']);
+		unset($_REQUEST['resendEmail']);
 
+		$result = $this->processEmailResetPinForm();
+
+		if (!$result['success']) {
+			if (preg_match('/password recovery has already been started/i', $result['error'])) {
+				$_REQUEST['resendEmail'] = true;
+				$result = $this->processEmailResetPinForm();
+			}
+		}
+
+		return [
+			'success' => $result['success'],
+			'message' => $result['success'] ? translate(['text' => 'The email with your PIN reset link was sent.', 'isPublicFacing' => true]) : $result['error'],
+		];
+	}
 }

@@ -299,6 +299,114 @@ class CatalogConnection {
 	}
 
 	/**
+	 * @param mixed $barcode
+	 * @return array
+	 */
+	public function sendAspenPasswordResetEmailForBarcode(mixed $barcode): array {
+		$result = [
+			'success' => false,
+			'error' => translate([
+				'text' => "Unknown error sending password reset.",
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$userToResetPin = new User();
+		$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
+		$userToResetPin->$barcodeProperty = $barcode;
+		if (!$userToResetPin->find(true)) {
+			$userToResetPin = $this->driver->findNewUser($barcode);
+		}
+		if ($userToResetPin == false) {
+			$result['error'] = translate([
+				'text' => "Could not find a patron with that barcode, please contact the library.",
+				'isPublicFacing' => true,
+			]);
+		} else {
+			if (empty($userToResetPin->email)) {
+				$result['error'] = translate([
+					'text' => "That account does not have an email associated with it, please contact the library.",
+					'isPublicFacing' => true,
+				]);
+			} else {
+				require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
+				$pinResetToken = new PinResetToken();
+				$pinResetToken->userId = $userToResetPin->id;
+				$pinResetToken->generateToken();
+				$pinResetToken->dateIssued = time();
+				if ($pinResetToken->insert()) {
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$mailer = new Mailer();
+
+					global $configArray;
+					$resetUrl = $configArray['Site']['url'] . '/MyAccount/CompletePinReset?token=' . $pinResetToken->token;
+					$subject = translate([
+						'text' => 'Reset PIN',
+						'isPublicFacing' => true,
+					]);
+					$body = translate([
+						'text' => 'Hi %1%,',
+						1 => $userToResetPin->firstname,
+						'isPublicFacing' => true,
+					]);
+					$body .= "\r\n" . translate([
+							'text' => 'It looks like you forgot your PIN. Click on the link or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link.',
+							'isPublicFacing' => true,
+						]);
+					$body .= "\r\n\r\n" . $resetUrl;
+					$body .= "\r\n" . translate([
+							'text' => 'You can also paste the following code into the page where you generated the reset.',
+							'isPublicFacing' => true,
+						]);
+					$body .= "\r\n\r\n" . $pinResetToken->token;
+
+					$htmlBody = "<html></html><table><tr><td>" . translate([
+							'text' => 'Hi %1%,',
+							1 => $userToResetPin->firstname,
+							'isPublicFacing' => true,
+						]) . '<br/>';
+					$htmlBody .= translate([
+							'text' => 'It looks like you forgot your PIN. Click on the button or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link',
+							'isPublicFacing' => true,
+							1 => $userToResetPin->firstname,
+						]) . "</td>";
+					$htmlBody .= "<tr><td style='text-align: center'><a href='{$resetUrl}'>" . translate([
+							'text' => 'CREATE NEW PIN',
+							'isPublicFacing' => true,
+						]) . '</a></td></tr>';
+					$htmlBody .= '<tr><td></td></tr>';
+					$htmlBody .= "<tr><td style='text-align: center'>" . translate([
+							'text' => 'Reset Token',
+							'isPublicFacing' => true,
+						]) . '</tr>';
+					$htmlBody .= "<tr><td style='text-align: center'>" . $pinResetToken->token . '</td></tr>';
+					$htmlBody .= '</table></html>';
+
+
+					if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)) {
+						$result['success'] = true;
+						$result['message'] = translate([
+							'text' => "The email with your PIN reset link was sent. Please click on the link within that email or enter the code below.",
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$result['error'] = translate([
+							'text' => "The email with your PIN reset link could not be sent, please contact the library.",
+							'isPublicFacing' => true,
+						]);
+					}
+				} else {
+					$result['error'] = translate([
+						'text' => "Could not generate PIN reset token.",
+						'isPublicFacing' => true,
+					]);
+				}
+			}
+		}
+		return $result;
+	}
+
+	/**
 	 * @param $nameFromUser  string
 	 * @param $nameFromIls   string
 	 * @return boolean
@@ -1076,98 +1184,7 @@ class CatalogConnection {
 				]);
 			} else {
 				$barcode = $_REQUEST['reset_username'];
-				$userToResetPin = new User();
-				$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
-				$userToResetPin->$barcodeProperty = $barcode;
-				if (!$userToResetPin->find(true)) {
-					$userToResetPin = $this->driver->findNewUser($barcode);
-				}
-				if ($userToResetPin == false) {
-					$result['error'] = translate([
-						'text' => "Could not find a patron with that barcode, please contact the library.",
-						'isPublicFacing' => true,
-					]);
-				} else {
-					if (empty($userToResetPin->email)) {
-						$result['error'] = translate([
-							'text' => "That account does not have an email associated with it, please contact the library.",
-							'isPublicFacing' => true,
-						]);
-					} else {
-						require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
-						$pinResetToken = new PinResetToken();
-						$pinResetToken->userId = $userToResetPin->id;
-						$pinResetToken->generateToken();
-						$pinResetToken->dateIssued = time();
-						if ($pinResetToken->insert()) {
-							require_once ROOT_DIR . '/sys/Email/Mailer.php';
-							$mailer = new Mailer();
-
-							global $configArray;
-							$resetUrl = $configArray['Site']['url'] . '/MyAccount/CompletePinReset?token=' . $pinResetToken->token;
-							$subject = translate([
-								'text' => 'Reset PIN',
-								'isPublicFacing' => true,
-							]);
-							$body = translate([
-								'text' => 'Hi %1%,',
-								1 => $userToResetPin->firstname,
-								'isPublicFacing' => true,
-							]);
-							$body .= "\r\n" . translate([
-									'text' => 'It looks like you forgot your PIN. Click on the link or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link.',
-									'isPublicFacing' => true,
-								]);
-							$body .= "\r\n\r\n" . $resetUrl;
-							$body .= "\r\n" . translate([
-									'text' => 'You can also paste the following code into the page where you generated the reset.',
-									'isPublicFacing' => true,
-								]);
-							$body .= "\r\n\r\n" . $pinResetToken->token;
-
-							$htmlBody = "<html></html><table><tr><td>" . translate([
-									'text' => 'Hi %1%,',
-									1 => $userToResetPin->firstname,
-									'isPublicFacing' => true,
-								]) . '<br/>';
-							$htmlBody .= translate([
-									'text' => 'It looks like you forgot your PIN. Click on the button or copy/paste the URL below into a browser to reset your password. This link will only work for 60 minutes, after that you’ll have to request a new link',
-									'isPublicFacing' => true,
-									1 => $userToResetPin->firstname,
-								]) . "</td>";
-							$htmlBody .= "<tr><td style='text-align: center'><a href='{$resetUrl}'>" . translate([
-									'text' => 'CREATE NEW PIN',
-									'isPublicFacing' => true,
-								]) . '</a></td></tr>';
-							$htmlBody .= '<tr><td></td></tr>';
-							$htmlBody .= "<tr><td style='text-align: center'>" . translate([
-									'text' => 'Reset Token',
-									'isPublicFacing' => true,
-								]) . '</tr>';
-							$htmlBody .= "<tr><td style='text-align: center'>" . $pinResetToken->token . '</td></tr>';
-							$htmlBody .= '</table></html>';
-
-
-							if ($mailer->send($userToResetPin->email, $subject, $body, null, $htmlBody)) {
-								$result['success'] = true;
-								$result['message'] = translate([
-									'text' => "The email with your PIN reset link was sent. Please click on the link within that email or enter the code below.",
-									'isPublicFacing' => true,
-								]);
-							} else {
-								$result['error'] = translate([
-									'text' => "The email with your PIN reset link could not be sent, please contact the library.",
-									'isPublicFacing' => true,
-								]);
-							}
-						} else {
-							$result['error'] = translate([
-								'text' => "Could not generate PIN reset token.",
-								'isPublicFacing' => true,
-							]);
-						}
-					}
-				}
+				$result = $this->sendAspenPasswordResetEmailForBarcode($barcode);
 			}
 
 			return $result;
@@ -1518,5 +1535,49 @@ class CatalogConnection {
 
 	public function showDateInFines(): bool {
 		return $this->driver->showDateInFines();
+	}
+
+	public function initiatePasswordResetByEmail() : array {
+		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
+			$email = $_REQUEST['email'];
+			if (!filter_var($_REQUEST['email'], FILTER_VALIDATE_EMAIL)) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'This provided email is not valid, please provide a properly formatted email address.',
+						'isPublicFacing' => true,
+					])
+				];
+			} else {
+				//Get the user for this
+
+			}
+		} else {
+			return $this->driver->initiatePasswordResetByEmail();
+		}
+	}
+
+	public function initiatePasswordResetByBarcode() : array {
+		if ($this->getForgotPasswordType() == 'emailAspenResetLink') {
+			if (!isset($_REQUEST['barcode'])) {
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'The barcode was not provided, please submit the barcode to reset the PIN for.',
+						'isPublicFacing' => true,
+					])
+				];
+			} else {
+				//Get the user for this
+				$barcode = $_REQUEST['barcode'];
+				$result = $this->sendAspenPasswordResetEmailForBarcode($barcode);
+				return [
+					'success' => $result['success'],
+					'message' => $result['success'] ? $result['message'] : $result['error']
+				];
+			}
+		} else {
+			return $this->driver->initiatePasswordResetByBarcode();
+		}
 	}
 }
