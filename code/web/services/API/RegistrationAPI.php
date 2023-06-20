@@ -42,7 +42,7 @@ class API_RegistrationAPI extends Action {
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('UserAPI', $method);
+					APIUsage::incrementStat('RegistrationAPI', $method);
 					$output = json_encode(['result' => $this->$method()]);
 				} else {
 					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -63,7 +63,7 @@ class API_RegistrationAPI extends Action {
 				];
 				$output = json_encode($result);
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('UserAPI', $method);
+				APIUsage::incrementStat('RegistrationAPI', $method);
 			} else {
 				$output = json_encode(['error' => 'invalid_method']);
 			}
