@@ -7269,22 +7269,35 @@ class Koha extends AbstractIlsDriver {
 	}
 
 	public function initiatePasswordResetByBarcode() : array {
-		$_REQUEST['username'] = $_REQUEST['barcode'];
-		unset($_REQUEST['email']);
-		unset($_REQUEST['resendEmail']);
+		if (isset($_REQUEST['barcode'])) {
+			$_REQUEST['username'] = $_REQUEST['barcode'];
+			unset($_REQUEST['email']);
+			unset($_REQUEST['resendEmail']);
 
-		$result = $this->processEmailResetPinForm();
+			$result = $this->processEmailResetPinForm();
 
-		if (!$result['success']) {
-			if (preg_match('/password recovery has already been started/i', $result['error'])) {
-				$_REQUEST['resendEmail'] = true;
-				$result = $this->processEmailResetPinForm();
+			if (!$result['success']) {
+				if (preg_match('/password recovery has already been started/i', $result['error'])) {
+					$_REQUEST['resendEmail'] = true;
+					$result = $this->processEmailResetPinForm();
+				}
 			}
-		}
 
-		return [
-			'success' => $result['success'],
-			'message' => $result['success'] ? translate(['text' => 'The email with your PIN reset link was sent.', 'isPublicFacing' => true]) : $result['error'],
-		];
+			return [
+				'success' => $result['success'],
+				'message' => $result['success'] ? translate([
+					'text' => 'The email with your PIN reset link was sent.',
+					'isPublicFacing' => true
+				]) : $result['error'],
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => translate([
+					'text' => 'The barcode was not provided, please provide the barcode to reset the password for.',
+					'isPublicFacing' => true
+				]),
+			];
+		}
 	}
 }
