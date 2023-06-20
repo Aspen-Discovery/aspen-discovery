@@ -2196,7 +2196,7 @@ EOT;
 EOT;
         } elseif ($showOverdueOnly == 'fees') {
             $sql = <<<EOT
-                -- school fees report CarlX sql
+               -- school fees report CarlX sql
                 with p as ( -- first gather patrons of the requested branch
                     select
                         b.branchcode
@@ -2211,25 +2211,22 @@ EOT;
                     left join bty_v t on p.bty = t.btynumber
                     where p.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
                     and b.branchcode = '$location'
-                )
+                ), r as (
                 select
-                     p.branchcode AS Home_Lib_Code
-                    , p.branchname AS Home_Lib
-                    , p.bty AS P_Type
-                    , p.btyname AS Grd_Lvl
-                    , p.sponsor AS Home_Room
-                    , p.name AS Patron_Name
-                    , p.patronid AS P_Barcode
-                    , itembranch.branchgroup AS SYSTEM
-                    , r.callnumber AS Call_Number
-                    , r.title AS Title
-                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date
-                    , to_char(r.amountowed / 100, 'fm999D00') as Owed
-                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date_Dup
-                    , r.item AS Item
+                     p.branchcode
+                    , p.branchname
+                    , p.bty
+                    , p.btyname
+                    , p.sponsor
+                    , p.name
+                    , p.patronid
+                    , r.callnumber
+                    , r.title
+                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') as due
+                    , to_char(r.amountowed / 100, 'fm999D00') as owed
+                    , r.item
                 from p 
                 left join report3fines_v r on p.patronid = r.patronid
-                left join branch_v itembranch on r.branch = itembranch.branchnumber
                 where r.patronid is not null
                 and r.amountowed > 0
                 order by 
@@ -2237,9 +2234,35 @@ EOT;
                     , p.bty
                     , p.sponsor
                     , p.name
-                    , itembranch.branchgroup
                     , r.callnumber
                     , r.title
+            ) 
+            select
+                     r.branchcode AS Home_Lib_Code
+                    , r.branchname AS Home_Lib
+                    , r.bty AS P_Type
+                    , r.btyname AS Grd_Lvl
+                    , r.sponsor AS Home_Room
+                    , r.name AS Patron_Name
+                    , r.patronid AS P_Barcode
+                    , itembranch.branchgroup AS SYSTEM
+                    , r.callnumber AS Call_Number
+                    , r.title AS Title
+                    , r.due AS Due_Date
+                    , r.owed as Owed
+                    , r.due AS Due_Date_Dup
+                    , r.item AS Item
+            from r
+            left join item_v i on r.item = i.item
+            left join branch_v itembranch on i.owningbranch = itembranch.branchnumber
+            order by 
+                r.branchcode
+                , r.bty
+                , r.sponsor
+                , r.name
+                , itembranch.branchgroup
+                , r.callnumber
+                , r.title
 EOT;
         }
 		$stid = oci_parse($this->dbConnection, $sql);
