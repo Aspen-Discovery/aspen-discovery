@@ -62,7 +62,22 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE themes ADD COLUMN defaultCover VARCHAR(100) default ''",
 			],
 		], //theme_cover_default_image
-
+		'theme_format_category_icons' => [
+			'title' => 'Theme - Set custom icon images for format category icons',
+			'description' => 'Update theme table to have custom icon image values for format category icons',
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN booksImage VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN eBooksImage VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN audioBooksImage VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN musicImage VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN moviesImage VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN booksImageSelected VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN eBooksImageSelected VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN audioBooksImageSelected VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN musicImageSelected VARCHAR(100) default ''",
+				"ALTER TABLE themes ADD COLUMN moviesImageSelected VARCHAR(100) default ''",
+			],
+		], //theme_format_category_icons
 		//other
 	];
 }
