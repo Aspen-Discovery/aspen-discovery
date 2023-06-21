@@ -225,6 +225,7 @@ class Sierra extends Millennium {
 	}
 
 	public function getHolds($patron): array {
+		global $library;
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = [];
 		$unavailableHolds = [];
@@ -313,6 +314,7 @@ class Sierra extends Millennium {
 				} else {
 					// inn-reach status
 					$isInnReach = true;
+					$curHold->source = $library->interLibraryLoanName;
 					$recordStatus = $recordItemStatus;
 				}
 			}
@@ -438,6 +440,7 @@ class Sierra extends Millennium {
 				}
 				$curHold->sourceId = '';
 				$curHold->recordId = '';
+				$curHold->source = $library->interLibraryLoanName;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -577,6 +580,7 @@ class Sierra extends Millennium {
 	public function getCheckouts(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
+		global $library;
 
 		$patronId = $patron->username;
 
@@ -608,6 +612,7 @@ class Sierra extends Millennium {
 					$curCheckout->barcode = $entry->barcode;
 				}
 				if (strpos($entry->item, "@") !== false) {
+					$curCheckout->source = $library->interLibraryLoanName;
 					$curCheckout->sourceId = '';
 					$curCheckout->recordId = '';
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
