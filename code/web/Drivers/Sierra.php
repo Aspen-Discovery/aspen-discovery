@@ -295,6 +295,7 @@ class Sierra extends Millennium {
 			} else {
 				$recordId = substr($sierraHold->record, strrpos($sierraHold->record, '/') + 1);
 			}
+			$isInnReach = false;
 			if ($sierraHold->recordType == 'i') {
 				$recordItemStatus = $sierraHold->status->code;
 				// If this is an inn-reach exclude from check -- this comes later
@@ -311,6 +312,7 @@ class Sierra extends Millennium {
 					}
 				} else {
 					// inn-reach status
+					$isInnReach = true;
 					$recordStatus = $recordItemStatus;
 				}
 			}
@@ -332,6 +334,14 @@ class Sierra extends Millennium {
 						$updatePickup = true;
 					} else {
 						$updatePickup = false;
+					}
+					if ($isInnReach) {
+						if (!empty($sierraHold->pickupByDate)) {
+							$status = 'Ready For Pickup';
+							$available = true;
+							$updatePickup = false;
+							$freezeable = false;
+						}
 					}
 					break;
 				case 'b':
@@ -421,6 +431,7 @@ class Sierra extends Millennium {
 				if ($titleAuthor !== false) {
 					$curHold->title = $titleAuthor['title'];
 					$curHold->author = $titleAuthor['author'];
+					$curHold->format = [];
 				} else {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';
