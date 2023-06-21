@@ -2440,4 +2440,18 @@ EOT;
 	public function showDateInFines(): bool {
 		return false;
 	}
+
+	public function bypassReadingHistoryUpdate($patron) : bool {
+		//Check to see if the last seen date is after the last time we updated reading history
+		$request = $this->getSearchbyPatronIdRequest($patron);
+		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
+
+		$selfServeActivityDate = strtotime($result->Patron->SelfServeActivityDate);
+		$lastActionDate = strtotime($patron->Patron->LastActionDate);
+		$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
+		if ($selfServeActivityDate > $lastReadingHistoryUpdate || $lastActionDate > $lastReadingHistoryUpdate) {
+			return false;
+		}
+		return true;
+	}
 }

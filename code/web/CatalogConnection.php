@@ -940,16 +940,23 @@ class CatalogConnection {
 		return $historyEntry;
 	}
 
+	public function bypassReadingHistoryUpdate($patron) : bool {
+		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
+		$curTime = time();
+		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])) {
+			return true;
+		}
+		// Check the ILS to see if it is ok to update
+		return $this->driver->bypassReadingHistoryUpdate($patron);
+	}
+
 	/**
 	 * @param User $patron
 	 */
 	public function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
-		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
-		$curTime = time();
-		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])) {
+		if ($this->bypassReadingHistoryUpdate($patron)) {
 			return;
 		}
-
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
 		require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
 		//Note, include deleted titles here so they are not added multiple times.
@@ -1038,7 +1045,7 @@ class CatalogConnection {
 		}
 
 		//Set the last update time
-		$patron->lastReadingHistoryUpdate = $curTime;
+		$patron->lastReadingHistoryUpdate = time();
 		$patron->update();
 	}
 

@@ -694,4 +694,9 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 			'message' => ['Cannot initiate Password Reset by Barcode for this ILS.'],
 		];
 	}
+
+	public function bypassReadingHistoryUpdate($patron) : bool {
+		//By default, always update
+		return false;
+	}
 }
