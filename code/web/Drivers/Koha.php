@@ -7300,4 +7300,25 @@ class Koha extends AbstractIlsDriver {
 			];
 		}
 	}
+
+	public function bypassReadingHistoryUpdate($patron) : bool {
+		$this->initDatabaseConnection();
+		$sql = "SELECT lastseen FROM borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->username) . "'";
+		$results = mysqli_query($this->dbConnection, $sql);
+		$lastSeenDate = null;
+		if ($results !== false) {
+			while ($curRow = $results->fetch_assoc()) {
+				if (!is_null($curRow['lastseen'])) {
+					$lastSeenDate =  strtotime($curRow['lastseen']);
+				}
+			}
+		}
+
+		//Don't update reading history if we've never seen the patron or the patron was last seen before we last updated reading history
+		$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
+		if ($lastSeenDate != null && ($lastSeenDate > $lastReadingHistoryUpdate)) {
+			return false;
+		}
+		return true;
+	}
 }
