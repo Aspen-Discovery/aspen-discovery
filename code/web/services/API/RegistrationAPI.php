@@ -36,12 +36,13 @@ class API_RegistrationAPI extends Action {
 					'lookupAccountByPhoneNumber',
 					'getBasicRegistrationForm',
 					'processBasicRegistrationForm',
-					'getForgotPinType',
-					'initiatePinReset',
+					'getForgotPasswordType',
+					'initiatePasswordResetByEmail',
+					'initiatePasswordResetByBarcode',
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-					APIUsage::incrementStat('UserAPI', $method);
+					APIUsage::incrementStat('RegistrationAPI', $method);
 					$output = json_encode(['result' => $this->$method()]);
 				} else {
 					header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
@@ -62,7 +63,7 @@ class API_RegistrationAPI extends Action {
 				];
 				$output = json_encode($result);
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
-				APIUsage::incrementStat('UserAPI', $method);
+				APIUsage::incrementStat('RegistrationAPI', $method);
 			} else {
 				$output = json_encode(['error' => 'invalid_method']);
 			}
@@ -76,7 +77,8 @@ class API_RegistrationAPI extends Action {
 		return [];
 	}
 
-	function getRegistrationCapabilities() {
+	/** @noinspection PhpUnused */
+	function getRegistrationCapabilities() : array {
 		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
 		$catalogRegistrationCapabilities = $catalog->getRegistrationCapabilities();
 		return [
@@ -85,27 +87,98 @@ class API_RegistrationAPI extends Action {
 		];
 	}
 
-	function lookupAccountByEmail() {
-
+	/** @noinspection PhpUnused */
+	function lookupAccountByEmail() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if (isset($_REQUEST['email'])) {
+			$email = $_REQUEST['email'];
+			if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'The email supplied was not valid.', 'isPublicFacing' => true])
+				];
+			} else {
+				return $catalog->lookupAccountByEmail($email);
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'email was not supplied', 'isPublicFacing' => true])
+			];
+		}
 	}
 
-	function lookupAccountByPhoneNumber() {
-
+	/** @noinspection PhpUnused */
+	function lookupAccountByPhoneNumber() : array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'This method is not currently available', 'isPublicFacing' => true])
+		];
 	}
 
-	function getBasicRegistrationForm() {
-
+	/** @noinspection PhpUnused */
+	function getBasicRegistrationForm() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->getBasicRegistrationForm();
 	}
 
-	function processBasicRegistrationForm() {
-
+	/** @noinspection PhpUnused */
+	function processBasicRegistrationForm() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		$addressValidated = false;
+		if (isset($_REQUEST['addressValidated'])) {
+			if ($_REQUEST['addressValidated'] == 'on') {
+				$addressValidated = true;
+			}else{
+				$addressValidated = boolval($_REQUEST['addressValidated']);
+			}
+		}
+		return $catalog->processBasicRegistrationForm($addressValidated);
 	}
 
-	function getForgotPinType() {
+	/** @noinspection PhpUnused */
+	function getForgotPasswordType() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		$forgotPasswordType = $catalog->getForgotPasswordType();
+		$labels = [
+			'emailResetLink' => 'Reset my PIN/Password',
+			'emailAspenResetLink' => 'Start PIN/Password Reset',
+			'none' => '',
+			'emailPin' => 'Recover PIN/Password'
 
+		];
+		global $configArray;
+		$resetPasswordLink = '';
+
+
+		switch ($forgotPasswordType) {
+			case 'emailAspenResetLink':
+				$resetPasswordLink = $configArray['Site']['url'] . '/MyAccount/InitiateResetPin';
+				break;
+			case 'emailResetLink':
+				$resetPasswordLink = $configArray['Site']['url'] . '/MyAccount/EmailResetPin';
+				break;
+			case 'emailPin':
+				$resetPasswordLink = $configArray['Site']['url'] . '/MyAccount/EmailPin';
+				break;
+		}
+		return [
+			'success' => true,
+			'forgotPasswordType' => $forgotPasswordType,
+			'label' => translate(['text' => $labels[$forgotPasswordType], 'isPublicFacing' => true, 'inAttribute' => true]),
+			'resetPasswordLink' => $resetPasswordLink,
+		];
 	}
 
-	function initiatePinReset() {
+	/** @noinspection PhpUnused */
+	function initiatePasswordResetByEmail() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->initiatePasswordResetByEmail();
+	}
 
+	/** @noinspection PhpUnused */
+	function initiatePasswordResetByBarcode() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		return $catalog->initiatePasswordResetByBarcode();
 	}
 }

@@ -84,3 +84,13 @@
 # Send Custom LiDA Notifications #
 #########################
 */15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php arlington.production
+
+#########################
+# Run Scheduled Updates #
+#########################
+*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php arlington.production
+
+#########################
+# Update Translations from Community #
+#########################
+15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php arlington.production

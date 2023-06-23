@@ -163,6 +163,10 @@ class Library extends DataObject {
 	public $promptForSMSNoticesInSelfReg;
 	public $selfRegRequirePhone;
 	public $selfRegRequireEmail;
+	public $enableThirdPartyRegistration;
+	public $thirdPartyRegistrationLocation;
+	public $thirdPartyPTypeAddressValidated;
+	public $thirdPartyPTypeAddressNotValidated;
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $availableHoldDelay;
@@ -455,6 +459,14 @@ class Library extends DataObject {
 		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
 		unset($libraryThemeStructure['libraryId']);
 		unset($libraryThemeStructure['weight']);
+
+		$thirdPartyRegistrationLocations = [
+			'-1' => 'None, Use ILS defaults'
+		];
+
+		$patronType = new PType();
+		$patronTypes = $patronType->fetchAll('id', 'pType');
+		$patronTypes = array_merge([-1 => 'No Patron Type, Use ILS defaults'], $patronTypes);
 
 		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 		$accountProfile = new AccountProfile();
@@ -2089,7 +2101,7 @@ class Library extends DataObject {
 						'type' => 'section',
 						'label' => 'Self Registration',
 						'hideInLists' => true,
-						'permissions' => ['Library Self Registration'],
+						'permissions' => ['Library Registration'],
 						'properties' => [
 							'enableSelfRegistration' => [
 								'property' => 'enableSelfRegistration',
@@ -2215,6 +2227,47 @@ class Library extends DataObject {
 								'default' => 'SELFREG',
 							],
 						],
+					],
+					'thirdPartyRegistrationSection' => [
+						'property' => 'thirdPartyRegistrationSection',
+						'type' => 'section',
+						'label' => 'Third Party Registration',
+						'hideInLists' => true,
+						'permissions' => ['Library Registration'],
+						'properties' => [
+							'enableThirdPartyRegistration' => [
+								'property' => 'enableThirdPartyRegistration',
+								'type' => 'checkbox',
+								'label' => 'Enable Third Party Registration',
+								'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.',
+								'hideInLists' => true,
+								'default' => true,
+							],
+							'thirdPartyRegistrationLocation' => [
+								'property' => 'thirdPartyRegistrationLocation',
+								'type' => 'enum',
+								'values' => $thirdPartyRegistrationLocations,
+								'label' => 'Home Location for Third Party Registrations',
+								'description' => 'Determines what location is applied to the patron when self registering',
+								'hideInLists' => true,
+							],
+							'thirdPartyPTypeAddressValidated' => [
+								'property' => 'thirdPartyPTypeAddressValidated',
+								'type' => 'enum',
+								'values' => $patronTypes,
+								'label' => 'Patron Type for Third Party Registrations when address has been validated',
+								'description' => 'Determines the patron type to be used when the address has been validated in the third party system.',
+								'hideInLists' => true,
+							],
+							'thirdPartyPTypeAddressNotValidated' => [
+								'property' => 'thirdPartyPTypeAddressNotValidated',
+								'type' => 'enum',
+								'values' => $patronTypes,
+								'label' => 'Patron Type for Third Party Registrations when address has been not been validated',
+								'description' => 'Determines the patron type to be used when the address has been not validated in the third party system.',
+								'hideInLists' => true,
+							],
+						]
 					],
 					'masqueradeModeSection' => [
 						'property' => 'masqueradeModeSection',
@@ -3664,10 +3717,6 @@ class Library extends DataObject {
 
 	public function validateCategoryId() {
 		return $this->validateSso('ssoCategoryIdAttr', 'ssoCategoryIdFallback', 'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value');
-		$validationResults = [
-			'validatedOk' => true,
-			'errors' => [],
-		];
 	}
 
 	public function __get($name) {
@@ -4456,5 +4505,15 @@ class Library extends DataObject {
 		return $apiInfo;
 	}
 
-
+	public function updateStructureForEditingObject($structure) : array {
+		//Get locations for the active library and apply those to third party registration locations
+		$location = new Location();
+		$location->libraryId = $this->libraryId;
+		$thirdPartyRegistrationLocations = $location->fetchAll('locationId', 'displayName');
+		$thirdPartyRegistrationLocations = array_merge([
+			'-1' => 'None, Use ILS defaults'
+		], $thirdPartyRegistrationLocations);
+		$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
+		return $structure;
+	}
 }

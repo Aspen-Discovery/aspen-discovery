@@ -175,4 +175,8 @@ class HooplaExtractLogEntry implements BaseIndexingLogEntry {
 		this.numInvalidRecords++;
 		this.addNote("Invalid Record found: " + invalidRecordId);
 	}
+
+	public long getLogEntryId() {
+		return logEntryId;
+	}
 }

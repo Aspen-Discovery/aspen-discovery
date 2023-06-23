@@ -123,7 +123,8 @@ class HooplaProcessor {
 
 				String fullTitle = title + " " + subTitle;
 				fullTitle = fullTitle.trim();
-				groupedWork.setTitle(title, subTitle, title, title, primaryFormat, formatCategory);
+				String sortableTitle = AspenStringUtils.makeValueSortable(title);
+				groupedWork.setTitle(title, subTitle, title, sortableTitle, primaryFormat, formatCategory);
 				groupedWork.addFullTitle(fullTitle);
 
 

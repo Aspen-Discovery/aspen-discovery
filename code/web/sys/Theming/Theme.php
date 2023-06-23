@@ -10,8 +10,19 @@ class Theme extends DataObject {
 	public $extendsTheme;
 	public $logoName;
 	public $favicon;
+	public $defaultCover;
 	public $logoApp;
 	public $fullWidth;
+	public $booksImage;
+	public $eBooksImage;
+	public $audioBooksImage;
+	public $musicImage;
+	public $moviesImage;
+	public $booksImageSelected;
+	public $eBooksImageSelected;
+	public $audioBooksImageSelected;
+	public $musicImageSelected;
+	public $moviesImageSelected;
 
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */
@@ -591,6 +602,16 @@ class Theme extends DataObject {
 				'maxHeight' => 512,
 				'hideInLists' => true,
 			],
+			'defaultCover' => [
+				'property' => 'defaultCover',
+				'type' => 'image',
+				'label' => 'Background Image for Default Covers (280x280)',
+				'description' => 'A background image for default covers (.jpg or .png only)',
+				'required' => false,
+				'maxWidth' => 280,
+				'maxHeight' => 280,
+				'hideInLists' => true,
+			],
 			'coverStyle' => [
 				'property' => 'coverStyle',
 				'type' => 'enum',
@@ -1096,6 +1117,115 @@ class Theme extends DataObject {
 				],
 			],*/
 
+			//Format Category Facet Theming
+			'formatCategorySection' => [
+				'property' => 'formatCategorySection',
+				'type' => 'section',
+				'label' => 'Format Category Icons',
+				'hideInLists' => true,
+				'properties' => [
+					'booksImage' => [
+						'property' => 'booksImage',
+						'type' => 'image',
+						'label' => 'Book Icon (50x50px max)',
+						'description' => 'An image for the book format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'booksImageSelected' => [
+						'property' => 'booksImageSelected',
+						'type' => 'image',
+						'label' => 'Book Icon Selected (50x50px max)',
+						'description' => 'An image for the book format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'eBooksImage' => [
+						'property' => 'eBooksImage',
+						'type' => 'image',
+						'label' => 'eBook Icon (50x50px max)',
+						'description' => 'An image for the eBook format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'eBooksImageSelected' => [
+						'property' => 'eBooksImageSelected',
+						'type' => 'image',
+						'label' => 'eBook Icon Selected (50x50px max)',
+						'description' => 'An image for the eBook format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'audioBooksImage' => [
+						'property' => 'audioBooksImage',
+						'type' => 'image',
+						'label' => 'Audio Book Icon (50x50px max)',
+						'description' => 'An image for the audio book format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'audioBooksImageSelected' => [
+						'property' => 'audioBooksImageSelected',
+						'type' => 'image',
+						'label' => 'Audio Book Icon Selected (50x50px max)',
+						'description' => 'An image for the audio book format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'musicImage' => [
+						'property' => 'musicImage',
+						'type' => 'image',
+						'label' => 'Music Icon (50x50px max)',
+						'description' => 'An image for the music format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'musicImageSelected' => [
+						'property' => 'musicImageSelected',
+						'type' => 'image',
+						'label' => 'Music Icon Selected (50x50px max)',
+						'description' => 'An image for the music format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'moviesImage' => [
+						'property' => 'moviesImage',
+						'type' => 'image',
+						'label' => 'Movie Icon (50x50px max)',
+						'description' => 'An image for the movie format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'moviesImageSelected' => [
+						'property' => 'moviesImageSelected',
+						'type' => 'image',
+						'label' => 'Movie Icon Selected (50x50px max)',
+						'description' => 'An image for the movie format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+				],
+			],
 			//Browse category theming
 			'browseCategorySection' => [
 				'property' => 'browseCategorySection',

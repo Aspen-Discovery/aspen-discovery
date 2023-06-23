@@ -34,7 +34,7 @@ class Admin_ReindexLog extends Admin_Admin {
 
 		$options = [
 			'totalItems' => $total,
-			'fileName' => '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			//'fileName' => '/Admin/ReindexLog?page=%d' . (empty($_REQUEST['worksLimit']) ? '' : '&worksLimit=' . $_REQUEST['worksLimit']) . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 			'perPage' => $pageSize,
 		];
 		$pager = new Pager($options);
