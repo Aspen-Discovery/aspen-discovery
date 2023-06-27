@@ -12,6 +12,7 @@ class WebBuilder_PortalPage extends Action {
 		require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
 		$this->portalPage = new PortalPage();
 		$id = strip_tags($_REQUEST['id']);
+		$_SESSION['returnToId'] = $_REQUEST['id'];
 		$this->portalPage->id = $id;
 		$this->portalPageFound = $this->portalPage->find(true);
 

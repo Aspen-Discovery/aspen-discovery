@@ -47,6 +47,7 @@ class Admin_CreateCollectionSpotlight extends Action {
 				$collectionSpotlight->onSelectCallback = '';
 				$collectionSpotlight->listDisplayType = 'tabs';
 				$collectionSpotlight->showMultipleTitles = 1;
+				$collectionSpotlight->numTitlesToShow = 25;
 				$collectionSpotlight->insert();
 			} else {
 				$collectionSpotlight = new CollectionSpotlight();

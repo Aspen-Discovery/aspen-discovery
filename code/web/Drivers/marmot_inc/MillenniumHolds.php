@@ -447,7 +447,7 @@ class MillenniumHolds {
 						$bibId = '.' . $matches[1] . $this->driver->getCheckDigit($shortId);
 						$title = strip_tags($matches[2]);
 					} else {
-						//This happens for prospector titles
+						//This happens for INN-Reach titles
 						$bibId = '';
 						$shortId = '';
 						$title = trim($sCols[$i]);

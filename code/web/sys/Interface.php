@@ -566,7 +566,7 @@ class UInterface extends Smarty {
 		$this->assign('generalContactLink', $library->generalContactLink);
 		$this->assign('showLoginButton', $library->showLoginButton && ($offlineMode == false || $this->getVariable('enableEContentWhileOffline')));
 		$this->assign('showAdvancedSearchbox', $library->showAdvancedSearchbox);
-		$this->assign('enableProspectorIntegration', $library->enableProspectorIntegration);
+		$this->assign('enableInnReachIntegration', $library->enableInnReachIntegration);
 		$groupedWorkDisplaySettings = $library->getGroupedWorkDisplaySettings();
 		$this->assign('showRatings', $groupedWorkDisplaySettings->showRatings);
 		$this->assign('show856LinksAsTab', $groupedWorkDisplaySettings->show856LinksAsTab);

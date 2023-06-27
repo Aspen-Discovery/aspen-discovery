@@ -1,0 +1,17 @@
+#innReachSearchResultsHeader {
+  padding-top: 15px;
+}
+#innReachSearchResultsTitle {
+  padding-top: 15px;
+  font-size: 140%;
+  font-weight: normal;
+}
+#innReachSearchResultsNote {
+  font-style: italic;
+  margin-bottom: 0.5em;
+}
+#moreResultsFromInnReach {
+  margin: 5px;
+  text-align: right;
+}
+/*# sourceMappingURL=inn-reach.css.map */
