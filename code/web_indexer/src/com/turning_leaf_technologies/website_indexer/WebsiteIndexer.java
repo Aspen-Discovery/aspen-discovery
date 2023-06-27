@@ -151,7 +151,7 @@ class WebsiteIndexer {
 
 					//check if path is to be excluded
 					for (Pattern curPattern : pathsToExcludePatterns){
-						if (!curPattern.matcher(pageToProcess).matches()){ //if url is not in paths to exclude, process page (if it is an xml it will be processed in next step)
+						if (!curPattern.matcher(pageToProcess).matches() && !pageToProcess.matches(".*\\.xml.*")){ //if url is not in paths to exclude, process page (if it is an xml it will be processed in next step)
 							processPage(pageToProcess);
 							allLinks.put(pageToProcess, true);
 						}
