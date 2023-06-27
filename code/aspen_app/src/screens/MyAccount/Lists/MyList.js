@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import { Box, Button, FlatList, HStack, Icon, Image, Pressable, Text, VStack, ScrollView, FormControl, CheckIcon, Select } from 'native-base';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { Platform, SafeAreaView } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 
@@ -228,6 +228,7 @@ export const MyList = () => {
                          <HStack space={2}>
                               <FormControl w={150}>
                                    <Select
+                                        isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"
                                         selectedValue={sort}
                                         accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
