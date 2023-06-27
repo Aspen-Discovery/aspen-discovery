@@ -15,14 +15,30 @@ class Authentication_SAML2 extends Action {
 			$returnTo = $configArray['Site']['url'];
 			$followupAction = $_SESSION['returnToAction'] ?? strip_tags($_REQUEST['followupAction']);
 			$followupModule = $_SESSION['returnToModule'] ?? strip_tags($_REQUEST['followupModule']);
+			$followupPageId = $_SESSION['returnToId'] ?? null;
 			if($followupModule && $followupAction) {
-				$returnTo = $configArray['Site']['url'] . '/' . $followupModule . '/' . $followupAction;
+				if($followupModule == 'WebBuilder' && $followupAction == 'PortalPage' && $followupPageId) {
+					require_once ROOT_DIR . '/sys/WebBuilder/PortalPage.php';
+					$portalPage = new PortalPage();
+					$portalPage->id = $followupPageId;
+					if ($portalPage->find(true)) {
+						if ($portalPage->urlAlias) {
+							$returnTo = $portalPage->urlAlias;
+						} else {
+							$returnTo = $configArray['Site']['url'] . '/' . $followupModule . '/' . $followupAction . '?id=' . $followupAction;
+						}
+					} else {
+						$returnTo = $configArray['Site']['url'] . '/' . $followupModule . '/' . $followupAction . '?id=' . $followupAction;
+					}
+				} else {
+					$returnTo = $configArray['Site']['url'] . '/' . $followupModule . '/' . $followupAction;
+				}
 			}
 			unset($_SESSION['returnToAction']);
 			unset($_SESSION['returnToModule']);
 			unset($_REQUEST['followupAction']);
 			unset($_REQUEST['followupModule']);
-			$auth->login($returnTo);
+			$auth->login($returnTo, [], true);
 		} elseif(isset($_GET['acs'])) {
 			global $logger;
 			$logger->log('Completing SAML Authentication', Logger::LOG_ERROR);
@@ -108,14 +124,10 @@ class Authentication_SAML2 extends Action {
 					die();
 				}
 			} catch (Exception $e) {
-				$errorMessage = 'Could not initialize authentication';
-				require_once ROOT_DIR . '/services/MyAccount/Login.php';
-				$launchAction = new MyAccount_Login();
-				$launchAction->launch('Could not initialize authentication');
-				exit();
+				header('Location: /');
 			}
 		} else {
-			header('Location: /Search/Home');
+			header('Location: /');
 		}
 	}
 

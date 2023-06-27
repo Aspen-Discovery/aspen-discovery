@@ -78,6 +78,8 @@ class TopFacets implements RecommendationInterface {
 		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
 		$interface->assign('facetCountsToShow', $facetCountsToShow);
 
+		$appliedTheme = $interface->getAppliedTheme();
+
 		// Grab the facet set
 		$facetList = $this->searchObject->getFacetList($this->facets);
 		foreach ($facetList as $facetSetkey => $facetSet) {
@@ -85,8 +87,50 @@ class TopFacets implements RecommendationInterface {
 				//add an image name for display in the template
 				foreach ($facetSet['list'] as $facetKey => $facet) {
 					if (!empty($facetKey) && array_key_exists($facetKey, TopFacets::$formatCategorySortOrder)) {
-						$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
-						$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+						if ($appliedTheme != null){
+							if (strtolower($facet['value']) == "books" && !empty($appliedTheme->booksImage)){
+								$facet['imageName'] = '/files/original/' . $appliedTheme->booksImage;
+								if (!empty($appliedTheme->booksImageSelected)){
+									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->booksImageSelected;
+								}else{
+									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+								}
+							}elseif (strtolower($facet['value']) == "ebook" && !empty($appliedTheme->eBooksImage)){
+								$facet['imageName'] = '/files/original/' . $appliedTheme->eBooksImage;
+								if (!empty($appliedTheme->eBooksImageSelected)){
+									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->eBooksImageSelected;
+								}else{
+									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+								}
+							}elseif (strtolower($facet['value']) == "audiobooks" && !empty($appliedTheme->audioBooksImage)){
+								$facet['imageName'] = '/files/original/' . $appliedTheme->audioBooksImage;
+								if (!empty($appliedTheme->audioBooksImageSelected)){
+									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->audioBooksImageSelected;
+								}else{
+									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+								}
+							}elseif (strtolower($facet['value']) == "music" && !empty($appliedTheme->musicImage)){
+								$facet['imageName'] = '/files/original/' . $appliedTheme->musicImage;
+								if (!empty($appliedTheme->musicImageSelected)){
+									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->musicImageSelected;
+								}else{
+									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+								}
+							}elseif (strtolower($facet['value']) == "movies" && !empty($appliedTheme->moviesImage)){
+								$facet['imageName'] = '/files/original/' . $appliedTheme->moviesImage;
+								if (!empty($appliedTheme->moviesImageSelected)){
+									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->moviesImageSelected;
+								}else{
+									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+								}
+							}else{
+								$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
+								$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+							}
+						}else{
+							$facet['imageName'] = strtolower(str_replace(' ', '', $facet['value'])) . ".png";
+							$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
+						}
 						$facetSet['list'][$facetKey] = $facet;
 					} else {
 						unset($facetSet['list'][$facetKey]);

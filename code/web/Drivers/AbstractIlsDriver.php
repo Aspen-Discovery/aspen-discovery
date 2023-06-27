@@ -564,11 +564,143 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	}
 
 	public function getRegistrationCapabilities() : array {
+		$forgotPasswordType = $this->getForgotPasswordType();
+		//This can change if both email and name are required to initiate
+		$canInitiatePasswordType = $forgotPasswordType != 'none';
 		return [
-			'lookupAccountByEmail' => true,
+			'lookupAccountByEmail' => false,
 			'lookupAccountByPhone' => false,
-			'basicRegistration' => true,
-			'forgottenPin' => $this->getForgotPasswordType() != 'none'
+			'basicRegistration' => false,
+			'forgottenPassword' => $forgotPasswordType != 'none',
+			'initiatePasswordResetByEmail' => false,
+			'initiatePasswordResetByBarcode' => $canInitiatePasswordType
 		];
+	}
+
+	public function lookupAccountByEmail(string $email) : array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'This ILS does not support looking up accounts by email.', 'isPublicFacing' => true])
+		];
+	}
+
+	public function getBasicRegistrationForm() : array {
+		global $library;
+
+		if (empty($library->validSelfRegistrationStates)) {
+			$stateField = [
+				'property' => 'state',
+				'type' => 'text',
+				'label' => translate(['text'=>'State', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+				'maxLength' => 32,
+				'required' => true,
+			];
+		} else {
+			$validStates = explode('|', $library->validSelfRegistrationStates);
+			$validStates = array_combine($validStates, $validStates);
+			$stateField = [
+				'property' => 'state',
+				'type' => 'enum',
+				'values' => $validStates,
+				'label' => translate(['text'=>'State', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+				'maxLength' => 32,
+			];
+		}
+
+		if ($library->requireNumericPhoneNumbersWhenUpdatingProfile) {
+			$phoneFormat = '';
+		} else {
+			$phoneFormat = ' (xxx-xxx-xxxx)';
+		}
+
+		return [
+			'success' => true,
+			'basicFormDefinition' => [
+				'firstname' => [
+					'property' => 'firstname',
+					'type' => 'text',
+					'label' => translate(['text'=>'First Name', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+					'maxLength' => 25,
+					'required' => true,
+				],
+				'lastname' => [
+					'property' => 'lastname',
+					'type' => 'text',
+					'label' => translate(['text'=>'Last Name', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+					'maxLength' => 60,
+				],
+				'address' => [
+					'property' => 'address',
+					'type' => 'text',
+					'label' => translate(['text'=>'Address', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+					'maxLength' => 128,
+				],
+				'address2' => [
+					'property' => 'address2',
+					'type' => 'text',
+					'label' => translate(['text'=>'Address 2', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+
+					'maxLength' => 128,
+					'required' => false,
+				],
+				'city' => [
+					'property' => 'city',
+					'type' => 'text',
+					'label' => translate(['text'=>'City', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+
+					'maxLength' => 48,
+					'required' => true,
+				],
+				'state' => $stateField,
+				'zipcode' => [
+					'property' => 'zipcode',
+					'type' => 'text',
+					'label' => translate(['text'=>'Zip Code', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+					'maxLength' => 32,
+					'required' => true,
+				],
+				'phone' => [
+					'property' => 'phone',
+					'type' => 'text',
+					'label' => translate(['text'=>'Phone' . $phoneFormat, 'isPublicFacing'=>true, 'inAttribute'=>true]),
+					'maxLength' => 128,
+					'required' => false,
+
+				],
+				'email' => [
+					'property' => 'email',
+					'type' => 'email',
+					'label' => translate(['text'=>'Email', 'isPublicFacing'=>true, 'inAttribute'=>true]),
+					'maxLength' => 128,
+					'required' => false,
+				],
+			]
+		];
+	}
+
+	public function processBasicRegistrationForm(bool $addressValidated) : array {
+		return [
+			'success' => false,
+			'messages' => ['Cannot process basic registration forms with this ILS.'],
+		];
+	}
+
+	public function initiatePasswordResetByEmail() : array {
+		return [
+			'success' => false,
+			'message' => ['Cannot initiate Password Reset by Email for this ILS.'],
+		];
+	}
+
+	public function initiatePasswordResetByBarcode() : array {
+		return [
+			'success' => false,
+			'message' => ['Cannot initiate Password Reset by Barcode for this ILS.'],
+		];
+	}
+
+	public function bypassReadingHistoryUpdate($patron) : bool {
+		//By default, always update
+		return false;
 	}
 }
