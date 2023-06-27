@@ -16,6 +16,11 @@ class GroupedWorkDisplayInfo extends DataObject {
 		if (empty($this->seriesDisplayOrder)) {
 			$this->seriesDisplayOrder = 0;
 		}
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $this->permanent_id;
+		if ($groupedWork->find(true)) {
+			$groupedWork->forceReindex(true);
+		}
 		return parent::insert();
 	}
 
@@ -23,6 +28,20 @@ class GroupedWorkDisplayInfo extends DataObject {
 		if (empty($this->seriesDisplayOrder)) {
 			$this->seriesDisplayOrder = 0;
 		}
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $this->permanent_id;
+		if ($groupedWork->find(true)) {
+			$groupedWork->forceReindex(true);
+		}
 		return parent::update();
+	}
+
+	public function delete($useWhere = false) {
+		$groupedWork = new GroupedWork();
+		$groupedWork->permanent_id = $this->permanent_id;
+		if ($groupedWork->find(true)) {
+			$groupedWork->forceReindex(true);
+		}
+		return parent::delete($useWhere);
 	}
 }

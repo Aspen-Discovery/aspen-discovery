@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . '/ResultsAction.php';
 require_once ROOT_DIR . '/sys/SearchEntry.php';
-require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 
 require_once ROOT_DIR . '/sys/Pager.php';
 
@@ -354,12 +354,12 @@ class Search_Results extends ResultsAction {
 		//This must be done before we process each result
 		$interface->assign('showNotInterested', false);
 
-		$enableProspectorIntegration = ($library->enableProspectorIntegration == 1);
-		if ($enableProspectorIntegration) {
-			$interface->assign('showProspectorLink', true);
-			$interface->assign('prospectorSavedSearchId', $searchObject->getSearchId());
+		$enableInnReachIntegration = ($library->enableInnReachIntegration == 1);
+		if ($enableInnReachIntegration) {
+			$interface->assign('showInnReachLink', true);
+			$interface->assign('innReachSavedSearchId', $searchObject->getSearchId());
 		} else {
-			$interface->assign('showProspectorLink', false);
+			$interface->assign('showInnReachLink', false);
 		}
 
 		// Save the ID of this search to the session so we can return to it easily:

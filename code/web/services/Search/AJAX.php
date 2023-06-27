@@ -105,10 +105,10 @@ class AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getProspectorResults() {
-		$prospectorSavedSearchId = $_GET['prospectorSavedSearchId'];
+	function getInnReachResults() {
+		$innReachSavedSearchId = $_GET['innReachSavedSearchId'];
 
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 		global $interface;
 		global $library;
 		global $timer;
@@ -116,24 +116,24 @@ class AJAX extends Action {
 		/** @var SearchObject_AbstractGroupedWorkSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
-		$searchObject = $searchObject->restoreSavedSearch($prospectorSavedSearchId, false);
+		$searchObject = $searchObject->restoreSavedSearch($innReachSavedSearchId, false);
 
 		if (!empty($searchObject)) {
-			//Load results from Prospector
-			$prospector = new Prospector();
+			//Load results from INN-Reach
+			$innReach = new InnReach();
 
-			// Only show prospector results within search results if enabled
-			if ($library && $library->enableProspectorIntegration && $library->showProspectorResultsAtEndOfSearch) {
-				$prospectorResults = $prospector->getTopSearchResults($searchObject->getSearchTerms(), 5);
-				$interface->assign('prospectorResults', $prospectorResults['records']);
+			// Only show INN-Reach results within search results if enabled
+			if ($library && $library->enableInnReachIntegration && $library->showInnReachResultsAtEndOfSearch) {
+				$innReachResults = $innReach->getTopSearchResults($searchObject->getSearchTerms(), 5);
+				$interface->assign('innReachResults', $innReachResults['records']);
 			}
 
-			$prospectorLink = $prospector->getSearchLink($searchObject->getSearchTerms());
-			$interface->assign('prospectorLink', $prospectorLink);
-			$timer->logTime('load Prospector titles');
+			$innReachLink = $innReach->getSearchLink($searchObject->getSearchTerms());
+			$interface->assign('innReachLink', $innReachLink);
+			$timer->logTime('load INN-Reach titles');
 			//echo $interface->fetch('Search/ajax-innreach.tpl');
 			return [
-				'numTitles' => count($prospectorResults),
+				'numTitles' => count($innReachResults),
 				'formattedData' => $interface->fetch('Search/ajax-innreach.tpl'),
 			];
 		} else {

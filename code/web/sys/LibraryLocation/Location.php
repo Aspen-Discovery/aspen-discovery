@@ -72,7 +72,7 @@ class Location extends DataObject {
 	public $curbsidePickupInstructions;
 	public $repeatSearchOption;
 	public $repeatInOnlineCollection;
-	public $repeatInProspector;
+	public $repeatInInnReach;
 	public $repeatInWorldCat;
 	public $vdxFormId;
 	public $vdxLocation;
@@ -129,7 +129,7 @@ class Location extends DataObject {
 			'restrictSearchByLocation',
 			'showHoldButton',
 			'repeatInOnlineCollection',
-			'repeatInProspector',
+			'repeatInInnReach',
 			'repeatInWorldCat',
 			'showEmailThis',
 			'showShareOnExternalSites',
@@ -769,10 +769,10 @@ class Location extends DataObject {
 								'default' => false,
 							],
 							[
-								'property' => 'repeatInProspector',
+								'property' => 'repeatInInnReach',
 								'type' => 'checkbox',
-								'label' => 'Repeat In Prospector',
-								'description' => 'Turn on to allow repeat search in Prospector functionality.',
+								'label' => 'Repeat In INN-Reach',
+								'description' => 'Turn on to allow repeat search in INN-Reach functionality.',
 								'hideInLists' => true,
 								'default' => false,
 							],

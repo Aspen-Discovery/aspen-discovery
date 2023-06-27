@@ -225,6 +225,7 @@ class Sierra extends Millennium {
 	}
 
 	public function getHolds($patron): array {
+		global $library;
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = [];
 		$unavailableHolds = [];
@@ -295,6 +296,7 @@ class Sierra extends Millennium {
 			} else {
 				$recordId = substr($sierraHold->record, strrpos($sierraHold->record, '/') + 1);
 			}
+			$isInnReach = false;
 			if ($sierraHold->recordType == 'i') {
 				$recordItemStatus = $sierraHold->status->code;
 				// If this is an inn-reach exclude from check -- this comes later
@@ -311,6 +313,8 @@ class Sierra extends Millennium {
 					}
 				} else {
 					// inn-reach status
+					$isInnReach = true;
+					$curHold->source = $library->interLibraryLoanName;
 					$recordStatus = $recordItemStatus;
 				}
 			}
@@ -332,6 +336,14 @@ class Sierra extends Millennium {
 						$updatePickup = true;
 					} else {
 						$updatePickup = false;
+					}
+					if ($isInnReach) {
+						if (!empty($sierraHold->pickupByDate)) {
+							$status = 'Ready For Pickup';
+							$available = true;
+							$updatePickup = false;
+							$freezeable = false;
+						}
 					}
 					break;
 				case 'b':
@@ -421,12 +433,14 @@ class Sierra extends Millennium {
 				if ($titleAuthor !== false) {
 					$curHold->title = $titleAuthor['title'];
 					$curHold->author = $titleAuthor['author'];
+					$curHold->format = [];
 				} else {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';
 				}
 				$curHold->sourceId = '';
 				$curHold->recordId = '';
+				$curHold->source = $library->interLibraryLoanName;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -566,6 +580,7 @@ class Sierra extends Millennium {
 	public function getCheckouts(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
+		global $library;
 
 		$patronId = $patron->username;
 
@@ -597,6 +612,7 @@ class Sierra extends Millennium {
 					$curCheckout->barcode = $entry->barcode;
 				}
 				if (strpos($entry->item, "@") !== false) {
+					$curCheckout->source = $library->interLibraryLoanName;
 					$curCheckout->sourceId = '';
 					$curCheckout->recordId = '';
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);

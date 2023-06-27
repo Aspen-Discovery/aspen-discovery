@@ -10094,6 +10094,9 @@ a.browse-thumbnail-sorted.active {
 .contained-record-title {
   font-size: 110%;
 }
+#formattedMarcRecord {
+  overflow-x: auto;
+}
 .result {
   border-bottom: 2px solid #d5d6da;
   padding: 10px 0 15px;
@@ -10568,23 +10571,19 @@ a.browse-thumbnail-sorted.active {
 .trackNumber {
   font-weight: bold;
 }
-#prospectorSearchResultsHeader {
+#innReachSearchResultsHeader {
   padding-top: 15px;
 }
-#prospectorSearchResultsTitle {
+#innReachSearchResultsTitle {
   padding-top: 15px;
   font-size: 140%;
   font-weight: normal;
 }
-#prospectorSearchResultsNote {
+#innReachSearchResultsNote {
   font-style: italic;
   margin-bottom: 0.5em;
 }
-#prospectorMan {
-  float: left;
-  margin-right: 7px;
-}
-#moreResultsFromProspector {
+#moreResultsFromInnReach {
   margin: 5px;
   text-align: right;
 }

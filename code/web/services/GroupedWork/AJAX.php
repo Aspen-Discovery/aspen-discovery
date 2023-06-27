@@ -919,8 +919,8 @@ class GroupedWork_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
-	function getProspectorInfo() {
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+	function getInnReachInfo() {
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 		global $interface;
 		$id = $_REQUEST['id'];
 		$interface->assign('id', $id);
@@ -934,7 +934,7 @@ class GroupedWork_AJAX extends JSON_Action {
 			AspenError::raiseError(new AspenError('Record Does Not Exist'));
 		}
 
-		$prospector = new Prospector();
+		$innReach = new InnReach();
 
 		$searchTerms = [
 			[
@@ -949,11 +949,11 @@ class GroupedWork_AJAX extends JSON_Action {
 			];
 		}
 
-		$prospectorResults = $prospector->getTopSearchResults($searchTerms, 10);
-		$interface->assign('prospectorResults', $prospectorResults['records']);
+		$innReachResults = $innReach->getTopSearchResults($searchTerms, 10);
+		$interface->assign('innReachResults', $innReachResults['records']);
 
 		return [
-			'numTitles' => count($prospectorResults),
+			'numTitles' => count($innReachResults),
 			'formattedData' => $interface->fetch('GroupedWork/ajax-innreach.tpl'),
 		];
 	}
@@ -2433,7 +2433,7 @@ class GroupedWork_AJAX extends JSON_Action {
 		global $interface;
 		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 		$id = $_REQUEST['id'];
-		$selectedFormat = urldecode($_REQUEST['format']);
+		$selectedFormat = $_REQUEST['format'];
 		$variationId = $_REQUEST['variationId'];
 
 		$result = [
@@ -2446,29 +2446,34 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		$groupedWorkDriver = new GroupedWorkDriver($id);
 		$relatedManifestation = null;
-		foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
-			if ($relatedManifestation->format == $selectedFormat) {
+		$foundManifestation = false;
+		$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+		foreach ($relatedManifestations as $relatedManifestation) {
+			if (preg_replace('/[^a-zA-Z0-9_-]/', '_', $relatedManifestation->format) == $selectedFormat) {
+				$foundManifestation = true;
 				break;
 			}
 		}
 
-		$variation = null;
-		foreach ($relatedManifestation->getVariations() as $variation) {
-			if($variation->databaseId == $variationId) {
-				break;
+		if ($foundManifestation) {
+			$variation = null;
+			foreach ($relatedManifestation->getVariations() as $variation) {
+				if ($variation->databaseId == $variationId) {
+					break;
+				}
 			}
-		}
 
-		if($variation) {
-			$interface->assign('relatedRecords', $variation->getRelatedRecords());
-			$interface->assign('relatedManifestation', $relatedManifestation);
-			$interface->assign('variationId', $variation->databaseId);
-			$interface->assign('workId', $id);
+			if ($variation != null) {
+				$interface->assign('relatedRecords', $variation->getRelatedRecords());
+				$interface->assign('relatedManifestation', $relatedManifestation);
+				$interface->assign('variationId', $variation->databaseId);
+				$interface->assign('workId', $id);
 
-			$result = [
-				'success' => true,
-				'body' => $interface->fetch('GroupedWork/relatedRecords.tpl'),
-			];
+				$result = [
+					'success' => true,
+					'body' => $interface->fetch('GroupedWork/relatedRecords.tpl'),
+				];
+			}
 		}
 
 		return $result;

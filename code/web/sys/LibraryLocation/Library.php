@@ -34,7 +34,7 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 }
 
-if(file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
 }
 
@@ -130,7 +130,7 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$repeatInOnlineCollection;
 	public /** @noinspection PhpUnused */
-		$repeatInProspector;
+		$repeatInInnReach;
 	public /** @noinspection PhpUnused */
 		$repeatInWorldCat;
 	public $overDriveScopeId;
@@ -145,11 +145,9 @@ class Library extends DataObject {
 	public $additionalLocationsToShowAvailabilityFor;
 	public $homeLink;
 	public $showAdvancedSearchbox;
-	public $enableProspectorIntegration;
+	public $enableInnReachIntegration;
 	public /** @noinspection PhpUnused */
-		$showProspectorResultsAtEndOfSearch;
-	public /** @noinspection PhpUnused */
-		$prospectorCode;
+		$showInnReachResultsAtEndOfSearch;
 	public /** @noinspection PhpUnused */
 		$enableGenealogy;
 	public $showHoldCancelDate;
@@ -165,6 +163,10 @@ class Library extends DataObject {
 	public $promptForSMSNoticesInSelfReg;
 	public $selfRegRequirePhone;
 	public $selfRegRequireEmail;
+	public $enableThirdPartyRegistration;
+	public $thirdPartyRegistrationLocation;
+	public $thirdPartyPTypeAddressValidated;
+	public $thirdPartyPTypeAddressNotValidated;
 	public $showItsHere;
 	public $holdDisclaimer;
 	public $availableHoldDelay;
@@ -414,7 +416,7 @@ class Library extends DataObject {
 			'ebscohostSearchSettingId',
 			'invoiceCloudSettingId',
 			'deluxeCertifiedPaymentsSettingId',
-			'paypalPayflowSettingId'
+			'paypalPayflowSettingId',
 		];
 	}
 
@@ -458,13 +460,21 @@ class Library extends DataObject {
 		unset($libraryThemeStructure['libraryId']);
 		unset($libraryThemeStructure['weight']);
 
+		$thirdPartyRegistrationLocations = [
+			'-1' => 'None, Use ILS defaults'
+		];
+
+		$patronType = new PType();
+		$patronTypes = $patronType->fetchAll('id', 'pType');
+		$patronTypes = array_merge([-1 => 'No Patron Type, Use ILS defaults'], $patronTypes);
+
 		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 		$accountProfile = new AccountProfile();
 		$accountProfile->orderBy('name');
 		$accountProfileOptions = [];
 		$accountProfile->find();
 		while ($accountProfile->fetch()) {
-			if($accountProfile->name !== 'admin') {
+			if ($accountProfile->name !== 'admin') {
 				$accountProfileOptions[$accountProfile->id] = $accountProfile->name;
 			}
 		}
@@ -472,7 +482,7 @@ class Library extends DataObject {
 		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 		$novelist = new NovelistSetting();
 		$availableNovelistSettings = [
-			'-1' => 'None'
+			'-1' => 'None',
 		];
 		$novelist->orderBy('profile');
 		$novelist->find();
@@ -806,7 +816,7 @@ class Library extends DataObject {
 				'property' => 'isConsortialCatalog',
 				'type' => 'checkbox',
 				'label' => 'Consortial Interface?',
-				'description' => 'If this library is a consortial view',
+				'description' => 'Enabling this option will treat this library system as part of a consortium, including other Library systems on the same Aspen installation. This setting assumes showing items from all locations and includes all libraries in the Owning Library and Owning Location search facets. Additionally, all owned copies will show within a grouped work within search results.',
 				'hideInLists' => true,
 				'permissions' => ['Library Domain Settings'],
 				'forcesReindex' => true,
@@ -824,21 +834,10 @@ class Library extends DataObject {
 				'property' => 'showInSelectInterface',
 				'type' => 'checkbox',
 				'label' => 'Show In Select Interface (requires Create Search Interface)',
-				'description' => 'Whether or not this Library will show in the Select Interface Page. Access this page at {YourAspenURL}/MyAccount/SelectInterface',
+				'description' => 'Whether or not this Library will show in the Select Interface page. Access this page at {YourAspenURL}/MyAccount/SelectInterface',
 				'forcesReindex' => false,
 				'editPermissions' => ['Library Domain Settings'],
 				'default' => true,
-			],
-			'systemMessage' => [
-				'property' => 'systemMessage',
-				'type' => 'html',
-				'label' => 'System Message',
-				'description' => 'A message to be displayed at the top of the screen',
-				'size' => '80',
-				'maxLength' => '512',
-				'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>",
-				'hideInLists' => true,
-				'permissions' => ['Library Theme Configuration'],
 			],
 			'generateSitemap' => [
 				'property' => 'generateSitemap',
@@ -848,7 +847,6 @@ class Library extends DataObject {
 				'hideInLists' => true,
 				'permissions' => ['Library Domain Settings'],
 			],
-
 			// Basic Display //
 			'displaySection' => [
 				'property' => 'displaySection',
@@ -861,6 +859,7 @@ class Library extends DataObject {
 						'type' => 'oneToMany',
 						'label' => 'Themes',
 						'description' => 'The themes which can be used for the library',
+						'note' => 'Tip: sort your primary theme to the top of this list. Other themes assigned to this library will be available as additional Display options.',
 						'keyThis' => 'libraryId',
 						'keyOther' => 'libraryId',
 						'subObjectType' => 'LibraryTheme',
@@ -895,6 +894,7 @@ class Library extends DataObject {
 						'type' => 'textarea',
 						'label' => 'Additional CSS',
 						'description' => 'Extra CSS to apply to the site.  Will apply to all pages.',
+						'note' => 'This is a legacy setting. To customize with CSS, head to your <a href="/Admin/Themes">Theme</a> settings.',
 						'hideInLists' => true,
 						'permissions' => ['Library Theme Configuration'],
 					],
@@ -902,7 +902,7 @@ class Library extends DataObject {
 						'property' => 'headerText',
 						'type' => 'html',
 						'label' => 'Header Text',
-						'description' => 'Optional Text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.',
+						'description' => 'Optional text to display in the header, between the logo and the log in/out buttons.  Will apply to all pages.',
 						'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 						'hideInLists' => true,
 						'editPermissions' => ['Library Theme Configuration'],
@@ -911,10 +911,22 @@ class Library extends DataObject {
 						'property' => 'footerText',
 						'type' => 'html',
 						'label' => 'Footer Text',
-						'description' => 'Optional Text to display in the footer above the footer logo if displayed.  Will apply to all pages.',
+						'description' => 'Optional text to display in the footer above the footer logo if displayed.  Will apply to all pages.',
 						'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 						'hideInLists' => true,
 						'editPermissions' => ['Library Theme Configuration'],
+					],
+					'systemMessage' => [
+						'property' => 'systemMessage',
+						'type' => 'html',
+						'label' => 'System Message (Legacy Version)',
+						'description' => 'A message to be displayed at the top of the screen',
+						'note' => 'This is a legacy setting. For more options and features, use <a href="/Admin/SystemMessages">System Messages</a> under Local Catalog Enrichment.',
+						'size' => '80',
+						'maxLength' => '512',
+						'allowableTags' => "<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup><script>",
+						'hideInLists' => true,
+						'permissions' => ['Library Theme Configuration'],
 					],
 				],
 			],
@@ -930,8 +942,8 @@ class Library extends DataObject {
 					'facebookLink' => [
 						'property' => 'facebookLink',
 						'type' => 'text',
-						'label' => 'Facebook Link Url',
-						'description' => 'The url to Facebook (leave blank if the library does not have a Facebook account',
+						'label' => 'Facebook Link URL',
+						'description' => 'The URL to Facebook (leave blank if the library does not have a Facebook account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -939,8 +951,8 @@ class Library extends DataObject {
 					'twitterLink' => [
 						'property' => 'twitterLink',
 						'type' => 'text',
-						'label' => 'Twitter Link Url',
-						'description' => 'The url to Twitter (leave blank if the library does not have a Twitter account',
+						'label' => 'Twitter Link URL',
+						'description' => 'The URL to Twitter (leave blank if the library does not have a Twitter account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -948,8 +960,8 @@ class Library extends DataObject {
 					'youtubeLink' => [
 						'property' => 'youtubeLink',
 						'type' => 'text',
-						'label' => 'Youtube Link Url',
-						'description' => 'The url to Youtube (leave blank if the library does not have a Youtube account',
+						'label' => 'Youtube Link URL',
+						'description' => 'The URL to Youtube (leave blank if the library does not have a Youtube account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -957,8 +969,8 @@ class Library extends DataObject {
 					'instagramLink' => [
 						'property' => 'instagramLink',
 						'type' => 'text',
-						'label' => 'Instagram Link Url',
-						'description' => 'The url to Instagram (leave blank if the library does not have a Instagram account',
+						'label' => 'Instagram Link URL',
+						'description' => 'The URL to Instagram (leave blank if the library does not have a Instagram account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -966,8 +978,8 @@ class Library extends DataObject {
 					'pinterestLink' => [
 						'property' => 'pinterestLink',
 						'type' => 'text',
-						'label' => 'Pinterest Link Url',
-						'description' => 'The url to Pinterest (leave blank if the library does not have a Pinterest account',
+						'label' => 'Pinterest Link URL',
+						'description' => 'The URL to Pinterest (leave blank if the library does not have a Pinterest account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -975,8 +987,8 @@ class Library extends DataObject {
 					'goodreadsLink' => [
 						'property' => 'goodreadsLink',
 						'type' => 'text',
-						'label' => 'GoodReads Link Url',
-						'description' => 'The url to GoodReads (leave blank if the library does not have a GoodReads account',
+						'label' => 'GoodReads Link URL',
+						'description' => 'The URL to GoodReads (leave blank if the library does not have a GoodReads account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -984,8 +996,8 @@ class Library extends DataObject {
 					'tiktokLink' => [
 						'property' => 'tiktokLink',
 						'type' => 'text',
-						'label' => 'TikTok Link Url',
-						'description' => 'The url to TikTok (leave blank if the library does not have a TikTok account',
+						'label' => 'TikTok Link URL',
+						'description' => 'The URL to TikTok (leave blank if the library does not have a TikTok account)',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -993,8 +1005,8 @@ class Library extends DataObject {
 					'generalContactLink' => [
 						'property' => 'generalContactLink',
 						'type' => 'text',
-						'label' => 'General Contact Link Url',
-						'description' => 'The url to a General Contact Page, i.e web form or mailto link',
+						'label' => 'General Contact Link URL',
+						'description' => 'The URL to a General Contact Page, i.e web form or mailto link',
 						'size' => '40',
 						'maxLength' => 255,
 						'hideInLists' => true,
@@ -1250,9 +1262,9 @@ class Library extends DataObject {
 					'workstationId' => [
 						'property' => 'workstationId',
 						'type' => 'text',
-						'label' => 'Workstation Id (Polaris)',
+						'label' => 'Workstation ID (Polaris)',
 						'maxLength' => 10,
-						'description' => 'Optional workstation ID for transactions. If different than main workstation ID set for the account profile.',
+						'description' => 'Optional workstation ID for transactions. If different than main workstation ID, set for the account profile.',
 						'permissions' => ['Library ILS Connection'],
 					],
 					'scope' => [
@@ -1324,8 +1336,10 @@ class Library extends DataObject {
 					'showMessagingSettings' => [
 						'property' => 'showMessagingSettings',
 						'type' => 'checkbox',
-						'label' => 'Show Messaging Settings (Koha, Symphony)',
+						'label' => 'Show Messaging Settings',
+						'note' => 'Applies to Koha and Symphony Only',
 						'description' => 'Whether or not the user should be able to view their messaging settings.',
+
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
@@ -1352,14 +1366,15 @@ class Library extends DataObject {
 						'property' => 'displayItemBarcode',
 						'type' => 'checkbox',
 						'label' => 'Display item barcodes in patron checkouts',
-						'description' => 'Whether or not patrons can see item barcodes to materials they have checked out.',
+						'description' => 'Whether or not patrons can see item barcodes for materials they have checked out.',
 						'hideInLists' => true,
 						'permissions' => ['Library ILS Connection'],
 					],
 					'displayHoldsOnCheckout' => [
 						'property' => 'displayHoldsOnCheckout',
 						'type' => 'checkbox',
-						'label' => 'Display if patron checkouts have holds on them (Koha)',
+						'label' => 'Display if patron checkouts have holds on them',
+						'note' => 'Applies to Koha Only',
 						'description' => 'Whether or not patrons can see if checked out items have holds on them.',
 						'hideInLists' => true,
 						'permissions' => ['Library ILS Connection'],
@@ -1378,7 +1393,7 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Opting in to Reading History Updates ILS settings',
 						'description' => 'Whether or not the user should be opted in to reading history within the ILS when they opt in within Aspen.',
-						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
+						'note' => 'Applies to Carl.X, Koha, Millennium, Sierra, and Symphony Only',
 						'hideInLists' => true,
 						'default' => 0,
 						'permissions' => ['Library ILS Options'],
@@ -1388,7 +1403,7 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Opting out of Reading History Updates ILS settings',
 						'description' => 'Whether or not the user should be opted out of reading history within the ILS when they opt out within Aspen.',
-						'note' => 'Only applies to Carl.X, Koha, Millennium, Sierra, and Symphony',
+						'note' => 'Applies to Carl.X, Koha, Millennium, Sierra, and Symphony Only',
 						'hideInLists' => true,
 						'default' => 1,
 						'permissions' => ['Library ILS Options'],
@@ -1499,7 +1514,7 @@ class Library extends DataObject {
 								'property' => 'showAlternateLibraryCardPassword',
 								'type' => 'checkbox',
 								'label' => 'Show Alternate Library Card PIN/Password',
-								'description' => 'Whether or not the patron can enter an PIN/Password for their alternate library card',
+								'description' => 'Whether or not the patron can enter a PIN/Password for their alternate library card',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -1562,8 +1577,9 @@ class Library extends DataObject {
 							'allowNameUpdates' => [
 								'property' => 'allowNameUpdates',
 								'type' => 'checkbox',
-								'label' => 'Allow Patrons to Update Their Name (Setting applies to Koha only)',
+								'label' => 'Allow Patrons to Update Their Name',
 								'description' => 'Whether or not patrons should be able to update their name in their profile.',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 1,
 								'readOnly' => false,
@@ -1573,7 +1589,7 @@ class Library extends DataObject {
 								'property' => 'setUsePreferredNameInIlsOnUpdate',
 								'type' => 'checkbox',
 								'label' => 'Set "Use Preferred Name" in the ILS when updating preferred name.',
-								'description' => 'Whether or not the Use Preferred Name checkbox is updated when setting preferred name.',
+								'description' => 'Checking this will ensure that updates to Preferred Name from the Aspen user account will set the Use Preferred Name preference in Symphony.',
 								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 1,
@@ -1583,8 +1599,9 @@ class Library extends DataObject {
 							'allowDateOfBirthUpdates' => [
 								'property' => 'allowDateOfBirthUpdates',
 								'type' => 'checkbox',
-								'label' => 'Allow Patrons to Update Their Date of Birth (Setting applies to Koha only)',
+								'label' => 'Allow Patrons to Update Their Date of Birth',
 								'description' => 'Whether or not patrons should be able to update their date of birth in their profile.',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 								'readOnly' => false,
@@ -1624,7 +1641,7 @@ class Library extends DataObject {
 								'property' => 'useAllCapsWhenUpdatingProfile',
 								'type' => 'checkbox',
 								'label' => 'Use All Caps When Updating Profile',
-								'description' => 'Whether or not modifications to the patron profile will be submitted using all caps',
+								'description' => 'Enabling this option will force all account updates to submit in all caps.',
 								'default' => 0,
 								'permissions' => ['Library ILS Options'],
 							],
@@ -1639,16 +1656,17 @@ class Library extends DataObject {
 							'bypassReviewQueueWhenUpdatingProfile' => [
 								'property' => 'bypassReviewQueueWhenUpdatingProfile',
 								'type' => 'checkbox',
-								'label' => 'Bypass Review Queue Updating Profile (Koha only)',
-								'description' => 'Whether or not the Koha review queue for patron modifications is bypassed when updates are submitted',
+								'label' => 'Bypass Review Queue When Updating Profile',
+								'note' => 'Applies to Koha Only',
+								'description' => 'Enabling this will allow patron account modifications to bypass the review queue in Koha. Updates will be applied to the user account automatically without needing approval.',
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
 							'enableForgotPasswordLink' => [
 								'property' => 'enableForgotPasswordLink',
 								'type' => 'checkbox',
-								'label' => 'Enable Forgot Password Link',
-								'description' => 'Whether or not the user can click a link to reset their password.',
+								'label' => 'Enable "Forgot Password?" Link on Login Screen',
+								'description' => 'Checking this will enable a &quot;Forgot Password?&quot; link on the login screen, which will allow users to reset their PIN/password. The user account must have an email address on file to reset their PIN/password with this link.',
 								'hideInLists' => true,
 								'default' => 1,
 								'permissions' => ['Library ILS Connection'],
@@ -1656,8 +1674,8 @@ class Library extends DataObject {
 							'showAlternateLibraryOptionsInProfile' => [
 								'property' => 'showAlternateLibraryOptionsInProfile',
 								'type' => 'checkbox',
-								'label' => 'Allow Patrons to Update their Alternate Libraries',
-								'description' => 'Allow Patrons to See and Change Alternate Library Settings in the Catalog Options Tab in their profile.',
+								'label' => 'Allow Patrons to Update their Alternate Pickup Locations',
+								'description' => 'Enabling this will allow patrons to see and modify alternate pickup locations in the &quot;Your Preferences&quot; section of their account. Selecting alternate pickup locations will sort those options toward the top of the pickup location options when placing holds.',
 								'hideInLists' => true,
 								'default' => 1,
 								'permissions' => ['Library ILS Options'],
@@ -1666,7 +1684,7 @@ class Library extends DataObject {
 								'property' => 'showWorkPhoneInProfile',
 								'type' => 'checkbox',
 								'label' => 'Show Work Phone in Profile',
-								'description' => 'Whether or not patrons should be able to change a secondary/work phone number in their profile.',
+								'description' => 'Whether or not patrons should be able to change a secondary or work phone number in their profile.',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1688,7 +1706,8 @@ class Library extends DataObject {
 									1 => 'CITY and STATE fields',
 								],
 								'label' => 'City / State Field (Symphony Only)',
-								'description' => 'The field to load and update city and state from (symphony only).',
+								'description' => 'The field from which to load and update city and state.',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1697,7 +1716,7 @@ class Library extends DataObject {
 								'property' => 'addSMSIndicatorToPhone',
 								'type' => 'checkbox',
 								'label' => 'Add SMS Indicator to Primary Phone',
-								'description' => 'Whether or not add ### TEXT ONLY to the user\'s primary phone number when they opt in to SMS notices.',
+								'description' => 'Whether or not to add ### TEXT ONLY to the user\'s primary phone number when they opt in to SMS notices.',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1823,8 +1842,8 @@ class Library extends DataObject {
 							'showLogMeOutAfterPlacingHolds' => [
 								'property' => 'showLogMeOutAfterPlacingHolds',
 								'type' => 'checkbox',
-								'label' => 'Show Log Me Out After Placing Holds',
-								'description' => 'Whether or a checkbox should be shown that will automatically log patrons out after a hold is placed.',
+								'label' => 'Show "Log Me Out" Option When Placing Holds',
+								'description' => 'Enabling this will display a checkbox option to automatically log patrons out after their hold is placed.',
 								'hideInLists' => true,
 								'default' => 1,
 							],
@@ -1843,7 +1862,7 @@ class Library extends DataObject {
 								'property' => 'showVolumesWithLocalCopiesFirst',
 								'type' => 'checkbox',
 								'label' => 'Show volumes with local copies first when placing holds',
-								'description' => 'When true, volumes that have at least one copy owned locally are shown before volumes with no local copies.',
+								'description' => 'When enabled, volumes that have at least one copy owned locally are shown before volumes with no local copies.',
 								'default' => 0,
 							],
 							'allowFreezeHolds' => [
@@ -1910,8 +1929,9 @@ class Library extends DataObject {
 									1 => 'Use Patron Home Library',
 									2 => 'Use Pickup Location',
 								],
-								'label' => 'Hold Placed At (Symphony Only)',
+								'label' => 'Hold Placed At',
 								'description' => 'Determines how the hold placed at value should be set when placing holds',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -1920,17 +1940,19 @@ class Library extends DataObject {
 								'type' => 'enum',
 								'values' => [
 									'SYSTEM' => 'System',
-									'GROUP' => 'Group'
+									'GROUP' => 'Group',
 								],
-								'label' => 'Hold Range (Symphony Only)',
+								'label' => 'Hold Range',
 								'description' => 'The hold range to use when placing holds in Symphony',
+								'note' => 'Applies to Symphony Only',
 								'default' => 'SYSTEM',
 							],
 							'systemHoldNote' => [
 								'property' => 'systemHoldNote',
 								'type' => 'text',
-								'label' => 'System Hold Note (Symphony Only)',
+								'label' => 'System Hold Note',
 								'description' => 'A note to automatically add when placing a hold',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'maxLength' => 50,
 								'default' => '',
@@ -1938,8 +1960,9 @@ class Library extends DataObject {
 							'systemHoldNoteMasquerade' => [
 								'property' => 'systemHoldNoteMasquerade',
 								'type' => 'text',
-								'label' => 'System Hold Note Masquerade (Symphony Only)',
+								'label' => 'System Hold Note Masquerade',
 								'description' => 'A note to automatically add when placing a hold when a librarian is Masquerading and places a hold',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'maxLength' => 50,
 								'default' => '',
@@ -1991,7 +2014,7 @@ class Library extends DataObject {
 								'property' => 'defaultRememberMe',
 								'type' => 'checkbox',
 								'label' => 'Check "Remember Me" by default when outside the library',
-								'description' => 'Whether or not to check the "Remember Me" option by default when logging in outside the library',
+								'description' => 'Whether or not to check the &quot;Remember Me&quot; option by default when logging in outside the library',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2049,6 +2072,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show OPAC Notes',
 								'description' => 'Whether or not OPAC/Web Notes from the ILS should be shown',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2057,6 +2081,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Borrower Notes',
 								'description' => 'Whether or not Borrower Messages from the ILS should be shown',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2065,6 +2090,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Debarment Notes',
 								'description' => 'Whether or not Debarment Messages from the ILS should be shown',
+								'note' => 'Applies to Koha Only',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -2075,7 +2101,7 @@ class Library extends DataObject {
 						'type' => 'section',
 						'label' => 'Self Registration',
 						'hideInLists' => true,
-						'permissions' => ['Library Self Registration'],
+						'permissions' => ['Library Registration'],
 						'properties' => [
 							'enableSelfRegistration' => [
 								'property' => 'enableSelfRegistration',
@@ -2115,26 +2141,30 @@ class Library extends DataObject {
 							'selfRegRequirePhone' => [
 								'property' => 'selfRegRequirePhone',
 								'type' => 'checkbox',
-								'label' => 'Self Registration requires Phone Number (Symphony Only)',
-								'description' => 'Whether or not phone number is required when self registering',
+								'label' => 'Self Registration requires Phone Number',
+								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
 							],
 							'selfRegRequireEmail' => [
 								'property' => 'selfRegRequireEmail',
 								'type' => 'checkbox',
-								'label' => 'Self Registration requires Email (Symphony Only)',
-								'description' => 'Whether or not email is required when self registering',
+								'label' => 'Self Registration requires Email',
+								'description' => 'Whether or not email is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
 							],
 							'promptForParentInSelfReg' => [
 								'property' => 'promptForParentInSelfReg',
 								'type' => 'checkbox',
-								'label' => 'Prompt For Parent Information (Symphony Only)',
-								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile.',
+								'label' => 'Prompt For Parent Information',
+								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
 							],
 							'promptForSMSNoticesInSelfReg' => [
 								'property' => 'promptForSMSNoticesInSelfReg',
 								'type' => 'checkbox',
-								'label' => 'Prompt For SMS Notices (Symphony Only)',
-								'description' => 'Whether or not SMS Notification information should be requested',
+								'label' => 'Prompt For SMS Notices',
+								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
 							],
 							'useAllCapsWhenSubmittingSelfRegistration' => [
 								'property' => 'useAllCapsWhenSubmittingSelfRegistration',
@@ -2191,11 +2221,53 @@ class Library extends DataObject {
 								'property' => 'selfRegistrationUserProfile',
 								'type' => 'text',
 								'label' => 'Self Registration Profile',
-								'description' => 'The Profile to use during self registration (Symphony).',
+								'description' => 'The Profile to use during self registration (Symphony Only).',
+								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 'SELFREG',
 							],
 						],
+					],
+					'thirdPartyRegistrationSection' => [
+						'property' => 'thirdPartyRegistrationSection',
+						'type' => 'section',
+						'label' => 'Third Party Registration',
+						'hideInLists' => true,
+						'permissions' => ['Library Registration'],
+						'properties' => [
+							'enableThirdPartyRegistration' => [
+								'property' => 'enableThirdPartyRegistration',
+								'type' => 'checkbox',
+								'label' => 'Enable Third Party Registration',
+								'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.',
+								'hideInLists' => true,
+								'default' => true,
+							],
+							'thirdPartyRegistrationLocation' => [
+								'property' => 'thirdPartyRegistrationLocation',
+								'type' => 'enum',
+								'values' => $thirdPartyRegistrationLocations,
+								'label' => 'Home Location for Third Party Registrations',
+								'description' => 'Determines what location is applied to the patron when self registering',
+								'hideInLists' => true,
+							],
+							'thirdPartyPTypeAddressValidated' => [
+								'property' => 'thirdPartyPTypeAddressValidated',
+								'type' => 'enum',
+								'values' => $patronTypes,
+								'label' => 'Patron Type for Third Party Registrations when address has been validated',
+								'description' => 'Determines the patron type to be used when the address has been validated in the third party system.',
+								'hideInLists' => true,
+							],
+							'thirdPartyPTypeAddressNotValidated' => [
+								'property' => 'thirdPartyPTypeAddressNotValidated',
+								'type' => 'enum',
+								'values' => $patronTypes,
+								'label' => 'Patron Type for Third Party Registrations when address has been not been validated',
+								'description' => 'Determines the patron type to be used when the address has been not validated in the third party system.',
+								'hideInLists' => true,
+							],
+						]
 					],
 					'masqueradeModeSection' => [
 						'property' => 'masqueradeModeSection',
@@ -2217,6 +2289,7 @@ class Library extends DataObject {
 								'type' => 'integer',
 								'label' => 'Masquerade Mode Automatic Timeout Length',
 								'description' => 'The length of time before an idle user\'s Masquerade session automatically ends in seconds.',
+								'note' => 'Enter the length of time in seconds.',
 								'size' => '8',
 								'hideInLists' => true,
 								'max' => 240,
@@ -2225,7 +2298,7 @@ class Library extends DataObject {
 								'property' => 'allowReadingHistoryDisplayInMasqueradeMode',
 								'type' => 'checkbox',
 								'label' => 'Allow Display of Reading History in Masquerade Mode',
-								'description' => 'This option allows Guiding Users to view the Reading History of the masqueraded user.',
+								'description' => 'This option allows masquerading users to view the Reading History of the masqueraded user.',
 								'hideInLists' => true,
 								'default' => false,
 							],
@@ -2258,7 +2331,7 @@ class Library extends DataObject {
 							8 => 'ACI Speedpay',
 							9 => 'InvoiceCloud',
 							10 => 'Certified Payments by Deluxe',
-							11 => 'PayPal Payflow'
+							11 => 'PayPal Payflow',
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2278,8 +2351,9 @@ class Library extends DataObject {
 					'finePaymentOrder' => [
 						'property' => 'finePaymentOrder',
 						'type' => 'text',
-						'label' => 'Fine Payment Order by type (separated with pipes)',
-						'description' => 'The order fines should be paid in separated by pipes',
+						'label' => 'Fine Payment Order by type',
+						'description' => 'The order in which fines should be paid, separated with pipes |',
+						'note' => 'Separate values with pipes. Example: Fines|Lost|Overdue',
 						'hideInLists' => true,
 						'default' => 'default',
 						'size' => 80,
@@ -2414,6 +2488,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Symphony Payment Type',
 						'description' => 'Payment type to use when adding transactions to Symphony.',
+						'note' => 'Applies to Symphony Only',
 						'hideInLists' => true,
 						'default' => '',
 						'maxLength' => 8,
@@ -2511,8 +2586,8 @@ class Library extends DataObject {
 							'showAdvancedSearchbox' => [
 								'property' => 'showAdvancedSearchbox',
 								'type' => 'checkbox',
-								'label' => 'Show Advanced Search Link',
-								'description' => 'Whether or not users should see the advanced search link below the search box.',
+								'label' => 'Show Advanced Search Option',
+								'description' => 'Enabling this will show the Advanced Search option in the &quot;search by&quot; dropdown menu next to the search box.',
 								'hideInLists' => true,
 								'default' => 1,
 							],
@@ -2644,7 +2719,7 @@ class Library extends DataObject {
 						'property' => 'allowableListNames',
 						'type' => 'text',
 						'label' => 'Allowable List Names',
-						'description' => 'A pipe separated list of valid names for the patron to choose, leave blank to allow the patron to enter their own name for a list.',
+						'description' => 'A pipe separated list of valid names for the patron to choose. Leave blank to allow the patron to enter their own name for a list.',
 						'hideInLists' => true,
 						'default' => '',
 						'maxLength' => '500',
@@ -2652,8 +2727,8 @@ class Library extends DataObject {
 					'showConvertListsFromClassic' => [
 						'property' => 'showConvertListsFromClassic',
 						'type' => 'checkbox',
-						'label' => 'Enable Importing Lists From Old Catalog',
-						'description' => 'Whether or not users can import lists from the ILS',
+						'label' => 'Enable Option to Import Lists From Old Catalog',
+						'description' => 'Whether or not users have the option to import lists from the ILS.',
 						'hideInLists' => true,
 						'default' => 0,
 					],
@@ -2669,7 +2744,7 @@ class Library extends DataObject {
 						'property' => 'showCitationStyleGuides',
 						'type' => 'checkbox',
 						'label' => 'Show Citation Style Guides',
-						'description' => 'Whether or not citations style guides should be shown',
+						'description' => 'Whether or not citation style guides should be shown',
 						'default' => '1',
 						'hideInLists' => true,
 					],
@@ -2733,7 +2808,7 @@ class Library extends DataObject {
 						'property' => 'showItsHere',
 						'type' => 'checkbox',
 						'label' => 'Show It\'s Here',
-						'description' => 'Whether or not the holdings summary should show It\'s here based on IP and the currently logged in patron\'s location.',
+						'description' => 'Enabling this will change the &quot;On Shelf&quot; status label for available titles to &quot;It\'s Here&quot; based on a user\'s current location when IP settings are enabled for that location.',
 						'hideInLists' => true,
 						'default' => 1,
 					],
@@ -2776,8 +2851,8 @@ class Library extends DataObject {
 					'displayMaterialsRequestToPublic' => [
 						'property' => 'displayMaterialsRequestToPublic',
 						'type' => 'checkbox',
-						'label' => 'Turn on Materials Request for Public',
-						'description' => 'Whether or not Materials Request should be shown.',
+						'label' => 'Enable Materials Request for the Public',
+						'description' => 'Whether or not links to the Materials Request should be shown. Materials request links can be found at the bottom of search results and (unless using an external link) within the user account.',
 						'hideInLists' => true,
 						'default' => 1,
 					],
@@ -2786,6 +2861,7 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Send email to library when Materials Requests are created',
 						'description' => 'Whether or not an email should be sent out when a new Materials Request has been created.',
+						'note' => 'Applies to Aspen Request System Only',
 						'hideInLists' => true,
 					],
 					'materialsRequestNewEmail' => [
@@ -2793,6 +2869,7 @@ class Library extends DataObject {
 						'type' => 'text',
 						'label' => 'Email to receive notifications for new Materials Requests',
 						'description' => 'The email address that will receive emails when a patron creates a new Materials Request.',
+						'note' => 'Applies to Aspen Request System Only',
 						'maxLength' => 125,
 						'hideInLists' => true,
 					],
@@ -2801,6 +2878,7 @@ class Library extends DataObject {
 						'type' => 'checkbox',
 						'label' => 'Send an email to staff when they are assigned a Materials Request',
 						'description' => 'Whether or not staff are notified when assigned a Materials Request',
+						'note' => 'Applies to Aspen Request System Only',
 						'hideInLists' => true,
 					],
 					'allowDeletingILSRequests' => [
@@ -2858,7 +2936,7 @@ class Library extends DataObject {
 						'property' => 'materialsRequestFieldsToDisplay',
 						'type' => 'oneToMany',
 						'label' => 'Fields to display on Manage Materials Request Table',
-						'description' => 'Fields displayed when materials requests are listed for Managing',
+						'description' => 'Determine which columns to display on the Manage Requests page.',
 						'keyThis' => 'libraryId',
 						'keyOther' => 'libraryId',
 						'subObjectType' => 'MaterialsRequestFieldsToDisplay',
@@ -2980,41 +3058,34 @@ class Library extends DataObject {
 						'size' => '200',
 					],
 
-					'prospectorSection' => [
-						'property' => 'prospectorSection',
+					'innReachSection' => [
+						'property' => 'innReachSection',
 						'type' => 'section',
-						'label' => 'Prospector',
+						'label' => 'INN-Reach',
 						'hideInLists' => true,
 						'helpLink' => '',
 						'properties' => [
-							'repeatInProspector' => [
-								'property' => 'repeatInProspector',
+							'repeatInInnReach' => [
+								'property' => 'repeatInInnReach',
 								'type' => 'checkbox',
-								'label' => 'Repeat In Prospector',
-								'description' => 'Turn on to allow repeat search in Prospector functionality.',
+								'label' => 'Repeat In INN-Reach',
+								'description' => 'Turn on to allow repeat search in INN-Reach functionality.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
-							'prospectorCode' => [
-								'property' => 'prospectorCode',
-								'type' => 'text',
-								'label' => 'Prospector Code',
-								'description' => 'The code used to identify this location within Prospector. Leave blank if items for this location are not in Prospector.',
-								'hideInLists' => true,
-							],
-							'enableProspectorIntegration' => [
-								'property' => 'enableProspectorIntegration',
+							'enableInnReachIntegration' => [
+								'property' => 'enableInnReachIntegration',
 								'type' => 'checkbox',
-								'label' => 'Enable Prospector Integration',
-								'description' => 'Whether or not Prospector Integrations should be displayed for this library.',
+								'label' => 'Enable INN-Reach Integration',
+								'description' => 'Whether or not INN-Reach Integrations should be displayed for this library.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
-							'showProspectorResultsAtEndOfSearch' => [
-								'property' => 'showProspectorResultsAtEndOfSearch',
+							'showInnReachResultsAtEndOfSearch' => [
+								'property' => 'showInnReachResultsAtEndOfSearch',
 								'type' => 'checkbox',
-								'label' => 'Show Prospector Results At End Of Search',
-								'description' => 'Whether or not Prospector Search Results should be shown at the end of search results.',
+								'label' => 'Show INN-Reach Results At End Of Search',
+								'description' => 'Whether or not INN-Reach Search Results should be shown at the end of search results.',
 								'hideInLists' => true,
 								'default' => 0,
 							],
@@ -3418,7 +3489,7 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-				]
+				],
 			],
 		];
 
@@ -3432,7 +3503,7 @@ class Library extends DataObject {
 			if ($accountProfile->ils == 'sierra' || $accountProfile->ils == 'millennium') {
 				$hasCourseReserves = true;
 				$hasScoping = true;
-			}elseif ($accountProfile->ils == 'koha') {
+			} elseif ($accountProfile->ils == 'koha') {
 				$isKoha = true;
 			}
 		}
@@ -3490,7 +3561,7 @@ class Library extends DataObject {
 
 	static $searchLibrary = [];
 
-	static function hasEventSettings() : bool {
+	static function hasEventSettings(): bool {
 		global $enabledModules;
 		global $library;
 
@@ -3646,10 +3717,6 @@ class Library extends DataObject {
 
 	public function validateCategoryId() {
 		return $this->validateSso('ssoCategoryIdAttr', 'ssoCategoryIdFallback', 'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value');
-		$validationResults = [
-			'validatedOk' => true,
-			'errors' => [],
-		];
 	}
 
 	public function __get($name) {
@@ -3783,7 +3850,7 @@ class Library extends DataObject {
 	public function update($context = '') {
 		//Make sure we have no other default libraries since
 		if ($this->isDefault == 1 && $this->_changedFields != null) {
-			if(in_array('isDefault', $this->_changedFields)) {
+			if (in_array('isDefault', $this->_changedFields)) {
 				$library = new Library();
 				$library->isDefault = 1;
 				$library->find();
@@ -3975,6 +4042,7 @@ class Library extends DataObject {
 		$allThemes = $this->getThemes();
 		return reset($allThemes);
 	}
+
 	/**
 	 * @return LibraryTheme[]|null
 	 */
@@ -4397,7 +4465,7 @@ class Library extends DataObject {
 			$activeTheme = reset($allThemes);
 			$theme = new Theme();
 			$theme->id = $activeTheme->id;
-			if($theme->find(true)) {
+			if ($theme->find(true)) {
 				$theme->applyDefaults();
 				if ($theme->logoName) {
 					$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
@@ -4437,5 +4505,15 @@ class Library extends DataObject {
 		return $apiInfo;
 	}
 
-
+	public function updateStructureForEditingObject($structure) : array {
+		//Get locations for the active library and apply those to third party registration locations
+		$location = new Location();
+		$location->libraryId = $this->libraryId;
+		$thirdPartyRegistrationLocations = $location->fetchAll('locationId', 'displayName');
+		$thirdPartyRegistrationLocations = array_merge([
+			'-1' => 'None, Use ILS defaults'
+		], $thirdPartyRegistrationLocations);
+		$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
+		return $structure;
+	}
 }
