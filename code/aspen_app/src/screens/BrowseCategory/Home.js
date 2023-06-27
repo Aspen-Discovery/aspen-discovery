@@ -16,6 +16,8 @@ import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { NotificationsOnboard } from '../../components/NotificationsOnboard';
+import { getNotificationPreference } from '../../components/Notifications';
 
 let maxCategories = 5;
 
@@ -24,7 +26,8 @@ export const DiscoverHomeScreen = () => {
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
-     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
+     const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(false);
+     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -149,6 +152,45 @@ export const DiscoverHomeScreen = () => {
                updateBrowseCategoryList(data);
           },
      });
+
+     useFocusEffect(
+          React.useCallback(() => {
+               const checkSettings = async () => {
+                    console.log('onboardAppNotifications: ' + user.onboardAppNotifications);
+                    if (!_.isUndefined(user.onboardAppNotifications)) {
+                         if (_.isObject(notificationSettings)) {
+                              console.log('notificationSettings is object.');
+                              const currentPreferences = Object.values(notificationSettings);
+                              for await (const pref of currentPreferences) {
+                                   const i = _.findIndex(currentPreferences, ['option', pref.option]);
+                                   const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
+                                   if (result && i !== -1) {
+                                        if (result.success) {
+                                             if (pref.option === 'notifySavedSearch' || pref.option === 'notifyCustom' || pref.option === 'notifyAccount') {
+                                                  if (result.allow) {
+                                                       setShowNotificationsOnboarding(true);
+                                                  }
+                                             }
+                                        }
+                                   }
+                              }
+                         } else {
+                              console.log('notificationSettings is not object.');
+                              setShowNotificationsOnboarding(true);
+                         }
+                    }
+               };
+               checkSettings().then(() => {
+                    return () => checkSettings();
+               });
+          }, [notificationSettings])
+     );
+
+     // load notification onboarding prompt
+     console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
+     if (showNotificationsOnboarding && !alreadyCheckedNotifications) {
+          return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
+     }
 
      const renderHeader = (title, key, user, url) => {
           return (

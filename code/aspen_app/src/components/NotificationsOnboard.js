@@ -6,16 +6,20 @@ import { LanguageContext, LibrarySystemContext, UserContext } from '../context/i
 import { getTermFromDictionary } from '../translations/TranslationService';
 import { navigateStack } from '../helpers/RootNavigator';
 import { getNotificationPreference } from './Notifications';
+import { updateNotificationOnboardingStatus } from '../util/api/user';
 
-export const NotificationsOnboard = () => {
+export const NotificationsOnboard = (props) => {
+     const { setAlreadyCheckedNotifications } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { user, notificationSettings, expoToken } = React.useContext(UserContext);
      const [isOpen, setIsOpen] = React.useState(true);
      const [onboardingBody, setOnboardingBody] = React.useState('');
+     const [onboardingButton, setOnboardingButton] = React.useState('');
      const onClose = async () => {
           setIsOpen(false);
-          await updateNotificationOnboardingStatus(user, library.baseUrl);
+          setAlreadyCheckedNotifications(true);
+          await updateNotificationOnboardingStatus(0, user, library.baseUrl);
      };
      const cancelRef = React.useRef(null);
 
@@ -25,8 +29,10 @@ export const NotificationsOnboard = () => {
                     const doNotificationSettingsExist = await checkIfAnyNotificationSettingsExist(notificationSettings, library.baseUrl, expoToken);
                     if (doNotificationSettingsExist) {
                          setOnboardingBody(getTermFromDictionary(language, 'onboard_notifications_body_update'));
+                         setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_update'));
                     } else {
                          setOnboardingBody(getTermFromDictionary(language, 'onboard_notifications_body_new'));
+                         setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_new'));
                     }
                };
                checkSettings().then(() => {
@@ -51,7 +57,7 @@ export const NotificationsOnboard = () => {
                                         onClose();
                                         navigateStack('AccountScreenTab', 'SettingsNotifications', {});
                                    }}>
-                                   {getTermFromDictionary(language, 'onboard_notifications_button_ok')}
+                                   {onboardingButton}
                               </Button>
                          </Button.Group>
                     </AlertDialog.Footer>
@@ -79,5 +85,3 @@ async function checkIfAnyNotificationSettingsExist(notificationSettings, url, ex
      }
      return false;
 }
-
-async function updateNotificationOnboardingStatus(user, url) {}
