@@ -141,7 +141,7 @@ class Language extends DataObject {
 				$term = new TranslationTerm();
 				$term->id = $translationTermId;
 				if($term->find(true))  {
-					if($term->isMetadata == 0 && $term->isAdminEnteredData == 0) {
+					if($term->isMetadata == 0 && $term->isAdminEnteredData == 0 && ($term->isPublicFacing == 1 || $term->isAdminFacing == 1)) {
 						$translation = new Translation();
 						$translation->termId = $translationTermId;
 						$translation->languageId = $this->id;
