@@ -146,6 +146,10 @@ class CommunicoIndexer {
 		nextYear.setTime(new Date());
 		nextYear.add(YEAR, 1);
 		JSONArray communicoEvents = getCommunicoEvents();
+		if (communicoEvents == null) {
+			logEntry.incErrors("Did not get any events returned from the Communico API");
+			return;
+		}
 		if (doFullReload) {
 			try {
 				solrUpdateServer.deleteByQuery("type:event_communico AND source:" + this.settingsId);
@@ -413,7 +417,7 @@ class CommunicoIndexer {
 		//Check to see if we already have a valid token
 		if (communicoAPIToken != null){
 			if (communicoAPIExpiration - new Date().getTime() > 0){
-				logEntry.incErrors("token is still valid");
+				logEntry.addNote("token is still valid");
 				return true;
 			}else{
 				logEntry.incErrors("Token has expired");
@@ -465,9 +469,11 @@ class CommunicoIndexer {
 					response.append(line);
 				}
 				rd.close();
+				logEntry.incErrors("Did not get an access token from the Communico Authentication service: " + response);
 				return false;
 			}
 		} catch (SocketTimeoutException toe){
+			logEntry.incErrors("Timeout connecting to Communico Authentication service");
 			throw toe;
 		} catch (Exception e) {
 			logEntry.incErrors("Error connecting to Communico API", e );
@@ -513,6 +519,8 @@ class CommunicoIndexer {
 									events.put(events1.get(i));
 								}
 							}
+						} else {
+							logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
 						}
 					} catch (Exception e) {
 						logEntry.incErrors("Error getting events from " + apiEventsURL, e);
