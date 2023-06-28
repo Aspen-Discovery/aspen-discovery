@@ -106,6 +106,7 @@
   "notifications_manage": "Manage Notifications",
   "notification_settings": "Notification Settings",
   "notifications_allow": "Allow Notifications",
+  "notifications_enable_all": "Enable all",
   "open_barcode": "Open Barcode",
   "linked_account_to_manage": "Account to Manage",
   "linked_add_account": "Add Account",
