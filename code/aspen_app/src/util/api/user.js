@@ -779,7 +779,7 @@ export async function getSavedSearch(id, language = 'en', url) {
  ******************************************************************* **/
 /**
  * Update the status on if the user should be prompted for notification onboarding
- * @param {number} status
+ * @param {boolean} status
  * @param {string} url
  * @param {string} language
  **/
