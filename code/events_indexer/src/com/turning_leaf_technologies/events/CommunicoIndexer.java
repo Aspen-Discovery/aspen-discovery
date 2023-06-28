@@ -39,6 +39,7 @@ import java.util.zip.CRC32;
 import static java.util.Calendar.YEAR;
 
 class CommunicoIndexer {
+	private final Logger logger;
 	private long settingsId;
 	private String name;
 	private String baseUrl;
@@ -68,6 +69,7 @@ class CommunicoIndexer {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
+		this.logger = logger;
 		if (this.baseUrl.endsWith("/")) {
 			this.baseUrl = this.baseUrl.substring(0, this.baseUrl.length() - 1);
 		}
@@ -471,6 +473,7 @@ class CommunicoIndexer {
 				}
 				rd.close();
 				logEntry.incErrors("Did not get an access token from the Communico Authentication service: " + response);
+				logger.error(clientId + ":" + clientSecret);
 				return false;
 			}
 		} catch (SocketTimeoutException toe){
