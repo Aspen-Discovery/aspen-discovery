@@ -231,7 +231,7 @@ export async function getNotificationPreference(url, pushToken, type) {
      }
 }
 
-export async function setNotificationPreference(url, pushToken, type, value) {
+export async function setNotificationPreference(url, pushToken, type, value, showToast = true) {
      let postBody = await postData();
      postBody.append('pushToken', pushToken);
      postBody.append('type', type);
@@ -249,15 +249,21 @@ export async function setNotificationPreference(url, pushToken, type, value) {
      const response = await api.post('/UserAPI?method=setNotificationPreference', postBody);
      if (response.ok) {
           if (response.data.result.success === true) {
-               popAlert(response.data.result.title, response.data.result.message, 'success');
+               if (showToast) {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
+               }
                return response.data.result;
           } else {
-               popAlert(response.data.result.title ?? 'Unknown Error', response.data.result.message, 'error');
+               if (showToast) {
+                    popAlert(response.data.result.title ?? 'Unknown Error', response.data.result.message, 'error');
+               }
                return false;
           }
      } else {
           const problem = problemCodeMap(response.problem);
-          popToast(problem.title, problem.message, 'warning');
+          if (showToast) {
+               popToast(problem.title, problem.message, 'warning');
+          }
           return false;
      }
 }

@@ -8,7 +8,7 @@
 					<div>
 						<a class="btn btn-primary" role="button" href="/MyAccount/EmailResetPin">{translate text='Try Again' isPublicFacing=true}</a>
 					</div>
-				{elseif $result.message}
+				{elseif !empty($result.message)}
 					<div class="alert alert-success">{$result.message}</div>{* Translation should be done prior to display *}
 					<p>
 						<a class="btn btn-primary" role="button" href="/MyAccount/Login">{translate text='Sign in' isPublicFacing=true}</a>

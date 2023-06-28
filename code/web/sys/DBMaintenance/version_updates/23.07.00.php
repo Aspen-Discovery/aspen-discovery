@@ -45,6 +45,14 @@ function getUpdates23_07_00(): array {
 		], //update_collection_spotlight_number_of_titles
 
 		//kirstien
+		'user_onboard_notifications' => [
+			'title' => 'Add column to store if user should be onboarded about notifications',
+			'description' => 'Add column in user table to store if they should be onboarded about app notifications when opening Aspen LiDA.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1',
+			],
+		], //user_onboard_notifications
 
 		//kodi
 		'add_disallow_third_party_covers' => [
@@ -55,6 +63,9 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE bookcover_info ADD COLUMN disallowThirdPartyCover TINYINT(1) DEFAULT 0',
 			],
 		], //add_disallow_third_party_covers
+
+
+		// other
 		'theme_cover_default_image' => [
 			'title' => 'Theme - Set default image for cover images',
 			'description' => 'Update theme table to have default values for the default cover image',
@@ -78,6 +89,5 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE themes ADD COLUMN moviesImageSelected VARCHAR(100) default ''",
 			],
 		], //theme_format_category_icons
-		//other
 	];
 }

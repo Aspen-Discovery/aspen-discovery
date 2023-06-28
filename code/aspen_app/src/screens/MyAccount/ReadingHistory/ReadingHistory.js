@@ -10,7 +10,7 @@ import CachedImage from 'expo-cached-image';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, getPatronCheckedOutItems, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView, Platform } from 'react-native';
 import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
 import { loadError } from '../../../components/loadError';
 import { navigateStack } from '../../../helpers/RootNavigator';
@@ -197,6 +197,7 @@ export const MyReadingHistory = () => {
                          <HStack space={2}>
                               <FormControl w={150}>
                                    <Select
+                                        isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"
                                         selectedValue={sort}
                                         accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
