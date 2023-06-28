@@ -436,15 +436,16 @@ class CommunicoIndexer {
 				});
 			}
 			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 			String encoded = Base64.encodeBase64String((clientId + ":" + clientSecret).getBytes());
 			conn.setRequestProperty("Authorization", "Basic " + encoded);
+			conn.setRequestProperty("Host", "api.communico.co");
 			conn.setReadTimeout(30000);
 			conn.setConnectTimeout(30000);
 			conn.setDoOutput(true);
 
 			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
-			wr.write("{\n" + "\"grant_type\": \"client_credentials\"\n" + "}");
+			wr.write("grant_type=client_credentials");
 			wr.flush();
 			wr.close();
 
