@@ -4,16 +4,17 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
+import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { reloadProfile } from '../../../util/api/user';
+import { getPatronCheckedOutItems, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
-import * as Notifications from 'expo-notifications';
 
 export const Settings_NotificationOptions = () => {
-     const [isLoading, setLoading] = React.useState(true);
+     const isFetchingUserProfile = useIsFetching({ queryKey: ['user'] });
+     const [isLoading, setLoading] = React.useState(false);
      const [error, showError] = React.useState(false);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [allowNotifications, setAllowNotifications] = React.useState(!Device.isDevice);
@@ -29,6 +30,7 @@ export const Settings_NotificationOptions = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
+                    setLoading(true);
                     await createChannelsAndCategories();
                     if (expoToken) {
                          if (aspenToken) {
@@ -75,6 +77,7 @@ export const Settings_NotificationOptions = () => {
                setLoading(false);
                return true;
           }
+          setLoading(false);
           return false;
      };
 
@@ -114,7 +117,7 @@ export const Settings_NotificationOptions = () => {
           setLoading(false);
      };
 
-     if (isLoading) {
+     if (isLoading || isFetchingUserProfile) {
           return loadingSpinner();
      }
 
@@ -125,7 +128,7 @@ export const Settings_NotificationOptions = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box flex={1} safeArea={5}>
-                    <HStack space={3} pb={5} alignItems="center" justifyContent="space-between">
+                    <HStack space={3} pb={3} alignItems="center" justifyContent="space-between">
                          <Text bold>{getTermFromDictionary(language, 'notifications_allow')}</Text>
                          <Switch
                               onToggle={() => {
@@ -136,9 +139,68 @@ export const Settings_NotificationOptions = () => {
                               isDisabled={allowNotifications}
                          />
                     </HStack>
+                    {toggled && !error && _.isObject(notificationSettings) ? <EnableAllNotifications setLoading={setLoading} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} /> : null}
                     {toggled && !error && _.isObject(notificationSettings) ? <FlatList data={Object.keys(notificationSettings)} renderItem={({ item }) => <DisplayPreference data={notificationSettings[item]} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />} keyExtractor={(item, index) => index.toString()} /> : null}
                </Box>
           </SafeAreaView>
+     );
+};
+
+const EnableAllNotifications = (data) => {
+     const queryClient = useQueryClient();
+     const { language } = React.useContext(LanguageContext);
+     const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { notifySavedSearch, setNotifySavedSearch, notifyCustom, setNotifyCustom, notifyAccount, setNotifyAccount, setLoading } = data;
+
+     let defaultToggleState = notifyCustom && notifyAccount && notifySavedSearch;
+     const [toggled, setToggle] = React.useState(defaultToggleState);
+     const toggleSwitch = () => setToggle((previousState) => !previousState);
+
+     const enableAllNotifications = async (value) => {
+          console.log(value);
+          setLoading(true);
+          let allowAllNotifications = true;
+          if (value === 0 || value === 'false' || value === false) {
+               allowAllNotifications = false;
+          }
+          if (expoToken) {
+               await setNotificationPreference(library.baseUrl, expoToken, 'notifySavedSearch', allowAllNotifications, false);
+               await setNotificationPreference(library.baseUrl, expoToken, 'notifyCustom', allowAllNotifications, false);
+               await setNotificationPreference(library.baseUrl, expoToken, 'notifyAccount', allowAllNotifications, false);
+               setNotifySavedSearch(allowAllNotifications);
+               setNotifyCustom(allowAllNotifications);
+               setNotifyAccount(allowAllNotifications);
+               /*
+                _.set(notificationSettings.notifySavedSearch, notificationSettings.notifySavedSearch.allow, allowAllNotifications);
+               _.set(notificationSettings.notifyCustom, notificationSettings.notifyCustom.allow, allowAllNotifications);
+               _.set(notificationSettings.notifyAccount, notificationSettings.notifyAccount.allow, allowAllNotifications);
+             
+               */
+               await reloadProfile(library.baseUrl).then((data) => {
+                    updateUser(data);
+                    updateNotificationSettings(data.notification_preferences, language);
+                    setLoading(false);
+               });
+               queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+
+               //updateNotificationSettings
+          }
+     };
+
+     return (
+          <HStack space={3} alignItems="center" justifyContent="space-between" pb={1}>
+               <Text bold>{getTermFromDictionary(language, 'notifications_enable_all')}</Text>
+               <Switch
+                    onToggle={() => {
+                         toggleSwitch();
+                         enableAllNotifications(!toggled).then((r) => {
+                              console.log(r);
+                         });
+                    }}
+                    isChecked={toggled}
+               />
+          </HStack>
      );
 };
 
