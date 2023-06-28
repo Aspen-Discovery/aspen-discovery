@@ -31,9 +31,10 @@ echo Installing Solr Files for HOST
 cd %WD%/data_dir_setup/
 update_solr_files.bat %HOST%
 
-echo In lieu of "Creating symbolic link in /etc/httpd/conf.d to apache config file"
-echo Windows apache config file (httpd.conf) needs an Include pointing to %HOST% file, e.g.,
-echo Include "c:/web/aspen-discovery/sites/nashville.aspenlocal/httpd-nashville.aspenlocal.conf"
+rem In lieu of "Creating symbolic link in /etc/httpd/conf.d to apache config file" as in setup_server.sh
+rem Windows apache config file (httpd.conf) needs an Include pointing to %HOST% file, e.g.,
+rem Include "c:/web/aspen-discovery/sites/nashville.aspenlocal/httpd-nashville.aspenlocal.conf"
+rem This is communicated to user in createSite.php as the first of several Next Steps
 
 goto end
 
