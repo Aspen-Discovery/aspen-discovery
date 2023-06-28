@@ -21,7 +21,7 @@ foreach($languages as $languageId) {
 				$term = new TranslationTerm();
 				$term->id = $translationTermId;
 				if($term->find(true)) {
-					if($term->isMetadata === 0 && $term->isAdminEnteredData === 0) {
+					if($term->isMetadata == 0 && $term->isAdminEnteredData == 0) {
 						$translation = new Translation();
 						$translation->termId = $translationTermId;
 						$translation->languageId = $language->id;
