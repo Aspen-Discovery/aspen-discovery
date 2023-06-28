@@ -141,27 +141,29 @@ class Language extends DataObject {
 				$term = new TranslationTerm();
 				$term->id = $translationTermId;
 				if($term->find(true))  {
-					$translation = new Translation();
-					$translation->termId = $translationTermId;
-					$translation->languageId = $this->id;
-					if(!$translation->find(true)) {
-						try {
-							$now = time();
-							$translationResponse = $this->getCommunityTranslations($term->term, $this);
-							if ($translationResponse['isTranslatedInCommunity']) {
-								$translation->translated = 1;
-								$translation->translation = trim($translationResponse['translation']);
-							} else {
-								$translation->lastCheckInCommunity = $now;
+					if($term->isMetadata === 0 && $term->isAdminEnteredData === 0) {
+						$translation = new Translation();
+						$translation->termId = $translationTermId;
+						$translation->languageId = $this->id;
+						if (!$translation->find(true)) {
+							try {
+								$now = time();
+								$translationResponse = $this->getCommunityTranslations($term->term, $this);
+								if ($translationResponse['isTranslatedInCommunity']) {
+									$translation->translated = 1;
+									$translation->translation = trim($translationResponse['translation']);
+								} else {
+									$translation->lastCheckInCommunity = $now;
+								}
+								$translation->update();
+							} catch (Exception $e) {
+								// This will happen before last check in community is set.
 							}
-							$translation->update();
-						} catch (Exception $e) {
-							// This will happen before last check in community is set.
 						}
-					}
 
-					$translation->__destruct();
-					$translation = null;
+						$translation->__destruct();
+						$translation = null;
+					}
 				}
 				$term->__destruct();
 				$term = null;
