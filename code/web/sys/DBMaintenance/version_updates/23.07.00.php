@@ -23,6 +23,14 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE library CHANGE COLUMN enableProspectorIntegration enableInnReachIntegration TINYINT(4) NOT NULL DEFAULT 0',
 			],
 		], //rename_prospector_to_innreach2
+		'rename_prospector_to_innreach3' => [
+			'title' => 'Rename Prospector Integration to INN-Reach Location',
+			'description' => 'Rename Prospector Integration to INN-Reach in Location table',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE location CHANGE COLUMN repeatInProspector repeatInInnReach TINYINT DEFAULT 0',
+			],
+		], //rename_prospector_to_innreach3
 		'third_party_registration' => [
 			'title' => 'Third Party Registration',
 			'description' => 'Configuration of Third Party Registration ',
@@ -43,6 +51,15 @@ function getUpdates23_07_00(): array {
 				'update collection_spotlights set numTitlesToShow = 25 where numTitlesToShow = 0;',
 			],
 		], //update_collection_spotlight_number_of_titles
+		'remove_unused_fields_23_07' => [
+			'title' => 'Remove Unused Fields - 23.07',
+			'description' => 'Remove Unused Fields - 23.07',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE aspen_usage DROP COLUMN islandoraSearches',
+				'ALTER TABLE ptype DROP COLUMN allowStaffViewDisplay'
+			]
+		], //remove_unused_fields_23_07
 
 		//kirstien
 		'user_onboard_notifications' => [
