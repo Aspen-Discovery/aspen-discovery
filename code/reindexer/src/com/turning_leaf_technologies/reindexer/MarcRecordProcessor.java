@@ -1775,6 +1775,9 @@ abstract class MarcRecordProcessor {
 					}  else if (noteValue.contains("playaway bookpack") || noteValue.contains("playaway bookpacks")) {
 						result.add("PlayawayBookpack");
 						break;
+					}else if (noteValue.contains("playaway launchpad")) {
+						result.add("PlayawayLaunchpad");
+						break;
 					}
 				}
 			}
