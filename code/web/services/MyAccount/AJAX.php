@@ -4974,6 +4974,7 @@ class MyAccount_AJAX extends JSON_Action {
 			$tokenResults = $payflowTokenRequest->curlSendPage($tokenRequestUrl, 'POST', $params);
 			$tokenResults = PayPalPayflowSetting::parsePayflowString($tokenResults);
 			if ($tokenResults['RESULT'] != 0) {
+				ExternalRequestLogEntry::logRequest('getPayflowToken', 'POST', $tokenRequestUrl, $payflowTokenRequest->getHeaders(), $params, $payflowTokenRequest->getResponseCode(), $tokenResults, []);
 				return [
 					'success' => false,
 					'message' => 'Unable to authenticate with Payflow, please try again in a few minutes.',

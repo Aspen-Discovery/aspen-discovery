@@ -80,7 +80,8 @@ class UserAPI extends Action {
 					'deleteAllFromReadingHistory',
 					'deleteSelectedFromReadingHistory',
 					'getReadingHistorySortOptions',
-					'confirmHold'
+					'confirmHold',
+					'updateNotificationOnboardingStatus'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -798,6 +799,7 @@ class UserAPI extends Action {
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
+			$userData->onboardAppNotifications = $user->onboardAppNotifications;
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
@@ -4112,6 +4114,35 @@ class UserAPI extends Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function updateNotificationOnboardingStatus(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$status = $_REQUEST['status'] ?? null;
+			if($status) {
+				$user->onboardAppNotifications = $status;
+				$user->update();
+				return [
+					'success' => true,
+					'title' => '',
+					'message' => 'Updated user notification onboarding status'
+				];
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'New status not provided',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function getUserByBarcode(): array {
 		$results = [
 			'success' => false,
@@ -4990,9 +5021,14 @@ class UserAPI extends Action {
 			unset($_SESSION['guidingUserId']);
 			$masqueradeMode = false;
 			if ($guidingUser) {
-				$_REQUEST['username'] = $guidingUser->getBarcode();
-				$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
-				$user = UserAccount::login();
+				if($guidingUser->isLoggedInViaSSO) {
+					$user = UserAccount::loginWithAspen($guidingUser);
+				} else {
+					$_REQUEST['username'] = $guidingUser->getBarcode();
+					$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
+					$user = UserAccount::login();
+				}
+
 				if ($user && !($user instanceof AspenError)) {
 					return ['success' => true];
 				} else {

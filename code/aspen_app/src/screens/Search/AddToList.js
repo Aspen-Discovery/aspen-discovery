@@ -46,6 +46,7 @@ export const AddToList = (props) => {
      const SelectLists = () => {
           return (
                <Select
+                    isReadOnly={Platform.OS === 'android'}
                     selectedValue={listId}
                     onValueChange={(itemValue) => {
                          setListId(itemValue);
