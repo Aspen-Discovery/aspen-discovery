@@ -28,7 +28,7 @@ foreach($languages as $languageId) {
 						if(!$translation->find(true)) {
 							try {
 								$now = time();
-								$translationResponse = getCommunityTranslation($translation->translation, $language->code);
+								$translationResponse = getCommunityTranslation($term->term, $language);
 								if ($translationResponse['isTranslatedInCommunity']) {
 									$translation->translated = 1;
 									$translation->translation = trim($translationResponse['translation']);
@@ -43,7 +43,13 @@ foreach($languages as $languageId) {
 						} else {
 							// Translation already exists
 						}
+
+						$translation->__destruct();
+						$translation = null;
 					}
+
+					$term->__destruct();
+					$term = null;
 				}
 			}
 		}
