@@ -39,6 +39,7 @@ import java.util.zip.CRC32;
 import static java.util.Calendar.YEAR;
 
 class CommunicoIndexer {
+	private final Logger logger;
 	private long settingsId;
 	private String name;
 	private String baseUrl;
@@ -68,6 +69,7 @@ class CommunicoIndexer {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
+		this.logger = logger;
 		if (this.baseUrl.endsWith("/")) {
 			this.baseUrl = this.baseUrl.substring(0, this.baseUrl.length() - 1);
 		}
@@ -146,6 +148,10 @@ class CommunicoIndexer {
 		nextYear.setTime(new Date());
 		nextYear.add(YEAR, 1);
 		JSONArray communicoEvents = getCommunicoEvents();
+		if (communicoEvents == null) {
+			logEntry.incErrors("Did not get any events returned from the Communico API");
+			return;
+		}
 		if (doFullReload) {
 			try {
 				solrUpdateServer.deleteByQuery("type:event_communico AND source:" + this.settingsId);
@@ -413,7 +419,7 @@ class CommunicoIndexer {
 		//Check to see if we already have a valid token
 		if (communicoAPIToken != null){
 			if (communicoAPIExpiration - new Date().getTime() > 0){
-				logEntry.incErrors("token is still valid");
+				logEntry.addNote("token is still valid");
 				return true;
 			}else{
 				logEntry.incErrors("Token has expired");
@@ -432,15 +438,16 @@ class CommunicoIndexer {
 				});
 			}
 			conn.setRequestMethod("POST");
-			conn.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8");
 			String encoded = Base64.encodeBase64String((clientId + ":" + clientSecret).getBytes());
 			conn.setRequestProperty("Authorization", "Basic " + encoded);
+			conn.setRequestProperty("Host", "api.communico.co");
 			conn.setReadTimeout(30000);
 			conn.setConnectTimeout(30000);
 			conn.setDoOutput(true);
 
 			OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream(), StandardCharsets.UTF_8);
-			wr.write("{\n" + "\"grant_type\": \"client_credentials\"\n" + "}");
+			wr.write("grant_type=client_credentials");
 			wr.flush();
 			wr.close();
 
@@ -465,9 +472,12 @@ class CommunicoIndexer {
 					response.append(line);
 				}
 				rd.close();
+				logEntry.incErrors("Did not get an access token from the Communico Authentication service: " + response);
+				logger.error(clientId + ":" + clientSecret);
 				return false;
 			}
 		} catch (SocketTimeoutException toe){
+			logEntry.incErrors("Timeout connecting to Communico Authentication service");
 			throw toe;
 		} catch (Exception e) {
 			logEntry.incErrors("Error connecting to Communico API", e );
@@ -513,6 +523,8 @@ class CommunicoIndexer {
 									events.put(events1.get(i));
 								}
 							}
+						} else {
+							logEntry.incErrors("Did not get a good response calling " + apiEventsURL + " got " + status.getStatusCode());
 						}
 					} catch (Exception e) {
 						logEntry.incErrors("Error getting events from " + apiEventsURL, e);
