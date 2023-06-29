@@ -4,6 +4,7 @@ import CachedImage from 'expo-cached-image';
 import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
+import * as Device from 'expo-device';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
@@ -212,7 +213,7 @@ export const DiscoverHomeScreen = () => {
 
      // load notification onboarding prompt
      //console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
-     if (showNotificationsOnboarding && !alreadyCheckedNotifications) {
+     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice) {
           return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
      }
 
