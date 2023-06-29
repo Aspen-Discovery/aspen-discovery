@@ -96,7 +96,7 @@ public class EventsIndexerMain {
 				}
 
 					//Index events from other source here
-			} catch (SQLException e) {
+			} catch (Exception e) {
 				logger.error("Error indexing events", e);
 			}
 
