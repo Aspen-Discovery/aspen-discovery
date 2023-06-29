@@ -1,7 +1,7 @@
 {strip}
 	<input type="hidden" name="patronId" value="{$userId}"/>
 	<div class="row">
-		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
+		<div class="col-tn-12 col-sm-12 col-md-12 col-lg-6">
 		<script type="text/javascript" src="{$squareCdnUrl}"></script>
         <script>
 	        const appId = '{$squareApplicationId}';
