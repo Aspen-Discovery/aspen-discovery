@@ -19,7 +19,7 @@ export const NotificationsOnboard = (props) => {
      const onClose = async () => {
           setIsOpen(false);
           setAlreadyCheckedNotifications(true);
-          await updateNotificationOnboardingStatus(0, user, library.baseUrl);
+          await updateNotificationOnboardingStatus(false, library.baseUrl, language);
      };
      const cancelRef = React.useRef(null);
 

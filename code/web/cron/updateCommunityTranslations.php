@@ -21,14 +21,14 @@ foreach($languages as $languageId) {
 				$term = new TranslationTerm();
 				$term->id = $translationTermId;
 				if($term->find(true)) {
-					if($term->isMetadata === 0 && $term->isAdminEnteredData) {
+					if($term->isMetadata == 0 && $term->isAdminEnteredData == 0 && ($term->isPublicFacing == 1 || $term->isAdminFacing == 1)) {
 						$translation = new Translation();
 						$translation->termId = $translationTermId;
 						$translation->languageId = $language->id;
 						if(!$translation->find(true)) {
 							try {
 								$now = time();
-								$translationResponse = getCommunityTranslation($translation->translation, $language->code);
+								$translationResponse = getCommunityTranslation($term->term, $language);
 								if ($translationResponse['isTranslatedInCommunity']) {
 									$translation->translated = 1;
 									$translation->translation = trim($translationResponse['translation']);
@@ -43,7 +43,13 @@ foreach($languages as $languageId) {
 						} else {
 							// Translation already exists
 						}
+
+						$translation->__destruct();
+						$translation = null;
 					}
+
+					$term->__destruct();
+					$term = null;
 				}
 			}
 		}
