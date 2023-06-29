@@ -115,7 +115,7 @@ class Language extends DataObject {
 		return in_array($this->code, Language::$rtl_languages);
 	}
 
-	public function update($context = '') {
+	/*public function update($context = '') {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveTranslations();
@@ -169,13 +169,14 @@ class Language extends DataObject {
 				$term = null;
 			}
 		}
-	}
+	}*/
 
 	/**
 	 * @param string $phrase
 	 * @param Language $activeLanguage
 	 * @return array
 	 */
+	/*
 	function getCommunityTranslations(string $phrase, $activeLanguage): array {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
@@ -201,5 +202,5 @@ class Language extends DataObject {
 			'isTranslatedInCommunity' => $translatedInCommunity,
 			'translation' => $defaultTranslation
 		];
-	}
+	}*/
 }
