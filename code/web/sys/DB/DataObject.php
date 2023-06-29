@@ -10,7 +10,7 @@
  * Each property that starts with _ is runtime data that is reset for each object
  * Each property that starts with [a-zA-Z] is a property that is saved to the database
  */
-abstract class DataObject {
+abstract class DataObject implements JsonSerializable {
 	public $__table;
 	public $__primaryKey = 'id';
 	public $__displayNameColumn = null;
@@ -1215,5 +1215,16 @@ abstract class DataObject {
 
 	function hasChanges() : bool {
 		return !empty($this->_changedFields);
+	}
+
+	public function jsonSerialize() {
+		$properties = get_object_vars($this);
+		$serializedData = [];
+		foreach ($properties as $name => $value) {
+			if ($name[0] != '_' && $name[0] != 'N') {
+				$serializedData[$name] = $value;
+			}
+		}
+		return $serializedData;
 	}
 }
