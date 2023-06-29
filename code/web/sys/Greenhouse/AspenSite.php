@@ -1,38 +1,37 @@
 <?php
 
-
 class AspenSite extends DataObject {
 	public $__table = 'aspen_sites';
-	public $id;
-	public $name;
-	public $baseUrl;
-	public $internalServerName;
-	public $siteType;
-	public $libraryType;
-	public $libraryServes;
-	public $timezone;
-	public $implementationStatus;
-	public $monitored;
-	public $hosting;
-	public $appAccess;
-	public $operatingSystem;
-	public $ils;
-	public $notes;
-	public $version;
-	public $sendErrorNotificationsTo;
-	public $lastNotificationTime;
-	public $contractSigningDate;
-	public $goLiveDate;
-	public $contactFrequency;
-	public $lastContacted;
-	public $nextMeetingDate;
-	public $nextMeetingPerson;
-	public $activeTicketFeed;
-	public $lastOfflineTime;
-	public $lastOnlineTime;
-	public $lastOfflineNote;
-	public $isOnline;
-	public $optOutBatchUpdates;
+	protected $id;
+	protected $name;
+	protected $baseUrl;
+	protected $internalServerName;
+	protected $siteType;
+	protected $libraryType;
+	protected $libraryServes;
+	protected $timezone;
+	protected $implementationStatus;
+	protected $monitored;
+	protected $hosting;
+	protected $appAccess;
+	protected $operatingSystem;
+	protected $ils;
+	protected $notes;
+	protected $version;
+	protected $sendErrorNotificationsTo;
+	protected $lastNotificationTime;
+	protected $contractSigningDate;
+	protected $goLiveDate;
+	protected $contactFrequency;
+	protected $lastContacted;
+	protected $nextMeetingDate;
+	protected $nextMeetingPerson;
+	protected $activeTicketFeed;
+	protected $lastOfflineTime;
+	protected $lastOnlineTime;
+	protected $lastOfflineNote;
+	protected $isOnline;
+	protected $optOutBatchUpdates;
 	//public $jointAspenKohaImplementation;
 	//public $ilsMigration;
 
@@ -494,7 +493,9 @@ class AspenSite extends DataObject {
 							$this->isOnline = 1;
 							$this->lastOnlineTime = time();
 						}
-						$this->update();
+						if ($this->hasChanges()) {
+							$this->update();
+						}
 					}
 				} catch (Exception $e) {
 					$retry = ($numTries <= 2);
@@ -507,7 +508,9 @@ class AspenSite extends DataObject {
 						if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 							$this->lastOfflineTime = time();
 						}
-						$this->update();
+						if ($this->hasChanges()) {
+							$this->update();
+						}
 					}
 				}
 				if ($retry) {
@@ -523,7 +526,9 @@ class AspenSite extends DataObject {
 			if ((time() - $this->lastOfflineTime) > 4 * 60 * 60) {
 				$this->lastOfflineTime = time();
 			}
-			$this->update();
+			if ($this->hasChanges()) {
+				$this->update();
+			}
 		}
 
 		return $status;

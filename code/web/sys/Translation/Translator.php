@@ -138,10 +138,15 @@ class Translator {
 						}
 					} else {
 						$termChanged = false;
+						if ($defaultText == null) {
+							$defaultText = '';
+						}
 						if ($defaultText != $translationTerm->defaultText) {
-							$translationTerm->defaultText = $defaultText;
-							$defaultTextChanged = true;
-							$termChanged = true;
+							if (empty($translationTerm->defaultText) && !empty($defaultText)) {
+								$translationTerm->defaultText = $defaultText;
+								$defaultTextChanged = true;
+								$termChanged = true;
+							}
 						}
 						if ($isPublicFacing && !$translationTerm->isPublicFacing) {
 							$translationTerm->isPublicFacing = $isPublicFacing;

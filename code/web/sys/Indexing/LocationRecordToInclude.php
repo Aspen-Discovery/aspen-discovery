@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/Indexing/RecordToInclude.php';
 
 class LocationRecordToInclude extends RecordToInclude {
 	public $__table = 'location_records_to_include';    // table name
-	public $locationId;
+	protected $locationId;
 
 	static function getObjectStructure($context = ''): array {
 		$location = new Location();

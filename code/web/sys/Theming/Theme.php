@@ -4,119 +4,119 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 class Theme extends DataObject {
 	public $__table = 'themes';
 	public $__displayNameColumn = 'displayName';
-	public $id;
-	public $themeName;
-	public $displayName;
-	public $extendsTheme;
-	public $logoName;
-	public $favicon;
-	public $defaultCover;
-	public $logoApp;
-	public $fullWidth;
-	public $booksImage;
-	public $eBooksImage;
-	public $audioBooksImage;
-	public $musicImage;
-	public $moviesImage;
-	public $booksImageSelected;
-	public $eBooksImageSelected;
-	public $audioBooksImageSelected;
-	public $musicImageSelected;
-	public $moviesImageSelected;
+	protected $id;
+	protected $themeName;
+	protected $displayName;
+	protected $extendsTheme;
+	protected $logoName;
+	protected $favicon;
+	protected $defaultCover;
+	protected $logoApp;
+	protected $fullWidth;
+	protected $booksImage;
+	protected $eBooksImage;
+	protected $audioBooksImage;
+	protected $musicImage;
+	protected $moviesImage;
+	protected $booksImageSelected;
+	protected $eBooksImageSelected;
+	protected $audioBooksImageSelected;
+	protected $musicImageSelected;
+	protected $moviesImageSelected;
 
-	public $headerBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $headerBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$headerBackgroundColorDefault;
-	public $headerForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $headerForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$headerForegroundColorDefault;
-	public $headerBottomBorderWidth;
-	public $headerBackgroundImage;
-	public $headerBackgroundImageSize;
-	public $headerBackgroundImageRepeat;
+	protected $headerBottomBorderWidth;
+	protected $headerBackgroundImage;
+	protected $headerBackgroundImageSize;
+	protected $headerBackgroundImageRepeat;
 
-	public $pageBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $pageBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$pageBackgroundColorDefault;
-	public $bodyBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $bodyBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$bodyBackgroundColorDefault;
-	public $bodyTextColor;
-	public /** @noinspection PhpUnused */
+	protected $bodyTextColor;
+	protected /** @noinspection PhpUnused */
 		$bodyTextColorDefault;
-	public $linkColor;
-	public /** @noinspection PhpUnused */
+	protected $linkColor;
+	protected /** @noinspection PhpUnused */
 		$linkColorDefault;
-	public $linkHoverColor;
-	public /** @noinspection PhpUnused */
+	protected $linkHoverColor;
+	protected /** @noinspection PhpUnused */
 		$linkHoverColorDefault;
-	public $resultLabelColor;
-	public /** @noinspection PhpUnused */
+	protected $resultLabelColor;
+	protected /** @noinspection PhpUnused */
 		$resultLabelColorDefault;
-	public $resultValueColor;
-	public /** @noinspection PhpUnused */
+	protected $resultValueColor;
+	protected /** @noinspection PhpUnused */
 		$resultValueColorDefault;
 
-	public $breadcrumbsBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $breadcrumbsBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$breadcrumbsBackgroundColorDefault;
-	public $breadcrumbsForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $breadcrumbsForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$breadcrumbsForegroundColorDefault;
 
-	public $searchToolsBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $searchToolsBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$searchToolsBackgroundColorDefault;
-	public $searchToolsBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $searchToolsBorderColor;
+	protected /** @noinspection PhpUnused */
 		$searchToolsBorderColorDefault;
-	public $searchToolsForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $searchToolsForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$searchToolsForegroundColorDefault;
 
-	public $footerLogo;
-	public $footerLogoLink;
-	public $footerLogoAlt;
-	public $footerBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $footerLogo;
+	protected $footerLogoLink;
+	protected $footerLogoAlt;
+	protected $footerBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$footerBackgroundColorDefault;
-	public $footerForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $footerForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$footerForegroundColorDefault;
 
 	//Primary color is used for the search bar
-	public $primaryBackgroundColor;
-	public $primaryBackgroundColorDefault;
-	public $primaryForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryBackgroundColor;
+	protected $primaryBackgroundColorDefault;
+	protected $primaryForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$primaryForegroundColorDefault;
 
 	//Secondary color is used for selections like browse category
-	public $secondaryBackgroundColor;
-	public $secondaryBackgroundColorDefault;
-	public $secondaryForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $secondaryBackgroundColor;
+	protected $secondaryBackgroundColorDefault;
+	protected $secondaryForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$secondaryForegroundColorDefault;
 
 	//Tertiary color is used for selections like browse category
-	public $tertiaryBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $tertiaryBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$tertiaryBackgroundColorDefault;
-	public $tertiaryForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $tertiaryForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$tertiaryForegroundColorDefault;
-	public $buttonRadius;
-	public $smallButtonRadius;
+	protected $buttonRadius;
+	protected $smallButtonRadius;
 
 	public static $defaultBadgeBackgroundColor = '#666666';
 	public static $defaultBadgeForegroundColor = '#ffffff';
-	public $badgeBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $badgeBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$badgeBackgroundColorDefault;
-	public $badgeForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $badgeForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$badgeForegroundColorDefault;
-	public $badgeBorderRadius;
+	protected $badgeBorderRadius;
 
 	//Colors for buttons
 	public static $defaultDefaultButtonBackgroundColor = '#ffffff';
@@ -125,23 +125,23 @@ class Theme extends DataObject {
 	public static $defaultDefaultButtonHoverBackgroundColor = '#eeeeee';
 	public static $defaultDefaultButtonHoverForegroundColor = '#333333';
 	public static $defaultDefaultButtonHoverBorderColor = '#cccccc';
-	public $defaultButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $defaultButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$defaultButtonBackgroundColorDefault;
-	public $defaultButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $defaultButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$defaultButtonForegroundColorDefault;
-	public $defaultButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $defaultButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$defaultButtonBorderColorDefault;
-	public $defaultButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $defaultButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$defaultButtonHoverBackgroundColorDefault;
-	public $defaultButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $defaultButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$defaultButtonHoverForegroundColorDefault;
-	public $defaultButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $defaultButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$defaultButtonHoverBorderColorDefault;
 
 	public static $defaultPrimaryButtonBackgroundColor = '#1b6ec2';
@@ -150,23 +150,23 @@ class Theme extends DataObject {
 	public static $defaultPrimaryButtonHoverBackgroundColor = '#ffffff';
 	public static $defaultPrimaryButtonHoverForegroundColor = '#1b6ec2';
 	public static $defaultPrimaryButtonHoverBorderColor = '#1b6ec2';
-	public $primaryButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$primaryButtonBackgroundColorDefault;
-	public $primaryButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$primaryButtonForegroundColorDefault;
-	public $primaryButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$primaryButtonBorderColorDefault;
-	public $primaryButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$primaryButtonHoverBackgroundColorDefault;
-	public $primaryButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$primaryButtonHoverForegroundColorDefault;
-	public $primaryButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $primaryButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$primaryButtonHoverBorderColorDefault;
 
 	public static $defaultEditionsButtonBackgroundColor = '#f8f9fa';
@@ -175,23 +175,23 @@ class Theme extends DataObject {
 	public static $defaultEditionsButtonHoverBackgroundColor = '#ffffff';
 	public static $defaultEditionsButtonHoverForegroundColor = '#1b6ec2';
 	public static $defaultEditionsButtonHoverBorderColor = '#1b6ec2';
-	public $editionsButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $editionsButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$editionsButtonBackgroundColorDefault;
-	public $editionsButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $editionsButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$editionsButtonForegroundColorDefault;
-	public $editionsButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $editionsButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$editionsButtonBorderColorDefault;
-	public $editionsButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $editionsButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$editionsButtonHoverBackgroundColorDefault;
-	public $editionsButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $editionsButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$editionsButtonHoverForegroundColorDefault;
-	public $editionsButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $editionsButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$editionsButtonHoverBorderColorDefault;
 
 	public static $defaultToolsButtonBackgroundColor = '#747474';
@@ -200,23 +200,23 @@ class Theme extends DataObject {
 	public static $defaultToolsButtonHoverBackgroundColor = '#636363';
 	public static $defaultToolsButtonHoverForegroundColor = '#ffffff';
 	public static $defaultToolsButtonHoverBorderColor = '#636363';
-	public $toolsButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $toolsButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$toolsButtonBackgroundColorDefault;
-	public $toolsButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $toolsButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$toolsButtonForegroundColorDefault;
-	public $toolsButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $toolsButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$toolsButtonBorderColorDefault;
-	public $toolsButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $toolsButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$toolsButtonHoverBackgroundColorDefault;
-	public $toolsButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $toolsButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$toolsButtonHoverForegroundColorDefault;
-	public $toolsButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $toolsButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$toolsButtonHoverBorderColorDefault;
 
 	public static $defaultActionButtonBackgroundColor = '#1b6ec2';
@@ -225,23 +225,23 @@ class Theme extends DataObject {
 	public static $defaultActionButtonHoverBackgroundColor = '#ffffff';
 	public static $defaultActionButtonHoverForegroundColor = '#1b6ec2';
 	public static $defaultActionButtonHoverBorderColor = '#1b6ec2';
-	public $actionButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $actionButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$actionButtonBackgroundColorDefault;
-	public $actionButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $actionButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$actionButtonForegroundColorDefault;
-	public $actionButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $actionButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$actionButtonBorderColorDefault;
-	public $actionButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $actionButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$actionButtonHoverBackgroundColorDefault;
-	public $actionButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $actionButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$actionButtonHoverForegroundColorDefault;
-	public $actionButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $actionButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$actionButtonHoverBorderColorDefault;
 
 	public static $defaultInfoButtonBackgroundColor = '#8cd2e7';
@@ -250,23 +250,23 @@ class Theme extends DataObject {
 	public static $defaultInfoButtonHoverBackgroundColor = '#ffffff';
 	public static $defaultInfoButtonHoverForegroundColor = '#217e9b';
 	public static $defaultInfoButtonHoverBorderColor = '#217e9b';
-	public $infoButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $infoButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$infoButtonBackgroundColorDefault;
-	public $infoButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $infoButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$infoButtonForegroundColorDefault;
-	public $infoButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $infoButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$infoButtonBorderColorDefault;
-	public $infoButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $infoButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$infoButtonHoverBackgroundColorDefault;
-	public $infoButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $infoButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$infoButtonHoverForegroundColorDefault;
-	public $infoButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $infoButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$infoButtonHoverBorderColorDefault;
 
 	public static $defaultWarningButtonBackgroundColor = '#f4d03f';
@@ -275,23 +275,23 @@ class Theme extends DataObject {
 	public static $defaultWarningButtonHoverBackgroundColor = '#ffffff';
 	public static $defaultWarningButtonHoverForegroundColor = '#8d6708';
 	public static $defaultWarningButtonHoverBorderColor = '#8d6708';
-	public $warningButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $warningButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$warningButtonBackgroundColorDefault;
-	public $warningButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $warningButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$warningButtonForegroundColorDefault;
-	public $warningButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $warningButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$warningButtonBorderColorDefault;
-	public $warningButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $warningButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$warningButtonHoverBackgroundColorDefault;
-	public $warningButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $warningButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$warningButtonHoverForegroundColorDefault;
-	public $warningButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $warningButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$warningButtonHoverBorderColorDefault;
 
 	public static $defaultDangerButtonBackgroundColor = '#D50000';
@@ -300,139 +300,139 @@ class Theme extends DataObject {
 	public static $defaultDangerButtonHoverBackgroundColor = '#ffffff';
 	public static $defaultDangerButtonHoverForegroundColor = '#D50000';
 	public static $defaultDangerButtonHoverBorderColor = '#D50000';
-	public $dangerButtonBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $dangerButtonBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$dangerButtonBackgroundColorDefault;
-	public $dangerButtonForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $dangerButtonForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$dangerButtonForegroundColorDefault;
-	public $dangerButtonBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $dangerButtonBorderColor;
+	protected /** @noinspection PhpUnused */
 		$dangerButtonBorderColorDefault;
-	public $dangerButtonHoverBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $dangerButtonHoverBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$dangerButtonHoverBackgroundColorDefault;
-	public $dangerButtonHoverForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $dangerButtonHoverForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$dangerButtonHoverForegroundColorDefault;
-	public $dangerButtonHoverBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $dangerButtonHoverBorderColor;
+	protected /** @noinspection PhpUnused */
 		$dangerButtonHoverBorderColorDefault;
 
 	//Top Menu
-	public $menubarBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $menubarBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$menubarBackgroundColorDefault;
-	public $menubarForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $menubarForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$menubarForegroundColorDefault;
-	public $menubarHighlightBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $menubarHighlightBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$menubarHighlightBackgroundColorDefault;
-	public $menubarHighlightForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $menubarHighlightForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$menubarHighlightForegroundColorDefault;
-	public $menuDropdownBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $menuDropdownBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$menuDropdownBackgroundColorDefault;
-	public $menuDropdownForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $menuDropdownForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$menuDropdownForegroundColorDefault;
 
 	//Modal dialog
-	public $modalDialogHeaderFooterBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $modalDialogHeaderFooterBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$modalDialogHeaderFooterBackgroundColorDefault;
-	public $modalDialogHeaderFooterForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $modalDialogHeaderFooterForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$modalDialogHeaderFooterForegroundColorDefault;
-	public $modalDialogBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $modalDialogBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$modalDialogBackgroundColorDefault;
-	public $modalDialogForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $modalDialogForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$modalDialogForegroundColorDefault;
-	public $modalDialogHeaderFooterBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $modalDialogHeaderFooterBorderColor;
+	protected /** @noinspection PhpUnused */
 		$modalDialogHeaderFooterBorderColorDefault;
 
 	//Browse Category Colors
-	public $browseCategoryPanelColor;
-	public /** @noinspection PhpUnused */
+	protected $browseCategoryPanelColor;
+	protected /** @noinspection PhpUnused */
 		$browseCategoryPanelColorDefault;
-	public $selectedBrowseCategoryBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $selectedBrowseCategoryBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$selectedBrowseCategoryBackgroundColorDefault;
-	public $selectedBrowseCategoryForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $selectedBrowseCategoryForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$selectedBrowseCategoryForegroundColorDefault;
-	public $selectedBrowseCategoryBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $selectedBrowseCategoryBorderColor;
+	protected /** @noinspection PhpUnused */
 		$selectedBrowseCategoryBorderColorDefault;
-	public $deselectedBrowseCategoryBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $deselectedBrowseCategoryBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$deselectedBrowseCategoryBackgroundColorDefault;
-	public $deselectedBrowseCategoryForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $deselectedBrowseCategoryForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$deselectedBrowseCategoryForegroundColorDefault;
-	public $deselectedBrowseCategoryBorderColor;
-	public /** @noinspection PhpUnused */
+	protected $deselectedBrowseCategoryBorderColor;
+	protected /** @noinspection PhpUnused */
 		$deselectedBrowseCategoryBorderColorDefault;
-	public $capitalizeBrowseCategories;
-	public $browseCategoryImageSize;
-	public $browseImageLayout;
+	protected $capitalizeBrowseCategories;
+	protected $browseCategoryImageSize;
+	protected $browseImageLayout;
 
 	//Panel Colors
-	public $closedPanelBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $closedPanelBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$closedPanelBackgroundColorDefault;
-	public $closedPanelForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $closedPanelForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$closedPanelForegroundColorDefault;
-	public $openPanelBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $openPanelBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$openPanelBackgroundColorDefault;
-	public $openPanelForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $openPanelForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$openPanelForegroundColorDefault;
-	public $panelBodyBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $panelBodyBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$panelBodyBackgroundColorDefault;
-	public $panelBodyForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $panelBodyForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$panelBodyForegroundColorDefault;
 
 	//Tab Colors
-	public $inactiveTabBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $inactiveTabBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$inactiveTabBackgroundColorDefault;
-	public $inactiveTabForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $inactiveTabForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$inactiveTabForegroundColorDefault;
-	public $activeTabBackgroundColor;
-	public /** @noinspection PhpUnused */
+	protected $activeTabBackgroundColor;
+	protected /** @noinspection PhpUnused */
 		$activeTabBackgroundColorDefault;
-	public $activeTabForegroundColor;
-	public /** @noinspection PhpUnused */
+	protected $activeTabForegroundColor;
+	protected /** @noinspection PhpUnused */
 		$activeTabForegroundColorDefault;
 
 	//Theme accessibility options
-	public $isHighContrast;
+	protected $isHighContrast;
 
 	//Fonts
-	public $headingFont;
-	public $headingFontDefault;
-	public $customHeadingFont;
-	public $bodyFont;
-	public $bodyFontDefault;
-	public $customBodyFont;
+	protected $headingFont;
+	protected $headingFontDefault;
+	protected $customHeadingFont;
+	protected $bodyFont;
+	protected $bodyFontDefault;
+	protected $customBodyFont;
 
-	public $coverStyle;
+	protected $coverStyle;
 
-	public $additionalCssType;
-	public $additionalCss;
+	protected $additionalCssType;
+	protected $additionalCss;
 
-	public $generatedCss;
+	protected $generatedCss;
 
 	private $_libraries;
 	private $_locations;
@@ -2322,7 +2322,7 @@ class Theme extends DataObject {
 	}
 
 	public function insert($context = '') {
-		$this->generatedCss = $this->generateCss();
+		$this->_set('generatedCss', $this->generateCss());
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
@@ -2687,7 +2687,7 @@ class Theme extends DataObject {
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		$this->generatedCss = $interface->fetch('theme.css.tpl');
+		$this->__set('generatedCss', $interface->fetch('theme.css.tpl'));
 		if ($saveChanges) {
 			$this->update();
 		}
@@ -2749,7 +2749,7 @@ class Theme extends DataObject {
 		} elseif ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -2759,7 +2759,7 @@ class Theme extends DataObject {
 		} elseif ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 
