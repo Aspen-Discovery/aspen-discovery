@@ -4,30 +4,30 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class AspenUsage extends DataObject {
 	public $__table = 'aspen_usage';
-	public $id;
-	public $instance;
-	public $year;
-	public $month;
-	public $pageViews;
-	public $pageViewsByBots;
-	public $pageViewsByAuthenticatedUsers;
-	public $pagesWithErrors;
-	public $sessionsStarted;
-	public $ajaxRequests;
-	public $coverViews;
-	public $genealogySearches;
-	public $groupedWorkSearches;
-	public $openArchivesSearches;
-	public $userListSearches;
-	public $websiteSearches;
-	public $eventsSearches;
-	public $ebscoEdsSearches;
-	public $ebscohostSearches;
-	public $blockedRequests;
-	public $blockedApiRequests;
-	public $timedOutSearches;
-	public $timedOutSearchesWithHighLoad;
-	public $searchesWithErrors;
+	protected $id;
+	protected $instance;
+	protected $year;
+	protected $month;
+	protected $pageViews;
+	protected $pageViewsByBots;
+	protected $pageViewsByAuthenticatedUsers;
+	protected $pagesWithErrors;
+	protected $sessionsStarted;
+	protected $ajaxRequests;
+	protected $coverViews;
+	protected $genealogySearches;
+	protected $groupedWorkSearches;
+	protected $openArchivesSearches;
+	protected $userListSearches;
+	protected $websiteSearches;
+	protected $eventsSearches;
+	protected $ebscoEdsSearches;
+	protected $ebscohostSearches;
+	protected $blockedRequests;
+	protected $blockedApiRequests;
+	protected $timedOutSearches;
+	protected $timedOutSearchesWithHighLoad;
+	protected $searchesWithErrors;
 
 	public function getUniquenessFields(): array {
 		return [

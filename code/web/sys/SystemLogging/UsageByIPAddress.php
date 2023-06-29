@@ -3,18 +3,18 @@
 
 class UsageByIPAddress extends DataObject {
 	public $__table = 'usage_by_ip_address';
-	public $id;
-	public $instance;
-	public $ipAddress;
-	public $year;
-	public $month;
-	public $numRequests;
-	public $numBlockedRequests;
-	public $numBlockedApiRequests;
-	public $lastRequest;
-	public $numLoginAttempts;
-	public $numFailedLoginAttempts;
-	public $numSpammyRequests;
+	protected $id;
+	protected $instance;
+	protected $ipAddress;
+	protected $year;
+	protected $month;
+	protected $numRequests;
+	protected $numBlockedRequests;
+	protected $numBlockedApiRequests;
+	protected $lastRequest;
+	protected $numLoginAttempts;
+	protected $numFailedLoginAttempts;
+	protected $numSpammyRequests;
 
 	public function getUniquenessFields(): array {
 		return [

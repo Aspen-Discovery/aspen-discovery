@@ -8,16 +8,16 @@
  */
 class TranslationTerm extends DataObject {
 	public $__table = 'translation_terms';
-	public $id;
-	public $term;
-	public $defaultText;
-	public $parameterNotes;
-	public $samplePageUrl;
-	public $isPublicFacing;
-	public $isAdminFacing;
-	public $isMetadata;
-	public $isAdminEnteredData;
-	public $lastUpdate;
+	protected $id;
+	protected $term;
+	protected $defaultText;
+	protected $parameterNotes;
+	protected $samplePageUrl;
+	protected $isPublicFacing;
+	protected $isAdminFacing;
+	protected $isMetadata;
+	protected $isAdminEnteredData;
+	protected $lastUpdate;
 
 	public function getNumericColumnNames(): array {
 		return [

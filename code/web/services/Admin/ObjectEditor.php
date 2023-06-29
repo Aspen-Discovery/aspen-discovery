@@ -489,7 +489,11 @@ abstract class ObjectEditor extends Admin_Admin {
 					$user = UserAccount::getActiveUserObj();
 					$validationResults = $this->updateFromUI($curObject, $structure);
 					if ($validationResults['validatedOk']) {
-						$ret = $curObject->update($this->getContext());
+						if ($curObject->hasChanges()) {
+							$ret = $curObject->update($this->getContext());
+						} else {
+							$ret = true;
+						}
 						if ($ret === false) {
 							if ($curObject->getLastError()) {
 								$errorDescription = $curObject->getLastError();

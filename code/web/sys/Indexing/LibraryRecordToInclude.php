@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/sys/Indexing/RecordToInclude.php';
 
 class LibraryRecordToInclude extends RecordToInclude {
 	public $__table = 'library_records_to_include';    // table name
-	public $libraryId;
+	protected $libraryId;
 
 	static function getObjectStructure($context = ''): array {
 		$library = new Library();

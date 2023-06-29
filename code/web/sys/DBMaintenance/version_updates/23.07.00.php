@@ -54,12 +54,25 @@ function getUpdates23_07_00(): array {
 		'remove_unused_fields_23_07' => [
 			'title' => 'Remove Unused Fields - 23.07',
 			'description' => 'Remove Unused Fields - 23.07',
-			'continueOnError' => false,
+			'continueOnError' => true,
 			'sql' => [
 				'ALTER TABLE aspen_usage DROP COLUMN islandoraSearches',
 				'ALTER TABLE ptype DROP COLUMN allowStaffViewDisplay'
 			]
 		], //remove_unused_fields_23_07
+		'remove_unused_fields_23_07b' => [
+			'title' => 'Remove Unused Fields - 23.07b',
+			'description' => 'Remove Unused Fields - 23.07b',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user DROP COLUMN alwaysHoldNextAvailable',
+				'ALTER TABLE user DROP COLUMN overdriveAutoCheckout',
+				'ALTER TABLE user DROP COLUMN primaryTwoFactor',
+				'ALTER TABLE user DROP COLUMN authLocked',
+				'ALTER TABLE search DROP COLUMN folder_id',
+				'ALTER TABLE search DROP COLUMN newTitles',
+			]
+		], //remove_unused_fields_23_07b
 
 		//kirstien
 		'user_onboard_notifications' => [

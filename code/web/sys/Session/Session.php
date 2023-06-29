@@ -7,12 +7,12 @@ class Session extends DataObject {
 	/* the code below is auto generated do not remove the above tag */
 
 	public $__table = 'session';                        // table name
-	public $id;
-	public $session_id;
-	public $data;
-	public $last_used;
-	public $created;
-	public $remember_me;
+	protected $id;
+	protected $session_id;
+	protected $data;
+	protected $last_used;
+	protected $created;
+	protected $remember_me;
 
 	function getNumericColumnNames(): array {
 		return [
