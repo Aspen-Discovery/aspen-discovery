@@ -229,6 +229,9 @@ class MyAccount_Fines extends MyAccount {
 						$interface->assign('squareApplicationId', $squareSetting->applicationId);
 						$interface->assign('squareAccessToken', $squareSetting->accessToken);
 						$interface->assign('squareLocationId', $squareSetting->locationId);
+
+						//require_once ROOT_DIR . '/sys/CurlWrapper.php';
+						//$serviceAccountAuthorization = new CurlWrapper();
 					}
 				}
 

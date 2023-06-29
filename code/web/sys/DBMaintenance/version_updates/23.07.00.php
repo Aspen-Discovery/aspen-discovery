@@ -84,6 +84,9 @@ function getUpdates23_07_00(): array {
 					locationId VARCHAR(80) NOT NULL
 				) ENGINE INNODB',
 				'ALTER TABLE library ADD COLUMN squareSettingId INT(11) DEFAULT -1',
+				'ALTER TABLE user_payments ADD COLUMN squareToken VARCHAR(255) DEFAULT null',
+				'ALTER TABLE user_payments MODIFY COLUMN orderId VARCHAR(75)',
+				'ALTER TABLE user_payments MODIFY COLUMN transactionId VARCHAR(75)',
 			],
 		],
 		// add_ecommerce_square_settings

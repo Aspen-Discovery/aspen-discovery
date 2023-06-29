@@ -18,6 +18,7 @@ class UserPayment extends DataObject {
 	public $totalPaid;
 	public $transactionDate;
 	public $transactionType;
+	public $squareToken;
 	public $aciToken;
 	public $deluxeRemittanceId;
 	public $deluxeSecurityId;

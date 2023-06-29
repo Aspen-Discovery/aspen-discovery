@@ -6726,6 +6726,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentRequestUrl;
 						} else if (paymentType === 'PayPalPayflow') {
 							orderInfo = response.paymentIframe;
+						} else if (paymentType === 'Square') {
+							orderInfo = response.paymentId;
 						}
 					}
 				}
@@ -6837,6 +6839,10 @@ AspenDiscovery.Account = (function () {
 			}
 		},
 
+		createSquareOrder: function (finesFormId, transactionType, token) {
+			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
+		},
+
 		createPayPalPayflowOrder: function (userId, transactionType) {
 			var result = this.createGenericOrder('#fines' + userId, 'PayPalPayflow', transactionType);
 			if (result === false) {
@@ -6890,6 +6896,39 @@ AspenDiscovery.Account = (function () {
 		cancelPayPalError: function () {
 			AspenDiscovery.showMessage('Payment cancelled', 'Your payment has successfully been cancelled.', true);
 		},
+
+		completeSquareOrder: function (patronId, transactionType, token) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeSquareOrder",
+				patronId: patronId,
+				type: transactionType,
+				token: token,
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
+					}
+				} else {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message) {
+							message = data.message;
+						} else {
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
 		updateFineTotal: function (finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
