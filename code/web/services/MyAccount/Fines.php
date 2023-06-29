@@ -214,6 +214,24 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				// Square
+				if($userLibrary->finePaymentType == 12) {
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+					$squareSetting = new SquareSetting();
+					$squareSetting->id = $library->squareSettingId;
+					if($squareSetting->find(true)) {
+						$cdnUrl = 'https://web.squarecdn.com/v1/square.js';
+						if($squareSetting->sandboxMode == 1 || $squareSetting->sandboxMode == '1') {
+							$cdnUrl = 'https://sandbox.web.squarecdn.com/v1/square.js';
+						}
+						$interface->assign('squareCdnUrl', $cdnUrl);
+						$interface->assign('squareApplicationId', $squareSetting->applicationId);
+						$interface->assign('squareAccessToken', $squareSetting->accessToken);
+						$interface->assign('squareLocationId', $squareSetting->locationId);
+					}
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 
