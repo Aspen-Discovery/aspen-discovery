@@ -4,6 +4,7 @@ import CachedImage from 'expo-cached-image';
 import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
+import * as Device from 'expo-device';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
@@ -14,7 +15,7 @@ import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigateStack } from '../../helpers/RootNavigator';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, updateNotificationOnboardingStatus } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
 import { getNotificationPreference } from '../../components/Notifications';
@@ -34,6 +35,9 @@ export const DiscoverHomeScreen = () => {
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const [notifySavedSearch, setNotifySavedSearch] = React.useState(false);
+     const [notifyCustom, setNotifyCustom] = React.useState(false);
+     const [notifyAccount, setNotifyAccount] = React.useState(false);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -166,11 +170,32 @@ export const DiscoverHomeScreen = () => {
                                    const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
                                    if (result && i !== -1) {
                                         if (result.success) {
-                                             if (pref.option === 'notifySavedSearch' || pref.option === 'notifyCustom' || pref.option === 'notifyAccount') {
-                                                  if (result.allow) {
+                                             if (pref.option === 'notifySavedSearch') {
+                                                  setNotifySavedSearch(result.allow);
+                                             }
+
+                                             if (pref.option === 'notifyCustom') {
+                                                  setNotifyCustom(result.allow);
+                                             }
+
+                                             if (pref.option === 'notifyAccount') {
+                                                  setNotifyAccount(result.allow);
+                                             }
+
+                                             if (notifyAccount && notifyCustom && notifySavedSearch) {
+                                                  await updateNotificationOnboardingStatus(false, library.baseUrl, language);
+                                                  setShowNotificationsOnboarding(false);
+                                             } else {
+                                                  if (user.onboardAppNotifications === '1' || user.onboardAppNotifications === 1) {
                                                        setShowNotificationsOnboarding(true);
                                                   }
                                              }
+
+                                             /*if (pref.option === 'notifySavedSearch' || pref.option === 'notifyCustom' || pref.option === 'notifyAccount') {
+                                                  if (result.allow) {
+                                                       setShowNotificationsOnboarding(true);
+                                                  }
+                                             }*/
                                         }
                                    }
                               }
@@ -187,8 +212,8 @@ export const DiscoverHomeScreen = () => {
      );
 
      // load notification onboarding prompt
-     console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
-     if (showNotificationsOnboarding && !alreadyCheckedNotifications) {
+     //console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
+     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice) {
           return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
      }
 

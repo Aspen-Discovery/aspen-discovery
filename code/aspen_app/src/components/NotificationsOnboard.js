@@ -7,8 +7,10 @@ import { getTermFromDictionary } from '../translations/TranslationService';
 import { navigateStack } from '../helpers/RootNavigator';
 import { getNotificationPreference } from './Notifications';
 import { updateNotificationOnboardingStatus } from '../util/api/user';
+import { useQueryClient } from '@tanstack/react-query';
 
 export const NotificationsOnboard = (props) => {
+     const queryClient = useQueryClient();
      const { setAlreadyCheckedNotifications } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
@@ -20,6 +22,7 @@ export const NotificationsOnboard = (props) => {
           setIsOpen(false);
           setAlreadyCheckedNotifications(true);
           await updateNotificationOnboardingStatus(false, library.baseUrl, language);
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
      };
      const cancelRef = React.useRef(null);
 

@@ -83,6 +83,36 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE user ADD COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1',
 			],
 		], //user_onboard_notifications
+		'add_ecommerce_square_settings' => [
+			'title' => 'Add eCommerce vendor Square',
+			'description' => 'Create tables to store settings for Square',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS square_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					sandboxMode TINYINT(1) DEFAULT 0,
+					applicationId VARCHAR(80) NOT NULL,
+					accessToken VARCHAR(80) NOT NULL,
+					locationId VARCHAR(80) NOT NULL
+				) ENGINE INNODB',
+				'ALTER TABLE library ADD COLUMN squareSettingId INT(11) DEFAULT -1',
+				'ALTER TABLE user_payments ADD COLUMN squareToken VARCHAR(255) DEFAULT null',
+				'ALTER TABLE user_payments MODIFY COLUMN orderId VARCHAR(75)',
+				'ALTER TABLE user_payments MODIFY COLUMN transactionId VARCHAR(75)',
+			],
+		],
+		// add_ecommerce_square_settings
+		'permissions_ecommerce_square' => [
+			'title' => 'Add permissions for Square',
+			'description' => 'Create permissions for administration of Square',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Square', '', 10, 'Controls if the user can change Square settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Square'))",
+			],
+		],
+		// permissions_ecommerce_square
 
 		//kodi
 		'add_disallow_third_party_covers' => [

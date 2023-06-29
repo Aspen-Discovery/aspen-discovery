@@ -27,6 +27,7 @@ export const MyLibraryCard = () => {
      const [isLoading, setLoading] = React.useState(true);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
      const [previousBrightness, setPreviousBrightness] = React.useState();
+     const [brightnessMode, setBrightnessMode] = React.useState(1);
      const [isLandscape, setIsLandscape] = React.useState(false);
      const { user, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
      //const [numCards, setNumCards] = React.useState(_.size(cards) ?? 1);
@@ -66,8 +67,12 @@ export const MyLibraryCard = () => {
                } else {
                     if (status === 'granted') {
                          await Brightness.getBrightnessAsync().then((level) => {
-                              console.log('Storing previous screen brightness for later');
+                              console.log('Storing previous screen brightness for later: ' + level);
                               setPreviousBrightness(level);
+                         });
+                         await Brightness.getSystemBrightnessModeAsync().then((mode) => {
+                              console.log('Storing system brightness mode for later: ' + mode);
+                              setBrightnessMode(mode);
                          });
                          console.log('Updating screen brightness');
                          Brightness.setSystemBrightnessAsync(1);
@@ -115,6 +120,16 @@ export const MyLibraryCard = () => {
                     if (status === 'granted' && previousBrightness) {
                          console.log('Restoring previous screen brightness');
                          Brightness.setSystemBrightnessAsync(previousBrightness);
+                         console.log('Restoring system brightness');
+                         Brightness.restoreSystemBrightnessAsync();
+                    }
+                    if (status === 'granted' && brightnessMode) {
+                         console.log('Restoring brightness mode');
+                         let mode = 'BrightnessMode.MANUAL';
+                         if (brightnessMode === 1) {
+                              mode = 'BrightnessMode.AUTOMATIC';
+                         }
+                         Brightness.setSystemBrightnessModeAsync(brightnessMode);
                     }
                     console.log('navigationListener isLandscape > ' + isLandscape);
                     if (isLandscape) {
