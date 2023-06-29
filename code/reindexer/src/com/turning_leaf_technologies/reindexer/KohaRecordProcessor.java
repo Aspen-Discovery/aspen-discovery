@@ -233,7 +233,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String iType = iTypeCode.toLowerCase().trim();
 				//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
 				String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-				if (translatedFormat != null) {
+				if (translatedFormat != null && translatedFormat.length() > 0) {
 					foundFormatFromIType = true;
 					itemInfo.setFormat(translatedFormat);
 					String translatedLocationCategory = translateValue("format_category", iType, recordInfo.getRecordIdentifier());
@@ -248,7 +248,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection && !foundFormatFromIType) {
 			String format = getItemSubfieldData(formatSubfield, itemField);
 			String translatedFormat = translateValue("format", format, recordInfo.getRecordIdentifier());
-			if (translatedFormat != null) {
+			if (translatedFormat != null && translatedFormat.length() > 0) {
 				itemInfo.setFormat(translatedFormat);
 				String translatedLocationCategory = translateValue("format_category", format, recordInfo.getRecordIdentifier());
 				itemInfo.setFormatCategory(translatedLocationCategory);
