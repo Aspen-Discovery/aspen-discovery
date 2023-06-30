@@ -1321,8 +1321,8 @@ class Evergreen extends AbstractIlsDriver {
 				$result['message'] = "Error {$apiResponse->payload[0]->textcode} updating your payment, please visit the library with your receipt.";
 			}
 		} else {
-			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
-			$logger->log('Unable to authenticate with Evergreen while completing fine payment', Logger::LOG_ERROR);
+			$result['message'] = translate(['text' => 'Unable to post the payment to the library ILS. The library has been notified and will manually reconcile the payment.', 'isPublicFacing'=>true]);
+			$logger->log('Unable to post the payment to the library ILS. The library has been notified and will manually reconcile the payment. Response code: ' . $this->apiCurlWrapper->getResponseCode(), Logger::LOG_ERROR);
 		}
 
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
