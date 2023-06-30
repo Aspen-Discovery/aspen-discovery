@@ -4430,7 +4430,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
 				}
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
-				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
+				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				if ($transactionType == 'donation') {
 					$donation = $this->addDonation($payment, $tempDonation);
