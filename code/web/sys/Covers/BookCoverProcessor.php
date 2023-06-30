@@ -1034,7 +1034,7 @@ class BookCoverProcessor {
 
 	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = '') {
 		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
-		if ($this->type != 'grouped_work') {
+		if ($this->type != 'grouped_work' || !$this->bookCoverInfo->disallowThirdPartyCover) {
 			return false;
 		}
 
