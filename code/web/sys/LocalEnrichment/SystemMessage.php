@@ -131,7 +131,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -167,7 +167,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

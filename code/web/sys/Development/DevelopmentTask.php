@@ -394,7 +394,7 @@ class DevelopmentTask extends DataObject {
 		} elseif ($name == 'assignedQA') {
 			return $this->getAssignedQA();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -414,7 +414,7 @@ class DevelopmentTask extends DataObject {
 		} elseif ($name == "assignedQA") {
 			$this->_assignedQA = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

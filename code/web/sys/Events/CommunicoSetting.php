@@ -131,7 +131,7 @@ class CommunicoSetting extends DataObject {
 		} if ($name == "locationMap") {
 			return $this->getLocationMap();
 		}else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -139,7 +139,7 @@ class CommunicoSetting extends DataObject {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

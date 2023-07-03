@@ -276,7 +276,7 @@ class Ticket extends DataObject {
 		} elseif ($name == 'relatedComponents') {
 			return $this->getRelatedComponents();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -286,7 +286,7 @@ class Ticket extends DataObject {
 		} elseif ($name == "relatedComponents") {
 			$this->_relatedComponents = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

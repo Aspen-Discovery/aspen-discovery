@@ -306,7 +306,7 @@ class CollectionSpotlight extends DataObject {
 			}
 			return $this->_lists;
 		}
-		return null;
+		return parent::__get($name);
 	}
 
 	public function getNumLists() {
@@ -330,6 +330,8 @@ class CollectionSpotlight extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "lists") {
 			$this->_lists = $value;
+		} else {
+			parent::__set($name, $value);
 		}
 	}
 

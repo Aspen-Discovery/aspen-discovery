@@ -150,7 +150,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 		} elseif ($name == 'allowAccess') {
 			return $this->getAccess();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -166,7 +166,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 		} elseif ($name == 'allowAccess') {
 			$this->_allowAccess = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 
