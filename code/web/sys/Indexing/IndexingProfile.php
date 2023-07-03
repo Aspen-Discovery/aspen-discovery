@@ -1415,7 +1415,7 @@ class IndexingProfile extends DataObject {
 			}
 			return $this->_formatMap;
 		}
-		return null;
+		return parent::__get($name);
 	}
 
 	public function __set($name, $value) {
@@ -1429,6 +1429,8 @@ class IndexingProfile extends DataObject {
 			$this->_statusMap = $value;
 		} elseif ($name == "formatMap") {
 			$this->_formatMap = $value;
+		}else{
+			parent::__set($name, $value);
 		}
 	}
 

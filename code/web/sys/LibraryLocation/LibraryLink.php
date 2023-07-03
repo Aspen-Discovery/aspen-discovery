@@ -202,7 +202,7 @@ class LibraryLink extends DataObject {
 			$this->getLanguages();
 			return $this->_languages;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -212,7 +212,7 @@ class LibraryLink extends DataObject {
 		} elseif ($name == 'languages') {
 			$this->_languages = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

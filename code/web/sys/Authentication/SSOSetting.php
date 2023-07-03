@@ -925,7 +925,7 @@ class SSOSetting extends DataObject {
 		} elseif ($name == 'idpNameIDFormat') {
 			return 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -935,7 +935,7 @@ class SSOSetting extends DataObject {
 		} elseif ($name == "dataMapping") {
 			$this->_dataMapping = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

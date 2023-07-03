@@ -78,7 +78,7 @@ class TranslationMap extends DataObject {
 		if ($name == "translationMapValues") {
 			return $this->getTranslationMapValues();
 		}
-		return null;
+		return parent::__get($name);
 	}
 
 	public function getTranslationMapValues(): ?array {
@@ -102,6 +102,8 @@ class TranslationMap extends DataObject {
 		if ($name == "translationMapValues") {
 			/** @noinspection PhpUndefinedFieldInspection */
 			$this->_translationMapValues = $value;
+		} else {
+			parent::__set($name, $value);
 		}
 	}
 

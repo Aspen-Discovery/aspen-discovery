@@ -270,7 +270,7 @@ class GroupedWorkFacetGroup extends DataObject {
 		if ($name == 'facets') {
 			return $this->getFacets();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -278,7 +278,7 @@ class GroupedWorkFacetGroup extends DataObject {
 		if ($name == 'facets') {
 			$this->setFacets($value);
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

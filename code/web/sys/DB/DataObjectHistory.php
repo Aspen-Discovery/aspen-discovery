@@ -89,7 +89,7 @@ class DataObjectHistory extends DataObject {
 		if ($name == "changedByName") {
 			return $this->getChangedByName();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 

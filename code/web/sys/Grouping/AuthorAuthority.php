@@ -63,7 +63,7 @@ class AuthorAuthority extends DataObject {
 		if ($name == 'alternatives') {
 			return $this->getAlternatives();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -71,7 +71,7 @@ class AuthorAuthority extends DataObject {
 		if ($name == 'alternatives') {
 			$this->_alternatives = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

@@ -201,7 +201,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 			$this->getLanguages();
 			return $this->_languages;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -215,7 +215,7 @@ class Placard extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == 'languages') {
 			$this->_languages = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

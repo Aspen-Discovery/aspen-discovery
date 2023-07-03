@@ -200,7 +200,7 @@ class SideLoadScope extends DataObject {
 			}
 			return $this->_locations;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -211,6 +211,8 @@ class SideLoadScope extends DataObject {
 			$this->_locations = $value;
 		} else {
 			$this->_data[$name] = $value;
+		} else {
+			parent::__set($name, $value);
 		}
 	}
 

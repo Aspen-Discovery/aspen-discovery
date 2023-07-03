@@ -196,7 +196,7 @@ class DevelopmentEpic extends DataObject {
 		} elseif ($name == 'requestingPartners') {
 			return $this->getRequestingPartners();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -208,7 +208,7 @@ class DevelopmentEpic extends DataObject {
 		} elseif ($name == "requestingPartners") {
 			$this->_requestingPartners = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

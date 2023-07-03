@@ -147,7 +147,7 @@ class CloudLibrarySetting extends DataObject {
 			}
 			return $this->_scopes;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -155,7 +155,7 @@ class CloudLibrarySetting extends DataObject {
 		if ($name == "scopes") {
 			$this->_scopes = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 }

@@ -63,8 +63,9 @@ class CourseReservesIndexingSettings extends DataObject {
 	public function __get($name) {
 		if ($name == "libraryMappings") {
 			return $this->getLibraryMappings();
+		} else {
+			return parent::__get($name);
 		}
-		return null;
 	}
 
 	public function getLibraryMappings(): ?array {
@@ -87,6 +88,8 @@ class CourseReservesIndexingSettings extends DataObject {
 	public function __set($name, $value) {
 		if ($name == "libraryMappings") {
 			$this->_libraryMappings = $value;
+		} else {
+			parent::__set($name, $value);
 		}
 	}
 

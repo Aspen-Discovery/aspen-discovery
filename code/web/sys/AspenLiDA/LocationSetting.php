@@ -72,7 +72,7 @@ class LocationSetting extends DataObject {
 			}
 			return $this->_locations;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -80,7 +80,7 @@ class LocationSetting extends DataObject {
 		if ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

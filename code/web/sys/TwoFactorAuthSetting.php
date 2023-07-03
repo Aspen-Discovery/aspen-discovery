@@ -101,7 +101,7 @@ class TwoFactorAuthSetting extends DataObject {
 			}
 			return $this->_ptypes;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -111,7 +111,7 @@ class TwoFactorAuthSetting extends DataObject {
 		} elseif ($name == 'ptypes') {
 			$this->_ptypes = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

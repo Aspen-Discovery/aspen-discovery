@@ -1729,9 +1729,8 @@ class Location extends DataObject {
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
-		return null;
 	}
 
 	public function __set($name, $value) {
@@ -1750,7 +1749,7 @@ class Location extends DataObject {
 		} elseif ($name == 'themes') {
 			$this->_themes = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

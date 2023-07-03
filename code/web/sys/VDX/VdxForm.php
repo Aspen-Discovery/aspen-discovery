@@ -144,7 +144,7 @@ class VdxForm extends DataObject {
 		if ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -176,7 +176,7 @@ class VdxForm extends DataObject {
 		if ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 
