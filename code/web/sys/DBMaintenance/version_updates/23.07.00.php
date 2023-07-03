@@ -73,6 +73,14 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE search DROP COLUMN newTitles',
 			]
 		], //remove_unused_fields_23_07b
+		'add_barcode_last_name_login_option' => [
+			'title' => 'Add Barcode Last Name Login Option',
+			'description' => 'Add Barcode and Last Name Login Option',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE account_profiles CHANGE COLUMN loginConfiguration loginConfiguration enum('barcode_pin','name_barcode','barcode_lastname') COLLATE utf8mb4_general_ci NOT NULL",
+			]
+		], //add_barcode_last_name_login_option
 
 		//kirstien
 		'user_onboard_notifications' => [

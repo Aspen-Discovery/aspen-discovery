@@ -134,7 +134,8 @@ class AccountProfile extends DataObject {
 						'label' => 'Login Configuration',
 						'values' => [
 							'barcode_pin' => 'Barcode and Pin',
-							'name_barcode' => 'Name and Barcode',
+							'name_barcode' => 'Name and Barcode (Sierra/Millennium Only)',
+							'barcode_lastname' => 'Barcode and Last Name (CARL.X Only)',
 						],
 						'description' => 'How to configure the prompts for this authentication profile',
 						'required' => true,
