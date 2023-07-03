@@ -97,11 +97,14 @@ public class EventsIndexerMain {
 
 					//Index events from other source here
 			} catch (Exception e) {
+				logger.error("Exception indexing events", e);
+			} catch (Error e) {
 				logger.error("Error indexing events", e);
 			}
 
 			//Check to see if the jar has changes, and if so quit
 			if (myChecksumAtStart != JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar")){
+				logger.warn("Ending because the checksum for the jar changed");
 				break;
 			}
 			//Check to see if it's between midnight and 1 am and the jar has been running more than 15 hours.  If so, restart just to clean up memory.
@@ -109,7 +112,7 @@ public class EventsIndexerMain {
 			Date now = new Date();
 			nowAsCalendar.setTime(now);
 			if (nowAsCalendar.get(Calendar.HOUR_OF_DAY) <=1 && (now.getTime() - timeAtStart) > 15 * 60 * 60 * 1000 ){
-				logger.info("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
+				logger.warn("Ending because we have been running for more than 15 hours and it's between midnight and one AM");
 				break;
 			}
 

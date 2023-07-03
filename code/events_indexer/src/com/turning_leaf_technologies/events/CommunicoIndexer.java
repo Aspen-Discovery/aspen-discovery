@@ -4,9 +4,11 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
@@ -490,7 +492,14 @@ class CommunicoIndexer {
 		try {
 			if (connectToCommunico()){
 				JSONArray events = new JSONArray();
-				CloseableHttpClient httpclient = HttpClients.createDefault();
+				//Give a 5-minute timeout
+				int timeout = 600;
+				RequestConfig config = RequestConfig.custom()
+					.setConnectTimeout(timeout * 1000)
+					.setConnectionRequestTimeout(timeout * 1000)
+					.setSocketTimeout(timeout * 1000).build();
+				CloseableHttpClient httpclient =  HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+
 				LocalDate today = LocalDate.now();
 				for (int m = 0; m < 13; m++) {
 					LocalDate firstOfMonth;
@@ -509,6 +518,8 @@ class CommunicoIndexer {
 					apiEventsURL += "&fields=ages,searchTags,registration,eventImage,eventType,privateEvent,registrationOpens,registrationCloses,eventRegistrationUrl,thirdPartyRegistration,waitlist,maxAttendees,totalRegistrants,totalWaitlist,maxWaitlist,types";
 					HttpGet apiRequest = new HttpGet(apiEventsURL);
 					apiRequest.addHeader("Authorization", communicoAPITokenType + " " + communicoAPIToken);
+					logEntry.addNote("Loading events from " + apiEventsURL);
+					logEntry.saveResults();
 					try (CloseableHttpResponse response1 = httpclient.execute(apiRequest)) {
 						StatusLine status = response1.getStatusLine();
 						HttpEntity entity1 = response1.getEntity();
@@ -529,6 +540,8 @@ class CommunicoIndexer {
 					} catch (Exception e) {
 						logEntry.incErrors("Error getting events from " + apiEventsURL, e);
 					}
+					logEntry.addNote("Finished loading events");
+					logEntry.saveResults();
 				}
 				return events;
 			}
