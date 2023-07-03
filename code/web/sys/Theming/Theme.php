@@ -2718,7 +2718,7 @@ class Theme extends DataObject {
 		return $allAppliedThemes;
 	}
 
-	public $_parentTheme = null;
+	protected $_parentTheme = null;
 
 	public function getParentTheme() {
 		if ($this->_parentTheme == null) {
