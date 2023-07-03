@@ -210,8 +210,6 @@ class SideLoadScope extends DataObject {
 		} elseif ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
-		} else {
 			parent::__set($name, $value);
 		}
 	}
