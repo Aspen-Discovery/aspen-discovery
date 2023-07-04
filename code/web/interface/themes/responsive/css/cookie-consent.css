@@ -1,0 +1,104 @@
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLFj_V1s.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v20/pxiEyp8kv8JHgFVrFJA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Poppins';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/poppins/v20/pxiByp8kv8JHgFVrLCz7V1s.ttf) format('truetype');
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.stripPopup {
+  background-color: #1d7ff0;
+  padding: 15px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1;
+  font-family: 'Poppins', sans-serif;
+}
+.stripPopup .btnWrap {
+  width: 400px;
+  float: right;
+  display: flex;
+}
+.stripPopup .btnWrap a.button {
+  width: 188px;
+  color: white;
+  padding: 12px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: normal;
+  text-align: center;
+  border: 1px solid white;
+  margin: 2px 5px 0;
+  display: inline-block;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+}
+.stripPopup .btnWrap a.button:hover {
+  background-color: red;
+  transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+}
+.stripPopup .container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1000px;
+  display: block;
+  padding: 0 20px;
+  margin: 0 auto;
+}
+.stripPopup .container .contentWrap {
+  width: 490px;
+  float: left;
+}
+.stripPopup .container .contentWrap span {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 700;
+  display: block;
+}
+.stripPopup .container .contentWrap abbr {
+  font-size: 12px;
+  color: white;
+  font-weight: 400;
+  display: block;
+}
+@media only screen and (max-width: 768px) {
+  .stripPopup .contentWrap {
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+  .stripPopup .btnWrap {
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+  .stripPopup .btnWrap a.button {
+    width: auto;
+    font-size: 12px;
+  }
+}

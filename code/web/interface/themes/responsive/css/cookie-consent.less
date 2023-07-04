@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;700&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.stripPopup{
+    background-color: rgb(29, 127, 240);
+    padding: 15px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1;
+    font-family: 'Poppins', sans-serif;
+
+    .btnWrap{
+        width: 400px;
+        float: right;
+        display: flex;
+
+        a.button{
+            width:188px;
+            color: white;
+            padding: 12px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            line-height: normal;
+            text-align: center;
+            border: 1px solid white;
+            margin: 2px 5px 0;
+            display: inline-block; 
+            text-decoration: none;
+            transition: all .3s ease-in-out;
+            -webkit-transition: all .3s ease-in-out;
+            -moz-transition: all .3s ease-in-out;
+           
+        }
+            a.button:hover{
+                background-color: red;
+                transition: all .3s ease-in-out;
+                -webkit-transition: all .3s ease-in-out;
+                -moz-transition: all .3s ease-in-out;
+            }
+    }
+
+    .container{
+        display:flex;
+        justify-content: space-between;
+        width:100%;
+        max-width: 1000px;
+        display: block;
+        padding: 0 20px;
+        margin: 0 auto;
+
+        .contentWrap{
+            width: 490px;
+            float: left;
+
+            span{
+                font-size: 14px;
+                color: #fff;
+                font-weight: 700;
+                display: block;
+            }
+            abbr {
+                font-size: 12px;
+                color: white;
+                font-weight: 400;
+                display: block;
+            }
+            
+        }
+    }
+
+    @media only screen and (max-width: 768px) {
+
+        .contentWrap{
+            width: 100%;
+            text-align: center;
+            display: block;
+        }
+
+        .btnWrap{
+            width: 100%;
+            text-align: center;
+            display: block;
+
+            a.button{
+                width: auto;
+                font-size: 12px;
+            }
+        } 
+    }
+}     
