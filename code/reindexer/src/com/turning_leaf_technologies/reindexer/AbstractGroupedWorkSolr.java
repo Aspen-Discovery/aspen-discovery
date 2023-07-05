@@ -1328,6 +1328,19 @@ public abstract class AbstractGroupedWorkSolr {
 							}
 							for (String scopeToRemove : scopesToRemove){
 								curItem1.getScopingInfo().remove(scopeToRemove);
+								//Remove from related scopes as well
+								ArrayList<ScopingInfo> scopingInfo = relatedScopes.get(scopeToRemove);
+								if (scopingInfo != null) {
+									ArrayList<ScopingInfo> scopingInfoClone = (ArrayList<ScopingInfo>) scopingInfo.clone();
+									for (ScopingInfo relatedScopeInfo : scopingInfoClone) {
+										if (relatedScopeInfo.getItem().equals(curItem1)) {
+											scopingInfo.remove(relatedScopeInfo);
+										}
+									}
+									if (scopingInfo.size() == 0) {
+										relatedScopes.remove(scopeToRemove);
+									}
+								}
 							}
 
 							//Remove the item entirely if it is no longer valid for any scope
@@ -1335,6 +1348,8 @@ public abstract class AbstractGroupedWorkSolr {
 								record1.getRelatedItems().remove(curItem1);
 								break;
 							}
+
+
 						}
 					}
 				}
