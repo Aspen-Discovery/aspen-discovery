@@ -570,6 +570,7 @@ class CommunicoIndexer {
 				}
 			} catch (Exception e) {
 				logEntry.incErrors("Error getting event registrations from " + apiRegistrationsURL, e);
+				return null;
 			}
 			return eventRegistrations;
 		} catch(Exception e){
