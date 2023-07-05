@@ -2290,7 +2290,12 @@ class Library extends DataObject {
 						'properties' => [
 							'allowMasqueradeMode' => [
 								'property' => 'allowMasqueradeMode',
-								'type' => 'checkbox',
+								'type' => 'enum',
+								'values' => [
+									0 => 'Not Allowed',
+									1 => 'Allowed from all IP addresses',
+									2 => 'Allowed from enabled IP addresses',
+								],
 								'label' => 'Allow Masquerade Mode',
 								'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.',
 								'hideInLists' => true,
@@ -3578,6 +3583,7 @@ class Library extends DataObject {
 		if (!array_key_exists('Single sign-on', $enabledModules)) {
 			unset($structure['ssoSection']);
 		}
+
 		return $structure;
 	}
 
@@ -3596,6 +3602,19 @@ class Library extends DataObject {
 			}
 		}
 		return false;
+	}
+
+	public static function getMasqueradeStatus(): int {
+		$libLookUp = new Library();
+		$libLookUp->find();
+
+		if($libLookUp->getNumResults() == 0){
+			echo("No libraries are configured for the system.  Please configure at least one library before proceeding.");
+			die();
+		} else {
+			$libLookUp->fetch();
+			return $libLookUp->allowMasqueradeMode;
+		}
 	}
 
 	static function getSearchLibrary($searchSource = null) {
@@ -3740,6 +3759,8 @@ class Library extends DataObject {
 	public function validateCategoryId() {
 		return $this->validateSso('ssoCategoryIdAttr', 'ssoCategoryIdFallback', 'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value');
 	}
+
+
 
 	public function __get($name) {
 		if ($name == "holidays") {

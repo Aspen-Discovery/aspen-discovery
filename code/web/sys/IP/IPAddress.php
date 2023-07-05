@@ -19,6 +19,7 @@ class IPAddress extends DataObject {
 	public $startIpVal;
 	public $endIpVal;
 	public $authenticatedForEBSCOhost;
+	public $masqueradeMode;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -128,6 +129,13 @@ class IPAddress extends DataObject {
 				'description' => 'Traffic from this IP will be automaticatlly authenticated in EBSCOhost.',
 				'default' => false,
 			],
+			'masqueradeMode' => [
+				'property' => 'masqueradeMode',
+				'type' => 'checkbox',
+				'label' => 'Allow Masquerade',
+				'description' => 'Traffic from this IP will be allowed to use Masquerade Mode.',
+				'default' => false,
+			]
 		];
 
 		global $enabledModules;
