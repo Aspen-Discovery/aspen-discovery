@@ -38,7 +38,7 @@ public class SymphonyExportMain {
 
 	private static Date reindexStartTime;
 
-	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.).*$");
+	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.).*$");
 	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	private static boolean hadErrors = false;
@@ -911,8 +911,8 @@ public class SymphonyExportMain {
 									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
 									//get notes from specified subfield in indexing profile
-									List<DataField> items = curBib.getDataFields(indexingProfile.getItemTagInt());
 									if (indexingProfile.getNoteSubfield() != ' '){
+										List<DataField> items = curBib.getDataFields(indexingProfile.getItemTagInt());
 										for (DataField item : items) {
 											List<Subfield> notes = item.getSubfields(indexingProfile.getNoteSubfield());
 											for (Subfield note : notes){
