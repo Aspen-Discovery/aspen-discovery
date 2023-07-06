@@ -28,7 +28,7 @@ export const DiscoverHomeScreen = () => {
      const [loading, setLoading] = React.useState(false);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(false);
-     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken } = React.useContext(UserContext);
+     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
@@ -160,48 +160,12 @@ export const DiscoverHomeScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const checkSettings = async () => {
-                    console.log('onboardAppNotifications: ' + user.onboardAppNotifications);
-                    if (!_.isUndefined(user.onboardAppNotifications)) {
-                         if (_.isObject(notificationSettings)) {
-                              console.log('notificationSettings is object.');
-                              const currentPreferences = Object.values(notificationSettings);
-                              for await (const pref of currentPreferences) {
-                                   const i = _.findIndex(currentPreferences, ['option', pref.option]);
-                                   const result = await getNotificationPreference(library.baseUrl, expoToken, pref.option);
-                                   if (result && i !== -1) {
-                                        if (result.success) {
-                                             if (pref.option === 'notifySavedSearch') {
-                                                  setNotifySavedSearch(result.allow);
-                                             }
-
-                                             if (pref.option === 'notifyCustom') {
-                                                  setNotifyCustom(result.allow);
-                                             }
-
-                                             if (pref.option === 'notifyAccount') {
-                                                  setNotifyAccount(result.allow);
-                                             }
-
-                                             if (notifyAccount && notifyCustom && notifySavedSearch) {
-                                                  await updateNotificationOnboardingStatus(false, library.baseUrl, language);
-                                                  setShowNotificationsOnboarding(false);
-                                             } else {
-                                                  if (user.onboardAppNotifications === '1' || user.onboardAppNotifications === 1) {
-                                                       setShowNotificationsOnboarding(true);
-                                                  }
-                                             }
-
-                                             /*if (pref.option === 'notifySavedSearch' || pref.option === 'notifyCustom' || pref.option === 'notifyAccount') {
-                                                  if (result.allow) {
-                                                       setShowNotificationsOnboarding(true);
-                                                  }
-                                             }*/
-                                        }
-                                   }
-                              }
-                         } else {
-                              console.log('notificationSettings is not object.');
+                    console.log('notificationOnboard: ' + notificationOnboard);
+                    if (!_.isUndefined(notificationOnboard)) {
+                         if (notificationOnboard === 1 || notificationOnboard === 2) {
                               setShowNotificationsOnboarding(true);
+                         } else {
+                              setShowNotificationsOnboarding(false);
                          }
                     }
                };
