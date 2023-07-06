@@ -58,7 +58,7 @@ export const NotificationsOnboard = (props) => {
                                    colorScheme="danger"
                                    onPress={() => {
                                         onClose();
-                                        navigateStack('AccountScreenTab', 'SettingsNotifications', {});
+                                        navigateStack('AccountScreenTab', 'SettingsNotificationOptions', {});
                                    }}>
                                    {onboardingButton}
                               </Button>

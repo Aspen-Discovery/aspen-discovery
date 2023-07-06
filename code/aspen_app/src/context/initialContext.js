@@ -30,6 +30,8 @@ export const UserContext = React.createContext({
      expoToken: false,
      aspenToken: false,
      resetUser: () => {},
+     updateExpoToken: () => {},
+     updateAspenToken: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -347,6 +349,16 @@ export const UserProvider = ({ children }) => {
           console.log('updated notification settings in UserContext');
      };
 
+     const updateExpoToken = (data) => {
+          setExpoToken(data);
+          console.log('updated expo token UserContext');
+     };
+
+     const updateAspenToken = (data) => {
+          setAspenToken(data);
+          console.log('updated aspen token UserContext');
+     };
+
      return (
           <UserContext.Provider
                value={{
@@ -371,6 +383,8 @@ export const UserProvider = ({ children }) => {
                     updateNotificationSettings,
                     expoToken,
                     aspenToken,
+                    updateExpoToken,
+                    updateAspenToken,
                }}>
                {children}
           </UserContext.Provider>

@@ -23,6 +23,7 @@ export const Settings_NotificationOptions = () => {
      const [notifyAccount, setNotifyAccount] = React.useState(false);
      const { user, updateUser, notificationSettings, updateNotificationSettings, expoToken, aspenToken } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     console.log(library.baseUrl);
      const [toggled, setToggle] = React.useState(aspenToken);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
      const { language } = React.useContext(LanguageContext);
@@ -117,7 +118,7 @@ export const Settings_NotificationOptions = () => {
           setLoading(false);
      };
 
-     if (isLoading || isFetchingUserProfile) {
+     if (isLoading) {
           return loadingSpinner();
      }
 
@@ -139,8 +140,12 @@ export const Settings_NotificationOptions = () => {
                               isDisabled={allowNotifications}
                          />
                     </HStack>
-                    {toggled && !error && _.isObject(notificationSettings) ? <EnableAllNotifications setLoading={setLoading} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} /> : null}
-                    {toggled && !error && _.isObject(notificationSettings) ? <FlatList data={Object.keys(notificationSettings)} renderItem={({ item }) => <DisplayPreference data={notificationSettings[item]} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />} keyExtractor={(item, index) => index.toString()} /> : null}
+                    {toggled && !error && _.isObject(notificationSettings) ? (
+                         <>
+                              <EnableAllNotifications setLoading={setLoading} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />
+                              <FlatList data={Object.keys(notificationSettings)} renderItem={({ item }) => <DisplayPreference data={notificationSettings[item]} notifySavedSearch={notifySavedSearch} setNotifySavedSearch={setNotifySavedSearch} notifyCustom={notifyCustom} setNotifyCustom={setNotifyCustom} notifyAccount={notifyAccount} setNotifyAccount={setNotifyAccount} />} keyExtractor={(item, index) => index.toString()} />
+                         </>
+                    ) : null}
                </Box>
           </SafeAreaView>
      );
