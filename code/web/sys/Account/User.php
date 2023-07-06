@@ -1995,7 +1995,7 @@ class User extends DataObject {
 	 * @param string $itemId The id of the item to hold
 	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
 	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
-	 * @return  blocked               True if successful, false if unsuccessful
+	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
 	 * @access  public
 	 */
@@ -2555,18 +2555,9 @@ class User extends DataObject {
 			return true;
 		} else if ($masqueradeStatus == 2) {
 			$clientIP = IPAddress::getClientIP();
-			$IPs = new IPAddress();
-			$IPs->orderBy('id');
-			$IPs->find();
-			while($IPs->fetch()){
-				if($IPs->masqueradeMode == 1){
-					$IPAddresses[$IPs->id] = $IPs->ip;
-				}
-			}
-			if(in_array($clientIP,$IPAddresses)){
-				return true;
-			} else {
-				return false;
+			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+			if ($ipInfo != false) {
+				return $ipInfo->masqueradeMode == 1;
 			}
 		}
 		return false;

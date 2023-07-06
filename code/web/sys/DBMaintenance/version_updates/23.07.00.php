@@ -11,7 +11,6 @@ function getUpdates23_07_00(): array {
 				''
 			]
 		], //sample*/
-		//mark
 		'rename_prospector_to_innreach2' => [
 			'title' => 'Rename Prospector Integration to INN-Reach',
 			'description' => 'Rename Prospector Integration to INN-Reach',
@@ -82,7 +81,6 @@ function getUpdates23_07_00(): array {
 			]
 		], //add_barcode_last_name_login_option
 
-		//kirstien
 		'user_onboard_notifications' => [
 			'title' => 'Add column to store if user should be onboarded about notifications',
 			'description' => 'Add column in user table to store if they should be onboarded about app notifications when opening Aspen LiDA.',
@@ -122,7 +120,6 @@ function getUpdates23_07_00(): array {
 		],
 		// permissions_ecommerce_square
 
-		//kodi
 		'add_disallow_third_party_covers' => [
 			'title' => 'Add option to disallow third party cover images for certain works',
 			'description' => 'Add option to disallow third party cover images for certain works',
@@ -131,9 +128,6 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE bookcover_info ADD COLUMN disallowThirdPartyCover TINYINT(1) DEFAULT 0',
 			],
 		], //add_disallow_third_party_covers
-
-
-		// other
 		'theme_cover_default_image' => [
 			'title' => 'Theme - Set default image for cover images',
 			'description' => 'Update theme table to have default values for the default cover image',
@@ -157,5 +151,13 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE themes ADD COLUMN moviesImageSelected VARCHAR(100) default ''",
 			],
 		], //theme_format_category_icons
+
+		'add_masquerade_switch_to_ip_addresses' => [
+			'title' => 'Add Masquerade Switch to IP Addresses',
+			'description' => 'Add Masquerade Switch to IP Addresses',
+			'sql' => [
+				"ALTER TABLE ip_lookup ADD COLUMN masqueradeMode TINYINT(1) default 0",
+			],
+		], //add_masquerade_switch_to_ip_addresses
 	];
 }
