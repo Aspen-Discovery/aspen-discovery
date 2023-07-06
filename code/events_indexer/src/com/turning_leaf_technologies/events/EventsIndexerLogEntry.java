@@ -123,6 +123,9 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 
 	void incAdded() {
 		numAdded++;
+		if (numAdded % 50 == 0){
+			this.saveResults();
+		}
 	}
 
 	void incDeleted() {
@@ -131,6 +134,9 @@ public class EventsIndexerLogEntry implements BaseLogEntry {
 
 	void incUpdated() {
 		numUpdated++;
+		if (numUpdated % 50 == 0){
+			this.saveResults();
+		}
 	}
 
 	boolean hasErrors() {
