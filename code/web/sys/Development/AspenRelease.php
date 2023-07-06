@@ -81,7 +81,7 @@ class AspenRelease extends DataObject {
 		} elseif ($name == 'relatedTasks') {
 			return $this->getRelatedTasks();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -89,7 +89,7 @@ class AspenRelease extends DataObject {
 		if ($name == "relatedTasks") {
 			$this->_relatedTasks = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

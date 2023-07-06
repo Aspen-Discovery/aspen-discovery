@@ -1696,4 +1696,42 @@ class Sierra extends Millennium {
 	public function showTimesRenewed(): bool {
 		return true;
 	}
+
+	function updateHomeLibrary(User $patron, string $homeLibraryCode) {
+		$result = [
+			'success' => false,
+			'messages' => [],
+		];
+
+		if ($patron->getHomeLibrary()->allowHomeLibraryUpdates) {
+			$params = [];
+
+			if (isset($_REQUEST['homeLocation'])) {
+				$location = new Location();
+				$location->code = $_REQUEST['homeLocation'];
+				if (!$location->find(true)) {
+					$result['messages'][] = 'Could not find that home location.';
+					return $result;
+				}
+				$patron->homeLocationId = $location->locationId;
+				$params['homeLibraryCode'] = $_REQUEST['homeLocation'];
+			}
+
+			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
+			$updatePatronResponse = $this->_sendPage('sierra.updatePatronHomeLocation', 'PUT', $sierraUrl, json_encode($params));
+
+			if ($this->lastResponseCode == 204) {
+				$result['success'] = true;
+				$result['messages'][] = 'Your home library was updated successfully.';
+				$patron->update();
+			} else {
+				$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;
+			}
+		} else {
+			$result['messages'][] = 'You do not have permission to update profile information.';
+		}
+
+		return $result;
+	}
 }

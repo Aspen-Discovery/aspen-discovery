@@ -95,7 +95,7 @@ class EBSCOhostSearchSetting extends DataObject {
 		} elseif ($name == "databases") {
 			return $this->getDatabases();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -126,7 +126,7 @@ class EBSCOhostSearchSetting extends DataObject {
 		} elseif ($name == "databases") {
 			$this->_databases = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

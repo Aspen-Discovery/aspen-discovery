@@ -123,7 +123,7 @@ class ProPaySetting extends DataObject {
 			}
 			return $this->_libraries;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -131,7 +131,7 @@ class ProPaySetting extends DataObject {
 		if ($name == "libraries") {
 			$this->_libraries = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

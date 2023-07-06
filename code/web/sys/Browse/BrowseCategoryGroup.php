@@ -145,7 +145,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == 'additionalEditors') {
 			return $this->getAdditionalEditors();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -225,7 +225,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 		} elseif ($name == 'additionalEditors') {
 			$this->_additionalEditors = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

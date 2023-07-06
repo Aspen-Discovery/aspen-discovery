@@ -225,8 +225,9 @@ class GreenhouseAPI extends Action {
 			}
 
 			//Check to see if we need to send an alert
+			global $serverName;
 			if (strlen($alertText) > 0 && $sendAlert) {
-				$alertText = '*' . $sites->name . "* $notification\n" . $alertText;
+				$alertText = '*' . $sites->name . "* $notification\n" . $alertText . "\nFrom $serverName";
 				if (!empty($greenhouseAlertSlackHook)) {
 					$curlWrapper = new CurlWrapper();
 					$headers = [

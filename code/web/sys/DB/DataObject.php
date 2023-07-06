@@ -10,7 +10,7 @@
  * Each property that starts with _ is runtime data that is reset for each object
  * Each property that starts with [a-zA-Z] is a property that is saved to the database
  */
-abstract class DataObject {
+abstract class DataObject implements JsonSerializable {
 	public $__table;
 	public $__primaryKey = 'id';
 	public $__displayNameColumn = null;
@@ -420,6 +420,12 @@ abstract class DataObject {
 		$updates = '';
 		foreach ($properties as $name => $value) {
 			if ($value !== null && !is_array($value) && $name[0] != '_' && $name != 'N' && $name != $this->__primaryKey) {
+				//Check to see if we are updating only selected fields and if so, only skip things that aren't changed
+				if (!empty($this->_changedFields)) {
+					if (!in_array($name, $this->_changedFields)) {
+						continue;
+					}
+				}
 				if (strlen($updates) != 0) {
 					$updates .= ', ';
 				}
@@ -463,6 +469,9 @@ abstract class DataObject {
 					$updates .= $name . ' = ' . $aspen_db->quote('');
 				}
 			}
+		}
+		if (empty($updates)) {
+			return true;
 		}
 		$updateQuery .= ' SET ' . $updates . ' WHERE ' . $primaryKey . ' = ' . $aspen_db->quote($this->$primaryKey);
 		$this->__lastQuery = $updateQuery;
@@ -827,7 +836,9 @@ abstract class DataObject {
 				$oneToManyDBObject->delete();
 			} else {
 				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})) { // (negative ids need processed with insert)
-					$oneToManyDBObject->update();
+					if ($oneToManyDBObject->hasChanges()) {
+						$oneToManyDBObject->update();
+					}
 				} else {
 					$oneToManyDBObject->$keyOther = $this->{$this->__primaryKey};
 					$oneToManyDBObject->insert();
@@ -1178,4 +1189,42 @@ abstract class DataObject {
 		return $structure;
 	}
 
+	function __get($name) {
+		if (property_exists($this, $name)) {
+			return $this->$name;
+		}else {
+			return $this->_data[$name] ?? null;
+		}
+	}
+
+	function __set($name, $value) {
+		if (property_exists($this, $name)) {
+			if ($this->__fetchingFromDB) {
+				$this->$name = $value;
+			} else {
+				$propertyChanged = $this->$name != $value || (is_null($this->$name) && !is_null($value));
+				if ($propertyChanged) {
+					$this->_changedFields[] = $name;
+					$this->$name = $value;
+				}
+			}
+		}else {
+			$this->_data[$name] = $value;
+		}
+	}
+
+	function hasChanges() : bool {
+		return !empty($this->_changedFields);
+	}
+
+	public function jsonSerialize() {
+		$properties = get_object_vars($this);
+		$serializedData = [];
+		foreach ($properties as $name => $value) {
+			if ($name[0] != '_' && $name[0] != 'N') {
+				$serializedData[$name] = $value;
+			}
+		}
+		return $serializedData;
+	}
 }

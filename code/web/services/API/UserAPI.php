@@ -4119,7 +4119,11 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			$status = $_REQUEST['status'] ?? null;
 			if($status) {
-				$user->onboardAppNotifications = $status;
+				if($status == 'false' || $status == false) {
+					$user->onboardAppNotifications = 0;
+				} else {
+					$user->onboardAppNotifications = 1;
+				}
 				$user->update();
 				return [
 					'success' => true,

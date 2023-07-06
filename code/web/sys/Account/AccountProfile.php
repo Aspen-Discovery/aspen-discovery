@@ -134,7 +134,8 @@ class AccountProfile extends DataObject {
 						'label' => 'Login Configuration',
 						'values' => [
 							'barcode_pin' => 'Barcode and Pin',
-							'name_barcode' => 'Name and Barcode',
+							'name_barcode' => 'Name and Barcode (Sierra/Millennium Only)',
+							'barcode_lastname' => 'Barcode and Last Name (CARL.X Only)',
 						],
 						'description' => 'How to configure the prompts for this authentication profile',
 						'required' => true,
@@ -417,7 +418,7 @@ class AccountProfile extends DataObject {
 			}
 			return $this->_libraries;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -425,7 +426,7 @@ class AccountProfile extends DataObject {
 		if ($name == 'libraries') {
 			$this->_libraries = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

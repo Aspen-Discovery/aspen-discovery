@@ -542,11 +542,11 @@ export function formatBrowseCategories(payload) {
                                         id: categoryId,
                                    });
                               } else {
-                                   if (!_.isUndefined(category.listId)) {
+                                   if (!_.isUndefined(category.listId) && !_.isNull(category.listId)) {
                                         id = category.listId;
                                    }
 
-                                   if (!_.isUndefined(category.sourceId)) {
+                                   if (!_.isUndefined(category.sourceId) && !_.isNull(category.sourceId)) {
                                         id = category.sourceId;
                                    }
 

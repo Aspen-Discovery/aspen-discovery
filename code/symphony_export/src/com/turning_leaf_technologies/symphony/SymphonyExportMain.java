@@ -21,6 +21,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class SymphonyExportMain {
 	private static Logger logger;
@@ -36,6 +37,9 @@ public class SymphonyExportMain {
 	private static IlsExtractLogEntry logEntry;
 
 	private static Date reindexStartTime;
+
+	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.).*$");
+	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	private static boolean hadErrors = false;
 
@@ -906,6 +910,24 @@ public class SymphonyExportMain {
 									marcStatus = appendItemsToRecordResult.getMarcStatus();
 									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
+									//get notes from specified subfield in indexing profile
+									if (indexingProfile.getNoteSubfield() != ' '){
+										List<DataField> items = curBib.getDataFields(indexingProfile.getItemTagInt());
+										for (DataField item : items) {
+											List<Subfield> notes = item.getSubfields(indexingProfile.getNoteSubfield());
+											for (Subfield note : notes){
+												String noteString = note.getData();
+												if (hideNotePattern.matcher(noteString).matches()) { //hide notes if private or staff
+													item.removeSubfield(note);
+												}else if (publicNotePattern.matcher(noteString).matches()){ //strip out ".PUBLIC." for public notes
+													String newNote = noteString.replaceAll("(\\.PUBLIC\\.)", "").trim();
+													note.setData(newNote);
+												}
+											}
+
+										}
+									}
+
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 

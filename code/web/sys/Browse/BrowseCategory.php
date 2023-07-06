@@ -125,7 +125,7 @@ class BrowseCategory extends BaseBrowsable {
 			$this->getSubCategories();
 			return $this->_subBrowseCategories;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -133,7 +133,7 @@ class BrowseCategory extends BaseBrowsable {
 		if ($name == 'subBrowseCategories') {
 			$this->_subBrowseCategories = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

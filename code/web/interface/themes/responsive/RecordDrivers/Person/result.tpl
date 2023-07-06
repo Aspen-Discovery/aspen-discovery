@@ -64,7 +64,7 @@
 				{if empty($viewingCombinedResults)}
 					<div class="row">
 						<div class="col-xs-12">
-							{include file='Genealogy/result-tools-horizontal.tpl' recordUrl=$summUrl showMoreInfo=true}
+							{include file='Genealogy/result-tools-horizontal.tpl' showMoreInfo=true}
 						</div>
 					</div>
 				{/if}

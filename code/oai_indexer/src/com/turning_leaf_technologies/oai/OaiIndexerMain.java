@@ -211,19 +211,19 @@ public class OaiIndexerMain {
 			//Get existing records for the collection
 			OpenArchivesExtractLogEntry logEntry = createDbLogEntry(collectionName);
 
-			if (!fullReload) {
-				//Only need to do this if we aren't doing a full reload since the full reload deletes everything
-				try {
-					//Use the ID rather than name in case the name changes.
-					updateServer.deleteByQuery("collection_id:\"" + collectionId + "\"");
-					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-				} catch (HttpSolrClient.RemoteSolrException rse) {
-					logger.error("Solr is not running properly, try restarting", rse);
-					System.exit(-1);
-				} catch (Exception e) {
-					logger.error("Error deleting from index", e);
-				}
-			}
+//			if (!fullReload) {
+//				//Only need to do this if we aren't doing a full reload since the full reload deletes everything
+//				try {
+//					//Use the ID rather than name in case the name changes.
+//					updateServer.deleteByQuery("collection_id:\"" + collectionId + "\"");
+//					//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
+//				} catch (HttpSolrClient.RemoteSolrException rse) {
+//					logger.error("Solr is not running properly, try restarting", rse);
+//					System.exit(-1);
+//				} catch (Exception e) {
+//					logger.error("Error deleting from index", e);
+//				}
+//			}
 
 			int numRecordsLoaded = 0;
 			int numRecordsSkipped = 0;
@@ -269,8 +269,8 @@ public class OaiIndexerMain {
 										return;
 									}
 								}
-
 							}
+
 							try {
 								logger.info("Loading from " + oaiUrl);
 								HashMap<String, String> headers = new HashMap<>();
@@ -346,23 +346,37 @@ public class OaiIndexerMain {
 			}
 
 			//Records to delete
-			try {
-				PreparedStatement getRecordsToDeleteStmt =  aspenConn.prepareStatement("SELECT * from open_archives_record where lastSeen < " + startTime + " AND sourceCollection = " + collectionId, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				ResultSet recordsToDeleteRS = getRecordsToDeleteStmt.executeQuery();
-				int numDeleted = 0;
-				while (recordsToDeleteRS.next()) {
-					deleteOpenArchivesRecord.setLong(1, recordsToDeleteRS.getLong("id"));
-					deleteOpenArchivesRecord.executeUpdate();
-					logEntry.incDeleted();
-					numDeleted++;
+			if (!logEntry.hasErrors()) {
+				try {
+					PreparedStatement getRecordsToDeleteStmt = aspenConn.prepareStatement("SELECT * from open_archives_record where lastSeen < " + startTime + " AND sourceCollection = " + collectionId, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+					ResultSet recordsToDeleteRS = getRecordsToDeleteStmt.executeQuery();
+					int numDeleted = 0;
+					while (recordsToDeleteRS.next()) {
+						//Delete from solr
+						Long idToDelete = recordsToDeleteRS.getLong("id");
+						try {
+							updateServer.deleteByQuery("id:\"" + idToDelete + "\"");
+						} catch (HttpSolrClient.RemoteSolrException rse) {
+							logger.error("Solr is not running properly, try restarting", rse);
+							System.exit(-1);
+						} catch (Exception e) {
+							logger.error("Error deleting from index", e);
+						}
+
+						//Delete from the database
+						deleteOpenArchivesRecord.setLong(1, idToDelete);
+						deleteOpenArchivesRecord.executeUpdate();
+						logEntry.incDeleted();
+						numDeleted++;
+					}
+					logEntry.addNote("Deleted " + numDeleted + " records from the collection");
+					recordsToDeleteRS.close();
+				} catch (HttpSolrClient.RemoteSolrException rse) {
+					logEntry.incErrors("Solr is not running properly, try restarting", rse);
+					System.exit(-1);
+				} catch (SQLException e) {
+					logEntry.incErrors("Error deleting records that have not been seen since the start of indexing", e);
 				}
-				logEntry.incErrors("Deleted " + numDeleted + "records from the collection");
-				recordsToDeleteRS.close();
-			} catch (HttpSolrClient.RemoteSolrException rse) {
-				logEntry.incErrors("Solr is not running properly, try restarting", rse);
-				System.exit(-1);
-			} catch (SQLException e) {
-				logEntry.incErrors("Error deleting records that have not been seen since the start of indexing", e);
 			}
 
 			//Now that we are done with all changes, commit them.
@@ -591,7 +605,7 @@ public class OaiIndexerMain {
 							} else {
 								solrRecord.setId(existingRecordRS.getString("id"));
 								updateServer.add(solrRecord.getSolrDocument());
-								updateLastSeenForRecord.setLong(1, lastSeen);
+								updateLastSeenForRecord.setLong(1, new Date().getTime() / 1000);
 								updateLastSeenForRecord.setLong(2, existingRecordRS.getLong("id"));
 								updateLastSeenForRecord.executeUpdate();
 								addedToIndex = true;

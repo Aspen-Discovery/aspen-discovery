@@ -115,7 +115,7 @@ class PortalRow extends DataObject {
 		if ($name == 'cells') {
 			return $this->getCells();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -123,7 +123,7 @@ class PortalRow extends DataObject {
 		if ($name == 'cells') {
 			$this->_cells = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

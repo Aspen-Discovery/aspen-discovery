@@ -32,6 +32,10 @@
                     {include file="Donations/invoiceCloudPayments.tpl"}
                 {elseif $paymentType == 10}
                     {include file="Donations/deluxeCertifiedPaymentsPayments.tpl"}
+                {elseif $finePaymentType == 11}
+                    {include file="Donations/paypalPayflowPayments.tpl"}
+                {elseif $finePaymentType == 12}
+                    {include file="Donations/squarePayments.tpl"}
                 {/if}
             </form>
         {/if}

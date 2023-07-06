@@ -10,6 +10,10 @@ class RosenLevelUPSetting extends DataObject {
 	public $lu_eligible_ptypes;
 	public $lu_multi_district_name;
 	public $lu_school_name;
+	public $lu_ptypes_k;
+	public $lu_ptypes_1;
+	public $lu_ptypes_2;
+	public $lu_location_code_prefix;
 
 	public static function getObjectStructure($context = ''): array {
 		$structure = [

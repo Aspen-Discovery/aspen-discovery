@@ -740,7 +740,7 @@ class UInterface extends Smarty {
 			try {
 				require_once ROOT_DIR . '/sys/Rosen/RosenLevelUPSetting.php';
 				$rosenLevelUPSetting = new RosenLevelUPSetting();
-				if ($rosenLevelUPSetting->find(true)) {
+				if ($rosenLevelUPSetting->count() > 0) {
 					$this->assign('enableRosenLevelUP', true);
 				} else {
 					$this->assign('enableRosenLevelUP', false);
