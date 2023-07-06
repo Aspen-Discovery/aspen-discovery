@@ -41,7 +41,7 @@ public class DatabaseCleanup implements IProcessHandler {
 		try {
 			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE search");
 
-			optimizeStmt.executeUpdate();
+			optimizeStmt.execute();
 
 			processLog.addNote("Optimized search table.");
 			processLog.saveResults();
