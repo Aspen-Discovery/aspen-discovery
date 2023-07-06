@@ -2549,15 +2549,33 @@ class User extends DataObject {
 		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
+	public function canClientIpUseMasquerade(): bool {
+		$masqueradeStatus = Library::getMasqueradeStatus();
+		if ($masqueradeStatus == 1){
+			return true;
+		} else if ($masqueradeStatus == 2) {
+			$clientIP = IPAddress::getClientIP();
+			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+			if ($ipInfo != false) {
+				return $ipInfo->masqueradeMode == 1;
+			}
+		}
+		return false;
+	}
+
 	public function canMasquerade() {
-		return $this->hasPermission([
-			'Masquerade as any user',
-			'Masquerade as unrestricted patron types',
-			'Masquerade as patrons with same home library',
-			'Masquerade as unrestricted patrons with same home library',
-			'Masquerade as patrons with same home location',
-			'Masquerade as unrestricted patrons with same home location',
-		]);
+		if(self::canClientIpUseMasquerade()){
+			return $this->hasPermission([
+				'Masquerade as any user',
+				'Masquerade as unrestricted patron types',
+				'Masquerade as patrons with same home library',
+				'Masquerade as unrestricted patrons with same home library',
+				'Masquerade as patrons with same home location',
+				'Masquerade as unrestricted patrons with same home location',
+			]);
+		} else {
+			return $this->hasPermission(['']);
+		}
 	}
 
 	/**
