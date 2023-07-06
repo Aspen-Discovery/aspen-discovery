@@ -799,7 +799,6 @@ class UserAPI extends Action {
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
-			$userData->onboardAppNotifications = $user->onboardAppNotifications;
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();

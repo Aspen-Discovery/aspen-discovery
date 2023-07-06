@@ -80,15 +80,6 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE account_profiles CHANGE COLUMN loginConfiguration loginConfiguration enum('barcode_pin','name_barcode','barcode_lastname') COLLATE utf8mb4_general_ci NOT NULL",
 			]
 		], //add_barcode_last_name_login_option
-
-		'user_onboard_notifications' => [
-			'title' => 'Add column to store if user should be onboarded about notifications',
-			'description' => 'Add column in user table to store if they should be onboarded about app notifications when opening Aspen LiDA.',
-			'continueOnError' => true,
-			'sql' => [
-				'ALTER TABLE user ADD COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1',
-			],
-		], //user_onboard_notifications
 		'add_ecommerce_square_settings' => [
 			'title' => 'Add eCommerce vendor Square',
 			'description' => 'Create tables to store settings for Square',
@@ -159,5 +150,43 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE ip_lookup ADD COLUMN masqueradeMode TINYINT(1) default 0",
 			],
 		], //add_masquerade_switch_to_ip_addresses
+
+		'user_token_onboard_notifications' => [
+			'title' => 'Add column to store if user should be onboarded about notifications for given device',
+			'description' => 'Add column in user notification token table to store if they should be onboarded about app notifications when opening Aspen LiDA.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_notification_tokens ADD COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1',
+			],
+		], //user_token_onboard_notifications
+
+		'update_notification_onboarding_status' => [
+			'title' => 'Update initial notification onboarding status for user',
+			'description' => 'Update initial notification onboarding statuses for users that already provided token',
+			'continueOnError' => true,
+			'sql' => [
+				'updateNotificationOnboardStatus',
+			],
+		], //update_notification_onboarding_status
 	];
+}
+
+function updateNotificationOnboardStatus() {
+	require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+	$tokens = new UserNotificationToken();
+	$tokens->find();
+	$userTokens = $tokens->fetchAll();
+	foreach ($userTokens as $token) {
+		if($token->notifySavedSearch && $token->notifyCustom && $token->notifyAccount) {
+			// do not onboard user
+			$token->onboardAppNotifications = 0;
+			$token->update();
+		} elseif ($token->notifySavedSearch || $token->notifyCustom || $token->notifyAccount) {
+			// prompt user to review their existing settings
+			$token->onboardAppNotifications = 2;
+			$token->update();
+		} else {
+			// onboard user for notifications
+		}
+	}
 }
