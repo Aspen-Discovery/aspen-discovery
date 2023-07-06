@@ -38,7 +38,7 @@ public class SymphonyExportMain {
 
 	private static Date reindexStartTime;
 
-	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.).*$");
+	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.|\\.CAT_BY\\.).*$");
 	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	private static boolean hadErrors = false;
