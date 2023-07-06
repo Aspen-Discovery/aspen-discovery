@@ -166,6 +166,7 @@ class CommunicoIndexer {
 			}
 		}
 
+		logEntry.incNumEvents(communicoEvents.length());
 		for (int i = 0; i < communicoEvents.length(); i++){
 			try {
 				JSONObject curEvent = communicoEvents.getJSONObject(i);
