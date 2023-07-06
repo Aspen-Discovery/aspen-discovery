@@ -42,7 +42,7 @@ export const NotificationsOnboard = (props) => {
      );
 
      return (
-          <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+          <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={() => onClose()}>
                <AlertDialog.Content>
                     <AlertDialog.Header>{getTermFromDictionary(language, 'onboard_notifications_title')}</AlertDialog.Header>
                     <AlertDialog.Body>{onboardingBody}</AlertDialog.Body>
@@ -54,8 +54,7 @@ export const NotificationsOnboard = (props) => {
                               <Button
                                    colorScheme="danger"
                                    onPress={() => {
-                                        onClose();
-                                        navigateStack('AccountScreenTab', 'SettingsNotificationOptions', {});
+                                        onClose().then(() => navigateStack('AccountScreenTab', 'SettingsNotificationOptions', {}));
                                    }}>
                                    {onboardingButton}
                               </Button>
