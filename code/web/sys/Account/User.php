@@ -4,73 +4,73 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class User extends DataObject {
 	public $__table = 'user';                            // table name
-	protected $id;                              // int(11)  not_null primary_key auto_increment
-	protected $source;
-	protected $username;                        // string(30)  not_null unique_key
-	protected $displayName;                     // string(30)
-	protected $password;                        // string(32)  not_null
-	protected $firstname;                       // string(50)  not_null
-	protected $lastname;                        // string(50)  not_null
-	protected $email;                           // string(250)  not_null
-	protected $phone;                           // string(30)
-	protected $cat_username;                    // string(50)
-	protected $cat_password;                    // string(50)
-	protected $patronType;
-	protected $created;                         // datetime(19)  not_null binary
-	protected $homeLocationId;                     // int(11)
-	protected $myLocation1Id;                     // int(11)
-	protected $myLocation2Id;                     // int(11)
-	protected $trackReadingHistory;             // tinyint
-	protected $initialReadingHistoryLoaded;
-	protected $lastReadingHistoryUpdate;
-	protected $bypassAutoLogout;        //tinyint
-	protected $disableRecommendations;     //tinyint
-	protected $disableCoverArt;     //tinyint
-	protected $overdriveEmail;
-	protected $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
-	protected $hooplaCheckOutConfirmation;
-	protected $promptForAxis360Email;
-	protected $axis360Email;
-	protected $preferredLibraryInterface;
-	protected $preferredTheme;
-	protected $noPromptForUserReviews; //tinyint(1)
-	protected $lockedFacets;
-	protected $alternateLibraryCard;
-	protected $alternateLibraryCardPassword;
-	protected $hideResearchStarters;
-	protected $disableAccountLinking;
-	protected $oAuthAccessToken;
-	protected $oAuthRefreshToken;
-	protected $isLoggedInViaSSO;
+	public $id;                              // int(11)  not_null primary_key auto_increment
+	public $source;
+	public $username;                        // string(30)  not_null unique_key
+	public $displayName;                     // string(30)
+	public $password;                        // string(32)  not_null
+	public $firstname;                       // string(50)  not_null
+	public $lastname;                        // string(50)  not_null
+	public $email;                           // string(250)  not_null
+	public $phone;                           // string(30)
+	public $cat_username;                    // string(50)
+	public $cat_password;                    // string(50)
+	public $patronType;
+	public $created;                         // datetime(19)  not_null binary
+	public $homeLocationId;                     // int(11)
+	public $myLocation1Id;                     // int(11)
+	public $myLocation2Id;                     // int(11)
+	public $trackReadingHistory;             // tinyint
+	public $initialReadingHistoryLoaded;
+	public $lastReadingHistoryUpdate;
+	public $bypassAutoLogout;        //tinyint
+	public $disableRecommendations;     //tinyint
+	public $disableCoverArt;     //tinyint
+	public $overdriveEmail;
+	public $promptForOverdriveEmail; //Semantics of this have changed to not prompting for hold settings
+	public $hooplaCheckOutConfirmation;
+	public $promptForAxis360Email;
+	public $axis360Email;
+	public $preferredLibraryInterface;
+	public $preferredTheme;
+	public $noPromptForUserReviews; //tinyint(1)
+	public $lockedFacets;
+	public $alternateLibraryCard;
+	public $alternateLibraryCardPassword;
+	public $hideResearchStarters;
+	public $disableAccountLinking;
+	public $oAuthAccessToken;
+	public $oAuthRefreshToken;
+	public $isLoggedInViaSSO;
 
-	protected $holdInfoLastLoaded;
-	protected $checkoutInfoLastLoaded;
+	public $holdInfoLastLoaded;
+	public $checkoutInfoLastLoaded;
 
-	protected $onboardAppNotifications;
+	public $onboardAppNotifications;
 
 	/** @var Role[] */
 	private $_roles;
 	private $_permissions;
 	private $_masqueradingRoles;
 
-	protected $interfaceLanguage;
-	protected $searchPreferenceLanguage;
+	public $interfaceLanguage;
+	public $searchPreferenceLanguage;
 
-	protected $rememberHoldPickupLocation;
-	protected $pickupLocationId;
+	public $rememberHoldPickupLocation;
+	public $pickupLocationId;
 
-	protected $lastListUsed;
-	protected $browseAddToHome;
+	public $lastListUsed;
+	public $browseAddToHome;
 
-	protected $lastLoginValidation;
+	public $lastLoginValidation;
 
-	protected $twoFactorStatus; //Whether the user has enrolled
-	protected $twoFactorAuthSettingId; //The settings based on their PType
+	public $twoFactorStatus; //Whether the user has enrolled
+	public $twoFactorAuthSettingId; //The settings based on their PType
 
-	protected $updateMessage;
-	protected $updateMessageIsError;
+	public $updateMessage;
+	public $updateMessageIsError;
 
-	protected $proPayPayerAccountId;
+	public $proPayPayerAccountId;
 
 	/** @var User $parentUser */
 	private $parentUser;
@@ -119,9 +119,9 @@ class User extends DataObject {
 	public $_phoneType;
 
 	//Staff Settings
-	protected $materialsRequestEmailSignature;
-	protected $materialsRequestReplyToAddress;
-	protected $materialsRequestSendEmailOnAssign;
+	public $materialsRequestEmailSignature;
+	public $materialsRequestReplyToAddress;
+	public $materialsRequestSendEmailOnAssign;
 
 	function getNumericColumnNames(): array {
 		return [
