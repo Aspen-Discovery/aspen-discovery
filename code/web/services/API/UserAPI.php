@@ -799,7 +799,6 @@ class UserAPI extends Action {
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
-			$userData->onboardAppNotifications = $user->onboardAppNotifications;
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
@@ -4117,24 +4116,34 @@ class UserAPI extends Action {
 	function updateNotificationOnboardingStatus(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$status = $_REQUEST['status'] ?? null;
-			if($status) {
-				if($status == 'false' || $status == false) {
-					$user->onboardAppNotifications = 0;
+			$newStatus = $_REQUEST['status'] ?? null;
+			$userToken = $_REQUEST['token'] ?? null;
+			if($newStatus && $userToken) {
+				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+				$token = new UserNotificationToken();
+				$token->pushToken = $userToken;
+				if($token->find(true)) {
+					if ($newStatus == 'false' || !$newStatus) {
+						$token->onboardAppNotifications = 0;
+					}
+					$token->update();
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Updated user notification onboarding status'
+					];
 				} else {
-					$user->onboardAppNotifications = 1;
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Push token not valid.',
+					];
 				}
-				$user->update();
-				return [
-					'success' => true,
-					'title' => '',
-					'message' => 'Updated user notification onboarding status'
-				];
 			} else {
 				return [
 					'success' => false,
 					'title' => 'Error',
-					'message' => 'New status not provided',
+					'message' => 'New status or user token not provided',
 				];
 			}
 		} else {
