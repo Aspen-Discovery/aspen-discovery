@@ -780,10 +780,11 @@ export async function getSavedSearch(id, language = 'en', url) {
 /**
  * Update the status on if the user should be prompted for notification onboarding
  * @param {boolean} status
+ * @param {string} token
  * @param {string} url
  * @param {string} language
  **/
-export async function updateNotificationOnboardingStatus(status, url, language = 'en') {
+export async function updateNotificationOnboardingStatus(status, token, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -792,6 +793,7 @@ export async function updateNotificationOnboardingStatus(status, url, language =
           auth: createAuthTokens(),
           params: {
                status,
+               token,
                language,
           },
      });

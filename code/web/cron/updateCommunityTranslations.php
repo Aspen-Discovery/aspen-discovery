@@ -17,6 +17,7 @@ foreach($languages as $languageId) {
 	$language->id = $languageId;
 	if($language->find(true)) {
 		if($language->code != 'en' || $language->code != 'pig' || $language->code != 'ubb') {
+			//Get a list of all terms to be fetched from community
 			foreach($translationTerms as $translationTermId) {
 				$term = new TranslationTerm();
 				$term->id = $translationTermId;
@@ -52,6 +53,9 @@ foreach($languages as $languageId) {
 					$term = null;
 				}
 			}
+
+			//Loop through all the terms in batches of 100?
+
 		}
 	}
 }
@@ -61,6 +65,7 @@ foreach($languages as $languageId) {
  * @param Language $activeLanguage
  * @return array
  */
+//TODO: Switch this to take an array of things to be translated (pass map of translation ids mapped to term)
 function getCommunityTranslation(string $phrase, $activeLanguage): array {
 	require_once ROOT_DIR . '/sys/SystemVariables.php';
 	$systemVariables = SystemVariables::getSystemVariables();
@@ -69,6 +74,7 @@ function getCommunityTranslation(string $phrase, $activeLanguage): array {
 	if ($systemVariables && !empty($systemVariables->communityContentUrl)) {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$communityContentCurlWrapper = new CurlWrapper();
+		//TODO: change this to posting a list of terms
 		$body = [
 			'term' => $phrase,
 			'languageCode' => $activeLanguage->code,

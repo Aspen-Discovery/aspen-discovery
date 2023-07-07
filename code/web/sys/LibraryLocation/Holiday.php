@@ -4,10 +4,10 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class Holiday extends DataObject {
 	public $__table = 'holiday';   // table name
-	protected $id;                    // int(11)  not_null primary_key auto_increment
-	protected $libraryId;             // int(11)
-	protected $date;                  // date
-	protected $name;                  // varchar(100)
+	public $id;                    // int(11)  not_null primary_key auto_increment
+	public $libraryId;             // int(11)
+	public $date;                  // date
+	public $name;                  // varchar(100)
 
 
 	static function getObjectStructure($context = ''): array {
