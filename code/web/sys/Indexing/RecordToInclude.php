@@ -3,57 +3,57 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class RecordToInclude extends DataObject {
-	protected $id;
-	protected $indexingProfileId;
-	protected /** @noinspection PhpUnused */
+	public $id;
+	public $indexingProfileId;
+	public /** @noinspection PhpUnused */
 		$markRecordsAsOwned;
-	protected $location;
-	protected /** @noinspection PhpUnused */
+	public $location;
+	public /** @noinspection PhpUnused */
 		$locationsToExclude;
-	protected $subLocation;
-	protected /** @noinspection PhpUnused */
+	public $subLocation;
+	public /** @noinspection PhpUnused */
 		$subLocationsToExclude;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$iType;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$iTypesToExclude;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$audience;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$audiencesToExclude;
-	protected $format;
-	protected /** @noinspection PhpUnused */
+	public $format;
+	public /** @noinspection PhpUnused */
 		$formatsToExclude;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$shelfLocation;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$shelfLocationsToExclude;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$collectionCode;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$collectionCodesToExclude;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$includeHoldableOnly;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$includeItemsOnOrder;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$includeEContent;
 	//The next 3 fields allow inclusion or exclusion of records based on a marc tag
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$marcTagToMatch;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$marcValueToMatch;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$includeOnlyMatches;
 	//The next 2 fields determine how urls are constructed
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$urlToMatch;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$urlReplacement;
-	protected /** @noinspection PhpUnused */
+	public /** @noinspection PhpUnused */
 		$includeExcludeMatches;
 
-	protected $weight;
+	public $weight;
 
 	static function getObjectStructure($context = ''): array {
 		$indexingProfiles = [];

@@ -2574,7 +2574,7 @@ class User extends DataObject {
 				'Masquerade as unrestricted patrons with same home location',
 			]);
 		} else {
-			return $this->hasPermission(['']);
+			return false;
 		}
 	}
 
