@@ -10,7 +10,7 @@ import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/Brow
 import Settings_HomeScreen from '../../screens/MyAccount/Settings/HomeScreen';
 import { MyLinkedAccounts } from '../../screens/MyAccount/Settings/LinkedAccounts/LinkedAccounts';
 import Settings_Notifications from '../../screens/MyAccount/Settings/Notifications';
-import Preferences from '../../screens/MyAccount/Settings/Preferences';
+import Preferences, { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
 import { MyReadingHistory } from '../../screens/MyAccount/ReadingHistory/ReadingHistory';
 import { MyCheckouts } from '../../screens/MyAccount/CheckedOutTitles/MyCheckouts';
 import { MyHolds } from '../../screens/MyAccount/TitlesOnHold/MyHolds';
@@ -19,10 +19,10 @@ import { MyList } from '../../screens/MyAccount/Lists/MyList';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
-import {CreateVDXRequest} from '../../screens/GroupedWork/CreateVDXRequest';
-import {LanguageContext} from '../../context/initialContext';
-import {getTermFromDictionary} from '../../translations/TranslationService';
-import {MySavedSearches} from '../../screens/MyAccount/SavedSearches/MySavedSearches';
+import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
+import { LanguageContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { MySavedSearches } from '../../screens/MyAccount/SavedSearches/MySavedSearches';
 
 const AccountStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -35,7 +35,7 @@ const AccountStackNavigator = () => {
                     headerBackTitleVisible: false,
                }}>
                <Stack.Group>
-                    <Stack.Screen name="MyPreferences" component={Preferences} options={{ title: getTermFromDictionary(language, 'preferences') }} />
+                    <Stack.Screen name="MyPreferences" component={PreferencesScreen} options={{ title: getTermFromDictionary(language, 'preferences') }} />
                     <Stack.Screen name="SettingsHomeScreen" component={Settings_HomeScreen} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
@@ -52,7 +52,7 @@ const AccountStackNavigator = () => {
                          name="MyHolds"
                          component={MyHolds}
                          options={{
-                             title: getTermFromDictionary(language, 'titles_on_hold')
+                              title: getTermFromDictionary(language, 'titles_on_hold'),
                          }}
                     />
                     <Stack.Screen
@@ -63,13 +63,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyHolds' }}
                     />
-                   <Stack.Screen
-                       name="MyHold221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
+                    <Stack.Screen
+                         name="MyHold221200"
+                         component={GroupedWork221200}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                         })}
+                    />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -87,13 +87,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyCheckouts' }}
                     />
-                   <Stack.Screen
-                       name="MyCheckout221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
+                    <Stack.Screen
+                         name="MyCheckout221200"
+                         component={GroupedWork221200}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                         })}
+                    />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -112,13 +112,13 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MyList' }}
                     />
-                   <Stack.Screen
-                       name="ListItem221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                   />
+                    <Stack.Screen
+                         name="ListItem221200"
+                         component={GroupedWork221200}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                         })}
+                    />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -129,23 +129,22 @@ const AccountStackNavigator = () => {
                          }}
                     />
                     <Stack.Screen
-                        name="MySavedSearch"
-                        component={MySavedSearch}
-                        options={({ navigation, route }) => ({
-                            title: route.params.title,
-                            headerLeft: () => {
-                                if(route.params.prevRoute === 'NONE') {
-                                    return null;
-                                } else {
-                                    return (
-                                        <Pressable mr={3} onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                                            <ChevronLeftIcon size={6} color="primary.baseContrast" />
-                                        </Pressable>
-                                    );
-                                }
-                            }
-                        }
-                        )}
+                         name="MySavedSearch"
+                         component={MySavedSearch}
+                         options={({ navigation, route }) => ({
+                              title: route.params.title,
+                              headerLeft: () => {
+                                   if (route.params.prevRoute === 'NONE') {
+                                        return null;
+                                   } else {
+                                        return (
+                                             <Pressable mr={3} onPress={() => navigation.goBack()} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                                  <ChevronLeftIcon size={6} color="primary.baseContrast" />
+                                             </Pressable>
+                                        );
+                                   }
+                              },
+                         })}
                     />
                     <Stack.Screen
                          name="SavedSearchItem"
@@ -155,14 +154,14 @@ const AccountStackNavigator = () => {
                          })}
                          initialParams={{ prevRoute: 'MySavedSearch' }}
                     />
-                   <Stack.Screen
-                       name="SavedSearchItem221200"
-                       component={GroupedWork221200}
-                       options={({ route }) => ({
-                           title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
-                       })}
-                       initialParams={{ prevRoute: 'MySavedSearch' }}
-                   />
+                    <Stack.Screen
+                         name="SavedSearchItem221200"
+                         component={GroupedWork221200}
+                         options={({ route }) => ({
+                              title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
+                         })}
+                         initialParams={{ prevRoute: 'MySavedSearch' }}
+                    />
                </Stack.Group>
                <Stack.Group>
                     <Stack.Screen
@@ -207,22 +206,22 @@ const AccountStackNavigator = () => {
                          presentation: 'modal',
                     }}
                />
-              <Stack.Screen
-                  name="CreateVDXRequest"
-                  component={CreateVDXRequest}
-                  options={({ navigation }) => ({
-                      title: getTermFromDictionary(language, 'ill_request_title'),
-                      presentation: 'modal',
-                      headerLeft: () => {
-                          return <></>;
-                      },
-                      headerRight: () => (
-                          <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
-                              <CloseIcon size={5} color="primary.baseContrast" />
-                          </Pressable>
-                      ),
-                  })}
-              />
+               <Stack.Screen
+                    name="CreateVDXRequest"
+                    component={CreateVDXRequest}
+                    options={({ navigation }) => ({
+                         title: getTermFromDictionary(language, 'ill_request_title'),
+                         presentation: 'modal',
+                         headerLeft: () => {
+                              return <></>;
+                         },
+                         headerRight: () => (
+                              <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                   <CloseIcon size={5} color="primary.baseContrast" />
+                              </Pressable>
+                         ),
+                    })}
+               />
           </Stack.Navigator>
      );
 };

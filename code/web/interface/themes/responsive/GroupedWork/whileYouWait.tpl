@@ -10,7 +10,7 @@
 						<a href="{$whileYouWaitTitle.url}">
 							<img src="{$whileYouWaitTitle.coverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$whileYouWaitTitle.title|escape}">
 						</a>
-						<div class="formatIcons" style="padding-top: 5px">
+						{*<div class="formatIcons" style="padding-top: 5px">
 							{foreach from=$whileYouWaitTitle.formatCategories item=formatCategory}
 								{if $formatCategory.formatCategory != 'Other'}
 									<span class="{if !empty($formatCategory.available)}available{/if}" style="padding: 2px;"><img src="{$formatCategory.image}" alt="{$formatCategory.formatCategory}"/></span>
@@ -18,6 +18,7 @@
 									<span class="{if !empty($formatCategory.available)}statusValue available{/if}" style="padding: 2px;"><i class="fas fa-box" aria-label="{$formatCategory.formatCategory}"></i></span>
                                 {/if}
 							{/foreach}
+							*}
 						</div>
 					</div>
 				</div>

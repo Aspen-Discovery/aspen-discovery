@@ -23,7 +23,7 @@ export const MyList = () => {
      const id = providedList.id;
      const [page, setPage] = React.useState(1);
      const [sort, setSort] = React.useState('dateAdded');
-     const [pageSize, setPageSize] = React.useState(25);
+     const [pageSize, setPageSize] = React.useState(20);
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [list] = React.useState(providedList);
@@ -68,8 +68,9 @@ export const MyList = () => {
           fetchTranslations();
      }, [language]);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
-          keepPreviousData: true,
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id, sort, page], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
+          keepPreviousData: false,
+          staleTime: 1000,
      });
 
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
