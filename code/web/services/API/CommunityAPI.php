@@ -107,6 +107,8 @@ class CommunityAPI extends Action {
 		return $result;
 	}
 
+	//TODO: Create get default translations to process an array of translations
+
 	/** @noinspection PhpUnused */
 	public function getDefaultTranslation() {
 		$result = [
