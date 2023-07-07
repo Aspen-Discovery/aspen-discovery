@@ -3931,6 +3931,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
 			$preference['notifyAccount'] = $obj->notifyAccount;
+			$preference['onboardStatus'] = $obj->onboardAppNotifications;
 
 			$preferences[] = $preference;
 		}
