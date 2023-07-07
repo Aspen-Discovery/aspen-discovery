@@ -312,6 +312,7 @@ class CommunicoIndexer {
 					}
 				}
 
+				logger.warn("Fetching registration info for event " + eventId);
 				//Fetch registrations here and add to DB - for events that require registration ONLY
 				if (curEvent.getBoolean("registration")){
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
@@ -367,6 +368,7 @@ class CommunicoIndexer {
 			}
 		}
 
+		logger.warn("Checking for duplicates of events");
 		for(CommunicoEvent eventInfo : existingEvents.values()){
 			try {
 				deleteEventStmt.setLong(1, eventInfo.getId());
@@ -382,12 +384,14 @@ class CommunicoIndexer {
 			logEntry.incDeleted();
 		}
 
+		logger.warn("Updating solr");
 		try {
 			solrUpdateServer.commit(true, true, false);
 		} catch (Exception e) {
 			logEntry.incErrors("Error in final commit ", e);
 		}
 
+		logEntry.addNote("Indexing Finished");
 		logEntry.setFinished();
 	}
 
