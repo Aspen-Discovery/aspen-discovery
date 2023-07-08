@@ -297,7 +297,7 @@ export function App() {
                                                                                                                    SearchByList: 'search/list',
                                                                                                               },
                                                                                                          },
-                                                                                                         HomeTab: {
+                                                                                                         BrowseTab: {
                                                                                                               screens: {
                                                                                                                    HomeScreen: 'home',
                                                                                                                    GroupedWorkScreen: 'search/grouped_work',

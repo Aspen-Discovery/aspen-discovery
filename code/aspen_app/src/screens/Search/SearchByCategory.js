@@ -221,13 +221,13 @@ export default class SearchByCategory extends Component {
           const libraryContext = route.params.libraryContext;
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
           if (version >= '23.01.00') {
-               navigateStack('HomeTab', 'CategoryResultItem', {
+               navigateStack('BrowseTab', 'CategoryResultItem', {
                     id: item,
                     url: url,
                     title: getCleanTitle(title),
                });
           } else {
-               navigateStack('HomeTab', 'CategoryResultItem221200', {
+               navigateStack('BrowseTab', 'CategoryResultItem221200', {
                     id: item,
                     title: getCleanTitle(title),
                     url: url,
