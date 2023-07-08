@@ -20,14 +20,14 @@ export default function TabNavigator() {
      const tabBarBackgroundColor = useColorModeValue('light', 'dark');
      return (
           <Tab.Navigator
-               initialRouteName="HomeTab"
+               initialRouteName="BrowseTab"
                screenOptions={({ route }) => ({
                     headerShown: false,
                     backBehavior: 'none',
                     tabBarHideOnKeyboard: true,
                     tabBarIcon: ({ focused, color, size }) => {
                          let iconName;
-                         if (route.name === 'HomeTab') {
+                         if (route.name === 'BrowseTab') {
                               iconName = focused ? 'library' : 'library-outline';
                          } else if (route.name === 'LibraryCardTab') {
                               iconName = focused ? 'card' : 'card-outline';
@@ -49,7 +49,7 @@ export default function TabNavigator() {
                     },
                })}>
                <Tab.Screen
-                    name="HomeTab"
+                    name="BrowseTab"
                     component={BrowseStackNavigator}
                     options={{
                          tabBarLabel: getTermFromDictionary(language, 'nav_discover'),
@@ -84,14 +84,6 @@ export default function TabNavigator() {
                     component={AccountStackNavigator}
                     options={{
                          tabBarButton: () => null,
-                    }}
-               />
-               <Tab.Screen
-                    name="SearchTab"
-                    component={SearchStackNavigator}
-                    options={{
-                         tabBarButton: () => null,
-                         unmountOnBlur: true,
                     }}
                />
                <Tab.Screen
