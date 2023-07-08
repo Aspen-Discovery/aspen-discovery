@@ -107,7 +107,55 @@ class CommunityAPI extends Action {
 		return $result;
 	}
 
-	//TODO: Create get default translations to process an array of translations
+	/** @noinspection PhpUnused */
+	public function getDefaultTranslations() {
+		$result = [
+			'success' => false,
+			'translations' => [],
+		];
+		if (!empty($_REQUEST['terms']) && !empty($_REQUEST['languageCode'])) {
+			if(is_array($_REQUEST['terms'])) {
+				$terms = $_REQUEST['terms'];
+				$language = new Language();
+				$language->code = $_REQUEST['languageCode'];
+				if($language->find(true)) {
+					foreach ($terms as $termToTranslate) {
+						$translationTerm = new TranslationTerm();
+						$translationTerm->term = $termToTranslate;
+						if($translationTerm->find(true)) {
+							$translation = new Translation();
+							$translation->termId = $translationTerm->id;
+							$translation->languageId = $language->id;
+							if($translation->find(true)) {
+								if ($translation->translated) {
+									if (!empty($translationTerm->defaultText) && ($translationTerm->defaultText == $translation->translation)) {
+										//$result['message'] = 'Translation matches the original default text';
+									} else if ($translationTerm->term == $translation->translation) {
+										//$result['message'] = 'Translation matches the original text';
+									} else {
+										$result['success'] = true;
+										$result['translations'][$translation->id] = $translation->translation;
+									}
+								} else {
+									//$result['message'] = 'Term has not been translated yet';
+								}
+							} else {
+								//$result['message'] = 'No translation found';
+							}
+						} else {
+							//$result['message'] = 'Could not find term';
+						}
+					}
+				} else {
+					$result['message'] = 'Could not find language';
+				}
+			}
+		} else {
+			$result['message'] = 'Terms and/or languageCode not provided';
+		}
+
+		return $result;
+	}
 
 	/** @noinspection PhpUnused */
 	public function getDefaultTranslation() {
