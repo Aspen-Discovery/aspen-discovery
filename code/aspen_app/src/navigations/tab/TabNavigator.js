@@ -87,6 +87,14 @@ export default function TabNavigator() {
                     }}
                />
                <Tab.Screen
+                    name="SearchTab"
+                    component={SearchStackNavigator}
+                    options={{
+                         tabBarButton: () => null,
+                         unmountOnBlur: true,
+                    }}
+               />
+               <Tab.Screen
                     name="MoreTab"
                     component={MoreStackNavigator}
                     options={{
