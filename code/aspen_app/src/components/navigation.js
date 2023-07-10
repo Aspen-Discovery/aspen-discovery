@@ -33,6 +33,7 @@ import { navigationRef } from '../helpers/RootNavigator';
 import { updateAspenLiDABuild } from '../util/greenhouse';
 import { ResetExpiredPin } from '../screens/Auth/ResetExpiredPin';
 import { PermissionsPrompt } from './PermissionsPrompt';
+import LibraryCardScanner from './LibraryCardScanner';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -366,6 +367,14 @@ export function App() {
                                                                            }}
                                                                       />
                                                                  )}
+                                                                 <Stack.Screen
+                                                                      name="LibraryCardScanner"
+                                                                      component={LibraryCardScanner}
+                                                                      options={{
+                                                                           gestureEnabled: false,
+                                                                           presentation: 'modal',
+                                                                      }}
+                                                                 />
                                                             </Stack.Navigator>
                                                        </NavigationContainer>
                                                   </GroupedWorkProvider>
