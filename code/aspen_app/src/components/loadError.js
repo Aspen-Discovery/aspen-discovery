@@ -1,10 +1,10 @@
-import React, {useCallback} from "react";
-import {Alert, Button, Center, Heading, HStack, Icon, ScrollView, Text, Toast, VStack, Box, AlertDialog, IconButton, CloseIcon} from "native-base";
-import {MaterialIcons} from "@expo/vector-icons";
-import _ from "lodash";
+import React, { useCallback } from 'react';
+import { Alert, Button, Center, Heading, HStack, Icon, ScrollView, Text, Toast, VStack, Box, AlertDialog, IconButton, CloseIcon } from 'native-base';
+import { MaterialIcons } from '@expo/vector-icons';
+import _ from 'lodash';
 
 // custom components and helper files
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 /**
  * Catch an error and display it to the user
@@ -15,45 +15,44 @@ import {getTermFromDictionary} from '../translations/TranslationService';
  * @param {string} error
  * @param {string} reloadAction
  **/
-export function loadError(error, reloadAction) {
-	return (
-		<Center flex={1}>
-			<HStack>
-				<Icon as={MaterialIcons} name="error" size="md" mt={.5} mr={1} color="error.500"/>
-				<Heading color="error.500" mb={2}>{getTermFromDictionary('en', 'error')}</Heading>
-			</HStack>
-			<Text bold w="75%" textAlign="center">{getTermFromDictionary('en', 'error_loading_results')}</Text>
-			{reloadAction ?
-				<Button
-					mt={5}
-					colorScheme="primary"
-					onPress={reloadAction}
-					startIcon={<Icon as={MaterialIcons} name="refresh" size={5}/>}
-				>
-					{getTermFromDictionary('en', 'button_reload')}
-				</Button>
-				: null}
-			<Text fontSize="xs" w="75%" mt={5} color="muted.500" textAlign="center">ERROR: {error}</Text>
-		</Center>
-	);
+export function loadError(error, reloadAction = '') {
+     return (
+          <Center flex={1}>
+               <HStack>
+                    <Icon as={MaterialIcons} name="error" size="md" mt={0.5} mr={1} color="error.500" />
+                    <Heading color="error.500" mb={2}>
+                         {getTermFromDictionary('en', 'error')}
+                    </Heading>
+               </HStack>
+               <Text bold w="75%" textAlign="center">
+                    {getTermFromDictionary('en', 'error_loading_results')}
+               </Text>
+               {reloadAction ? (
+                    <Button mt={5} colorScheme="primary" onPress={reloadAction} startIcon={<Icon as={MaterialIcons} name="refresh" size={5} />}>
+                         {getTermFromDictionary('en', 'button_reload')}
+                    </Button>
+               ) : null}
+               <Text fontSize="xs" w="75%" mt={5} color="muted.500" textAlign="center">
+                    ERROR: {error}
+               </Text>
+          </Center>
+     );
 }
 
 /**
  * Display a toast if Aspen LiDA is unable to connect to the server when fetching data
  **/
 export function badServerConnectionToast() {
-	return (
-		Toast.show({
-			title: getTermFromDictionary('en', 'error_no_server_connection'),
-			description: getTermFromDictionary('en', 'error_no_library_connection'),
-			status: "error",
-			isClosable: true,
-			duration: 5000,
-			accessibilityAnnouncement: getTermFromDictionary('en', 'error_no_library_connection'),
-			zIndex: 9999,
-			placement: "top"
-		})
-	);
+     return Toast.show({
+          title: getTermFromDictionary('en', 'error_no_server_connection'),
+          description: getTermFromDictionary('en', 'error_no_library_connection'),
+          status: 'error',
+          isClosable: true,
+          duration: 5000,
+          accessibilityAnnouncement: getTermFromDictionary('en', 'error_no_library_connection'),
+          zIndex: 9999,
+          placement: 'top',
+     });
 }
 
 /**
@@ -78,18 +77,16 @@ export function badServerConnectionToast() {
  * @param {string} status
  **/
 export function popToast(title, description, status) {
-	return (
-		Toast.show({
-			title: title,
-			description: description,
-			status: status,
-			isClosable: true,
-			duration: 5000,
-			accessibilityAnnouncement: description,
-			zIndex: 9999,
-			placement: "top"
-		})
-	);
+     return Toast.show({
+          title: title,
+          description: description,
+          status: status,
+          isClosable: true,
+          duration: 5000,
+          accessibilityAnnouncement: description,
+          zIndex: 9999,
+          placement: 'top',
+     });
 }
 
 /**
@@ -114,33 +111,32 @@ export function popToast(title, description, status) {
  * @param {string} status
  **/
 export function popAlert(title, description, status) {
-	return (
-		Toast.show({
-		duration: 5000,
-		accessibilityAnnouncement: description,
-		avoidKeyboard: true,
-		render: () => {
-			return (
-				<Center>
-					<Alert maxW="400" status={status} colorScheme={status}>
-						<VStack space={2} flexShrink={1} w="100%">
-							<HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
-								<HStack flexShrink={1} space={2} alignItems="center">
-									<Alert.Icon/>
-									<Text fontSize="md" fontWeight="medium" _dark={{color: "coolCray.800"}}>
-										{title}
-									</Text>
-								</HStack>
-							</HStack>
-							<Box pl="6" _dark={{_text: {color: "coolGray.600"}}}>
-								{description}
-							</Box>
-						</VStack>
-					</Alert>
-				</Center>
-			)
-		}
-	}))
+     return Toast.show({
+          duration: 5000,
+          accessibilityAnnouncement: description,
+          avoidKeyboard: true,
+          render: () => {
+               return (
+                    <Center>
+                         <Alert maxW="400" status={status} colorScheme={status}>
+                              <VStack space={2} flexShrink={1} w="100%">
+                                   <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
+                                        <HStack flexShrink={1} space={2} alignItems="center">
+                                             <Alert.Icon />
+                                             <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolCray.800' }}>
+                                                  {title}
+                                             </Text>
+                                        </HStack>
+                                   </HStack>
+                                   <Box pl="6" _dark={{ _text: { color: 'coolGray.600' } }}>
+                                        {description}
+                                   </Box>
+                              </VStack>
+                         </Alert>
+                    </Center>
+               );
+          },
+     });
 }
 
 /*export function popAlert(title, description, status) {
