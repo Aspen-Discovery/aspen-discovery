@@ -17,6 +17,7 @@ import { SearchResults } from '../../screens/Search/SearchResults';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { FiltersScreen } from '../../screens/Search/Filters';
 import Facet from '../../screens/Search/Facet';
+import Scanner from '../../components/Scanner';
 
 const BrowseStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -194,6 +195,14 @@ const BrowseStackNavigator = () => {
                     component={FilterModal}
                     options={{
                          headerShown: false,
+                         presentation: 'modal',
+                    }}
+               />
+               <Stack.Screen
+                    name="Scanner"
+                    component={Scanner}
+                    options={{
+                         gestureEnabled: false,
                          presentation: 'modal',
                     }}
                />

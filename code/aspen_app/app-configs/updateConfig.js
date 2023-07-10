@@ -114,7 +114,7 @@ const app_config = {
                LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
                CFBundleAllowMixedLocalizations: true,
           },
-          jsEngine: 'jsc'
+          jsEngine: 'jsc',
      },
      android: {
           allowBackup: false,
@@ -145,7 +145,7 @@ const app_config = {
           },
           iosStoreUrl: 'https://apps.apple.com/us/app/id' + app['ascAppId'],
           androidStoreUrl: 'https://play.google.com/store/apps/details?id=' + app['reverseDns'],
-          patch: version['patch']
+          patch: version['patch'],
      },
      hooks: {
           postPublish: [
@@ -159,7 +159,7 @@ const app_config = {
                },
           ],
      },
-     plugins: ['sentry-expo', 'expo-localization']
+     plugins: ['sentry-expo', 'expo-localization', ['expo-barcode-scanner', { cameraPermission: 'Allow $(PRODUCT_NAME) to access camera.' }]],
 };
 
 fs.readFile('app.config.js', 'utf8', function (err, data) {

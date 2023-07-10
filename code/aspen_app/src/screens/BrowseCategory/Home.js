@@ -19,7 +19,6 @@ import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, updateNotificationOnboardingStatus } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { getNotificationPreference } from '../../components/Notifications';
 import { getDefaultFacets } from '../../util/search';
 
 let maxCategories = 5;
@@ -186,6 +185,10 @@ export const DiscoverHomeScreen = () => {
      const search = async () => {
           navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'SearchHome' });
           clearText();
+     };
+
+     const openScanner = async () => {
+          navigateStack('BrowseTab', 'Scanner');
      };
 
      // load notification onboarding prompt
@@ -397,7 +400,7 @@ export const DiscoverHomeScreen = () => {
                               size="xl"
                               InputLeftElement={<Icon as={<Ionicons name="search" />} size={5} ml="2" color="muted.800" />}
                               InputRightElement={
-                                   <Pressable>
+                                   <Pressable onPress={() => openScanner()}>
                                         <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
                                    </Pressable>
                               }
