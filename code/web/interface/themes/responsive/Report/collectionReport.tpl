@@ -22,7 +22,7 @@
 
 		</div>
 {literal}
-<style type="text/css">
+<style>
 	table#reportTable {
 		width: 7in;
 		margin-left: 0;
@@ -34,10 +34,10 @@
 		display: none;
 	}
 	table#reportTable thead {
-		display: table !important;
+		/*display: table !important;*/
 	}
 	table#reportTable tbody tr td {
-		border: 0;
+		/*border: 0;*/
 	}
 
 	@media print {
@@ -71,7 +71,7 @@
 		/* Chromium + Safari */
 		/* fix for "Print Pages" */
 		@supports (not (-moz-appearance: none)) {
-			tr.overdueSlipContainer {
+			tr.recordContainer {
 				display: block;
 			}
 		}
@@ -95,14 +95,14 @@
 					<th class="filter">Cumulative Circ</th>
 					<th class="filter">Barcode</th>
 					<th class="filter">Created</th>
-					<th class="filter">Status</th>
+					<th class="filter-select filter-onlyAvail">Status</th>
 					<th class="filter">Status Date</th>
-				<tr>
+				</tr>
 			</thead>
 			<tbody>
 {assign var=previousPatron value=0}
 {foreach from=$reportData item=dataRow name=data}
-				<tr class="overdueSlipContainer">
+				<tr class="recordContainer">
 					<td class="ITEM">{$dataRow.ITEM}</td>
 					<td class="BID">{$dataRow.BID}</td>
 					<td class="TITLE">{$dataRow.TITLE}</td>

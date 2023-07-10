@@ -479,9 +479,10 @@ class Nashville extends CarlX {
 			-- get the almost-whole enchilada (on shelf, charged, missing, lost, damaged, in processing; NOT withdrawn) for an owning branch
 			with i as (
 				select
-					*
+					i.*
 				from item_v i
-				where i.branch = '$location'
+				right join branch_v b on i.branch = b.branchnumber
+				where b.branchcode = '$location'
 			), r as (
 				select
 					r.refid
