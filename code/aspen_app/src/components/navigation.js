@@ -371,7 +371,6 @@ export function App() {
                                                                       name="LibraryCardScanner"
                                                                       component={LibraryCardScanner}
                                                                       options={{
-                                                                           gestureEnabled: false,
                                                                            presentation: 'modal',
                                                                       }}
                                                                  />

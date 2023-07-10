@@ -4,10 +4,12 @@ import { Box, Button, View } from 'native-base';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { loadingSpinner } from './loadingSpinner';
 import { loadError } from './loadError';
-import { navigateStack } from '../helpers/RootNavigator';
+import { navigate, navigateStack } from '../helpers/RootNavigator';
 import BarcodeMask from 'react-native-barcode-mask';
+import { useNavigation } from '@react-navigation/native';
 
 export default function LibraryCardScanner() {
+     const navigation = useNavigation();
      const [hasPermission, setHasPermission] = React.useState(null);
      const [scanned, setScanned] = React.useState(false);
 
@@ -21,6 +23,9 @@ export default function LibraryCardScanner() {
      const handleBarCodeScanned = ({ type, data }) => {
           if (!scanned) {
                setScanned(true);
+               navigate('Login', {
+                    barcode: data,
+               });
           }
      };
 
