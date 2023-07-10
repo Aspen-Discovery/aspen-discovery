@@ -42,7 +42,7 @@
 					<div class="col-tn-6">
 						<div class="btn btn-block btn-default">
 							<a href="/MyAccount/CheckedOut">
-								<div class="dashboardLabel">{translate text="Checked Out" isPublicFacing=true}</div>
+								<div class="dashboardLabel">{translate text="Checked Out Titles" isPublicFacing=true}</div>
 								<div class="dashboardValue"><span class="checkouts-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
 							</a>
 						</div>
@@ -63,7 +63,7 @@
 					<div class="col-tn-6">
 						<div class="btn btn-block btn-default">
 							<a href="/MyAccount/Holds">
-								<div class="dashboardLabel">{translate text="Holds" isPublicFacing=true}</div>
+								<div class="dashboardLabel">{translate text="Titles On Hold" isPublicFacing=true}</div>
 								<div class="dashboardValue"><span class="holds-placeholder"><img src="/images/loading.gif" alt="loading"></span></div>
 							</a>
 						</div>
