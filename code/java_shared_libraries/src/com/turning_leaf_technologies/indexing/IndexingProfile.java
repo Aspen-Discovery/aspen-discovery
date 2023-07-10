@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import org.apache.logging.log4j.Logger;
@@ -22,6 +23,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private String itemTag;
 	private int itemTagInt;
 	private char itemRecordNumberSubfield;
+	private String dateAddedFormat;
+	private SimpleDateFormat dateAddedFormatter;
+	private SimpleDateFormat dateAddedFormatter2;
 	private String lastCheckinFormat;
 	private SimpleDateFormat lastCheckinFormatter;
 	private String dateCreatedFormat;
@@ -29,7 +33,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private String dueDateFormat;
 	private char lastCheckinDateSubfield;
 	private char locationSubfield;
+	private Pattern nonHoldableLocations;
+	Pattern locationsToSuppressPattern = null;
+	Pattern collectionsToSuppressPattern = null;
+	boolean includeLocationNameInDetailedLocation;
 	private char itemStatusSubfield;
+	private Pattern statusesToSuppressPattern;
+	private Pattern nonHoldableStatuses;
 	private boolean treatLibraryUseOnlyGroupedStatusesAsAvailable;
 	private char iTypeSubfield;
 	private char collectionSubfield;
@@ -67,7 +77,24 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private int orderRecordsToSuppressByDate;
 	private boolean checkSierraMatTypeForFormat;
 
-	public IndexingProfile(ResultSet indexingProfileRS)  throws SQLException {
+	//Custom Facets
+	private String customFacet1SourceField;
+	private String customFacet1ValuesToInclude;
+	private Pattern customFacet1ValuesToIncludePattern;
+	private String customFacet1ValuesToExclude;
+	private Pattern customFacet1ValuesToExcludePattern;
+	private String customFacet2SourceField;
+	private String customFacet2ValuesToInclude;
+	private Pattern customFacet2ValuesToIncludePattern;
+	private String customFacet2ValuesToExclude;
+	private Pattern customFacet2ValuesToExcludePattern;
+	private String customFacet3SourceField;
+	private String customFacet3ValuesToInclude;
+	private Pattern customFacet3ValuesToIncludePattern;
+	private String customFacet3ValuesToExclude;
+	private Pattern customFacet3ValuesToExcludePattern;
+
+	public IndexingProfile(ResultSet indexingProfileRS, BaseIndexingLogEntry logEntry)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
 		this.setName(indexingProfileRS.getString("name"));
 		this.setFilenamesToInclude(indexingProfileRS.getString("filenamesToInclude"));
@@ -79,9 +106,40 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setItemTag(indexingProfileRS.getString("itemTag"));
 		this.setItemRecordNumberSubfield(getCharFromRecordSet(indexingProfileRS,"itemRecordNumber"));
 		this.setLastCheckinDateSubfield(getCharFromRecordSet(indexingProfileRS,"lastCheckinDate"));
+		this.setDateAddedFormat(indexingProfileRS.getString("dateCreatedFormat"));
 		this.setLastCheckinFormat(indexingProfileRS.getString("lastCheckinFormat"));
 		this.setLocationSubfield(getCharFromRecordSet(indexingProfileRS,"location"));
+		this.includeLocationNameInDetailedLocation = indexingProfileRS.getBoolean("includeLocationNameInDetailedLocation");
+		try {
+			String pattern = indexingProfileRS.getString("nonHoldableLocations");
+			if (pattern != null && pattern.length() > 0) {
+				nonHoldableLocations = Pattern.compile("^(" + pattern + ")$");
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Could not load non holdable locations", e);
+		}
+		String locationsToSuppress = indexingProfileRS.getString("locationsToSuppress");
+		if (locationsToSuppress != null && locationsToSuppress.length() > 0){
+			locationsToSuppressPattern = Pattern.compile(locationsToSuppress);
+		}
+
+		String collectionsToSuppress = indexingProfileRS.getString("collectionsToSuppress");
+		if (collectionsToSuppress != null && collectionsToSuppress.length() > 0){
+			collectionsToSuppressPattern = Pattern.compile(collectionsToSuppress);
+		}
 		this.setItemStatusSubfield(getCharFromRecordSet(indexingProfileRS,"status"));
+		String statusesToSuppress = indexingProfileRS.getString("statusesToSuppress");
+		if (statusesToSuppress != null && statusesToSuppress.length() > 0){
+			this.statusesToSuppressPattern = Pattern.compile(statusesToSuppress);
+		}
+		try {
+			String pattern = indexingProfileRS.getString("nonHoldableStatuses");
+			if (pattern != null && pattern.length() > 0) {
+				this.nonHoldableStatuses = Pattern.compile("^(" + pattern + ")$", Pattern.CASE_INSENSITIVE);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Could not load non holdable statuses", e);
+		}
 		this.setTreatLibraryUseOnlyGroupedStatusesAsAvailable(indexingProfileRS.getBoolean("treatLibraryUseOnlyGroupedStatusesAsAvailable"));
 		this.setDueDateSubfield(getCharFromRecordSet(indexingProfileRS,"dueDate"));
 		this.setDueDateFormat(indexingProfileRS.getString("dueDateFormat"));
@@ -105,7 +163,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setFormatSource(indexingProfileRS.getString("formatSource"));
 		this.setFallbackFormatField(indexingProfileRS.getString("fallbackFormatField"));
 		this.setSpecifiedFormatCategory(indexingProfileRS.getString("specifiedFormatCategory"));
-		this.setFormat(getCharFromRecordSet(indexingProfileRS, "format"));
+		this.setFormatSubfield(getCharFromRecordSet(indexingProfileRS, "format"));
 		this.setCheckRecordForLargePrint(indexingProfileRS.getBoolean("checkRecordForLargePrint"));
 
 		this.setDoAutomaticEcontentSuppression(indexingProfileRS.getBoolean("doAutomaticEcontentSuppression"));
@@ -157,6 +215,63 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.orderRecordsToSuppressByDate = indexingProfileRS.getInt("orderRecordsToSuppressByDate");
 
 		this.checkSierraMatTypeForFormat = indexingProfileRS.getBoolean("checkSierraMatTypeForFormat");
+
+		//Custom Facet 1
+		this.customFacet1SourceField = indexingProfileRS.getString("customFacet1SourceField");
+		this.customFacet1ValuesToInclude = indexingProfileRS.getString("customFacet1ValuesToInclude");
+		if (this.customFacet1ValuesToInclude.length() > 0 && !this.customFacet1ValuesToInclude.equals(".*")) {
+			try {
+				customFacet1ValuesToIncludePattern = Pattern.compile(customFacet1ValuesToInclude, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException e) {
+				logEntry.incErrors("Unable to compile pattern for customFacet1ValuesToIncludePattern", e);
+			}
+		}
+		this.customFacet1ValuesToExclude = indexingProfileRS.getString("customFacet1ValuesToExclude");
+		if (this.customFacet1ValuesToExclude.length() > 0) {
+			try {
+				customFacet1ValuesToExcludePattern = Pattern.compile(customFacet1ValuesToExclude, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException e) {
+				logEntry.incErrors("Unable to compile pattern for customFacet1ValuesToExcludePattern", e);
+			}
+		}
+
+		//Custom Facet 2
+		this.customFacet2SourceField = indexingProfileRS.getString("customFacet2SourceField");
+		this.customFacet2ValuesToInclude = indexingProfileRS.getString("customFacet2ValuesToInclude");
+		if (this.customFacet2ValuesToInclude.length() > 0 && !this.customFacet2ValuesToInclude.equals(".*")) {
+			try {
+				customFacet2ValuesToIncludePattern = Pattern.compile(customFacet2ValuesToInclude, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException e) {
+				logEntry.incErrors("Unable to compile pattern for customFacet2ValuesToIncludePattern", e);
+			}
+		}
+		this.customFacet2ValuesToExclude = indexingProfileRS.getString("customFacet2ValuesToExclude");
+		if (this.customFacet2ValuesToExclude.length() > 0) {
+			try {
+				customFacet2ValuesToExcludePattern = Pattern.compile(customFacet2ValuesToExclude, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException e) {
+				logEntry.incErrors("Unable to compile pattern for customFacet2ValuesToExcludePattern", e);
+			}
+		}
+
+		//Custom Facet 3
+		this.customFacet3SourceField = indexingProfileRS.getString("customFacet3SourceField");
+		this.customFacet3ValuesToInclude = indexingProfileRS.getString("customFacet3ValuesToInclude");
+		if (this.customFacet3ValuesToInclude.length() > 0 && !this.customFacet3ValuesToInclude.equals(".*")) {
+			try {
+				customFacet3ValuesToIncludePattern = Pattern.compile(customFacet3ValuesToInclude, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException e) {
+				logEntry.incErrors("Unable to compile pattern for customFacet3ValuesToIncludePattern", e);
+			}
+		}
+		this.customFacet3ValuesToExclude = indexingProfileRS.getString("customFacet3ValuesToExclude");
+		if (this.customFacet3ValuesToExclude.length() > 0) {
+			try {
+				customFacet3ValuesToExcludePattern = Pattern.compile(customFacet3ValuesToExclude, Pattern.CASE_INSENSITIVE);
+			} catch (PatternSyntaxException e) {
+				logEntry.incErrors("Unable to compile pattern for customFacet3ValuesToExcludePattern", e);
+			}
+		}
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -183,22 +298,22 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.formatSource = formatSource;
 	}
 
-	public char getFormat() {
+	public char getFormatSubfield() {
 		return format;
 	}
 
-	public void setFormat(char format) {
+	public void setFormatSubfield(char format) {
 		this.format = format;
 	}
 
-	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger) {
+	public static IndexingProfile loadIndexingProfile(Connection dbConn, String profileToLoad, Logger logger, BaseIndexingLogEntry logEntry) {
 		//Get the Indexing Profile from the database
 		IndexingProfile indexingProfile = null;
 		try {
 			PreparedStatement getIndexingProfileStmt = dbConn.prepareStatement("SELECT * FROM indexing_profiles where name ='" + profileToLoad + "'");
 			ResultSet indexingProfileRS = getIndexingProfileStmt.executeQuery();
 			if (indexingProfileRS.next()) {
-				indexingProfile = new IndexingProfile(indexingProfileRS);
+				indexingProfile = new IndexingProfile(indexingProfileRS, logEntry);
 
 			} else {
 				logger.error("Unable to find " + profileToLoad + " indexing profile, please create a profile with the name ils.");
@@ -264,6 +379,23 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.itemRecordNumberSubfield = itemRecordNumberSubfield;
 	}
 
+	public void setDateAddedFormat(String dateAddedFormat) {
+		this.dateAddedFormat = dateAddedFormat;
+		this.dateAddedFormatter = new SimpleDateFormat(dateAddedFormat);
+		this.dateAddedFormatter2 = new SimpleDateFormat("yyMMdd");
+	}
+
+	public String getDateAddedFormat(){
+		return dateAddedFormat;
+	}
+	public SimpleDateFormat getDateAddedFormatter() {
+		return dateAddedFormatter;
+	}
+
+	public SimpleDateFormat getDateAddedFormatter2() {
+		return dateAddedFormatter2;
+	}
+
 	public String getLastCheckinFormat() {
 		return lastCheckinFormat;
 	}
@@ -307,12 +439,36 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.locationSubfield = locationSubfield;
 	}
 
+	public Pattern getNonHoldableLocations() {
+		return nonHoldableLocations;
+	}
+
+	public Pattern getLocationsToSuppressPattern() {
+		return locationsToSuppressPattern;
+	}
+
+	public Pattern getCollectionsToSuppressPattern() {
+		return collectionsToSuppressPattern;
+	}
+
+	public boolean isIncludeLocationNameInDetailedLocation() {
+		return  includeLocationNameInDetailedLocation;
+	}
+
 	public char getItemStatusSubfield() {
 		return itemStatusSubfield;
 	}
 
 	private void setItemStatusSubfield(char itemStatusSubfield) {
 		this.itemStatusSubfield = itemStatusSubfield;
+	}
+
+	public Pattern getStatusesToSuppressPattern() {
+		return statusesToSuppressPattern;
+	}
+
+	public Pattern getNonHoldableStatuses() {
+		return nonHoldableStatuses;
 	}
 
 	public char getITypeSubfield() {
@@ -646,4 +802,39 @@ public class IndexingProfile extends BaseIndexingSettings {
 		return orderRecordsToSuppressByDate;
 	}
 
+	public String getCustomFacet1SourceField() {
+		return customFacet1SourceField;
+	}
+
+	public Pattern getCustomFacet1ValuesToIncludePattern() {
+		return customFacet1ValuesToIncludePattern;
+	}
+
+	public Pattern getCustomFacet1ValuesToExcludePattern() {
+		return customFacet1ValuesToExcludePattern;
+	}
+
+	public String getCustomFacet2SourceField() {
+		return customFacet2SourceField;
+	}
+
+	public Pattern getCustomFacet2ValuesToIncludePattern() {
+		return customFacet2ValuesToIncludePattern;
+	}
+
+	public Pattern getCustomFacet2ValuesToExcludePattern() {
+		return customFacet2ValuesToExcludePattern;
+	}
+
+	public String getCustomFacet3SourceField() {
+		return customFacet3SourceField;
+	}
+
+	public Pattern getCustomFacet3ValuesToIncludePattern() {
+		return customFacet3ValuesToIncludePattern;
+	}
+
+	public Pattern getCustomFacet3ValuesToExcludePattern() {
+		return customFacet3ValuesToExcludePattern;
+	}
 }

@@ -20,8 +20,8 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String statusFieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
-		String shelfLocationData = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		String statusFieldData = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
+		String shelfLocationData = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
 		if (shelfLocationData != null){
 			shelfLocationData = shelfLocationData.toLowerCase();
 		}else{
@@ -60,7 +60,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 		if (itemInfo.getStatusCode().equals("ONSHELF")) {
 			available = true;
 		}else {
-			if (groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"))){
+			if (groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"))){
 				available = true;
 			}
 		}
@@ -68,10 +68,10 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
 		String location = translateValue("location", locationCode, identifier, true);
 
-		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
+		String subLocationCode = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
 		if (subLocationCode != null && subLocationCode.length() > 0){
 			String translatedSubLocation = translateValue("sub_location", subLocationCode, identifier, true);
 			if (translatedSubLocation != null && translatedSubLocation.length() > 0) {
@@ -82,7 +82,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 
-		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String status = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
 		if (status == null || status.equals("CHECKEDOUT") || status.equals("HOLDS") || status.equals("INTRANSIT")) {
 			String shelvingLocation = itemInfo.getShelfLocationCode();
 			if (location == null) {
@@ -105,7 +105,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 	protected void setShelfLocationCode(DataField itemField, ItemInfo itemInfo, String recordIdentifier) {
 		//For Symphony the status field holds the location code unless it is currently checked out, on display, etc.
 		//In that case the location code holds the permanent location
-		String subfieldData = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String subfieldData = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
 		boolean loadFromPermanentLocation = false;
 		if (subfieldData == null){
 			loadFromPermanentLocation = true;
@@ -113,7 +113,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			loadFromPermanentLocation = true;
 		}
 		if (loadFromPermanentLocation){
-			subfieldData = getItemSubfieldData(shelvingLocationSubfield, itemField);
+			subfieldData = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
 		}
 		itemInfo.setShelfLocationCode(subfieldData);
 	}

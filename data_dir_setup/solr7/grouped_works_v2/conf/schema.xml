@@ -346,6 +346,9 @@
 		<field name="rating" type="float" indexed="true" stored="false" multiValued="false" default="2.5"/>
 		<field name="rating_facet" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
 
+		<!-- Custom facets -->
+		<dynamicField name="custom_facet_*" type="unchanged_string" indexed="true" stored="true" multiValued="true" docValues="true"/>
+
 		<!-- spelling -->
 		<field name="spelling" type="textSpelling" indexed="true" stored="false" multiValued="true"/>
 		<!-- suggestions (for type ahead) -->

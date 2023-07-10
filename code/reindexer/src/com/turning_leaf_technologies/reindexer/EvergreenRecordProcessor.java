@@ -63,12 +63,12 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return itemInfo.getStatusCode().equals("Available") || groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
+		return itemInfo.getStatusCode().equals("Available") || groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
 	private SimpleDateFormat createdByFormatter = new SimpleDateFormat("yyyy-MM-dd");
 	protected void loadDateAdded(String recordIdentifier, DataField itemField, ItemInfo itemInfo) {
-		Subfield itemBarcodeSubfield = itemField.getSubfield(barcodeSubfield);
+		Subfield itemBarcodeSubfield = itemField.getSubfield(settings.getBarcodeSubfield());
 		if (itemBarcodeSubfield != null){
 			String barcode = itemBarcodeSubfield.getData();
 			if (barcodeCreatedByDates.containsKey(barcode)){

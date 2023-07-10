@@ -102,6 +102,8 @@ public abstract class AbstractGroupedWorkSolr {
 
 	protected final HashSet<String> parentRecords = new HashSet<>();
 
+	protected final HashMap<Integer, Set<String>> customFacetValues = new HashMap<>();
+
 	//Store a list of scopes for the work
 	protected HashMap<String, ArrayList<ScopingInfo>> relatedScopes = new HashMap<>();
 
@@ -1463,5 +1465,12 @@ public abstract class AbstractGroupedWorkSolr {
 
 	public void addParentRecord(String workId){
 		this.parentRecords.add(workId);
+	}
+
+	public void addCustomFacetValues(int customFacetNumber, Set<String> fieldData) {
+		if (!customFacetValues.containsKey(customFacetNumber)) {
+			customFacetValues.put(customFacetNumber, new LinkedHashSet<>());
+		}
+		customFacetValues.get(customFacetNumber).addAll(fieldData);
 	}
 }

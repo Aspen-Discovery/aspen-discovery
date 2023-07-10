@@ -23,17 +23,17 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return itemInfo.getStatusCode().equals("Available") || groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
+		return itemInfo.getStatusCode().equals("Available") || groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
 	protected ResultWithNotes isItemSuppressed(DataField curItem, String itemIdentifier, StringBuilder suppressionNotes) {
-		if (statusSubfieldIndicator != ' ') {
-			Subfield statusSubfield = curItem.getSubfield(statusSubfieldIndicator);
+		if (settings.getItemStatusSubfield() != ' ') {
+			Subfield statusSubfield = curItem.getSubfield(settings.getItemStatusSubfield());
 			if (statusSubfield == null) {
 				//For evolve this is ok.  It actually means the item is on shelf.
 			} else {
 				String statusValue = statusSubfield.getData();
-				if (statusesToSuppressPattern != null && statusesToSuppressPattern.matcher(statusValue).matches()) {
+				if (settings.getStatusesToSuppressPattern() != null && settings.getStatusesToSuppressPattern().matcher(statusValue).matches()) {
 					suppressionNotes.append("Item ").append(itemIdentifier).append(" - matched status suppression pattern<br>");
 					return new ResultWithNotes(true, suppressionNotes);
 				}else if (statusesToSuppress.contains(statusValue)){
@@ -43,32 +43,32 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 
 			}
 		}
-		Subfield locationSubfield = curItem.getSubfield(locationSubfieldIndicator);
+		Subfield locationSubfield = curItem.getSubfield(settings.getLocationSubfield());
 		if (locationSubfield == null){
 			suppressionNotes.append("Item ").append(itemIdentifier).append(" no location<br/>");
 			return new ResultWithNotes(true, suppressionNotes);
 		}else{
-			if (locationsToSuppressPattern != null && locationsToSuppressPattern.matcher(locationSubfield.getData().trim()).matches()){
+			if (settings.getLocationsToSuppressPattern() != null && settings.getLocationsToSuppressPattern().matcher(locationSubfield.getData().trim()).matches()){
 				suppressionNotes.append("Item ").append(itemIdentifier).append(" location matched suppression pattern<br/>");
 				return new ResultWithNotes(true, suppressionNotes);
 			}
 		}
-		if (collectionSubfield != ' '){
-			Subfield collectionSubfieldValue = curItem.getSubfield(collectionSubfield);
+		if (settings.getCollectionSubfield() != ' '){
+			Subfield collectionSubfieldValue = curItem.getSubfield(settings.getCollectionSubfield());
 			if (collectionSubfieldValue == null){
 				if (this.suppressRecordsWithNoCollection) {
 					suppressionNotes.append("Item ").append(itemIdentifier).append(" no collection<br/>");
 					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}else{
-				if (collectionsToSuppressPattern != null && collectionsToSuppressPattern.matcher(collectionSubfieldValue.getData().trim()).matches()){
+				if (settings.getCollectionsToSuppressPattern() != null && settings.getCollectionsToSuppressPattern().matcher(collectionSubfieldValue.getData().trim()).matches()){
 					suppressionNotes.append("Item ").append(itemIdentifier).append(" collection matched suppression pattern<br/>");
 					return new ResultWithNotes(true, suppressionNotes);
 				}
 			}
 		}
-		if (formatSubfield != ' '){
-			Subfield formatSubfieldValue = curItem.getSubfield(formatSubfield);
+		if (settings.getFormatSubfield() != ' '){
+			Subfield formatSubfieldValue = curItem.getSubfield(settings.getFormatSubfield());
 			if (formatSubfieldValue != null){
 				String formatValue = formatSubfieldValue.getData();
 				if (formatsToSuppress.contains(formatValue.toUpperCase())){
@@ -92,7 +92,7 @@ public class EvolveRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String status = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String status = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
 		if (status == null || status.length() == 0){
 			status = "On Shelf";
 		} else if (status.startsWith("Due on")) {

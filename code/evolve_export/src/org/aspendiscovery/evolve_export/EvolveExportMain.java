@@ -140,7 +140,7 @@ public class EvolveExportMain {
 					logger.error("Error deleting old log entries", e);
 				}
 
-				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
 				if (indexingProfile == null){
 					logEntry.incErrors("Could not load indexing profile for " + profileToLoad);
 				}else {
