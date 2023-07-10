@@ -36,7 +36,7 @@
 				{if $showQuickCopy == 1 || $showQuickCopy == 2 || $showQuickCopy == 3}
 					<div class="itemSummary">
 						<a href="#" onclick="return AspenDiscovery.GroupedWork.showCopyDetails('{$workId}', '{if !empty($relatedManifestation)}{$relatedManifestation->format|urlencode}{else}{$format}{/if}', '{$itemSummaryId}');">
-							{translate text="Where is it?" isPublicFacing=true}
+							{translate text="where_is_it_button" defaultText="Where is it?" isPublicFacing=true}
 						</a>
 					</div>
 				{/if}

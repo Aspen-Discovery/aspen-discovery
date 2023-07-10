@@ -68,7 +68,7 @@ const DisplayResult = (data) => {
      const handlePressItem = () => {
           if (item) {
                if (recordType === 'list') {
-                    navigateStack('HomeTab', 'ListResults', {
+                    navigateStack('BrowseTab', 'ListResults', {
                          id: item.id,
                          title: item.title_display,
                          url: library.baseUrl,
@@ -76,7 +76,7 @@ const DisplayResult = (data) => {
                     });
                } else {
                     if (version >= '23.01.00') {
-                         navigateStack('HomeTab', 'ListResultItem', {
+                         navigateStack('BrowseTab', 'ListResultItem', {
                               id: item.id,
                               title: getCleanTitle(item.title_display),
                               url: library.baseUrl,
@@ -84,7 +84,7 @@ const DisplayResult = (data) => {
                               prevRoute: 'SearchByList',
                          });
                     } else {
-                         navigateStack('HomeTab', 'ResultItem221200', {
+                         navigateStack('BrowseTab', 'ResultItem221200', {
                               id: item.id,
                               title: getCleanTitle(item.title_display),
                               url: library.baseUrl,

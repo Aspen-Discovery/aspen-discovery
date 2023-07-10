@@ -27,9 +27,6 @@ if (file_exists(ROOT_DIR . '/sys/MaterialsRequestFormFields.php')) {
 if (file_exists(ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php')) {
 	require_once ROOT_DIR . '/sys/CloudLibrary/LibraryCloudLibraryScope.php';
 }
-if (file_exists(ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php')) {
-	require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
-}
 if (file_exists(ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
 }
@@ -400,7 +397,6 @@ class Library extends DataObject {
 
 	//LiDA settings
 	public $lidaNotificationSettingId;
-	public $lidaQuickSearchId;
 	public $lidaGeneralSettingId;
 
 	public $accountProfileId;
@@ -697,16 +693,6 @@ class Library extends DataObject {
 		$notificationSettings[-1] = 'none';
 		while ($notificationSetting->fetch()) {
 			$notificationSettings[$notificationSetting->id] = $notificationSetting->name;
-		}
-
-		require_once ROOT_DIR . '/sys/AspenLiDA/QuickSearchSetting.php';
-		$quickSearchSetting = new QuickSearchSetting();
-		$quickSearchSetting->orderBy('name');
-		$quickSearchSettings = [];
-		$quickSearchSetting->find();
-		$quickSearchSettings[-1] = 'none';
-		while ($quickSearchSetting->fetch()) {
-			$quickSearchSettings[$quickSearchSetting->id] = $quickSearchSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
@@ -3487,15 +3473,6 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
-					'lidaQuickSearchId' => [
-						'property' => 'lidaQuickSearchId',
-						'type' => 'enum',
-						'values' => $quickSearchSettings,
-						'label' => 'Quick Search Settings',
-						'description' => 'The Quick Search Settings to use for Aspen LiDA',
-						'hideInLists' => true,
-						'default' => -1,
-					],
 				],
 			],
 
@@ -3844,8 +3821,6 @@ class Library extends DataObject {
 			return $this->getThemes();
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
-		} elseif ($name == 'quickSearches') {
-			return $this->getQuickSearches();
 		} else {
 			return parent::__get($name);
 		}
@@ -3877,8 +3852,6 @@ class Library extends DataObject {
 			$this->_themes = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
-		} elseif ($name == 'quickSearches') {
-			$this->_quickSearches = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -3935,7 +3908,6 @@ class Library extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
-			//$this->saveQuickSearches();
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -3991,7 +3963,6 @@ class Library extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
-			//$this->saveQuickSearches();
 			$this->processSso();
 		}
 		return $ret;
@@ -4337,27 +4308,6 @@ class Library extends DataObject {
 	/**
 	 * @return array|null
 	 */
-	public function getQuickSearches() {
-		$quickSearches = [];
-		$quickSearchSettings = new QuickSearchSetting();
-		$quickSearchSettings->id = $this->lidaQuickSearchId;
-		if ($quickSearchSettings->find()) {
-			$quickSearch = new QuickSearch();
-			$quickSearch->quickSearchSettingId = $quickSearchSettings->id;
-			$quickSearch->orderBy('weight');
-			if ($quickSearch->find()) {
-				while ($quickSearch->fetch()) {
-					$quickSearches[$quickSearch->id] = clone $quickSearch;
-				}
-			}
-		}
-
-		return $quickSearches;
-	}
-
-	/**
-	 * @return array|null
-	 */
 	public function getLiDANotifications() {
 		$lidaNotifications = [];
 
@@ -4491,16 +4441,7 @@ class Library extends DataObject {
 		} else {
 			$apiInfo['barcodeStyle'] = null;
 		}
-		$quickSearches = $this->getQuickSearches();
 		$apiInfo['quickSearches'] = [];
-		foreach ($quickSearches as $quickSearch) {
-			$apiInfo['quickSearches'][$quickSearch->id] = [
-				'id' => $quickSearch->id,
-				'label' => $quickSearch->label,
-				'searchTerm' => $quickSearch->searchTerm,
-				'weight' => $quickSearch->weight,
-			];
-		}
 		$apiInfo['notifications'] = $this->getLiDANotifications();
 		$allThemes = $this->getThemes();
 		if (count($allThemes) > 0) {

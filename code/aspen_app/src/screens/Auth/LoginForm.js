@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Button, Center, FormControl, Icon, Input } from 'native-base';
+import { Button, Center, FormControl, Icon, Input, Pressable } from 'native-base';
 import React, { useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
@@ -21,8 +21,12 @@ import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
 import { PATRON } from '../../util/loadPatron';
 import { getLocationInfo } from '../../util/api/location';
+import { navigate, navigateStack } from '../../helpers/RootNavigator';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 export const GetLoginForm = (props) => {
+     const navigation = useNavigation();
+     const barcode = useRoute().params?.barcode ?? null;
      const [loading, setLoading] = React.useState(false);
 
      const [pinValidationRules, setPinValidationRules] = React.useState([]);
@@ -52,6 +56,16 @@ export const GetLoginForm = (props) => {
      const patronsLibrary = props.selectedLibrary;
 
      const { usernameLabel, passwordLabel } = props;
+
+     React.useEffect(() => {
+          const unsubscribe = navigation.addListener('focus', () => {
+               if (barcode) {
+                    setUsername(barcode);
+               }
+          });
+
+          return unsubscribe;
+     }, [navigation, barcode]);
 
      const initialValidation = async () => {
           const result = await checkAspenDiscovery(patronsLibrary['baseUrl'], patronsLibrary['libraryId']);
@@ -135,6 +149,10 @@ export const GetLoginForm = (props) => {
           });
      };
 
+     const openScanner = async () => {
+          navigate('LibraryCardScanner');
+     };
+
      const setAsyncStorage = async () => {
           await SecureStore.setItemAsync('userKey', valueUser);
           await SecureStore.setItemAsync('secretKey', valueSecret);
@@ -173,6 +191,7 @@ export const GetLoginForm = (props) => {
                          autoCorrect={false}
                          variant="filled"
                          id="barcode"
+                         value={valueUser}
                          onChangeText={(text) => setUsername(text)}
                          returnKeyType="next"
                          textContentType="username"
@@ -181,6 +200,11 @@ export const GetLoginForm = (props) => {
                               passwordRef.current.focus();
                          }}
                          blurOnSubmit={false}
+                         InputRightElement={
+                              <Pressable onPress={() => openScanner()}>
+                                   <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
+                              </Pressable>
+                         }
                     />
                </FormControl>
                <FormControl mt={3}>
