@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
@@ -403,13 +404,14 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
-							//Remove all 949n Item notes from the marc record because CARL.X can include the patron identifier in the notes
+							//Redact strings that look like patron IDs from 949n Item notes
 							List<DataField> itemFields = curBib.getDataFields(indexingProfile.getItemTag());
 							for (DataField itemField : itemFields) {
 								List <Subfield> subfields = itemField.getSubfields();
 								for (Subfield subfield : subfields) {
 									if (subfield.getCode() == 'n') {
-										itemField.removeSubfield(subfield);
+										String censored = patronIDPattern.matcher(subfield.getData()).replaceAll("X");
+										subfield.setData(censored);
 									}
 								}
 							}
@@ -1553,4 +1555,7 @@ public class CarlXExportMain {
 		}
 		return groupedWorkIndexer;
 	}
+
+	private static Pattern patronIDPattern = Pattern.compile("\\b\\d{6,14}\\b");
+
 }
