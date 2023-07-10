@@ -33,6 +33,7 @@ import { navigationRef } from '../helpers/RootNavigator';
 import { updateAspenLiDABuild } from '../util/greenhouse';
 import { ResetExpiredPin } from '../screens/Auth/ResetExpiredPin';
 import { PermissionsPrompt } from './PermissionsPrompt';
+import LibraryCardScanner from './LibraryCardScanner';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -297,7 +298,7 @@ export function App() {
                                                                                                                    SearchByList: 'search/list',
                                                                                                               },
                                                                                                          },
-                                                                                                         HomeTab: {
+                                                                                                         BrowseTab: {
                                                                                                               screens: {
                                                                                                                    HomeScreen: 'home',
                                                                                                                    GroupedWorkScreen: 'search/grouped_work',
@@ -366,6 +367,13 @@ export function App() {
                                                                            }}
                                                                       />
                                                                  )}
+                                                                 <Stack.Screen
+                                                                      name="LibraryCardScanner"
+                                                                      component={LibraryCardScanner}
+                                                                      options={{
+                                                                           presentation: 'modal',
+                                                                      }}
+                                                                 />
                                                             </Stack.Navigator>
                                                        </NavigationContainer>
                                                   </GroupedWorkProvider>
