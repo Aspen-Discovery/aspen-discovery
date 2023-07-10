@@ -719,6 +719,7 @@ class WebBuilder_AJAX extends JSON_Action {
 				'address' => preg_replace('/\r\n|\r|\n/', '<br>', $locationToProcess->address),
 				'phone' => $locationToProcess->phone,
 				'tty' => $locationToProcess->tty,
+				'email' => $locationToProcess->contactEmail,
 				//'map_image' => "http://maps.googleapis.com/maps/api/staticmap?center=$mapAddress&zoom=15&size=200x200&sensor=false&markers=color:red%7C$mapAddress",
 				'hours' => $hours,
 				'hasValidHours' => $locationToProcess->hasValidHours(),
