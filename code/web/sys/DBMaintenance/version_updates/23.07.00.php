@@ -179,9 +179,6 @@ function getUpdates23_07_00(): array {
 					('Circulation Reports', 'View Location Collection Reports', '', 40, 'Allows the user to view collection reports for their home location (CARL.X) only.'),
 					('Circulation Reports', 'View All Collection Reports', '', 50, 'Allows the user to view collection reports for any location (CARL.X) only.')
 				",
-				//"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='school library staff'), (SELECT id from permissions where name='View Location Collection Reports'))",
-				//"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='MNPS Library Services'), (SELECT id from permissions where name='View All Collection Reports'))",
-				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View All Collection Reports'))",
 			],
 		], //collection_report_permissions
   ];
