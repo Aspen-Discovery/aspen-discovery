@@ -2322,7 +2322,7 @@ class Theme extends DataObject {
 	}
 
 	public function insert($context = '') {
-		$this->generatedCss = $this->generateCss();
+		$this->_set('generatedCss', $this->generateCss());
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
@@ -2687,7 +2687,7 @@ class Theme extends DataObject {
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		$this->generatedCss = $interface->fetch('theme.css.tpl');
+		$this->__set('generatedCss', $interface->fetch('theme.css.tpl'));
 		if ($saveChanges) {
 			$this->update();
 		}
@@ -2749,7 +2749,7 @@ class Theme extends DataObject {
 		} elseif ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -2759,7 +2759,7 @@ class Theme extends DataObject {
 		} elseif ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

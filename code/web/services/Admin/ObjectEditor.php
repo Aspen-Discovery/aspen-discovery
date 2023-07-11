@@ -489,6 +489,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					$user = UserAccount::getActiveUserObj();
 					$validationResults = $this->updateFromUI($curObject, $structure);
 					if ($validationResults['validatedOk']) {
+						//Always save since has changes does not check sub objects for changes (which it should)
 						$ret = $curObject->update($this->getContext());
 						if ($ret === false) {
 							if ($curObject->getLastError()) {

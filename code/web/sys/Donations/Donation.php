@@ -230,7 +230,7 @@ class Donation extends DataObject {
 				return 'Unknown';
 			}
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 

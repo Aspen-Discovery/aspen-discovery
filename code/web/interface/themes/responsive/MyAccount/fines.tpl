@@ -153,6 +153,8 @@
                                     {include file="MyAccount/deluxeCertifiedPaymentsPayments.tpl"}
                                 {elseif $finePaymentType == 11}
                                     {include file="MyAccount/paypalPayflowPayments.tpl"}
+                                {elseif $finePaymentType == 12}
+                                    {include file="MyAccount/squarePayments.tpl"}
 								{/if}
 							{else}
 								<p>{translate text="Fines and fees can be paid online when you owe more than %1%." 1=$minimumFineAmount|formatCurrency isPublicFacing=true}</p>

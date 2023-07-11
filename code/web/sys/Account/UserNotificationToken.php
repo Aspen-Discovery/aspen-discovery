@@ -9,6 +9,7 @@ class UserNotificationToken extends DataObject {
 	public $notifySavedSearch;
 	public $notifyCustom;
 	public $notifyAccount;
+	public $onboardAppNotifications;
 
 	public static function deleteToken($token): bool {
 		$storedToken = new UserNotificationToken();

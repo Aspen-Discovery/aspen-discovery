@@ -1325,6 +1325,20 @@ function checkForMaliciouslyFormattedParameters(): void {
 			$isMaliciousUrl = true;
 		}
 	}
+	if (isset($_REQUEST['month'])) {
+		if (is_array($_REQUEST['month'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['month'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['year'])) {
+		if (is_array($_REQUEST['year'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['year'])) {
+			$isMaliciousUrl = true;
+		}
+	}
 	if (isset($_REQUEST['size'])) {
 		if (is_array($_REQUEST['size'])) {
 			$isMaliciousUrl = true;

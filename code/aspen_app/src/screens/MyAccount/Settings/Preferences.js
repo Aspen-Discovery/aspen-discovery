@@ -5,14 +5,134 @@ import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
 import { Box, FlatList, HStack, Icon, Pressable, Text } from 'native-base';
 import React, { Component } from 'react';
+import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
 import { userContext } from '../../../context/user';
-import { LibrarySystemContext } from '../../../context/initialContext';
+import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { LanguageContext } from '../../../context/initialContext';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
-import { SEARCH } from '../../../util/search';
-import { UnsavedChangesExit } from '../../Search/UnsavedChanges';
+import { navigate } from '../../../helpers/RootNavigator';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+
+export const PreferencesScreen = () => {
+     const navigation = useNavigation();
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+     const { user, expoToken, aspenToken, updateExpoToken, updateAspenToken } = React.useContext(UserContext);
+
+     const defaultMenuItems = [
+          {
+               key: '0',
+               title: getTermFromDictionary(language, 'manage_browse_categories'),
+               path: 'SettingsHomeScreen',
+               external: false,
+               minVersion: '22.06.00',
+               icon: 'chevron-right',
+          },
+          {
+               key: '1',
+               title: getTermFromDictionary(language, 'notifications_manage'),
+               path: 'SettingsNotifications',
+               external: false,
+               minVersion: '22.09.00',
+               icon: 'chevron-right',
+          },
+     ];
+
+     React.useEffect(() => {
+          const updateTokens = navigation.addListener('focus', async () => {
+               if (Constants.isDevice) {
+                    const token = (await Notifications.getExpoPushTokenAsync()).data;
+                    if (token) {
+                         if (!_.isEmpty(user.notification_preferences)) {
+                              const tokenStorage = user.notification_preferences;
+                              if (_.find(tokenStorage, _.matchesProperty('token', token))) {
+                                   updateAspenToken(true);
+                                   updateExpoToken(token);
+                              }
+                         }
+                    }
+               }
+          });
+          return updateTokens;
+     }, [navigation]);
+
+     const openWebsite = async (url, minVersion) => {
+          WebBrowser.openBrowserAsync(url);
+     };
+
+     const onPressMenuItem = (path, minVersion) => {
+          const thisVersion = formatDiscoveryVersion(library.discoveryVersion);
+          let screen = path;
+          if (thisVersion >= minVersion) {
+               if (path === 'SettingsHomeScreen' && thisVersion >= '22.12.00') {
+                    screen = 'SettingsBrowseCategories';
+               }
+               if (path === 'SettingsNotifications' && thisVersion >= '23.01.00') {
+                    screen = 'SettingsNotificationOptions';
+               }
+          }
+          navigate(screen, {
+               libraryUrl: library.baseUrl,
+               patronId: user.id,
+               screen,
+               user,
+               pushToken: expoToken,
+               aspenToken,
+          });
+     };
+
+     const menuItem = (item) => {
+          if (item.external) {
+               return (
+                    <Pressable
+                         borderBottomWidth="1"
+                         _dark={{ borderColor: 'gray.600' }}
+                         borderColor="coolGray.200"
+                         pl="4"
+                         pr="5"
+                         py="2"
+                         onPress={() => {
+                              openWebsite(item.path, item.minVersion);
+                         }}>
+                         <HStack space={3}>
+                              <Icon as={MaterialIcons} name={item.icon} size="7" />
+                              <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800" bold fontSize={{ base: 'lg', lg: 'xl' }}>
+                                   {item.title}
+                              </Text>
+                         </HStack>
+                    </Pressable>
+               );
+          } else {
+               return (
+                    <Pressable
+                         borderBottomWidth="1"
+                         _dark={{ borderColor: 'gray.600' }}
+                         borderColor="coolGray.200"
+                         pl="4"
+                         pr="5"
+                         py="2"
+                         onPress={() => {
+                              onPressMenuItem(item.path, item.minVersion);
+                         }}>
+                         <HStack>
+                              <Icon as={MaterialIcons} name={item.icon} size="7" />
+                              <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800" bold fontSize={{ base: 'lg', lg: 'xl' }}>
+                                   {item.title}
+                              </Text>
+                         </HStack>
+                    </Pressable>
+               );
+          }
+     };
+
+     return (
+          <Box>
+               <FlatList data={defaultMenuItems} renderItem={({ item }) => menuItem(item)} keyExtractor={(item, index) => index.toString()} />
+          </Box>
+     );
+};
 
 export default class Preferences extends Component {
      static contextType = userContext;

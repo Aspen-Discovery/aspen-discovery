@@ -11,7 +11,6 @@ function getUpdates23_07_00(): array {
 				''
 			]
 		], //sample*/
-		//mark
 		'rename_prospector_to_innreach2' => [
 			'title' => 'Rename Prospector Integration to INN-Reach',
 			'description' => 'Rename Prospector Integration to INN-Reach',
@@ -23,6 +22,14 @@ function getUpdates23_07_00(): array {
 				'ALTER TABLE library CHANGE COLUMN enableProspectorIntegration enableInnReachIntegration TINYINT(4) NOT NULL DEFAULT 0',
 			],
 		], //rename_prospector_to_innreach2
+		'rename_prospector_to_innreach3' => [
+			'title' => 'Rename Prospector Integration to INN-Reach Location',
+			'description' => 'Rename Prospector Integration to INN-Reach in Location table',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE location CHANGE COLUMN repeatInProspector repeatInInnReach TINYINT DEFAULT 0',
+			],
+		], //rename_prospector_to_innreach3
 		'third_party_registration' => [
 			'title' => 'Third Party Registration',
 			'description' => 'Configuration of Third Party Registration ',
@@ -43,10 +50,67 @@ function getUpdates23_07_00(): array {
 				'update collection_spotlights set numTitlesToShow = 25 where numTitlesToShow = 0;',
 			],
 		], //update_collection_spotlight_number_of_titles
+		'remove_unused_fields_23_07' => [
+			'title' => 'Remove Unused Fields - 23.07',
+			'description' => 'Remove Unused Fields - 23.07',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE aspen_usage DROP COLUMN islandoraSearches',
+				'ALTER TABLE ptype DROP COLUMN allowStaffViewDisplay'
+			]
+		], //remove_unused_fields_23_07
+		'remove_unused_fields_23_07b' => [
+			'title' => 'Remove Unused Fields - 23.07b',
+			'description' => 'Remove Unused Fields - 23.07b',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user DROP COLUMN alwaysHoldNextAvailable',
+				'ALTER TABLE user DROP COLUMN overdriveAutoCheckout',
+				'ALTER TABLE user DROP COLUMN primaryTwoFactor',
+				'ALTER TABLE user DROP COLUMN authLocked',
+				'ALTER TABLE search DROP COLUMN folder_id',
+				'ALTER TABLE search DROP COLUMN newTitles',
+			]
+		], //remove_unused_fields_23_07b
+		'add_barcode_last_name_login_option' => [
+			'title' => 'Add Barcode Last Name Login Option',
+			'description' => 'Add Barcode and Last Name Login Option',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE account_profiles CHANGE COLUMN loginConfiguration loginConfiguration enum('barcode_pin','name_barcode','barcode_lastname') COLLATE utf8mb4_general_ci NOT NULL",
+			]
+		], //add_barcode_last_name_login_option
+		'add_ecommerce_square_settings' => [
+			'title' => 'Add eCommerce vendor Square',
+			'description' => 'Create tables to store settings for Square',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS square_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					name VARCHAR(50) NOT NULL UNIQUE,
+					sandboxMode TINYINT(1) DEFAULT 0,
+					applicationId VARCHAR(80) NOT NULL,
+					accessToken VARCHAR(80) NOT NULL,
+					locationId VARCHAR(80) NOT NULL
+				) ENGINE INNODB',
+				'ALTER TABLE library ADD COLUMN squareSettingId INT(11) DEFAULT -1',
+				'ALTER TABLE user_payments ADD COLUMN squareToken VARCHAR(255) DEFAULT null',
+				'ALTER TABLE user_payments MODIFY COLUMN orderId VARCHAR(75)',
+				'ALTER TABLE user_payments MODIFY COLUMN transactionId VARCHAR(75)',
+			],
+		],
+		// add_ecommerce_square_settings
+		'permissions_ecommerce_square' => [
+			'title' => 'Add permissions for Square',
+			'description' => 'Create permissions for administration of Square',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('eCommerce', 'Administer Square', '', 10, 'Controls if the user can change Square settings. <em>This has potential security and cost implications.</em>')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Square'))",
+			],
+		],
+		// permissions_ecommerce_square
 
-		//kirstien
-
-		//kodi
 		'add_disallow_third_party_covers' => [
 			'title' => 'Add option to disallow third party cover images for certain works',
 			'description' => 'Add option to disallow third party cover images for certain works',
@@ -78,7 +142,34 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE themes ADD COLUMN moviesImageSelected VARCHAR(100) default ''",
 			],
 		], //theme_format_category_icons
-		//other
+
+		'add_masquerade_switch_to_ip_addresses' => [
+			'title' => 'Add Masquerade Switch to IP Addresses',
+			'description' => 'Add Masquerade Switch to IP Addresses',
+			'sql' => [
+				"ALTER TABLE ip_lookup ADD COLUMN masqueradeMode TINYINT(1) default 0",
+			],
+		], //add_masquerade_switch_to_ip_addresses
+
+		'user_token_onboard_notifications' => [
+			'title' => 'Add column to store if user should be onboarded about notifications for given device',
+			'description' => 'Add column in user notification token table to store if they should be onboarded about app notifications when opening Aspen LiDA.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_notification_tokens ADD COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1',
+			],
+		], //user_token_onboard_notifications
+
+		'update_notification_onboarding_status' => [
+			'title' => 'Update initial notification onboarding status for user',
+			'description' => 'Update initial notification onboarding statuses for users that already provided token',
+			'continueOnError' => true,
+			'sql' => [
+				'updateNotificationOnboardStatus',
+			],
+		], //update_notification_onboarding_status
+
+  	//other
 		'collection_report_permissions' => [
 			'title' => 'Reporting permissions',
 			'description' => 'Create permissions for collection reports',
@@ -93,5 +184,25 @@ function getUpdates23_07_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='View All Collection Reports'))",
 			],
 		], //collection_report_permissions
-	];
+  ];
+}
+
+function updateNotificationOnboardStatus() {
+	require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+	$tokens = new UserNotificationToken();
+	$tokens->find();
+	$userTokens = $tokens->fetchAll();
+	foreach ($userTokens as $token) {
+		if($token->notifySavedSearch && $token->notifyCustom && $token->notifyAccount) {
+			// do not onboard user
+			$token->onboardAppNotifications = 0;
+			$token->update();
+		} elseif ($token->notifySavedSearch || $token->notifyCustom || $token->notifyAccount) {
+			// prompt user to review their existing settings
+			$token->onboardAppNotifications = 2;
+			$token->update();
+		} else {
+			// onboard user for notifications
+		}
+	}
 }

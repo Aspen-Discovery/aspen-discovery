@@ -192,7 +192,7 @@ class OverDriveScope extends DataObject {
 			}
 			return $this->_locations;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -202,7 +202,7 @@ class OverDriveScope extends DataObject {
 		} elseif ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

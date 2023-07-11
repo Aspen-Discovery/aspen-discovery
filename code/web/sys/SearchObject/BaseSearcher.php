@@ -1685,6 +1685,7 @@ abstract class SearchObject_BaseSearcher {
 					$this->savedSearch = false;
 
 					// Chicken and egg... We didn't know the id before insert
+					// This is pretty inefficient since we have to save everything twice
 					$search->search_object = serialize($this->minify());
 					$search->update();
 				}

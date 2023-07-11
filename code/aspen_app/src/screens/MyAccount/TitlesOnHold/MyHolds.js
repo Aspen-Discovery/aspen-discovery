@@ -231,6 +231,7 @@ export const MyHolds = () => {
                                    <HStack space={2}>
                                         <FormControl w={150}>
                                              <Select
+                                                  isReadOnly={Platform.OS === 'android'}
                                                   name="sortBy"
                                                   selectedValue={pendingSortMethod}
                                                   accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
@@ -265,6 +266,7 @@ export const MyHolds = () => {
                               <HStack space={2}>
                                    <FormControl w={150}>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={pendingSortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
@@ -297,6 +299,7 @@ export const MyHolds = () => {
                               <HStack space={2}>
                                    <FormControl w={150}>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={readySortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}

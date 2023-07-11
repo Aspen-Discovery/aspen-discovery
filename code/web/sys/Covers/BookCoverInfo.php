@@ -4,19 +4,19 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class BookCoverInfo extends DataObject {
 	public $__table = 'bookcover_info';    // table name
-	public $id;
-	public $recordType;
-	public $recordId;
-	public $firstLoaded;
-	public $lastUsed;
-	public $imageSource;
-	public $sourceWidth;
-	public $sourceHeight;
-	public $thumbnailLoaded;
-	public $mediumLoaded;
-	public $largeLoaded;
-	public $uploadedImage;
-	public $disallowThirdPartyCover;
+	protected $id;
+	protected $recordType;
+	protected $recordId;
+	protected $firstLoaded;
+	protected $lastUsed;
+	protected $imageSource;
+	protected $sourceWidth;
+	protected $sourceHeight;
+	protected $thumbnailLoaded;
+	protected $mediumLoaded;
+	protected $largeLoaded;
+	protected $uploadedImage;
+	protected $disallowThirdPartyCover;
 
 	public function getNumericColumnNames(): array {
 		return [

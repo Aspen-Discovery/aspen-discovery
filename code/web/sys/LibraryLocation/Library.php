@@ -118,6 +118,7 @@ class Library extends DataObject {
 	public $compriseSettingId;
 	public $payPalSettingId;
 	public $proPaySettingId;
+	public $squareSettingId;
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
@@ -417,6 +418,7 @@ class Library extends DataObject {
 			'invoiceCloudSettingId',
 			'deluxeCertifiedPaymentsSettingId',
 			'paypalPayflowSettingId',
+			'squareSettingId'
 		];
 	}
 
@@ -620,6 +622,16 @@ class Library extends DataObject {
 		$paypalPayflowSettings[-1] = 'none';
 		while ($paypalPayflowSetting->fetch()) {
 			$paypalPayflowSettings[$paypalPayflowSetting->id] = $paypalPayflowSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+		$squareSetting = new SquareSetting();
+		$squareSetting->orderBy('name');
+		$squareSettings = [];
+		$squareSetting->find();
+		$squareSettings[-1] = 'none';
+		while ($squareSetting->fetch()) {
+			$squareSettings[$squareSetting->id] = $squareSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2278,7 +2290,12 @@ class Library extends DataObject {
 						'properties' => [
 							'allowMasqueradeMode' => [
 								'property' => 'allowMasqueradeMode',
-								'type' => 'checkbox',
+								'type' => 'enum',
+								'values' => [
+									0 => 'Not Allowed',
+									1 => 'Allowed from all IP addresses',
+									2 => 'Allowed from enabled IP addresses',
+								],
 								'label' => 'Allow Masquerade Mode',
 								'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.',
 								'hideInLists' => true,
@@ -2332,6 +2349,7 @@ class Library extends DataObject {
 							9 => 'InvoiceCloud',
 							10 => 'Certified Payments by Deluxe',
 							11 => 'PayPal Payflow',
+							12 => 'Square'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2471,6 +2489,15 @@ class Library extends DataObject {
 						'values' => $paypalPayflowSettings,
 						'label' => 'PayPal Payflow Settings',
 						'description' => 'The PayPal Payflow settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'squareSettingId' => [
+						'property' => 'squareSettingId',
+						'type' => 'enum',
+						'values' => $squareSettings,
+						'label' => 'Square Settings',
+						'description' => 'The Square settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
@@ -3556,6 +3583,7 @@ class Library extends DataObject {
 		if (!array_key_exists('Single sign-on', $enabledModules)) {
 			unset($structure['ssoSection']);
 		}
+
 		return $structure;
 	}
 
@@ -3574,6 +3602,19 @@ class Library extends DataObject {
 			}
 		}
 		return false;
+	}
+
+	public static function getMasqueradeStatus(): int {
+		$libLookUp = new Library();
+		$libLookUp->find();
+
+		if($libLookUp->getNumResults() == 0){
+			echo("No libraries are configured for the system.  Please configure at least one library before proceeding.");
+			die();
+		} else {
+			$libLookUp->fetch();
+			return $libLookUp->allowMasqueradeMode;
+		}
 	}
 
 	static function getSearchLibrary($searchSource = null) {
@@ -3719,6 +3760,8 @@ class Library extends DataObject {
 		return $this->validateSso('ssoCategoryIdAttr', 'ssoCategoryIdFallback', 'Single sign-on category ID: You must enter either an identity provider attribute name or fallback value');
 	}
 
+
+
 	public function __get($name) {
 		if ($name == "holidays") {
 			if (!isset($this->holidays) && $this->libraryId) {
@@ -3804,9 +3847,8 @@ class Library extends DataObject {
 		} elseif ($name == 'quickSearches') {
 			return $this->getQuickSearches();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
-		return null;
 	}
 
 	public function __set($name, $value) {
@@ -3838,7 +3880,7 @@ class Library extends DataObject {
 		} elseif ($name == 'quickSearches') {
 			$this->_quickSearches = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

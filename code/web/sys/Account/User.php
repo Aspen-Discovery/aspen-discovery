@@ -46,6 +46,8 @@ class User extends DataObject {
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
 
+	public $onboardAppNotifications;
+
 	/** @var Role[] */
 	private $_roles;
 	private $_permissions;
@@ -232,7 +234,7 @@ class User extends DataObject {
 		} elseif ($name == 'linkedUsers') {
 			return $this->getLinkedUsers();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -240,7 +242,7 @@ class User extends DataObject {
 		if ($name == 'roles') {
 			$this->setRoles($value);
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 
@@ -792,7 +794,7 @@ class User extends DataObject {
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 
 		if ($this->disableAccountLinking == 0) {
-			$this->disableAccountLinking = 1;
+			$this->__set('disableAccountLinking', 1);
 			//Remove Managing Accounts
 			$userLink = new UserLink();
 			$userLink->linkedAccountId = $this->id;
@@ -821,7 +823,7 @@ class User extends DataObject {
 			$userLink->primaryAccountId = $this->id;
 			$userLink->delete(true);
 		} else {
-			$this->disableAccountLinking = 0;
+			$this->__set('disableAccountLinking', 0);
 		}
 		return $this->update();
 	}
@@ -831,10 +833,10 @@ class User extends DataObject {
 	 */
 	function update($context = '') {
 		if (empty($this->created)) {
-			$this->created = date('Y-m-d');
+			$this->__set('created', date('Y-m-d'));
 		}
 		if ($this->pickupLocationId == 0) {
-			$this->pickupLocationId = $this->homeLocationId;
+			$this->__set('pickupLocationId', $this->homeLocationId);
 		}
 		$this->fixFieldLengths();
 		$result = parent::update();
@@ -1042,12 +1044,12 @@ class User extends DataObject {
 	function updateOverDriveOptions() {
 		if (isset($_REQUEST['promptForOverdriveEmail']) && ($_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on')) {
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-			$this->promptForOverdriveEmail = 1;
+			$this->__set('promptForOverdriveEmail', 1);
 		} else {
-			$this->promptForOverdriveEmail = 0;
+			$this->__set('promptForOverdriveEmail', 0);
 		}
 		if (isset($_REQUEST['overdriveEmail'])) {
-			$this->overdriveEmail = strip_tags($_REQUEST['overdriveEmail']);
+			$this->__set('overdriveEmail', strip_tags($_REQUEST['overdriveEmail']));
 		}
 		$this->update();
 
@@ -1059,9 +1061,9 @@ class User extends DataObject {
 	function updateHooplaOptions() {
 		if (isset($_REQUEST['hooplaCheckOutConfirmation']) && ($_REQUEST['hooplaCheckOutConfirmation'] == 'yes' || $_REQUEST['hooplaCheckOutConfirmation'] == 'on')) {
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-			$this->hooplaCheckOutConfirmation = 1;
+			$this->__set('hooplaCheckOutConfirmation', 1);
 		} else {
-			$this->hooplaCheckOutConfirmation = 0;
+			$this->__set('hooplaCheckOutConfirmation', 0);
 		}
 		$this->update();
 	}
@@ -1069,21 +1071,21 @@ class User extends DataObject {
 	function updateAxis360Options() {
 		if (isset($_REQUEST['promptForAxis360Email']) && ($_REQUEST['promptForAxis360Email'] == 'yes' || $_REQUEST['promptForAxis360Email'] == 'on')) {
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'
-			$this->promptForAxis360Email = 1;
+			$this->__set('promptForAxis360Email', 1);
 		} else {
-			$this->promptForAxis360Email = 0;
+			$this->__set('promptForAxis360Email', 0);
 		}
 		if (isset($_REQUEST['axis360Email'])) {
-			$this->axis360Email = strip_tags($_REQUEST['axis360Email']);
+			$this->__set('axis360Email', strip_tags($_REQUEST['axis360Email']));
 		}
 		$this->update();
 	}
 
 	function updateStaffSettings() {
 		if (isset($_REQUEST['bypassAutoLogout']) && ($_REQUEST['bypassAutoLogout'] == 'yes' || $_REQUEST['bypassAutoLogout'] == 'on')) {
-			$this->bypassAutoLogout = 1;
+			$this->__set('bypassAutoLogout', 1);
 		} else {
-			$this->bypassAutoLogout = 0;
+			$this->__set('bypassAutoLogout', 0);
 		}
 		if (isset($_REQUEST['materialsRequestEmailSignature'])) {
 			$this->setMaterialsRequestEmailSignature($_REQUEST['materialsRequestEmailSignature']);
@@ -1092,9 +1094,9 @@ class User extends DataObject {
 			$this->setMaterialsRequestReplyToAddress($_REQUEST['materialsRequestReplyToAddress']);
 		}
 		if (isset($_REQUEST['materialsRequestSendEmailOnAssign']) && ($_REQUEST['materialsRequestSendEmailOnAssign'] == 'yes' || $_REQUEST['materialsRequestSendEmailOnAssign'] == 'on')) {
-			$this->materialsRequestSendEmailOnAssign = 1;
+			$this->__set('materialsRequestSendEmailOnAssign', 1);
 		} else {
-			$this->materialsRequestSendEmailOnAssign = 0;
+			$this->__set('materialsRequestSendEmailOnAssign', 0);
 		}
 		$this->update();
 	}
@@ -1121,19 +1123,19 @@ class User extends DataObject {
 		}
 
 		if (isset($_REQUEST['profileLanguage'])) {
-			$this->interfaceLanguage = $_REQUEST['profileLanguage'];
+			$this->__set('interfaceLanguage', $_REQUEST['profileLanguage']);
 		}
 		if (isset($_REQUEST['searchPreferenceLanguage'])) {
-			$this->searchPreferenceLanguage = $_REQUEST['searchPreferenceLanguage'];
+			$this->__set('searchPreferenceLanguage', $_REQUEST['searchPreferenceLanguage']);
 		}
 		if (isset($_REQUEST['preferredTheme'])) {
-			$this->preferredTheme = $_REQUEST['preferredTheme'];
+			$this->__set('preferredTheme', $_REQUEST['preferredTheme']);
 		}
 
 		//Make sure the selected location codes are in the database.
 		if (isset($_POST['pickupLocation'])) {
 			if ($_POST['pickupLocation'] == 0) {
-				$this->pickupLocationId = $_POST['pickupLocation'];
+				$this->__set('pickupLocationId', $_POST['pickupLocation']);
 			} else {
 				$location = new Location();
 				$location->get('locationId', $_POST['pickupLocation']);
@@ -1143,13 +1145,13 @@ class User extends DataObject {
 						'message' => 'The pickup location could not be found in the database.',
 					];
 				} else {
-					$this->pickupLocationId = $_POST['pickupLocation'];
+					$this->__set('pickupLocationId', $_POST['pickupLocation']);
 				}
 			}
 		}
 		if (isset($_POST['myLocation1'])) {
 			if ($_POST['myLocation1'] == 0) {
-				$this->myLocation1Id = $_POST['myLocation1'];
+				$this->__set('myLocation1Id', $_POST['myLocation1']);
 			} else {
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation1']);
@@ -1159,13 +1161,13 @@ class User extends DataObject {
 						'message' => 'The 1st location could not be found in the database.',
 					];
 				} else {
-					$this->myLocation1Id = $_POST['myLocation1'];
+					$this->__set('myLocation1Id', $_POST['myLocation1']);
 				}
 			}
 		}
 		if (isset($_POST['myLocation2'])) {
 			if ($_POST['myLocation2'] == 0) {
-				$this->myLocation2Id = $_POST['myLocation2'];
+				$this->__set('myLocation2Id', $_POST['myLocation2']);
 			} else {
 				$location = new Location();
 				$location->get('locationId', $_POST['myLocation2']);
@@ -1175,17 +1177,17 @@ class User extends DataObject {
 						'message' => 'The 2nd location could not be found in the database.',
 					];
 				} else {
-					$this->myLocation2Id = $_POST['myLocation2'];
+					$this->__set('myLocation2Id', $_POST['myLocation2']);
 				}
 			}
 		}
 
-		$this->noPromptForUserReviews = (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0;
-		$this->rememberHoldPickupLocation = (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on') ? 1 : 0;
+		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
+		$this->__set('rememberHoldPickupLocation', (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on') ? 1 : 0);
 		global $enabledModules;
 		global $library;
 		if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)) {
-			$this->hideResearchStarters = (isset($_POST['hideResearchStarters']) && $_POST['hideResearchStarters'] == 'on') ? 1 : 0;
+			$this->__set('hideResearchStarters', (isset($_POST['hideResearchStarters']) && $_POST['hideResearchStarters'] == 'on') ? 1 : 0);
 		}
 
 		if ($this->hasEditableUsername()) {
@@ -1393,7 +1395,7 @@ class User extends DataObject {
 				}
 			}
 
-			$this->checkoutInfoLastLoaded = time();
+			$this->__set('checkoutInfoLastLoaded',time());
 			$this->update();
 		} else {
 			if ($source == 'all' || $source == 'overdrive') {
@@ -1546,7 +1548,7 @@ class User extends DataObject {
 					$logger->log('Could not save unavailable hold ' . $holdToSave->getLastError(), Logger::LOG_ERROR);
 				}
 			}
-			$this->holdInfoLastLoaded = time();
+			$this->__set('holdInfoLastLoaded', time());
 			$this->update();
 		} else {
 			//fetch cached holds
@@ -2520,8 +2522,8 @@ class User extends DataObject {
 		}
 		$result = $this->getCatalogDriver()->updatePin($this, $oldPin, $newPin);
 		if ($result['success']) {
-			$this->cat_password = $newPin;
-			$this->password = $newPin;
+			$this->__set('cat_password', $newPin);
+			$this->__set('password', $newPin);
 			$this->update();
 			$this->clearCache();
 		}
@@ -2547,29 +2549,47 @@ class User extends DataObject {
 		return $this->getCatalogDriver()->importListsFromIls($this);
 	}
 
+	public function canClientIpUseMasquerade(): bool {
+		$masqueradeStatus = Library::getMasqueradeStatus();
+		if ($masqueradeStatus == 1){
+			return true;
+		} else if ($masqueradeStatus == 2) {
+			$clientIP = IPAddress::getClientIP();
+			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+			if ($ipInfo != false) {
+				return $ipInfo->masqueradeMode == 1;
+			}
+		}
+		return false;
+	}
+
 	public function canMasquerade() {
-		return $this->hasPermission([
-			'Masquerade as any user',
-			'Masquerade as unrestricted patron types',
-			'Masquerade as patrons with same home library',
-			'Masquerade as unrestricted patrons with same home library',
-			'Masquerade as patrons with same home location',
-			'Masquerade as unrestricted patrons with same home location',
-		]);
+		if(self::canClientIpUseMasquerade()){
+			return $this->hasPermission([
+				'Masquerade as any user',
+				'Masquerade as unrestricted patron types',
+				'Masquerade as patrons with same home library',
+				'Masquerade as unrestricted patrons with same home library',
+				'Masquerade as patrons with same home location',
+				'Masquerade as unrestricted patrons with same home location',
+			]);
+		} else {
+			return false;
+		}
 	}
 
 	/**
 	 * @param mixed $materialsRequestReplyToAddress
 	 */
 	public function setMaterialsRequestReplyToAddress($materialsRequestReplyToAddress) {
-		$this->materialsRequestReplyToAddress = $materialsRequestReplyToAddress;
+		$this->__set('materialsRequestReplyToAddress', $materialsRequestReplyToAddress);
 	}
 
 	/**
 	 * @param mixed $materialsRequestEmailSignature
 	 */
 	public function setMaterialsRequestEmailSignature($materialsRequestEmailSignature) {
-		$this->materialsRequestEmailSignature = $materialsRequestEmailSignature;
+		$this->__set('materialsRequestEmailSignature', $materialsRequestEmailSignature);
 	}
 
 	function setNumMaterialsRequests($val) {
@@ -2752,13 +2772,13 @@ class User extends DataObject {
 
 	private function fixFieldLengths() {
 		if (strlen($this->lastname) > 100) {
-			$this->lastname = substr($this->lastname, 0, 100);
+			$this->__set('lastname', substr($this->lastname, 0, 100));
 		}
 		if (strlen($this->firstname) > 50) {
-			$this->firstname = substr($this->firstname, 0, 50);
+			$this->__set('firstname', substr($this->firstname, 0, 50));
 		}
 		if (strlen($this->displayName) > 60) {
-			$this->displayName = substr($this->displayName, 0, 60);
+			$this->__set('displayName', substr($this->displayName, 0, 60));
 		}
 	}
 
@@ -2970,8 +2990,8 @@ class User extends DataObject {
 		if ($this->hasIlsConnection()) {
 			$this->getCatalogDriver()->logout($this);
 		}
-		$this->lastLoginValidation = 0;
-		$this->isLoggedInViaSSO = 0;
+		$this->__set('lastLoginValidation', 0);
+		$this->__set('isLoggedInViaSSO', 0);
 		$this->update();
 	}
 
@@ -3196,6 +3216,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('InvoiceCloud Settings', 'Define Settings for InvoiceCloud.', '/Admin/InvoiceCloudSettings'), 'Administer InvoiceCloud');
 		$sections['ecommerce']->addAction(new AdminAction('Certified Payments by Deluxe Settings', 'Define Settings for Certified Payments by Deluxe.', '/Admin/CertifiedPaymentsByDeluxeSettings'), 'Administer Certified Payments by Deluxe');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Payflow Settings', 'Define Settings for PayPal Payflow.', '/Admin/PayPalPayflowSettings'), 'Administer PayPal Payflow');
+		$sections['ecommerce']->addAction(new AdminAction('Square Settings', 'Define Settings for Square.', '/Admin/SquareSettings'), 'Administer Square');
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['ils_integration'] = new AdminSection('ILS Integration');
@@ -3610,7 +3631,7 @@ class User extends DataObject {
 		$checkout->userId = $this->id;
 		$checkout->delete(true);
 
-		$this->checkoutInfoLastLoaded = 0;
+		$this->__set('checkoutInfoLastLoaded', 0);
 		$this->update();
 	}
 
@@ -3620,7 +3641,7 @@ class User extends DataObject {
 		$hold->userId = $this->id;
 		$hold->delete(true);
 
-		$this->holdInfoLastLoaded = 0;
+		$this->__set('holdInfoLastLoaded', 0);
 		$this->update();
 	}
 
@@ -3770,14 +3791,14 @@ class User extends DataObject {
 	public function getDisplayName() {
 		if (empty($this->displayName)) {
 			if ($this->firstname == '') {
-				$this->displayName = $this->lastname;
+				$this->__set('displayName', $this->lastname);
 			} else {
 				// #PK-979 Make display name configurable firstname, last initial, vs first initial last name
 				$homeLibrary = $this->getHomeLibrary();
 				if ($homeLibrary == null || ($homeLibrary->patronNameDisplayStyle == 'firstinitial_lastname')) {
-					$this->displayName = substr($this->firstname, 0, 1) . '. ' . $this->lastname;
+					$this->__set('displayName', substr($this->firstname, 0, 1) . '. ' . $this->lastname);
 				} else {
-					$this->displayName = $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.';
+					$this->__set('displayName', $this->firstname . ' ' . substr($this->lastname, 0, 1) . '.');
 				}
 			}
 			$this->update();
@@ -3914,6 +3935,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
 			$preference['notifyAccount'] = $obj->notifyAccount;
+			$preference['onboardStatus'] = $obj->onboardAppNotifications;
 
 			$preferences[] = $preference;
 		}

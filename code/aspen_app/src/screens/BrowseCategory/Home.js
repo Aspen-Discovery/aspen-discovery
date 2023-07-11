@@ -4,6 +4,7 @@ import CachedImage from 'expo-cached-image';
 import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
+import * as Device from 'expo-device';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
@@ -13,9 +14,11 @@ import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCateg
 import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
-import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, updateNotificationOnboardingStatus } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { NotificationsOnboard } from '../../components/NotificationsOnboard';
+import { getNotificationPreference } from '../../components/Notifications';
 
 let maxCategories = 5;
 
@@ -23,13 +26,18 @@ export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
-     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
+     const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
+     const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(false);
+     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const [notifySavedSearch, setNotifySavedSearch] = React.useState(false);
+     const [notifyCustom, setNotifyCustom] = React.useState(false);
+     const [notifyAccount, setNotifyAccount] = React.useState(false);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -148,6 +156,30 @@ export const DiscoverHomeScreen = () => {
                updateBrowseCategoryList(data);
           },
      });
+
+     useFocusEffect(
+          React.useCallback(() => {
+               const checkSettings = async () => {
+                    console.log('notificationOnboard: ' + notificationOnboard);
+                    if (!_.isUndefined(notificationOnboard)) {
+                         if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
+                              setShowNotificationsOnboarding(true);
+                         } else {
+                              setShowNotificationsOnboarding(false);
+                         }
+                    }
+               };
+               checkSettings().then(() => {
+                    return () => checkSettings();
+               });
+          }, [notificationSettings])
+     );
+
+     // load notification onboarding prompt
+     //console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
+     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice) {
+          return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
+     }
 
      const renderHeader = (title, key, user, url) => {
           return (

@@ -1,5 +1,6 @@
 import { FormControl, Select, CheckIcon, Radio } from 'native-base';
 import React from 'react';
+import { Platform } from 'react-native';
 import _ from 'lodash';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 
@@ -45,6 +46,7 @@ export const SelectItem = (props) => {
                     <FormControl>
                          <FormControl.Label>{getTermFromDictionary(language, 'select_item')}</FormControl.Label>
                          <Select
+                              isReadOnly={Platform.OS === 'android'}
                               name="itemForHold"
                               selectedValue={defaultItem}
                               minWidth="200"

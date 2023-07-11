@@ -41,6 +41,19 @@ class CarlX extends AbstractIlsDriver {
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $timer;
 
+		//CARL.X supports 3 different login methods:
+		//  Patron Barcode & PIN
+		//  Last Name & Patron Barcode
+		//  EZ Username & EZ Password
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			//Remove any spaces from the barcode
+			$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
+			$password = trim($password);
+		} else {
+			//Remove any spaces from the barcode
+			$username = trim($username);
+			$password = preg_replace('/[^0-9a-zA-Z]/', '', trim($password));
+		}
 		//Remove any spaces from the barcode
 		$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
 		$password = trim($password);
@@ -54,8 +67,18 @@ class CarlX extends AbstractIlsDriver {
 
 		if ($result) {
 			if (isset($result->Patron)) {
-				//Check to see if the pin matches
-				if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
+				$loginValid = false;
+				if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+					//Check to see if the pin matches
+					if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
+						$loginValid = true;
+					}
+				} else {
+					if (($result->Patron->PatronID == $username) && ((strcasecmp($result->Patron->LastName, $password) === 0) || $validatedViaSSO)) {
+						$loginValid = true;
+					}
+				}
+				if ($loginValid) {
 					//$fullName = $result->Patron->FullName;
 					$firstName = $result->Patron->FirstName;
 					$lastName = $result->Patron->LastName;
@@ -83,7 +106,11 @@ class CarlX extends AbstractIlsDriver {
 						$user->displayName = '';
 					}
 					$user->cat_username = $username;
-					$user->cat_password = $result->Patron->PatronPIN;
+					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+						$user->cat_password = $result->Patron->PatronPIN;
+					}else {
+						$user->cat_password = $result->Patron->LastName;
+					}
 					$user->email = $result->Patron->Email;
 
 					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
@@ -943,7 +970,6 @@ class CarlX extends AbstractIlsDriver {
 			// searchPatron on Email appears to be case-insensitive and
 			// appears to eliminate spurious whitespace
 			$request = new stdClass();
-			$request->Modifiers = '';
 			$request->AllSearchTermMatch = 'true';
 			$request->SearchTerms = new stdClass();
 			$request->SearchTerms->ApplicationType = 'exact match';
@@ -1336,7 +1362,6 @@ class CarlX extends AbstractIlsDriver {
 					$fine->Branch = $fine->TransactionBranch;
 				}
 
-				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
 					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
 				} else {
@@ -1383,7 +1408,6 @@ class CarlX extends AbstractIlsDriver {
 					$fine->System = $this->getFineSystem($fine->Branch);
 					$fine->CanPayFine = $this->canPayFine($fine->System);
 
-					$fine->FeeAmountOutstanding = 0;
 					if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
 						$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
 					} else {
@@ -2092,6 +2116,7 @@ EOT;
 		$this->initDatabaseConnection();
 		// query school branch codes and homerooms
 		/** @noinspection SqlResolve */
+		/** @noinspection SqlConstantExpression */
 		$sql = <<<EOT
 			select 
 			  branchcode
