@@ -504,7 +504,7 @@ class Nashville extends CarlX {
 				left join bbibmap_v b on ir.bid = b.bid
 			), ix as (
 				select
-					irb.item
+					distinct irb.item
 					, irb.bid
 					, irb.title as Title
 					, irb.author as Author
