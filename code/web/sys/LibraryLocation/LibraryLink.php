@@ -77,7 +77,7 @@ class LibraryLink extends DataObject {
 			'iconName' => [
 				'property' => 'iconName',
 				'type' => 'text',
-				'label' => 'FontAwesome Icon Name <small><a href="https://fontawesome.com/cheatsheet/free/solid" target="_blank"><i class="fa fa-info-circle"></i></a></small>',
+				'label' => 'FontAwesome Icon Name <small><a href="https://fontawesome.com/v5/search?o=r&m=free&s=solid" target="_blank"><i class="fa fa-info-circle"></i></a></small>',
 				'description' => 'Show a font awesome icon next to the menu name',
 			],
 			'linkText' => [
