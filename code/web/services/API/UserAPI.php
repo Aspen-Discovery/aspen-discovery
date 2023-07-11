@@ -1778,7 +1778,7 @@ class UserAPI extends Action {
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
 								'shouldBeItemHold' => (bool)$result['items'],
-								'items' => $result['items'] ?? [],
+								'items' => $result['items'] ?? null,
 							];
 						}
 				} elseif ($source == 'overdrive') {
