@@ -312,6 +312,7 @@ class CommunicoIndexer {
 					}
 				}
 
+				logger.warn("Fetching registration info for event " + eventId);
 				//Fetch registrations here and add to DB - for events that require registration ONLY
 				if (curEvent.getBoolean("registration")){
 					JSONArray communicoEventRegistrants = getRegistrations(Integer.valueOf(eventId));
@@ -330,35 +331,36 @@ class CommunicoIndexer {
 								logEntry.incErrors("Error getting JSON information ", e);
 							}
 						}
-					}
-					for (String uniqueBarcodeRegistered : uniqueBarcodesRegistered) {
-						try {
-							PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
-							getUserIdStmt.setString(1, uniqueBarcodeRegistered);
-							ResultSet getUserIdRS = getUserIdStmt.executeQuery();
-							while (getUserIdRS.next()) {
-								long userId = getUserIdRS.getLong("id");
-								if (registrationsForEvent.containsKey(userId)) {
-									registrationsForEvent.remove(userId);
-								} else {
-									addRegistrantStmt.setLong(1, userId);
-									addRegistrantStmt.setString(2, uniqueBarcodeRegistered);
-									addRegistrantStmt.setString(3, sourceId);
-									addRegistrantStmt.executeUpdate();
-								}
-							}
-						} catch (SQLException e) {
-							logEntry.incErrors("Error adding registrant info to database ", e);
-						}
-					}
 
-					for(EventRegistrations registrantInfo : registrationsForEvent.values()){
-						try {
-							deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
-							deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
-							deleteRegistrantStmt.executeUpdate();
-						}catch (SQLException e) {
-							logEntry.incErrors("Error deleting registration info ", e);
+						for (String uniqueBarcodeRegistered : uniqueBarcodesRegistered) {
+							try {
+								PreparedStatement getUserIdStmt = aspenConn.prepareStatement("SELECT id FROM user WHERE cat_username = ?");
+								getUserIdStmt.setString(1, uniqueBarcodeRegistered);
+								ResultSet getUserIdRS = getUserIdStmt.executeQuery();
+								while (getUserIdRS.next()) {
+									long userId = getUserIdRS.getLong("id");
+									if (registrationsForEvent.containsKey(userId)) {
+										registrationsForEvent.remove(userId);
+									} else {
+										addRegistrantStmt.setLong(1, userId);
+										addRegistrantStmt.setString(2, uniqueBarcodeRegistered);
+										addRegistrantStmt.setString(3, sourceId);
+										addRegistrantStmt.executeUpdate();
+									}
+								}
+							} catch (SQLException e) {
+								logEntry.incErrors("Error adding registrant info to database ", e);
+							}
+						}
+
+						for(EventRegistrations registrantInfo : registrationsForEvent.values()){
+							try {
+								deleteRegistrantStmt.setLong(1, registrantInfo.getUserId());
+								deleteRegistrantStmt.setString(2, registrantInfo.getSourceId());
+								deleteRegistrantStmt.executeUpdate();
+							}catch (SQLException e) {
+								logEntry.incErrors("Error deleting registration info ", e);
+							}
 						}
 					}
 				}
@@ -367,6 +369,7 @@ class CommunicoIndexer {
 			}
 		}
 
+		logger.warn("Checking for duplicates of events");
 		for(CommunicoEvent eventInfo : existingEvents.values()){
 			try {
 				deleteEventStmt.setLong(1, eventInfo.getId());
@@ -382,12 +385,14 @@ class CommunicoIndexer {
 			logEntry.incDeleted();
 		}
 
+		logger.warn("Updating solr");
 		try {
 			solrUpdateServer.commit(true, true, false);
 		} catch (Exception e) {
 			logEntry.incErrors("Error in final commit ", e);
 		}
 
+		logEntry.addNote("Indexing Finished");
 		logEntry.setFinished();
 	}
 

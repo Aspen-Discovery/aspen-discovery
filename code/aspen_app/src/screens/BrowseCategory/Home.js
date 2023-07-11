@@ -162,7 +162,7 @@ export const DiscoverHomeScreen = () => {
                const checkSettings = async () => {
                     console.log('notificationOnboard: ' + notificationOnboard);
                     if (!_.isUndefined(notificationOnboard)) {
-                         if (notificationOnboard === 1 || notificationOnboard === 2) {
+                         if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
                               setShowNotificationsOnboarding(true);
                          } else {
                               setShowNotificationsOnboarding(false);

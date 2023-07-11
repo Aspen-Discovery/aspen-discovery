@@ -27,10 +27,10 @@ export const NotificationsOnboard = (props) => {
      useFocusEffect(
           React.useCallback(() => {
                const getTranslations = async () => {
-                    if (notificationOnboard === 2) {
+                    if (notificationOnboard === 2 || notificationOnboard === '2') {
                          setOnboardingBody(getTermFromDictionary(language, 'onboard_notifications_body_update'));
                          setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_update'));
-                    } else if (notificationOnboard === 1) {
+                    } else if (notificationOnboard === 1 || notificationOnboard === '1') {
                          setOnboardingBody(getTermFromDictionary(language, 'onboard_notifications_body_new'));
                          setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_new'));
                     }

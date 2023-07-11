@@ -901,11 +901,13 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 		}
 
 		//Setup the default redirection paths
-		if ($recordDriver->getPrimaryFormat() == 'MP3') {
-			$redirectUrl = $userInterfaceUrl . '/AudioPlayer/' . $recordDriver->getId();
-		} else {
-			$redirectUrl = $userInterfaceUrl . '/EPubRead/' . $recordDriver->getId();
-		}
+		//These URLs no longer work
+//		if ($recordDriver->getPrimaryFormat() == 'MP3') {
+//			$redirectUrl = $userInterfaceUrl . '/AudioPlayer/' . $recordDriver->getId();
+//		} else {
+//			$redirectUrl = $userInterfaceUrl . '/EPubRead/' . $recordDriver->getId();
+//		}
+		$redirectUrl = $userInterfaceUrl . '/detail/' . $recordDriver->getId();
 
 		//Login the user to CloudLibrary
 		$loginUrl = "{$userInterfaceUrl}/login";
@@ -929,12 +931,13 @@ class CloudLibraryDriver extends AbstractEContentDriver {
 			}
 			foreach ($cookies as $name => $value) {
 				if (strpos($name, 'sessionid_') === 0) {
-					if ($recordDriver->getPrimaryFormat() == 'MP3') {
-						//TODO: Need a new URL from CloudLibrary for audio books
-						$redirectUrl = "$userInterfaceUrl/audiobooks/{$recordDriver->getId()}?auth_cookie={$value}";
-					} else {
-						$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
-					}
+//					if ($recordDriver->getPrimaryFormat() == 'MP3') {
+//						//TODO: Need a new URL from CloudLibrary for audio books
+//						$redirectUrl = "$userInterfaceUrl/audiobooks/{$recordDriver->getId()}?auth_cookie={$value}";
+//					} else {
+//						$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
+//					}
+					$redirectUrl = "$userInterfaceUrl/ebooks/{$recordDriver->getId()}?auth_cookie={$value}";
 
 					break;
 				}
