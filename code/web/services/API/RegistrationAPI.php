@@ -110,6 +110,19 @@ class API_RegistrationAPI extends Action {
 
 	/** @noinspection PhpUnused */
 	function lookupAccountByPhoneNumber() : array {
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if (isset($_REQUEST['phone'])) {
+			$phone = $_REQUEST['phone'];
+			$phone = preg_replace('/[^0-9]/', '', $phone);
+			if (strlen($phone) >= 7 && strlen($phone) <= 11) {
+				return $catalog->lookupAccountByPhoneNumber($phone);
+			}else{
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'The phone number supplied was not valid.', 'isPublicFacing' => true])
+				];
+			}
+		}
 		return [
 			'success' => false,
 			'message' => translate(['text' => 'This method is not currently available', 'isPublicFacing' => true])

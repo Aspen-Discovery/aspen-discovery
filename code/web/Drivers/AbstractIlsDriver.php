@@ -330,6 +330,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return null;
 	}
 
+	public function getCollectionReportData($location, $date) {
+		return null;
+	}
+
 	/**
 	 * Loads any contact information that is not stored by Aspen Discovery from the ILS. Updates the user object.
 	 *
@@ -577,6 +581,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return [
 			'success' => false,
 			'message' => translate(['text' => 'This ILS does not support looking up accounts by email.', 'isPublicFacing' => true])
+		];
+	}
+
+	public function lookupAccountByPhoneNumber(string $phone) : array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'This ILS does not support looking up accounts by phone number.', 'isPublicFacing' => true])
 		];
 	}
 

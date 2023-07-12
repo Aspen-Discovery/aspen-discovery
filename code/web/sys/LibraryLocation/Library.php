@@ -393,6 +393,9 @@ class Library extends DataObject {
 	//SSO
 	public $ssoSettingId;
 
+	//Messaging
+	public $twilioSettingId;
+
 	public $defaultRememberMe;
 
 	//LiDA settings
@@ -713,6 +716,16 @@ class Library extends DataObject {
 		$ssoSettings[-1] = 'none';
 		while ($ssoSetting->fetch()) {
 			$ssoSettings[$ssoSetting->id] = $ssoSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/SMS/TwilioSetting.php';
+		$twilioSetting = new TwilioSetting();
+		$twilioSetting->orderBy('name');
+		$twilioSettings = [];
+		$twilioSetting->find();
+		$twilioSettings[-1] = 'none';
+		while ($twilioSetting->fetch()) {
+			$twilioSettings[$twilioSetting->id] = $twilioSetting->name;
 		}
 
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
@@ -3135,6 +3148,26 @@ class Library extends DataObject {
 								'size' => '40',
 							],
 						],
+					],
+				],
+			],
+			'messagingSection' => [
+				'property' => 'messagingSection',
+				'type' => 'section',
+				'label' => 'Messaging',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Library Domain Settings'],
+				'properties' => [
+					'twilioSettingId' => [
+						'property' => 'twilioSettingId',
+						'type' => 'enum',
+						'values' => $twilioSettings,
+						'label' => 'Twilio Settings',
+						'description' => 'The settings to use for Twilio',
+						'hideInLists' => true,
+						'default' => -1,
+						'forcesReindex' => false,
 					],
 				],
 			],
