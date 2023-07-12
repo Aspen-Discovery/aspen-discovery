@@ -8,6 +8,7 @@ class WebsiteIndexSetting extends DataObject {
 	public $name;
 	public $searchCategory;
 	public $siteUrl;
+	public $defaultCover;
 	public /** @noinspection PhpUnused */
 		$pageTitleExpression;
 	public /** @noinspection PhpUnused */
@@ -69,6 +70,16 @@ class WebsiteIndexSetting extends DataObject {
 				'description' => 'The URL to the page in the Website to start indexing from or a sitemap to index based on. Sitemap must have a .xml extension.',
 				'maxLength' => 255,
 				'required' => true,
+			],
+			'defaultCover' => [
+				'property' => 'defaultCover',
+				'type' => 'image',
+				'label' => 'Background Image for Default Covers (280x280)',
+				'description' => 'A background image for default covers (.jpg or .png only)',
+				'required' => false,
+				'maxWidth' => 280,
+				'maxHeight' => 280,
+				'hideInLists' => true,
 			],
 			'pageTitleExpression' => [
 				'property' => 'pageTitleExpression',
