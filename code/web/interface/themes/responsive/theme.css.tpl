@@ -452,6 +452,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 .label-warning{ldelim}
     background-color: {$warningButtonBackgroundColor};
     color: {$warningButtonForegroundColor};
+    border: 1px solid {$warningButtonBorderColor};
 {rdelim}
 
 .btn-danger,.btn-danger:visited,a.btn-danger,a.btn-danger:visited{ldelim}
