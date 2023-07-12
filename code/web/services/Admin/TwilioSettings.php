@@ -2,15 +2,15 @@
 
 require_once ROOT_DIR . '/Action.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
-require_once ROOT_DIR . '/sys/Email/AmazonSesSetting.php';
+require_once ROOT_DIR . '/sys/SMS/TwilioSetting.php';
 
-class Admin_AmazonSesSettings extends ObjectEditor {
+class Admin_TwilioSettings extends ObjectEditor {
 	function getObjectType(): string {
-		return 'AmazonSesSetting';
+		return 'TwilioSetting';
 	}
 
 	function getToolName(): string {
-		return 'AmazonSesSettings';
+		return 'TwilioSettings';
 	}
 
 	function getModule(): string {
@@ -18,11 +18,11 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'Amazon SES Settings';
+		return 'Twilio Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-		$object = new AmazonSesSetting();
+		$object = new TwilioSetting();
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$this->applyFilters($object);
 		$object->find();
@@ -42,7 +42,7 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 	}
 
 	function getObjectStructure($context = ''): array {
-		return AmazonSesSetting::getObjectStructure($context);
+		return TwilioSetting::getObjectStructure($context);
 	}
 
 	function getPrimaryKeyColumn(): string {
@@ -61,7 +61,7 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home#system_admin', 'System Administration');
-		$breadcrumbs[] = new Breadcrumb('/Admin/AmazonSesSettings', 'Amazon SES Settings');
+		$breadcrumbs[] = new Breadcrumb('/Admin/TwilioSettings', 'Twilio Settings');
 		return $breadcrumbs;
 	}
 
@@ -70,6 +70,6 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Amazon SES');
+		return UserAccount::userHasPermission('Administer Twilio');
 	}
 }
