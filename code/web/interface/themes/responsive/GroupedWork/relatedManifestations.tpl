@@ -16,14 +16,14 @@
 			</div>
 		{foreachelse}
 			<div class="row related-manifestation">
-				<div class="col-sm-12">
+				<div class="col-xs-12">
 					{translate text="The library does not own any copies of this title." isPublicFacing=true}
 				</div>
 			</div>
 		{/foreach}
 		{if !empty($hasHiddenFormats)}
 			<div class="row related-manifestation" id="formatToggle_{$workId}">
-				<div class="col-sm-12">
+				<div class="col-xs-12">
 					<a href="#" onclick="$('.hiddenManifestation_{$workId}').show();$('#formatToggle_{$workId}').hide();return false;" class="showHidden">{translate text="View all Formats" isPublicFacing=true}</a>
 				</div>
 			</div>
