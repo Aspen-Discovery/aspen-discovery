@@ -240,6 +240,7 @@ try {
 	$systemVariables = new SystemVariables();
 	if ($systemVariables->find(true) && !empty($systemVariables->cookieStorageConsent)) {
 		$interface->assign('cookieStorageConsent', true);
+		$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
 	}
 } catch (Exception $e) {
 	AspenError::raiseError("Error loading cookie consent banner");

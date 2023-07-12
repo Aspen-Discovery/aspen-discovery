@@ -196,6 +196,16 @@ function getUpdates23_07_00(): array {
 				"ALTER TABLE system_variables add column cookieStorageConsent TINYINT(1) DEFAULT 0"
 			],
 		], //enable/disable cookie consent banner
+		
+		'cookie_policy_html' => [
+			'title' => 'Cookie Policy HTML',
+			'description' => 'Allow admin to set HTML for cookie policy',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN cookiePolicyHTML TEXT",
+				"UPDATE system_variables set cookiePolicyHTML = 'This body has not yet set a cookie storage policy, please check back later.'",
+			],
+		],  //storage of HTML for cookie policy
 	];
 }
 
