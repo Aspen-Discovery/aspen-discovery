@@ -169,6 +169,7 @@ function getUpdates23_07_00(): array {
 			],
 		], //update_notification_onboarding_status
 
+
 		'add_company_system_variables' => [
 			'title' => 'Add company into system variables',
 			'description' => 'Add coloumn to set name of company undertaking installation',
@@ -181,6 +182,21 @@ function getUpdates23_07_00(): array {
 		//add_company_system_variables
 			
 	];
+
+  	//other
+		'collection_report_permissions' => [
+			'title' => 'Reporting permissions',
+			'description' => 'Create permissions for collection reports',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Circulation Reports', 'View Location Collection Reports', '', 40, 'Allows the user to view collection reports for their home location (CARL.X) only.'),
+					('Circulation Reports', 'View All Collection Reports', '', 50, 'Allows the user to view collection reports for any location (CARL.X) only.')
+				",
+			],
+		], //collection_report_permissions
+  ];
+
 }
 
 function updateNotificationOnboardStatus() {
