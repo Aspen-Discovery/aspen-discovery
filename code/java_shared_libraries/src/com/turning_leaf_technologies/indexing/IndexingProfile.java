@@ -219,7 +219,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		//Custom Facet 1
 		this.customFacet1SourceField = indexingProfileRS.getString("customFacet1SourceField");
 		this.customFacet1ValuesToInclude = indexingProfileRS.getString("customFacet1ValuesToInclude");
-		if (this.customFacet1ValuesToInclude.length() > 0 && !this.customFacet1ValuesToInclude.equals(".*")) {
+		if (this.customFacet1ValuesToInclude != null && this.customFacet1ValuesToInclude.length() > 0 && !this.customFacet1ValuesToInclude.equals(".*")) {
 			try {
 				customFacet1ValuesToIncludePattern = Pattern.compile(customFacet1ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -227,7 +227,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 		}
 		this.customFacet1ValuesToExclude = indexingProfileRS.getString("customFacet1ValuesToExclude");
-		if (this.customFacet1ValuesToExclude.length() > 0) {
+		if (this.customFacet1ValuesToExclude != null && this.customFacet1ValuesToExclude.length() > 0) {
 			try {
 				customFacet1ValuesToExcludePattern = Pattern.compile(customFacet1ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -238,7 +238,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		//Custom Facet 2
 		this.customFacet2SourceField = indexingProfileRS.getString("customFacet2SourceField");
 		this.customFacet2ValuesToInclude = indexingProfileRS.getString("customFacet2ValuesToInclude");
-		if (this.customFacet2ValuesToInclude.length() > 0 && !this.customFacet2ValuesToInclude.equals(".*")) {
+		if (this.customFacet2ValuesToInclude != null && this.customFacet2ValuesToInclude.length() > 0 && !this.customFacet2ValuesToInclude.equals(".*")) {
 			try {
 				customFacet2ValuesToIncludePattern = Pattern.compile(customFacet2ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -246,7 +246,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 		}
 		this.customFacet2ValuesToExclude = indexingProfileRS.getString("customFacet2ValuesToExclude");
-		if (this.customFacet2ValuesToExclude.length() > 0) {
+		if (this.customFacet2ValuesToExclude != null && this.customFacet2ValuesToExclude.length() > 0) {
 			try {
 				customFacet2ValuesToExcludePattern = Pattern.compile(customFacet2ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -257,7 +257,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		//Custom Facet 3
 		this.customFacet3SourceField = indexingProfileRS.getString("customFacet3SourceField");
 		this.customFacet3ValuesToInclude = indexingProfileRS.getString("customFacet3ValuesToInclude");
-		if (this.customFacet3ValuesToInclude.length() > 0 && !this.customFacet3ValuesToInclude.equals(".*")) {
+		if (this.customFacet3ValuesToInclude != null && this.customFacet3ValuesToInclude.length() > 0 && !this.customFacet3ValuesToInclude.equals(".*")) {
 			try {
 				customFacet3ValuesToIncludePattern = Pattern.compile(customFacet3ValuesToInclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
@@ -265,7 +265,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 			}
 		}
 		this.customFacet3ValuesToExclude = indexingProfileRS.getString("customFacet3ValuesToExclude");
-		if (this.customFacet3ValuesToExclude.length() > 0) {
+		if (this.customFacet3ValuesToExclude != null && this.customFacet3ValuesToExclude.length() > 0) {
 			try {
 				customFacet3ValuesToExcludePattern = Pattern.compile(customFacet3ValuesToExclude, Pattern.CASE_INSENSITIVE);
 			} catch (PatternSyntaxException e) {
