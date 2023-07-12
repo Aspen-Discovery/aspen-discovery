@@ -136,6 +136,22 @@ class TwilioSetting extends DataObject {
 		}
 	}
 
+	public function validatePhoneNumber($phoneNumber) {
+		$curlWrapper = new CurlWrapper();
+		$headers = [
+			'Content-Type: application/x-www-form-urlencoded',
+			"Authorization: Basic " . base64_encode($this->accountSid . ':' . $this->authToken),
+		];
+		$curlWrapper->addCustomHeaders($headers, false);
+		$result = $curlWrapper->curlGetPage("https://lookups.twilio.com/v2/PhoneNumbers/" . urlencode($phoneNumber));
+		$jsonResponse = json_decode($result);
+		if ($curlWrapper->getResponseCode() == 200) {
+			return $jsonResponse->valid;
+		} else {
+			return false;
+		}
+	}
+
 	public function sendMessage($messageBody, $phoneNumber){
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$curlWrapper = new CurlWrapper();
