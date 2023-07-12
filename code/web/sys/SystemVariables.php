@@ -27,6 +27,7 @@ class SystemVariables extends DataObject {
 	public $catalogStatus;
 	public $offlineMessage;
 	public $appScheme;
+	public $company;
 	public $googleBucket;
 	public $trackIpAddresses;
 	public $allowScheduledUpdates;
@@ -271,6 +272,13 @@ class SystemVariables extends DataObject {
 				'type' => 'text',
 				'label' => 'App Scheme',
 				'description' => 'Scheme used for creating deep links into the app',
+			],
+			'company' => [
+				'property' => 'company',
+				'type' => 'text',
+				'label' => 'Company Completing Installation',
+				'description' => 'Sets company name in footer.',
+				'default' => 'ByWater Solutions',
 			],
 			'trackIpAddresses' => [
 				'property' => 'trackIpAddresses',

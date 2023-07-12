@@ -4478,6 +4478,7 @@ CREATE TABLE `system_variables` (
   `regroupAllRecordsDuringNightlyIndex` tinyint(4) DEFAULT '0',
   `processEmptyGroupedWorks` tinyint(4) DEFAULT '1',
   `appScheme` varchar(72) COLLATE utf8mb4_general_ci DEFAULT 'aspen-lida',
+  `company` varchar(72) COLLATE utf8mb4_general_ci DEFAULT 'ByWater Solutions',
   `googleBucket` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `trackIpAddresses` tinyint(1) DEFAULT '0',
   `communityContentUrl` varchar(128) COLLATE utf8mb4_general_ci DEFAULT '',

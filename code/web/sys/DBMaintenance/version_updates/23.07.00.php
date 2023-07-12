@@ -168,6 +168,18 @@ function getUpdates23_07_00(): array {
 				'updateNotificationOnboardStatus',
 			],
 		], //update_notification_onboarding_status
+
+		'add_company_system_variables' => [
+			'title' => 'Add company into system variables',
+			'description' => 'Add coloumn to set name of company undertaking installation',
+			'continueOnError' => false,
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN company VARCHAR(72) default 'ByWater Solutions'",
+
+			]
+		],
+		//add_company_system_variables
+			
 	];
 }
 

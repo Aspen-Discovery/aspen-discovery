@@ -60,6 +60,8 @@ class Library extends DataObject {
 	public $footerText;
 	public $systemMessage;
 
+	
+
 	public $generateSitemap;
 
 	//More general display configurations

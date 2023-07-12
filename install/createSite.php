@@ -46,6 +46,8 @@ if (count($_SERVER['argv']) > 1){
 			'ils' => $configArray['Site']['ils'],
 			'ilsUrl' => $configArray['ILS']['ilsUrl'],
 			'staffUrl' => $configArray['ILS']['staffUrl'],
+			
+			
 		];
 		if ($variables['ils'] == 'Koha') {
 			$variables['ilsDriver'] = 'Koha';
@@ -97,6 +99,12 @@ if (!$foundConfig) {
 	$variables['url'] = '';
 	while (empty($variables['url'])) {
 		$variables['url'] = readline("Enter the url where the site will be accessed, e.g., https://demo.aspendiscovery.org or http://demo.localhost > ");
+	}
+
+	//company
+	$variables['company'] = '';
+	while (empty($variables['company'])) {
+		$variables['company'] = readline("Enter the name of the company completing the installation e.g. ByWater, PTFS");
 	}
 
 	$siteOnWindows = readline("Will Aspen run on Windows (y/N)? ");

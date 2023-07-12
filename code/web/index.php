@@ -170,6 +170,8 @@ $interface->assign('physicalLocation', $physicalLocation);
 $productionServer = $configArray['Site']['isProduction'];
 $interface->assign('productionServer', $productionServer);
 
+
+
 $location = $locationSingleton->getActiveLocation();
 
 // Determine Module and Action
@@ -233,6 +235,17 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 		//This happens before the table is setup
 	}
 }
+
+//system varaible for company name
+$interface->assign('company', 'ByWater Solutions');
+	try {
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = new SystemVariables();
+		if ($systemVariables->find(true)) {
+			$interface->assign('company', $systemVariables->company);
+		} 
+	} catch (Exception $e) {
+	}
 
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);

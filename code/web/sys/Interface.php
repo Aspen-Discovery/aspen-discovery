@@ -670,6 +670,10 @@ class UInterface extends Smarty {
 		if (!empty($library->footerText)) {
 			$this->assign('footerText', $library->footerText);
 		}
+		//company
+		if (!empty($library->comapny)) {
+			$this->assign('company', $library->company);
+		}
 		$this->assign('showHoldButton', $showHoldButton);
 		$this->assign('showHoldButtonInSearchResults', $showHoldButtonInSearchResults);
 		$this->assign('showNotInterested', true);
@@ -1010,6 +1014,15 @@ class UInterface extends Smarty {
 			$footerLogoAlt = $theme->footerLogoAlt;
 			if ($footerLogoAlt) {
 				$this->assign('footerLogoAlt', $footerLogoAlt);
+			}
+			
+			
+			$systemVariables = SystemVariables::getSystemVariables();
+			$company = $systemVariables->company;
+	
+
+			if(!empty ($company)) {
+				$this->assign('company', $company);
 			}
 
 			//Get favicon
