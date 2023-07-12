@@ -8,7 +8,7 @@ class CarlX extends AbstractIlsDriver {
 	public $catalogWsdl;
 
 	private $soapClient;
-	private $dbConnection;
+	protected $dbConnection;
 
 	public function __construct($accountProfile) {
 		parent::__construct($accountProfile);
@@ -2220,6 +2220,7 @@ EOT;
                       , bbibmap_v.title
 EOT;
         } elseif ($showOverdueOnly == 'fees') {
+			/** @noinspection SqlResolve */
             $sql = <<<EOT
                -- school fees report CarlX sql
                 with p as ( -- first gather patrons of the requested branch

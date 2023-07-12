@@ -3266,6 +3266,10 @@ class User extends DataObject {
 			'View Location Student Reports',
 			'View All Student Reports',
 		]);
+		$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
+			'View Location Collection Reports',
+			'View All Collection Reports',
+		]);
 
 		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['axis360'] = new AdminSection('Axis 360');
