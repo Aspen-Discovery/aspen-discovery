@@ -2473,7 +2473,7 @@ EOT;
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
 
 		$selfServeActivityDate = strtotime($result->Patron->SelfServeActivityDate);
-		$lastActionDate = strtotime($patron->Patron->LastActionDate);
+		$lastActionDate = strtotime($result->Patron->LastActionDate);
 		$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
 		if ($selfServeActivityDate > $lastReadingHistoryUpdate || $lastActionDate > $lastReadingHistoryUpdate) {
 			return false;
