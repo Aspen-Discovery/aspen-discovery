@@ -1196,7 +1196,7 @@ abstract class DataObject implements JsonSerializable {
 
 	function __get($name) {
 		if (property_exists($this, $name)) {
-			return $this->$name;
+			return $this->$name ?? null;
 		}else {
 			return $this->_data[$name] ?? null;
 		}
