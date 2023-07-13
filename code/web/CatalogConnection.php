@@ -612,7 +612,7 @@ class CatalogConnection {
 			}
 			//Update the reading history based on titles that the patron currently has checked out if we are on the first page.
 			if ($page == 1 && empty($filter)) {
-				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron);
+				$this->updateReadingHistoryBasedOnCurrentCheckouts($patron, false);
 				$timer->logTime("Finished updating reading history based on current checkouts");
 			}
 		}
@@ -1013,21 +1013,21 @@ class CatalogConnection {
 		return $historyEntry;
 	}
 
-	public function bypassReadingHistoryUpdate($patron) : bool {
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
 		//Check to see if we need to update the reading history.  Only update every 5 minutes in normal situations.
 		$curTime = time();
 		if ((($curTime - $patron->lastReadingHistoryUpdate) < 60 * 5) && !isset($_REQUEST['reload'])) {
 			return true;
 		}
 		// Check the ILS to see if it is ok to update
-		return $this->driver->bypassReadingHistoryUpdate($patron);
+		return $this->driver->bypassReadingHistoryUpdate($patron, $isNightlyUpdate);
 	}
 
 	/**
 	 * @param User $patron
 	 */
-	public function updateReadingHistoryBasedOnCurrentCheckouts($patron) {
-		if ($this->bypassReadingHistoryUpdate($patron)) {
+	public function updateReadingHistoryBasedOnCurrentCheckouts($patron, $isNightlyUpdate) {
+		if ($this->bypassReadingHistoryUpdate($patron, $isNightlyUpdate)) {
 			return;
 		}
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';

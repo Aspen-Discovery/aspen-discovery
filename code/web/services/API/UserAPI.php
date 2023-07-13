@@ -3321,7 +3321,7 @@ class UserAPI extends Action {
 			$user = new User();
 			$user->cat_username = $username;
 			if ($user->find(true)) {
-				$user->updateReadingHistoryBasedOnCurrentCheckouts();
+				$user->updateReadingHistoryBasedOnCurrentCheckouts(true);
 
 				return ['success' => true];
 			} else {

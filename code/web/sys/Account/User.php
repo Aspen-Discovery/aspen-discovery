@@ -357,7 +357,7 @@ class User extends DataObject {
 		if ($this->getAccountProfile() == null) {
 			return trim($this->cat_username);
 		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
 				return trim($this->cat_username);
 			} else {
 				return trim($this->cat_password);
@@ -369,7 +369,7 @@ class User extends DataObject {
 		if ($this->getAccountProfile() == null) {
 			return trim($this->cat_password);
 		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
 				return trim($this->cat_password);
 			} else {
 				return trim($this->cat_username);
@@ -381,7 +381,7 @@ class User extends DataObject {
 		if ($this->getAccountProfile() == null) {
 			return 'cat_password';
 		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
 				return 'cat_password';
 			} else {
 				return 'cat_username';
@@ -393,7 +393,7 @@ class User extends DataObject {
 		if ($this->getAccountProfile() == null) {
 			return 'cat_username';
 		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin') {
+			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
 				return 'cat_username';
 			} else {
 				return 'cat_password';
@@ -2420,10 +2420,10 @@ class User extends DataObject {
 		}
 	}
 
-	public function updateReadingHistoryBasedOnCurrentCheckouts() {
+	public function updateReadingHistoryBasedOnCurrentCheckouts($isNightlyUpdate) {
 		if ($this->isReadingHistoryEnabled()) {
 			$catalogDriver = $this->getCatalogDriver();
-			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this);
+			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
 		}
 	}
 
