@@ -113,10 +113,6 @@ class CarlX extends AbstractIlsDriver {
 					}
 					$user->email = $result->Patron->Email;
 
-					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
-						$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
-					}
-
 					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
 					$location = new Location();
 					$location->code = $homeBranchCode;
@@ -162,6 +158,16 @@ class CarlX extends AbstractIlsDriver {
 								//reset the patrons preferred pickup location to their new home library
 								$user->pickupLocationId = $user->homeLocationId;
 								$user->rememberHoldPickupLocation = 0;
+							}
+						}
+					}
+
+					//See if we should reset tracking reading history
+					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
+						$homeLibrary = $user->getHomeLibrary();
+						if ($homeLibrary != null){
+							if ($homeLibrary->optInToReadingHistoryUpdatesILS && $homeLibrary->optOutOfReadingHistoryUpdatesILS) {
+								$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
 							}
 						}
 					}
