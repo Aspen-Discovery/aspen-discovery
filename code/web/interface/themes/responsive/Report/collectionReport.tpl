@@ -13,8 +13,6 @@
 				&nbsp;
 				<input type="submit" name="showData" value="Show Data" class="btn btn-sm btn-primary"/>
 				&nbsp;
-				<input type="button" name="printPages" value="Print Pages" class="btn btn-sm btn-primary" onclick="{literal} var x = document.querySelectorAll('.overdueSlipContainer'); var i; for (i = 0; i < x.length; i++) { x[i].style.pageBreakBefore = 'always'; } window.print(); {/literal}" />
-				&nbsp;
 				<input type="submit" name="download" value="Download CSV" class="btn btn-sm btn-info"/>
 				&nbsp;
 			</form>
@@ -24,7 +22,6 @@
 {literal}
 <style>
 	table#reportTable {
-		width: 7in;
 		margin-left: 0;
 		margin-right: auto;
 		font: inherit;
@@ -37,8 +34,23 @@
 		/*display: table !important;*/
 	}
 	table#reportTable tbody tr td {
-		/*border: 0;*/
+		border: 1px black solid !important;
+		overflow: hidden;
 	}
+	td,CIRC, td.MEDIA, td.PRICE, td.PUBDATE {
+		/*min-width: 6ex !important;*/
+		max-width: 6ex !important;
+    }
+	td.BARCODE, td.CALLNUMBER, td.CREATED, td.LASTRETURNED, td.LOCATION, td.STATUS, td.STATUSDATE {
+		min-width: 12ex !important;
+		max-width: 12ex !important;
+    }
+	td.AUTHOR {
+		min-width: 20ex !important;
+    }
+	td.TITLE {
+		min-width: 30ex !important;
+    }
 
 	@media print {
 		div.breadcrumbs {
@@ -82,29 +94,27 @@
 		<table id="reportTable">
 			<thead>
 				<tr>
-					<th class="filter">Item</th>
-					<th class="filter">BID</th>
-					<th class="filter">Title</th>
-					<th class="filter">Author</th>
-					<th class="filter">PubDate</th>
-					<th class="filter">Price</th>
-					<th class="filter-select filter-onlyAvail">Location</th>
-					<th class="filter-select filter-onlyAvail">Media</th>
-					<th class="filter">Call Number</th>
-					<th class="filter">Last Returned</th>
-					<th class="filter">Cumulative Circ</th>
-					<th class="filter">Barcode</th>
-					<th class="filter">Created</th>
-					<th class="filter-select filter-onlyAvail">Status</th>
-					<th class="filter">Status Date</th>
+{*					<th>Item</th>*}
+{*					<th>BID</th>*}
+					<th>Title</th>
+					<th>Author</th>
+					<th>PubDate</th>
+					<th>Price</th>
+					<th>Location</th>
+					<th>Media</th>
+					<th>Call Number</th>
+					<th>Last Returned</th>
+					<th>Cumulative Circ</th>
+					<th>Barcode</th>
+					<th>Created</th>
+					<th>Status</th>
+					<th>Status Date</th>
 				</tr>
 			</thead>
 			<tbody>
 {assign var=previousPatron value=0}
 {foreach from=$reportData item=dataRow name=data}
 				<tr class="recordContainer">
-					<td class="ITEM">{$dataRow.ITEM}</td>
-					<td class="BID">{$dataRow.BID}</td>
 					<td class="TITLE">{$dataRow.TITLE}</td>
 					<td class="AUTHOR">{$dataRow.AUTHOR}</td>
 					<td class="PUBDATE">{$dataRow.PUBDATE}</td>
@@ -122,19 +132,6 @@
 {/foreach}
 			</tbody>
 		</table>
-		<script type="text/javascript">
-			{literal}
-				$(document).ready(function(){
-					$('#reportTable').tablesorter({
-						widgets: ["filter"],
-						widgetOptions: {
-							filter_hideFilters : false,
-							filter_ignoreCase: true
-						}
-					});
-				});
-			{/literal}
-		</script>
 	{/if}
 	</div>
 {/strip}
