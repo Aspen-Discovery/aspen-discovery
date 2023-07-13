@@ -699,7 +699,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
-	public function bypassReadingHistoryUpdate($patron) : bool {
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
 		//By default, always update
 		return false;
 	}

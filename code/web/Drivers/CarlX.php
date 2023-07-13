@@ -2467,7 +2467,7 @@ EOT;
 		return false;
 	}
 
-	public function bypassReadingHistoryUpdate($patron) : bool {
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
 		//Check to see if the last seen date is after the last time we updated reading history
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);

@@ -2420,10 +2420,10 @@ class User extends DataObject {
 		}
 	}
 
-	public function updateReadingHistoryBasedOnCurrentCheckouts() {
+	public function updateReadingHistoryBasedOnCurrentCheckouts($isNightlyUpdate) {
 		if ($this->isReadingHistoryEnabled()) {
 			$catalogDriver = $this->getCatalogDriver();
-			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this);
+			$catalogDriver->updateReadingHistoryBasedOnCurrentCheckouts($this, $isNightlyUpdate);
 		}
 	}
 
