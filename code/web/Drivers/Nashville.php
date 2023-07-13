@@ -503,9 +503,8 @@ class Nashville extends CarlX {
 				from ir
 				left join bbibmap_v b on ir.bid = b.bid
 			), ix as (
-				select
-					distinct irb.item
-					, irb.bid
+				select 
+                    distinct irb.item as Barcode
 					, irb.title as Title
 					, irb.author as Author
 					, irb.publishingdate as PubDate
@@ -515,7 +514,6 @@ class Nashville extends CarlX {
 					, irb.cn as CallNumber
 					, to_char(irb.returndate, 'MM/DD/YYYY') as LastReturned
 					, irb.cumulativehistory Circ
-					, irb.item as Barcode
 					, to_char(irb.creationdate, 'MM/DD/YYYY') as Created
 					, c.description as Status
 					, to_char(irb.statusdate, 'MM/DD/YYYY') as StatusDate
