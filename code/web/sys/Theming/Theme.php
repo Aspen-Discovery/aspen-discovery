@@ -2322,7 +2322,7 @@ class Theme extends DataObject {
 	}
 
 	public function insert($context = '') {
-		$this->_set('generatedCss', $this->generateCss());
+		$this->__set('generatedCss', $this->generateCss());
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
