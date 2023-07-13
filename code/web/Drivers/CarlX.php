@@ -113,10 +113,6 @@ class CarlX extends AbstractIlsDriver {
 					}
 					$user->email = $result->Patron->Email;
 
-					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
-						$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
-					}
-
 					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
 					$location = new Location();
 					$location->code = $homeBranchCode;
@@ -162,6 +158,16 @@ class CarlX extends AbstractIlsDriver {
 								//reset the patrons preferred pickup location to their new home library
 								$user->pickupLocationId = $user->homeLocationId;
 								$user->rememberHoldPickupLocation = 0;
+							}
+						}
+					}
+
+					//See if we should reset tracking reading history
+					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
+						$homeLibrary = $user->getHomeLibrary();
+						if ($homeLibrary != null){
+							if ($homeLibrary->optInToReadingHistoryUpdatesILS && $homeLibrary->optOutOfReadingHistoryUpdatesILS) {
+								$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
 							}
 						}
 					}
@@ -1220,14 +1226,26 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
-		$readHistoryEnabled = false;
+		$homeLibrary = $patron->getHomeLibrary();
+		$readHistoryEnabledInCarlX = false;
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
 		if ($result && $result->Patron) {
-			$readHistoryEnabled = $result->Patron->LoanHistoryOptInFlag;
+			$readHistoryEnabledInCarlX = $result->Patron->LoanHistoryOptInFlag;
+			if ($readHistoryEnabledInCarlX != $patron->trackReadingHistory) {
+				$patron->trackReadingHistory = (boolean)$readHistoryEnabledInCarlX;
+				$patron->update();
+			}
 		}
 
-		if ($readHistoryEnabled) { // Create Reading History Request
+		//Make sure that we are trying to synchronize reading history
+		if ($homeLibrary->optOutOfReadingHistoryUpdatesILS && $homeLibrary->optInToReadingHistoryUpdatesILS) {
+			$readingHistoryEnabled = $readHistoryEnabledInCarlX;
+		} else {
+			$readingHistoryEnabled = $patron->trackReadingHistory;
+		}
+
+		if ($readHistoryEnabledInCarlX) { // Create Reading History Request
 			$historyActive = true;
 			$readingHistoryTitles = [];
 			$numTitles = 0;
@@ -1311,7 +1329,7 @@ class CarlX extends AbstractIlsDriver {
 			}
 		}
 		return [
-			'historyActive' => false,
+			'historyActive' => $readingHistoryEnabled,
 			'titles' => [],
 			'numTitles' => 0,
 		];
@@ -2467,7 +2485,7 @@ EOT;
 		return false;
 	}
 
-	public function bypassReadingHistoryUpdate($patron) : bool {
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
 		//Check to see if the last seen date is after the last time we updated reading history
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);

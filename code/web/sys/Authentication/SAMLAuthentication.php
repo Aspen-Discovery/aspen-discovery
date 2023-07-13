@@ -20,6 +20,7 @@ class SAMLAuthentication{
 	protected bool $isStudentUser = false;
 
 	protected bool $ssoAuthOnly = false;
+    protected bool $forceReAuth = false;
 
 	/**
 	 * @throws Exception
@@ -63,6 +64,12 @@ class SAMLAuthentication{
 				$technicalContactEmail = $systemVariables->errorEmail;
 			}
 
+            if(isset($ssoSettings->forceReAuth)) {
+                if($ssoSettings->forceReAuth == 1 || $ssoSettings->forceReAuth == '1') {
+                    $this->forceReAuth = true;
+                }
+            }
+
 			$settings = [
 				// Strict should always be set to true in production
 				'strict' => true,
@@ -82,7 +89,7 @@ class SAMLAuthentication{
 				'security' => [
 					'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 					'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
-					'requestedAuthnContext' => false,
+					'requestedAuthnContext' => $this->forceReAuth,
 				],
 				/*'contactPerson' => [
 					'technical' => [
