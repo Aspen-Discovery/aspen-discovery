@@ -169,6 +169,15 @@ function getUpdates23_07_00(): array {
 			],
 		], //update_notification_onboarding_status
 
+        'add_force_reauth_sso' => [
+            'title' => 'Add toggle to force reauth for SSO Settings',
+            'description' => 'Update SSO Settings to allow a toggle for forcing re-authentication with IdP',
+            'continueOnError' => true,
+            'sql' => [
+                'ALTER TABLE sso_setting ADD COLUMN forceReAuth TINYINT(1) DEFAULT 0',
+            ],
+        ], //add_force_reauth_sso
+
   	//other
 		'collection_report_permissions' => [
 			'title' => 'Reporting permissions',
