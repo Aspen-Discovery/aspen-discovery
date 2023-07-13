@@ -111,6 +111,10 @@ class WebsitePageRecordDriver extends IndexRecordDriver {
 		return $this->fields['id'];
 	}
 
+	public function getSettingId(){
+		return $this->fields['settingId'];
+	}
+
 	public function getLinkUrl($absolutePath = false) {
 		return $this->fields['source_url'];
 	}

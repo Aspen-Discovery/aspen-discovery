@@ -1424,6 +1424,23 @@ class BookCoverProcessor {
 								}
 							}
 						}
+					}else if (!empty($sourceCollection->defaultCover)) {
+						//Build a cover based on the title of the page
+						require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+						$coverBuilder = new DefaultCoverImageBuilder();
+						require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+
+						$OAIRecordDriver = new OpenArchivesRecordDriver($id);
+						if ($OAIRecordDriver->isValid()) {
+							$title = $OAIRecordDriver->getTitle();
+							$author = null;
+
+							$image = ROOT_DIR . '/files/original/' . $sourceCollection->defaultCover;
+							$coverBuilder->getCover($title, $author, $this->cacheFile, $image);
+							if ($this->processImageURL('open_archives',  $this->cacheFile, false)) {
+								return true;
+							}
+						}
 					}
 				}
 			}
