@@ -56,6 +56,20 @@ function getUpdates23_08_00(): array {
 
 		//kodi - ByWater
 
+		'webpage_default_image' => [
+			'title' => 'Website Indexing - Set default image for cover images',
+			'description' => 'Update website_indexing_settings table to have default values for the default cover image',
+			'sql' => [
+				"ALTER TABLE website_indexing_settings ADD COLUMN defaultCover VARCHAR(100) default ''",
+			],
+		], //webpage_default_image
+		'OAI_default_image' => [
+			'title' => 'OAI Indexing - Set default image for cover images',
+			'description' => 'Update open_archives_collection table to have default values for the default cover image',
+			'sql' => [
+				"ALTER TABLE open_archives_collection ADD COLUMN defaultCover VARCHAR(100) default ''",
+			],
+		], //OAI_default_image
 
 		//other organizations
 
