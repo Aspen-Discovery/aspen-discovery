@@ -632,7 +632,7 @@ class CarlX extends AbstractIlsDriver {
 				$curTitle->title = $chargeItem->Title;
 				$curTitle->author = $chargeItem->Author;
 				$curTitle->dueDate = strtotime($dueDate);
-				$curTitle->checkoutDate = strstr($chargeItem->TransactionDate, 'T', true);
+				$curTitle->checkoutDate = strtotime(strstr($chargeItem->TransactionDate, 'T', true));
 				$curTitle->renewCount = isset($chargeItem->RenewalCount) ? $chargeItem->RenewalCount : 0;
 				$curTitle->canRenew = true;
 				$curTitle->renewIndicator = $chargeItem->ItemNumber;
@@ -1247,7 +1247,7 @@ class CarlX extends AbstractIlsDriver {
 						$curTitle['shortId'] = $readingHistoryEntry->BID;
 						$curTitle['recordId'] = $this->fullCarlIDfromBID($readingHistoryEntry->BID);
 						$curTitle['title'] = rtrim($readingHistoryEntry->Title, ' /');
-						$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Aspen Discovery's java cron program.
+						$curTitle['checkout'] = $checkOutDate->getTimestamp(); // this format is expected by Aspen Discovery's java cron program.
 						$curTitle['borrower_num'] = $patron->id;
 						$curTitle['dueDate'] = null; // Not available in ChargeHistoryItems
 						$curTitle['author'] = null; // Not available in ChargeHistoryItems

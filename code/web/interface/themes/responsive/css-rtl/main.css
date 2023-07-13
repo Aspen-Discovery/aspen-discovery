@@ -313,7 +313,7 @@ img {
   height: auto;
 }
 .img-thumbnail.floating {
-  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 15px 22px rgba(0, 0, 0, 0.072), 0 20px 33px 0 rgba(0, 0, 0, 0.086);
   min-height: 2em;
   background: transparent;
   border-width: 0;
@@ -9325,7 +9325,7 @@ a.browse-thumbnail.active {
   min-height: 158px;
 }
 .browse-thumbnail img.floating {
-  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 15px 22px rgba(0, 0, 0, 0.072), 0 20px 33px 0 rgba(0, 0, 0, 0.086);
   min-height: 2em;
   background: transparent;
   border-width: 0;
@@ -9333,7 +9333,7 @@ a.browse-thumbnail.active {
   margin: 0 0 60px 0;
 }
 .browse-thumbnail img.floating.browse-grid {
-  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 12.3px 17.9px rgba(0, 0, 0, 0.072), 0 21.8px 33.4px rgba(0, 0, 0, 0.086), 0 40px 80px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 15px 22px rgba(0, 0, 0, 0.072), 0 20px 33px 0 rgba(0, 0, 0, 0.086);
 }
 .browse-thumbnail img.floating.ratings-on {
   margin: 0 0 10px 0;
@@ -9400,7 +9400,7 @@ a.browse-thumbnail-sorted.active {
   border-radius: 3px;
 }
 .browse-list img.floating {
-  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 22.3px 17.9px rgba(0, 0, 0, 0.072), 0 41.8px 33.4px rgba(0, 0, 0, 0.086), 0 100px 80px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 15px 22px rgba(0, 0, 0, 0.072), 0 20px 33px 0 rgba(0, 0, 0, 0.086);
   min-height: 2em;
   background: transparent;
   border-width: 0;
