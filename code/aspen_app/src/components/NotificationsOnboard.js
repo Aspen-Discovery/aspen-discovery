@@ -20,7 +20,11 @@ export const NotificationsOnboard = (props) => {
           setIsOpen(false);
           setAlreadyCheckedNotifications(true);
           updateNotificationOnboard(0);
-          await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
+          try {
+               await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
+          } catch (e) {
+               // onboarding isn't setup yet (Discovery older than 23.07.00)
+          }
      };
      const cancelRef = React.useRef(null);
 
@@ -33,6 +37,15 @@ export const NotificationsOnboard = (props) => {
                     } else if (notificationOnboard === 1 || notificationOnboard === '1') {
                          setOnboardingBody(getTermFromDictionary(language, 'onboard_notifications_body_new'));
                          setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_new'));
+                    } else {
+                         setIsOpen(false);
+                         setAlreadyCheckedNotifications(true);
+                         updateNotificationOnboard(0);
+                         try {
+                              await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
+                         } catch (e) {
+                              // onboarding isn't setup yet (Discovery older than 23.07.00)
+                         }
                     }
                };
                getTranslations().then(() => {
