@@ -28,7 +28,7 @@ export const DiscoverHomeScreen = () => {
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
-     const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(false);
+     const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
      const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
@@ -167,9 +167,14 @@ export const DiscoverHomeScreen = () => {
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
                               setShowNotificationsOnboarding(true);
+                              setAlreadyCheckedNotifications(false);
                          } else {
                               setShowNotificationsOnboarding(false);
                          }
+                    } else {
+                         updateNotificationOnboard(1);
+                         setShowNotificationsOnboarding(true);
+                         setAlreadyCheckedNotifications(false);
                     }
                };
                checkSettings().then(() => {
@@ -193,7 +198,7 @@ export const DiscoverHomeScreen = () => {
 
      // load notification onboarding prompt
      //console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
-     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice) {
+     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice && notificationOnboard !== '0' && notificationOnboard !== '0') {
           return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
      }
 
