@@ -352,7 +352,7 @@ export const UserProvider = ({ children }) => {
                     // something went wrong when receiving data from Discovery API
                     setExpoToken(false);
                     setAspenToken(false);
-                    setNotificationOnboard(0);
+                    setNotificationOnboard(1);
                }
           } else {
                setExpoToken(false);
