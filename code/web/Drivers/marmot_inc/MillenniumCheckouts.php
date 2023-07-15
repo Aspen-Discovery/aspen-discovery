@@ -19,7 +19,7 @@ class MillenniumCheckouts {
 			//TODO: may need to be modified to match both patFuncTitle & patFuncTitleMain, using '/<a href=".*?\/record\/C__R(.*?)\?.*?"patFuncTitle.*?">(.*?)<\/span>/si'. plb 3-31-2016
 			return trim(strip_tags($matches[2]));
 		} elseif (preg_match('/<td.*?"patFuncTitle">(.*?)<\/td>/si', $row, $matches)) {
-			// Prospector Holds in Sierra WebPAC
+			// INN-Reach Holds in Sierra WebPAC
 			// This Regex developed using output from Marmot Sierra webpac.  plb 3-31-2016
 			// Note: this regex doesn't extract a record id like the two above do.
 			return trim(strip_tags($matches[1]));

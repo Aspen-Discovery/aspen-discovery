@@ -35,46 +35,46 @@ public class HorizonExportMain {
 		logger = LoggingUtil.setupLogging(serverName, "horizon_export");
 		logger.info(startTime.toString() + ": Starting Horizon Export");
 
-		// Read the base INI file to get information about the server (current directory/conf/config.ini)
-		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
-
-		//Connect to the database
-		dbConn = null;
-		try {
-			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
-			if (databaseConnectionInfo == null){
-				logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
-				System.exit(1);
-			}
-			dbConn = DriverManager.getConnection(databaseConnectionInfo);
-
-			markGroupedWorkForBibAsChangedStmt = dbConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
-		} catch (Exception e) {
-			logger.error("Error connecting to database ", e);
-			System.exit(1);
-		}
-
-		String profileToLoad = "ils";
-		if (args.length > 1){
-			profileToLoad = args[1];
-		}
-		indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
-
-		//Look for any exports from Horizon that have not been processed
-		processChangesFromHorizon(ini);
-
-		//TODO: Get a list of records with holds on them?
-
-		//Cleanup
-		if (dbConn != null){
-			try{
-				//Close the connection
-				dbConn.close();
-			}catch(Exception e){
-				System.out.println("Error closing connection: " + e.toString());
-				e.printStackTrace();
-			}
-		}
+//		// Read the base INI file to get information about the server (current directory/conf/config.ini)
+//		Ini ini = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
+//
+//		//Connect to the database
+//		dbConn = null;
+//		try {
+//			String databaseConnectionInfo = ConfigUtil.cleanIniValue(ini.get("Database", "database_aspen_jdbc"));
+//			if (databaseConnectionInfo == null){
+//				logger.error("Please provide database_aspen_jdbc within config.pwd.ini");
+//				System.exit(1);
+//			}
+//			dbConn = DriverManager.getConnection(databaseConnectionInfo);
+//
+//			markGroupedWorkForBibAsChangedStmt = dbConn.prepareStatement("UPDATE grouped_work SET date_updated = ? where id = (SELECT grouped_work_id from grouped_work_primary_identifiers WHERE type = 'ils' and identifier = ?)") ;
+//		} catch (Exception e) {
+//			logger.error("Error connecting to database ", e);
+//			System.exit(1);
+//		}
+//
+//		String profileToLoad = "ils";
+//		if (args.length > 1){
+//			profileToLoad = args[1];
+//		}
+//		indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
+//
+//		//Look for any exports from Horizon that have not been processed
+//		processChangesFromHorizon(ini);
+//
+//		//TODO: Get a list of records with holds on them?
+//
+//		//Cleanup
+//		if (dbConn != null){
+//			try{
+//				//Close the connection
+//				dbConn.close();
+//			}catch(Exception e){
+//				System.out.println("Error closing connection: " + e.toString());
+//				e.printStackTrace();
+//			}
+//		}
 
 		Date currentTime = new Date();
 		logger.info(currentTime.toString() + ": Finished Horizon Export");

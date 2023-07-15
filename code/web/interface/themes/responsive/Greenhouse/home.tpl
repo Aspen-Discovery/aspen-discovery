@@ -257,10 +257,26 @@
 						</div>
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/TicketsTrend" title="{translate text="Trend of Active Tickets" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/TicketsTrend">{translate text="Trend of Active Tickets"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/BugsBySeverityAndComponent" title="{translate text="Active Bugs By Severity" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
 							</div>
 							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
 								<div class="adminActionLabel"><a href="/Greenhouse/BugsBySeverityAndComponent">{translate text="Active Bugs By Severity"  isAdminFacing=true}</a></div>
+							</div>
+						</div>
+						<div class="adminAction row">
+							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
+								<a href="/Greenhouse/BugsBySeverityTrend" title="{translate text="Trend of Active Bugs By Severity" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>
+							</div>
+							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">
+								<div class="adminActionLabel"><a href="/Greenhouse/BugsBySeverityTrend">{translate text="Trend of Active Bugs By Severity"  isAdminFacing=true}</a></div>
 							</div>
 						</div>
 						<div class="adminAction row">
@@ -279,6 +295,14 @@
 								<div class="adminActionLabel"><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Component"  isAdminFacing=true}</a></div>
 							</div>
 						</div>
+{*						<div class="adminAction row">*}
+{*							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">*}
+{*								<a href="/Greenhouse/TicketsByComponentTrend" title="{translate text="Trend of Active Tickets By Component" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>*}
+{*							</div>*}
+{*							<div class="col-tn-10 col-xs-11 col-sm-10 col-md-11">*}
+{*								<div class="adminActionLabel"><a href="/Greenhouse/TicketsByComponentTrend">{translate text="Trend of Active Tickets By Component"  isAdminFacing=true}</a></div>*}
+{*							</div>*}
+{*						</div>*}
 						<div class="adminAction row">
 							<div class="col-tn-2 col-xs-1 col-sm-2 col-md-1 adminActionLabel">
 								<a href="/Greenhouse/PartnerTicketDashboard" title="{translate text="Partner Priorities" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chevron-circle-right fa"></i></a>

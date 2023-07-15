@@ -5846,7 +5846,7 @@ AspenDiscovery.Account = (function () {
 					referer = "/MyAccount/Home";
 				} else if ((module === "Search") && (action === "Home")) {
 					referer = "/MyAccount/Home";
-				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin')) {
+				} else if ((module === "MyAccount") && (action === "InitiateResetPin" || action === 'CompletePinReset' || action === 'EmailResetPin') || (action === "SelfReg")) {
 					referer = "/MyAccount/Home";
 				} else {
 					referer = window.location;
@@ -6671,6 +6671,16 @@ AspenDiscovery.Account = (function () {
 				params.emailAddress = $(finesFormId + " input[name=emailAddress]").val();
 				params.settingId = $(finesFormId + " input[name=settingId]").val();
 			}
+
+			if(paymentType === 'PayPalPayflow') {
+				params.billingFirstName = $(finesFormId + " input[name=billingFirstName]").val();
+				params.billingLastName = $(finesFormId + " input[name=billingLastName]").val();
+				params.billingAddress = $(finesFormId + " input[name=billingStreet]").val();
+				params.billingCity = $(finesFormId + " input[name=billingCity]").val();
+				params.billingState = $(finesFormId + " input[name=billingState]").val();
+				params.billingZip = $(finesFormId + " input[name=billingZip]").val();
+			}
+
 			$(finesFormId + " .selectedFine:checked").each(
 				function () {
 					var name = $(this).attr('name');
@@ -6714,6 +6724,10 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentRequestUrl;
 						} else if (paymentType === 'CertifiedPaymentsByDeluxe') {
 							orderInfo = response.paymentRequestUrl;
+						} else if (paymentType === 'PayPalPayflow') {
+							orderInfo = response.paymentIframe;
+						} else if (paymentType === 'Square') {
+							orderInfo = response.paymentId;
 						}
 					}
 				}
@@ -6762,6 +6776,8 @@ AspenDiscovery.Account = (function () {
 				// Do nothing; there was an error that should be displayed
 			} else {
 				window.location.href = url;
+				$(".ils-available-holds-placeholder").html(summary.numAvailableHolds);
+				$(".ils-available-holds").show();
 			}
 		},
 
@@ -6823,6 +6839,26 @@ AspenDiscovery.Account = (function () {
 			}
 		},
 
+		createSquareOrder: function (finesFormId, transactionType, token) {
+			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
+		},
+
+		createPayPalPayflowOrder: function (userId, transactionType) {
+			var result = this.createGenericOrder('#fines' + userId, 'PayPalPayflow', transactionType);
+			if (result === false) {
+				// Do nothing; there was an error that should be displayed
+			} else {
+				$("#myModalLabel").html('Pay with PayPal');
+				$(".modal-body").html(result);
+				$('.modal-buttons').html('');
+				$('.modal-dialog').addClass('paymentModal');
+				$("#modalDialog").modal('show');
+				$("#modalDialog").on('hide.bs.modal', function(){
+					location.reload();
+				})
+			}
+		},
+
 		completePayPalOrder: function (orderId, patronId, transactionType) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
@@ -6860,6 +6896,39 @@ AspenDiscovery.Account = (function () {
 		cancelPayPalError: function () {
 			AspenDiscovery.showMessage('Payment cancelled', 'Your payment has successfully been cancelled.', true);
 		},
+
+		completeSquareOrder: function (patronId, transactionType, token) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeSquareOrder",
+				patronId: patronId,
+				type: transactionType,
+				token: token,
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
+					}
+				} else {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message) {
+							message = data.message;
+						} else {
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
 		updateFineTotal: function (finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
@@ -10113,7 +10182,8 @@ AspenDiscovery.Browse = (function(){
 
 						var dismissButton = $('.selected-browse-dismiss');
 						dismissButton.removeAttr('onclick');
-						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+categoryTextId+'")');
+						var thisCategoryToDismiss = data.subCategoryTextId || categoryTextId;
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ thisCategoryToDismiss +'")');
 
 						AspenDiscovery.Browse.curPage = 1;
 						AspenDiscovery.Browse.curCategory = data.textId;
@@ -10365,7 +10435,6 @@ AspenDiscovery.Browse = (function(){
 
 	}
 }(AspenDiscovery.Browse || {}));
-
 AspenDiscovery.CloudLibrary = (function () {
 	return {
 		cancelHold: function (patronId, id) {
@@ -11221,6 +11290,14 @@ AspenDiscovery.GroupedWork = (function(){
 			return false;
 		},
 
+		thirdPartyCoverToggle: function (groupedWorkId, recordType, recordId){
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=thirdPartyCoverToggle&recordType=' + recordType + '&recordId=' + recordId;
+			$.getJSON(url, function (data){
+				AspenDiscovery.showMessage("Success", data.message, true, true);
+			});
+			return false;
+		},
+
 		clearUploadedCover: function (groupedWorkId, recordType, recordId){
 			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=clearUploadedCover&recordType=' + recordType + '&recordId=' + recordId;
 			$.getJSON(url, function (data){
@@ -11239,7 +11316,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCover: function (groupedWorkId, recordType, recordId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId;
+			var uploadOption = $('#uploadOption').val();
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCover&recordType=' + recordType + '&recordId=' + recordId + '&uploadOption=' + uploadOption;
 			var uploadCoverData = new FormData($("#uploadCoverForm")[0]);
 			$.ajax({
 				url: url,
@@ -11266,7 +11344,8 @@ AspenDiscovery.GroupedWork = (function(){
 		},
 
 		uploadCoverByURL: function (groupedWorkId, recordType, recordId){
-			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId;
+			var uploadOption = $('#uploadOption').val();
+			var url = Globals.path + '/GroupedWork/' + groupedWorkId + '/AJAX?method=uploadCoverByURL&recordType=' + recordType + '&recordId=' + recordId + '&uploadOption=' + uploadOption;
 			var uploadCoverData = new FormData($("#uploadCoverFormByURL")[0]);
 			$.ajax({
 				url: url,
@@ -11763,9 +11842,11 @@ AspenDiscovery.CollectionSpotlights = (function(){
 				if (data.success) {
 					//Create an unordered list for display
 					var html = '<ul>';
+					var i = 1;
 
 					$.each(data.titles, function() {
 						html += '<li class="carouselTitleWrapper">' + this.formattedTitle + '</li>';
+						i++;
 					});
 
 					html += '</ul>';
@@ -12498,34 +12579,34 @@ AspenDiscovery.Hoopla = (function(){
 
 	}
 }(AspenDiscovery.Hoopla || {}));
-AspenDiscovery.Prospector = (function(){
+AspenDiscovery.InterLibraryLoan = (function(){
 	return {
-		getProspectorResults: function(prospectorNumTitlesToLoad, prospectorSavedSearchId){
+		getInnReachResults: function(innReachNumTitlesToLoad, innReachSavedSearchId){
 			var url = Globals.path + "/Search/AJAX";
-			var params = "method=getProspectorResults&prospectorNumTitlesToLoad=" + encodeURIComponent(prospectorNumTitlesToLoad) + "&prospectorSavedSearchId=" + encodeURIComponent(prospectorSavedSearchId);
+			var params = "method=getInnReachResults&innReachNumTitlesToLoad=" + encodeURIComponent(innReachNumTitlesToLoad) + "&innReachSavedSearchId=" + encodeURIComponent(innReachSavedSearchId);
 			var fullUrl = url + "?" + params;
 			$.ajax({
 				url: fullUrl,
 				success: function(data) {
-					if (data.numTitles == 0){
-						$("#prospectorSearchResultsPlaceholder").hide();
+					if (data.numTitles === 0){
+						$("#innReachSearchResultsPlaceholder").hide();
 					}else{
-						$("#prospectorSearchResultsPlaceholder").html(data.formattedData);
+						$("#innReachSearchResultsPlaceholder").html(data.formattedData);
 					}
 				}
 			});
 		},
 
-		loadRelatedProspectorTitles: function (id) {
+		loadRelatedInnReachTitles: function (id) {
 			var url;
 			url = Globals.path + "/GroupedWork/" + encodeURIComponent(id) + "/AJAX";
-			var params = "method=getProspectorInfo";
+			var params = "method=getInnReachInfo";
 			var fullUrl = url + "?" + params;
 			$.getJSON(fullUrl, function(data) {
-				if (data.numTitles == 0){
-					$("#prospectorPanel").hide();
+				if (data.numTitles === 0){
+					$("#innReachPanel").hide();
 				}else{
-					$("#inProspectorPlaceholder").html(data.formattedData);
+					$("#inInnReachPlaceholder").html(data.formattedData);
 				}
 			});
 		},
@@ -12534,12 +12615,12 @@ AspenDiscovery.Prospector = (function(){
 			var $img = $(imgElem);
 			//when the content providers cannot find a bookjacket, they return a 1x1 pixel
 			//remove the wrapping div, for consistent spacing with other results
-			if ($img.height() == 1 && $img.width() == 1 || isForceRemove) {
+			if ($img.height() === 1 && $img.width() === 1 || isForceRemove) {
 				$(elemToHide).remove();
 			}
 		}
 	}
-}(AspenDiscovery.Prospector || {}));
+}(AspenDiscovery.InterLibraryLoan || {}));
 AspenDiscovery.Ratings = (function(){
 	$(function(){
 		AspenDiscovery.Ratings.initializeRaters();
@@ -14587,7 +14668,39 @@ AspenDiscovery.IndexingClass = (function () {
 			//Config per Class
 			var ilsOptions = {
 				//Common for all classes
-				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude', 'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom', 'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver', 'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking', 'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix', 'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs', 'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching', 'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs', 'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm', 'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs', 'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers', 'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp', 'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations', 'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection', 'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode', 'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress', 'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts', 'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes', 'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated', 'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat', 'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield', 'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField', 'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost', 'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection', 'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle', 'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords', 'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords', 'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport', 'propertyRowtranslationMaps', 'FloatingSave', 'propertyRowindex856Links', 'propertyRowincludePersonalAndCorporateNamesInTopics'],
+				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude',
+					'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom',
+					'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver',
+					'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking',
+					'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix',
+					'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs',
+					'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching',
+					'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs',
+					'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm',
+					'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs',
+					'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers',
+					'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp',
+					'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations',
+					'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection',
+					'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode',
+					'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress',
+					'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts',
+					'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes',
+					'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated',
+					'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat',
+					'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield',
+					'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField',
+					'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost',
+					'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection',
+					'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle',
+					'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords',
+					'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords',
+					'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport',
+					'propertyRowtranslationMaps', 'FloatingSave', 'propertyRowindex856Links', 'propertyRowincludePersonalAndCorporateNamesInTopics',
+					'propertyRowcustomFacetSection', 'propertyRowcustomFacet1SourceField', 'propertyRowcustomFacet1ValuesToInclude', 'propertyRowcustomFacet1ValuesToExclude',
+					'propertyRowcustomFacet2SourceField', 'propertyRowcustomFacet2ValuesToInclude', 'propertyRowcustomFacet2ValuesToExclude',
+					'propertyRowcustomFacet3SourceField', 'propertyRowcustomFacet3ValuesToInclude', 'propertyRowcustomFacet3ValuesToExclude'
+				],
 				//Specific per class
 				Koha: ['propertyRowlastUpdateOfAuthorities'],
 				Evolve: [],
@@ -14615,3 +14728,122 @@ AspenDiscovery.IndexingClass = (function () {
 	}
 }(AspenDiscovery.IndexingClass || {}));
 
+/*
+ *   This content is licensed according to the W3C Software License at
+ *   https://www.w3.org/Consortium/Legal/2015/copyright-software-and-document
+ *
+ *   Desc:   Implements ARIA Authoring Practices for switching tabs
+ */
+'use strict';
+class TabsSwitcher {
+	constructor(groupNode) {
+		this.tablistNode = groupNode;
+		this.tabs = [];
+		this.firstTab = null;
+		this.lastTab = null;
+		this.tabs = Array.from(this.tablistNode.querySelectorAll('[role=tab]'));
+		this.tabpanels = [];
+
+		for (let i = 0; i < this.tabs.length; i++) {
+			const tab = this.tabs[i];
+			const tabPanel = document.getElementById(tab.getAttribute('aria-controls'));
+
+			tab.setAttribute('aria-selected', 'false');
+			this.tabpanels.push(tabPanel);
+
+			tab.addEventListener('keydown', this.onKeydown.bind(this));
+			tab.addEventListener('click', this.onClick.bind(this));
+
+			if (!this.firstTab) {
+				this.firstTab = tab;
+			}
+			this.lastTab = tab;
+		}
+
+		//this.setSelectedTab(this.firstTab, false);
+	}
+
+	 setSelectedTab(currentTab, setFocus) {
+		if (typeof setFocus !== 'boolean') {
+			setFocus = true;
+		}
+		for (let i = 0; i < this.tabs.length; i++) {
+			const tab = this.tabs[i];
+			if (currentTab === tab) {
+				//$('#collectionSpotlightCarousel' + tab.dataset.carouselid).jcarousel('reload');
+				$(tab).attr('aria-selected', 'true');
+				$(tab).addClass('active');
+				//this.tabs[i].classList.add('active');
+				if (setFocus) {
+					tab.focus();
+				}
+			} else {
+				//$('#collectionSpotlightCarousel' + tab.dataset.carouselid).jcarousel('reload');
+				$(tab).attr('aria-selected', 'false');
+				$(tab).removeClass('active');
+				//this.tabs[i].classList.remove('active');
+			}
+		}
+	}
+
+	setSelectedToPreviousTab(currentTab) {
+		let index;
+
+		if (currentTab === this.tabs.firstTab) {
+			this.setSelectedTab(this.tabs.lastTab);
+		} else {
+			index = this.tabs.indexOf(currentTab);
+			this.setSelectedTab(this.tabs[index - 1]);
+		}
+	}
+
+	setSelectedToNextTab(currentTab) {
+		let index;
+
+		if (currentTab === this.tabs.lastTab) {
+			this.setSelectedTab(this.tabs.firstTab);
+		} else {
+			index = this.tabs.indexOf(currentTab);
+			this.setSelectedTab(this.tabs[index + 1]);
+		}
+	}
+
+	onKeydown(event) {
+		const tgt = event.currentTarget;
+		let flag = false;
+
+		switch (event.key) {
+			case 'ArrowLeft':
+				this.setSelectedToPreviousTab(tgt);
+				flag = true;
+				break;
+
+			case 'ArrowRight':
+				this.setSelectedToNextTab(tgt);
+				flag = true;
+				break;
+
+			case 'Home':
+				this.setSelectedTab(this.tabs.firstTab);
+				flag = true;
+				break;
+
+			case 'End':
+				this.setSelectedTab(this.tabs.lastTab);
+				flag = true;
+				break;
+
+			default:
+				break;
+		}
+
+		if (flag) {
+			event.stopPropagation();
+			event.preventDefault();
+		}
+	}
+
+	onClick(event) {
+		this.setSelectedTab(event.currentTarget);
+	}
+}

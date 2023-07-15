@@ -225,6 +225,7 @@ class Sierra extends Millennium {
 	}
 
 	public function getHolds($patron): array {
+		global $library;
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = [];
 		$unavailableHolds = [];
@@ -295,6 +296,7 @@ class Sierra extends Millennium {
 			} else {
 				$recordId = substr($sierraHold->record, strrpos($sierraHold->record, '/') + 1);
 			}
+			$isInnReach = false;
 			if ($sierraHold->recordType == 'i') {
 				$recordItemStatus = $sierraHold->status->code;
 				// If this is an inn-reach exclude from check -- this comes later
@@ -311,6 +313,8 @@ class Sierra extends Millennium {
 					}
 				} else {
 					// inn-reach status
+					$isInnReach = true;
+					$curHold->source = $library->interLibraryLoanName;
 					$recordStatus = $recordItemStatus;
 				}
 			}
@@ -332,6 +336,14 @@ class Sierra extends Millennium {
 						$updatePickup = true;
 					} else {
 						$updatePickup = false;
+					}
+					if ($isInnReach) {
+						if (!empty($sierraHold->pickupByDate)) {
+							$status = 'Ready For Pickup';
+							$available = true;
+							$updatePickup = false;
+							$freezeable = false;
+						}
 					}
 					break;
 				case 'b':
@@ -421,12 +433,14 @@ class Sierra extends Millennium {
 				if ($titleAuthor !== false) {
 					$curHold->title = $titleAuthor['title'];
 					$curHold->author = $titleAuthor['author'];
+					$curHold->format = [];
 				} else {
 					$curHold->title = 'Unknown';
 					$curHold->author = 'Unknown';
 				}
 				$curHold->sourceId = '';
 				$curHold->recordId = '';
+				$curHold->source = $library->interLibraryLoanName;
 			} else {
 				///////////////
 				// ILS HOLD
@@ -566,6 +580,7 @@ class Sierra extends Millennium {
 	public function getCheckouts(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
+		global $library;
 
 		$patronId = $patron->username;
 
@@ -597,6 +612,7 @@ class Sierra extends Millennium {
 					$curCheckout->barcode = $entry->barcode;
 				}
 				if (strpos($entry->item, "@") !== false) {
+					$curCheckout->source = $library->interLibraryLoanName;
 					$curCheckout->sourceId = '';
 					$curCheckout->recordId = '';
 					$titleAuthor = $this->getTitleAndAuthorForInnReachCheckout($checkoutId);
@@ -1104,7 +1120,9 @@ class Sierra extends Millennium {
 			$user->update();
 		} else {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		}
 		return $user;
 	}
@@ -1179,7 +1197,9 @@ class Sierra extends Millennium {
 			$user->update();
 		} else {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		}
 
 		return $user;
@@ -1675,5 +1695,43 @@ class Sierra extends Millennium {
 
 	public function showTimesRenewed(): bool {
 		return true;
+	}
+
+	function updateHomeLibrary(User $patron, string $homeLibraryCode) {
+		$result = [
+			'success' => false,
+			'messages' => [],
+		];
+
+		if ($patron->getHomeLibrary()->allowHomeLibraryUpdates) {
+			$params = [];
+
+			if (isset($_REQUEST['homeLocation'])) {
+				$location = new Location();
+				$location->code = $_REQUEST['homeLocation'];
+				if (!$location->find(true)) {
+					$result['messages'][] = 'Could not find that home location.';
+					return $result;
+				}
+				$patron->homeLocationId = $location->locationId;
+				$params['homeLibraryCode'] = $_REQUEST['homeLocation'];
+			}
+
+			$sierraUrl = $this->accountProfile->vendorOpacUrl;
+			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
+			$updatePatronResponse = $this->_sendPage('sierra.updatePatronHomeLocation', 'PUT', $sierraUrl, json_encode($params));
+
+			if ($this->lastResponseCode == 204) {
+				$result['success'] = true;
+				$result['messages'][] = 'Your home library was updated successfully.';
+				$patron->update();
+			} else {
+				$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;
+			}
+		} else {
+			$result['messages'][] = 'You do not have permission to update profile information.';
+		}
+
+		return $result;
 	}
 }

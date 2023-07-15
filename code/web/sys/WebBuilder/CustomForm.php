@@ -144,7 +144,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 		} elseif ($name == "formFields") {
 			return $this->getFormFields();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -154,7 +154,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 		} elseif ($name == "formFields") {
 			$this->_formFields = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

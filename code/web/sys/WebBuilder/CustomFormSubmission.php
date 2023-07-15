@@ -78,7 +78,7 @@ class CustomFormSubmission extends DataObject {
 			$user->__destruct();
 			return $this->_data[$name] ?? null;
 		}
-		return false;
+		return parent::__get($name);
 	}
 
 	public function okToExport(array $selectedFilters): bool {

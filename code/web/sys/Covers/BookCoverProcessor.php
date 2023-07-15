@@ -516,7 +516,7 @@ class BookCoverProcessor {
 
 	private function getCoverFromProvider() {
 		// Update to allow retrieval of covers based on upc
-		if (!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) {
+		if ((!is_null($this->isn) || !is_null($this->upc) || !is_null($this->issn)) && !$this->bookCoverInfo->disallowThirdPartyCover) {
 			$this->log("Looking for picture based on isbn and upc.", Logger::LOG_NOTICE);
 
 			//TODO: Allow these to be sorted
@@ -1034,7 +1034,7 @@ class BookCoverProcessor {
 
 	function omdb(OMDBSetting $omdbSettings, $title = null, $shortTitle = null, $year = '') {
 		//Only load from google if we are looking at a grouped work to be sure uploaded covers have a chance to load
-		if ($this->type != 'grouped_work') {
+		if ($this->type != 'grouped_work' || !$this->bookCoverInfo->disallowThirdPartyCover) {
 			return false;
 		}
 
@@ -1424,6 +1424,23 @@ class BookCoverProcessor {
 								}
 							}
 						}
+					}else if (!empty($sourceCollection->defaultCover)) {
+						//Build a cover based on the title of the page
+						require_once ROOT_DIR . '/sys/Covers/DefaultCoverImageBuilder.php';
+						$coverBuilder = new DefaultCoverImageBuilder();
+						require_once ROOT_DIR . '/RecordDrivers/OpenArchivesRecordDriver.php';
+
+						$OAIRecordDriver = new OpenArchivesRecordDriver($id);
+						if ($OAIRecordDriver->isValid()) {
+							$title = $OAIRecordDriver->getTitle();
+							$author = null;
+
+							$image = ROOT_DIR . '/files/original/' . $sourceCollection->defaultCover;
+							$coverBuilder->getCover($title, $author, $this->cacheFile, $image);
+							if ($this->processImageURL('open_archives',  $this->cacheFile, false)) {
+								return true;
+							}
+						}
 					}
 				}
 			}
@@ -1705,7 +1722,22 @@ class BookCoverProcessor {
 		if ($ebscohostRecordDriver->isValid()) {
 			$title = $ebscohostRecordDriver->getTitle();
 			$author = $ebscohostRecordDriver->getAuthor();
-			$coverBuilder->getCover($title, $author, $this->cacheFile);
+			$idParts = explode(':', $id);
+			$db = $idParts[0];
+
+			$ebscohostdb = new EBSCOhostDatabase();
+			$ebscohostdb->shortName = $db;
+			$ebscohostdb->find();
+			while ($ebscohostdb->fetch()) {
+				$image = $ebscohostdb->logo;
+			}
+			if (empty($image)) {
+				$coverBuilder->getCover($title, $author, $this->cacheFile);
+			} else {
+				$image = ROOT_DIR . '/files/original/' . $image;
+				$coverBuilder->getCover($title, $author, $this->cacheFile, $image);
+			}
+
 			return $this->processImageURL('default_ebscohost', $this->cacheFile, false);
 		} else {
 			return false;

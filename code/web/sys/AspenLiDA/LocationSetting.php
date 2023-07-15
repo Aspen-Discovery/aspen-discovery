@@ -72,7 +72,7 @@ class LocationSetting extends DataObject {
 			}
 			return $this->_locations;
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -80,7 +80,7 @@ class LocationSetting extends DataObject {
 		if ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 
@@ -102,7 +102,7 @@ class LocationSetting extends DataObject {
 
 	public function saveLocations() {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$locationList = Location::getLocationList(UserAccount::userHasPermission('Administer Aspen LiDA Settings'));
+			$locationList = Location::getLocationList(false);
 			foreach ($locationList as $locationId => $displayName) {
 				$location = new Location();
 				$location->locationId = $locationId;

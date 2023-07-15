@@ -66,7 +66,7 @@ class SearchSources {
 		if ($location != null && $location->useScope && $location->restrictSearchByLocation) {
 			$repeatSearchSetting = $location->repeatSearchOption;
 			$repeatInWorldCat = $location->repeatInWorldCat == 1;
-			$repeatInProspector = $location->repeatInProspector == 1;
+			$repeatInInnReach = $location->repeatInInnReach == 1;
 			if (strlen($location->systemsToRepeatIn) > 0) {
 				$systemsToRepeatIn = explode('|', $location->systemsToRepeatIn);
 			} else {
@@ -75,7 +75,7 @@ class SearchSources {
 		} else {
 			$repeatSearchSetting = $library->repeatSearchOption;
 			$repeatInWorldCat = $library->repeatInWorldCat == 1;
-			$repeatInProspector = $library->repeatInProspector == 1;
+			$repeatInInnReach = $library->repeatInInnReach == 1;
 			$systemsToRepeatIn = explode('|', $library->systemsToRepeatIn);
 		}
 
@@ -280,10 +280,10 @@ class SearchSources {
 			];
 		}
 
-		if ($repeatInProspector) {
-			$searchOptions['prospector'] = [
-				'name' => 'Prospector Catalog',
-				'description' => 'A shared catalog of academic, public, and special libraries all over Colorado.',
+		if ($repeatInInnReach) {
+			$searchOptions['innReach'] = [
+				'name' => $library->interLibraryLoanName,
+				'description' => 'Additional materials from partner libraries available by interlibrary loan.',
 				'external' => true,
 				'catalogType' => 'catalog',
 				'hasAdvancedSearch' => false,
@@ -378,7 +378,7 @@ class SearchSources {
 		}
 	}
 
-	public function getExternalLink($searchSource, $type, $lookFor) {
+	public function getExternalLink($searchSource, $type, $lookFor) : string {
 		global $library;
 		global $configArray;
 		if ($searchSource == 'worldcat') {
@@ -410,15 +410,19 @@ class SearchSources {
 					return "$overDriveUrl/search?query=" . urlencode($lookFor);
 				}
 			}
-		} elseif ($searchSource == 'prospector') {
-			$prospectorSearchType = $this->getProspectorSearchType($type);
+		} elseif ($searchSource == 'innReach') {
+			$innReachSearchType = $this->getInnReachSearchType($type);
 			$lookFor = str_replace('+', '%20', rawurlencode($lookFor));
 			// Handle special exception: ? character in the search must be encoded specially
 			$lookFor = str_replace('%3F', 'Pw%3D%3D', $lookFor);
-			if ($prospectorSearchType != ' ') {
-				$lookFor = "$prospectorSearchType:(" . $lookFor . ")";
+			if ($innReachSearchType != ' ') {
+				$lookFor = "$innReachSearchType:(" . $lookFor . ")";
 			}
-			return "http://encore.coalliance.org/iii/encore/search/C|S" . $lookFor . "|Orightresult|U1?lang=eng&amp;suite=def";
+			$baseUrl = $library->interLibraryLoanUrl;
+			if (substr($baseUrl, -1, 1) == '/') {
+				$baseUrl = substr($baseUrl, 0, strlen($baseUrl) -1);
+			}
+			return "$baseUrl/iii/encore/search/C|S" . $lookFor . "|Orightresult|U1?lang=eng&amp;suite=def";
 		} elseif ($searchSource == 'amazon') {
 			return "http://www.amazon.com/s/ref=nb_sb_noss?url=search-alias%3Daps&field-keywords=" . urlencode($lookFor);
 		} elseif ($searchSource == 'course-reserves-course-name') {
@@ -427,29 +431,23 @@ class SearchSources {
 		} elseif ($searchSource == 'course-reserves-instructor') {
 			$linkingUrl = $configArray['Catalog']['linking_url'];
 			return "$linkingUrl/search~S{$library->scope}/p?SEARCH=" . urlencode($lookFor);
-		} else {
-			return "";
 		}
+		return "";
 	}
 
-	public function getProspectorSearchType($type) {
+	public function getInnReachSearchType($type) {
 		switch ($type) {
 			case 'Subject':
 				return 'd';
-				break;
 			case 'Author':
 				return 'a';
-				break;
 			case 'Title':
 				return 't';
-				break;
 			case 'ISN':
 				return 'i';
-				break;
 			case 'Keyword':
+			default:
 				return ' ';
-				break;
 		}
-		return ' ';
 	}
 }

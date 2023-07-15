@@ -40,7 +40,7 @@ aspen/materials-request.js
 aspen/overdrive.js
 aspen/open-archives.js
 aspen/hoopla.js
-aspen/prospector.js
+aspen/interlibraryLoan.js
 aspen/ratings.js
 aspen/reading-history.js
 aspen/record.js
@@ -53,3 +53,4 @@ aspen/web-builder.js
 aspen/websites.js
 aspen/wikipedia.js
 aspen/indexing-profile.js
+aspen/tab-switcher.js

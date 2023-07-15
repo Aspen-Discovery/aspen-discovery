@@ -1325,6 +1325,27 @@ function checkForMaliciouslyFormattedParameters(): void {
 			$isMaliciousUrl = true;
 		}
 	}
+	if (isset($_REQUEST['month'])) {
+		if (is_array($_REQUEST['month'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['month'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['year'])) {
+		if (is_array($_REQUEST['year'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-zA-Z0-9]*$/', $_REQUEST['year'])) {
+			$isMaliciousUrl = true;
+		}
+	}
+	if (isset($_REQUEST['size'])) {
+		if (is_array($_REQUEST['size'])) {
+			$isMaliciousUrl = true;
+		} elseif (!preg_match_all('/^[a-z-]*$/', $_REQUEST['size'])) {
+			$isMaliciousUrl = true;
+		}
+	}
 	if (isset($_REQUEST['author'])) {
 		if (is_array($_REQUEST['author'])) {
 			$isMaliciousUrl = true;
@@ -1385,9 +1406,10 @@ function trackSpammyRequest() {
 				$ipAddress->isOpac = 0;
 				$ipAddress->calcIpRange();
 				$ipAddress->insert();
+			} else if (!$ipAddress->isOpac && $ipAddress->locationid == -1) {
+				$ipAddress->blockedForSpam = 1;
+				$ipAddress->update();
 			}
-			$ipAddress->blockedForSpam = 1;
-			$ipAddress->update();
 		}
 		$usageByIPAddress->update();
 	} else {

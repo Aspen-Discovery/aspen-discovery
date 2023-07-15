@@ -198,7 +198,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 	}
 
 	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $methodName, $forceNewConnection = false) {
-		/** @var Memcache $memCache */ global $memCache;
+		global $memCache;
 		global $timer;
 		global $logger;
 		$settings = $this->getSettings();

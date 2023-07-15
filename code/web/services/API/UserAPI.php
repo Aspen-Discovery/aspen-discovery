@@ -80,7 +80,8 @@ class UserAPI extends Action {
 					'deleteAllFromReadingHistory',
 					'deleteSelectedFromReadingHistory',
 					'getReadingHistorySortOptions',
-					'confirmHold'
+					'confirmHold',
+					'updateNotificationOnboardingStatus'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -117,7 +118,7 @@ class UserAPI extends Action {
 
 	/**
 	 *
-	 * Returns whether or not a user is currently logged in based on session information.
+	 * Returns whether a user is currently logged in based on session information.
 	 * This method is only useful from VuFind itself or from files which can share cookies
 	 * with the VuFind server.
 	 *
@@ -1585,7 +1586,7 @@ class UserAPI extends Action {
 	function renewAll(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			$result = $user->renewAll();
+			$result = $user->renewAll(true);
 			$message = array_merge([$result['Renewed'] . ' of ' . $result['Total'] . ' titles were renewed'], $result['message']);
 			for ($i = 0; $i < $result['Renewed']; $i++) {
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -1776,6 +1777,8 @@ class UserAPI extends Action {
 								'action' => $action,
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
+								'shouldBeItemHold' => (bool)$result['items'],
+								'items' => $result['items'] ?? null,
 							];
 						}
 				} elseif ($source == 'overdrive') {
@@ -2657,7 +2660,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2685,7 +2688,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2743,7 +2746,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2768,7 +2771,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2794,7 +2797,7 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			$patron = $user->getUserReferredTo($user->id);
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2822,7 +2825,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -2848,7 +2851,7 @@ class UserAPI extends Action {
 
 		if ($user && !($user instanceof AspenError)) {
 			require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
-			$this->recordDriver = new Axis360RecordDriver($id);
+			$recordDriver = new Axis360RecordDriver($id);
 
 			require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
 			$driver = new Axis360Driver();
@@ -3318,7 +3321,7 @@ class UserAPI extends Action {
 			$user = new User();
 			$user->cat_username = $username;
 			if ($user->find(true)) {
-				$user->updateReadingHistoryBasedOnCurrentCheckouts();
+				$user->updateReadingHistoryBasedOnCurrentCheckouts(true);
 
 				return ['success' => true];
 			} else {
@@ -4109,6 +4112,49 @@ class UserAPI extends Action {
 		}
 
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function updateNotificationOnboardingStatus(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$newStatus = $_REQUEST['status'] ?? null;
+			$userToken = $_REQUEST['token'] ?? null;
+			if($newStatus && $userToken) {
+				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+				$token = new UserNotificationToken();
+				$token->pushToken = $userToken;
+				if($token->find(true)) {
+					if ($newStatus == 'false' || !$newStatus) {
+						$token->onboardAppNotifications = 0;
+					}
+					$token->update();
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Updated user notification onboarding status'
+					];
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Push token not valid.',
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'New status or user token not provided',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
@@ -4990,9 +5036,14 @@ class UserAPI extends Action {
 			unset($_SESSION['guidingUserId']);
 			$masqueradeMode = false;
 			if ($guidingUser) {
-				$_REQUEST['username'] = $guidingUser->getBarcode();
-				$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
-				$user = UserAccount::login();
+				if($guidingUser->isLoggedInViaSSO) {
+					$user = UserAccount::loginWithAspen($guidingUser);
+				} else {
+					$_REQUEST['username'] = $guidingUser->getBarcode();
+					$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
+					$user = UserAccount::login();
+				}
+
 				if ($user && !($user instanceof AspenError)) {
 					return ['success' => true];
 				} else {

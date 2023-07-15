@@ -127,7 +127,7 @@ class Hold extends CircEntry {
 			if ($recordDriver != false) {
 				return $recordDriver->getFormats();
 			} else {
-				return 'Unknown';
+				return [];
 			}
 		} else {
 			return [$this->format];

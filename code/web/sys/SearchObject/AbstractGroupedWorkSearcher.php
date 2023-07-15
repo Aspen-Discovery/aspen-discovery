@@ -555,15 +555,17 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 		}
 
 		$baseUrl = $configArray['Site']['url'];
-		for ($i = 0; $i < count($result['response']['docs']); $i++) {
-			$id = $result['response']['docs'][$i]['id'];
-			$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
-			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-			$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
-			if ($groupedWorkDriver->isValid) {
-				$image = $groupedWorkDriver->getBookcoverUrl('medium', true);
-				$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
-				$result['response']['docs'][$i]['rss_description'] = $description;
+		if (!empty($result)){
+			for ($i = 0; $i < count($result['response']['docs']); $i++) {
+				$id = $result['response']['docs'][$i]['id'];
+				$result['response']['docs'][$i]['recordUrl'] = $baseUrl . '/GroupedWork/' . $id;
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($result['response']['docs'][$i]);
+				if ($groupedWorkDriver->isValid) {
+					$image = $groupedWorkDriver->getBookcoverUrl('medium', true);
+					$description = "<img alt='Cover Image' src='$image'/> " . $groupedWorkDriver->getDescriptionFast();
+					$result['response']['docs'][$i]['rss_description'] = $description;
+				}
 			}
 		}
 
@@ -618,104 +620,106 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 
 			$docs = $result['response']['docs'];
 
-			for ($i = 0; $i < count($docs); $i++) {
-				//Output the row to csv
-				$curDoc = $docs[$i];
-				//Output the row to csv
-				$link = '';
-				if ($curDoc['id']) {
-					$link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
-				}
+			if ($docs != null){
+				for ($i = 0; $i < count($docs); $i++) {
+					//Output the row to csv
+					$curDoc = $docs[$i];
+					//Output the row to csv
+					$link = '';
+					if ($curDoc['id']) {
+						$link = $configArray['Site']['url'] . '/GroupedWork/' . $curDoc['id'];
+					}
 
-				$title = '';
-				$title = $curDoc['title_display'];
+					$title = '';
+					$title = $curDoc['title_display'];
 
-				$author = '';
-				$author = $curDoc['author_display'];
+					$author = '';
+					$author = $curDoc['author_display'];
 
-				$publisher = '';
-				if (isset($curDoc['publisherStr'])) {
-					$publisher = implode('; ', $curDoc['publisherStr']);
-				}
+					$publisher = '';
+					if (isset($curDoc['publisherStr'])) {
+						$publisher = implode('; ', $curDoc['publisherStr']);
+					}
 
-				// Publish Dates: Min-Max
-				$publishDates = [''];
-				if (isset($curDoc['publishDate'])) {
-					if (!is_array($curDoc['publishDate'])) {
-						$publishDates = [$curDoc['publishDate']];
+					// Publish Dates: Min-Max
+					$publishDates = [''];
+					if (isset($curDoc['publishDate'])) {
+						if (!is_array($curDoc['publishDate'])) {
+							$publishDates = [$curDoc['publishDate']];
+						} else {
+							$publishDates = $curDoc['publishDate'];
+						}
+					}
+					$publishDate = '';
+					if (count($publishDates) == 1) {
+						$publishDate = $publishDates[0];
+					} elseif (count($publishDates) > 1) {
+						$publishDate = min($publishDates) . ' - ' . max($publishDates);
+					}
+
+					// Formats
+					$formatField = 'format_' . $solrScope;
+					if (array_key_exists($formatField, $curDoc)) {
+						if (!is_array($curDoc[$formatField])) {
+							$formats = (array)$curDoc[$formatField];
+						} else {
+							$formats = $curDoc[$formatField];
+						}
 					} else {
-						$publishDates = $curDoc['publishDate'];
+						if (!is_array($curDoc['format'])) {
+							$formats = (array)$curDoc['format'];
+						} else {
+							$formats = $curDoc['format'];
+						}
+						foreach ($formats as $key => $format) {
+							$formats[$key] = substr($format, strpos($format, '#') + 1);
+						}
 					}
-				}
-				$publishDate = '';
-				if (count($publishDates) == 1) {
-					$publishDate = $publishDates[0];
-				} elseif (count($publishDates) > 1) {
-					$publishDate = min($publishDates) . ' - ' . max($publishDates);
-				}
+					$uniqueFormats = array_unique($formats);
+					$uniqueFormats = implode(';', $uniqueFormats);
 
-				// Formats
-				$formatField = 'format_' . $solrScope;
-				if (array_key_exists($formatField, $curDoc)) {
-					if (!is_array($curDoc[$formatField])) {
-						$formats = (array)$curDoc[$formatField];
-					} else {
-						$formats = $curDoc[$formatField];
-					}
-				} else {
-					if (!is_array($curDoc['format'])) {
-						$formats = (array)$curDoc['format'];
-					} else {
-						$formats = $curDoc['format'];
-					}
-					foreach ($formats as $key => $format) {
-						$formats[$key] = substr($format, strpos($format, '#') + 1);
-					}
-				}
-				$uniqueFormats = array_unique($formats);
-				$uniqueFormats = implode(';', $uniqueFormats);
-
-				// Format / Location / Call number, max 3 records
-				//Get the Grouped Work Driver so we can get information about the formats and locations within the record
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWorkDriver = new GroupedWorkDriver($curDoc);
-				$output = [];
-				foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
-					//Manifestation gives us Format & Format Category
-					if (!$relatedManifestation->isHideByDefault()) {
-						$format = $relatedManifestation->format;
-						//Variation gives us the sort
-						foreach ($relatedManifestation->getVariations() as $variation) {
-							if (!$variation->isHideByDefault()) {
-								//Record will give us the call number, and location
-								//Only do up to 3 records per format?
-								foreach ($variation->getRecords() as $record) {
-									if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
-										$copySummary = $record->getItemSummary();
-										foreach ($copySummary as $item) {
-											$output[] = $format . "::" . $item['description'];
+					// Format / Location / Call number, max 3 records
+					//Get the Grouped Work Driver so we can get information about the formats and locations within the record
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($curDoc);
+					$output = [];
+					foreach ($groupedWorkDriver->getRelatedManifestations() as $relatedManifestation) {
+						//Manifestation gives us Format & Format Category
+						if (!$relatedManifestation->isHideByDefault()) {
+							$format = $relatedManifestation->format;
+							//Variation gives us the sort
+							foreach ($relatedManifestation->getVariations() as $variation) {
+								if (!$variation->isHideByDefault()) {
+									//Record will give us the call number, and location
+									//Only do up to 3 records per format?
+									foreach ($variation->getRecords() as $record) {
+										if ($record->isLocallyOwned() || $record->isLibraryOwned()) {
+											$copySummary = $record->getItemSummary();
+											foreach ($copySummary as $item) {
+												$output[] = $format . "::" . $item['description'];
+											}
+											$output = array_unique($output);
+											$output = array_slice($output, 0, 3);
+											if (count($output) == 0) {
+												$output[] = "No copies currently owned by this library";
+											}
 										}
-										$output = array_unique($output);
-										$output = array_slice($output, 0, 3);
-										if (count($output) == 0) {
-											$output[] = "No copies currently owned by this library";
+										if($record->_eContentSource == "OverDrive"){
+											$output[] = $format . "::" . "OverDrive";
+											$output = array_unique($output);
+											$output = array_slice($output, 0, 3);
 										}
+										$record->discardDriver();
 									}
-									if($record->_eContentSource == "OverDrive"){
-										$output[] = $format . "::" . "OverDrive";
-										$output = array_unique($output);
-										$output = array_slice($output, 0, 3);
-									}
-									$record->discardDriver();
 								}
 							}
 						}
 					}
+					$groupedWorkDriver = null;
+					$output = implode(',', $output);
+					$row = array ($link, $title, $author, $publisher, $publishDate, $uniqueFormats, $output);
+					fputcsv($fp, $row);
 				}
-				$groupedWorkDriver = null;
-				$output = implode(',', $output);
-				$row = array ($link, $title, $author, $publisher, $publishDate, $uniqueFormats, $output);
-				fputcsv($fp, $row);
 			}
 			exit();
 		} catch (Exception $e) {
@@ -801,6 +805,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			]),
 			'Subject' => translate([
 				'text' => 'Subject',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+			'LocalCallNumber' => translate([
+				'text' => 'Call Number',
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),

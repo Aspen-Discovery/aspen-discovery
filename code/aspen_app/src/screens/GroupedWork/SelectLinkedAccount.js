@@ -1,11 +1,12 @@
 import { Button, Center, Modal, FormControl, Select, Heading, CheckIcon } from 'native-base';
 import React from 'react';
+import { Platform } from 'react-native';
 import { completeAction } from './Record';
-import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {refreshProfile} from '../../util/api/user';
+import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { refreshProfile } from '../../util/api/user';
 import _ from 'lodash';
-import {SelectVolume} from './SelectVolume';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { SelectVolume } from './SelectVolume';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const SelectLinkedAccount = (props) => {
      const { id, action, title, volumeInfo, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
@@ -23,12 +24,12 @@ const SelectLinkedAccount = (props) => {
      let typeOfHold = 'default';
      let promptForHoldType = false;
 
-     if(volumeInfo.numItemsWithVolumes > 0) {
+     if (volumeInfo.numItemsWithVolumes > 0) {
           typeOfHold = 'item';
           shouldDisplayVolumes = true;
           promptForHoldType = true;
 
-          if(volumeInfo.majorityOfItemsHaveVolumes) {
+          if (volumeInfo.majorityOfItemsHaveVolumes) {
                typeOfHold = 'volume';
           }
 
@@ -41,11 +42,11 @@ const SelectLinkedAccount = (props) => {
      const [holdType, setHoldType] = React.useState(typeOfHold);
      const [volume, setVolume] = React.useState(null);
 
-     const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
+     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
      let pickupLocation = '';
-     if(!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
           pickupLocation = userPickupLocation[0];
-          if(_.isObject(pickupLocation)) {
+          if (_.isObject(pickupLocation)) {
                pickupLocation = pickupLocation.code;
           }
      }
@@ -78,44 +79,44 @@ const SelectLinkedAccount = (props) => {
                               <Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
-                              {shouldDisplayVolumes ? (
-                                  <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
-                              ) : null}
+                              {shouldDisplayVolumes ? <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType} /> : null}
                               {_.size(locations) > 1 && !isEContent ? (
-                                  <FormControl>
-                                       <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
-                                       <Select
-                                           name="pickupLocations"
-                                           selectedValue={location}
-                                           minWidth="200"
-                                           accessibilityLabel={getTermFromDictionary(language, 'select_pickup_location')}
-                                           _selectedItem={{
-                                                bg: 'tertiary.300',
-                                                endIcon: <CheckIcon size="5" />,
-                                           }}
-                                           mt={1}
-                                           mb={2}
-                                           onValueChange={(itemValue) => setLocation(itemValue)}>
-                                            {locations.map((location, index) => {
-                                                 return <Select.Item label={location.name} value={location.code} key={index} />;
-                                            })}
-                                       </Select>
-                                  </FormControl>
+                                   <FormControl>
+                                        <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
+                                        <Select
+                                             isReadOnly={Platform.OS === 'android'}
+                                             name="pickupLocations"
+                                             selectedValue={location}
+                                             minWidth="200"
+                                             accessibilityLabel={getTermFromDictionary(language, 'select_pickup_location')}
+                                             _selectedItem={{
+                                                  bg: 'tertiary.300',
+                                                  endIcon: <CheckIcon size="5" />,
+                                             }}
+                                             mt={1}
+                                             mb={2}
+                                             onValueChange={(itemValue) => setLocation(itemValue)}>
+                                             {locations.map((location, index) => {
+                                                  return <Select.Item label={location.name} value={location.code} key={index} />;
+                                             })}
+                                        </Select>
+                                   </FormControl>
                               ) : null}
                               <FormControl pb={5}>
                                    <FormControl.Label>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControl.Label>
                                    <Select
-                                       name="linkedAccount"
-                                       selectedValue={activeAccount}
-                                       minWidth="200"
-                                       accessibilityLabel={isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}
-                                       _selectedItem={{
-                                            bg: 'tertiary.300',
-                                            endIcon: <CheckIcon size="5" />,
-                                       }}
-                                       mt={1}
-                                       mb={3}
-                                       onValueChange={(itemValue) => setActiveAccount(itemValue)}>
+                                        isReadOnly={Platform.OS === 'android'}
+                                        name="linkedAccount"
+                                        selectedValue={activeAccount}
+                                        minWidth="200"
+                                        accessibilityLabel={isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}
+                                        _selectedItem={{
+                                             bg: 'tertiary.300',
+                                             endIcon: <CheckIcon size="5" />,
+                                        }}
+                                        mt={1}
+                                        mb={3}
+                                        onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                         <Select.Item label={user.displayName} value={user.id} />
                                         {availableAccounts.map((item, index) => {
                                              return <Select.Item label={item.displayName} value={item.id} key={index} />;
@@ -141,9 +142,9 @@ const SelectLinkedAccount = (props) => {
                                              await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (result) => {
                                                   setResponse(result);
                                                   setShowPrompt(false);
-                                                  if(result) {
+                                                  if (result) {
                                                        setResponseIsOpen(true);
-                                                       if(result.success) {
+                                                       if (result.success) {
                                                             await refreshProfile(library.baseUrl).then((profile) => {
                                                                  updateUser(profile);
                                                             });

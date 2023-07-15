@@ -625,7 +625,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]);;
 			} else {
-				//MDN 9/20/2015 The recordId can be empty for Prospector holds
+				//MDN 9/20/2015 The recordId can be empty for INN-Reach holds
 				if (empty($_REQUEST['cancelId']) && empty($_REQUEST['recordId'])) {
 					$result['message'] = translate([
 						'text' => 'Information about the hold to be cancelled was not provided.',
@@ -770,7 +770,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]);;
 			} else {
-				//MDN 9/20/2015 The recordId can be empty for Prospector holds
+				//MDN 9/20/2015 The recordId can be empty for INN-Reach holds
 				if (empty($_REQUEST['requestId']) || !isset($_REQUEST['cancelId'])) {
 					$result['message'] = translate([
 						'text' => 'Information about the requests to be cancelled was not provided.',
@@ -3089,11 +3089,16 @@ class MyAccount_AJAX extends JSON_Action {
 		$event->userId = UserAccount::getActiveUserId();
 		if ($eventsFilter == 'past') {
 			$event->whereAdd("eventDate < $curTime");
+			$event->orderBy('eventDate DESC');
 		}
 		if ($eventsFilter == 'upcoming') {
 			$event->whereAdd("eventDate >= $curTime");
+			$event->orderBy('eventDate ASC');
 		}
-		$event->orderBy('eventDate ASC');
+		if ($eventsFilter == 'all'){
+			$event->orderBy('eventDate DESC');
+
+		}
 		$event->limit(($page - 1) * $pageSize, $pageSize);
 		$event->find();
 		$events = [];
@@ -4006,6 +4011,9 @@ class MyAccount_AJAX extends JSON_Action {
 				if($paymentType == 'deluxe') {
 					$payment->deluxeRemittanceId = $_REQUEST['token'];
 				}
+				if($paymentType == 'square') {
+					$payment->squareToken = $_REQUEST['token'];
+				}
 			}
 
 			$paymentId = $payment->insert();
@@ -4318,6 +4326,184 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function createSquareOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('square');
+		} else {
+			$result = $this->createGenericOrder('square');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+
+			return [
+				'success' => true,
+				'paymentId' => $payment->id,
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function completeSquareOrder() {
+		global $configArray;
+
+		$patronId = $_REQUEST['patronId'];
+		$transactionType = $_REQUEST['type'];
+		$paymentToken = $_REQUEST['token'];
+
+		global $library;
+		$paymentLibrary = $library;
+
+		if ($transactionType == 'donation') {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->squareToken = $paymentToken;
+			$payment->transactionType = 'donation';
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
+				$donation->paymentId = $payment->id;
+				if (!$donation->find(true)) {
+					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=square&payment=' . $payment->id . '&donation=' . $donation->id);
+				}
+			} else {
+				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=square&payment=' . $payment->id);
+			}
+		} else {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->squareToken = $paymentToken;
+			$payment->userId = $patronId;
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				$user = UserAccount::getLoggedInUser();
+				$patronId = $_REQUEST['patronId'];
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+				global $library;
+				$paymentLibrary = $library;
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 0) {
+					$paymentLibrary = $userLibrary;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+		$squareSettings = new SquareSetting();
+		$squareSettings->id = $paymentLibrary->squareSettingId;
+		if($squareSettings->find(true)) {
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$paymentRequest = new CurlWrapper();
+			$baseUrl = 'https://connect.squareup.com';
+			if($squareSettings->sandboxMode == 1) {
+				$baseUrl = 'https://connect.squareupsandbox.com';
+			}
+
+			$paymentRequest->addCustomHeaders([
+				'Content-Type: application/json',
+				'Square-Version: 2023-06-08',
+				"Authorization: Bearer $squareSettings->accessToken",
+			], true);
+
+			$paymentId = null;
+			$paymentAmount = null;
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->squareToken = $paymentToken;
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				$paymentAmount = $payment->totalPaid;
+				$body = [
+					'idempotency_key' => $paymentId,
+					'amount_money' => [
+						'amount' => 2000,
+						'currency' => 'USD'
+					],
+					'source_id' => $paymentToken
+				];
+
+				$paymentUrl = $baseUrl . '/v2/payments';
+				$paymentRequestResults = $paymentRequest->curlPostBodyData($paymentUrl, $body);
+				$paymentRequestResults = json_decode($paymentRequestResults);
+				if ($paymentRequestResults->payment) {
+					$paymentResults = $paymentRequestResults->payment;
+					if ($paymentResults->status == 'COMPLETED' || $paymentResults->status == 'APPROVED') {
+						if($transactionType == 'donation') {
+							$payment->completed = 1;
+							$payment->transactionId = $paymentResults->id;
+							$payment->orderId = $paymentResults->order_id;
+							$payment->update();
+							return [
+								'success' => true,
+								'isDonation' => true,
+								'paymentId' => $payment->id,
+								'donationId' => $donation->id,
+							];
+						} else {
+							if($payment->completed) {
+								return [
+									'success' => false,
+									'message' => 'This payment has already been processed'
+								];
+							} else {
+								$payment->transactionId = $paymentResults->id;
+								$payment->orderId = $paymentResults->order_id;
+								$payment->update();
+								$user = UserAccount::getActiveUserObj();
+								$patron = $user->getUserReferredTo($patronId);
+								$result = $patron->completeFinePayment($payment);
+								if($result['success'] == false) {
+									$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
+									$payment->update();
+									$result['message'] = $payment->message;
+								}
+
+								return $result;
+							}
+						}
+					}
+				} else {
+					$error = $paymentRequestResults->error;
+					$payment->error = 1;
+					$payment->message = $error->detail;
+					$payment->update();
+					return [
+						'success' => false,
+						'message' => $error->detail,
+					];
+				}
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
 	function createMSBOrder() {
 		global $configArray;
 
@@ -4425,7 +4611,7 @@ class MyAccount_AJAX extends JSON_Action {
 					$paymentRequestUrl .= "&PatronID=" . $patron->getBarcode();
 				}
 				$paymentRequestUrl .= '&UserName=' . urlencode($compriseSettings->username);
-				$paymentRequestUrl .= '&Password=' . $compriseSettings->password;
+				$paymentRequestUrl .= '&Password=' . urlencode($compriseSettings->password);
 				$paymentRequestUrl .= '&Amount=' . $currencyFormatter->format($payment->totalPaid);
 				if ($transactionType == 'donation') {
 					$donation = $this->addDonation($payment, $tempDonation);
@@ -4867,6 +5053,125 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 	}
 
+	function createPayPalPayflowOrder() {
+		global $configArray;
+		global $interface;
+		global $activeLanguage;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('payflow');
+		} else {
+			$result = $this->createGenericOrder('payflow');
+		}
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			/** @noinspection PhpUnusedLocalVariableInspection */
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+
+			$bodyBackgroundColor = $interface->getVariable('bodyBackgroundColor');
+			$bodyTextColor = $interface->getVariable('bodyTextColor');
+			$defaultButtonBackgroundColor = $interface->getVariable('defaultButtonBackgroundColor');
+			$defaultButtonForegroundColor = $interface->getVariable('defaultButtonForegroundColor');
+
+			require_once ROOT_DIR . '/sys/ECommerce/PayPalPayflowSetting.php';
+			$payflowSettings = new PayPalPayflowSetting();
+			$payflowSettings->id = $paymentLibrary->paypalPayflowSettingId;
+			if (!$payflowSettings->find(true)) {
+				return [
+					'success' => false,
+					'message' => 'PayPal Payflow settings are not configured correctly for ' . $paymentLibrary->displayName,
+				];
+			}
+
+			$iframeUrl = 'https://payflowlink.paypal.com/';
+			$mode = 'LIVE';
+			$tokenRequestUrl = 'https://payflowpro.paypal.com/';
+			if ($payflowSettings->sandboxMode == 1 || $payflowSettings->sandboxMode == '1') {
+				$iframeUrl = 'https://pilot-payflowlink.paypal.com/';
+				$tokenRequestUrl = 'https://pilot-payflowpro.paypal.com/';
+				$mode = 'TEST';
+			}
+
+			//Create unique token
+			$uid = random_bytes(12);
+			$tokenId = bin2hex($uid);
+
+			//Get the access token
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$payflowTokenRequest = new CurlWrapper();
+
+			$patron->loadContactInformation();
+			$postParams = [
+				'PARTNER' => $payflowSettings->partner,
+				'VENDOR' => $payflowSettings->vendor,
+				'USER' => $payflowSettings->user,
+				'PWD' => $payflowSettings->password,
+				'TRXTYPE' => 'S',
+				'CURRENCY' => 'USD',
+				'TEMPLATE' => 'MOBILE',
+				'AMT' => "$payment->totalPaid",
+				'CREATESECURETOKEN' => 'Y',
+				'SECURETOKENID' => $tokenId,
+				'RETURNURL' => $configArray['Site']['url'] . '/MyAccount/PayflowComplete',
+				'CANCELURL' => $configArray['Site']['url'] . '/MyAccount/PayflowCancelled',
+				'ERRORURL' => $configArray['Site']['url'] . '/MyAccount/PayflowComplete',
+				'SILENTPOSTURL' => $configArray['Site']['url'] . '/MyAccount/PayflowComplete',
+				'USER1' => $payment->id,
+				'USER2' => $_SESSION['activeUserId'],
+				'USER3' => $activeLanguage->code,
+				'PAGECOLLAPSEBGCOLOR' => $bodyBackgroundColor,
+				'PAGECOLLAPSETEXTCOLOR' => $bodyTextColor,
+				'PAGEBUTTONBGCOLOR' => $defaultButtonBackgroundColor,
+				'PAGEBUTTONTEXTCOLOR' => $defaultButtonForegroundColor,
+				'LABELTEXTCOLOR' => $bodyTextColor
+			];
+
+			foreach ($postParams as $index => $value) {
+				$paramList[] = $index . '[' . strlen($value) . ']=' . $value;
+			}
+
+			$params = implode('&', $paramList);
+
+			$tokenResults = $payflowTokenRequest->curlSendPage($tokenRequestUrl, 'POST', $params);
+			$tokenResults = PayPalPayflowSetting::parsePayflowString($tokenResults);
+			if ($tokenResults['RESULT'] != 0) {
+				ExternalRequestLogEntry::logRequest('getPayflowToken', 'POST', $tokenRequestUrl, $payflowTokenRequest->getHeaders(), $params, $payflowTokenRequest->getResponseCode(), $tokenResults, []);
+				return [
+					'success' => false,
+					'message' => 'Unable to authenticate with Payflow, please try again in a few minutes.',
+				];
+			} else {
+				$token = $tokenResults['SECURETOKEN'];
+				$tokenId = $tokenResults['SECURETOKENID'];
+			}
+
+			return [
+				'success' => true,
+				'paymentIframe' => "<iframe class='fulfillmentFrame' id='payflow-link-iframe' src='{$iframeUrl}/?SECURETOKEN={$token}&SECURETOKENID={$tokenId}' sandbox='allow-top-navigation allow-scripts allow-same-origin allow-forms allow-modals' border='0' frameborder='0' scrolling='no' allowtransparency='true'>\n</iframe>",
+			];
+		}
+	}
+
 	/** @noinspection PhpUnused */
 	function createACIOrder() {
 		$transactionType = $_REQUEST['type'];
@@ -5303,7 +5608,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 
 						$label = explode('_', $hiddenCategory->browseCategoryId);
-						$id = $label[3];
+						$id = $label[3] ?? $hiddenCategory->browseCategoryId;
 						$searchEntry = new SearchEntry();
 						$searchEntry->id = $id;
 						if ($searchEntry->find(true)) {
@@ -5325,7 +5630,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 
 						$label = explode('_', $hiddenCategory->browseCategoryId);
-						$id = $label[3];
+						$id = $label[3] ?? $hiddenCategory->browseCategoryId;
 						require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 						$sourceList = new UserList();
 						$sourceList->id = $id;
@@ -5343,8 +5648,19 @@ class MyAccount_AJAX extends JSON_Action {
 						$browseCategory = new BrowseCategory();
 						$browseCategory->textId = $hiddenCategory->browseCategoryId;
 						if ($browseCategory->find(true)) {
+							$parentLabel = "";
+							require_once ROOT_DIR . '/sys/Browse/SubBrowseCategories.php';
+							$subBrowseCategory = new SubBrowseCategories();
+							$subBrowseCategory->subCategoryId = $browseCategory->id;
+							if($subBrowseCategory->find(true)) {
+								$parentCategory = new BrowseCategory();
+								$parentCategory->id = $subBrowseCategory->browseCategoryId;
+								if($parentCategory->find(true)) {
+									$parentLabel = $parentCategory->label . ': ';
+								}
+							}
 							$category['id'] = $browseCategory->textId;
-							$category['name'] = $browseCategory->label;
+							$category['name'] = $parentLabel . $browseCategory->label;
 							$category['description'] = $browseCategory->description;
 							$categories[] = $category;
 						}

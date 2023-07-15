@@ -7,6 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
@@ -38,6 +39,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.crypto.Data;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -144,7 +146,7 @@ public class CarlXExportMain {
 					profileToLoad = carlXInstanceInformation.indexingProfileName;
 				}
 
-				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
 				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 				if (!extractSingleWork && indexingProfile.isRegroupAllRecords()) {
 					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);
@@ -402,7 +404,17 @@ public class CarlXExportMain {
 						}else if (!recordIdentifier.isSuppressed()) {
 							String recordNumber = recordIdentifier.getIdentifier();
 
-							//TODO: Remove all 949n (Item notes from the marc record). Will attempt to remove from the export, if that can't be done we will strip them out here.
+							//Redact strings that look like patron IDs from 949n Item notes
+							List<DataField> itemFields = curBib.getDataFields(indexingProfile.getItemTag());
+							for (DataField itemField : itemFields) {
+								List <Subfield> subfields = itemField.getSubfields();
+								for (Subfield subfield : subfields) {
+									if (subfield.getCode() == 'n') {
+										String censored = patronIDPattern.matcher(subfield.getData()).replaceAll("X");
+										subfield.setData(censored);
+									}
+								}
+							}
 
 							GroupedWorkIndexer.MarcStatus marcStatus = indexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 							if (marcStatus != GroupedWorkIndexer.MarcStatus.UNCHANGED || indexingProfile.isRunFullUpdate()) {
@@ -1543,4 +1555,7 @@ public class CarlXExportMain {
 		}
 		return groupedWorkIndexer;
 	}
+
+	private static Pattern patronIDPattern = Pattern.compile("\\b\\d{6,14}\\b");
+
 }

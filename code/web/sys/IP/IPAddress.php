@@ -19,6 +19,7 @@ class IPAddress extends DataObject {
 	public $startIpVal;
 	public $endIpVal;
 	public $authenticatedForEBSCOhost;
+	public $masqueradeMode;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -45,6 +46,12 @@ class IPAddress extends DataObject {
 			$locationLookupList[$location->locationId] = $location->displayName;
 		}
 		$structure = [
+			'id' => [
+				'property' => 'id',
+				'type' => 'label',
+				'label' => 'Id',
+				'description' => 'The unique id within the database',
+			],
 			'ip' => [
 				'property' => 'ip',
 				'type' => 'text',
@@ -128,6 +135,13 @@ class IPAddress extends DataObject {
 				'description' => 'Traffic from this IP will be automaticatlly authenticated in EBSCOhost.',
 				'default' => false,
 			],
+			'masqueradeMode' => [
+				'property' => 'masqueradeMode',
+				'type' => 'checkbox',
+				'label' => 'Allow Masquerade',
+				'description' => 'Traffic from this IP will be allowed to use Masquerade Mode.',
+				'default' => false,
+			]
 		];
 
 		global $enabledModules;
@@ -146,6 +160,7 @@ class IPAddress extends DataObject {
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
+		IPAddress::$ipAddressesForIP = [];
 		return parent::insert();
 	}
 
@@ -154,8 +169,18 @@ class IPAddress extends DataObject {
 		global $memCache;
 		$memCache->deleteStartingWith('ipId_for_ip_');
 		$memCache->deleteStartingWith('location_for_ip_');
+		IPAddress::$ipAddressesForIP = [];
 		return parent::update();
 	}
+
+	function delete($useWhere = false) {
+		global $memCache;
+		$memCache->deleteStartingWith('ipId_for_ip_');
+		$memCache->deleteStartingWith('location_for_ip_');
+		IPAddress::$ipAddressesForIP = [];
+		return parent::delete($useWhere);
+	}
+
 
 	/** @noinspection PhpUnused This is used in validation when editing the object */
 	function validateIPAddress(): array {

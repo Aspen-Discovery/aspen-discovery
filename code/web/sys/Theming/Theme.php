@@ -10,8 +10,19 @@ class Theme extends DataObject {
 	public $extendsTheme;
 	public $logoName;
 	public $favicon;
+	public $defaultCover;
 	public $logoApp;
 	public $fullWidth;
+	public $booksImage;
+	public $eBooksImage;
+	public $audioBooksImage;
+	public $musicImage;
+	public $moviesImage;
+	public $booksImageSelected;
+	public $eBooksImageSelected;
+	public $audioBooksImageSelected;
+	public $musicImageSelected;
+	public $moviesImageSelected;
 
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */
@@ -520,7 +531,7 @@ class Theme extends DataObject {
 				'property' => 'themeName',
 				'type' => 'text',
 				'label' => 'Theme Name',
-				'description' => 'The Name of the Theme',
+				'description' => 'The Name of the Theme. This theme name will only display internally within Aspen settings.',
 				'maxLength' => 50,
 				'required' => true,
 				'uniqueProperty' => true,
@@ -529,7 +540,7 @@ class Theme extends DataObject {
 				'property' => 'displayName',
 				'type' => 'text',
 				'label' => 'Display Name',
-				'description' => 'The Display Name of the Theme',
+				'description' => 'The Display Name of the Theme. This will display to users when more than one theme option is available for them to choose in their preferences. Examples: Default, High Contrast, Dark Mode, etc.',
 				'maxLength' => 50,
 				'required' => true,
 				'uniqueProperty' => false,
@@ -555,13 +566,14 @@ class Theme extends DataObject {
 				'property' => 'isHighContrast',
 				'type' => 'checkbox',
 				'label' => 'High Contrast Theme',
-				'description' => 'Whether or not the theme is high contrast to add some accessibility styling enhancements.',
+				'description' => 'Do not enable this option for your primary/default theme! Enabling this option will add some accessibility styling enhancements.',
+                'note' => 'Enabling this option will add accessibility and styling enhancements to a High Contrast theme. Not recommended for your default/primary theme.',
 				'required' => false,
 			],
 			'logoName' => [
 				'property' => 'logoName',
 				'type' => 'image',
-				'label' => 'Logo (1170 x 250px max) - (250 x 100px max if showing library name in header)',
+				'label' => 'Logo (1140 x 225px max) - (250 x 100px max if showing library name in header)',
 				'description' => 'The logo for use in the header',
 				'required' => false,
 				'thumbWidth' => 750,
@@ -573,7 +585,7 @@ class Theme extends DataObject {
 				'property' => 'favicon',
 				'type' => 'image',
 				'label' => 'favicon (32px x 32px max)',
-				'description' => 'The icon for use in the tab (.jpg and .png files supported)',
+				'description' => 'The icon for use in the browser tab (.jpg and .png files supported)',
 				'required' => false,
 				'maxWidth' => 32,
 				'maxHeight' => 32,
@@ -583,11 +595,21 @@ class Theme extends DataObject {
 				'property' => 'logoApp',
 				'type' => 'image',
 				'label' => 'Logo for Aspen LiDA (512x512 pixels)',
-				'description' => 'The logo for use in Aspen LiDA, if none provided will use favicon',
+				'description' => 'The logo for use in Aspen LiDA. If none provided, Aspen will use the favicon.',
 				'required' => false,
 				'thumbWidth' => 180,
 				'maxWidth' => 512,
 				'maxHeight' => 512,
+				'hideInLists' => true,
+			],
+			'defaultCover' => [
+				'property' => 'defaultCover',
+				'type' => 'image',
+				'label' => 'Background Image for Default Covers (280x280)',
+				'description' => 'A background image for default covers (.jpg or .png only)',
+				'required' => false,
+				'maxWidth' => 280,
+				'maxHeight' => 280,
 				'hideInLists' => true,
 			],
 			'coverStyle' => [
@@ -595,7 +617,7 @@ class Theme extends DataObject {
 				'type' => 'enum',
 				'values' => $coverStyles,
 				'label' => 'Cover Image Style',
-				'description' => 'Choose a style for cover images throughout the catalog.)',
+				'description' => 'Choose a style for cover images throughout the catalog.',
 				'required' => false,
 				'hideInLists' => true,
 			],
@@ -1095,6 +1117,115 @@ class Theme extends DataObject {
 				],
 			],*/
 
+			//Format Category Facet Theming
+			'formatCategorySection' => [
+				'property' => 'formatCategorySection',
+				'type' => 'section',
+				'label' => 'Format Category Icons',
+				'hideInLists' => true,
+				'properties' => [
+					'booksImage' => [
+						'property' => 'booksImage',
+						'type' => 'image',
+						'label' => 'Book Icon (50x50px max)',
+						'description' => 'An image for the book format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'booksImageSelected' => [
+						'property' => 'booksImageSelected',
+						'type' => 'image',
+						'label' => 'Book Icon Selected (50x50px max)',
+						'description' => 'An image for the book format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'eBooksImage' => [
+						'property' => 'eBooksImage',
+						'type' => 'image',
+						'label' => 'eBook Icon (50x50px max)',
+						'description' => 'An image for the eBook format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'eBooksImageSelected' => [
+						'property' => 'eBooksImageSelected',
+						'type' => 'image',
+						'label' => 'eBook Icon Selected (50x50px max)',
+						'description' => 'An image for the eBook format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'audioBooksImage' => [
+						'property' => 'audioBooksImage',
+						'type' => 'image',
+						'label' => 'Audio Book Icon (50x50px max)',
+						'description' => 'An image for the audio book format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'audioBooksImageSelected' => [
+						'property' => 'audioBooksImageSelected',
+						'type' => 'image',
+						'label' => 'Audio Book Icon Selected (50x50px max)',
+						'description' => 'An image for the audio book format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'musicImage' => [
+						'property' => 'musicImage',
+						'type' => 'image',
+						'label' => 'Music Icon (50x50px max)',
+						'description' => 'An image for the music format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'musicImageSelected' => [
+						'property' => 'musicImageSelected',
+						'type' => 'image',
+						'label' => 'Music Icon Selected (50x50px max)',
+						'description' => 'An image for the music format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'moviesImage' => [
+						'property' => 'moviesImage',
+						'type' => 'image',
+						'label' => 'Movie Icon (50x50px max)',
+						'description' => 'An image for the movie format category icon',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+					'moviesImageSelected' => [
+						'property' => 'moviesImageSelected',
+						'type' => 'image',
+						'label' => 'Movie Icon Selected (50x50px max)',
+						'description' => 'An image for the movie format category icon when selected',
+						'required' => false,
+						'maxWidth' => 50,
+						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+				],
+			],
 			//Browse category theming
 			'browseCategorySection' => [
 				'property' => 'browseCategorySection',
@@ -2191,7 +2322,7 @@ class Theme extends DataObject {
 	}
 
 	public function insert($context = '') {
-		$this->generatedCss = $this->generateCss();
+		$this->__set('generatedCss', $this->generateCss());
 		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
@@ -2556,7 +2687,7 @@ class Theme extends DataObject {
 
 		$interface->assign('additionalCSS', $additionalCSS);
 
-		$this->generatedCss = $interface->fetch('theme.css.tpl');
+		$this->__set('generatedCss', $interface->fetch('theme.css.tpl'));
 		if ($saveChanges) {
 			$this->update();
 		}
@@ -2618,7 +2749,7 @@ class Theme extends DataObject {
 		} elseif ($name == "locations") {
 			return $this->getLocations();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -2628,7 +2759,7 @@ class Theme extends DataObject {
 		} elseif ($name == "locations") {
 			$this->_locations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

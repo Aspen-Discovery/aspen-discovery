@@ -53,12 +53,15 @@
 					<div id="ticketStatsGroup" class="panel-collapse collapse in">
 						<div class="panel-body">
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsCreatedByDay">{translate text="Tickets Created By Day" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Development/TicketsCreatedByMonth">{translate text="Tickets Created By Month" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Development/TicketsClosedByDay">{translate text="Tickets Closed By Day" isAdminFacing=true}</a></div>
-							<div class="adminMenuLink "><a href="/Development/TicketsClosedByMonth">{translate text="Tickets Closed By Month" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsCreatedByMonth">{translate text="Tickets Created By Month" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsClosedByDay">{translate text="Tickets Closed By Day" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsClosedByMonth">{translate text="Tickets Closed By Month" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/TicketsTrend">{translate text="Trend of Active Tickets" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/BugsBySeverityAndComponent">{translate text="Active Bugs by Severity" isAdminFacing=true}</a></div>
+							<div class="adminMenuLink "><a href="/Greenhouse/BugsBySeverityTrend">{translate text="Trend of Active Bugs by Severity" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByPartner">{translate text="Active Tickets By Partner" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponent">{translate text="Active Tickets By Component" isAdminFacing=true}</a></div>
+{*							<div class="adminMenuLink "><a href="/Greenhouse/TicketsByComponentTrend">{translate text="Trend of Active Tickets by Component" isAdminFacing=true}</a></div>*}
 							<div class="adminMenuLink "><a href="/Greenhouse/PartnerPriorities">{translate text="Partner Priorities" isAdminFacing=true}</a></div>
 							<div class="adminMenuLink "><a href="/Greenhouse/PartnerTicketDashboard">{translate text="Partner Ticket Dashboard" isAdminFacing=true}</a></div>
 						</div>

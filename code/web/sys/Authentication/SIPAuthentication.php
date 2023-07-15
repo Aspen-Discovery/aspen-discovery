@@ -60,6 +60,9 @@ class SIPAuthentication implements Authentication {
 
 								// Success!!!
 								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
+								if (empty($user)) {
+									return null;
+								}
 
 								// Set login cookie for 1 hour
 								$user->password = $password; // Need this for Metalib
@@ -152,9 +155,12 @@ class SIPAuthentication implements Authentication {
 
 								// Success!!!
 								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
-
-								// Set login cookie for 1 hour
-								$user->password = $password; // Need this for Metalib
+								if (empty($user)) {
+									$user = new AspenError('Could not load user information.');
+								} else {
+									// Set login cookie for 1 hour
+									$user->password = $password; // Need this for Metalib
+								}
 							} else {
 								$user = new AspenError('Sorry that login information was not recognized, please try again.');
 							}
@@ -247,7 +253,9 @@ class SIPAuthentication implements Authentication {
 
 		if ($insert) {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		} else {
 			$user->update();
 		}

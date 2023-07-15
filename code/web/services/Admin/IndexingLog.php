@@ -38,7 +38,7 @@ abstract class Admin_IndexingLog extends Admin_Admin {
 
 		$options = [
 			'totalItems' => $total,
-			'fileName' => "/{$this->getModule()}/IndexingLog?page=%d" . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			//'fileName' => "/{$this->getModule()}/IndexingLog?page=%d" . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']) . (empty($_REQUEST['processedLimit']) ? '' : '&processedLimit=' . $_REQUEST['processedLimit']) ,
 			'perPage' => $pageSize,
 		];
 		$pager = new Pager($options);

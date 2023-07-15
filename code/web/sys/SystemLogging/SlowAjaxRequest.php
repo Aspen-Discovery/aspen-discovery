@@ -4,17 +4,17 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class SlowAjaxRequest extends DataObject {
 	public $__table = 'slow_ajax_request';
-	public $id;
-	public $year;
-	public $month;
-	public $module;
-	public $action;
-	public $method;
-	public $timesFast; //Less than .5 seconds
-	public $timesAcceptable; //.5 to 1 second
-	public $timesSlow; //1 second to 2 second
-	public $timesSlower; //2 second to 4 second
-	public $timesVerySlow; //4+ seconds
+	protected $id;
+	protected $year;
+	protected $month;
+	protected $module;
+	protected $action;
+	protected $method;
+	protected $timesFast; //Less than .5 seconds
+	protected $timesAcceptable; //.5 to 1 second
+	protected $timesSlow; //1 second to 2 second
+	protected $timesSlower; //2 second to 4 second
+	protected $timesVerySlow; //4+ seconds
 
 	public function getUniquenessFields(): array {
 		return [

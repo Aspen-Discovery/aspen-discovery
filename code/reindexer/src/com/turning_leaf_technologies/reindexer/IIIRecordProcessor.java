@@ -99,7 +99,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 	private final SimpleDateFormat displayDateFormatter = new SimpleDateFormat("MMM d, yyyy");
 	private String getDisplayDueDate(String dueDateStr, String identifier){
 		try {
-			Date dueDate = dueDateFormatter.parse(dueDateStr);
+			Date dueDate = settings.getDueDateFormatter().parse(dueDateStr);
 			return displayDateFormatter.format(dueDate);
 		}catch (Exception e){
 			logger.warn("Could not load display due date for dueDate " + dueDateStr + " for identifier " + identifier, e);
@@ -225,7 +225,7 @@ class IIIRecordProcessor extends IlsRecordProcessor{
 				available = true;
 			}
 		}
-		if (!available && (groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only")))){
+		if (!available && (groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only")))){
 			available = true;
 		}
 		return available;

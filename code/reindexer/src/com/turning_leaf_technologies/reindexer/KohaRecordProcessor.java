@@ -166,7 +166,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && displayStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
+		return !inTransitItems.contains(itemInfo.getItemIdentifier()) && displayStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
 	private final HashSet<String> unhandledFormatBoosts = new HashSet<>();
@@ -233,7 +233,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				String iType = iTypeCode.toLowerCase().trim();
 				//Translate the iType to see what formats we get.  Some item types do not have a format by default and use the default translation
 				String translatedFormat = translateValue("format", iType, recordInfo.getRecordIdentifier());
-				if (translatedFormat != null) {
+				if (translatedFormat != null && translatedFormat.length() > 0) {
 					foundFormatFromIType = true;
 					itemInfo.setFormat(translatedFormat);
 					String translatedLocationCategory = translateValue("format_category", iType, recordInfo.getRecordIdentifier());
@@ -246,9 +246,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 		}
 
 		if (!foundFormatFromShelfLocation && !foundFormatFromSublocation && !foundFormatFromCollection && !foundFormatFromIType) {
-			String format = getItemSubfieldData(formatSubfield, itemField);
+			String format = getItemSubfieldData(settings.getFormatSubfield(), itemField);
 			String translatedFormat = translateValue("format", format, recordInfo.getRecordIdentifier());
-			if (translatedFormat != null) {
+			if (translatedFormat != null && translatedFormat.length() > 0) {
 				itemInfo.setFormat(translatedFormat);
 				String translatedLocationCategory = translateValue("format_category", format, recordInfo.getRecordIdentifier());
 				itemInfo.setFormatCategory(translatedLocationCategory);
@@ -280,7 +280,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			return "On Hold Shelf";
 		}
 
-		String subLocationData = getItemSubfieldData(subLocationSubfield, itemField);
+		String subLocationData = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
 		if (subLocationData != null && subLocationData.equalsIgnoreCase("ON-ORDER")){
 			return "On Order";
 		}
@@ -386,7 +386,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected StringBuilder loadUnsuppressedPrintItems(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, String identifier, Record record, StringBuilder suppressionNotes){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		for (DataField itemField : itemRecords){
 			String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
 			ResultWithNotes isSuppressed = isItemSuppressed(itemField, itemIdentifier, suppressionNotes);
@@ -410,7 +410,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 	}
 
 	protected List<RecordInfo> loadUnsuppressedEContentItems(AbstractGroupedWorkSolr groupedWork, String identifier, Record record, StringBuilder suppressionNotes, RecordInfo mainRecordInfo, boolean hasParentRecord, boolean hasChildRecords){
-		List<DataField> itemRecords = MarcUtil.getDataFields(record, itemTagInt);
+		List<DataField> itemRecords = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		List<RecordInfo> unsuppressedEcontentRecords = new ArrayList<>();
 
 		for (DataField itemField : itemRecords){
@@ -535,8 +535,8 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 //					sourceType = field037.getSubfield('b').getData();
 //				}else{
 					//Try the location for the item
-					if (itemField.getSubfield(locationSubfieldIndicator) != null){
-						sourceType = itemField.getSubfield(locationSubfieldIndicator).getData();
+					if (itemField.getSubfield(settings.getLocationSubfield()) != null){
+						sourceType = itemField.getSubfield(settings.getLocationSubfield()).getData();
 					}
 //				}
 				sourceType = "Online Content";
@@ -569,9 +569,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		//Suppression based on format
-		String shelfLocationCode = getSubfieldData(curItem, shelvingLocationSubfield);
-		String subLocation = getSubfieldData(curItem, subLocationSubfield);
-		String collectionCode = getSubfieldData(curItem, collectionSubfield);
+		String shelfLocationCode = getSubfieldData(curItem, settings.getShelvingLocationSubfield());
+		String subLocation = getSubfieldData(curItem, settings.getSubLocationSubfield());
+		String collectionCode = getSubfieldData(curItem, settings.getCollectionSubfield());
 		String itemType = getSubfieldData(curItem, iTypeSubfield);
 		if (shelfLocationCode != null && formatsToSuppress.contains(shelfLocationCode.toUpperCase())){
 			suppressed = true;
@@ -595,9 +595,9 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location;
-		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
-		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		if (includeLocationNameInDetailedLocation) {
+		String subLocationCode = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
+		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
+		if (settings.isIncludeLocationNameInDetailedLocation()) {
 			location = translateValue("location", locationCode, identifier);
 		}else{
 			location = "";
@@ -611,7 +611,7 @@ class KohaRecordProcessor extends IlsRecordProcessor {
 				location += translateValue("sub_location", subLocationCode, identifier, true);
 			}
 		}
-		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		String shelvingLocation = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0){
 			if (location.length() > 0){
 				location += " - ";

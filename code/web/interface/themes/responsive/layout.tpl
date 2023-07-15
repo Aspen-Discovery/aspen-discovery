@@ -115,10 +115,10 @@
 			<div class="row">
 				{if !empty($sidebar)} {* Main Content & Sidebars *}
 					{* Sidebar on the left *}
-					<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3" id="side-bar" role="navigation" aria-labelledby="sidebarNav">
+					<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 {if !empty($fullWidthTheme) && !empty($showContentAsFullWidth)}col-lg-2{else}col-lg-3{/if}" id="side-bar" role="navigation" aria-labelledby="sidebarNav">
 						{include file="sidebar.tpl"}
 					</div>
-					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9" id="main-content-with-sidebar">
+					<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 {if !empty($fullWidthTheme) && !empty($showContentAsFullWidth)}col-lg-10{else}col-lg-9{/if}" id="main-content-with-sidebar">
 						{if !empty($showBreadcrumbs)}
 							<div role="navigation" aria-label="{translate text="Breadcrumbs" isPublicFacing=true inAttribute=true}">
 							{include file="breadcrumbs.tpl"}

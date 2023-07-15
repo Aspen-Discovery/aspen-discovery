@@ -30,6 +30,10 @@ export const UserContext = React.createContext({
      expoToken: false,
      aspenToken: false,
      resetUser: () => {},
+     updateExpoToken: () => {},
+     updateAspenToken: () => {},
+     notificationOnboard: 0,
+     updateNotificationOnboard: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -230,6 +234,7 @@ export const UserProvider = ({ children }) => {
      const [readingHistory, setReadingHistory] = useState();
      const [cards, setCards] = useState();
      const [notificationSettings, setNotificationSettings] = useState();
+     const [notificationOnboard, setNotificationOnboard] = useState();
      const [expoToken, setExpoToken] = useState();
      const [aspenToken, setAspenToken] = useState();
 
@@ -330,21 +335,49 @@ export const UserProvider = ({ children }) => {
                          setNotificationSettings(settings);
                          setExpoToken(deviceSettings[0]?.token ?? false);
                          setAspenToken(true);
+
+                         if (deviceSettings[0].onboardStatus) {
+                              setNotificationOnboard(deviceSettings[0].onboardStatus);
+                         } else {
+                              // probably connecting to a Discovery version earlier than 23.07.00
+                              setNotificationOnboard(0);
+                         }
                     } else {
                          console.log('No settings found for this device model yet');
                          setExpoToken(false);
                          setAspenToken(false);
+                         setNotificationOnboard(1);
                     }
                } else {
+                    // something went wrong when receiving data from Discovery API
                     setExpoToken(false);
                     setAspenToken(false);
+                    setNotificationOnboard(1);
                }
           } else {
                setExpoToken(false);
                setAspenToken(false);
+
+               // this is not a device that can use notifications, ignore
+               setNotificationOnboard(0);
           }
           //maybe set allowNotifications at this point for initial load?
           console.log('updated notification settings in UserContext');
+     };
+
+     const updateExpoToken = (data) => {
+          setExpoToken(data);
+          console.log('updated expo token UserContext');
+     };
+
+     const updateAspenToken = (data) => {
+          setAspenToken(data);
+          console.log('updated aspen token UserContext');
+     };
+
+     const updateNotificationOnboard = (data) => {
+          setNotificationOnboard(data);
+          console.log('updated notification onboard status in UserContext');
      };
 
      return (
@@ -371,6 +404,10 @@ export const UserProvider = ({ children }) => {
                     updateNotificationSettings,
                     expoToken,
                     aspenToken,
+                    updateExpoToken,
+                    updateAspenToken,
+                    notificationOnboard,
+                    updateNotificationOnboard,
                }}>
                {children}
           </UserContext.Provider>

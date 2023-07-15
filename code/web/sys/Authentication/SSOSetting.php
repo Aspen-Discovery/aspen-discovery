@@ -11,6 +11,7 @@ class SSOSetting extends DataObject {
 	public $bypassAspenLogin;
 	public $bypassAspenPatronLogin;
 	public $ssoAuthOnly;
+    public $forceReAuth;
 
 	//oAuth
 	public $clientId;
@@ -203,6 +204,13 @@ class SSOSetting extends DataObject {
 				'description' => 'Whether or not users are authenticated only by single sign-on',
 				'note' => 'Aspen will not authenticate with the ILS when a user logs in with single sign-on. <em>This has potential security implications</em>',
 			],
+            'forceReAuth' => [
+                'property' => 'forceReAuth',
+                'type' => 'checkbox',
+                'label' => 'Force users to re-authenticate with the IdP when logging into Aspen',
+                'description' => 'Whether or not users must re-authenticate with the IdP each time they log into Aspen',
+                'note' => 'If enabled, users will have to authenticate with the IdP each time they go to log back into Aspen. This is useful for single sign-on being used on public machines.',
+            ],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
 				'type' => 'section',
@@ -925,7 +933,7 @@ class SSOSetting extends DataObject {
 		} elseif ($name == 'idpNameIDFormat') {
 			return 'urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress';
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -935,7 +943,7 @@ class SSOSetting extends DataObject {
 		} elseif ($name == "dataMapping") {
 			$this->_dataMapping = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

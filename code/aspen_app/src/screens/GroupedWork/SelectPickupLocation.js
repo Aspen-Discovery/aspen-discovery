@@ -1,11 +1,12 @@
 import _ from 'lodash';
 import { Button, FormControl, Modal, Select, CheckIcon, Heading } from 'native-base';
 import React, { useState } from 'react';
+import { Platform } from 'react-native';
 import { completeAction } from './Record';
-import {HoldsContext, LanguageContext, LibrarySystemContext, UserContext} from '../../context/initialContext';
-import {refreshProfile} from '../../util/api/user';
-import {SelectVolume} from './SelectVolume';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { HoldsContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { refreshProfile } from '../../util/api/user';
+import { SelectVolume } from './SelectVolume';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const SelectPickupLocation = (props) => {
      const { id, action, title, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, language } = props;
@@ -22,12 +23,12 @@ const SelectPickupLocation = (props) => {
      let typeOfHold = 'default';
      let promptForHoldType = false;
 
-     if(volumeInfo.numItemsWithVolumes > 0) {
+     if (volumeInfo.numItemsWithVolumes > 0) {
           typeOfHold = 'item';
           shouldDisplayVolumes = true;
           promptForHoldType = true;
 
-          if(volumeInfo.majorityOfItemsHaveVolumes) {
+          if (volumeInfo.majorityOfItemsHaveVolumes) {
                typeOfHold = 'volume';
           }
 
@@ -39,11 +40,11 @@ const SelectPickupLocation = (props) => {
 
      const [holdType, setHoldType] = React.useState(typeOfHold);
 
-     const userPickupLocation = _.filter(locations, { 'locationId': user.pickupLocationId });
+     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
      let pickupLocation = '';
-     if(!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
           pickupLocation = userPickupLocation[0];
-          if(_.isObject(pickupLocation)) {
+          if (_.isObject(pickupLocation)) {
                pickupLocation = pickupLocation.code;
           }
      }
@@ -77,13 +78,12 @@ const SelectPickupLocation = (props) => {
                               <Heading size="md">{isPlacingHold ? getTermFromDictionary(language, 'hold_options') : getTermFromDictionary(language, 'checkout_options')}</Heading>
                          </Modal.Header>
                          <Modal.Body>
-                              {shouldDisplayVolumes ? (
-                                  <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType}/>
-                              ) : null}
+                              {shouldDisplayVolumes ? <SelectVolume language={language} id={id} holdType={holdType} setHoldType={setHoldType} volume={volume} setVolume={setVolume} promptForHoldType={promptForHoldType} /> : null}
                               {_.size(accounts) > 1 ? (
                                    <FormControl>
                                         <FormControl.Label>{isPlacingHold ? getTermFromDictionary(language, 'linked_place_hold_for_account') : getTermFromDictionary(language, 'linked_checkout_to_account')}</FormControl.Label>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="linkedAccount"
                                              selectedValue={activeAccount}
                                              minWidth="200"
@@ -103,12 +103,13 @@ const SelectPickupLocation = (props) => {
                                    </FormControl>
                               ) : null}
                               <FormControl>
-                                   <FormControl.Label>{getTermFromDictionary(language, "select_pickup_location")}</FormControl.Label>
+                                   <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
                                    <Select
+                                        isReadOnly={Platform.OS === 'android'}
                                         name="pickupLocations"
                                         selectedValue={location}
                                         minWidth="200"
-                                        accessibilityLabel={getTermFromDictionary(language, "select_pickup_location")}
+                                        accessibilityLabel={getTermFromDictionary(language, 'select_pickup_location')}
                                         _selectedItem={{
                                              bg: 'tertiary.300',
                                              endIcon: <CheckIcon size="5" />,
@@ -135,9 +136,9 @@ const SelectPickupLocation = (props) => {
                                              await completeAction(id, action, activeAccount, null, null, location, library.baseUrl, volume, holdType).then(async (result) => {
                                                   setResponse(result);
                                                   setShowModal(false);
-                                                  if(result) {
+                                                  if (result) {
                                                        setResponseIsOpen(true);
-                                                       if(result.success) {
+                                                       if (result.success) {
                                                             await refreshProfile(library.baseUrl).then((profile) => {
                                                                  updateUser(profile);
                                                             });

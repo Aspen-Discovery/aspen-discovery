@@ -439,6 +439,9 @@ abstract class ObjectEditor extends Admin_Admin {
 			$objectType = $this->getObjectType();
 			$existingObject = new $objectType;
 			$this->setDefaultValues($existingObject, $structure);
+		} else {
+			$structure = $existingObject->updateStructureForEditingObject($structure);
+			$interface->assign('structure', $structure);
 		}
 		$interface->assign('object', $existingObject);
 		//Check to see if the request should be multipart/form-data
@@ -486,6 +489,7 @@ abstract class ObjectEditor extends Admin_Admin {
 					$user = UserAccount::getActiveUserObj();
 					$validationResults = $this->updateFromUI($curObject, $structure);
 					if ($validationResults['validatedOk']) {
+						//Always save since has changes does not check sub objects for changes (which it should)
 						$ret = $curObject->update($this->getContext());
 						if ($ret === false) {
 							if ($curObject->getLastError()) {

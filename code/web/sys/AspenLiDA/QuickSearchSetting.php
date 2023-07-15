@@ -73,7 +73,7 @@ class QuickSearchSetting extends DataObject {
 		} elseif ($name == 'quickSearches') {
 			return $this->getQuickSearches();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -83,7 +83,7 @@ class QuickSearchSetting extends DataObject {
 		} elseif ($name == 'quickSearches') {
 			$this->_quickSearches = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

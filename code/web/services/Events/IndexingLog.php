@@ -27,7 +27,7 @@ class Events_IndexingLog extends Admin_Admin {
 
 		$options = [
 			'totalItems' => $total,
-			'fileName' => '/Events/IndexingLog?page=%d' . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
+			//'fileName' => '/Events/IndexingLog?page=%d' . (empty($_REQUEST['pageSize']) ? '' : '&pageSize=' . $_REQUEST['pageSize']),
 			'perPage' => $pageSize,
 		];
 		$pager = new Pager($options);

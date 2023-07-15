@@ -102,6 +102,15 @@
 					</div>
 					{/if}
 
+					{if strcasecmp($record->source, $record->type) !== 0}
+						<div class="row">
+							<div class="result-label col-tn-4">{translate text='Source' isPublicFacing=true}</div>
+							<div class="col-tn-8 result-value">
+								{translate text=$record->source isPublicFacing=true}
+							</div>
+						</div>
+					{/if}
+
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='Pickup Location' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">

@@ -28,12 +28,12 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
+		return groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
 	@Override
 	protected String getItemStatus(DataField itemField, String recordIdentifier){
-		String statusCode = getItemSubfieldData(statusSubfieldIndicator, itemField);
+		String statusCode = getItemSubfieldData(settings.getItemStatusSubfield(), itemField);
 		if (statusCode.length() > 2){
 			statusCode = translateValue("status_codes", statusCode, recordIdentifier);
 		}
@@ -73,9 +73,9 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	}*/
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
-		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
+		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
 		String location = translateValue("location", locationCode, identifier, true);
-		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		String shelvingLocation = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
 		if (shelvingLocation != null && !shelvingLocation.equals(locationCode)){
 			if (location == null){
 				location = translateValue("shelf_location", shelvingLocation, identifier, true);
@@ -89,11 +89,11 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	private static int numSampleRecordsWithMultiplePrintFormats = 0;
 	@Override
 	public void loadPrintFormatInformation(RecordInfo ilsRecord, Record record, boolean hasChildRecords) {
-		List<DataField> items = MarcUtil.getDataFields(record, itemTagInt);
+		List<DataField> items = MarcUtil.getDataFields(record, settings.getItemTagInt());
 		boolean allItemsAreOrderRecords = true;
 		HashMap<String, Integer> printFormats = new HashMap<>();
 		for (DataField curItem : items){
-			Subfield shelfLocationField = curItem.getSubfield(shelvingLocationSubfield);
+			Subfield shelfLocationField = curItem.getSubfield(settings.getShelvingLocationSubfield());
 			boolean hasLocationBasedFormat = false;
 			if (shelfLocationField != null){
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
@@ -119,7 +119,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 				allItemsAreOrderRecords = false;
 			}
 			if (!hasLocationBasedFormat){
-				Subfield formatField = curItem.getSubfield(formatSubfield);
+				Subfield formatField = curItem.getSubfield(settings.getFormatSubfield());
 				if (formatField != null) {
 					String curFormat = formatField.getData();
 					String printFormatLower = curFormat.toLowerCase();
@@ -209,7 +209,7 @@ class CarlXRecordProcessor extends IlsRecordProcessor {
 	ItemInfoWithNotes createPrintIlsItem(AbstractGroupedWorkSolr groupedWork, RecordInfo recordInfo, Record record, DataField itemField, StringBuilder suppressionNotes) {
 		ItemInfoWithNotes item = super.createPrintIlsItem(groupedWork, recordInfo, record, itemField, suppressionNotes);
 		if (item.itemInfo != null){
-			Subfield shelfLocationField = itemField.getSubfield(shelvingLocationSubfield);
+			Subfield shelfLocationField = itemField.getSubfield(settings.getShelvingLocationSubfield());
 			if (shelfLocationField != null) {
 				String shelfLocation = shelfLocationField.getData().toLowerCase();
 				if (shelfLocation.equals("xord")) {

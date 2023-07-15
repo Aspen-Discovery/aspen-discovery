@@ -172,14 +172,14 @@ const DisplayResult = (data) => {
 
      const handlePressItem = () => {
           if (version >= '23.01.00') {
-               navigate('ResultItem', {
+               navigate('GroupedWorkScreen', {
                     id: item.key,
                     title: getCleanTitle(item.title),
                     url: library.baseUrl,
                     libraryContext: library,
                });
           } else {
-               navigate('ResultItem221200', {
+               navigate('GroupedWorkScreen221200', {
                     id: item.key,
                     title: getCleanTitle(item.title),
                     url: library.baseUrl,

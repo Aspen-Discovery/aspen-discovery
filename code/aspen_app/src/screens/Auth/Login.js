@@ -33,7 +33,7 @@ export const LoginScreen = () => {
      const [showModal, setShowModal] = React.useState(false);
      const [query, setQuery] = React.useState('');
      let isCommunity = true;
-     if (!_.includes(GLOBALS.slug, 'aspen-lida')) {
+     if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           isCommunity = false;
      }
 
@@ -43,7 +43,6 @@ export const LoginScreen = () => {
           React.useCallback(() => {
                const bootstrapAsync = async () => {
                     await getPermissions().then((result) => {
-                         console.log(result);
                          if (result.success === false && result.status === 'undetermined' && GLOBALS.releaseChannel !== 'DEV') {
                               setShouldRequestPermissions(true);
                          }
@@ -60,7 +59,7 @@ export const LoginScreen = () => {
                          }
                     });
 
-                    if (_.includes(GLOBALS.slug, 'aspen-lida')) {
+                    if (_.includes(GLOBALS.slug, 'aspen-lida') && GLOBALS.slug !== 'aspen-lida-bws') {
                          await fetchAllLibrariesFromGreenhouse().then((result) => {
                               if (result.success) {
                                    setAllLibraries(result.libraries);
@@ -135,7 +134,6 @@ const SelectYourLibraryModal = (payload) => {
                haystack = libraries;
           }
 
-
           if (!isCommunity) {
                return _.filter(haystack, function (branch) {
                     return branch.name.toLowerCase().indexOf(query.toLowerCase()) > -1;
@@ -183,18 +181,29 @@ const Item = (data) => {
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" onPress={handleSelect} pl="4" pr="5" py="2">
                <HStack space={3} alignItems="center">
-                    <Image
-                         key={library.name}
-                         borderRadius={100}
-                         source={{ uri: libraryIcon }}
-                         fallbackSource={require('../../themes/default/aspenLogo.png')}
-                         bg="warmGray.200"
-                         _dark={{ bgColor: 'coolGray.800' }}
-                         size={{
-                              base: '25px',
-                         }}
-                         alt={library.name}
-                    />
+                    {libraryIcon ? (
+                         <Image
+                              key={library.name}
+                              borderRadius={100}
+                              source={{ uri: libraryIcon }}
+                              fallbackSource={require('../../themes/default/aspenLogo.png')}
+                              bg="warmGray.200"
+                              _dark={{ bgColor: 'coolGray.800' }}
+                              size={{
+                                   base: '25px',
+                              }}
+                              alt={library.name}
+                         />
+                    ) : (
+                         <Box
+                              borderRadius={100}
+                              bg="warmGray.200"
+                              _dark={{ bgColor: 'coolGray.800' }}
+                              size={{
+                                   base: '25px',
+                              }}
+                         />
+                    )}
                     <VStack>
                          <Text
                               bold

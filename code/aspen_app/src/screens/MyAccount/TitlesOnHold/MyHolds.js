@@ -47,12 +47,12 @@ export const MyHolds = () => {
           });
      }, [navigation]);
 
-     useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+     /*useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateHolds(data);
                setLoading(false);
           },
-     });
+     });*/
 
      const toggleReadySort = async (value) => {
           updateReadySortMethod(value);
@@ -207,12 +207,14 @@ export const MyHolds = () => {
 
      const refreshHolds = async () => {
           setLoading(true);
-          await reloadProfile(library.baseUrl).then((result) => {
-               if (user !== result) {
-                    updateUser(result);
-               }
-               setLoading(false);
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+          useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+               onSuccess: (data) => {
+                    updateHolds(data);
+               },
           });
+          setLoading(false);
      };
 
      const actionButtons = (section) => {
@@ -229,6 +231,7 @@ export const MyHolds = () => {
                                    <HStack space={2}>
                                         <FormControl w={150}>
                                              <Select
+                                                  isReadOnly={Platform.OS === 'android'}
                                                   name="sortBy"
                                                   selectedValue={pendingSortMethod}
                                                   accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
@@ -263,6 +266,7 @@ export const MyHolds = () => {
                               <HStack space={2}>
                                    <FormControl w={150}>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={pendingSortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}
@@ -295,6 +299,7 @@ export const MyHolds = () => {
                               <HStack space={2}>
                                    <FormControl w={150}>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="sortBy"
                                              selectedValue={readySortMethod}
                                              accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}

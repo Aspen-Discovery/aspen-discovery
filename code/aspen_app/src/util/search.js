@@ -400,7 +400,11 @@ export function buildParamsForUrl() {
                _.forEach(facets, function (facet) {
                     if (field === 'sort_by') {
                          //ignore adding sort here, we'll do it later
-                         params = params.concat('&sort=' + facet);
+                         if (facet.includes(',')) {
+                              params = params.concat('&sort=' + encodeURIComponent(facet));
+                         } else {
+                              params = params.concat('&sort=' + facet);
+                         }
                     } else if (field === 'publishDateSort' || field === 'birthYear' || field === 'deathYear' || field === 'publishDate' || field === 'lexile_score' || field === 'accelerated_reader_point_value' || field === 'accelerated_reader_reading_level') {
                          facet = facet.replaceAll(' ', '+');
                          params = params.concat('&filter[]=' + field + ':' + facet);

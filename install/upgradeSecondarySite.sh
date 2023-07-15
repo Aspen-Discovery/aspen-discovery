@@ -11,7 +11,8 @@ if [ -z "$2" ]
     exit 1
 fi
 
-service crond stop
+#service crond stop
+pkill java
 
 cd /usr/local/aspen-discovery/install
 if [ -f "/usr/local/aspen-discovery/install/upgrade_$2.sh" ]; then
@@ -22,7 +23,6 @@ echo "Run database maintenance, and then press return when done"
 # shellcheck disable=SC2034
 read waitOver
 
-pkill java
 cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files.sh $1
 

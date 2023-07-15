@@ -228,7 +228,7 @@ public class MarcRecordGrouper extends BaseMarcRecordGrouper {
 		String groupingFormat;
 		if (profile.getFormatSource().equals("item")){
 			//get format from item
-			groupingFormat = getFormatFromItems(marcRecord, profile.getFormat());
+			groupingFormat = getFormatFromItems(marcRecord, profile.getFormatSubfield());
 			if (groupingFormat == null || groupingFormat.length() == 0){
 				//Do a bib level determination
 				String format = getFormatFromBib(marcRecord);

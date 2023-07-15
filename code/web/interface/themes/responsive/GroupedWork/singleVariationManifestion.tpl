@@ -1,5 +1,5 @@
 {strip}
-<div class="col-sm-12">
+<div class="col-xs-12">
 	<div class="row">
 		<div class="col-tn-4 col-xs-4{if empty($viewingCombinedResults)} col-md-3{/if} manifestation-format">
 			<a class="btn btn-xs btn-primary btn-wrap" href="{$relatedManifestation->getUrl()}" {if $relatedManifestation->getNumRelatedRecords() > 1}onclick="return AspenDiscovery.ResultsList.showRelatedManifestations('{$workId|escapeCSS},{$relatedManifestation->format|escapeCSS}','{$relatedManifestation->getFirstVariation()->databaseId|escapeCSS}');" aria-label="View Manifestations for {translate text=$relatedManifestation->format inAttribute=true isPublicFacing=true}"{else} aria-label="View {translate text=$relatedManifestation->format inAttribute=true}"{/if}>
@@ -37,7 +37,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-sm-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$relatedManifestation->getFirstVariation()->databaseId}" style="display:none">
+		<div class="col-xs-12" id="relatedRecordPopup_{$workId|escapeCSS}_{$relatedManifestation->format|escapeCSS}_{$relatedManifestation->getFirstVariation()->databaseId}" style="display:none">
 		</div>
 	</div>
 </div>

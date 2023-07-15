@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { changeHoldPickUpLocation } from '../../../util/accountActions';
 import React from 'react';
-import {getTermFromDictionary} from '../../../translations/TranslationService';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
 
 export const SelectPickupLocation = (props) => {
      const { locations, onClose, currentPickupId, holdId, userId, libraryContext, holdsContext, resetGroup, language } = props;
@@ -92,6 +92,7 @@ export const SelectPickupLocation = (props) => {
                                    <FormControl>
                                         <FormControl.Label>{getTermFromDictionary(language, 'select_new_pickup')}</FormControl.Label>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="pickupLocations"
                                              selectedValue={location}
                                              minWidth="200"

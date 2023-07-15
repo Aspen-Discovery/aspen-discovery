@@ -647,7 +647,7 @@ class Person extends SolrDataObject {
 		} elseif ($name == 'obituaries') {
 			return $this->getObituaries();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -661,7 +661,7 @@ class Person extends SolrDataObject {
 			//Update the database, first remove existing values
 			$this->saveObituaries();
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

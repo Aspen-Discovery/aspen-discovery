@@ -50,8 +50,8 @@ class Union_AJAX extends JSON_Action {
 			$results = $this->getResultsFromSolrSearcher('Lists', $searchTerm, $numberOfResults, $fullResultsLink);
 		} elseif ($source == 'open_archives') {
 			$results = $this->getResultsFromSolrSearcher('OpenArchives', $searchTerm, $numberOfResults, $fullResultsLink);
-		} elseif ($source == 'prospector') {
-			$results = $this->getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
+		} elseif ($source == 'innReach') {
+			$results = $this->getResultsFromInnReach($searchType, $searchTerm, $numberOfResults, $fullResultsLink);
 		} elseif ($source == 'websites') {
 			$results = $this->getResultsFromSolrSearcher('Websites', $searchTerm, $numberOfResults, $fullResultsLink);
 		} else {
@@ -220,29 +220,29 @@ class Union_AJAX extends JSON_Action {
 	 * @param $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromProspector($searchType, $searchTerm, $numberOfResults, $fullResultsLink) {
+	private function getResultsFromInnReach($searchType, $searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
 		$interface->assign('viewingCombinedResults', true);
-		require_once ROOT_DIR . '/Drivers/marmot_inc/Prospector.php';
+		require_once ROOT_DIR . '/sys/InterLibraryLoan/InnReach.php';
 		if ($searchTerm == '') {
 			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
 		} else {
-			$prospector = new Prospector();
+			$innReach = new InnReach();
 			$searchTerms = [
 				[
 					'index' => $searchType,
 					'lookfor' => $searchTerm,
 				],
 			];
-			$prospectorResults = $prospector->getTopSearchResults($searchTerms, $numberOfResults);
+			$innReachResults = $innReach->getTopSearchResults($searchTerms, $numberOfResults);
 			global $interface;
-			if ($prospectorResults['resultTotal'] == 0) {
+			if ($innReachResults['resultTotal'] == 0) {
 				$results = '<div class="clearfix"></div><div>No results match your search.</div>';
 			} else {
-				$formattedNumResults = number_format($prospectorResults['resultTotal']);
+				$formattedNumResults = number_format($innReachResults['resultTotal']);
 				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
-				$interface->assign('prospectorResults', $prospectorResults['records']);
-				$results .= $interface->fetch('Union/prospector.tpl');
+				$interface->assign('innReachResults', $innReachResults['records']);
+				$results .= $interface->fetch('Union/innReach.tpl');
 			}
 		}
 		return $results;

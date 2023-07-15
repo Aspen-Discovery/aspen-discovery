@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import { Box, Button, FlatList, HStack, Icon, Image, Pressable, Text, VStack, ScrollView, FormControl, CheckIcon, Select } from 'native-base';
 import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { Platform, SafeAreaView } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 
@@ -23,7 +23,7 @@ export const MyList = () => {
      const id = providedList.id;
      const [page, setPage] = React.useState(1);
      const [sort, setSort] = React.useState('dateAdded');
-     const [pageSize, setPageSize] = React.useState(25);
+     const [pageSize, setPageSize] = React.useState(20);
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const [list] = React.useState(providedList);
@@ -68,8 +68,9 @@ export const MyList = () => {
           fetchTranslations();
      }, [language]);
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
-          keepPreviousData: true,
+     const { status, data, error, isFetching, isPreviousData } = useQuery(['list', id, user.id, sort, page], () => getListTitles(id, library.baseUrl, page, pageSize, pageSize, sort), {
+          keepPreviousData: false,
+          staleTime: 1000,
      });
 
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
@@ -228,6 +229,7 @@ export const MyList = () => {
                          <HStack space={2}>
                               <FormControl w={150}>
                                    <Select
+                                        isReadOnly={Platform.OS === 'android'}
                                         name="sortBy"
                                         selectedValue={sort}
                                         accessibilityLabel={getTermFromDictionary(language, 'select_sort_method')}

@@ -172,7 +172,7 @@ public class PolarisExportMain {
 				}
 
 				if (loadAccountProfile(dbConn)){
-					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
 					logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 					WebServiceResponse authenticationResponse = authenticateStaffUser();
@@ -905,97 +905,98 @@ public class PolarisExportMain {
 				if (sourceForPolarisRS.next()){
 					sourceId = sourceForPolarisRS.getLong(1);
 				}else{
-					logEntry.incErrors("Could not get source id for Polaris");
-					return numChanges;
+					//Nothing has been indexed yet, leave source ID set to -1
 				}
 			} catch (Exception e) {
-				logEntry.incErrors("Unable to get source id for " + indexingProfile.getName(), e);
+				logEntry.incErrors("Error getting source id for " + indexingProfile.getName(), e);
 			}
 
 			// Get a list of items that have been deleted and update those MARC records too
-			String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedLastItemExtractTime;
-			WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
-			int bibsToUpdateBasedOnDeletedItems = 0;
-			if (pagedDeletedItems.isSuccess()){
-				try {
-					JSONObject response = pagedDeletedItems.getJSONResponse();
-					JSONArray allItems = response.getJSONArray("ItemIDListRows");
-					logEntry.addNote("There were " + allItems.length() + " items that have been deleted");
-					logEntry.saveResults();
-					for (int i = 0; i < allItems.length(); i++) {
-						JSONObject curItem = allItems.getJSONObject(i);
-						long itemId = curItem.getLong("ItemRecordID");
-						//Figure out the bib record based on the item id.
-						String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
-						if (bibForItem != null) {
-							if (!bibsToUpdate.contains(bibForItem)) {
-								logEntry.incProducts();
-								bibsToUpdate.add(bibForItem);
-								bibsToUpdateBasedOnDeletedItems++;
-								if (logEntry.getNumProducts() % 250 == 0){
-									logEntry.saveResults();
-								}
-							}
-//						}else{
-//							logger.info("The bib was deleted when item " + itemId + " was.");
-						}
-						if (i > 0 && (i % 1000 == 0)){
-							logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
-							logEntry.saveResults();
-						}
-					}
-				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for deleted items response", e);
-				}
-			}
-			logEntry.addNote("There are " + bibsToUpdateBasedOnDeletedItems + " records to be updated based on deleted items.");
-			logEntry.saveResults();
-
-			//noinspection SpellCheckingInspection
-			String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
-			int bibsToUpdateBasedOnChangedItems = 0;
-			WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
-			if (pagedItems.isSuccess()) {
-				try {
-					JSONObject response = pagedItems.getJSONResponse();
-					JSONArray allItems = response.getJSONArray("ItemIDListRows");
-					logEntry.addNote("There were " + allItems.length() + " items that have changed");
-					logEntry.saveResults();
-					for (int i = 0; i < allItems.length(); i++) {
-						JSONObject curItem = allItems.getJSONObject(i);
-						long itemId = curItem.getLong("ItemRecordID");
-						if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
+			if (sourceId != -1) {
+				String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedLastItemExtractTime;
+				WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
+				int bibsToUpdateBasedOnDeletedItems = 0;
+				if (pagedDeletedItems.isSuccess()) {
+					try {
+						JSONObject response = pagedDeletedItems.getJSONResponse();
+						JSONArray allItems = response.getJSONArray("ItemIDListRows");
+						logEntry.addNote("There were " + allItems.length() + " items that have been deleted");
+						logEntry.saveResults();
+						for (int i = 0; i < allItems.length(); i++) {
+							JSONObject curItem = allItems.getJSONObject(i);
+							long itemId = curItem.getLong("ItemRecordID");
 							//Figure out the bib record based on the item id.
-							//Getting from Aspen is faster if we can get it.
 							String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
-							if (bibForItem == null) {
-								//Use the APIs to get the bib id
-								bibForItem = getBibIdForItemId(itemId);
-							}
 							if (bibForItem != null) {
-								//check we've already updated this bib, if so it's ok to skip
-								if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
+								if (!bibsToUpdate.contains(bibForItem)) {
 									logEntry.incProducts();
 									bibsToUpdate.add(bibForItem);
-									bibsToUpdateBasedOnChangedItems++;
+									bibsToUpdateBasedOnDeletedItems++;
 									if (logEntry.getNumProducts() % 250 == 0) {
 										logEntry.saveResults();
 									}
 								}
+								//						}else{
+								//							logger.info("The bib was deleted when item " + itemId + " was.");
 							}
-						}else{
-							logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
+							if (i > 0 && (i % 1000 == 0)) {
+								logEntry.addNote("Processed " + i + " items looking for the bib that was deleted");
+								logEntry.saveResults();
+							}
 						}
-						if (i > 0 && (i % 500 == 0)){
-							logEntry.addNote("Processed " + i + " items to load bib id for the item");
-						}
+					} catch (Exception e) {
+						logEntry.incErrors("Unable to parse document for deleted items response", e);
 					}
-				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for paged items response", e);
 				}
+				logEntry.addNote("There are " + bibsToUpdateBasedOnDeletedItems + " records to be updated based on deleted items.");
+				logEntry.saveResults();
+
+				//noinspection SpellCheckingInspection
+				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
+				int bibsToUpdateBasedOnChangedItems = 0;
+				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
+				if (pagedItems.isSuccess()) {
+					try {
+						JSONObject response = pagedItems.getJSONResponse();
+						JSONArray allItems = response.getJSONArray("ItemIDListRows");
+						logEntry.addNote("There were " + allItems.length() + " items that have changed");
+						logEntry.saveResults();
+						for (int i = 0; i < allItems.length(); i++) {
+							JSONObject curItem = allItems.getJSONObject(i);
+							long itemId = curItem.getLong("ItemRecordID");
+							if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
+								//Figure out the bib record based on the item id.
+								//Getting from Aspen is faster if we can get it.
+								String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
+								if (bibForItem == null) {
+									//Use the APIs to get the bib id
+									bibForItem = getBibIdForItemId(itemId);
+								}
+								if (bibForItem != null) {
+									//check we've already updated this bib, if so it's ok to skip
+									if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
+										logEntry.incProducts();
+										bibsToUpdate.add(bibForItem);
+										bibsToUpdateBasedOnChangedItems++;
+										if (logEntry.getNumProducts() % 250 == 0) {
+											logEntry.saveResults();
+										}
+									}
+								}
+							} else {
+								logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
+							}
+							if (i > 0 && (i % 500 == 0)) {
+								logEntry.addNote("Processed " + i + " items to load bib id for the item");
+							}
+						}
+					} catch (Exception e) {
+						logEntry.incErrors("Unable to parse document for paged items response", e);
+					}
+				}
+				logEntry.addNote("There are " + bibsToUpdateBasedOnChangedItems + " records to be updated based on changes to the items.");
+				logEntry.saveResults();
 			}
-			logEntry.addNote("There are " + bibsToUpdateBasedOnChangedItems + " records to be updated based on changes to the items.");
-			logEntry.saveResults();
 
 			//Now that we have a list of all bibs that need to be updated based on item changes, reindex the bib
 			for(String bibNumber: bibsToUpdate){

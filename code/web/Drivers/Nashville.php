@@ -31,76 +31,68 @@ class Nashville extends CarlX {
 		$mailer = new Mailer();
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
-
 		$accountLinesPaid = explode(',', $payment->finesPaid);
-		$user = new User();
-		$user->id = $payment->userId;
-		if ($user->find(true)) {
-			$patronId = $user->cat_username;
-			$allPaymentsSucceed = true;
-			foreach ($accountLinesPaid as $line) {
-				// MSB Payments are in the form of fineId|paymentAmount
-				[
-					$feeId,
-					$pmtAmount,
-				] = explode('|', $line);
-				[
-					$feeId,
-					$feeType,
-				] = explode('-', $feeId);
-				$feeType = Nashville::$fineTypeSIP2Translations[$feeType];
-				if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
-					$feeId = '#' . $feeId;
-				}
-				$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
-				// If failed with 'Invalid patron ID', check for changed patron ID
-				if ($response['success'] === false && $response['message'] == 'Invalid patron ID.') {
-					$newPatronIds = $this->getPatronIDChanges($patronId);
-					if ($newPatronIds) {
-						foreach ($newPatronIds as $newPatronId) {
-							$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found " . $newPatronId['NEWPATRONID'], Logger::LOG_ERROR);
-							$response = $this->feePaidViaSIP($feeType, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
-							if ($response['success'] === false) {
-								$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
-								$allPaymentsSucceed = false;
-							} else {
-								$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
-								$allPaymentsSucceed = true;
-								break;
-							}
+		$patron->id = $payment->userId;
+		$patronId = $patron->cat_username;
+		$allPaymentsSucceed = true;
+		foreach ($accountLinesPaid as $line) {
+			// MSB Payments are in the form of fineId|paymentAmount
+			[
+				$feeId,
+				$pmtAmount,
+			] = explode('|', $line);
+			[
+				$feeId,
+				$feeType,
+			] = explode('-', $feeId);
+			$feeTypeSIP = Nashville::$fineTypeSIP2Translations[$feeType];
+			if (strlen($feeId) == 13 && strpos($feeId, '1700') === 0) { // we stripped out leading octothorpes (#) from CarlX manual fines in CarlX.php getFines() which take the form "#".INSTBIT (Institution; Nashville = 1700) in order to sidestep CSS/javascript selector "#" problems; need to add them back for updating CarlX via SIP2 Fee Paid
+				$feeId = '#' . $feeId;
+			}
+			$response = $this->feePaidViaSIP($feeTypeSIP, '02', $pmtAmount, 'USD', $feeId, '', $patronId); // As of CarlX 9.6, SIP2 37/38 BK transaction id is written by CarlX as a receipt number; CarlX will not keep information passed through 37 BK; hence transId should be empty instead of, e.g., MSB's Transaction ID at $payment->orderId
+			// If failed with 'Invalid patron ID', check for changed patron ID
+			if ($response['success'] === false && $response['message'] == 'Invalid patron ID.') {
+				$newPatronIds = $this->getPatronIDChanges($patronId);
+				if ($newPatronIds) {
+					foreach ($newPatronIds as $newPatronId) {
+						$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup on $patronId, found " . $newPatronId['NEWPATRONID'], Logger::LOG_ERROR);
+						$response = $this->feePaidViaSIP($feeTypeSIP, '02', $pmtAmount, 'USD', $feeId, '', $newPatronId['NEWPATRONID']);
+						if ($response['success'] === false) {
+							$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
+							$allPaymentsSucceed = false;
+						} else {
+							$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
+							$allPaymentsSucceed = true;
+							break;
 						}
-					} else {
-						$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup... failed to find patron id change for $patronId", Logger::LOG_ERROR);
 					}
-				}
-				if ($response['success'] === false) {
-					$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
-					$allPaymentsSucceed = false;
 				} else {
-					$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
-                    if ($feeType == 'NR') {
-                        $this->updateNonResident($patronId);
-                    }
+					$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'] . ". Trying patron id change lookup... failed to find patron id change for $patronId", Logger::LOG_ERROR);
 				}
 			}
-			if ($allPaymentsSucceed === false) {
-				$success = false;
-				$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
-				$level = Logger::LOG_ERROR;
-				$payment->completed = 9;
+			if ($response['success'] === false) {
+				$logger->log("MSB Payment CarlX update failed on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_ERROR);
+				$allPaymentsSucceed = false;
 			} else {
-				$success = true;
-				$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
-				$level = Logger::LOG_NOTICE;
-				$payment->completed = 1;
+				$logger->log("MSB Payment CarlX update succeeded on Payment Reference ID $payment->id on FeeID $feeId : " . $response['message'], Logger::LOG_DEBUG);
+				if ($feeType == 'NR') {
+					$this->updateNonResident($patron);
+				}
 			}
-			$payment->update();
-			$this->createPatronPaymentNote($patronId, $payment->id);
-		} else {
-			$success = false;
-			$message = 'User Payment ' . $payment->id . 'failed with Invalid Patron';
-			$level = Logger::LOG_ERROR;
 		}
+		if ($allPaymentsSucceed === false) {
+			$success = false;
+			$message = "MSB Payment CarlX update failed for Payment Reference ID $payment->id . See messages.log for details on individual items.";
+			$level = Logger::LOG_ERROR;
+			$payment->completed = 9;
+		} else {
+			$success = true;
+			$message = "MSB payment successfully recorded in CarlX for Payment Reference ID $payment->id .";
+			$level = Logger::LOG_NOTICE;
+			$payment->completed = 1;
+		}
+		$payment->update();
+		$this->createPatronPaymentNote($patronId, $payment->id);
 		$logger->log($message, $level);
 		if ($level == Logger::LOG_ERROR) {
 			if (!empty($systemVariables->errorEmail)) {
@@ -122,34 +114,38 @@ class Nashville extends CarlX {
 	}
 
     // Following successful online payment, update Patron with new Expiration Date
-    protected function updateNonResident($patronId): array {
-        global $logger;
-        $request = $this->getSearchbyPatronIdRequest($patronId);
-        $request->Patron = new stdClass();
-        $request->Patron->PatronExpirationDate = date('c', strtotime('+1 year'));
-        $result = $this->doSoapRequest('UpdatePatron', $request);
-        if ($result) {
-            $success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
-            if (!$success) {
-                $success = false;
-                $message = "Failed to update Non Resident Patron in CarlX for $patronId .";
-                $level = Logger::LOG_ERROR;
-            } else {
-                $success = true;
-                $message = "Non Resident Patron updated successfully in CarlX for $patronId .";
-                $level = Logger::LOG_NOTICE;
-            }
-        } else {
-            $success = false;
-            $message = "CarlX ILS gave no response when attempting to update Non Resident Patron $patronId .";
-            $level = Logger::LOG_ERROR;
-        }
-        $logger->log($message, $level);
-        return [
-            'success' => $success,
-            'message' => $message,
-        ];
-    }
+	protected function updateNonResident(User $user): array {
+		global $logger;
+		$patronId = $user->cat_username;
+		$request = $this->getSearchbyPatronIdRequest($user);
+		$request->Patron = new stdClass();
+		$request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
+		//$logger->log("Request updatePatron\r\n" . print_r($request, true), Logger::LOG_DEBUG);
+		$result = $this->doSoapRequest('updatePatron', $request, $this->patronWsdl, $this->genericResponseSOAPCallOptions);
+		//$logger->log("Result of updatePatron\r\n" . print_r($result, true), Logger::LOG_DEBUG);
+		if ($result) {
+			$success = stripos($result->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+			if (!$success) {
+				$success = false;
+				$message = "Failed to update Non Resident Patron in CarlX for $patronId .";
+				$level = Logger::LOG_ERROR;
+			} else {
+				$success = true;
+				$message = "Non Resident Patron updated successfully in CarlX for $patronId .";
+				$level = Logger::LOG_NOTICE;
+			}
+		} else {
+			$success = false;
+			$message = "CarlX ILS gave no response when attempting to update Non Resident Patron $patronId .";
+			$level = Logger::LOG_ERROR;
+		}
+		$logger->log($message, $level);
+		return [
+			'success' => $success,
+			'message' => $message,
+		];
+	}
+	
 	protected function createPatronPaymentNote($patronId, $paymentId): array {
 		global $logger;
 		global $serverName;
@@ -476,4 +472,70 @@ class Nashville extends CarlX {
 		}
 	}
 
+	public function getCollectionReportData($location, $date): array {
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = <<<EOT
+			-- get the almost-whole enchilada (on shelf, charged, missing, lost, damaged, in processing; NOT withdrawn) for an owning branch
+			with i as (
+				select
+					i.*
+				from item_v i
+				right join branch_v b on i.branch = b.branchnumber
+				where b.branchcode = '$location'
+			), r as (
+				select
+					r.refid
+					, max(r.returndate) as returndate
+				from itemnotewhohadit_v r
+				group by r.refid
+			), ir as (
+				select
+					*
+				from i
+				left join r on i.item = r.refid
+			), irb as (
+				select
+					ir.*
+					, b.title
+					, b.author
+					, b.publishingdate
+				from ir
+				left join bbibmap_v b on ir.bid = b.bid
+			), ix as (
+				select 
+                    distinct irb.item as Barcode
+					, irb.title as Title
+					, irb.author as Author
+					, irb.publishingdate as PubDate
+					, irb.price as Price
+					, l.locname as Location
+					, m.medcode as Media
+					, irb.cn as CallNumber
+					, to_char(irb.returndate, 'MM/DD/YYYY') as LastReturned
+					, irb.cumulativehistory Circ
+					, to_char(irb.creationdate, 'MM/DD/YYYY') as Created
+					, c.description as Status
+					, to_char(irb.statusdate, 'MM/DD/YYYY') as StatusDate
+				from irb
+				left join location_v l on irb.location = l.locnumber
+				left join media_v m on irb.media = m.mednumber
+				left join systemitemcodes_v c on irb.status = c.code
+			)
+			select
+				*
+			from ix
+			order by Location, CallNumber
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		$data = [];
+		while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
 }

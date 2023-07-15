@@ -81,6 +81,15 @@
 						</div>
 					{/if}
 
+					{if strcasecmp($record->source, $record->type) !== 0}
+						<div class="row">
+							<div class="result-label col-sm-12 col-md-5">{translate text='Source' isPublicFacing=true}</div>
+							<div class="col-sm-12 col-md-7 result-value">
+								{translate text=$record->source isPublicFacing=true}
+							</div>
+						</div>
+					{/if}
+
                     {if !empty($record->callNumber)}
 						<div class="row">
 							<div class="result-label col-sm-12 col-md-5">{translate text='Call Number' isPublicFacing=true}</div>

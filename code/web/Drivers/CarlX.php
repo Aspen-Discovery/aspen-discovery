@@ -8,7 +8,7 @@ class CarlX extends AbstractIlsDriver {
 	public $catalogWsdl;
 
 	private $soapClient;
-	private $dbConnection;
+	protected $dbConnection;
 
 	public function __construct($accountProfile) {
 		parent::__construct($accountProfile);
@@ -41,6 +41,19 @@ class CarlX extends AbstractIlsDriver {
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		global $timer;
 
+		//CARL.X supports 3 different login methods:
+		//  Patron Barcode & PIN
+		//  Last Name & Patron Barcode
+		//  EZ Username & EZ Password
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			//Remove any spaces from the barcode
+			$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
+			$password = trim($password);
+		} else {
+			//Remove any spaces from the barcode
+			$username = trim($username);
+			$password = preg_replace('/[^0-9a-zA-Z]/', '', trim($password));
+		}
 		//Remove any spaces from the barcode
 		$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
 		$password = trim($password);
@@ -54,8 +67,18 @@ class CarlX extends AbstractIlsDriver {
 
 		if ($result) {
 			if (isset($result->Patron)) {
-				//Check to see if the pin matches
-				if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
+				$loginValid = false;
+				if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+					//Check to see if the pin matches
+					if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
+						$loginValid = true;
+					}
+				} else {
+					if (($result->Patron->PatronID == $username) && ((strcasecmp($result->Patron->LastName, $password) === 0) || $validatedViaSSO)) {
+						$loginValid = true;
+					}
+				}
+				if ($loginValid) {
 					//$fullName = $result->Patron->FullName;
 					$firstName = $result->Patron->FirstName;
 					$lastName = $result->Patron->LastName;
@@ -83,12 +106,12 @@ class CarlX extends AbstractIlsDriver {
 						$user->displayName = '';
 					}
 					$user->cat_username = $username;
-					$user->cat_password = $result->Patron->PatronPIN;
-					$user->email = $result->Patron->Email;
-
-					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
-						$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
+					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+						$user->cat_password = $result->Patron->PatronPIN;
+					}else {
+						$user->cat_password = $result->Patron->LastName;
 					}
+					$user->email = $result->Patron->Email;
 
 					$homeBranchCode = strtolower($result->Patron->DefaultBranch);
 					$location = new Location();
@@ -119,6 +142,10 @@ class CarlX extends AbstractIlsDriver {
 							}
 						}
 						if (isset($location)) {
+							$homeLocationChanged = false;
+							if ($user->homeLocationId != $location->locationId) {
+								$homeLocationChanged = true;
+							}
 							$user->homeLocationId = $location->locationId;
 							if (empty($user->myLocation1Id)) {
 								$user->myLocation1Id = ($location->nearbyLocation1 > 0) ? $location->nearbyLocation1 : $location->locationId;
@@ -126,6 +153,21 @@ class CarlX extends AbstractIlsDriver {
 
 							if (empty($user->myLocation2Id)) {
 								$user->myLocation2Id = ($location->nearbyLocation2 > 0) ? $location->nearbyLocation2 : $location->locationId;
+							}
+							if ($homeLocationChanged) {
+								//reset the patrons preferred pickup location to their new home library
+								$user->pickupLocationId = $user->homeLocationId;
+								$user->rememberHoldPickupLocation = 0;
+							}
+						}
+					}
+
+					//See if we should reset tracking reading history
+					if ($userExistsInDB && $user->trackReadingHistory != $result->Patron->LoanHistoryOptInFlag) {
+						$homeLibrary = $user->getHomeLibrary();
+						if ($homeLibrary != null){
+							if ($homeLibrary->optInToReadingHistoryUpdatesILS && $homeLibrary->optOutOfReadingHistoryUpdatesILS) {
+								$user->trackReadingHistory = $result->Patron->LoanHistoryOptInFlag;
 							}
 						}
 					}
@@ -139,7 +181,9 @@ class CarlX extends AbstractIlsDriver {
 						$user->update();
 					} else {
 						$user->created = date('Y-m-d');
-						$user->insert();
+						if (!$user->insert()) {
+							return null;
+						}
 					}
 
 					$timer->logTime("patron logged in successfully");
@@ -255,7 +299,7 @@ class CarlX extends AbstractIlsDriver {
 		return $renew_result;
 	}
 
-	private $genericResponseSOAPCallOptions = [
+	protected $genericResponseSOAPCallOptions = [
 		'connection_timeout' => 1,
 		'features' => SOAP_SINGLE_ELEMENT_ARRAYS | SOAP_WAIT_ONE_WAY_CALLS,
 		'trace' => 1,
@@ -594,7 +638,7 @@ class CarlX extends AbstractIlsDriver {
 				$curTitle->title = $chargeItem->Title;
 				$curTitle->author = $chargeItem->Author;
 				$curTitle->dueDate = strtotime($dueDate);
-				$curTitle->checkoutDate = strstr($chargeItem->TransactionDate, 'T', true);
+				$curTitle->checkoutDate = strtotime(strstr($chargeItem->TransactionDate, 'T', true));
 				$curTitle->renewCount = isset($chargeItem->RenewalCount) ? $chargeItem->RenewalCount : 0;
 				$curTitle->canRenew = true;
 				$curTitle->renewIndicator = $chargeItem->ItemNumber;
@@ -932,7 +976,6 @@ class CarlX extends AbstractIlsDriver {
 			// searchPatron on Email appears to be case-insensitive and
 			// appears to eliminate spurious whitespace
 			$request = new stdClass();
-			$request->Modifiers = '';
 			$request->AllSearchTermMatch = 'true';
 			$request->SearchTerms = new stdClass();
 			$request->SearchTerms->ApplicationType = 'exact match';
@@ -1183,14 +1226,26 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function getReadingHistory(User $patron, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
-		$readHistoryEnabled = false;
+		$homeLibrary = $patron->getHomeLibrary();
+		$readHistoryEnabledInCarlX = false;
 		$request = $this->getSearchbyPatronIdRequest($patron);
 		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
 		if ($result && $result->Patron) {
-			$readHistoryEnabled = $result->Patron->LoanHistoryOptInFlag;
+			$readHistoryEnabledInCarlX = $result->Patron->LoanHistoryOptInFlag;
+			if ($readHistoryEnabledInCarlX != $patron->trackReadingHistory) {
+				$patron->trackReadingHistory = (boolean)$readHistoryEnabledInCarlX;
+				$patron->update();
+			}
 		}
 
-		if ($readHistoryEnabled) { // Create Reading History Request
+		//Make sure that we are trying to synchronize reading history
+		if ($homeLibrary->optOutOfReadingHistoryUpdatesILS && $homeLibrary->optInToReadingHistoryUpdatesILS) {
+			$readingHistoryEnabled = $readHistoryEnabledInCarlX;
+		} else {
+			$readingHistoryEnabled = $patron->trackReadingHistory;
+		}
+
+		if ($readHistoryEnabledInCarlX) { // Create Reading History Request
 			$historyActive = true;
 			$readingHistoryTitles = [];
 			$numTitles = 0;
@@ -1210,7 +1265,7 @@ class CarlX extends AbstractIlsDriver {
 						$curTitle['shortId'] = $readingHistoryEntry->BID;
 						$curTitle['recordId'] = $this->fullCarlIDfromBID($readingHistoryEntry->BID);
 						$curTitle['title'] = rtrim($readingHistoryEntry->Title, ' /');
-						$curTitle['checkout'] = $checkOutDate->format('m-d-Y'); // this format is expected by Aspen Discovery's java cron program.
+						$curTitle['checkout'] = $checkOutDate->getTimestamp(); // this format is expected by Aspen Discovery's java cron program.
 						$curTitle['borrower_num'] = $patron->id;
 						$curTitle['dueDate'] = null; // Not available in ChargeHistoryItems
 						$curTitle['author'] = null; // Not available in ChargeHistoryItems
@@ -1274,7 +1329,7 @@ class CarlX extends AbstractIlsDriver {
 			}
 		}
 		return [
-			'historyActive' => false,
+			'historyActive' => $readingHistoryEnabled,
 			'titles' => [],
 			'numTitles' => 0,
 		];
@@ -1325,7 +1380,6 @@ class CarlX extends AbstractIlsDriver {
 					$fine->Branch = $fine->TransactionBranch;
 				}
 
-				$fine->FineAmountOutstanding = 0;
 				if ($fine->FineAmountPaid > 0) {
 					$fine->FineAmountOutstanding = $fine->FineAmount - $fine->FineAmountPaid;
 				} else {
@@ -1372,7 +1426,6 @@ class CarlX extends AbstractIlsDriver {
 					$fine->System = $this->getFineSystem($fine->Branch);
 					$fine->CanPayFine = $this->canPayFine($fine->System);
 
-					$fine->FeeAmountOutstanding = 0;
 					if (!empty($fine->FeeAmountPaid) && $fine->FeeAmountPaid > 0) {
 						$fine->FeeAmountOutstanding = $fine->FeeAmount - $fine->FeeAmountPaid;
 					} else {
@@ -2081,6 +2134,7 @@ EOT;
 		$this->initDatabaseConnection();
 		// query school branch codes and homerooms
 		/** @noinspection SqlResolve */
+		/** @noinspection SqlConstantExpression */
 		$sql = <<<EOT
 			select 
 			  branchcode
@@ -2184,8 +2238,9 @@ EOT;
                       , bbibmap_v.title
 EOT;
         } elseif ($showOverdueOnly == 'fees') {
+			/** @noinspection SqlResolve */
             $sql = <<<EOT
-                -- school fees report CarlX sql
+               -- school fees report CarlX sql
                 with p as ( -- first gather patrons of the requested branch
                     select
                         b.branchcode
@@ -2200,25 +2255,22 @@ EOT;
                     left join bty_v t on p.bty = t.btynumber
                     where p.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
                     and b.branchcode = '$location'
-                )
+                ), r as (
                 select
-                     p.branchcode AS Home_Lib_Code
-                    , p.branchname AS Home_Lib
-                    , p.bty AS P_Type
-                    , p.btyname AS Grd_Lvl
-                    , p.sponsor AS Home_Room
-                    , p.name AS Patron_Name
-                    , p.patronid AS P_Barcode
-                    , itembranch.branchgroup AS SYSTEM
-                    , r.callnumber AS Call_Number
-                    , r.title AS Title
-                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date
-                    , to_char(r.amountowed / 100, 'fm999D00') as Owed
-                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date_Dup
-                    , r.item AS Item
+                     p.branchcode
+                    , p.branchname
+                    , p.bty
+                    , p.btyname
+                    , p.sponsor
+                    , p.name
+                    , p.patronid
+                    , r.callnumber
+                    , r.title
+                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') as due
+                    , to_char(r.amountowed / 100, 'fm999D00') as owed
+                    , r.item
                 from p 
                 left join report3fines_v r on p.patronid = r.patronid
-                left join branch_v itembranch on r.branch = itembranch.branchnumber
                 where r.patronid is not null
                 and r.amountowed > 0
                 order by 
@@ -2226,9 +2278,35 @@ EOT;
                     , p.bty
                     , p.sponsor
                     , p.name
-                    , itembranch.branchgroup
                     , r.callnumber
                     , r.title
+            ) 
+            select
+                     r.branchcode AS Home_Lib_Code
+                    , r.branchname AS Home_Lib
+                    , r.bty AS P_Type
+                    , r.btyname AS Grd_Lvl
+                    , r.sponsor AS Home_Room
+                    , r.name AS Patron_Name
+                    , r.patronid AS P_Barcode
+                    , itembranch.branchgroup AS SYSTEM
+                    , r.callnumber AS Call_Number
+                    , r.title AS Title
+                    , r.due AS Due_Date
+                    , r.owed as Owed
+                    , r.due AS Due_Date_Dup
+                    , r.item AS Item
+            from r
+            left join item_v i on r.item = i.item
+            left join branch_v itembranch on i.owningbranch = itembranch.branchnumber
+            order by 
+                r.branchcode
+                , r.bty
+                , r.sponsor
+                , r.name
+                , itembranch.branchgroup
+                , r.callnumber
+                , r.title
 EOT;
         }
 		$stid = oci_parse($this->dbConnection, $sql);
@@ -2405,5 +2483,19 @@ EOT;
 
 	public function showDateInFines(): bool {
 		return false;
+	}
+
+	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
+		//Check to see if the last seen date is after the last time we updated reading history
+		$request = $this->getSearchbyPatronIdRequest($patron);
+		$result = $this->doSoapRequest('getPatronInformation', $request, $this->patronWsdl);
+
+		$selfServeActivityDate = strtotime($result->Patron->SelfServeActivityDate);
+		$lastActionDate = strtotime($result->Patron->LastActionDate);
+		$lastReadingHistoryUpdate = $patron->lastReadingHistoryUpdate;
+		if ($selfServeActivityDate > $lastReadingHistoryUpdate || $lastActionDate > $lastReadingHistoryUpdate) {
+			return false;
+		}
+		return true;
 	}
 }

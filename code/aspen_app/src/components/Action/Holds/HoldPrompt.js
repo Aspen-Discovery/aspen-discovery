@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { HoldsContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { Button, Modal, Heading, FormControl, Select, CheckIcon } from 'native-base';
 import _ from 'lodash';
@@ -124,6 +125,7 @@ export const HoldPrompt = (props) => {
                                    <FormControl>
                                         <FormControl.Label>{getTermFromDictionary(language, 'select_pickup_location')}</FormControl.Label>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="pickupLocations"
                                              selectedValue={location}
                                              minWidth="200"
@@ -144,6 +146,7 @@ export const HoldPrompt = (props) => {
                                    <FormControl>
                                         <FormControl.Label>{isPlacingHold ? getTermFromDictionary('en', 'linked_place_hold_for_account') : getTermFromDictionary('en', 'linked_checkout_to_account')}</FormControl.Label>
                                         <Select
+                                             isReadOnly={Platform.OS === 'android'}
                                              name="linkedAccount"
                                              selectedValue={activeAccount}
                                              minWidth="200"

@@ -1,9 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
-import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center } from 'native-base';
+import { Ionicons } from '@expo/vector-icons';
+import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center, Input, FormControl } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
+import * as Device from 'expo-device';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
@@ -14,8 +16,10 @@ import DisplayBrowseCategory from './Category';
 import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, updateNotificationOnboardingStatus } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { NotificationsOnboard } from '../../components/NotificationsOnboard';
+import { getDefaultFacets } from '../../util/search';
 
 let maxCategories = 5;
 
@@ -23,13 +27,16 @@ export const DiscoverHomeScreen = () => {
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
-     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory } = React.useContext(UserContext);
+     const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
+     const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
+     const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const [searchTerm, setSearchTerm] = React.useState('');
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -149,6 +156,52 @@ export const DiscoverHomeScreen = () => {
           },
      });
 
+     useFocusEffect(
+          React.useCallback(() => {
+               const checkSettings = async () => {
+                    if (version >= '22.11.00') {
+                         await getDefaultFacets(language);
+                    }
+
+                    console.log('notificationOnboard: ' + notificationOnboard);
+                    if (!_.isUndefined(notificationOnboard)) {
+                         if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
+                              setShowNotificationsOnboarding(true);
+                              setAlreadyCheckedNotifications(false);
+                         } else {
+                              setShowNotificationsOnboarding(false);
+                         }
+                    } else {
+                         updateNotificationOnboard(1);
+                         setShowNotificationsOnboarding(true);
+                         setAlreadyCheckedNotifications(false);
+                    }
+               };
+               checkSettings().then(() => {
+                    return () => checkSettings();
+               });
+          }, [notificationSettings])
+     );
+
+     const clearText = () => {
+          setSearchTerm('');
+     };
+
+     const search = async () => {
+          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'SearchHome' });
+          clearText();
+     };
+
+     const openScanner = async () => {
+          navigateStack('BrowseTab', 'Scanner');
+     };
+
+     // load notification onboarding prompt
+     //console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
+     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice && notificationOnboard !== '0' && notificationOnboard !== '0') {
+          return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
+     }
+
      const renderHeader = (title, key, user, url) => {
           return (
                <Box>
@@ -230,7 +283,7 @@ export const DiscoverHomeScreen = () => {
      const onPressItem = (key, type, title, version) => {
           if (version >= '22.07.00') {
                if (type === 'List' || type === 'list') {
-                    navigateStack('HomeTab', 'SearchByList', {
+                    navigateStack('BrowseTab', 'SearchByList', {
                          id: key,
                          url: library.baseUrl,
                          title: title,
@@ -239,7 +292,7 @@ export const DiscoverHomeScreen = () => {
                          prevRoute: 'HomeScreen',
                     });
                } else if (type === 'SavedSearch') {
-                    navigateStack('HomeTab', 'SearchBySavedSearch', {
+                    navigateStack('BrowseTab', 'SearchBySavedSearch', {
                          id: key,
                          url: library.baseUrl,
                          title: title,
@@ -249,13 +302,13 @@ export const DiscoverHomeScreen = () => {
                     });
                } else {
                     if (version >= '23.01.00') {
-                         navigateStack('HomeTab', 'GroupedWorkScreen', {
+                         navigateStack('BrowseTab', 'GroupedWorkScreen', {
                               id: key,
                               title: title,
                               prevRoute: 'HomeScreen',
                          });
                     } else {
-                         navigateStack('HomeTab', 'GroupedWorkScreen221200', {
+                         navigateStack('BrowseTab', 'GroupedWorkScreen221200', {
                               id: key,
                               title: title,
                               url: library.baseUrl,
@@ -266,7 +319,7 @@ export const DiscoverHomeScreen = () => {
                     }
                }
           } else {
-               navigateStack('HomeTab', 'GroupedWorkScreen', {
+               navigateStack('BrowseTab', 'GroupedWorkScreen', {
                     id: key,
                     url: library.baseUrl,
                     title: title,
@@ -321,7 +374,7 @@ export const DiscoverHomeScreen = () => {
                screen = 'SearchBySavedSearch';
           }
 
-          navigateStack('HomeTab', screen, {
+          navigateStack('BrowseTab', screen, {
                title: label,
                id: key,
                url: library.baseUrl,
@@ -338,6 +391,26 @@ export const DiscoverHomeScreen = () => {
      return (
           <ScrollView>
                <Box safeArea={5}>
+                    <FormControl pb={5}>
+                         <Input
+                              returnKeyType="search"
+                              variant="outline"
+                              autoCapitalize="none"
+                              onChangeText={(term) => setSearchTerm(term)}
+                              status="info"
+                              placeholder={getTermFromDictionary(language, 'search')}
+                              clearButtonMode="while-editing"
+                              onSubmitEditing={search}
+                              value={searchTerm}
+                              size="xl"
+                              InputLeftElement={<Icon as={<Ionicons name="search" />} size={5} ml="2" color="muted.800" />}
+                              InputRightElement={
+                                   <Pressable onPress={() => openScanner()}>
+                                        <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
+                                   </Pressable>
+                              }
+                         />
+                    </FormControl>
                     {category.map((item, index) => {
                          return <DisplayBrowseCategory language={language} key={index} categoryLabel={item.title} categoryKey={item.key} id={item.id} records={item.records} isHidden={item.isHidden} categorySource={item.source} renderRecords={renderRecord} header={renderHeader} hideCategory={onHideCategory} user={user} libraryUrl={library.baseUrl} loadMore={renderLoadMore} discoveryVersion={library.version} onPressCategory={handleOnPressCategory} categoryList={category} />;
                     })}

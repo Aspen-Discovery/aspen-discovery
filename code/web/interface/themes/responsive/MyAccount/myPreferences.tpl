@@ -133,7 +133,7 @@
 						{* Allow editing the pickup location *}
 						<div class="form-group propertyRow">
 							<label for="pickupLocation" class="control-label">{translate text='Preferred Pickup Location' isPublicFacing=true}</label>
-							{if $edit == true}
+							{if $edit == true && !empty($allowPickupLocationUpdates)}
 								<select name="pickupLocation" id="pickupLocation" class="form-control">
 									{if count($pickupLocations) > 0}
 										{foreach from=$pickupLocations item=location}
@@ -148,7 +148,7 @@
 									{/if}
 								</select>
 							{else}
-								&nbsp;{$profile->getPickupLibraryName()|escape}
+								&nbsp;{$profile->getPickupLocationName()|escape}
 							{/if}
 						</div>
 					{/if}

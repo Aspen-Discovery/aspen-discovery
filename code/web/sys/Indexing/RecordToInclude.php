@@ -50,6 +50,8 @@ class RecordToInclude extends DataObject {
 		$urlToMatch;
 	public /** @noinspection PhpUnused */
 		$urlReplacement;
+	public /** @noinspection PhpUnused */
+		$includeExcludeMatches;
 
 	public $weight;
 

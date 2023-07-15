@@ -14,15 +14,15 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 
 	@Override
 	protected boolean isItemAvailable(ItemInfo itemInfo, String displayStatus, String groupedStatus) {
-		return itemInfo.getStatusCode().equalsIgnoreCase("in") || groupedStatus.equals("On Shelf") || (treatLibraryUseOnlyGroupedStatusesAsAvailable && groupedStatus.equals("Library Use Only"));
+		return itemInfo.getStatusCode().equalsIgnoreCase("in") || groupedStatus.equals("On Shelf") || (settings.getTreatLibraryUseOnlyGroupedStatusesAsAvailable() && groupedStatus.equals("Library Use Only"));
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {
 		String location;
-		String subLocationCode = getItemSubfieldData(subLocationSubfield, itemField);
-		String locationCode = getItemSubfieldData(locationSubfieldIndicator, itemField);
-		String collectionCode = getItemSubfieldData(collectionSubfield, itemField);
-		if (includeLocationNameInDetailedLocation) {
+		String subLocationCode = getItemSubfieldData(settings.getSubLocationSubfield(), itemField);
+		String locationCode = getItemSubfieldData(settings.getLocationSubfield(), itemField);
+		String collectionCode = getItemSubfieldData(settings.getCollectionSubfield(), itemField);
+		if (settings.isIncludeLocationNameInDetailedLocation()) {
 			location = translateValue("location", locationCode, identifier, true);
 		}else{
 			location = "";
@@ -45,7 +45,7 @@ public class PolarisRecordProcessor extends IlsRecordProcessor{
 				location += translatedCollection;
 			}
 		}
-		String shelvingLocation = getItemSubfieldData(shelvingLocationSubfield, itemField);
+		String shelvingLocation = getItemSubfieldData(settings.getShelvingLocationSubfield(), itemField);
 		if (shelvingLocation != null && shelvingLocation.length() > 0){
 			if (location.length() > 0){
 				location += " - ";

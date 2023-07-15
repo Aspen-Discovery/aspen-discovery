@@ -28,11 +28,26 @@ public class DatabaseCleanup implements IProcessHandler {
 		removeOldCachedObjects(dbConn, logger, processLog);
 		removeOldIndexingData(dbConn, logger, processLog);
 		removeOldExternalRequests(dbConn, logger, processLog);
+		optimizeSearchTable(dbConn, logger, processLog);
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 
 		processLog.setFinished();
 		processLog.saveResults();
+	}
+
+	private void optimizeSearchTable(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		//Optimize search table
+		try {
+			PreparedStatement optimizeStmt = dbConn.prepareStatement("OPTIMIZE TABLE search");
+
+			optimizeStmt.execute();
+
+			processLog.addNote("Optimized search table.");
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to optimize search table. ", e);
+		}
 	}
 
 	private void cleanupReadingHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {

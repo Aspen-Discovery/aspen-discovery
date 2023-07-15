@@ -150,14 +150,11 @@ class WebsiteIndexer {
 					pageToProcess = pageToProcess.replaceAll("</loc>", "");
 
 					//check if path is to be excluded
-					boolean includePath = true;
 					for (Pattern curPattern : pathsToExcludePatterns){
-						if (curPattern.matcher(pageToProcess).matches()){
-							includePath = false;
+						if (!curPattern.matcher(pageToProcess).matches() && !pageToProcess.matches(".*\\.xml.*")){ //if url is not in paths to exclude, process page (if it is an xml it will be processed in next step)
+							processPage(pageToProcess);
+							allLinks.put(pageToProcess, true);
 						}
-					}
-					if (!includePath){
-						continue; //skip to next url if this one is in paths to exclude
 					}
 
 					if (pageToProcess.matches(".*\\.xml.*")) { //if sitemap is xml index, walk through each xml file
@@ -169,11 +166,17 @@ class WebsiteIndexer {
 							pageToProcess2 = pageToProcess2.replaceAll("</loc>", "");
 							processPage(pageToProcess2);
 							allLinks.put(pageToProcess2, true);
+
+							//check if path is to be excluded
+							for (Pattern curPattern : pathsToExcludePatterns){
+								if (!curPattern.matcher(pageToProcess).matches()){ //if url is not in paths to exclude, process page
+									processPage(pageToProcess);
+									allLinks.put(pageToProcess, true);
+								}
+							}
 						}
-					}else { //otherwise, add each url to urlToProcess
-						processPage(pageToProcess);
-						allLinks.put(pageToProcess, true);
 					}
+
 					if (allLinks.size() > this.maxPagesToIndex) {
 						logEntry.incErrors("Error processing website, found more than " + this.maxPagesToIndex + " links in the site");
 					}

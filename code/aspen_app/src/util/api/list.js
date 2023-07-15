@@ -196,7 +196,7 @@ export async function addTitlesToList(id, itemId, url) {
      }
 }
 
-export async function getListTitles(id, url, page, pageSize = 25, numTitles = 25, sort = 'dateAdded') {
+export async function getListTitles(id, url, page, pageSize = 20, numTitles = 25, sort = 'dateAdded') {
      let morePages = false;
      let totalResults = 0;
      let curPage = page;

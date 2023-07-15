@@ -11,21 +11,21 @@
 	<th>
 		{translate text="Format" isPublicFacing=true}
 	</th>
-  {foreach from=$prospectorResults item=prospectorTitle}
+  {foreach from=$innReachResults item=innReachTitle}
 	  {if $similar.recordId != -1}
 		  <tr>
 			  <td>
-		      <a href="{$prospectorTitle.link}" rel="external" onclick="window.open (this.href, 'child'); return false"><h5>{$prospectorTitle.title|removeTrailingPunctuation|escape}</h5></a>
+		      <a href="{$innReachTitle.link}" rel="external" onclick="window.open (this.href, 'child'); return false"><h5>{$innReachTitle.title|removeTrailingPunctuation|escape}</h5></a>
 			  </td>
 
 		    <td>
-				  {if !empty($prospectorTitle.author)}<small>{$prospectorTitle.author|escape}</small>{/if}
+				  {if !empty($innReachTitle.author)}<small>{$innReachTitle.author|escape}</small>{/if}
 		    </td>
 			  <td>
-				  {if !empty($prospectorTitle.pubDate)}<small>{$prospectorTitle.pubDate|escape}</small>{/if}
+				  {if !empty($innReachTitle.pubDate)}<small>{$innReachTitle.pubDate|escape}</small>{/if}
 			  </td>
 			  <td>
-				  {if !empty($prospectorTitle.format)}<small>{$prospectorTitle.format|escape}</small>{/if}
+				  {if !empty($innReachTitle.format)}<small>{$innReachTitle.format|escape}</small>{/if}
 			  </td>
 		  </tr>
 	  {/if}

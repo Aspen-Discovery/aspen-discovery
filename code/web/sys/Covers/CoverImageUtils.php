@@ -95,7 +95,7 @@ function _clip($value, $lower, $upper) {
 	}
 }
 
-function formatImageUpload($uploadedFile, $destFullPath){
+function formatImageUpload($uploadedFile, $destFullPath, $id, $recordType){
 	$fileType = $uploadedFile["type"];
 	if ($fileType == 'image/png') {
 		if (copy($uploadedFile["tmp_name"], $destFullPath)) {
@@ -129,6 +129,22 @@ function formatImageUpload($uploadedFile, $destFullPath){
 	}
 
 	if ($result['success'] == true) {
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$bookCoverInfo = new BookCoverInfo();
+		$bookCoverInfo->recordType = $recordType;
+		$bookCoverInfo->recordId = $id;
+		if($bookCoverInfo->find(true)) {
+			$bookCoverInfo->imageSource = "upload";
+			$bookCoverInfo->thumbnailLoaded = 0;
+			$bookCoverInfo->mediumLoaded = 0;
+			$bookCoverInfo->largeLoaded = 0;
+			if($bookCoverInfo->update()) {
+				$result['message'] = translate([
+					'text' => 'Your cover has been uploaded successfully',
+					'isAdminFacing' => true,
+				]);
+			}
+		}
 		try {
 			chgrp($destFullPath, 'aspen_apache');
 			chmod($destFullPath, 0775);

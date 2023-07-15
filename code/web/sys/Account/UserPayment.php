@@ -18,6 +18,7 @@ class UserPayment extends DataObject {
 	public $totalPaid;
 	public $transactionDate;
 	public $transactionType;
+	public $squareToken;
 	public $aciToken;
 	public $deluxeRemittanceId;
 	public $deluxeSecurityId;
@@ -211,6 +212,7 @@ class UserPayment extends DataObject {
 					$troutD = $queryParams['TROUTD'];
 					$authCode = $queryParams['AUTHCODE'];
 					$ccNumber = $queryParams['CCNUMBER'];
+					$userPayment->transactionId = $troutD;
 					if ($amountPaid != $userPayment->totalPaid) {
 						$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
 						$userPayment->totalPaid = $amountPaid;
@@ -564,6 +566,88 @@ class UserPayment extends DataObject {
 				$error = 'Incorrect Payment ID provided';
 				global $logger;
 				$logger->log('Incorrect Payment ID provided', Logger::LOG_ERROR);
+			}
+		}
+		$result = [
+			'success' => $success,
+			'message' => $success ? $message : $error,
+		];
+
+		return $result;
+	}
+
+	public static function completePayPalPayflowPayment($queryParams) {
+		$success = false;
+		$error = '';
+		$message = '';
+		if (empty($queryParams['USER1'])) {
+			$error = 'No Payment ID was provided, could not complete the payment';
+		} else {
+			$paymentId = $queryParams['USER1'];
+			$userPayment = new UserPayment();
+			$userPayment->id = $paymentId;
+			if ($userPayment->find(true)) {
+				if ($userPayment->error || $userPayment->completed || $userPayment->cancelled) {
+					$userPayment->error = true;
+					$userPayment->message .= 'This payment has already been completed. ';
+				} else {
+					if($queryParams['RESPMSG'] != "Approved") {
+						$success = false;
+						$userPayment->error = true;
+						$userPayment->message = "Payment failed. Reason: " . $queryParams['RESPMSG'];
+					} else {
+						$success = true;
+						$amountPaid = $queryParams['AMT'];
+						$transactionId = $queryParams['PNREF'];
+						$userPayment->transactionId = $transactionId;
+						if ($amountPaid != $userPayment->totalPaid) {
+							$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
+							$userPayment->totalPaid = $amountPaid;
+						}
+
+						//Check to see if we have a donation for this payment
+						require_once ROOT_DIR . '/sys/Donations/Donation.php';
+						$donation = new Donation();
+						$donation->paymentId = $userPayment->id;
+						if ($donation->find(true)) {
+							$success = true;
+							$message = 'Your donation payment has been completed. ';
+							$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId";
+						} else {
+							$user = new User();
+							$user->id = $userPayment->userId;
+							if ($user->find(true)) {
+								$finePaymentCompleted = $user->completeFinePayment($userPayment);
+								if ($finePaymentCompleted['success']) {
+									$success = true;
+									$message = translate([
+										'text' => 'Your payment has been completed. ',
+										'isPublicFacing' => true,
+									]);
+									$userPayment->message .= "Payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId ";
+								} else {
+									$userPayment->error = true;
+									$userPayment->message .= $finePaymentCompleted['message'];
+								}
+							} else {
+								$userPayment->error = true;
+								$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+							}
+						}
+						$userPayment->completed = true;
+
+					}
+				}
+				$userPayment->update();
+				if ($userPayment->error) {
+					$error = $userPayment->message;
+				} else {
+					$message = $userPayment->message;
+				}
+			} else {
+				$error = 'Invalid Payment ID provided';
+				global $logger;
+				$logger->log('Invalid Payment ID provided', Logger::LOG_ERROR);
 			}
 		}
 		$result = [

@@ -191,6 +191,7 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				// Certified Payments by Deluxe
 				if($userLibrary->finePaymentType == 10) {
 					global $library;
 					require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
@@ -210,6 +211,27 @@ class MyAccount_Fines extends MyAccount {
 
 						// application id from deluxe
 						$interface->assign('deluxeApplicationId', $deluxeSettings->applicationId);
+					}
+				}
+
+				// Square
+				if($userLibrary->finePaymentType == 12) {
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+					$squareSetting = new SquareSetting();
+					$squareSetting->id = $library->squareSettingId;
+					if($squareSetting->find(true)) {
+						$cdnUrl = 'https://web.squarecdn.com/v1/square.js';
+						if($squareSetting->sandboxMode == 1 || $squareSetting->sandboxMode == '1') {
+							$cdnUrl = 'https://sandbox.web.squarecdn.com/v1/square.js';
+						}
+						$interface->assign('squareCdnUrl', $cdnUrl);
+						$interface->assign('squareApplicationId', $squareSetting->applicationId);
+						$interface->assign('squareAccessToken', $squareSetting->accessToken);
+						$interface->assign('squareLocationId', $squareSetting->locationId);
+
+						//require_once ROOT_DIR . '/sys/CurlWrapper.php';
+						//$serviceAccountAuthorization = new CurlWrapper();
 					}
 				}
 

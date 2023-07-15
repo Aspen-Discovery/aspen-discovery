@@ -1275,7 +1275,7 @@ class Evergreen extends AbstractIlsDriver {
 				$evgUserObj = $this->mapEvergreenFields($evgUser, $this->fetchIdl('au'));
 				$lastXactId = $evgUserObj['last_xact_id'];
 			} else {
-				$result['message'] = "Error {$apiResponse->payload[0]->textcode} updating your payment, please visit the library with your receipt.";
+				$result['message'] = "Error {$apiResponse->payload[0]->textcode} loading user to update payment, please visit the library with your receipt.";
 				$logger->log('Unable to fetch patron from Evergreen while completing fine payment', Logger::LOG_ERROR);
 				return $result;
 			}
@@ -1321,8 +1321,8 @@ class Evergreen extends AbstractIlsDriver {
 				$result['message'] = "Error {$apiResponse->payload[0]->textcode} updating your payment, please visit the library with your receipt.";
 			}
 		} else {
-			$result['message'] = translate(['text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.', 'isPublicFacing'=>true]);
-			$logger->log('Unable to authenticate with Evergreen while completing fine payment', Logger::LOG_ERROR);
+			$result['message'] = translate(['text' => 'Unable to post the payment to the library ILS. The library has been notified and will manually reconcile the payment.', 'isPublicFacing'=>true]);
+			$logger->log('Unable to post the payment to the library ILS. The library has been notified and will manually reconcile the payment. Response code: ' . $this->apiCurlWrapper->getResponseCode(), Logger::LOG_ERROR);
 		}
 
 		$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
@@ -1427,7 +1427,7 @@ class Evergreen extends AbstractIlsDriver {
 		return false;
 	}
 
-	private function loadPatronInformation($userData, $username, $password): User {
+	private function loadPatronInformation($userData, $username, $password): ?User {
 		$user = new User();
 		$user->username = $userData['id'];
 		if ($user->find(true)) {
@@ -1551,7 +1551,9 @@ class Evergreen extends AbstractIlsDriver {
 
 		if ($insert) {
 			$user->created = date('Y-m-d');
-			$user->insert();
+			if (!$user->insert()) {
+				return null;
+			}
 		} else {
 			$user->update();
 		}

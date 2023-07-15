@@ -45,7 +45,7 @@
 # MySQL Nightly Dump #
 ######################
 # backup important bits at 12:10am daily
-10 0 * * *    root    /usr/local/aspen-discovery/code/cron/nightly_mysql_dump.sh pueblo.production aspen 2>&1 >/dev/null
+10 0 * * *    root    php /usr/local/aspen-discovery/code/web/cron/backupAspen.php pueblo.production aspen
 
 #############################################
 # New York Times Best seller Lists Updating #
@@ -64,3 +64,39 @@
 00 22 * * *   aspen    cd /usr/local/aspen-discovery/code/cron; java -jar cron.jar pueblo.production
 
 00 01 * * *   root    certbot renew
+
+############################
+# Fix Cover Permissions    #
+############################
+*/15 * * * * root chown aspen:aspen_apache /data/aspen-discovery/pueblo.production/covers/original/*
+*/15 * * * * root chmod g+rw /data/aspen-discovery/pueblo.production/covers/original/*
+
+#############################
+# Refresh SAML SSO metadata #
+#############################
+00 05  * * * aspen php /usr/local/aspen-discovery/code/web/cron/refreshSsoMetadata.php pueblo.production
+
+#########################
+# Fetch Notification Receipts #
+#########################
+0 11 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/fetchNotificationReceipts.php pueblo.production
+
+#########################
+# Update Saved Searches #
+#########################
+0 10 * * 1-5    aspen php /usr/local/aspen-discovery/code/web/cron/updateSavedSearches.php pueblo.production
+
+#########################
+# Send Custom LiDA Notifications #
+#########################
+*/15 * * * * aspen php /usr/local/aspen-discovery/code/web/cron/sendLiDANotifications.php pueblo.production
+
+#########################
+# Run Scheduled Updates #
+#########################
+*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php pueblo.production
+
+#########################
+# Update Translations from Community #
+#########################
+15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php pueblo.production

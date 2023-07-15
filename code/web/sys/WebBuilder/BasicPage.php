@@ -190,7 +190,7 @@ class BasicPage extends DB_LibraryLinkedObject {
 		} elseif ($name == "allowableHomeLocations") {
 			return $this->getAllowableHomeLocations();
 		} else {
-			return $this->_data[$name] ?? null;
+			return parent::__get($name);
 		}
 	}
 
@@ -206,7 +206,7 @@ class BasicPage extends DB_LibraryLinkedObject {
 		} elseif ($name == "allowableHomeLocations") {
 			$this->_allowableHomeLocations = $value;
 		} else {
-			$this->_data[$name] = $value;
+			parent::__set($name, $value);
 		}
 	}
 

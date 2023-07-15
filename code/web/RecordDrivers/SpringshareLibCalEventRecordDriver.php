@@ -312,7 +312,9 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getCategories() {
-		return $this->fields['program_type'];
+		if (array_key_exists('program_type', $this->fields)){
+			return $this->fields['program_type'];
+		}
 	}
 
 	public function getBranch() {

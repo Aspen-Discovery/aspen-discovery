@@ -21,6 +21,7 @@ import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class SymphonyExportMain {
 	private static Logger logger;
@@ -36,6 +37,9 @@ public class SymphonyExportMain {
 	private static IlsExtractLogEntry logEntry;
 
 	private static Date reindexStartTime;
+
+	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.|\\.CAT_BY\\.).*$");
+	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	private static boolean hadErrors = false;
 
@@ -98,7 +102,7 @@ public class SymphonyExportMain {
 
 			//TODO: Load the account profile with additional information about Symphony connection if needed.
 
-			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+			indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
 			logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 
 			//Check for new marc out
@@ -710,6 +714,8 @@ public class SymphonyExportMain {
 
 		//These are all the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
+		//TODO: Unizp any files that exist in the marc path
+		//unzipAllFiles(marcExportPath)
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		ArrayList<File> filesToProcess = new ArrayList<>();
 		File latestFile = null;
@@ -741,6 +747,8 @@ public class SymphonyExportMain {
 
 		//Get a list of marc deltas since the last marc record
 		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
+		//TODO: Unizp any files that exist in the marc delta path
+		//unzipAllFiles(marcDeltaPath)
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
 			for (File exportedMarcDeltaFile : exportedMarcDeltaFiles) {
@@ -769,6 +777,14 @@ public class SymphonyExportMain {
 			return 0;
 		}
 	}
+
+	//TODO: Create a function to unzip all files in a directory
+	//function unzipAllFiles(directory)
+	//  get a list of all zip files
+	//  loop
+	//     check to see if the file is still changing
+	//     when it stops changing
+	//         UnzipUtility.unzip(the file)
 
 	/**
 	 * Updates Aspen using the MARC export or exports provided.
@@ -906,6 +922,24 @@ public class SymphonyExportMain {
 									marcStatus = appendItemsToRecordResult.getMarcStatus();
 									curBib = appendItemsToRecordResult.getMergedRecord();
 								} else {
+									//get notes from specified subfield in indexing profile
+									if (indexingProfile.getNoteSubfield() != ' '){
+										List<DataField> items = curBib.getDataFields(indexingProfile.getItemTagInt());
+										for (DataField item : items) {
+											List<Subfield> notes = item.getSubfields(indexingProfile.getNoteSubfield());
+											for (Subfield note : notes){
+												String noteString = note.getData();
+												if (hideNotePattern.matcher(noteString).matches()) { //hide notes if private or staff
+													item.removeSubfield(note);
+												}else if (publicNotePattern.matcher(noteString).matches()){ //strip out ".PUBLIC." for public notes
+													String newNote = noteString.replaceAll("(\\.PUBLIC\\.)", "").trim();
+													note.setData(newNote);
+												}
+											}
+
+										}
+									}
+
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
 
