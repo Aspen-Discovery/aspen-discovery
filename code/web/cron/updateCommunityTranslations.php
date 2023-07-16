@@ -62,8 +62,6 @@ foreach($languages as $languageId) {
 					}
 				}
 			}
-			$translationTerms->__destruct();
-			$translationTerms = null;
 		}
 	}
 }

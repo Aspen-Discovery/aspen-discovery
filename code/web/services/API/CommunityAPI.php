@@ -119,7 +119,7 @@ class CommunityAPI extends Action {
 				$language = new Language();
 				$language->code = $_REQUEST['languageCode'];
 				if($language->find(true)) {
-					foreach ($terms as $termToTranslate) {
+					foreach ($terms as $originalTermId => $termToTranslate) {
 						$translationTerm = new TranslationTerm();
 						$translationTerm->term = $termToTranslate;
 						if($translationTerm->find(true)) {
@@ -134,7 +134,7 @@ class CommunityAPI extends Action {
 										//$result['message'] = 'Translation matches the original text';
 									} else {
 										$result['success'] = true;
-										$result['translations'][$translation->id] = $translation->translation;
+										$result['translations'][$originalTermId] = $translation->translation;
 									}
 								} else {
 									//$result['message'] = 'Term has not been translated yet';
