@@ -313,6 +313,15 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     max-height: 250px;
     {/if}
 {rdelim}
+
+.home-page-browse-results-grid .browse-thumbnail{ldelim}
+{if !empty($browseCategoryImageSize)}
+    height: 350px;
+{else}
+    height: 250px;
+{/if}
+{rdelim}
+
 {/if}
 
 .browse-thumbnail{ldelim}
