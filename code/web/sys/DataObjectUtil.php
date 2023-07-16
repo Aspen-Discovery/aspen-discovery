@@ -171,7 +171,11 @@ class DataObjectUtil {
 			'hidden',
 			'url',
 			'email',
+            'email_autocomplete',
 			'multiemail',
+            'barcode_autocomplete',
+            'phone_autocomplete',
+            'username_autocomplete'
 		])) {
 			if (isset($_REQUEST[$propertyName])) {
 				if ($object instanceof UnsavedDataObject && $property['type'] == 'enum') {

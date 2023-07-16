@@ -21,7 +21,12 @@ class CustomFormField extends DataObject {
 		4 => 'Date',
 		5 => 'Email address',
 		6 => 'URL',
+        7 => 'Barcode (autocomplete)',
+        8 => 'Username (autocomplete)',
+        9 => 'Email (autocomplete)',
+        10 => 'Phone (autocomplete)',
 	];
+
 	public static $fieldTypes = [
 		0 => 'text',
 		1 => 'textarea',
@@ -30,6 +35,10 @@ class CustomFormField extends DataObject {
 		4 => 'date',
 		5 => 'email',
 		6 => 'url',
+        7 => 'barcode_autocomplete',
+        8 => 'username_autocomplete',
+        9 => 'email_autocomplete',
+        10 => 'phone_autocomplete',
 	];
 
 	static function getObjectStructure($context = ''): array {
