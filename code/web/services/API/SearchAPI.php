@@ -345,7 +345,7 @@ class SearchAPI extends Action {
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $webIndexNote);
 				}
 			}elseif ($aspenModule->name == 'Side Loads') {
-				require_once ROOT_DIR . '/sys/Indexing/SideloadScope.php';
+				require_once ROOT_DIR . '/sys/Indexing/SideLoadScope.php';
 				$sideloadScope = new SideLoadScope();
 				$sideloadScope->deleted = false;
 				$sideloadScope = $sideloadScope->fetchAll();
