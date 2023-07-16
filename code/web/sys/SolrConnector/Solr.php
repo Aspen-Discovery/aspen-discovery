@@ -2004,7 +2004,6 @@ abstract class Solr {
 					AspenError::raiseError("Solr is not currently running");
 				}
 				$fields = [];
-				/** @noinspection PhpUndefinedFieldInspection */
 				foreach ($schema->fields->field as $field) {
 					//print_r($field);
 					if ($field['stored'] == 'true' || $field['indexed'] == 'true') {
@@ -2012,9 +2011,14 @@ abstract class Solr {
 					}
 				}
 				if ($solrScope) {
-					/** @noinspection PhpUndefinedFieldInspection */
 					foreach ($schema->fields->dynamicField as $field) {
-						$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
+						if ($field['name'] != 'custom_facet_*') {
+							$fields[] = substr((string)$field['name'], 0, -1) . $solrScope;
+						}else{
+							for ($i = 1; $i <= 4; $i++) {
+								$fields[] = substr((string)$field['name'], 0, -1) . $i;
+							}
+						}
 					}
 				}
 				$memCache->set("schema_fields_$key", $fields, 24 * 60 * 60);
