@@ -344,48 +344,47 @@ class SearchAPI extends Action {
 				}else{
 					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $webIndexNote);
 				}
-			}elseif ($aspenModule->name == 'Side Loads') {
-				require_once ROOT_DIR . '/sys/Indexing/SideLoadScope.php';
-				$sideloadScope = new SideLoadScope();
-				$sideloadScope->deleted = false;
-				$sideloadScope = $sideloadScope->fetchAll();
-				$hasErrors = false;
-				$sideloadIndexNote = '';
-				/** @var SideloadScope  $sideloadScope */
-				foreach ($sideloadScope as $sideload) {
-					require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
-					$sideLoadLogEntry = new SideLoadLogEntry();
-					$sideLoadLogEntry->id = $sideloadScope->id;
-					$sideLoadLogEntry->orderBy("id DESC");
-					$sideLoadLogEntry->find();
-					if ($sideLoadLogEntry->getNumResults() > 0) {
-						$sideLoadLogEntry->fetch();
-						if ($sideLoadLogEntry->numErrors > 0) {
-							$sideloadIndexNote .= $sideloadScope->name . ' had an error on the last run<br/>';
-						}
-						if (empty($sideLoadLogEntry->endTime)){
-							//First indexing entry has not finished, check the one before that
-							if ($sideLoadLogEntry->getNumResults() > 1) {
-								$sideLoadLogEntry->fetch();
-								if ($sideLoadLogEntry->numErrors > 0) {
-									$sideloadIndexNote .= $sideloadScope->name . ' had an error on the last completed run<br/>';
-								} elseif (empty($sideLoadLogEntry->endTime)){
-									$sideloadIndexNote .= $sideloadScope->name . ' has not finished indexing on the last 2 tries<br/>';
-								}
-							} else {
-								$sideloadIndexNote .= $sideloadScope->name . ' has never finished indexing<br/>';
-							}
-						}
-					}else{
-						$hasErrors = true;
-						$sideloadIndexNote .= $sideloadScope->name . ' has never been indexed<br/>';
-					}
-				}
-				if (!$hasErrors) {
-					$this->addCheck($checks, $aspenModule->name);
-				}else{
-					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $sideloadIndexNote);
-				}
+//			}elseif ($aspenModule->name == 'Side Loads') {
+//				require_once ROOT_DIR . '/sys/Indexing/SideLoad.php';
+//				$sideload = new SideLoad();
+//				$sideloads = $sideload->fetchAll();
+//				$hasErrors = false;
+//				$sideloadIndexNote = '';
+//				/** @var Sideload  $sideload */
+//				foreach ($sideloads as $sideload) {
+//					require_once ROOT_DIR . '/sys/Indexing/SideLoadLogEntry.php';
+//					$sideLoadLogEntry = new SideLoadLogEntry();
+//					$sideLoadLogEntry->whereAdd("sideLoadsUpdated LIKE '%" . $sideload->escape($sideload->name) . "%'");
+//					$sideLoadLogEntry->orderBy("id DESC");
+//					$sideLoadLogEntry->find();
+//					if ($sideLoadLogEntry->getNumResults() > 0) {
+//						$sideLoadLogEntry->fetch();
+//						if ($sideLoadLogEntry->numErrors > 0) {
+//							$sideloadIndexNote .= $sideload->name . " had an error on the last run<br/>';
+//						}
+//						if (empty($sideLoadLogEntry->endTime)){
+//							//First indexing entry has not finished, check the one before that
+//							if ($sideLoadLogEntry->getNumResults() > 1) {
+//								$sideLoadLogEntry->fetch();
+//								if ($sideLoadLogEntry->numErrors > 0) {
+//									$sideloadIndexNote .= $sideload->name . ' had an error on the last completed run<br/>';
+//								} elseif (empty($sideLoadLogEntry->endTime)){
+//									$sideloadIndexNote .= $sideload->name . ' has not finished indexing on the last 2 tries<br/>';
+//								}
+//							} else {
+//								$sideloadIndexNote .= $sideload->name . ' has never finished indexing<br/>';
+//							}
+//						}
+//					}else{
+//						$hasErrors = true;
+//						$sideloadIndexNote .= $sideload->name . ' has never been indexed<br/>';
+//					}
+//				}
+//				if (!$hasErrors) {
+//					$this->addCheck($checks, $aspenModule->name);
+//				}else{
+//					$this->addCheck($checks, $aspenModule->name, self::STATUS_WARN, $sideloadIndexNote);
+//				}
 			} else {
 				if (!empty($aspenModule->logClassPath) && !empty($aspenModule->logClassName)) {
 					//Check to see how many settings we have
