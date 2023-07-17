@@ -144,7 +144,7 @@ public class EvergreenExportMain {
 				}
 
 				if (baseUrl != null) {
-					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+					indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
 					if (indexingProfile == null){
 						logEntry.incErrors("Could not load indexing profile for " + profileToLoad);
 					}else {

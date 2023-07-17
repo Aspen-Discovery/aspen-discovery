@@ -73,6 +73,7 @@
 			Globals.rtl = {if $userLang->isRTL()}true{else}false{/if};
 			Globals.bypassAspenLoginForSSO = {if $bypassAspenPatronLogin}true{else}false{/if};
 			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
+			AspenDiscovery.Browse.browseStyle = '{$browseStyle}';
 			{literal}
 		});
 		{/literal}

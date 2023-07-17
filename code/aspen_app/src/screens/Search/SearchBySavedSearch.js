@@ -255,13 +255,13 @@ export default class SearchBySavedSearch extends Component {
           const libraryContext = route.params?.libraryContext ?? [];
           const version = formatDiscoveryVersion(libraryContext.discoveryVersion);
           if (version >= '23.01.00') {
-               navigateStack('HomeTab', 'SavedSearchResultItem', {
+               navigateStack('BrowseTab', 'SavedSearchResultItem', {
                     id: item,
                     title: getCleanTitle(title),
                     url: library.baseUrl,
                });
           } else {
-               navigateStack('HomeTab', 'SavedSearchResultItem221200', {
+               navigateStack('BrowseTab', 'SavedSearchResultItem221200', {
                     id: item,
                     title: getCleanTitle(title),
                     url: library.baseUrl,

@@ -181,6 +181,16 @@ class IndexingProfile extends DataObject {
 
 	public $checkSierraMatTypeForFormat;
 
+	public $customFacet1SourceField;
+	public $customFacet1ValuesToInclude;
+	public $customFacet1ValuesToExclude;
+	public $customFacet2SourceField;
+	public $customFacet2ValuesToInclude;
+	public $customFacet2ValuesToExclude;
+	public $customFacet3SourceField;
+	public $customFacet3ValuesToInclude;
+	public $customFacet3ValuesToExclude;
+
 	private $_translationMaps;
 	private $_timeToReshelve;
 	private $_sierraFieldMappings;
@@ -1050,6 +1060,105 @@ class IndexingProfile extends DataObject {
 						'canEdit' => false,
 						'canAddNew' => true,
 						'canDelete' => true,
+						'forcesReindex' => true,
+					],
+				],
+			],
+
+			'customFacetSection' => [
+				'property' => 'customFacetSection',
+				'hiddenByDefault' => true ,
+				'type' => 'section',
+				'label' => 'Custom Facets',
+				'hideInLists' => true,
+				'properties' => [
+					'customFacet1SourceField' => [
+						'property' => 'customFacet1SourceField',
+						'type' => 'text',
+						'label' => 'Custom Facet 1 Source',
+						'maxLength' => 50,
+						'description' => 'A descriptor of the field(s) and subfield(s) to load data for the facet from',
+						'required' => false,
+						'default' => '',
+						'forcesReindex' => true,
+					],
+					'customFacet1ValuesToInclude' => [
+						'property' => 'customFacet1ValuesToInclude',
+						'type' => 'regularExpression',
+						'label' => 'Custom Facet 1 Values to Include (Regex)',
+						'description' => 'A regular expression for values to include, leave blank or use .* to include everything',
+						'maxLength' => '500',
+						'required' => false,
+						'default' => '.*',
+						'forcesReindex' => true,
+					],
+					'customFacet1ValuesToExclude' => [
+						'property' => 'customFacet1ValuesToExclude',
+						'type' => 'regularExpression',
+						'label' => 'Custom Facet 1 Values to Exclude (Regex)',
+						'description' => 'A regular expression for values to exclude, leave blank to not apply exclusions',
+						'maxLength' => '500',
+						'required' => false,
+						'forcesReindex' => true,
+					],
+
+					'customFacet2SourceField' => [
+						'property' => 'customFacet2SourceField',
+						'type' => 'text',
+						'label' => 'Custom Facet 2 Source',
+						'maxLength' => 50,
+						'description' => 'A descriptor of the field(s) and subfield(s) to load data for the facet from',
+						'required' => false,
+						'default' => '',
+						'forcesReindex' => true,
+					],
+					'customFacet2ValuesToInclude' => [
+						'property' => 'customFacet2ValuesToInclude',
+						'type' => 'regularExpression',
+						'label' => 'Custom Facet 2 Values to Include (Regex)',
+						'description' => 'A regular expression for values to include, leave blank or use .* to include everything',
+						'maxLength' => '500',
+						'required' => false,
+						'default' => '.*',
+						'forcesReindex' => true,
+					],
+					'customFacet2ValuesToExclude' => [
+						'property' => 'customFacet2ValuesToExclude',
+						'type' => 'regularExpression',
+						'label' => 'Custom Facet 2 Values to Exclude (Regex)',
+						'description' => 'A regular expression for values to exclude, leave blank to not apply exclusions',
+						'maxLength' => '500',
+						'required' => false,
+						'forcesReindex' => true,
+					],
+
+					'customFacet3SourceField' => [
+						'property' => 'customFacet3SourceField',
+						'type' => 'text',
+						'label' => 'Custom Facet 3 Source',
+						'maxLength' => 50,
+						'description' => 'A descriptor of the field(s) and subfield(s) to load data for the facet from',
+						'required' => false,
+						'default' => '',
+						'forcesReindex' => true,
+					],
+					'customFacet3ValuesToInclude' => [
+						'property' => 'customFacet3ValuesToInclude',
+						'type' => 'regularExpression',
+						'label' => 'Custom Facet 3 Values to Include (Regex)',
+						'description' => 'A regular expression for values to include, leave blank or use .* to include everything',
+						'maxLength' => '500',
+						'required' => false,
+						'default' => '.*',
+						'forcesReindex' => true,
+					],
+					'customFacet3ValuesToExclude' => [
+						'property' => 'customFacet3ValuesToExclude',
+						'type' => 'regularExpression',
+						'label' => 'Custom Facet 3 Values to Exclude (Regex)',
+						'description' => 'A regular expression for values to exclude, leave blank to not apply exclusions',
+						'maxLength' => '500',
+						'required' => false,
 						'forcesReindex' => true,
 					],
 				],

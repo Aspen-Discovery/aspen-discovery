@@ -7061,7 +7061,7 @@ class Koha extends AbstractIlsDriver {
 	public function getRegistrationCapabilities() : array {
 		return [
 			'lookupAccountByEmail' => true,
-			'lookupAccountByPhone' => false,
+			'lookupAccountByPhone' => true,
 			'basicRegistration' => true,
 			'forgottenPassword' => $this->getForgotPasswordType() != 'none',
 			'initiatePasswordResetByEmail' => true,
@@ -7073,7 +7073,7 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 		if ($this->dbConnection != null) {
 			/** @noinspection SqlResolve */
-			$sql = "SELECT firstname, middle_name, surname, cardnumber FROM borrowers where email = '" . mysqli_escape_string($this->dbConnection, $email) . "';";
+			$sql = "SELECT firstname, middle_name, surname, cardnumber, borrowernumber FROM borrowers where email = '" . mysqli_escape_string($this->dbConnection, $email) . "';";
 			$results = mysqli_query($this->dbConnection, $sql);
 			$cardNumbers = [];
 			if ($results !== false && $results != null) {
@@ -7088,6 +7088,41 @@ class Koha extends AbstractIlsDriver {
 				return [
 					'success' => false,
 					'message' => translate(['text' => 'No account was found for that email.', 'isPublicFacing' => true])
+				];
+			} else {
+				return [
+					'success' => true,
+					'accountInformation' => $cardNumbers
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'Could not connect to ILS, please try again later.', 'isPublicFacing' => true])
+			];
+		}
+	}
+
+	public function lookupAccountByPhoneNumber(string $phone) : array {
+		$this->initDatabaseConnection();
+		if ($this->dbConnection != null) {
+			/** @noinspection SqlResolve */
+			$sql = "SELECT firstname, middle_name, surname, cardnumber, borrowernumber FROM borrowers where REGEXP_REPLACE(phone, '[^0-9]', '') = '" . mysqli_escape_string($this->dbConnection, $phone) . "';";
+			$results = mysqli_query($this->dbConnection, $sql);
+			$cardNumbers = [];
+			if ($results !== false && $results != null) {
+				while ($curRow = $results->fetch_assoc()) {
+					$cardNumbers[] = [
+						'cardNumber' => $curRow['cardnumber'],
+						'name' => trim(trim($curRow['firstname'] . ' ' . $curRow['middle_name']) . ' ' . $curRow['surname']),
+						'patronId' => $curRow['borrowernumber']
+					];
+				}
+			}
+			if (count($cardNumbers) == 0) {
+				return [
+					'success' => false,
+					'message' => translate(['text' => 'No account was found for that phone number.', 'isPublicFacing' => true])
 				];
 			} else {
 				return [

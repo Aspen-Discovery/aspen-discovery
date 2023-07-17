@@ -24,6 +24,7 @@
 			{/if}
 
 			<div class="{if empty($showCovers)}col-xs-12{else}col-xs-9 col-sm-9{if !empty($viewingCombinedResults)} col-md-9 col-lg-10{/if}{/if}">{* May turn out to be more than one situation to consider here *}
+				<div class="row">
 				{* Title Row *}
 
 					<div class="col-xs-12">
@@ -220,7 +221,7 @@
 
 				{* Formats Section *}
 
-					<div class="{if empty($hasHiddenFormats) && count($relatedManifestations) != 1}hidden-xs {/if}col-sm-12" id="relatedManifestationsValue{$summId|escape}">
+					<div class="{if empty($hasHiddenFormats) && count($relatedManifestations) != 1}hidden-xs {/if}col-xs-12" id="relatedManifestationsValue{$summId|escape}">
 						{* Hide Formats section on mobile view, unless there is a single format or a format has been selected by the user *}
 						{* relatedManifestationsValue ID is used by the Formats button *}
 
@@ -251,6 +252,7 @@
 
 				{/if}
 
+			</div>
 			</div>
 
 		</div>

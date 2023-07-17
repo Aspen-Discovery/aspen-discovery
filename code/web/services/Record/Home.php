@@ -192,8 +192,8 @@ class Record_Home extends GroupedWorkSubRecordHomeAction {
 				}
 			}
 
-			if ($mpaaField = $this->marcRecord->getField('521')) {
-				$interface->assign('mpaaRating', $this->getSubfieldData($mpaaField, 'a'));
+			if (!empty($this->recordDriver->getGroupedWorkDriver()->getMpaaRating())) {
+				$interface->assign('mpaaRating', $this->recordDriver->getGroupedWorkDriver()->getMpaaRating());
 			}
 
 			$format = $this->recordDriver->getFormat();

@@ -584,6 +584,13 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
+	public function lookupAccountByPhoneNumber(string $phone) : array {
+		return [
+			'success' => false,
+			'message' => translate(['text' => 'This ILS does not support looking up accounts by phone number.', 'isPublicFacing' => true])
+		];
+	}
+
 	public function getBasicRegistrationForm() : array {
 		global $library;
 

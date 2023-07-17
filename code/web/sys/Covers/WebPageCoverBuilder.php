@@ -21,25 +21,54 @@ class WebPageCoverBuilder extends AbstractCoverBuilder {
 		//Draw a background for the entire image
 		imagefilledrectangle($imageCanvas, 0, 0, $this->imageWidth, $this->imageHeight, $backgroundColor);
 
-		//Draw the globe image
+		//Get website info for cover image
+		require_once ROOT_DIR . '/RecordDrivers/WebsitePageRecordDriver.php';
+		$id = $_GET['id'];
 
-		global $configArray;
-		$globeUrl = $configArray['Site']['local'] . '/images/globe.png';
-		//Load the cover
-		if ($globeImage = @file_get_contents($globeUrl, false)) {
-			$listEntryImageResource = @imagecreatefromstring($globeImage);
+		$webPage = new WebsitePageRecordDriver($id);
+		$webPage->id = $id;
+		if ($webPage->isValid()) {
+			$indexingSettingId = $webPage->getSettingId();
+		}
 
-			$listEntryWidth = imagesx($listEntryImageResource);
-			$listEntryHeight = imagesy($listEntryImageResource);
+		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteIndexSetting.php';
+		$setting = new WebsiteIndexSetting;
+		$setting->id = $indexingSettingId;
+		if($setting->find(true)){
+			$defaultCover = $setting->defaultCover;
+		}
 
-			//Put a white background beneath the cover
-			$coverLeft = 20;
-			$coverTop = 20;
+		if ($defaultCover){
+			$cover = ROOT_DIR . '/files/original/' . $defaultCover;
 
-			$coverLeft += 10;
-			$coverTop += 10;
-			imagecopyresampled($imageCanvas, $listEntryImageResource, $coverLeft, $coverTop, 0, 0, $listEntryWidth, $listEntryHeight, $listEntryWidth, $listEntryHeight);
-			imagedestroy($listEntryImageResource);
+			$coverImage = imagecreatefromstring(file_get_contents($cover));
+
+			$listEntryWidth = imagesx($coverImage);
+			$listEntryHeight = imagesy($coverImage);
+
+			imagecopyresampled($imageCanvas, $coverImage, 10, 10, 0, 0, $listEntryWidth, $listEntryHeight, $listEntryWidth, $listEntryHeight);
+			imagedestroy($coverImage);
+		}else{
+			//Draw the globe image
+
+			global $configArray;
+			$globeUrl = $configArray['Site']['local'] . '/images/globe.png';
+			//Load the cover
+			if ($globeImage = @file_get_contents($globeUrl, false)) {
+				$listEntryImageResource = @imagecreatefromstring($globeImage);
+
+				$listEntryWidth = imagesx($listEntryImageResource);
+				$listEntryHeight = imagesy($listEntryImageResource);
+
+				//Put a white background beneath the cover
+				$coverLeft = 20;
+				$coverTop = 20;
+
+				$coverLeft += 10;
+				$coverTop += 10;
+				imagecopyresampled($imageCanvas, $listEntryImageResource, $coverLeft, $coverTop, 0, 0, $listEntryWidth, $listEntryHeight, $listEntryWidth, $listEntryHeight);
+				imagedestroy($listEntryImageResource);
+			}
 		}
 
 		//Make sure the borders are preserved

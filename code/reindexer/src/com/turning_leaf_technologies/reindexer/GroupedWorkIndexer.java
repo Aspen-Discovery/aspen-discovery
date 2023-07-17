@@ -340,7 +340,7 @@ public class GroupedWorkIndexer {
 			while (indexingProfilesRS.next()){
 				String ilsIndexingClassString = indexingProfilesRS.getString("indexingClass");
 				String curType = indexingProfilesRS.getString("name");
-				IndexingProfile indexingProfile = new IndexingProfile(indexingProfilesRS);
+				IndexingProfile indexingProfile = new IndexingProfile(indexingProfilesRS, logEntry);
 				switch (ilsIndexingClassString) {
 					case "ArlingtonKoha":
 						ilsRecordProcessors.put(curType, new ArlingtonKohaRecordProcessor(this, curType, dbConn, indexingProfilesRS, logger, fullReindex));

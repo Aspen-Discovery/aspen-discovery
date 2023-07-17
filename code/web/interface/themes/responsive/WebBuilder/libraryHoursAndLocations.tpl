@@ -54,6 +54,16 @@
                     </div>
                 </div>
             {/if}
+            {if !empty($curLocation.email)}
+                <div class="row">
+                    <div class="col-tn-12 col-xs-3 result-label">
+                        {translate text="Email" isPublicFacing=true}
+                    </div>
+                    <div class="col-tn-12 col-xs-9">
+                        <a href="mailto:{$curLocation.email}">{$curLocation.email}</a>
+                    </div>
+                </div>
+            {/if}
             {if !empty($curLocation.hasValidHours)}
                 <h3>{translate text="Hours" isPublicFacing=true}</h3>
                 {assign var='lastDay' value="-1"}

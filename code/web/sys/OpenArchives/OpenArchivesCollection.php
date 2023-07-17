@@ -11,6 +11,7 @@ class OpenArchivesCollection extends DataObject {
 	public $baseUrl;
 	public $setName;
 	public $subjects;
+	public $defaultCover;
 	public /** @noinspection PhpUnused */
 		$subjectFilters;
 	public $imageRegex;
@@ -48,6 +49,16 @@ class OpenArchivesCollection extends DataObject {
 				'label' => 'Base URL',
 				'description' => 'The url of the open archives site',
 				'size' => '255',
+			],
+			'defaultCover' => [
+				'property' => 'defaultCover',
+				'type' => 'image',
+				'label' => 'Background Image for Default Covers (280x280)',
+				'description' => 'A background image for default covers (.jpg or .png only)',
+				'required' => false,
+				'maxWidth' => 280,
+				'maxHeight' => 280,
+				'hideInLists' => true,
 			],
 			'setName' => [
 				'property' => 'setName',

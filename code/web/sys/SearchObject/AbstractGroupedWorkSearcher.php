@@ -808,6 +808,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 				'isPublicFacing' => true,
 				'inAttribute' => true,
 			]),
+			'LocalCallNumber' => translate([
+				'text' => 'Call Number',
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
 		];
 	}
 

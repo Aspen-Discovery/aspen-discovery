@@ -13,6 +13,11 @@ import SearchByCategory from '../../screens/Search/SearchByCategory';
 import { SearchResultsForList } from '../../screens/Search/SearchByList';
 import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 import { CommonActions } from '@react-navigation/native';
+import { SearchResults } from '../../screens/Search/SearchResults';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { FiltersScreen } from '../../screens/Search/Filters';
+import Facet from '../../screens/Search/Facet';
+import Scanner from '../../components/Scanner';
 
 const BrowseStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -175,6 +180,32 @@ const BrowseStackNavigator = () => {
                          title: route.params.title ?? getTermFromDictionary(language, 'item_details'),
                     })}
                />
+               <Stack.Screen
+                    name="SearchResults"
+                    component={SearchResults}
+                    options={({ route }) => ({
+                         title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.term,
+                         params: {
+                              pendingParams: [],
+                         },
+                    })}
+               />
+               <Stack.Screen
+                    name="modal"
+                    component={FilterModal}
+                    options={{
+                         headerShown: false,
+                         presentation: 'modal',
+                    }}
+               />
+               <Stack.Screen
+                    name="Scanner"
+                    component={Scanner}
+                    options={{
+                         gestureEnabled: false,
+                         presentation: 'modal',
+                    }}
+               />
           </Stack.Navigator>
      );
 };
@@ -225,6 +256,55 @@ export const EditionsModal = () => {
                     }}
                />
           </EditionsStack.Navigator>
+     );
+};
+
+const FilterModalStack = createNativeStackNavigator();
+const FilterModal = () => {
+     const { language } = React.useContext(LanguageContext);
+     return (
+          <FilterModalStack.Navigator
+               id="SearchFilters"
+               screenOptions={({ navigation, route }) => ({
+                    headerShown: false,
+                    animationTypeForReplace: 'push',
+                    gestureEnabled: false,
+                    headerLeft: () => {
+                         if (route.name !== 'Filters') {
+                              return (
+                                   <Pressable onPress={() => navigation.goBack()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                                        <ChevronLeftIcon size={5} color="primary.baseContrast" />
+                                   </Pressable>
+                              );
+                         } else {
+                              return null;
+                         }
+                    },
+                    headerRight: () => (
+                         <Pressable onPress={() => navigation.getParent().pop()} mr={3} hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}>
+                              <CloseIcon size={5} color="primary.baseContrast" />
+                         </Pressable>
+                    ),
+               })}>
+               <FilterModalStack.Screen
+                    name="Filters"
+                    component={FiltersScreen}
+                    options={{
+                         title: getTermFromDictionary(language, 'filters'),
+                         headerShown: true,
+                         presentation: 'card',
+                    }}
+               />
+               <FilterModalStack.Screen
+                    name="Facet"
+                    component={Facet}
+                    options={({ route }) => ({
+                         title: route.params.title,
+                         headerShown: true,
+                         presentation: 'card',
+                    })}
+               />
+          </FilterModalStack.Navigator>
      );
 };
 

@@ -66,18 +66,20 @@
 				</div>
 			</div>
 
-			<div id="home-page-browse-results" {if empty($browseCategoryRatingsMode)}class="HideBorder"{/if}>
-				<div class="grid">
-					<!-- columns -->
-					<div class="grid-col grid-col--1"></div>
-					<div class="grid-col grid-col--2"></div>
-					<div class="grid-col grid-col--3"></div>
-					<div class="grid-col grid-col--4"></div>
-					<div class="grid-col grid-col--5"></div>
-					<div class="grid-col grid-col--6"></div>
-				</div>
+			<div id="home-page-browse-results" class="{if empty($browseCategoryRatingsMode)}HideBorder{/if}{if $browseStyle == 'grid'}home-page-browse-results-grid{else}home-page-browse-results-grid-masonry{/if}">
+				{if $browseStyle == 'masonry'}
+					<div class="masonry grid">
+						<!-- columns -->
+						<div class="grid-col grid-col--1"></div>
+						<div class="grid-col grid-col--2"></div>
+						<div class="grid-col grid-col--3"></div>
+						<div class="grid-col grid-col--4"></div>
+						<div class="grid-col grid-col--5"></div>
+						<div class="grid-col grid-col--6"></div>
+					</div>
+				{/if}
 			</div>
-
+			<div class="clearfix"></div>
 			<a onclick="return AspenDiscovery.Browse.getMoreResults()" onkeypress="return AspenDiscovery.Browse.getMoreResults()" role="button" title="{translate text='Get More Results' inAttribute=true isPublicFacing=true}" tabindex="0">
 				<div class="row" id="more-browse-results">
 					<span class="glyphicon glyphicon-chevron-down" aria-label="{translate text='Get More Results' inAttribute=true isPublicFacing=true}"></span>

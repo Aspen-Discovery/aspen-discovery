@@ -12,7 +12,7 @@
 		</div>
 
 	{else}{*Default Browse Mode (covers) *}
-		<div class="browse-thumbnail grid-item {$coverStyle}">
+		<div class="browse-thumbnail grid-item {$coverStyle} {if $browseStyle == 'grid'}col-tn-6 col-xs-4 col-sm-4 col-md-3 col-lg-2{/if}">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', {if !empty($browseCategoryId)}'{$browseCategoryId}'{/if});" href="{$summUrl}">
 				{if !empty($isNew)}<span class="browse-cover-badge">{translate text="New!" isPublicFacing=true}</span> {/if}
 				<div>

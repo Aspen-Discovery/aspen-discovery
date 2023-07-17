@@ -146,7 +146,7 @@ public class CarlXExportMain {
 					profileToLoad = carlXInstanceInformation.indexingProfileName;
 				}
 
-				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger);
+				indexingProfile = IndexingProfile.loadIndexingProfile(dbConn, profileToLoad, logger, logEntry);
 				logEntry.setIsFullUpdate(indexingProfile.isRunFullUpdate());
 				if (!extractSingleWork && indexingProfile.isRegroupAllRecords()) {
 					MarcRecordGrouper recordGrouper = getRecordGroupingProcessor(dbConn);

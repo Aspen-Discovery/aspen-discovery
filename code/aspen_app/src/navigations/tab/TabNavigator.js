@@ -10,8 +10,8 @@ import BrowseStackNavigator from '../stack/BrowseStackNavigator';
 import LibraryCardStackNavigator from '../stack/LibraryCardStackNavigator';
 import MoreStackNavigator from '../stack/MoreStackNavigator';
 import SearchStackNavigator from '../stack/SearchStackNavigator';
-import {LanguageContext} from '../../context/initialContext';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { LanguageContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export default function TabNavigator() {
      const { language } = React.useContext(LanguageContext);
@@ -20,17 +20,15 @@ export default function TabNavigator() {
      const tabBarBackgroundColor = useColorModeValue('light', 'dark');
      return (
           <Tab.Navigator
-               initialRouteName="HomeTab"
+               initialRouteName="BrowseTab"
                screenOptions={({ route }) => ({
                     headerShown: false,
                     backBehavior: 'none',
                     tabBarHideOnKeyboard: true,
                     tabBarIcon: ({ focused, color, size }) => {
                          let iconName;
-                         if (route.name === 'HomeTab') {
+                         if (route.name === 'BrowseTab') {
                               iconName = focused ? 'library' : 'library-outline';
-                         } else if (route.name === 'SearchTab') {
-                              iconName = focused ? 'search' : 'search-outline';
                          } else if (route.name === 'LibraryCardTab') {
                               iconName = focused ? 'card' : 'card-outline';
                          } else if (route.name === 'AccountTab') {
@@ -51,35 +49,27 @@ export default function TabNavigator() {
                     },
                })}>
                <Tab.Screen
-                    name="HomeTab"
+                    name="BrowseTab"
                     component={BrowseStackNavigator}
                     options={{
-                         tabBarLabel: getTermFromDictionary(language, "nav_discover"),
+                         tabBarLabel: getTermFromDictionary(language, 'nav_discover'),
                     }}
                     screenOptions={{
                          headerShown: false,
                     }}
                />
                <Tab.Screen
-                    name="SearchTab"
-                    component={SearchStackNavigator}
-                    options={{
-                         tabBarLabel: getTermFromDictionary(language, "nav_search"),
-                         unmountOnBlur: true,
-                    }}
-               />
-               <Tab.Screen
                     name="LibraryCardTab"
                     component={LibraryCardStackNavigator}
                     options={{
-                         tabBarLabel: getTermFromDictionary(language, "nav_card"),
+                         tabBarLabel: getTermFromDictionary(language, 'nav_card'),
                     }}
                />
                <Tab.Screen
                     name="AccountTab"
                     component={DrawerNavigator}
                     options={{
-                         tabBarLabel: getTermFromDictionary(language, "nav_account"),
+                         tabBarLabel: getTermFromDictionary(language, 'nav_account'),
                          //tabBarBadge: 3,
                     }}
                     listeners={({ navigation }) => ({
@@ -100,7 +90,7 @@ export default function TabNavigator() {
                     name="MoreTab"
                     component={MoreStackNavigator}
                     options={{
-                         tabBarLabel: getTermFromDictionary(language, "nav_more"),
+                         tabBarLabel: getTermFromDictionary(language, 'nav_more'),
                     }}
                />
           </Tab.Navigator>

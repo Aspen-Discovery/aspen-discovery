@@ -133,7 +133,9 @@ class SearchObject_GroupedWorkSearcher2 extends SearchObject_AbstractGroupedWork
 			if ($field === '') {
 				unset($this->filterList[$field]);
 			}
-			if (strpos($field, '_') !== false) {
+			if (strpos($field, 'custom_facet_') === 0) {
+				$this->filterList[$field] = $filter;
+			}else if (strpos($field, '_') !== false) {
 				$lastUnderscore = strrpos($field, '_');
 				$shortFieldName = substr($field, 0, $lastUnderscore + 1);
 				$oldScope = substr($field, $lastUnderscore + 1);

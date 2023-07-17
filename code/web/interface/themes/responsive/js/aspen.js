@@ -9985,6 +9985,7 @@ AspenDiscovery.Browse = (function(){
 			grid:'home-page-browse-grid'
 		},
 		changingDisplay: false,
+		browseStyle: 'masonry',
 
 		addToHomePage: function(searchId){
 			AspenDiscovery.Account.ajaxLightbox(Globals.path + '/Browse/AJAX?method=getAddBrowseCategoryForm&searchId=' + searchId, true);
@@ -10002,13 +10003,19 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		initializeBrowseCategory: function(){
-			if (!$('#home-page-browse-results .grid').length){
-				return;
+			if (AspenDiscovery.Browse.browseStyle === 'masonry') {
+				if (!$('#home-page-browse-results .grid').length){
+					return;
+				}
+				AspenDiscovery.Browse.colcade = new Colcade('#home-page-browse-results .grid', {
+					columns: '.grid-col',
+					items: '.grid-item'
+				});
+			}else{
+				if (!$('#home-page-browse-results').length){
+					return;
+				}
 			}
-			AspenDiscovery.Browse.colcade = new Colcade( '#home-page-browse-results .grid', {
-				columns: '.grid-col',
-				items: '.grid-item'
-			});
 
 			// wrapper for setting events and connecting w/ AspenDiscovery.initCarousels() in base.js
 
@@ -10104,14 +10111,18 @@ AspenDiscovery.Browse = (function(){
 			// })();
 			// var selectedClass = this.browseModeClasses[this.browseMode];
 
-			// hide current results while fetching new results
-			AspenDiscovery.Browse.colcade.destroy();
-			$('.grid-item').fadeOut().remove();
+			if (AspenDiscovery.Browse.browseStyle === 'masonry') {
+				// hide current results while fetching new results
+				AspenDiscovery.Browse.colcade.destroy();
+				$('.grid-item').fadeOut().remove();
 
-			AspenDiscovery.Browse.colcade = new Colcade( '#home-page-browse-results .grid', {
-				columns: '.grid-col',
-				items: '.grid-item'
-			});
+				AspenDiscovery.Browse.colcade = new Colcade( '#home-page-browse-results .grid', {
+					columns: '.grid-col',
+					items: '.grid-item'
+				});
+			} else {
+				$('.grid-item').fadeOut().remove();
+			}
 		},
 
 		changeBrowseCategory: function(categoryTextId, addToHistory) {
@@ -10192,7 +10203,12 @@ AspenDiscovery.Browse = (function(){
 						var resultsPanel = $('#home-page-browse-results');
 						resultsPanel.fadeOut('fast', function () {
 							$('.grid-item').remove();
-							AspenDiscovery.Browse.colcade.append($(data.records));
+							if (AspenDiscovery.Browse.browseStyle === 'masonry') {
+								AspenDiscovery.Browse.colcade.append($(data.records));
+							}else{
+								var resultsPanelGrid = $('#home-page-browse-results');
+								resultsPanelGrid.append($(data.records));
+							}
 							resultsPanel.fadeIn('slow');
 							AspenDiscovery.Ratings.initializeRaters();
 						});
@@ -10332,7 +10348,12 @@ AspenDiscovery.Browse = (function(){
 					if (data.textId) AspenDiscovery.Browse.curCategory = data.textId;
 					if (data.subCategoryTextId) AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 
-					AspenDiscovery.Browse.colcade.append($(data.records));
+					if (AspenDiscovery.Browse.browseMode === 'masonry') {
+						AspenDiscovery.Browse.colcade.append($(data.records));
+					} else {
+						var resultsPanelGrid = $('#home-page-browse-results');
+						resultsPanelGrid.append($(data.records));
+					}
 					AspenDiscovery.Ratings.initializeRaters();
 					
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
@@ -10423,7 +10444,12 @@ AspenDiscovery.Browse = (function(){
 				if (data.success === false){
 					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
-					AspenDiscovery.Browse.colcade.append($(data.records));
+					if (AspenDiscovery.Browse.browseMode === 'masonry') {
+						AspenDiscovery.Browse.colcade.append($(data.records));
+					} else {
+						var resultsPanelGrid = $('#home-page-browse-results');
+						resultsPanelGrid.append($(data.records));
+					}
 					AspenDiscovery.Ratings.initializeRaters();
 					if (data.lastPage){
 						$('#more-browse-results').hide(); // hide the load more results TODO: implement server side
@@ -14668,7 +14694,39 @@ AspenDiscovery.IndexingClass = (function () {
 			//Config per Class
 			var ilsOptions = {
 				//Common for all classes
-				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude', 'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom', 'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver', 'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking', 'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix', 'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs', 'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching', 'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs', 'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm', 'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs', 'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers', 'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp', 'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations', 'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection', 'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode', 'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress', 'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts', 'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes', 'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated', 'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat', 'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield', 'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField', 'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost', 'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection', 'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle', 'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords', 'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords', 'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport', 'propertyRowtranslationMaps', 'FloatingSave', 'propertyRowindex856Links', 'propertyRowincludePersonalAndCorporateNamesInTopics'],
+				commonFields: ['propertyRowid', 'propertyRowname', 'propertyRowmarcPath', 'propertyRowfilenamesToInclude',
+					'propertyRowmarcEncoding', 'propertyRowindividualMarcPath', 'propertyRownumCharsToCreateFolderFrom',
+					'propertyRowcreateFolderFromLeadingCharacters', 'propertyRowgroupingClass', 'propertyRowrecordDriver',
+					'propertyRowcatalogDriver', 'propertyRowrecordUrlComponent', 'propertyRowprocessRecordLinking',
+					'propertyRowrecordNumberTag', 'propertyRowrecordNumberSubfield', 'propertyRowrecordNumberPrefix',
+					'propertyRowcustomMarcFieldsToIndexAsKeyword', 'propertyRowtreatUnknownLanguageAs',
+					'propertyRowtreatUndeterminedLanguageAs', 'propertyRowsuppressRecordsWithUrlsMatching',
+					'propertyRowdetermineAudienceBy', 'propertyRowaudienceSubfield', 'propertyRowtreatUnknownAudienceAs',
+					'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm',
+					'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs',
+					'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers',
+					'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp',
+					'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations',
+					'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection',
+					'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode',
+					'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress',
+					'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts',
+					'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes',
+					'propertyRowiTypesToSuppress', 'propertyRowdueDate', 'propertyRowdueDateFormat', 'propertyRowdateCreated',
+					'propertyRowdateCreatedFormat', 'propertyRowlastCheckinDate', 'propertyRowlastCheckinFormat', 'propertyRowformat',
+					'propertyRoweContentDescriptor', 'propertyRowdoAutomaticEcontentSuppression', 'propertyRownoteSubfield',
+					'propertyRowformatMappingSection', 'propertyRowformatSource', 'propertyRowfallbackFormatField',
+					'propertyRowspecifiedFormat', 'propertyRowspecifiedFormatCategory', 'propertyRowspecifiedFormatBoost',
+					'propertyRowcheckRecordForLargePrint', 'propertyRowformatMap', 'propertyRowstatusMappingSection',
+					'propertyRowstatusMap', 'propertyRoworderTag', 'propertyRoworderStatus', 'propertyRoworderLocationSingle',
+					'propertyRoworderLocation', 'propertyRoworderCopies', 'propertyRoworderCode3', 'propertyRowregroupAllRecords',
+					'propertyRowrunFullUpdate', 'propertyRowlastUpdateOfChangedRecords', 'propertyRowlastUpdateOfAllRecords',
+					'propertyRowlastChangeProcessed', 'propertyRowfullMarcExportRecordIdThreshold', 'propertyRowlastUpdateFromMarcExport',
+					'propertyRowtranslationMaps', 'FloatingSave', 'propertyRowindex856Links', 'propertyRowincludePersonalAndCorporateNamesInTopics',
+					'propertyRowcustomFacetSection', 'propertyRowcustomFacet1SourceField', 'propertyRowcustomFacet1ValuesToInclude', 'propertyRowcustomFacet1ValuesToExclude',
+					'propertyRowcustomFacet2SourceField', 'propertyRowcustomFacet2ValuesToInclude', 'propertyRowcustomFacet2ValuesToExclude',
+					'propertyRowcustomFacet3SourceField', 'propertyRowcustomFacet3ValuesToInclude', 'propertyRowcustomFacet3ValuesToExclude'
+				],
 				//Specific per class
 				Koha: ['propertyRowlastUpdateOfAuthorities'],
 				Evolve: [],

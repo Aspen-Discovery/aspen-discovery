@@ -247,46 +247,119 @@ class CatalogConnection {
 		} else {
 			$cardsByEmail = $this->driver->lookupAccountByEmail($email);
 			if ($cardsByEmail['success']) {
-				//We won't return the card itself, instead we'll email the list to the patron's email
-				require_once ROOT_DIR . '/sys/Email/Mailer.php';
-				$eMailer = new Mailer();
-				$accountInfo = '';
-				foreach ($cardsByEmail['accountInformation'] as $cardInfo) {
-					$accountInfo .= $cardInfo['name'] . ' - ' . $cardInfo['cardNumber'] . "\n";
+				$sendMessageToPatron = true;
+				if (isset($_REQUEST['bypassPatronMessaging'])) {
+					$sendMessageToPatron = !filter_var($_REQUEST['bypassPatronMessaging'], FILTER_VALIDATE_BOOLEAN);
 				}
-				$body = translate([
-					'text' => "You recently requested your account information. Based on the email entered, the following barcodes were found.\n\n%1%\nIf you did not request this information, please contact the library.",
-					'isPublicFacing' => true,
-					1 => $accountInfo
-				]);
+				if ($sendMessageToPatron) {
+					//Email the list to the patron's email
+					require_once ROOT_DIR . '/sys/Email/Mailer.php';
+					$eMailer = new Mailer();
+					$accountInfo = '';
+					foreach ($cardsByEmail['accountInformation'] as $cardInfo) {
+						$accountInfo .= $cardInfo['name'] . ' - ' . $cardInfo['cardNumber'] . "\n";
+					}
+					$body = translate([
+						'text' => "You recently requested your account information. Based on the email entered, the following barcodes were found.\n\n%1%\nIf you did not request this information, please contact the library.",
+						'isPublicFacing' => true,
+						1 => $accountInfo
+					]);
 
 
-				$result = $eMailer->send($email, translate([
-					'text' => "Your library account",
-					'isPublicFacing' => true,
-				]), $body);
-				if ($result) {
-					return [
-						'success' => true,
-						'message' => translate([
+					$result = $eMailer->send($email, translate([
+						'text' => "Your library account",
+						'isPublicFacing' => true,
+					]), $body);
+					if ($result) {
+						$cardsByEmail['message'] = translate([
 							'text' => 'An email containing your library card was sent to %1%.',
 							'isPublicFacing' => true,
 							1 => $email
-						])
-					];
-				} else {
-					return [
-						'success' => false,
-						'message' => translate([
+						]);
+					} else {
+						$cardsByEmail['message'] = translate([
 							'text' => 'We could not send your barcode to %1%, please contact the library to retrieve your library card.',
 							'isPublicFacing' => true,
 							1 => $email
-						])
-					];
+						]);
+					}
 				}
+				return $cardsByEmail;
 			} else {
 				return $cardsByEmail;
 			}
+		}
+	}
+
+	public function lookupAccountByPhoneNumber($email) : array {
+		$phone = $_REQUEST['phone'];
+		$phone = preg_replace('/[^0-9]/', '', $phone);
+		if (strlen($phone) >= 7 && strlen($phone) <= 11) {
+			$result = $this->driver->lookupAccountByPhoneNumber($phone);
+			if ($result['success']) {
+				global $library;
+				if ($library->twilioSettingId != -1) {
+					$accountInfo = '';
+					foreach ($result['accountInformation'] as $cardInfo) {
+						$accountInfo .= $cardInfo['name'] . ' - ' . $cardInfo['cardNumber'] . "\n";
+					}
+					$body = translate([
+						'text' => "Your library account(s)\n%1%",
+						'isPublicFacing' => true,
+						1 => $accountInfo
+					]);
+
+					//Check to see if we should send a notification
+					$sendMessageToPatron = true;
+					if (isset($_REQUEST['bypassPatronMessaging'])) {
+						$sendMessageToPatron = !filter_var($_REQUEST['bypassPatronMessaging'], FILTER_VALIDATE_BOOLEAN);
+					}
+					if ($sendMessageToPatron) {
+						require_once ROOT_DIR . '/sys/SMS/TwilioSetting.php';
+						$twilioSetting = new TwilioSetting();
+						$twilioSetting->id = $library->twilioSettingId;
+						if ($twilioSetting->find(true)) {
+							$isNumberValid = $twilioSetting->validatePhoneNumber($phone);
+							if ($isNumberValid) {
+								$smsResponse = $twilioSetting->sendMessage($body, $phone);
+								if ($smsResponse['success']) {
+									$result['message'] = translate([
+										'text' => 'An message containing your library card was sent to %1%.',
+										'isPublicFacing' => true,
+										1 => $phone
+									]);
+								} else {
+									$result['message'] = translate([
+										'text' => 'We could not send a message to %1%, please contact the library to retrieve your library card.',
+										'isPublicFacing' => true,
+										1 => $phone
+									]);
+								}
+							} else {
+								$result['message'] = translate([
+									'text' => 'We could not send a message to %1%, please contact the library to retrieve your library card.',
+									'isPublicFacing' => true,
+									1 => $phone
+								]);
+							}
+						} else {
+							$result['message'] = translate([
+								'text' => 'We could not send a message to %1%, please contact the library to retrieve your library card.',
+								'isPublicFacing' => true,
+								1 => $phone
+							]);
+						}
+					}
+				}
+				return $result;
+			}else{
+				return $result;
+			}
+		}else{
+			return [
+				'success' => false,
+				'message' => translate(['text' => 'The phone number supplied was not valid.', 'isPublicFacing' => true])
+			];
 		}
 	}
 
