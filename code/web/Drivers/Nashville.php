@@ -472,4 +472,72 @@ class Nashville extends CarlX {
 		}
 	}
 
+	public function getCollectionReportData($location, $date): array {
+		$this->initDatabaseConnection();
+		/** @noinspection SqlResolve */
+		$sql = <<<EOT
+			-- get the almost-whole enchilada (on shelf, charged, missing, lost, damaged, in processing; NOT withdrawn) for an owning branch
+			with i as (
+				select
+					i.*
+				from item_v i
+				right join branch_v b on i.branch = b.branchnumber
+				where b.branchcode = '$location'
+			), r as (
+				select
+					r.refid
+					, max(r.returndate) as returndate
+				from itemnotewhohadit_v r
+				group by r.refid
+			), ir as (
+				select
+					*
+				from i
+				left join r on i.item = r.refid
+			), irb as (
+				select
+					ir.*
+					, b.title
+					, b.author
+					, b.publishingdate
+				from ir
+				left join bbibmap_v b on ir.bid = b.bid
+			), ix as (
+				select
+					distinct irb.item
+					, irb.bid
+					, irb.title as Title
+					, irb.author as Author
+					, irb.publishingdate as PubDate
+					, irb.price as Price
+					, l.locname as Location
+					, m.medcode as Media
+					, irb.cn as CallNumber
+					, irb.returndate as LastReturned
+					, irb.cumulativehistory Circ
+					, irb.item as Barcode
+					, irb.creationdate as Created
+					, c.description as Status
+					, irb.statusdate as StatusDate
+				from irb
+				left join location_v l on irb.location = l.locnumber
+				left join media_v m on irb.media = m.mednumber
+				left join systemitemcodes_v c on irb.status = c.code
+			)
+			select
+				*
+			from ix
+			order by Location, CallNumber
+EOT;
+		$stid = oci_parse($this->dbConnection, $sql);
+		// consider using oci_set_prefetch to improve performance
+		// oci_set_prefetch($stid, 1000);
+		oci_execute($stid);
+		$data = [];
+		while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+			$data[] = $row;
+		}
+		oci_free_statement($stid);
+		return $data;
+	}
 }

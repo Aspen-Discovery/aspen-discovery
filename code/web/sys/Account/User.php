@@ -2905,6 +2905,25 @@ class User extends DataObject {
 		return $pickupBranch;
 	}
 
+	function getPickupLocationName() {
+		//Always check if a preferred pickup location has been selected.  If not, use the home location
+		if ($this->pickupLocationId > 0 && $this->pickupLocationId != $this->homeLocationId) {
+			$pickupBranch = $this->pickupLocationId;
+			$locationLookup = new Location();
+			$locationLookup->locationId = $pickupBranch;
+			//Make sure that the hold location is a valid pickup location just in case it's been hidden since
+			if ($locationLookup->find(true) && $locationLookup->validHoldPickupBranch != 2) {
+				$pickupBranch = $locationLookup->displayName;
+			} else {
+				$pickupBranch = $this->getHomeLocation()->displayName;
+			}
+		} else {
+			$pickupBranch = $this->getHomeLocation()->displayName;
+		}
+
+		return $pickupBranch;
+	}
+
 	/**
 	 * @param string $pickupBranch
 	 * @return bool
@@ -3265,6 +3284,10 @@ class User extends DataObject {
 		$sections['circulation_reports']->addAction(new AdminAction('Student Checkout Report', 'View a report of all checkouts for a given class with filtering to only show overdue items and lost items.', '/Report/StudentReport'), [
 			'View Location Student Reports',
 			'View All Student Reports',
+		]);
+		$sections['circulation_reports']->addAction(new AdminAction('Collection Report', 'View a report of all items for a branch.', '/Report/CollectionReport'), [
+			'View Location Collection Reports',
+			'View All Collection Reports',
 		]);
 
 		if (array_key_exists('Axis 360', $enabledModules)) {

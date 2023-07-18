@@ -102,7 +102,7 @@ class TopFacets implements RecommendationInterface {
 								}else{
 									$facet['imageNameSelected'] = strtolower(str_replace(' ', '', $facet['value'])) . "_selected.png";
 								}
-							}elseif (strtolower($facet['value']) == "audiobooks" && !empty($appliedTheme->audioBooksImage)){
+							}elseif (strtolower($facet['value']) == "audio books" && !empty($appliedTheme->audioBooksImage)){
 								$facet['imageName'] = '/files/original/' . $appliedTheme->audioBooksImage;
 								if (!empty($appliedTheme->audioBooksImageSelected)){
 									$facet['imageNameSelected'] = '/files/original/' . $appliedTheme->audioBooksImageSelected;

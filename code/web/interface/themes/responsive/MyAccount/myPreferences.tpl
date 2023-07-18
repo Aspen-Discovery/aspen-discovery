@@ -148,7 +148,7 @@
 									{/if}
 								</select>
 							{else}
-								&nbsp;{$profile->getPickupLibraryName()|escape}
+								&nbsp;{$profile->getPickupLocationName()|escape}
 							{/if}
 						</div>
 					{/if}
