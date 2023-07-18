@@ -17,19 +17,28 @@ class CustomFormField extends DataObject {
 		0 => 'Text Field',
 		1 => 'Text Area',
 		2 => 'Checkbox',
-		'3' => 'Select List',
-		'4' => 'Date',
-		'5' => 'Email address',
-		'6' => 'URL',
+		3 => 'Select List',
+		4 => 'Date',
+		5 => 'Email address',
+		6 => 'URL',
+        7 => 'Barcode (prefill)',
+        8 => 'Username (prefill)',
+        9 => 'Email (prefill)',
+        10 => 'Phone (prefill)',
 	];
+
 	public static $fieldTypes = [
 		0 => 'text',
 		1 => 'textarea',
 		2 => 'checkbox',
-		'3' => 'enum',
-		'4' => 'date',
-		'5' => 'email',
-		'6' => 'url',
+		3 => 'enum',
+		4 => 'date',
+		5 => 'email',
+		6 => 'url',
+        7 => 'barcode_prefill',
+        8 => 'name_prefill',
+        9 => 'email_prefill',
+        10 => 'phone_prefill',
 	];
 
 	static function getObjectStructure($context = ''): array {
