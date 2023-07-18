@@ -52,7 +52,30 @@ function getUpdates23_08_00(): array {
 		],
 
 		//kirstien - ByWater
+		'aspen_lida_self_check_settings' => [
+			'title' => 'Aspen LiDA Self-Check Settings',
+			'description' => 'Add Aspen LiDA self-check settings and permissions',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS aspen_lida_self_check_settings (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(50) UNIQUE,
+					isEnabled TINYINT(1) DEFAULT 0
+				)',
+				'ALTER TABLE location ADD COLUMN lidaSelfCheckSettingId INT(11) DEFAULT -1',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Aspen LiDA', 'Administer Aspen LiDA Self-Check Settings', 'Aspen LiDA', 10, 'Controls if the user can change Aspen LiDA Self-Check settings.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Aspen LiDA Self-Check Settings'))",
+			]
+		],
+		'aspen_lida_permissions_update' => [
+			'title' => 'Update Aspen LiDA permissions',
+			'description' => 'Add Aspen LiDA as required module for Aspen LiDA permissions',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE permissions set requiredModule = 'Aspen LiDA' WHERE sectionName = 'Aspen LiDA'",
+			]
 
+		],
 
 		//kodi - ByWater
 

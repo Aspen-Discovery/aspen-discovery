@@ -15,6 +15,10 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LocationRecordToInclude.php')) {
 if (file_exists(ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php')) {
 	require_once ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php';
 }
+if (file_exists(ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php')) {
+	require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+}
+
 require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
 require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
 
@@ -117,7 +121,9 @@ class Location extends DataObject {
 	 */
 	public $ebscohostSearchSettingId;
 
+	//LiDA Settings
 	public $lidaLocationSettingId;
+	public $lidaSelfCheckSettingId;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -142,6 +148,7 @@ class Location extends DataObject {
 			'defaultToCombinedResults',
 			'useLibraryCombinedResultsSettings',
 			'ebscohostSearchSettingId',
+			'lidaSelfCheckSettingId'
 		];
 	}
 
@@ -287,6 +294,16 @@ class Location extends DataObject {
 			while ($vdxForm->fetch()) {
 				$vdxForms[$vdxForm->id] = $vdxForm->name;
 			}
+		}
+
+		require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+		$appSelfCheckSetting = new AspenLiDASelfCheckSetting();
+		$appSelfCheckSetting->orderBy('name');
+		$appSelfCheckSettings = [];
+		$appSelfCheckSetting->find();
+		$appSelfCheckSettings[-1] = 'none';
+		while ($appSelfCheckSetting->fetch()) {
+			$appSelfCheckSettings[$appSelfCheckSetting->id] = $appSelfCheckSetting->name;
 		}
 
 		$structure = [
@@ -1156,6 +1173,15 @@ class Location extends DataObject {
 						'hideInLists' => true,
 						'default' => -1,
 					],
+					'lidaSelfCheckSettingId' => [
+						'property' => 'lidaSelfCheckSettingId',
+						'type' => 'enum',
+						'values' => $appSelfCheckSettings,
+						'label' => 'Self-Check Settings',
+						'description' => 'The self-check settings to use for Aspen LiDA',
+						'hideInLists' => true,
+						'default' => -1,
+					]
 				],
 			],
 		];
