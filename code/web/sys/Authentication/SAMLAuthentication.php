@@ -89,7 +89,7 @@ class SAMLAuthentication{
 				'security' => [
 					'signatureAlgorithm' => 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256',
 					'digestAlgorithm' => 'http://www.w3.org/2001/04/xmlenc#sha256',
-					'requestedAuthnContext' => $this->forceReAuth,
+					'requestedAuthnContext' => false,
 				],
 				/*'contactPerson' => [
 					'technical' => [
@@ -141,7 +141,7 @@ class SAMLAuthentication{
 	 * @throws OneLogin_Saml2_Error
 	 */
 	public function login($returnTo = null, $parameters = array(), $forceAuthn = false, $isPassive = false, $stay = false, $setNameIdPolicy = true, $nameIdValueReq = null): ?string {
-		return $this->_auth->login($returnTo, $parameters, $forceAuthn, $isPassive, $stay, $setNameIdPolicy, $nameIdValueReq);
+		return $this->_auth->login($returnTo, $parameters, $this->forceReAuth ?? $forceAuthn, $isPassive, $stay, $setNameIdPolicy, $nameIdValueReq);
 	}
 
 	/**

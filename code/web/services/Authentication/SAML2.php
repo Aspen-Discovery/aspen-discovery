@@ -38,7 +38,7 @@ class Authentication_SAML2 extends Action {
 			unset($_SESSION['returnToModule']);
 			unset($_REQUEST['followupAction']);
 			unset($_REQUEST['followupModule']);
-			$auth->login($returnTo, [], true);
+			$auth->login($returnTo);
 		} elseif(isset($_GET['acs'])) {
 			global $logger;
 			$logger->log('Completing SAML Authentication', Logger::LOG_ERROR);
