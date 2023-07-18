@@ -194,6 +194,7 @@ class Koha extends AbstractIlsDriver {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'title', 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
 
 				if($this->getKohaVersion() >= 22.11) {
+					//TODO: Should this be capitalized? This does not seem to save to Koha
 					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
 				}
 
