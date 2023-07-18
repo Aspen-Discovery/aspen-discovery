@@ -16,39 +16,48 @@ foreach($languages as $languageId) {
 	$language->id = $languageId;
 	if($language->find(true)) {
 		if ($language->code != 'en' && $language->code != 'pig' && $language->code != 'ubb') {
-			$translation = new Translation();
-			$translation->languageId = $language->id;
-			$translation->find();
-			$allTranslations = [];
-			while($translation->fetch()) {
-				$translationTerm = new TranslationTerm();
-				$translationTerm->id = $translation->termId;
-				$translationTerm->whereAdd('isMetadata = 0');
-				$translationTerm->whereAdd('isAdminEnteredData = 0');
-				$translationTerm->whereAdd('isPublicFacing = 1 OR isAdminFacing = 1');
-				if($translationTerm->find(true)) {
-					$allTranslations[$translationTerm->id] = $translationTerm->term;
+			//Loop through all terms to be translated
+			$translationTerm = new TranslationTerm();
+			$translationTerm->whereAdd('isMetadata = 0');
+			$translationTerm->whereAdd('isAdminEnteredData = 0');
+			$translationTerm->whereAdd('isPublicFacing = 1 OR isAdminFacing = 1');
+			$allTermsToTranslate = [];
+			$translationTerm->find();
+			while ($translationTerm->fetch()) {
+				$translation = new Translation();
+				$translation->termId = $translationTerm->id;
+				$translation->languageId = $language->id;
+				//Needs to be fetched from community if we haven't gotten a translation yet
+				if ($translation->find(true)){
+					if (!$translation->translated) {
+						$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
+						$translation->lastCheckInCommunity = time();
+						$translation->update();
+					}
+				} else {
+					$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
+					$translation->lastCheckInCommunity = time();
+					$translation->update();
 				}
-				$translationTerm->__destruct();
-				$translationTerm = null;
+				$translation->__destruct();
+				$translation = null;
 			}
-			$terms = array_chunk($allTranslations, 100);
+
+			$terms = array_chunk($allTermsToTranslate, 100, true);
 			foreach ($terms as $batch) {
 				$response = getCommunityTranslations($batch, $language);
+				//Everything that has been translated is returned.  If there is not a translation in the
+				//community, that term is nto returned.
 				if(!empty($response['translations'])) {
 					$translatedBatch = $response['translations'];
-					foreach ($translatedBatch as $updatedTranslation) {
+					foreach ($translatedBatch as $termId => $updatedTranslation) {
 						$translation = new Translation();
-						$translation->termId = '';
+						$translation->termId = $termId;
 						$translation->languageId = $language->id;
 						if (!$translation->find(true)) {
 							try {
-								if ($response['isTranslatedInCommunity']) {
-									$translation->translated = 1;
-									$translation->translation = trim('');
-								} else {
-									$translation->lastCheckInCommunity = time();
-								}
+								$translation->translated = 1;
+								$translation->translation = $updatedTranslation;
 								$translation->update();
 								$numUpdated++;
 							} catch (Exception $e) {
@@ -56,14 +65,19 @@ foreach($languages as $languageId) {
 							}
 						} else {
 							// Translation already exists
+							//Check to see if the term is translated
+							if (!$translation->translated) {
+								$translation->translated = 1;
+								$translation->translation = $updatedTranslation;
+								$translation->update();
+								$numUpdated++;
+							}
 						}
 						$translation->__destruct();
 						$translation = null;
 					}
 				}
 			}
-			$translationTerms->__destruct();
-			$translationTerms = null;
 		}
 	}
 }
