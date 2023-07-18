@@ -11,7 +11,7 @@ minTimeToLog    = 0.05
 database_dsn          = "mysql:dbname={aspenDBName};host={aspenDBHost}"
 database_user         = {aspenDBUser}
 database_password     = {aspenDBPwd}
-database_aspen_jdbc   = "jdbc:mysql://{aspenDBHost}/{aspenDBName}?user={aspenDBUser}&password={aspenDBPwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
+database_aspen_jdbc   = "jdbc:mysql://{aspenDBHost}:{aspenDBPort}/{aspenDBName}?user={aspenDBUser}&password={aspenDBPwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
 database_aspen_dbname = {aspenDBName}
 
 [WorldCat]
