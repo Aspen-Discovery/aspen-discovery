@@ -2550,7 +2550,8 @@ class User extends DataObject {
 	}
 
 	public function canClientIpUseMasquerade(): bool {
-		$masqueradeStatus = Library::getMasqueradeStatus();
+		global $library;
+		$masqueradeStatus = $library->getMasqueradeStatus();
 		if ($masqueradeStatus == 1){
 			return true;
 		} else if ($masqueradeStatus == 2) {
