@@ -234,6 +234,18 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 	}
 }
 
+//system variable for supporting company name
+$interface->assign('supportingCompany', 'ByWater Solutions');
+try {
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
+	$systemVariables = new SystemVariables();
+	if ($systemVariables->find(true)) {
+		$interface->assign('supportingCompany', $systemVariables->supportingCompany);
+	}
+} catch (Exception $e) {
+	AspenError::raiseError("Error assigning supporting company name");
+}
+
 $deviceName = get_device_name();
 $interface->assign('deviceName', $deviceName);
 

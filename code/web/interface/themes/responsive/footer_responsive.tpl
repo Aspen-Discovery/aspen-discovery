@@ -3,7 +3,7 @@
 	<div class="navbar-inner">
 		<div class="row {if !empty($fullWidthTheme)}row-no-gutters{/if}">
 			<div class="col-tn-12 col-sm-5 col-md-4 text-left" id="install-info">
-				<small>{translate text='Powered By Aspen Discovery supported by ByWater Solutions' isPublicFacing=true}</small><br>
+				<small>{translate text="Powered By Aspen Discovery supported by %1%" 1=$supportingCompany isPublicFacing=true}</small><br>
 				{if empty($productionServer)}
 					<small class='location_info'>{$physicalLocation}{if !empty($debug)} ({$activeIp}){/if} - {$deviceName}</small>
 				{/if}
