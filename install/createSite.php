@@ -39,6 +39,7 @@ if (count($_SERVER['argv']) > 1){
 			'url' => $configArray['Site']['url'],
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
+            'aspenDBHost' => $configArray['Aspen']['DBHost'],
 			'aspenDBName' => $configArray['Aspen']['DBName'],
 			'aspenDBUser' => $configArray['Aspen']['DBUser'],
 			'aspenDBPwd' => $configArray['Aspen']['DBPwd'],
@@ -164,6 +165,11 @@ if (!$foundConfig) {
 
 	//This can be blank
 	$variables['staffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
+
+    $variables['aspenDBHost'] =  readline("Database host for Aspen (default: localhost) > ");
+    if (empty($variables['aspenDBHost'])){
+        $variables['aspenDBHost'] = "localhost";
+    }
 
 	$variables['aspenDBName'] =  readline("Database name for Aspen (default: aspen) > ");
 	if (empty($variables['aspenDBName'])){
