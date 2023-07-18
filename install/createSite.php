@@ -40,6 +40,7 @@ if (count($_SERVER['argv']) > 1){
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
             'aspenDBHost' => $configArray['Aspen']['DBHost'],
+            'aspenDBPort' => $configArray['Aspen']['DBPort'],
 			'aspenDBName' => $configArray['Aspen']['DBName'],
 			'aspenDBUser' => $configArray['Aspen']['DBUser'],
 			'aspenDBPwd' => $configArray['Aspen']['DBPwd'],
@@ -169,6 +170,11 @@ if (!$foundConfig) {
     $variables['aspenDBHost'] =  readline("Database host for Aspen (default: localhost) > ");
     if (empty($variables['aspenDBHost'])){
         $variables['aspenDBHost'] = "localhost";
+    }
+
+    $variables['aspenDBPort'] =  readline("Database host for Aspen (default: 3306) > ");
+    if (empty($variables['aspenDBPort'])){
+        $variables['aspenDBPort'] = "3306";
     }
 
 	$variables['aspenDBName'] =  readline("Database name for Aspen (default: aspen) > ");
