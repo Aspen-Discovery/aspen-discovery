@@ -9,6 +9,7 @@ class CustomFormSubmission extends DataObject {
 	public $userId;
 	public $dateSubmitted;
 	public $submission;
+	public $isRead;
 
 	public function getUniquenessFields(): array {
 		return [
