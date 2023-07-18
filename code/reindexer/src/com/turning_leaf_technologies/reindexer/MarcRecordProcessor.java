@@ -1715,6 +1715,11 @@ abstract class MarcRecordProcessor {
 					if (result.size() == 0 && subfield.getCode() == 'f' && (pagesPattern.matcher(physicalDescriptionData).matches())) {
 						result.add("Book");
 					}
+				} else {
+					String physicalDescriptionData = subfield.getData().toLowerCase();
+					if (kitPattern.matcher(physicalDescriptionData).matches()) {
+						result.add("Kit");
+					}
 				}
 			}
 		}
