@@ -280,17 +280,18 @@ if (!$siteOnWindows) {
 }
 
 //Import the database
+$aspen_db_cmd = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\" --port \"{$variables['aspenDBPort']}\"";
 if ($clearExisting) {
 	echo("Removing existing database\r\n");
-	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
+	exec("$aspen_db_cmd -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
 }
 echo("Creating database\r\n");
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
+exec("$aspen_db_cmd -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
 echo("Loading default database\r\n");
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $installDir/install/aspen.sql");
+exec("$aspen_db_cmd {$variables['aspenDBName']} < $installDir/install/aspen.sql");
 
 //Connect to the database
-$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host=localhost",$variables['aspenDBUser'],$variables['aspenDBPwd']);
+$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host={$variables['aspenDBHost']};port={$variables['aspenDBPort']}",$variables['aspenDBUser'],$variables['aspenDBPwd']);
 $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where cat_username = 'aspen_admin'");
 $updateUserStmt->execute();
 
@@ -300,7 +301,7 @@ if ($variables['ils'] == 'Koha'){
 	echo("Loading Koha information to database\r\n");
 	copy("$installDir/install/koha_connection.sql", "$tmp_dir/koha_connection_$sitename.sql");
 	replaceVariables("$tmp_dir/koha_connection_$sitename.sql", $variables);
-	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $tmp_dir/koha_connection_{$sitename}.sql");
+	exec("$aspen_db_cmd {$variables['aspenDBName']} < $tmp_dir/koha_connection_{$sitename}.sql");
 }
 
 $aspen_db = null;
