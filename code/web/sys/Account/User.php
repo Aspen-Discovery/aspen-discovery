@@ -2550,7 +2550,8 @@ class User extends DataObject {
 	}
 
 	public function canClientIpUseMasquerade(): bool {
-		$masqueradeStatus = Library::getMasqueradeStatus();
+		global $library;
+		$masqueradeStatus = $library->getMasqueradeStatus();
 		if ($masqueradeStatus == 1){
 			return true;
 		} else if ($masqueradeStatus == 2) {
@@ -3494,6 +3495,7 @@ class User extends DataObject {
 				'Send Notifications to Home Library Locations',
 			]);
 			$sections['aspen_lida']->addAction(new AdminAction('Branded App Settings', 'Define settings for branded versions of Aspen LiDA.', '/AspenLiDA/BrandedAppSettings'), 'Administer Aspen LiDA Settings');
+			$sections['aspen_lida']->addAction(new AdminAction('Self-Check Settings', 'Define settings for self-check in Aspen LiDA.', '/AspenLiDA/SelfCheckSettings'), 'Administer Aspen LiDA Self-Check Settings');
 		}
 
 		$sections['support'] = new AdminSection('Aspen Discovery Support');

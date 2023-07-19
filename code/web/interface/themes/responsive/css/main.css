@@ -9420,7 +9420,6 @@ a.browse-thumbnail-sorted.active {
   -webkit-column-break-inside: avoid;
   display: inline-block;
   text-align: left;
-  width: 100%;
 }
 .browse-list img {
   padding: 4px;

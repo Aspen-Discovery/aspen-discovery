@@ -8,10 +8,10 @@ minTimeToLog    = 0.05
 
 [Database]
 ;Since we have multiple databases, need to specify each
-database_dsn          = "mysql:dbname={aspenDBName};host=127.0.0.1"
+database_dsn          = "mysql:dbname={aspenDBName};host={aspenDBHost}"
 database_user         = {aspenDBUser}
 database_password     = {aspenDBPwd}
-database_aspen_jdbc   = "jdbc:mysql://localhost/{aspenDBName}?user={aspenDBUser}&password={aspenDBPwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
+database_aspen_jdbc   = "jdbc:mysql://{aspenDBHost}/{aspenDBName}?user={aspenDBUser}&password={aspenDBPwd}&useUnicode=yes&characterEncoding=UTF-8&serverTimezone={timezone}"
 database_aspen_dbname = {aspenDBName}
 
 [WorldCat]
