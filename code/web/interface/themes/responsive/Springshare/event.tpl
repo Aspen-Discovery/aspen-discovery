@@ -50,10 +50,10 @@
 
 	{*Content Right of Panel*}
 	<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9">
-		{else}
-		<div class="col-tn-12 col-xs-12 col-sm-12 col-md-12 col-lg-12">
-			{/if}
-			{*Row for Information and Registration/Your Events Button*}
+	{else}
+	<div class="col-tn-12 col-xs-12 col-sm-12 col-md-12 col-lg-12">
+	{/if}
+		{*Row for Information and Registration/Your Events Button*}
 		<div class="row">
 			<div class="col-xs-8">
 				<ul>
@@ -113,8 +113,8 @@
 	</div>
 </div>
 
-	{*Staff View Div*}
-	{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
+{*Staff View Div*}
+{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
 	<div class="row">
 		<div class="col-sm-12">
 			<div id="more-details-accordion" class="panel-group">
@@ -136,5 +136,4 @@
 			</div>
 		</div>
 	</div>
-	{/if}
-</div>
+{/if}
