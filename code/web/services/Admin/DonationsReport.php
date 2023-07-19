@@ -66,7 +66,10 @@ class Admin_DonationsReport extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('View Donations Reports');
+		return UserAccount::userHasPermission([
+            'View Donations Reports for All Libraries',
+            'View Donations Reports for Home Library'
+        ]);
 	}
 
 	function canBatchEdit() {

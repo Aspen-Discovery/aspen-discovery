@@ -66,6 +66,9 @@ class Admin_eCommerceReport extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('View eCommerce Reports');
+		return UserAccount::userHasPermission([
+            'View eCommerce Reports for All Libraries',
+            'View eCommerce Reports for Home Library'
+        ]);
 	}
 }
