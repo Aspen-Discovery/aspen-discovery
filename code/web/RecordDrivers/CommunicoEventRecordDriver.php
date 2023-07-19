@@ -83,6 +83,15 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		$eventSettings = new CommunicoSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
+			$interface->assign('bypassEventPage', $eventSettings->bypassAspenEventPages);
+		}
+		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Communico Settings') && UserAccount::isStaff());
+
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
 		$eventsUsage = new EventsUsage();
 		$eventsUsage->type = $this->getType();
@@ -150,7 +159,16 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getLinkUrl($absolutePath = false) {
-		return '/Communico/' . $this->getId() . '/Event';
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		$eventSettings = new CommunicoSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			if ($eventSettings->bypassAspenEventPages){
+				return $this->fields['url'];
+			} else {
+				return '/Communico/' . $this->getId() . '/Event';
+			}
+		}
 	}
 
 	public function getExternalUrl($absolutePath = false) {
@@ -181,7 +199,11 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		return $this->fields['event_type'];
 	}
 
-	private function getSource() {
+	public function getIntegration() {
+		return $this->fields['type'];
+	}
+
+	public function getSource() {
 		return $this->fields['source'];
 	}
 

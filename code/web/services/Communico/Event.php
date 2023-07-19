@@ -22,6 +22,14 @@ class Communico_Event extends Action {
 		}
 		$interface->assign('recordDriver', $this->recordDriver);
 
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		$eventSettings = new CommunicoSetting;
+		$eventSettings->id = $this->recordDriver->getSource();
+		if ($eventSettings->find(true)){
+			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
+		}
+		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Communico Settings') && UserAccount::isStaff());
+
 		// Display Page
 		$this->display('event.tpl', $this->recordDriver->getTitle(), null, false);
 	}
