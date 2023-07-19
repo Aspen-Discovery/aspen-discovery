@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.symphony;
 import com.opencsv.CSVReader;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
+import com.turning_leaf_technologies.file.UnzipUtility;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
@@ -38,7 +39,7 @@ public class SymphonyExportMain {
 
 	private static Date reindexStartTime;
 
-	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.|\\.CAT_BY\\.).*$");
+	private static final Pattern hideNotePattern = Pattern.compile("^.*?(\\.STAFF\\.|\\.PRIVATE\\.|\\.CIRCNOTE\\.|\\.CAT_BY\\.|CIRC\\.).*$");
 	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	private static boolean hadErrors = false;
@@ -714,8 +715,11 @@ public class SymphonyExportMain {
 
 		//These are all the full exports, we only want one full export to be processed
 		File marcExportPath = new File(indexingProfile.getMarcPath());
-		//TODO: Unizp any files that exist in the marc path
+
 		//unzipAllFiles(marcExportPath)
+		unzipAllFiles(marcExportPath);
+
+		//process unzipped files(marcExportPath)
 		File[] exportedMarcFiles = marcExportPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		ArrayList<File> filesToProcess = new ArrayList<>();
 		File latestFile = null;
@@ -747,8 +751,11 @@ public class SymphonyExportMain {
 
 		//Get a list of marc deltas since the last marc record
 		File marcDeltaPath = new File(marcExportPath.getParentFile() + "/marc_delta");
-		//TODO: Unizp any files that exist in the marc delta path
+
 		//unzipAllFiles(marcDeltaPath)
+		unzipAllFiles(marcDeltaPath);
+
+		//process unzipped files(marcExportPath)
 		File[] exportedMarcDeltaFiles = marcDeltaPath.listFiles((dir, name) -> name.endsWith("mrc") || name.endsWith("marc"));
 		if (exportedMarcDeltaFiles != null && exportedMarcDeltaFiles.length > 0){
 			for (File exportedMarcDeltaFile : exportedMarcDeltaFiles) {
@@ -778,13 +785,32 @@ public class SymphonyExportMain {
 		}
 	}
 
-	//TODO: Create a function to unzip all files in a directory
-	//function unzipAllFiles(directory)
-	//  get a list of all zip files
-	//  loop
-	//     check to see if the file is still changing
-	//     when it stops changing
-	//         UnzipUtility.unzip(the file)
+	public static void unzipAllFiles(File export){
+		File[] unzipFiles = export.listFiles((dir, name) -> name.endsWith("zip"));
+		if (unzipFiles != null && unzipFiles.length >0) {
+			for (File unzipFile : unzipFiles) {
+				long fileTimeStamp = unzipFile.lastModified();
+				boolean fileChanging = true;
+				while (fileChanging) {
+					fileChanging = false;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.debug("Thread interrupted while checking if marc file is changing");
+					}
+					if (fileTimeStamp != unzipFile.lastModified()) {
+						fileTimeStamp = unzipFile.lastModified();
+						fileChanging = true;
+					}
+				}
+				try {
+					UnzipUtility.unzip(unzipFile.getPath(), export.getPath());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 	/**
 	 * Updates Aspen using the MARC export or exports provided.
@@ -936,7 +962,6 @@ public class SymphonyExportMain {
 													note.setData(newNote);
 												}
 											}
-
 										}
 									}
 
