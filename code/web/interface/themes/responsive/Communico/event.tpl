@@ -1,11 +1,15 @@
+{*Title Div*}
 <div class="col-xs-12">
 	<div class="row">
 		<div class="col-sm-12">
 			<h1>{$recordDriver->getTitle()}</h1>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-sm-4">
+</div>
+{*Content Div*}
+<div class="row">
+	{*Left Panel Content*}
+	<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3">
 			{if !empty($recordDriver->getEventCoverUrl())}
 				<div class="panel active">
 					<div class="panel-body" style="display:flex; justify-content:center">
@@ -42,7 +46,12 @@
 				</div>
 			{/if}
 		</div>
-		<div class="col-sm-4">
+
+	{*Content Right of Panel*}
+	<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9">
+		{*Row for Information and Registration/Your Events Button*}
+		<div class="row">
+			<div class="col-xs-8">
 			<ul>
 				{if $recordDriver->isAllDayEvent()}
 					<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
@@ -63,34 +72,35 @@
 				{/if}
 			</ul>
 		</div>
-		<div class="col-sm-4" style="display:flex; justify-content:center;">
+		<div class="col-tn-4" style="display:flex; justify-content:center;">
 			{if $recordDriver->inEvents()}
 				{if $recordDriver->isRegistrationRequired()}
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $recordDriver->isRegisteredForEvent()}
-							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="You Are Registered" isPublicFacing=true}</a>
+							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:70%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="You Are Registered" isPublicFacing=true}</a>
 						{else}
-							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
+							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:70%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
 						{/if}
-						<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
+						<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:70%">{translate text="Go To Your Events" isPublicFacing=true}</a>
 					</div>
 					<br>
 				{else}
-					<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
+					<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:70%">{translate text="In Your Events" isPublicFacing=true}</a>
 				{/if}
 			{else}
 				{if $recordDriver->isRegistrationRequired()}
-					<a class="btn btn-sm btn-action btn-wrap" style="width:100%"  onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+					<a class="btn btn-sm btn-action btn-wrap" style="width:70%"  onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
 						<i class="fas fa-external-link-alt"></i>
 						{translate text=" Add to Your Events and Register" isPublicFacing=true}
 					</a>
 				{else}
-					<a class="btn btn-sm btn-action btn-wrap" style="width:100%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+					<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
 				{/if}
 			{/if}
 		</div>
-			<br>
-		<div class="col-sm-8">
+		</div>
+		{*column for tool buttons & event description*}
+		<div class="col-sm-9">
 			<div class="btn-group btn-group-sm">
 				<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
 				<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
@@ -100,24 +110,13 @@
 			</div>
 			<br>
 			<br>
-		</div>
-		{*If there is no image or program types we need to make a new row to display properly*}
-		{*A new row causes incorrect displays if there is an image or a panel for program type*}
-		{if (empty($recordDriver->getEventCoverUrl()) || empty($recordDriver->getProgramTypes()))}
-	</div>
-	<div class="row">
-		<div class="col-sm-offset-4 col-sm-8">
-			{else}
-		<div class="col-sm-8">
-			{/if}
-			{$recordDriver->getDescription()}
-			<br>
-			<br>
 			{$recordDriver->getFullDescription()}
 		</div>
 	</div>
-		{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
-		<br>
+</div>
+
+	{*Staff View Div*}
+	{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
 	<div class="row">
 			<div id="more-details-accordion" class="panel-group">
 				<div class="panel" id="staffPanel">
@@ -135,7 +134,7 @@
 						</div>
 					</div>
 				</div>
-			</div> {* End of tabs*}
+			</div>
 		</div>
 	</div>
 	{/if}

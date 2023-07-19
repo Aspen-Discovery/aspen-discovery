@@ -40,6 +40,13 @@
 				{* Search Type *}
 				<div class="col-lg-4 col-md-4 col-sm-6 col-xs-6 col-lg-offset-1 col-md-offset-1" style="padding-right: .5em">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
+						<script type="text/javascript">
+							{literal}
+							$(document).ready(function() {
+								AspenDiscovery.Searches.loadSearchTypes();
+							});
+							{/literal}
+						</script>
 						{foreach from=$searchIndexes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by %1%" 1=$searchDesc inAttribute=true isPublicFacing=true translateParameters=true}</option>
 						{/foreach}

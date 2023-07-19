@@ -1,34 +1,47 @@
+{*Title Div*}
 <div class="col-xs-12">
 	<div class="row">
 		<div class="col-sm-12">
 			<h1>{$recordDriver->getTitle()}</h1>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-sm-4">
-			{if !empty($recordDriver->getEventCoverUrl())}
-				<div class="panel active">
-					<div class="panel-body">
-						<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}"></a>
-					</div>
+</div>
+{*Content Div*}
+<div class="row">
+	{*Left Panel Content*}
+	{if !empty($recordDriver->getEventCoverUrl()) || !empty($recordDriver->getAudiences())}
+	<div class="col-tn-12 col-xs-12 col-sm-4 col-md-3 col-lg-3">
+		{if !empty($recordDriver->getEventCoverUrl())}
+			<div class="panel active">
+				<div class="panel-body">
+					<a href="{$recordDriver->getLinkUrl()}"><img class="img-responsive img-thumbnail {$coverStyle}" src="{$recordDriver->getEventCoverUrl()}" alt="{$recordDriver->getTitle()|escape}"></a>
 				</div>
-			{/if}
-			{if !empty($recordDriver->getAudiences())}
-				<div class="panel active">
-					<div class="panel-heading">
-						{translate text="Audience" isPublicFacing=true}
-					</div>
-					<div class="panel-body">
-						{foreach from=$recordDriver->getAudiences() item=audience}
-							<div class="col-xs-12">
-								<a href='/Events/Results?filter[]=age_group_facet%3A"{$audience|escape:'url'}"'>{$audience}</a>
-							</div>
-						{/foreach}
-					</div>
+			</div>
+		{/if}
+		{if !empty($recordDriver->getAudiences())}
+			<div class="panel active">
+				<div class="panel-heading">
+					{translate text="Audience" isPublicFacing=true}
 				</div>
-			{/if}
-		</div>
-		<div class="col-sm-4">
+				<div class="panel-body">
+					{foreach from=$recordDriver->getAudiences() item=audience}
+						<div class="col-xs-12">
+							<a href='/Events/Results?filter[]=age_group_facet%3A"{$audience|escape:'url'}"'>{$audience}</a>
+						</div>
+					{/foreach}
+				</div>
+			</div>
+		{/if}
+	</div>
+
+	{*Content Right of Panel*}
+	<div class="col-tn-12 col-xs-12 col-sm-8 col-md-9 col-lg-9">
+		{else}
+		<div class="col-tn-12 col-xs-12 col-sm-12 col-md-12 col-lg-12">
+		{/if}
+		{*Row for Information and Registration/Your Events Button*}
+		<div class="row">
+			<div class="col-xs-8">
 				<ul>
 					{if $recordDriver->isAllDayEvent()}
 						<li>{translate text="Date: " isPublicFacing=true}{$recordDriver->getStartDate()|date_format:"%A %B %e, %Y"}</li>
@@ -42,31 +55,32 @@
 					{/if}
 					<li>{translate text="Branch: " isPublicFacing=true}{$recordDriver->getBranch()}</li>
 				</ul>
-		</div>
-		<div class="col-sm-4" style="display:flex; justify-content:center;">
-			{if $recordDriver->inEvents()}
-				{if $recordDriver->isRegistrationRequired()}
-					<div class="btn-group btn-group-vertical btn-block">
-						<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
-						<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
-					</div>
-					<br>
+			</div>
+			<div class="col-tn-4" style="display:flex; justify-content:center;">
+				{if $recordDriver->inEvents()}
+					{if $recordDriver->isRegistrationRequired()}
+						<div class="btn btn-sm btn-action btn-wrap" style="width:70%">
+							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:70%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
+							<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap">{translate text="Go To Your Events" isPublicFacing=true}</a>
+						</div>
+						<br>
+					{else}
+						<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap">{translate text="In Your Events" isPublicFacing=true}</a>
+					{/if}
 				{else}
-					<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
+					{if $recordDriver->isRegistrationRequired()}
+						<a class="btn btn-sm btn-action btn-wrap" style="width:70%"  onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+							<i class="fas fa-external-link-alt"></i>
+							{translate text=" Add to Your Events and Register" isPublicFacing=true}
+						</a>
+					{else}
+						<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+					{/if}
 				{/if}
-			{else}
-				{if $recordDriver->isRegistrationRequired()}
-					<a class="btn btn-sm btn-action btn-wrap" style="width:100%"  onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
-						<i class="fas fa-external-link-alt"></i>
-						{translate text=" Add to Your Events and Register" isPublicFacing=true}
-					</a>
-				{else}
-					<a class="btn btn-sm btn-action btn-wrap" style="width:100%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
-				{/if}
-			{/if}
+			</div>
 		</div>
-			<br>
-		<div class="col-sm-8">
+		{*column for tool buttons & event description*}
+		<div class="col-sm-9">
 			<div class="btn-group btn-group-sm">
 				<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
 				<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
@@ -76,38 +90,31 @@
 			</div>
 			<br>
 			<br>
+			{$recordDriver->getDescription()}
 		</div>
-		{if empty($recordDriver->getEventCoverUrl())}
-			<div class="col-sm-8 col-sm-offset-4">
-				{$recordDriver->getDescription()}
-			</div>
-		{else}
-			<div class="col-sm-8">
-				{$recordDriver->getDescription()}
-			</div>
-		{/if}
 	</div>
+	{*Staff View Div*}
+	{if !empty($loggedIn) && (in_array('Administer LibraryMarket LibraryCalendar Settings', $userPermissions))}
 	<div class="row">
 		<div class="col-sm-12">
-			{if !empty($loggedIn) && (in_array('Administer LibraryMarket LibraryCalendar Settings', $userPermissions))}
-				<div id="more-details-accordion" class="panel-group">
-					<div class="panel" id="staffPanel">
-						<a data-toggle="collapse" href="#staffPanelBody">
-							<div class="panel-heading">
-								<div class="panel-title">
-									<h2>{translate text=Staff isPublicFacing=true}</h2>
-								</div>
+			<div id="more-details-accordion" class="panel-group">
+				<div class="panel" id="staffPanel">
+					<a data-toggle="collapse" href="#staffPanelBody">
+						<div class="panel-heading">
+							<div class="panel-title">
+								<h2>{translate text=Staff isPublicFacing=true}</h2>
 							</div>
-						</a>
-						<div id="staffPanelBody" class="panel-collapse collapse">
-							<div class="panel-body">
-								<h3>{translate text="LibraryMarket LibraryCalendar Event API response" isPublicFacing=true}</h3>
-								<pre>{$recordDriver->getStaffView()|print_r}</pre>
-							</div>
+						</div>
+					</a>
+					<div id="staffPanelBody" class="panel-collapse collapse">
+						<div class="panel-body">
+							<h3>{translate text="LibraryMarket LibraryCalendar Event API response" isPublicFacing=true}</h3>
+							<pre>{$recordDriver->getStaffView()|print_r}</pre>
 						</div>
 					</div>
 				</div>
-			{/if}
+			</div>
 		</div>
 	</div>
+	{/if}
 </div>
