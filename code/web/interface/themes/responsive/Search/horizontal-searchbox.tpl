@@ -41,6 +41,13 @@
 				{* Search Type *}
 				<div class="col-lg-2 col-lg-offset-0 col-md-2 col-md-offset-0 {if !empty($hiddenSearchSource)} col-sm-12 col-sm-offset-0 col-xs-12 col-xs-offset-0 {else} col-sm-6 col-sm-offset-0 col-xs-6 col-xs-offset-0{/if}">
 					<select name="searchIndex" class="searchTypeHorizontal form-control catalogType" id="searchIndex" title="The method of searching." aria-label="Search Index">
+						<script type="text/javascript">
+							{literal}
+							$(document).ready(function() {
+								AspenDiscovery.Searches.loadSearchTypes();
+							});
+							{/literal}
+						</script>
 						{foreach from=$searchIndexes item=searchDesc key=searchVal}
 							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by %1%" 1=$searchDesc inAttribute=true isPublicFacing=true translateParameters=true}</option>
 						{/foreach}
