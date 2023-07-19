@@ -48,6 +48,7 @@ class Location extends DataObject {
 	public $headerText;
 	public $address;
 	public $phone;
+    public $secondaryPhone;
 	public $contactEmail;
 	public $latitude;
 	public $longitude;
@@ -463,15 +464,25 @@ class Location extends DataObject {
 				'affectsLiDA' => true,
 			],
 			'phone' => [
-				'property' => 'phone',
-				'type' => 'text',
-				'label' => 'Phone Number',
-				'description' => 'The main phone number for the site .',
-				'maxLength' => '25',
-				'hideInLists' => true,
-				'editPermissions' => ['Location Address and Hours Settings'],
-				'affectsLiDA' => true,
+                'property' => 'phone',
+                'type' => 'text',
+                'label' => 'Phone Number',
+                'description' => 'The main phone number for the site .',
+                'maxLength' => '25',
+                'hideInLists' => true,
+                'editPermissions' => ['Location Address and Hours Settings'],
+                'affectsLiDA' => true,
 			],
+            'secondary phone' => [
+                'property' => 'secondary phone',
+                'type' => 'text',
+                'label' => 'Secondary Phone Number',
+                'description' => 'The secondary phone number for the site .',
+                'maxLength' => '25',
+                'hideInLists' => true,
+                'editPermissions' => ['Location Address and Hours Settings'],
+                'affectsLiDA' => true,
+            ],
 			'contactEmail' => [
 				'property' => 'contactEmail',
 				'type' => 'text',
@@ -2350,6 +2361,7 @@ class Location extends DataObject {
 			'latitude' => $this->latitude,
 			'longitude' => $this->longitude,
 			'phone' => $this->phone,
+            'secondaryPhone' => $this->secondaryPhone,
 			'tty' => $this->tty,
 			'description' => $this->description,
 			'vdxFormId' => $this->vdxFormId,

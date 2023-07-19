@@ -114,5 +114,16 @@ function getUpdates23_08_00(): array {
 
 		//other organizations
 
+        //Lucas - Theke
+        'secondary phone number' => [
+			'title' => 'Add a secondary phone number to Location',
+			'description' => 'A new field has been added in the location forms
+                                 referring to a secondary telephone number.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN secondaryPhoneNumber VARCHAR(25) DEFAULT ''",
+			]
+		], //secondary phone number
+
 	];
 }
