@@ -83,6 +83,16 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 
+		require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+		$eventSettings = new LMLibraryCalendarSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
+			$interface->assign('bypassEventPage', $eventSettings->bypassAspenEventPages);
+		}
+		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Springshare LibCal Settings') && UserAccount::isStaff());
+
+
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
 		$eventsUsage = new EventsUsage();
 		$eventsUsage->type = $this->getType();
@@ -145,7 +155,16 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getLinkUrl($absolutePath = false) {
-		return '/LibraryMarket/' . $this->getId() . '/Event';
+		require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+		$eventSettings = new LMLibraryCalendarSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			if ($eventSettings->bypassAspenEventPages){
+				return $this->fields['url'];
+			} else {
+				return '/LibraryMarket/' . $this->getId() . '/Event';
+			}
+		}
 	}
 
 	public function getExternalUrl($absolutePath = false) {
@@ -166,7 +185,11 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		return $this->fields['type'];
 	}
 
-	private function getSource() {
+	public function getIntegration() {
+		return $this->fields['type'];
+	}
+
+	public function getSource() {
 		return $this->fields['source'];
 	}
 

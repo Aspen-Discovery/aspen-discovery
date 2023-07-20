@@ -93,8 +93,37 @@ function getUpdates23_08_00(): array {
 				"ALTER TABLE open_archives_collection ADD COLUMN defaultCover VARCHAR(100) default ''",
 			],
 		], //OAI_default_image
+		'events_in_lists' => [
+			'title' => 'Events in Lists Settings',
+			'description'=> 'Add settings for events in lists for Communico, Springshare LibCal, and Library Market',
+			'sql' => [
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN eventsInLists tinyint(1) default 1',
+				'ALTER TABLE springshare_libcal_settings ADD COLUMN eventsInLists tinyint(1) default 1',
+				'ALTER TABLE communico_settings ADD COLUMN eventsInLists tinyint(1) default 1',
+			],
+		], //events_in_lists
+		'bypass_event_pages' => [
+			'title' => 'Bypass Aspen event pages',
+			'description'=> 'Add settings for events to bypass the Aspen event page and redirect the user to the event page on the native platform',
+			'sql' => [
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN bypassAspenEventPages tinyint(1) default 0',
+				'ALTER TABLE springshare_libcal_settings ADD COLUMN bypassAspenEventPages tinyint(1) default 0',
+				'ALTER TABLE communico_settings ADD COLUMN bypassAspenEventPages tinyint(1) default 0',
+			],
+		], //bypass_event_pages
 
 		//other organizations
+
+        //Lucas - Theke
+        'secondary phone number' => [
+			'title' => 'Add a secondary phone number to Location',
+			'description' => 'A new field has been added in the location forms
+                                 referring to a secondary telephone number.',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE location ADD COLUMN secondaryPhoneNumber VARCHAR(25) DEFAULT ''",
+			]
+		], //secondary phone number
 
 	];
 }

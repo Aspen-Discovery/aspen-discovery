@@ -15,6 +15,8 @@ class LMLibraryCalendarSetting extends DataObject {
 		$clientId;
 	public /** @noinspection PhpUnused */
 		$clientSecret;
+	public $eventsInLists;
+	public $bypassAspenEventPages;
 	public $username;
 	public $password;
 
@@ -76,6 +78,25 @@ class LMLibraryCalendarSetting extends DataObject {
 				'description' => 'Password for retrieving the staff feed',
 				'maxLength' => 36,
 				'hideInLists' => true,
+			],
+			'eventsInLists' => [
+				'property' => 'eventsInLists',
+				'type' => 'enum',
+				'label' => 'Events in Lists',
+				'description' => 'Allow/Disallow certain users to add events to lists',
+				'values' => [
+					'1' => 'Allow staff to add events to lists',
+					'2' => 'Allow all users to add events to lists',
+					'0' => 'Do not allow adding events to lists',
+				],
+				'default' => '1',
+			],
+			'bypassAspenEventPages' => [
+				'property' => 'bypassAspenEventPages',
+				'type' => 'checkbox',
+				'label' => 'Bypass event pages in Aspen',
+				'description' => 'Whether or not a user will be redirected to an Aspen event page or the page for the native event platform.',
+				'default' => 0,
 			],
 
 			'libraries' => [
