@@ -2178,6 +2178,13 @@ class Koha extends AbstractIlsDriver {
 							'Accept-Encoding: gzip, deflate',
 						], true);
 						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
+						// TODO: Fix for cancelling holds via API in point release 22.11.07 set to be available in August. Do we store the staff interface URL already?
+						/*
+						if ($this->getKohaVersion() >= 22.11.07) {
+							$apiUrl = staff interface URL . "/api/v1/public/patrons/$patron->username/holds/$holdKey";
+						} else {
+							$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
+						*/
 						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
 						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 						if ($this->apiCurlWrapper->getResponseCode() !== 204) {
