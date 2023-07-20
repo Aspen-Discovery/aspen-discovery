@@ -29,6 +29,14 @@ class Springshare_Event extends Action {
 		$interface->assign('appearsOnLists', $appearsOnLists);
         */
 
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting;
+		$eventSettings->id = $this->recordDriver->getSource();
+		if ($eventSettings->find(true)){
+			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
+		}
+		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Communico Settings') && UserAccount::isStaff());
+
 		// Display Page
 		$this->display('event.tpl', $this->recordDriver->getTitle(), null, false);
 	}

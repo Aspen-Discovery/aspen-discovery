@@ -85,6 +85,16 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
+			$interface->assign('bypassEventPage', $eventSettings->bypassAspenEventPages);
+		}
+		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Springshare LibCal Settings') && UserAccount::isStaff());
+
+
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
 		$eventsUsage = new EventsUsage();
 		$eventsUsage->type = $this->getType();
@@ -168,14 +178,27 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 	}
 
 	public function getLinkUrl($absolutePath = false) {
-		return '/Springshare/' . $this->getId() . '/Event';
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			if ($eventSettings->bypassAspenEventPages){
+				return $this->fields['url'];
+			} else {
+				return '/Springshare/' . $this->getId() . '/Event';
+			}
+		}
 	}
 
 	private function getType() {
 		return $this->fields['type'];
 	}
 
-	private function getSource() {
+	public function getIntegration() {
+		return $this->fields['type'];
+	}
+
+	public function getSource() {
 		return $this->fields['source'];
 	}
 
