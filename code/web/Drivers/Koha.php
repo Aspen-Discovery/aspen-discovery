@@ -519,14 +519,14 @@ class Koha extends AbstractIlsDriver {
 					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
 
 					if ($curCheckout->autoRenew == 1) {
-						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						if ($curCheckout->maxRenewals <= $curCheckout->renewCount) {
 							$curCheckout->autoRenewError = translate([
 								'text' => 'Cannot auto renew, too many renewals',
 								'isPublicFacing' => true,
 							]);
 						}
 					} else {
-						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						if ($curCheckout->maxRenewals <= $curCheckout->renewCount) {
 							$curCheckout->canRenew = "0";
 							$curCheckout->renewError = translate([
 								'text' => 'Renewed too many times',
