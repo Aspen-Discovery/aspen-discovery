@@ -48,19 +48,53 @@ class MillenniumHolds {
 						'text' => "Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account.",
 						'isPublicFacing' => true,
 					]);
+					$hold_result['api']['title'] = translate([
+						'text' => 'Hold placed successfully',
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = translate([
+						'text' => 'Your hold was placed successfully.  It may take up to 45 seconds for the hold to appear on your account.',
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['action'] = translate([
+						'text' => 'Go to Holds',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$hold_result['message'] = $reason;
+					$hold_result['api']['title'] = translate([
+						'text' => 'Unable to place hold',
+						'isPublicFacing' => true,
+					]);
+					$hold_result['api']['message'] = $reason;
 				}
 			} elseif (!isset($reason) || strlen($reason) == 0) {
 				//Didn't get a reason back.  This really shouldn't happen.
 				$hold_result['success'] = false;
 				$hold_result['message'] = 'Did not receive a response from the circulation system.  Please try again in a few minutes.';
+				$hold_result['api']['title'] = translate([
+					'text' => 'Unable to place hold',
+					'isPublicFacing' => true,
+				]);
+				$hold_result['api']['message'] = translate([
+					'text' => 'Did not receive a response from the circulation system.  Please try again in a few minutes.',
+					'isPublicFacing' => true,
+				]);
 			} else {
 				//Got an error message back.
 				$hold_result['success'] = false;
 				$hold_result['message'] = $reason;
+				$hold_result['api']['title'] = translate([
+					'text' => 'Unable to place hold',
+					'isPublicFacing' => true,
+				]);
+				$hold_result['api']['message'] = $reason;
 			}
 		} else {
+			$hold_result['api']['title'] = translate([
+				'text' => 'Unable to place hold',
+				'isPublicFacing' => true,
+			]);
 			if ($itemMatches > 0) {
 				//Get information about the items that are available for holds
 				preg_match_all('/<tr\\s+class="bibItemsEntry">.*?<input type="radio" name="radio" value="(.*?)".*?>.*?<td.*?>(.*?)<\/td>.*?<td.*?>(.*?)<\/td>.*?<td.*?>(.*?)<\/td>.*?<\/tr>/s', $holdResultPage, $itemInfo, PREG_PATTERN_ORDER);
@@ -76,6 +110,10 @@ class MillenniumHolds {
 				$hold_result['items'] = $items;
 				if (count($items) > 0) {
 					$message = 'This title requires item level holds, please select an item to place a hold on.';
+					$hold_result['api']['title'] = translate([
+						'text' => 'Select an Item',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$message = 'There are no holdable items for this title.';
 				}
@@ -84,6 +122,7 @@ class MillenniumHolds {
 			}
 			$hold_result['success'] = false;
 			$hold_result['message'] = $message;
+			$hold_result['api']['message'] = $message;
 
 			global $logger;
 			$logger->log('Place Hold Full HTML\n' . $holdResultPage, Logger::LOG_NOTICE);
