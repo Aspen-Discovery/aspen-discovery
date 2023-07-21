@@ -11,6 +11,8 @@ $allLanguages = new Language();
 $languages = array_filter($allLanguages->fetchAll('id'));
 $numUpdated = 0;
 
+global $logger;
+
 foreach($languages as $languageId) {
 	$language = new Language();
 	$language->id = $languageId;
@@ -21,21 +23,22 @@ foreach($languages as $languageId) {
 			$translationTerm->whereAdd('isMetadata = 0');
 			$translationTerm->whereAdd('isAdminEnteredData = 0');
 			$translationTerm->whereAdd('isPublicFacing = 1 OR isAdminFacing = 1');
+			$translationTerms = $translationTerm->fetchAll();
 			$allTermsToTranslate = [];
-			$translationTerm->find();
-			while ($translationTerm->fetch()) {
+
+			foreach($translationTerms as $obj) {
 				$translation = new Translation();
-				$translation->termId = $translationTerm->id;
+				$translation->termId = $obj->id;
 				$translation->languageId = $language->id;
 				//Needs to be fetched from community if we haven't gotten a translation yet
 				if ($translation->find(true)){
 					if (!$translation->translated) {
-						$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
+						$allTermsToTranslate[$obj->id] = $obj->term;
 						$translation->lastCheckInCommunity = time();
 						$translation->update();
 					}
 				} else {
-					$allTermsToTranslate[$translationTerm->id] = $translationTerm->term;
+					$allTermsToTranslate[$obj->id] = $obj->term;
 					$translation->lastCheckInCommunity = time();
 					$translation->update();
 				}
@@ -100,6 +103,7 @@ function getCommunityTranslations(array $terms, Language $activeLanguage): array
 			'terms' => $terms,
 			'languageCode' => $activeLanguage->code,
 		];
+		$url = $systemVariables->communityContentUrl . '/API/CommunityAPI?method=getDefaultTranslations';
 		$response = $communityContentCurlWrapper->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=getDefaultTranslations', $body);
 		if ($response) {
 			$jsonResponse = json_decode($response);
