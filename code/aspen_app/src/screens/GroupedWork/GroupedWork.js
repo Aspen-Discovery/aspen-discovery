@@ -261,7 +261,7 @@ export class GroupedWork221200 extends Component {
      }
 
      authorSearch = (author, libraryUrl) => {
-          navigateStack('SearchTab', 'SearchResults', {
+          navigateStack('BrowseTab', 'SearchResults', {
                term: author,
                libraryUrl: libraryUrl,
           });

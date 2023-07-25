@@ -3,7 +3,7 @@ import { AlertDialog, Button, Center, ChevronLeftIcon, CloseIcon, Pressable } fr
 import React from 'react';
 
 import { SEARCH } from '../../util/search';
-import {getTermFromDictionary} from '../../translations/TranslationService';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const UnsavedChangesBack = (props) => {
      const { updateSearch, discardChanges, language } = props;
@@ -92,7 +92,7 @@ export const UnsavedChangesExit = (props) => {
           setIsOpen(false);
           SEARCH.hasPendingChanges = false;
           if (prevRoute === 'SearchScreen') {
-               navigation.navigate('SearchTab', {
+               navigation.navigate('BrowseTab', {
                     screen: 'SearchResults',
                     params: {
                          term: SEARCH.term,

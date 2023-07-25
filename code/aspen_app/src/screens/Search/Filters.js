@@ -143,7 +143,7 @@ export const FiltersScreen = () => {
      const updateSearch = () => {
           const params = buildParamsForUrl();
           SEARCH.hasPendingChanges = false;
-          navigation.navigate('SearchTab', {
+          navigation.navigate('BrowseTab', {
                screen: 'SearchResults',
                params: {
                     term: SEARCH.term,
@@ -160,7 +160,7 @@ export const FiltersScreen = () => {
           SEARCH.pendingFilters = [];
           SEARCH.appendedParams = '';
 
-          navigation.navigate('SearchTab', {
+          navigation.navigate('BrowseTab', {
                screen: 'SearchResults',
                params: {
                     term: SEARCH.term,
@@ -177,7 +177,7 @@ export const FiltersScreen = () => {
           SEARCH.pendingFilters = [];
           SEARCH.appendedParams = '';
 
-          navigation.navigate('SearchTab', {
+          navigation.navigate('BrowseTab', {
                screen: 'SearchResults',
                params: {
                     term: SEARCH.term,

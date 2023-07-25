@@ -302,6 +302,7 @@ export function App() {
                                                                                                               screens: {
                                                                                                                    HomeScreen: 'home',
                                                                                                                    GroupedWorkScreen: 'search/grouped_work',
+                                                                                                                   SearchResults: 'search',
                                                                                                               },
                                                                                                          },
                                                                                                     },
