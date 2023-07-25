@@ -4,7 +4,7 @@
 {else}
 	<div class="row">
 		{foreach from=$whileYouWaitTitles item=whileYouWaitTitle}
-			<div class="col-tn-12 col-sm-4">
+			<div class="col-tn-12 col-sm-4 text-center">
 				<a href="{$whileYouWaitTitle.url}">
 					<img src="{$whileYouWaitTitle.coverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{$whileYouWaitTitle.title|escape}">
 				</a>
@@ -17,6 +17,13 @@
                         {/if}
 					{/foreach}
 				*}
+				{if !empty($showRatings)}
+                    <div class="browse-rating" data-average_rating="{$whileYouWaitTitle.ratingData.average}">
+                        <span class="ui-rater-starsOff" style="width:90px">
+                            <span class="ui-rater-starsOn" style="width:{math equation="90*rating/5" rating=$whileYouWaitTitle.ratingData.average}px"></span>
+                        </span>
+                    </div>
+                {/if}
 			</div>
 		{/foreach}
 	</div>
