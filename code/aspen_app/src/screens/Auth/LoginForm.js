@@ -55,7 +55,7 @@ export const GetLoginForm = (props) => {
      const { language, updateLanguage, updateLanguages } = React.useContext(LanguageContext);
      const patronsLibrary = props.selectedLibrary;
 
-     const { usernameLabel, passwordLabel } = props;
+     const { usernameLabel, passwordLabel, allowBarcodeScanner, allowCode39 } = props;
 
      React.useEffect(() => {
           const unsubscribe = navigation.addListener('focus', () => {
@@ -150,7 +150,7 @@ export const GetLoginForm = (props) => {
      };
 
      const openScanner = async () => {
-          navigate('LibraryCardScanner');
+          navigate('LibraryCardScanner', { allowCode39 });
      };
 
      const setAsyncStorage = async () => {
@@ -201,9 +201,11 @@ export const GetLoginForm = (props) => {
                          }}
                          blurOnSubmit={false}
                          InputRightElement={
-                              <Pressable onPress={() => openScanner()}>
-                                   <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
-                              </Pressable>
+                              allowBarcodeScanner ? (
+                                   <Pressable onPress={() => openScanner()}>
+                                        <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
+                                   </Pressable>
+                              ) : null
                          }
                     />
                </FormControl>
