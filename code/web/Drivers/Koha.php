@@ -331,6 +331,11 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 
+				if($this->getKohaVersion() >= 22.11) {
+					//TODO: Should this be capitalized? This does not seem to save to Koha
+					$postVariables = $this->setPostField($postVariables, 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+				}
+
 				$postVariables['csrf_token'] = $csr_token;
 				$postVariables['action'] = 'update';
 
