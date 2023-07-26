@@ -32,16 +32,18 @@
 				</div>
 			</div>
 		</div>
-		{if !empty($userPermissions) && in_array('Include Lists In Search Results', $userPermissions)}
-			<div class="form-group" id="searchableRow" style="display: none">
-				<label for="searchable" class="col-sm-3 control-label">{translate text="Show in search results" isPublicFacing=true}</label>
-				<div class="col-sm-9">
-					<input type='checkbox' name='searchable' id='searchable' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked/>
-					<div class="form-text text-muted">
-						<small>{translate text="If enabled, this list can be found by searching user lists. It must have at least 3 titles to be shown." isPublicFacing=true}</small>
+		{if !empty($userPermissions)}
+			{if in_array('Include Lists In Search Results', $userPermissions)}
+				<div class="form-group" id="searchableRow" style="display: none">
+					<label for="searchable" class="col-sm-3 control-label">{translate text="Show in search results" isPublicFacing=true}</label>
+					<div class="col-sm-9">
+						<input type='checkbox' name='searchable' id='searchable' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked/>
+						<div class="form-text text-muted">
+							<small>{translate text="If enabled, this list can be found by searching user lists. It must have at least 3 titles to be shown." isPublicFacing=true}</small>
+						</div>
 					</div>
 				</div>
-			</div>
+			{/if}
 		{/if}
 		<input type="hidden" name="source" value="{if !empty($source)}{$source}{/if}">
 		<input type="hidden" name="sourceId" value="{if !empty($sourceId)}{$sourceId}{/if}">
