@@ -96,24 +96,39 @@
 		{/foreach}
 	{/if}
 
-	{if count($validLanguages) > 1}
-		<div class="header-menu-section" id="aspenLanguagesMenuSection">
-			<i class="fas fa-globe fa-fw"></i>{translate text="Language" isPublicFacing=true}
+	{if count($validLanguages) >= 0}
+		<div class="header-menu-section" id="aspenLanguagesMenu" style="color:#3174AF; cursor:auto; font-weight:normal">
+			<i class="fas fa-globe fa-fw" style="color:#3174AF; cursor:auto"></i>&nbsp;&nbsp;{translate text="Language" isPublicFacing=true}
 		</div>
 
 		{foreach from=$validLanguages key=languageCode item=language}
 			{if $userLang->code!=$languageCode}
 			<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
 			{/if}
-				<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
+				<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}" style="color:#3174AF">
 					{if $userLang->code==$languageCode}
-						<i class="fas fa-check fa-fw"></i>&nbsp;
+						&nbsp;&nbsp;<i class="fas fa-check fa-fw" style="color:#3174AF; cursor:auto;"></i>&nbsp;
 					{/if}
 					{$language->displayName}
 				</div>
 			{if $userLang->code!=$languageCode}
 			</a>
 			{/if}
+		{/foreach}
+	{/if}
+
+	{if count($allActiveThemes) >= 0}
+		<div class="header-menu-section" id="aspenThemesMenuSection" style="color:#3174AF; cursor:auto;">
+			<i class="fas fa-cog" style="color:#3174AF; cursor:auto"></i>&nbsp;&nbsp;{translate text="Display" isPublicFacing=true}
+		</div>
+
+		{foreach from=$allActiveThemes key=themeId item=themeName}
+			{if $themeId === $activeTheme}
+				<i class="fas fa-check fa-fw" style="color:#3174AF; cursor:auto"></i>&nbsp;
+			{/if}
+			<li><a onclick="return AspenDiscovery.setTheme('{$themeId}')">
+				{$themeName}
+			</a></li>
 		{/foreach}
 	{/if}
 
