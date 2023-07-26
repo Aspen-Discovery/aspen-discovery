@@ -130,6 +130,7 @@ export const PlaceHold = (props) => {
                                              title: 'Select an Item',
                                              patronId: user.id,
                                              pickupLocation: pickupLocation,
+                                             bibId: record ?? null,
                                              items: ilsResponse.items ?? [],
                                         });
                                    }

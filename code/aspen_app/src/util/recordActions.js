@@ -7,7 +7,7 @@ import { popAlert, popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, postData, problemCodeMap } from './apiAuth';
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
-import {getTermFromDictionary} from '../translations/TranslationService';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 /**
  * Fetch information for GroupedWork
@@ -87,9 +87,9 @@ export async function checkoutItem(url, itemId, source, patronId) {
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
  **/
-export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null, holdNotificationPreferences = null, variationId = null) {
+export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null, holdNotificationPreferences = null, variationId = null, bibId = null) {
      let id = itemId;
-     if(variationId) {
+     if (variationId) {
           id = variationId;
           holdType = 'item';
      }
@@ -101,36 +101,37 @@ export async function placeHold(url, itemId, source, patronId, pickupBranch, vol
           volumeId: volumeId ?? '',
           holdType,
           recordId,
+          bibId,
      };
 
-     if(holdNotificationPreferences) {
-          if(holdNotificationPreferences.emailNotification === true) {
+     if (holdNotificationPreferences) {
+          if (holdNotificationPreferences.emailNotification === true) {
                _.assign(setParams, {
                     emailNotification: 'on',
-               })
+               });
           }
 
-          if(holdNotificationPreferences.phoneNotification === true) {
+          if (holdNotificationPreferences.phoneNotification === true) {
                _.assign(setParams, {
                     phoneNotification: 'on',
-               })
-               if(holdNotificationPreferences.phoneNumber && holdNotificationPreferences.phoneNumber.length > 0) {
+               });
+               if (holdNotificationPreferences.phoneNumber && holdNotificationPreferences.phoneNumber.length > 0) {
                     _.assign(setParams, {
                          phoneNumber: holdNotificationPreferences.phoneNumber,
-                    })
+                    });
                }
           }
 
-          if(holdNotificationPreferences.smsNotification === true) {
+          if (holdNotificationPreferences.smsNotification === true) {
                _.assign(setParams, {
                     smsNotification: 'on',
-               })
-               if(holdNotificationPreferences.smsNumber && holdNotificationPreferences.smsNumber.length > 0) {
-                    if(holdNotificationPreferences.smsCarrier && holdNotificationPreferences.smsCarrier !== -1) {
+               });
+               if (holdNotificationPreferences.smsNumber && holdNotificationPreferences.smsNumber.length > 0) {
+                    if (holdNotificationPreferences.smsCarrier && holdNotificationPreferences.smsCarrier !== -1) {
                          _.assign(setParams, {
                               smsCarrier: holdNotificationPreferences.smsCarrier,
                               smsNumber: holdNotificationPreferences.smsNumber,
-                         })
+                         });
                     }
                }
           }

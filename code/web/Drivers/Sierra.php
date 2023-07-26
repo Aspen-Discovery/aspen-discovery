@@ -704,12 +704,21 @@ class Sierra extends Millennium {
 					1 => $title,
 					'isPublicFacing' => true,
 				]);
+				$return['api']['message'] = translate([
+					'text' => '%1% has been renewed.',
+					1 => $title,
+					'isPublicFacing' => true,
+				]);
 			} else {
-				$return['message'] = translate([
+				$return['api']['message'] = translate([
 					'text' => 'Your item has been renewed',
 					'isPublicFacing' => true,
 				]);
 			}
+			$return['api']['title'] = translate([
+				'text' => 'Checkout renewed successfully',
+				'isPublicFacing' => true,
+			]);
 
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfCheckouts();
@@ -727,6 +736,13 @@ class Sierra extends Millennium {
 			return [
 				'success' => false,
 				'message' => $message,
+				'api' => [
+					'title' => translate([
+						'text' => 'Error renewing',
+						'isPublicFacing' => true,
+					]),
+					'message' => $message,
+				]
 			];
 		}
 
@@ -788,6 +804,16 @@ class Sierra extends Millennium {
 					'text' => "Hold frozen successfully.",
 					'isPublicFacing' => true,
 				]),
+				'api' => [
+					'title' => translate([
+						'text' => 'Hold frozen',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Hold frozen successfully',
+						'isPublicFacing' => true,
+					]),
+				],
 			];
 		} else {
 			$return = [
@@ -796,8 +822,22 @@ class Sierra extends Millennium {
 					'text' => "Unable to freeze your hold.",
 					'isPublicFacing' => true,
 				]),
+				'api' => [
+					'title' => translate([
+						'text' => 'Unable to freeze hold',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Unable to freeze your hold.',
+						'isPublicFacing' => true,
+					]),
+				],
 			];
 			$return['message'] .= ' ' . translate([
+					'text' => trim(str_replace('WebPAC Error : ', '', $freezeResponse->description)),
+					'isPublicFacing' => true,
+				]);
+			$return['api']['message'] .= ' ' . translate([
 					'text' => trim(str_replace('WebPAC Error : ', '', $freezeResponse->description)),
 					'isPublicFacing' => true,
 				]);
@@ -819,6 +859,16 @@ class Sierra extends Millennium {
 					'text' => 'Hold thawed successfully.',
 					'isPublicFacing' => true,
 				]),
+				'api' => [
+					'title' => translate([
+						'text' => 'Hold thawed',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Hold thawed successfully.',
+						'isPublicFacing' => true,
+					]),
+				],
 			];
 		} else {
 			$return = [
@@ -827,8 +877,22 @@ class Sierra extends Millennium {
 					'text' => "Unable to thaw your hold.",
 					'isPublicFacing' => true,
 				]),
+				'api' => [
+					'title' => translate([
+						'text' => 'Error thawing hold',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Unable to thaw your hold.',
+						'isPublicFacing' => true,
+					]),
+				],
 			];
 			$return['message'] .= ' ' . translate([
+					'text' => trim(str_replace('WebPAC Error : ', '', $thawResponse->description)),
+					'isPublicFacing' => true,
+				]);
+			$return['api']['message'] .= ' ' . translate([
 					'text' => trim(str_replace('WebPAC Error : ', '', $thawResponse->description)),
 					'isPublicFacing' => true,
 				]);
@@ -891,6 +955,16 @@ class Sierra extends Millennium {
 					'text' => 'Hold cancelled successfully.',
 					'isPublicFacing' => true,
 				]),
+				'api' => [
+					'title' => translate([
+						'text' => 'Hold cancelled',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Hold cancelled successfully.',
+						'isPublicFacing' => true,
+					]),
+				],
 			];
 		} else {
 			$return = [
@@ -899,8 +973,22 @@ class Sierra extends Millennium {
 					'text' => "Unable to cancel your hold.",
 					'isPublicFacing' => true,
 				]),
+				'api' => [
+					'title' => translate([
+						'text' => 'Error cancelling hold',
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Unable to cancel your hold. ',
+						'isPublicFacing' => true,
+					]),
+				],
 			];
 			$return['message'] .= ' ' . translate([
+					'text' => trim(str_replace('WebPAC Error : ', '', $cancelHoldResponse->description)),
+					'isPublicFacing' => true,
+				]);
+			$return['api']['message'] .= ' ' . translate([
 					'text' => trim(str_replace('WebPAC Error : ', '', $cancelHoldResponse->description)),
 					'isPublicFacing' => true,
 				]);
