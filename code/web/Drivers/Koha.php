@@ -2176,7 +2176,7 @@ class Koha extends AbstractIlsDriver {
 							'Content-Type: application/json',
 							'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 							'Accept-Encoding: gzip, deflate',
-							'x-koha-override: cancellation-request-flow' // fix to allow for approvals in koha for patrons canceling waiting holds
+							'x-koha-override: cancellation-request-flow' // fix to allow for approvals in koha 22.11.07 for patrons canceling waiting holds
 						], true);
 						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
 						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
