@@ -206,7 +206,7 @@ export const Variations = (props) => {
                                                        isLoadingText="Placing hold..."
                                                        onPress={async () => {
                                                             setPlacingItemHold(true);
-                                                            await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null).then(async (result) => {
+                                                            await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
                                                                  setResponse(result);
                                                                  queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
                                                                  await refreshProfile(library.baseUrl).then((result) => {

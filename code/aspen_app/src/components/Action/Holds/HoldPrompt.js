@@ -238,6 +238,7 @@ export const HoldPrompt = (props) => {
                                                                  title: 'Select an Item',
                                                                  patronId: activeAccount,
                                                                  pickupLocation: location,
+                                                                 bibId: id ?? null,
                                                                  items: result.items ?? [],
                                                             };
 
