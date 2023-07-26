@@ -360,7 +360,7 @@ export default class Results extends React.Component {
           const { navigation, route } = this.props;
           const libraryUrl = library.baseUrl;
           navigation.dispatch(
-               CommonActions.navigate('SearchTab', {
+               CommonActions.navigate('BrowseTab', {
                     screen: 'GroupedWork',
                     params: {
                          id: item,

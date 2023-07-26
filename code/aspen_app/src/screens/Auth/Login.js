@@ -13,7 +13,7 @@ import * as SecureStore from 'expo-secure-store';
 import { GLOBALS } from '../../util/globals';
 import { GetLoginForm } from './LoginForm';
 import { LIBRARY } from '../../util/loadLibrary';
-import { getLibraryLoginLabels } from '../../util/api/library';
+import { getLibraryInfo, getLibraryLoginLabels } from '../../util/api/library';
 import { getTermFromDictionary, getTranslation } from '../../translations/TranslationService';
 import { PATRON } from '../../util/loadPatron';
 import { PermissionsPrompt } from '../../components/PermissionsPrompt';
@@ -32,6 +32,8 @@ export const LoginScreen = () => {
      const [passwordLabel, setPasswordLabel] = React.useState('Password/PIN');
      const [showModal, setShowModal] = React.useState(false);
      const [query, setQuery] = React.useState('');
+     const [allowBarcodeScanner, setAllowBarcodeScanner] = React.useState(false);
+     const [allowCode39, setAllowCode39] = React.useState(false);
      let isCommunity = true;
      if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           isCommunity = false;
@@ -78,7 +80,27 @@ export const LoginScreen = () => {
      const updateSelectedLibrary = async (data) => {
           setSelectedLibrary(data);
           LIBRARY.url = data.baseUrl; // used in some cases before library context is set
-          await getLibraryLoginLabels(data.libraryId, data.baseUrl).then(async (labels) => {
+          await getLibraryInfo(data.baseUrl, data.libraryId).then(async (result) => {
+               if (_.isObject(result)) {
+                    if (result.barcodeStyle) {
+                         setAllowBarcodeScanner(true);
+                         if (result.barcodeStyle === 'CODE39') {
+                              setAllowCode39(true);
+                         }
+                    } else {
+                         setAllowBarcodeScanner(false);
+                    }
+
+                    if (result.usernameLabel) {
+                         setUsernameLabel(result.usernameLabel);
+                    }
+
+                    if (result.passwordLabel) {
+                         setPasswordLabel(result.passwordLabel);
+                    }
+               }
+          });
+          /*await getLibraryLoginLabels(data.libraryId, data.baseUrl).then(async (labels) => {
                try {
                     const username = await getTranslation('Your Name', 'en', data.baseUrl);
                     const password = await getTranslation('Library Card Number', 'en', data.baseUrl);
@@ -91,7 +113,7 @@ export const LoginScreen = () => {
                } catch (e) {
                     // couldn't fetch translated login terms for some reason, just use the default as backup
                }
-          });
+          });*/
           setShowModal(false);
      };
 
@@ -104,7 +126,7 @@ export const LoginScreen = () => {
                <Image source={{ uri: logoImage }} rounded={25} size="xl" alt="" fallbackSource={require('../../themes/default/aspenLogo.png')} />
                {isCommunity || shouldShowSelectLibrary ? <SelectYourLibraryModal updateSelectedLibrary={updateSelectedLibrary} selectedLibrary={selectedLibrary} query={query} setQuery={setQuery} showModal={showModal} setShowModal={setShowModal} isCommunity={isCommunity} setShouldRequestPermissions={setShouldRequestPermissions} shouldRequestPermissions={shouldRequestPermissions} permissionRequested={permissionRequested} libraries={libraries} allLibraries={allLibraries} /> : null}
                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} width="100%">
-                    {selectedLibrary ? <GetLoginForm selectedLibrary={selectedLibrary} usernameLabel={usernameLabel} passwordLabel={passwordLabel} /> : null}
+                    {selectedLibrary ? <GetLoginForm selectedLibrary={selectedLibrary} usernameLabel={usernameLabel} passwordLabel={passwordLabel} allowBarcodeScanner={allowBarcodeScanner} allowCode39={allowCode39} /> : null}
                     {isCommunity && Platform.OS !== 'android' ? (
                          <Button mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
                               {getTermFromDictionary('en', 'reset_geolocation')}

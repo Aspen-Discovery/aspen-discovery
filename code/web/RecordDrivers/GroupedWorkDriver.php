@@ -3120,6 +3120,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 					'title' => $similarTitleDriver->getTitle(),
 					'coverUrl' => $similarTitleDriver->getBookcoverUrl('medium', true),
 					'formatCategories' => $formatCategoryInfo,
+					'ratingData' => $similarTitleDriver->getRatingData()
 				];
 			}
 			return $whileYouWaitTitles;

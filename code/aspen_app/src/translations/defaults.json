@@ -372,5 +372,8 @@
   "specific_item": "Specific Item",
   "select_item": "Select an Item",
   "alerts_from_library": "Alerts from your library",
-  "alerts_about_account": "Alerts about my library account"
+  "alerts_about_account": "Alerts about my library account",
+  "scan_again": "Scan Again",
+  "scanner_request_permissions": "Requesting for camera permissions",
+  "scanner_denied_permissions": "No access to camera"
 }

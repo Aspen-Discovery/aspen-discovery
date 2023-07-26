@@ -38,7 +38,7 @@ export async function getLibraryLoginLabels(id, url) {
      };
 }
 
-export async function getLibraryInfo(url = null) {
+export async function getLibraryInfo(url = null, id = null) {
      const apiUrl = url ?? LIBRARY.url;
      let libraryId;
 
@@ -47,6 +47,11 @@ export async function getLibraryInfo(url = null) {
      } catch (e) {
           console.log(e);
      }
+
+     if (id) {
+          libraryId = id;
+     }
+
      const discovery = create({
           baseURL: apiUrl + '/API',
           timeout: GLOBALS.timeoutFast,
