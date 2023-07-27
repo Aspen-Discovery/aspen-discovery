@@ -4478,26 +4478,30 @@ class Library extends DataObject {
 		$apiInfo['notifications'] = $this->getLiDANotifications();
 		$allThemes = $this->getThemes();
 		if (count($allThemes) > 0) {
-			$activeTheme = reset($allThemes);
-			$theme = new Theme();
-			$theme->id = $activeTheme->id;
-			if ($theme->find(true)) {
-				$theme->applyDefaults();
-				if ($theme->logoName) {
-					$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+			$libraryTheme = new LibraryTheme();
+			$libraryTheme->libraryId = $this->libraryId;
+			$libraryTheme->orderBy('weight');
+			if ($libraryTheme->find(true)) {
+				$theme = new Theme();
+				$theme->id = $libraryTheme->themeId;
+				if ($theme->find(true)) {
+					$theme->applyDefaults();
+					if ($theme->logoName) {
+						$apiInfo['logo'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoName;
+					}
+					if ($theme->favicon) {
+						$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
+					}
+					if ($theme->logoApp) {
+						$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoApp;
+					}
+					$apiInfo['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
+					$apiInfo['primaryForegroundColor'] = $theme->primaryForegroundColor;
+					$apiInfo['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
+					$apiInfo['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
+					$apiInfo['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
+					$apiInfo['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 				}
-				if ($theme->favicon) {
-					$apiInfo['favicon'] = $configArray['Site']['url'] . '/files/original/' . $theme->favicon;
-				}
-				if ($theme->logoApp) {
-					$apiInfo['logoApp'] = $configArray['Site']['url'] . '/files/original/' . $theme->logoApp;
-				}
-				$apiInfo['primaryBackgroundColor'] = $theme->primaryBackgroundColor;
-				$apiInfo['primaryForegroundColor'] = $theme->primaryForegroundColor;
-				$apiInfo['secondaryBackgroundColor'] = $theme->secondaryBackgroundColor;
-				$apiInfo['secondaryForegroundColor'] = $theme->secondaryForegroundColor;
-				$apiInfo['tertiaryBackgroundColor'] = $theme->tertiaryBackgroundColor;
-				$apiInfo['tertiaryForegroundColor'] = $theme->tertiaryForegroundColor;
 			}
 		}
 		$locations = $this->getLocations();

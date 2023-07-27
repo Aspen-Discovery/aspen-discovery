@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { Box, Button, View } from 'native-base';
+import { View, Box, Button, Center, VStack } from 'native-base';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { loadingSpinner } from './loadingSpinner';
 import { loadError } from './loadError';
@@ -44,11 +44,15 @@ export default function Scanner() {
      }
 
      return (
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-end' }}>
                <BarCodeScanner onBarCodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]} barCodeTypes={[BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.upc_e, BarCodeScanner.Constants.BarCodeType.upc_ean, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8]}>
                     <BarcodeMask edgeColor="#62B1F6" showAnimatedLine={false} />
-                    {scanned && <Button onPress={() => setScanned(false)}>{getTermFromDictionary(language, 'scan_again')}</Button>}
                </BarCodeScanner>
+               {scanned && (
+                    <Center pb={20}>
+                         <Button onPress={() => setScanned(false)}>{getTermFromDictionary(language, 'scan_again')}</Button>
+                    </Center>
+               )}
           </View>
      );
 }

@@ -9,7 +9,6 @@ import AccountStackNavigator from '../stack/AccountStackNavigator';
 import BrowseStackNavigator from '../stack/BrowseStackNavigator';
 import LibraryCardStackNavigator from '../stack/LibraryCardStackNavigator';
 import MoreStackNavigator from '../stack/MoreStackNavigator';
-import SearchStackNavigator from '../stack/SearchStackNavigator';
 import { LanguageContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 

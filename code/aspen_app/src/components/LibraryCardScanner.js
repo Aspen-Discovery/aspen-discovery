@@ -22,8 +22,11 @@ export default function LibraryCardScanner() {
           })();
      }, []);
 
-     const handleBarCodeScanned = ({ type, data }) => {
+     const handleBarCodeScanned = ({ type, data, bounds, cornerPoints }) => {
           if (!scanned) {
+               if (type === '8' || type === 8) {
+                    data = cleanBarcode(data);
+               }
                setScanned(true);
                navigate('Login', {
                     barcode: data,
@@ -60,3 +63,19 @@ const styles = StyleSheet.create({
           justifyContent: 'center',
      },
 });
+
+function cleanBarcode(barcode) {
+     barcode = barcode.toUpperCase();
+
+     let firstValue = barcode.charAt(0);
+     if (firstValue === 'A' || firstValue === 'B' || firstValue === 'C' || firstValue === 'D') {
+          barcode = barcode.substring(1);
+     }
+
+     let lastValue = barcode.charAt(barcode.length - 1);
+     if (lastValue === 'A' || lastValue === 'B' || lastValue === 'C' || lastValue === 'D') {
+          barcode = barcode.substring(0, barcode.length - 1);
+     }
+
+     return barcode;
+}
