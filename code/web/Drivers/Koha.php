@@ -3364,6 +3364,15 @@ class Koha extends AbstractIlsDriver {
 		];
 
 		if($this->getKohaVersion() >= 22.11) {
+			$fields['identitySection']['properties']['borrower_middle_name'] = [
+				'property' => 'borrower_middle_name',
+				'type' => 'text',
+				'label' => 'Middle Name',
+				'description' => 'Your middle name',
+				'maxLength' => 25,
+				'required' => false,
+				'autocomplete' => false,
+			];
 			$fields['identitySection']['properties']['borrower_pronouns'] = [
 				'property' => 'borrower_pronouns',
 				'type' => 'text',
