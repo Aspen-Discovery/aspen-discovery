@@ -4,7 +4,7 @@
 		{if !empty($showCovers)}
 			<div class="coversColumn col-xs-3 col-sm-3 col-md-3 col-lg-2 text-center" aria-hidden="true" role="presentation">
 				{if $disableCoverArt != 1}
-					<a href="{$eventUrl}" class="alignleft listResultImage" onclick="AspenDiscovery.Events.trackUsage('{$id}')" aria-hidden="true">
+					<a href="{if $bypassEventPage}{$recordDriver->getExternalUrl()}{else}{$eventUrl}{/if}" class="alignleft listResultImage" onclick="AspenDiscovery.Events.trackUsage('{$id}')" aria-hidden="true">
 						<img src="{$bookCoverUrl}" class="listResultImage img-thumbnail {$coverStyle}" alt="{translate text='Cover Image' inAttribute=true isPublicFacing=true}">
 					</a>
 				{/if}
@@ -17,7 +17,7 @@
 			<div class="row">
 				<div class="col-xs-12">
 					<span class="result-index">{$resultIndex})</span>&nbsp;
-					<a href="{$eventUrl}" class="result-title notranslate" onclick="AspenDiscovery.Events.trackUsage('{$id}')">
+					<a href="{if $bypassEventPage}{$recordDriver->getExternalUrl()}{else}{$eventUrl}{/if}" class="result-title notranslate" onclick="AspenDiscovery.Events.trackUsage('{$id}')">
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
@@ -73,10 +73,14 @@
 						{if $recordDriver->isRegistrationRequired()}
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
+									<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Registration Information" isPublicFacing=true}</a>
+									<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+								</div>
+								{*<div class="btn-group btn-group-vertical btn-block">
 									<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
 										<i class="fas fa-external-link-alt"></i>{translate text=" Add to Your Events and Register" isPublicFacing=true}
 									</a>
-								</div>
+								</div>*}
 							</div>
 							<br>
 						{else}

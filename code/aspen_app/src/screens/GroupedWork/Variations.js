@@ -1,4 +1,4 @@
-import { Center, HStack, VStack, Badge, Icon, Button, Box, Text, AlertDialog, FlatList } from 'native-base';
+import { Center, HStack, VStack, Badge, Icon, Button, Box, Text, AlertDialog, FlatList, CheckIcon, Select } from 'native-base';
 import { useRoute } from '@react-navigation/native';
 import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -17,6 +17,8 @@ import { decodeHTML, stripHTML } from '../../util/apiAuth';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { confirmHold } from '../../util/api/circulation';
 import { getPatronCheckedOutItems, getPatronHolds, refreshProfile } from '../../util/api/user';
+import { Platform } from 'react-native';
+import { placeHold } from '../../util/recordActions';
 
 export const Variations = (props) => {
      const queryClient = useQueryClient();
@@ -38,6 +40,13 @@ export const Variations = (props) => {
      const onHoldConfirmationClose = () => setHoldConfirmationIsOpen(false);
      const cancelHoldConfirmationRef = React.useRef(null);
      const [holdConfirmationResponse, setHoldConfirmationResponse] = React.useState('');
+
+     const [holdItemSelectIsOpen, setHoldItemSelectIsOpen] = React.useState(false);
+     const onHoldItemSelectClose = () => setHoldItemSelectIsOpen(false);
+     const cancelHoldItemSelectRef = React.useRef(null);
+     const [holdSelectItemResponse, setHoldSelectItemResponse] = React.useState('');
+     const [placingItemHold, setPlacingItemHold] = React.useState(false);
+     const [selectedItem, setSelectedItem] = React.useState('');
 
      const { data: record } = useQuery({
           queryKey: ['recordId', id, format, language, library.baseUrl],
@@ -103,6 +112,12 @@ export const Variations = (props) => {
                                         cancelHoldConfirmationRef={cancelHoldConfirmationRef}
                                         holdConfirmationResponse={holdConfirmationResponse}
                                         setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                        setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                                        holdItemSelectIsOpen={holdItemSelectIsOpen}
+                                        onHoldItemSelectClose={onHoldItemSelectClose}
+                                        cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                                        holdSelectItemResponse={holdSelectItemResponse}
+                                        setHoldSelectItemResponse={setHoldSelectItemResponse}
                                    />
                               )}
                          />
@@ -155,6 +170,62 @@ export const Variations = (props) => {
                                         </AlertDialog.Footer>
                                    </AlertDialog.Content>
                               </AlertDialog>
+                              <AlertDialog leastDestructiveRef={cancelHoldItemSelectRef} isOpen={holdItemSelectIsOpen} onClose={onHoldItemSelectClose}>
+                                   <AlertDialog.Content>
+                                        <AlertDialog.Header>{holdSelectItemResponse?.title ? holdSelectItemResponse.title : 'Unknown Error'}</AlertDialog.Header>
+                                        <AlertDialog.Body>
+                                             {holdSelectItemResponse?.message ? decodeMessage(holdSelectItemResponse.message) : 'Unable to place hold for unknown error. Please contact the library.'}
+                                             {holdSelectItemResponse?.items ? (
+                                                  <Select
+                                                       isReadOnly={Platform.OS === 'android'}
+                                                       name="itemForHold"
+                                                       minWidth="200"
+                                                       accessibilityLabel={getTermFromDictionary(language, 'select_item')}
+                                                       _selectedItem={{
+                                                            bg: 'tertiary.300',
+                                                            endIcon: <CheckIcon size="5" />,
+                                                       }}
+                                                       mt={1}
+                                                       mb={2}
+                                                       onValueChange={(itemValue) => setSelectedItem(itemValue)}>
+                                                       {_.map(holdSelectItemResponse.items, function (item, index, array) {
+                                                            //let copy = copies[item];
+                                                            console.log(item);
+                                                            return <Select.Item label={item.callNumber} value={item.itemNumber} key={index} />;
+                                                       })}
+                                                  </Select>
+                                             ) : null}
+                                        </AlertDialog.Body>
+                                        <AlertDialog.Footer>
+                                             <Button.Group space={3}>
+                                                  <Button variant="outline" colorScheme="primary" onPress={() => setHoldItemSelectIsOpen(false)}>
+                                                       {getTermFromDictionary(language, 'close_window')}
+                                                  </Button>
+                                                  <Button
+                                                       isLoading={placingItemHold}
+                                                       isLoadingText="Placing hold..."
+                                                       onPress={async () => {
+                                                            setPlacingItemHold(true);
+                                                            await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
+                                                                 setResponse(result);
+                                                                 queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
+                                                                 await refreshProfile(library.baseUrl).then((result) => {
+                                                                      updateUser(result);
+                                                                 });
+
+                                                                 setHoldItemSelectIsOpen(false);
+                                                                 setPlacingItemHold(false);
+                                                                 if (result) {
+                                                                      setResponseIsOpen(true);
+                                                                 }
+                                                            });
+                                                       }}>
+                                                       Place Hold
+                                                  </Button>
+                                             </Button.Group>
+                                        </AlertDialog.Footer>
+                                   </AlertDialog.Content>
+                              </AlertDialog>
                          </Center>
                     </>
                )}
@@ -165,7 +236,7 @@ export const Variations = (props) => {
 const Variation = (payload) => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
-     const { id, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, prevRoute, format, volumeInfo, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef } = payload;
+     const { id, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, prevRoute, format, volumeInfo, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, holdSelectItemResponse, setHoldSelectItemResponse, holdItemSelectIsOpen, setHoldItemSelectIsOpen, onHoldItemSelectClose, cancelHoldItemSelectRef } = payload;
      const variation = payload.records;
      const actions = variation.actions;
      const source = variation.source;
@@ -260,6 +331,12 @@ const Variation = (payload) => {
                                         cancelHoldConfirmationRef={cancelHoldConfirmationRef}
                                         holdConfirmationResponse={holdConfirmationResponse}
                                         setHoldConfirmationResponse={setHoldConfirmationResponse}
+                                        setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                                        holdItemSelectIsOpen={holdItemSelectIsOpen}
+                                        onHoldItemSelectClose={onHoldItemSelectClose}
+                                        cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                                        holdSelectItemResponse={holdSelectItemResponse}
+                                        setHoldSelectItemResponse={setHoldSelectItemResponse}
                                    />
                               )}
                          />

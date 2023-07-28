@@ -113,6 +113,8 @@ const app_config = {
                NSLocationWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
                LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
                CFBundleAllowMixedLocalizations: true,
+               NSCameraUsageDescription: 'This app uses your camera to scan barcodes when searching for items in the library catalog',
+               NSMicrophoneUsageDescription: 'This app uses your microphone when scanning barcodes when searching for items in the library catalog',
           },
           jsEngine: 'jsc',
      },
@@ -120,7 +122,7 @@ const app_config = {
           allowBackup: false,
           package: app['reverseDns'],
           versionCode: versionAsInt,
-          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION', 'RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM'],
+          permissions: ['ACCESS_COARSE_LOCATION', 'ACCESS_FINE_LOCATION', 'RECEIVE_BOOT_COMPLETED', 'SCHEDULE_EXACT_ALARM', 'CAMERA'],
           adaptiveIcon: {
                foregroundImage: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
                backgroundColor: app['background'],

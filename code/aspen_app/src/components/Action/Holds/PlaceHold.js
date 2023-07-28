@@ -11,7 +11,35 @@ import { HoldPrompt } from './HoldPrompt';
 
 export const PlaceHold = (props) => {
      const queryClient = useQueryClient();
-     const { id, type, volumeInfo, title, record, holdTypeForFormat, variationId, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef, language } = props;
+     const {
+          id,
+          type,
+          volumeInfo,
+          title,
+          record,
+          holdTypeForFormat,
+          variationId,
+          prevRoute,
+          response,
+          setResponse,
+          responseIsOpen,
+          setResponseIsOpen,
+          onResponseClose,
+          cancelResponseRef,
+          holdConfirmationResponse,
+          setHoldConfirmationResponse,
+          holdConfirmationIsOpen,
+          setHoldConfirmationIsOpen,
+          onHoldConfirmationClose,
+          cancelHoldConfirmationRef,
+          language,
+          holdSelectItemResponse,
+          setHoldSelectItemResponse,
+          holdItemSelectIsOpen,
+          setHoldItemSelectIsOpen,
+          onHoldItemSelectClose,
+          cancelHoldItemSelectRef,
+     } = props;
      const { user, updateUser, accounts, locations } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
@@ -58,6 +86,12 @@ export const PlaceHold = (props) => {
                     cancelHoldConfirmationRef={cancelHoldConfirmationRef}
                     holdConfirmationResponse={holdConfirmationResponse}
                     setHoldConfirmationResponse={setHoldConfirmationResponse}
+                    setHoldItemSelectIsOpen={setHoldItemSelectIsOpen}
+                    holdItemSelectIsOpen={holdItemSelectIsOpen}
+                    onHoldItemSelectClose={onHoldItemSelectClose}
+                    cancelHoldItemSelectRef={cancelHoldItemSelectRef}
+                    holdSelectItemResponse={holdSelectItemResponse}
+                    setHoldSelectItemResponse={setHoldSelectItemResponse}
                />
           );
      } else {
@@ -90,6 +124,16 @@ export const PlaceHold = (props) => {
                                              recordId: record ?? null,
                                         });
                                    }
+                                   if (ilsResponse?.shouldBeItemHold && ilsResponse.shouldBeItemHold) {
+                                        setHoldSelectItemResponse({
+                                             message: ilsResponse.message,
+                                             title: 'Select an Item',
+                                             patronId: user.id,
+                                             pickupLocation: pickupLocation,
+                                             bibId: record ?? null,
+                                             items: ilsResponse.items ?? [],
+                                        });
+                                   }
                                    queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
                                    await refreshProfile(library.baseUrl).then((result) => {
                                         updateUser(result);
@@ -97,6 +141,8 @@ export const PlaceHold = (props) => {
                                    setLoading(false);
                                    if (ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
                                         setHoldConfirmationIsOpen(true);
+                                   } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
+                                        setHoldItemSelectIsOpen(true);
                                    } else {
                                         setResponseIsOpen(true);
                                    }

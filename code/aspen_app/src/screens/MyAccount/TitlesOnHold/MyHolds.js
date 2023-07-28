@@ -346,6 +346,7 @@ export const MyHolds = () => {
                               </Button>
                               <FormControl w={175}>
                                    <Select
+                                        isReadOnly={Platform.OS === 'android'}
                                         name="holdSource"
                                         selectedValue={holdSource}
                                         accessibilityLabel="Filter By Source"

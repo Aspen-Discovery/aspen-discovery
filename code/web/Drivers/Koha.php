@@ -331,6 +331,11 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 
+				if($this->getKohaVersion() >= 22.11) {
+					//TODO: Should this be capitalized? This does not seem to save to Koha
+					$postVariables = $this->setPostField($postVariables, 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+				}
+
 				$postVariables['csrf_token'] = $csr_token;
 				$postVariables['action'] = 'update';
 
@@ -519,14 +524,14 @@ class Koha extends AbstractIlsDriver {
 					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
 
 					if ($curCheckout->autoRenew == 1) {
-						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						if ($curCheckout->maxRenewals <= $curCheckout->renewCount) {
 							$curCheckout->autoRenewError = translate([
 								'text' => 'Cannot auto renew, too many renewals',
 								'isPublicFacing' => true,
 							]);
 						}
 					} else {
-						if ($curCheckout->maxRenewals == $curCheckout->renewCount) {
+						if ($curCheckout->maxRenewals <= $curCheckout->renewCount) {
 							$curCheckout->canRenew = "0";
 							$curCheckout->renewError = translate([
 								'text' => 'Renewed too many times',
@@ -2176,6 +2181,7 @@ class Koha extends AbstractIlsDriver {
 							'Content-Type: application/json',
 							'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 							'Accept-Encoding: gzip, deflate',
+							'x-koha-override: cancellation-request-flow' // fix to allow for approvals in koha 22.11.07 for patrons canceling waiting holds
 						], true);
 						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
 						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');

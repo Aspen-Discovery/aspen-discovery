@@ -21,7 +21,7 @@ export const navigateStack = (stack, screen, params) => {
 
 export const startSearch = (term, type, url) => {
      if (navigationRef.current) {
-          navigationRef.current.navigate('SearchTab', {
+          navigationRef.current.navigate('BrowseTab', {
                screen: type,
                params: {
                     term: term,

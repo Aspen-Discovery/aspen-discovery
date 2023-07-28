@@ -7,12 +7,9 @@ import { enableScreens } from 'react-native-screens';
 import { GroupedWork221200, GroupedWorkScreen } from '../../screens/GroupedWork/GroupedWork';
 import Facet from '../../screens/Search/Facet';
 import { FiltersScreen } from '../../screens/Search/Filters';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext } from '../../context/initialContext';
 import { SearchHome } from '../../screens/Search/Search';
 import { SearchResults } from '../../screens/Search/SearchResults';
-import SearchByCategory from '../../screens/Search/SearchByCategory';
-import { SearchResultsForList } from '../../screens/Search/SearchByList';
-import SearchBySavedSearch from '../../screens/Search/SearchBySavedSearch';
 import { WhereIsIt } from '../../screens/GroupedWork/WhereIsIt';
 import { EditionsModal } from './BrowseStackNavigator';
 import { CreateVDXRequest } from '../../screens/GroupedWork/CreateVDXRequest';
@@ -38,16 +35,6 @@ const SearchStackNavigator = ({ options, route, back, navigation }) => {
                          options={{
                               title: getTermFromDictionary(language, 'search'),
                          }}
-                    />
-                    <Stack.Screen
-                         name="SearchResults"
-                         component={SearchResults}
-                         options={({ route }) => ({
-                              title: getTermFromDictionary(language, 'results_for') + ' ' + route.params.term,
-                              params: {
-                                   pendingParams: [],
-                              },
-                         })}
                     />
                     <Stack.Screen
                          name="ResultItem"

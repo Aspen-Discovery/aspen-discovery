@@ -10003,6 +10003,13 @@ AspenDiscovery.Browse = (function(){
 		},
 
 		initializeBrowseCategory: function(){
+			var checkBrowseStyle = document.querySelector('#home-page-browse-results');
+			if(checkBrowseStyle) {
+				if (!checkBrowseStyle.classList.contains('home-page-browse-results-grid-masonry')) {
+					AspenDiscovery.Browse.browseStyle = 'grid';
+				}
+			}
+
 			if (AspenDiscovery.Browse.browseStyle === 'masonry') {
 				if (!$('#home-page-browse-results .grid').length){
 					return;

@@ -9379,7 +9379,7 @@ a.browse-thumbnail-sorted.active {
 .browse-list {
   break-inside: avoid-column;
   -webkit-column-break-inside: avoid;
-  display: inline-block;
+  display: inline-flex;
   text-align: right;
 }
 .browse-list img {
@@ -9405,6 +9405,26 @@ a.browse-thumbnail-sorted.active {
   border-width: 0;
   padding: 0;
   margin: 0 0 1.5em;
+}
+.browse-list a {
+  display: inline-flex;
+}
+.browse-list .info {
+  display: inline-flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.home-page-browse-results-grid-masonry .browse-list {
+  width: 100%;
+}
+.home-page-browse-results-grid .browse-list img {
+  width: auto;
+}
+.home-page-browse-results-grid .browse-list a {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
 }
 #more-browse-results {
   background-color: #e6e6e6;

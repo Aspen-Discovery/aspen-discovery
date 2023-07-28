@@ -6,12 +6,14 @@ import { loadingSpinner } from './loadingSpinner';
 import { loadError } from './loadError';
 import { navigate, navigateStack } from '../helpers/RootNavigator';
 import BarcodeMask from 'react-native-barcode-mask';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 export default function LibraryCardScanner() {
      const navigation = useNavigation();
+     const allowCode39 = useRoute().params?.allowCode39 ?? false;
      const [hasPermission, setHasPermission] = React.useState(null);
      const [scanned, setScanned] = React.useState(false);
+     let allowedBarcodes = [BarCodeScanner.Constants.BarCodeType.code128, BarCodeScanner.Constants.BarCodeType.codabar, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8, BarCodeScanner.Constants.BarCodeType.itf14];
 
      React.useEffect(() => {
           (async () => {
@@ -20,8 +22,11 @@ export default function LibraryCardScanner() {
           })();
      }, []);
 
-     const handleBarCodeScanned = ({ type, data }) => {
+     const handleBarCodeScanned = ({ type, data, bounds, cornerPoints }) => {
           if (!scanned) {
+               if (type === '8' || type === 8) {
+                    data = cleanBarcode(data);
+               }
                setScanned(true);
                navigate('Login', {
                     barcode: data,
@@ -37,9 +42,13 @@ export default function LibraryCardScanner() {
           return loadError('No access to camera');
      }
 
+     if (allowCode39) {
+          allowedBarcodes = [BarCodeScanner.Constants.BarCodeType.code128, BarCodeScanner.Constants.BarCodeType.codabar, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8, BarCodeScanner.Constants.BarCodeType.itf14, BarCodeScanner.Constants.BarCodeType.code39];
+     }
+
      return (
           <View style={{ flex: 1 }}>
-               <BarCodeScanner onBarCodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]}>
+               <BarCodeScanner onBarCodeScanned={scanned ? undefined : handleBarCodeScanned} style={[StyleSheet.absoluteFillObject, styles.container]} barCodeTypes={allowedBarcodes}>
                     <BarcodeMask edgeColor="#62B1F6" showAnimatedLine={false} />
                     {scanned && <Button onPress={() => setScanned(false)}>Scan Again</Button>}
                </BarCodeScanner>
@@ -54,3 +63,19 @@ const styles = StyleSheet.create({
           justifyContent: 'center',
      },
 });
+
+function cleanBarcode(barcode) {
+     barcode = barcode.toUpperCase();
+
+     let firstValue = barcode.charAt(0);
+     if (firstValue === 'A' || firstValue === 'B' || firstValue === 'C' || firstValue === 'D') {
+          barcode = barcode.substring(1);
+     }
+
+     let lastValue = barcode.charAt(barcode.length - 1);
+     if (lastValue === 'A' || lastValue === 'B' || lastValue === 'C' || lastValue === 'D') {
+          barcode = barcode.substring(0, barcode.length - 1);
+     }
+
+     return barcode;
+}

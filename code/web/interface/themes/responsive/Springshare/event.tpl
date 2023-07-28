@@ -87,10 +87,14 @@
 				{/if}
 			{else}
 				{if $recordDriver->isRegistrationRequired()}
-					<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
+					<div class="btn-group btn-group-vertical btn-block">
+						<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-info btn-wrap" target="_blank" style="width:70%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Registration Information" isPublicFacing=true}</a>
+						<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:70%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+					</div>
+					{*<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEventReg(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getExternalUrl()}');">
 						<i class="fas fa-external-link-alt"></i>
 						{translate text=" Add to Your Events and Register" isPublicFacing=true}
-					</a>
+					</a>*}
 				{else}
 					<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');">{translate text="Add to Your Events" isPublicFacing=true}</a>
 				{/if}
@@ -101,7 +105,9 @@
 		<div class="col-sm-9">
 			<div class="btn-group btn-group-sm">
 				<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
-				<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
+				{if $isStaffWithPermissions && $eventsInLists == 1 || $eventsInLists == 2}
+					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
+				{/if}
 			</div>
 			<div class="btn-group btn-group-sm">
 				{include file="Events/share-tools.tpl" eventUrl=$recordDriver->getExternalUrl()}

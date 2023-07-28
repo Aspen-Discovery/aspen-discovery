@@ -14,7 +14,35 @@ import { SelectItem } from './SelectItem';
 
 export const HoldPrompt = (props) => {
      const queryClient = useQueryClient();
-     const { language, id, title, action, volumeInfo, holdTypeForFormat, variationId, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef, holdConfirmationResponse, setHoldConfirmationResponse, holdConfirmationIsOpen, setHoldConfirmationIsOpen, onHoldConfirmationClose, cancelHoldConfirmationRef } = props;
+     const {
+          language,
+          id,
+          title,
+          action,
+          volumeInfo,
+          holdTypeForFormat,
+          variationId,
+          prevRoute,
+          isEContent,
+          response,
+          setResponse,
+          responseIsOpen,
+          setResponseIsOpen,
+          onResponseClose,
+          cancelResponseRef,
+          holdConfirmationResponse,
+          setHoldConfirmationResponse,
+          holdConfirmationIsOpen,
+          setHoldConfirmationIsOpen,
+          onHoldConfirmationClose,
+          cancelHoldConfirmationRef,
+          holdSelectItemResponse,
+          setHoldSelectItemResponse,
+          holdItemSelectIsOpen,
+          setHoldItemSelectIsOpen,
+          onHoldItemSelectClose,
+          cancelHoldItemSelectRef,
+     } = props;
      const [loading, setLoading] = React.useState(false);
      const [showModal, setShowModal] = React.useState(false);
 
@@ -203,10 +231,27 @@ export const HoldPrompt = (props) => {
                                                             setHoldConfirmationResponse(tmp);
                                                        }
 
+                                                       if (result?.shouldBeItemHold && result.shouldBeItemHold === true) {
+                                                            let tmp = holdSelectItemResponse;
+                                                            const obj = {
+                                                                 message: result.message,
+                                                                 title: 'Select an Item',
+                                                                 patronId: activeAccount,
+                                                                 pickupLocation: location,
+                                                                 bibId: id ?? null,
+                                                                 items: result.items ?? [],
+                                                            };
+
+                                                            tmp = _.merge(obj, tmp);
+                                                            setHoldSelectItemResponse(tmp);
+                                                       }
+
                                                        setLoading(false);
                                                        setShowModal(false);
                                                        if (result?.confirmationNeeded && result.confirmationNeeded) {
                                                             setHoldConfirmationIsOpen(true);
+                                                       } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
+                                                            setHoldItemSelectIsOpen(true);
                                                        } else {
                                                             setResponseIsOpen(true);
                                                        }

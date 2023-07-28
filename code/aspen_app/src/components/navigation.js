@@ -292,7 +292,6 @@ export function App() {
                                                                                                          },
                                                                                                          SearchTab: {
                                                                                                               screens: {
-                                                                                                                   SearchResults: 'search',
                                                                                                                    SearchByCategory: 'search/browse_category',
                                                                                                                    SearchByAuthor: 'search/author',
                                                                                                                    SearchByList: 'search/list',
@@ -302,6 +301,7 @@ export function App() {
                                                                                                               screens: {
                                                                                                                    HomeScreen: 'home',
                                                                                                                    GroupedWorkScreen: 'search/grouped_work',
+                                                                                                                   SearchResults: 'search',
                                                                                                               },
                                                                                                          },
                                                                                                     },
