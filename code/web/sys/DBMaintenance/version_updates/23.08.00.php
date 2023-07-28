@@ -74,7 +74,15 @@ function getUpdates23_08_00(): array {
 			'sql' => [
 				"UPDATE permissions set requiredModule = 'Aspen LiDA' WHERE sectionName = 'Aspen LiDA'",
 			]
-
+		],
+		'add_ecommerce_options' => [
+			'title' => 'Add additional eCommerce options in Library Systems',
+			'description' => 'Add option to add notes for convenience fee and terms of service for eCommerce',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN eCommerceFee VARCHAR(11) DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN eCommerceTerms VARCHAR(255) DEFAULT NULL"
+			]
 		],
 
 		//kodi - ByWater
