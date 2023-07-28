@@ -185,7 +185,9 @@ const UserProfileOverview = () => {
      const { language } = React.useContext(LanguageContext);
 
      let icon;
-     if (!_.isUndefined(library.favicon)) {
+     if (!_.isUndefined(library.logoApp)) {
+          icon = library.logoApp;
+     } else if (!_.isUndefined(library.favicon)) {
           icon = library.favicon;
      } else {
           icon = Constants.manifest2?.extra?.expoClient?.ios?.icon ?? Constants.manifest.ios.icon;
