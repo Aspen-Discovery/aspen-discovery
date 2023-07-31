@@ -16,6 +16,7 @@ class GroupedWorkDisplayInfo extends DataObject {
 		if (empty($this->seriesDisplayOrder)) {
 			$this->seriesDisplayOrder = 0;
 		}
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $this->permanent_id;
 		if ($groupedWork->find(true)) {
@@ -28,6 +29,7 @@ class GroupedWorkDisplayInfo extends DataObject {
 		if (empty($this->seriesDisplayOrder)) {
 			$this->seriesDisplayOrder = 0;
 		}
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $this->permanent_id;
 		if ($groupedWork->find(true)) {
@@ -37,6 +39,7 @@ class GroupedWorkDisplayInfo extends DataObject {
 	}
 
 	public function delete($useWhere = false) {
+		require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 		$groupedWork = new GroupedWork();
 		$groupedWork->permanent_id = $this->permanent_id;
 		if ($groupedWork->find(true)) {

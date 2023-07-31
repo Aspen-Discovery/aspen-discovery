@@ -329,9 +329,14 @@ const Checkout = (props) => {
           returnEarly = true;
      }
 
-     let renewMessage = getTermFromDictionary(language, 'if_eligible_auto_renew');
-     if (!checkout.canRenew) {
+     let renewMessage = false;
+     if (checkout.canRenew) {
+          renewMessage = getTermFromDictionary(language, 'checkout_renew');
+     } else {
           renewMessage = getTermFromDictionary(language, 'not_eligible_for_renewals');
+     }
+     if (checkout.autoRenew === '1' || checkout.autoRenew === 1) {
+          renewMessage = getTermFromDictionary(language, 'if_eligible_auto_renew');
      }
      if (checkout.autoRenewError) {
           renewMessage = checkout.autoRenewError;
@@ -406,21 +411,23 @@ const Checkout = (props) => {
                               startIcon={<Icon as={MaterialIcons} name="search" color="trueGray.400" mr="1" size="6" />}>
                               {getTermFromDictionary(language, 'view_item_details')}
                          </Actionsheet.Item>
-                         <Actionsheet.Item
-                              isDisabled={canRenew}
-                              isLoading={renewing}
-                              isLoadingText={getTermFromDictionary(language, 'renewing', true)}
-                              onPress={() => {
-                                   setRenew(true);
-                                   renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
-                                        setRenew(false);
-                                        reloadCheckouts();
-                                        toggle();
-                                   });
-                              }}
-                              startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6" />}>
-                              {renewMessage}
-                         </Actionsheet.Item>
+                         {renewMessage ? (
+                              <Actionsheet.Item
+                                   isDisabled={canRenew}
+                                   isLoading={renewing}
+                                   isLoadingText={getTermFromDictionary(language, 'renewing', true)}
+                                   onPress={() => {
+                                        setRenew(true);
+                                        renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
+                                             setRenew(false);
+                                             reloadCheckouts();
+                                             toggle();
+                                        });
+                                   }}
+                                   startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6" />}>
+                                   {renewMessage}
+                              </Actionsheet.Item>
+                         ) : null}
                          {checkout.source === 'overdrive' ? (
                               <Actionsheet.Item
                                    isLoading={access}

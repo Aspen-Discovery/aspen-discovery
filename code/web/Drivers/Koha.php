@@ -196,6 +196,7 @@ class Koha extends AbstractIlsDriver {
 				if($this->getKohaVersion() >= 22.11) {
 					//TODO: Should this be capitalized? This does not seem to save to Koha
 					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'middle_name', 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
 				}
 
 				// Patron extended attributes
@@ -334,6 +335,7 @@ class Koha extends AbstractIlsDriver {
 				if($this->getKohaVersion() >= 22.11) {
 					//TODO: Should this be capitalized? This does not seem to save to Koha
 					$postVariables = $this->setPostField($postVariables, 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
 				}
 
 				$postVariables['csrf_token'] = $csr_token;
@@ -3364,6 +3366,15 @@ class Koha extends AbstractIlsDriver {
 		];
 
 		if($this->getKohaVersion() >= 22.11) {
+			$fields['identitySection']['properties']['borrower_middle_name'] = [
+				'property' => 'borrower_middle_name',
+				'type' => 'text',
+				'label' => 'Middle Name',
+				'description' => 'Your middle name',
+				'maxLength' => 25,
+				'required' => false,
+				'autocomplete' => false,
+			];
 			$fields['identitySection']['properties']['borrower_pronouns'] = [
 				'property' => 'borrower_pronouns',
 				'type' => 'text',
@@ -4129,6 +4140,7 @@ class Koha extends AbstractIlsDriver {
 
 			if($this->getKohaVersion() >= 22.11) {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'pronouns', 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'middle_name', 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
 			}
 
 			// Patron extended attributes

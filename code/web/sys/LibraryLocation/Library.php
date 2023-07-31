@@ -110,6 +110,8 @@ class Library extends DataObject {
 	public $payFinesLinkText;
 	public $minimumFineAmount;
 	public $showRefreshAccountButton;    // specifically to refresh account after paying fines online
+	public $eCommerceFee;
+	public $eCommerceTerms;
 	public $msbUrl;
 	public $symphonyPaymentType;
 	public $compriseSettingId;
@@ -2409,7 +2411,23 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'default' => true,
 					],
-
+					'eCommerceFee' => [
+						'property' => 'eCommerceFee',
+						'type' => 'currency',
+						'displayFormat' => '%0.2f',
+						'label' => 'Convenience Fee',
+						'note' => 'If you charge a flat convenience fee to patrons paying online, you can provide that amount and Aspen will include it when displaying fines. This is only for display and patrons will not be charged this additional fee outside of what is configured with your eCommerce vendor.',
+						'description' => 'If you charge a flat convenience fee to patrons paying online',
+						'hideInLists' => true,
+					],
+					'eCommerceTerms' => [
+						'property' => 'eCommerceTerms',
+						'type' => 'html',
+						'label' => 'Terms of Service',
+						'description' => '',
+						'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
+						'hideInLists' => true,
+					],
 					'compriseSettingId' => [
 						'property' => 'compriseSettingId',
 						'type' => 'enum',

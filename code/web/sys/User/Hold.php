@@ -70,7 +70,7 @@ class Hold extends CircEntry {
 			global $configArray;
 			$hold['holdSource'] = 'OverDrive';
 			$hold['overDriveId'] = $hold['sourceId'];
-			$hold['holdQueuePosition'] = $hold['position'];
+			$hold['holdQueuePosition'] = (int)$hold['position'];
 			$hold['recordUrl'] = $configArray['Site']['url'] . $this->getLinkUrl();
 			if ($this->getRecordDriver()) {
 				$hold['previewActions'] = $this->getRecordDriver()->getPreviewActions();

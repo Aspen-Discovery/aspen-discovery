@@ -18,6 +18,11 @@
 		{if !empty($finePaymentResult)}
 			<div class="alert alert-{if $finePaymentResult->success === true}success{else}danger{/if}" id="finePaymentResult">{$finePaymentResult->message}</div>
 		{/if}
+		{if !empty($termsOfService)}
+			<div class="alert alert-info">
+	            {translate text=$termsOfService isPublicFacing=true}
+	        </div>
+		{/if}
 		{if count($userFines) > 0}
 			{* Show Fine Alert when the user has no linked accounts *}
 			{if count($userFines) == 1 && $profile->_fines}
@@ -121,6 +126,22 @@
 										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
 									{/if}
 								</tr>
+								{if !empty($convenienceFee) && $convenienceFee > 0}
+                                <tr>
+                                    <td></td>
+                                    <th>{translate text="Convenience Fee" isPublicFacing=true}</th>
+                                    <td></td>
+                                    <th id="convenienceFee" data-fee_amt="{$convenienceFee}">{$convenienceFee|formatCurrency}</th>
+                                    <th></th>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <th>{translate text="Grand Total" isPublicFacing=true}</th>
+                                    <td></td>
+                                    <th id="grandTotal{$userId}">{$grandTotalVal|formatCurrency}</th>
+                                    <th></th>
+                                </tr>
+                                {/if}
 							</tfoot>
 						</table>
 						{if $finePaymentType == 1}

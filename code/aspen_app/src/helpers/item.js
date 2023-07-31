@@ -263,7 +263,7 @@ export const getDueDate = (date) => {
 
 export const willAutoRenew = (props) => {
      const { language } = React.useContext(LanguageContext);
-     if (props.autoRenew === 1) {
+     if (props.autoRenew === 1 || props.autoRenew === '1') {
           return (
                <Box mt={1} p={0.5} bgColor="muted.100">
                     <Text
