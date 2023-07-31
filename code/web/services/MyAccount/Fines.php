@@ -238,9 +238,21 @@ class MyAccount_Fines extends MyAccount {
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 
+				$termsOfService = null;
+				$convenienceFee = 0.00;
+				try {
+					$termsOfService = $userLibrary->eCommerceTerms;
+					$convenienceFee = $userLibrary->eCommerceFee;
+				} catch (Exception $e) {
+					// fields don't exist;
+				}
+				$interface->assign('termsOfService', $termsOfService);
+				$interface->assign('convenienceFee', $convenienceFee);
+
 				$userAccountLabel = [];
 				$fineTotalsVal = [];
 				$outstandingTotalVal = [];
+				$grandTotalVal = 0;
 				// Get Account Labels, Add Up Totals
 				foreach ($fines as $userId => $finesDetails) {
 					$userAccountLabel[$userId] = $user->getUserReferredTo($userId)->getNameAndLibraryLabel();
@@ -262,17 +274,21 @@ class MyAccount_Fines extends MyAccount {
 					}
 
 					$fineTotalsVal[$userId] = $total;
+					$grandTotalVal += $total;
+					$grandTotalVal += $convenienceFee;
 
 					if ($useOutstanding) {
 						$outstandingTotalVal[$userId] = $totalOutstanding;
 					}
 				}
 
+
 				$interface->assign('userAccountLabel', $userAccountLabel);
 				$interface->assign('fineTotalsVal', $fineTotalsVal);
 				if ($useOutstanding) {
 					$interface->assign('outstandingTotalVal', $outstandingTotalVal);
 				}
+				$interface->assign('grandTotalVal', $grandTotalVal);
 			}
 		}
 		$interface->assign('showSystem', $showSystem);

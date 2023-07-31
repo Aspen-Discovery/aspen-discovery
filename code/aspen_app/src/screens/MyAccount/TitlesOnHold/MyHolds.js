@@ -64,6 +64,7 @@ export const MyHolds = () => {
      const togglePendingSort = async (value) => {
           updatePendingSortMethod(value);
           const sortedHolds = sortHolds(holds, value, readySortMethod);
+          console.log(sortedHolds[1]);
           queryClient.setQueryData(['holds', library.baseUrl, language], sortedHolds);
           updateHolds(sortedHolds);
      };
@@ -426,7 +427,15 @@ export const MyHolds = () => {
                          onChange={(newValues) => {
                               saveGroupValue(newValues);
                          }}>
-                         <SectionList sections={holds} renderItem={({ item, section: { title } }) => <MyHold data={item} resetGroup={resetGroup} language={language} pickupLocations={pickupLocations} section={title} key="ready" />} stickySectionHeadersEnabled={true} renderSectionHeader={({ section: { title } }) => displaySectionHeader(title)} renderSectionFooter={({ section: { title } }) => displaySectionFooter(title)} contentContainerStyle={{ paddingBottom: 30 }} />
+                         <SectionList
+                              sections={holds}
+                              renderItem={({ item, section: { title } }) => <MyHold data={item} resetGroup={resetGroup} language={language} pickupLocations={pickupLocations} section={title} key="ready" />}
+                              stickySectionHeadersEnabled={true}
+                              renderSectionHeader={({ section: { title } }) => displaySectionHeader(title)}
+                              renderSectionFooter={({ section: { title } }) => displaySectionFooter(title)}
+                              contentContainerStyle={{ paddingBottom: 30 }}
+                              keyExtractor={(item, index) => index.toString()}
+                         />
                     </Checkbox.Group>
                </Box>
           </SafeAreaView>
@@ -456,7 +465,13 @@ function sortHolds(holds, pendingSort, readySort) {
           if (holds[1].title === 'Pending') {
                holdsNotReady = holds[1].data;
                if (pendingSortMethod === 'position') {
-                    holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['desc']);
+                    holdsNotReady = _.orderBy(
+                         holdsNotReady,
+                         function (obj) {
+                              return new Number(obj.position);
+                         },
+                         ['desc']
+                    );
                }
                holdsNotReady = _.orderBy(holdsNotReady, [pendingSortMethod], ['asc']);
           }
