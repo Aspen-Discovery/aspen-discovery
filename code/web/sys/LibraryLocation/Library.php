@@ -2252,7 +2252,7 @@ class Library extends DataObject {
 								'property' => 'enableThirdPartyRegistration',
 								'type' => 'checkbox',
 								'label' => 'Enable Third Party Registration',
-								'description' => 'Whether or not staff users (depending on pType setting) can use Masquerade Mode.',
+								'description' => 'Whether or not third party registration APIs are enabled for this library.',
 								'hideInLists' => true,
 								'default' => true,
 							],
