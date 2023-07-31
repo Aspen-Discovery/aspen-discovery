@@ -1757,27 +1757,27 @@ AspenDiscovery.Account = (function () {
 			return false;
 		},
 
-		saveEventReg: function (trigger, source, id, regLink) {
+		regInfoModal: function (trigger, source, id, body, regLink) {
 			if (Globals.loggedIn) {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
-					'method': 'saveEvent',
+					'method': 'eventRegistrationModal',
 					sourceId: id,
 					source: source,
-					regLink: regLink
+					body: body,
+					regLink: regLink,
 				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.message, false, true); // do not auto-close if registrations required.
-						window.open(regLink, "_blank");
+						AspenDiscovery.showMessageWithButtons(data.title, body, data.buttons, false);
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
 					}
 				}).fail(AspenDiscovery.ajaxFail);
 			}else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					return AspenDiscovery.Account.saveEventReg(trigger, source, id);
+					return AspenDiscovery.Account.regInfoModal(trigger, source, id);
 				}, false);
 			}
 			return false;
