@@ -189,6 +189,7 @@ class WebsiteIndexSetting extends DataObject {
 		if (substr($this->siteUrl, -1) == '/') {
 			$this->siteUrl = substr($this->siteUrl, 0, -1);
 		}
+		$this->clearDefaultCovers();
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -202,6 +203,7 @@ class WebsiteIndexSetting extends DataObject {
 		if (substr($this->siteUrl, -1) == '/') {
 			$this->siteUrl = substr($this->siteUrl, 0, -1);
 		}
+		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -214,6 +216,7 @@ class WebsiteIndexSetting extends DataObject {
 		$this->deleted = 1;
 		$this->clearLibraries();
 		$this->clearLocations();
+		$this->clearDefaultCovers();
 		return $this->update();
 	}
 
@@ -302,5 +305,11 @@ class WebsiteIndexSetting extends DataObject {
 			}
 		}
 		return false;
+	}
+
+	private function clearDefaultCovers() {
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$covers = new BookCoverInfo();
+		$covers->reloadAllDefaultCovers();
 	}
 }
