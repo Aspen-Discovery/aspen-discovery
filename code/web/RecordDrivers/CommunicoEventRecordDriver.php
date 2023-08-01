@@ -171,6 +171,19 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getRegistrationModalBody() {
+		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+		$eventSettings = new CommunicoSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			if ($eventSettings->registrationModalBody){
+				return $eventSettings->registrationModalBody;
+			} else {
+				return null;
+			}
+		}
+	}
+
 	public function getExternalUrl($absolutePath = false) {
 		return $this->fields['url'];
 	}

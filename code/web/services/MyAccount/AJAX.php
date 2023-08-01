@@ -3124,6 +3124,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'title' => $entry->title,
 					'link' => $eventRecordDriver->getLinkUrl(),
 					'externalLink' => $eventRecordDriver->getExternalUrl(),
+					'regModalBody' => $eventRecordDriver->getRegistrationModalBody(),
 					'location' => $entry->location,
 					'regRequired' => $entry->regRequired,
 					'isRegistered' => $registration,
@@ -5801,6 +5802,23 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 		return $result;
+	}
+
+	/** @noinspection PhpUnused */
+	function eventRegistrationModal() {
+		$eventUrl = $_REQUEST['regLink'];
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Registration Information',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => '<a href="' .$eventUrl. '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>'
+				. translate([
+					'text' => 'Take Me To Event Registration',
+					'isPublicFacing' => true,
+				]) . '</a>',
+		];
 	}
 
 	/** @noinspection PhpUnused */

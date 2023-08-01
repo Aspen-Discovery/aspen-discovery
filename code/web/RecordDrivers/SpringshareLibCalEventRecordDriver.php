@@ -190,6 +190,19 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getRegistrationModalBody() {
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			if ($eventSettings->registrationModalBody){
+				return $eventSettings->registrationModalBody;
+			} else {
+				return null;
+			}
+		}
+	}
+
 	private function getType() {
 		return $this->fields['type'];
 	}

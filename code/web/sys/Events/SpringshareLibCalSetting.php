@@ -18,6 +18,7 @@ class SpringshareLibCalSetting extends DataObject {
 		$clientSecret;
 	public $eventsInLists;
 	public $bypassAspenEventPages;
+	public $registrationModalBody;
 	public $username;
 	public $password;
 
@@ -88,6 +89,14 @@ class SpringshareLibCalSetting extends DataObject {
 				'label' => 'Bypass event pages in Aspen',
 				'description' => 'Whether or not a user will be redirected to an Aspen event page or the page for the native event platform.',
 				'default' => 0,
+			],
+			'registrationModalBody' => [
+				'property' => 'registrationModalBody',
+				'type' => 'html',
+				'label' => 'Registration Modal Body',
+				'description' => 'The body of the modal for event registration information',
+				'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
+				'hideInLists' => true,
 			],
 
 			'libraries' => [

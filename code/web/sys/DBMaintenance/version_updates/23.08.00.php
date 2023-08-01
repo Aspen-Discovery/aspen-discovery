@@ -119,6 +119,15 @@ function getUpdates23_08_00(): array {
 				'ALTER TABLE communico_settings ADD COLUMN bypassAspenEventPages tinyint(1) default 0',
 			],
 		], //bypass_event_pages
+		'event_registration_modal' => [
+			'title' => 'Event Registration Modal',
+			'description'=> 'Add settings for modal for event registration information',
+			'sql' => [
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN registrationModalBody mediumtext',
+				'ALTER TABLE springshare_libcal_settings ADD COLUMN registrationModalBody mediumtext',
+				'ALTER TABLE communico_settings ADD COLUMN registrationModalBody mediumtext',
+			],
+		], //event_registration_modal
 
 		//other organizations
 
