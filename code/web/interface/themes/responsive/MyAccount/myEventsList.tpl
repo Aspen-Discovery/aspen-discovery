@@ -11,7 +11,6 @@
 						<th>{translate text='Start Time' isPublicFacing=true}</th>
 						<th>{translate text='Event Name' isPublicFacing=true}</th>
 						<th>{translate text='Location' isPublicFacing=true}</th>
-						<th>{translate text='Registration Required?' isPublicFacing=true}</th>
 						<th>{translate text='Registration Status' isPublicFacing=true}</th>
 						<th>&nbsp;</th>
 					</tr>
@@ -41,15 +40,13 @@
 								</td>
 								<td class="myAccountCell">
 									{if ($event.regRequired == 1)}
-										<span>{translate text="Yes" isPublicFacing=true}</span>
-									{else}
-										<span>{translate text="No" isPublicFacing=true}</span>
-									{/if}
-								</td>
-								<td class="myAccountCell">
-									{if ($event.regRequired == 1)}
 										{if $event.externalLink != null && !($event.isRegistered)}
-											<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>&nbsp{translate text=" Check Registration" isPublicFacing=true}</a>
+											{if !empty($event.regModalBody)}
+												<a class="btn btn-xs btn-action" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$event.id}', '{($event.regModalBody)}', '{$event.externalLink}');"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}
+												</a>
+											{else}
+												<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
+											{/if}
 										{elseif $event.isRegistered}
 											<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i>&nbsp{translate text=" You Are Registered" isPublicFacing=true}</a>
 										{else}

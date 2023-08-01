@@ -167,6 +167,19 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		}
 	}
 
+	public function getRegistrationModalBody() {
+		require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+		$eventSettings = new LMLibraryCalendarSetting;
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			if ($eventSettings->registrationModalBody){
+				return $eventSettings->registrationModalBody;
+			} else {
+				return null;
+			}
+		}
+	}
+
 	public function getExternalUrl($absolutePath = false) {
 		return $this->fields['url'];
 	}
