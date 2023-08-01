@@ -540,11 +540,20 @@ class AJAX extends Action {
 					]),
 				];
 			} else {
+				/** @var SearchObject_BaseSearcher $activeSearch */
+				$activeSearchObject = SearchSources::getSearcherForSource($searchSource);
+				$activeSearch = $activeSearchObject->loadLastSearch();
+				//Load information about the search so we can display it in the search box
+				if (!is_null($activeSearch)) {
+					$searchIndex = $activeSearch->getSearchIndex();
+				}else{
+					$searchIndex = $searchObject->getDefaultIndex();
+				}
 				$searchIndexes = SearchSources::getSearchIndexesForSource($searchObject, $searchSource);
 				$response = [
 					'success' => true,
 					'searchIndexes' => $searchIndexes,
-					'selectedIndex' => $searchObject->getDefaultIndex(),
+					'selectedIndex' => $searchIndex,
 					'defaultSearchIndex' => $searchObject->getDefaultIndex(),
 				];
 			}

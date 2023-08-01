@@ -48,7 +48,12 @@ class EventsSolrConnector extends Solr {
 			if (UserAccount::getActiveUserObj()->getHomeLocation() != null) {
 				$userLocation = UserAccount::getActiveUserObj()->getHomeLocation()->displayName;
 			} else {
-				$userLocation = $searchLibrary->displayName;
+				if ($searchLibrary != null) {
+					$userLocation = $searchLibrary->displayName;
+				} else {
+					global $library;
+					$userLocation = $library->displayName;
+				}
 			}
 		}else {
 			$userLocation = $searchLibrary->displayName;
