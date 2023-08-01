@@ -49,7 +49,7 @@
 							{/literal}
 						</script>
 						{foreach from=$searchIndexes item=searchDesc key=searchVal}
-							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text="by %1%" 1=$searchDesc inAttribute=true isPublicFacing=true translateParameters=true}</option>
+							<option value="{$searchVal}"{if !empty($searchIndex) && $searchIndex == $searchVal} selected="selected"{/if}>{translate text=$searchDesc inAttribute=true isPublicFacing=true}</option>
 						{/foreach}
 
 						{* Add Advanced Search *}
