@@ -149,14 +149,6 @@ class WebsiteIndexer {
 					pageToProcess = pageToProcess.replaceAll("<loc>", "");
 					pageToProcess = pageToProcess.replaceAll("</loc>", "");
 
-					//check if path is to be excluded
-					for (Pattern curPattern : pathsToExcludePatterns){
-						if (!curPattern.matcher(pageToProcess).matches() && !pageToProcess.matches(".*\\.xml.*")){ //if url is not in paths to exclude, process page (if it is an xml it will be processed in next step)
-							processPage(pageToProcess);
-							allLinks.put(pageToProcess, true);
-						}
-					}
-
 					if (pageToProcess.matches(".*\\.xml.*")) { //if sitemap is xml index, walk through each xml file
 						Document doc2 = Jsoup.connect(pageToProcess).get();
 						Elements url2 = doc2.select("loc");
@@ -164,16 +156,30 @@ class WebsiteIndexer {
 							String pageToProcess2 = String.valueOf(urlToProcess2);
 							pageToProcess2 = pageToProcess2.replaceAll("<loc>", "");
 							pageToProcess2 = pageToProcess2.replaceAll("</loc>", "");
-							processPage(pageToProcess2);
-							allLinks.put(pageToProcess2, true);
 
 							//check if path is to be excluded
 							for (Pattern curPattern : pathsToExcludePatterns){
-								if (!curPattern.matcher(pageToProcess).matches()){ //if url is not in paths to exclude, process page
-									processPage(pageToProcess);
-									allLinks.put(pageToProcess, true);
+								if (!curPattern.matcher(pageToProcess2).matches()){ //if url is not in paths to exclude, process page
+									processPage(pageToProcess2);
+									allLinks.put(pageToProcess2, true);
 								}
 							}
+							if (pathsToExcludePatterns.isEmpty()){
+								processPage(pageToProcess2);
+								allLinks.put(pageToProcess2, true);
+							}
+						}
+					}else {
+						//check if path is to be excluded
+						for (Pattern curPattern : pathsToExcludePatterns){
+							if (!curPattern.matcher(pageToProcess).matches()){ //if url is not in paths to exclude, process page
+								processPage(pageToProcess);
+								allLinks.put(pageToProcess, true);
+							}
+						}
+						if (pathsToExcludePatterns.isEmpty()){
+							processPage(pageToProcess);
+							allLinks.put(pageToProcess, true);
 						}
 					}
 
