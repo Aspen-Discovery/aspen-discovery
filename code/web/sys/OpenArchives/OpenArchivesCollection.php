@@ -160,6 +160,7 @@ class OpenArchivesCollection extends DataObject {
 		if (!empty($this->_changedFields) && !in_array('lastFetched', $this->_changedFields)) {
 			$this->lastFetched = 0;
 		}
+		$this->clearDefaultCovers();
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -170,6 +171,7 @@ class OpenArchivesCollection extends DataObject {
 	}
 
 	public function insert($context = '') {
+		$this->clearDefaultCovers();
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLibraries();
@@ -181,6 +183,7 @@ class OpenArchivesCollection extends DataObject {
 	public function delete($useWhere = false) {
 		$this->clearLibraries();
 		$this->clearLocations();
+		$this->clearDefaultCovers();
 		$this->deleted = true;
 		return $this->update();
 	}
@@ -253,5 +256,11 @@ class OpenArchivesCollection extends DataObject {
 		$locationOpenArchivesCollection = new LocationOpenArchivesCollection();
 		$locationOpenArchivesCollection->collectionId = $this->id;
 		return $locationOpenArchivesCollection->delete(true);
+	}
+
+	private function clearDefaultCovers() {
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$covers = new BookCoverInfo();
+		$covers->reloadAllDefaultCovers();
 	}
 }

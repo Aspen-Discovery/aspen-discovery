@@ -93,4 +93,31 @@ class EBSCOhostDatabase extends DataObject {
 	public function getEditLink($context): string {
 		return '/EBSCO/EBSCOhostDatabases?objectAction=edit&id=' . $this->id;
 	}
+
+	public function update($context = '') {
+		$this->clearDefaultCovers();
+		$ret = parent::update();
+
+		return $ret;
+	}
+
+	public function insert($context = '') {
+		$this->clearDefaultCovers();
+		$ret = parent::insert();
+
+		return $ret;
+	}
+
+	public function delete($useWhere = false) {
+		$this->deleted = 1;
+		$this->clearDefaultCovers();
+		return $this->update();
+	}
+
+	private function clearDefaultCovers() {
+		require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+		$covers = new BookCoverInfo();
+		$covers->reloadAllDefaultCovers();
+	}
+
 }
