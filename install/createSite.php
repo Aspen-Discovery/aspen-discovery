@@ -286,14 +286,16 @@ if (!$siteOnWindows) {
 }
 
 //Import the database
+$mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\" --port \"{$variables['aspenDBPort']}\"";
 if ($clearExisting) {
-	echo("Removing existing database\r\n");
-	exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
+    echo("Removing existing database\r\n");
+    exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
 }
 echo("Creating database\r\n");
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
+exec("$mysqlConnectionCommand -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
 echo("Loading default database\r\n");
-exec("mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" {$variables['aspenDBName']} < $installDir/install/aspen.sql");
+exec("$mysqlConnectionCommand {$variables['aspenDBName']} < $installDir/install/aspen.sql");
+
 
 //Connect to the database
 $aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host=localhost",$variables['aspenDBUser'],$variables['aspenDBPwd']);
