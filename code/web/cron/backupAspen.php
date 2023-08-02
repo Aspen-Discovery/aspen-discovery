@@ -12,6 +12,8 @@ $debug = false;
 $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
 $dbName = $configArray['Database']['database_aspen_dbname'];
+$dbHost = $configArray['Database']['database_aspen_host'];
+$dbPort = $configArray['Database']['database_aspen_dbport'];
 
 //Make sure our backup directory exists
 if (!file_exists("/data/aspen-discovery/$serverName/sql_backup")) {
@@ -44,9 +46,9 @@ foreach ($allTables as $table) {
 	$exportFile = "$serverName.$curDateTime.$table.sql";
 	$fullExportFilePath = "$backupDir/$exportFile";
 	if ($exportData) {
-		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword $dbName $table > $fullExportFilePath";
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort $dbName $table > $fullExportFilePath";
 	}else{
-		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --no-data $dbName $table > $fullExportFilePath";
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --no-data $dbName $table > $fullExportFilePath";
 	}
 	exec_advanced($dumpCommand, $debug);
 
