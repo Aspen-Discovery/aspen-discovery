@@ -78,8 +78,8 @@
 				<td>{$groupedRecord->identifier}</td>
 				{if !empty($loggedIn) && in_array('Upload Covers', $userPermissions)}
 					<td>
-						<button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->identifier}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->type}')" class="btn btn-sm {if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}btn-info{else}btn-default{/if}">
-						{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true}{translate text="Using this Cover" isPublicFacing=true}{else}{translate text="Preview Cover" isPublicFacing=true}{/if}</button>{if strpos($bookcoverInfo->imageSource, $groupedRecord->identifier) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset" isPublicFacing=true}</button>{/if}
+						<button onclick="return AspenDiscovery.GroupedWork.getPreviewRelatedCover('{$groupedRecord->__get('identifier')}', '{$recordDriver->getPermanentId()}', '{$groupedRecord->__get('type')}')" class="btn btn-sm {if strpos($bookcoverInfo->__get('imageSource'), $groupedRecord->__get('identifier')) == true}btn-info{else}btn-default{/if}">
+						{if strpos($bookcoverInfo->__get('imageSource'), $groupedRecord->__get('identifier')) == true}{translate text="Using this Cover" isPublicFacing=true}{else}{translate text="Preview Cover" isPublicFacing=true}{/if}</button>{if strpos($bookcoverInfo->__get('imageSource'), $groupedRecord->__get('identifier')) == true} <button onclick="return AspenDiscovery.GroupedWork.clearRelatedCover('{$recordDriver->getPermanentId()}')" class="btn btn-sm btn-warning">{translate text="Reset" isPublicFacing=true}</button>{/if}
 					</td>
 				{/if}
 			</tr>
@@ -90,13 +90,13 @@
 {if !empty($bookcoverInfo)}
 	<h4>{translate text="Book Cover Information" isPublicFacing=true}</h4>
 	<table class="table-striped table table-condensed notranslate">
-		{if !empty($bookcoverInfo->imageSource)}
-			<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{$bookcoverInfo->imageSource}</td></tr>
+		{if !empty($bookcoverInfo->__get('imageSource'))}
+			<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{$bookcoverInfo->__get('imageSource')}</td></tr>
 		{else}
 			<tr><th>{translate text="Image Source" isPublicFacing=true}</th><td>{translate text="Not Available" isPublicFacing=true}</td></tr>
 		{/if}
-		<tr><th>{translate text="First Loaded" isPublicFacing=true}</th><td>{$bookcoverInfo->firstLoaded|date_format}</td></tr>
-		<tr><th>{translate text="Last Used" isPublicFacing=true}</th><td>{$bookcoverInfo->lastUsed|date_format}</td></tr>
+		<tr><th>{translate text="First Loaded" isPublicFacing=true}</th><td>{$bookcoverInfo->__get('firstLoaded')|date_format}</td></tr>
+		<tr><th>{translate text="Last Used" isPublicFacing=true}</th><td>{$bookcoverInfo->__get('lastUsed')|date_format}</td></tr>
 	</table>
 {/if}
 {/strip}
