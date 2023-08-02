@@ -1014,20 +1014,12 @@ class UInterface extends Smarty {
 			
 			
 			$systemVariables = SystemVariables::getSystemVariables();
-			$supportingCompany = $systemVariables->supportingCompany;
-	
+			if (!empty($systemVariables)) {
+				$supportingCompany = $systemVariables->supportingCompany;
 
-			if(!empty ($supportingCompany)) {
-				$this->assign('supportingCompany', $supportingCompany);
-			}
-
-
-			$systemVariables = SystemVariables::getSystemVariables();
-			$supportingCompany = $systemVariables->supportingCompany;
-
-
-			if(!empty ($supportingCompany)) {
-				$this->assign('supportingCompany', $supportingCompany);
+				if (!empty ($supportingCompany)) {
+					$this->assign('supportingCompany', $supportingCompany);
+				}
 			}
 
 			//Get favicon
