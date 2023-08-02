@@ -1,17 +1,14 @@
-{if !$smarty.cookies.cookieConsent}
+{if empty($smarty.cookies.cookieConsent)}
     <div class="stripPopup">
-        <div class="container">
+        <div class="cookieContainer">
             <div class="contentWrap">
-                <span>We use cookies on this site to enhance your user experience.</span>
-                <abbr>By clicking any link on this website, you are giving us consent to set and store cookies.</abbr>
+                <span>{translate text="We use cookies on this site to enhance your user experience." isPublicFacing=true}</span>
+                <abbr>{translate text="By clicking any link on this website, you are giving us consent to set and store cookies." isPublicFacing=true}<abbr>
             </div>
             <div class="btnWrap">
-                <a href="#" id="consentAgree" class="button">Yes, I agree</a>
-                <a href="#" id="consentDisagree" class="button">No, I want to find out more</a>
+                <a onclick="AspenDiscovery.CookieConsent.cookieAgree();" href="#" id="consentAgree" class="button">{translate text="Yes, I agree" isPublicFacing=true}</a>
+                <a onclick="AspenDiscovery.CookieConsent.cookieDisagree();" href="#" id="consentDisagree" class="button">{translate text="No, I want to find out more" isPublicFacing=true}</a>
             </div>
         </div>
     </div>
-    <link rel="stylesheet" href="/interface/themes/responsive/css/cookie-consent.css" />
-    <script>cookiePolicyHTML='{$cookieStorageConsentHTML|escape:javascript|regex_replace:"/[\r\n]/" : " "}'</script>
-    <script src="/interface/themes/responsive/js/aspen/cookieConsent.js"></script>
 {/if}

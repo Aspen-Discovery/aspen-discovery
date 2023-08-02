@@ -1,11 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;700&display=swap');
-
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 .stripPopup{
+    margin: 0;
+    box-sizing: border-box;
     background-color: rgb(29, 127, 240);
     padding: 15px 0;
     position: fixed;
@@ -13,13 +8,9 @@
     left: 0;
     width: 100%;
     z-index: 1;
-    font-family: 'Poppins', sans-serif;
+    font-family: sans-serif;
 
     .btnWrap{
-        width: 400px;
-        float: right;
-        display: flex;
-
         a.button{
             width:188px;
             color: white;
@@ -45,7 +36,7 @@
             }
     }
 
-    .container{
+    .cookieContainer{
         display:flex;
         justify-content: space-between;
         width:100%;
@@ -56,6 +47,7 @@
 
         .contentWrap{
             width: 490px;
+            max-width: 100%;
             float: left;
 
             span{

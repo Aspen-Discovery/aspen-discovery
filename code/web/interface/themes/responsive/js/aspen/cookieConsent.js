@@ -1,14 +1,19 @@
-$(document).ready(function () {
-    var aDate = new Date();
-    aDate.setMonth(aDate.getMonth() + 3);
-    $(document).on('click', '#consentAgree, #modalConsentAgree', function (event) {
-        event.preventDefault();
-        $('.stripPopup').hide();
-        $('.modal').modal('hide');
-        document.cookie = 'cookieConsent' + '=' +encodeURIComponent(aDate)+'; expires=' + aDate.toUTCString() + '; path=/';
-    });
-    $('#consentDisagree').click(function() {
-        $('.stripPopup').hide();
-        AspenDiscovery.showMessageWithButtons("Cookie Policy",cookiePolicyHTML,'<button class=\'tool btn btn-primary\' id=\'modalConsentAgree\' >Accept essential cookies</button>', true);
-    });
-});
+AspenDiscovery.CookieConsent = (function() {
+    return {
+        cookieAgree: function() {
+            console.log('cookieAgree');
+            var aDate = new Date();
+            aDate.setMonth(aDate.getMonth() + 3);
+            $('.stripPopup').hide();
+            $('.modal').modal('hide');
+            document.cookie = 'cookieConsent' + '=' + encodeURIComponent(aDate) + '; expires=' + aDate.toUTCString() + '; path=/';
+            return;
+        },
+        cookieDisagree: function() {
+            console.log('cookieDisagree');  
+            $('.stripPopup').hide();
+            AspenDiscovery.showMessageWithButtons("Cookie Policy", Globals.cookiePolicyHTML,'<button onclick=\"AspenDiscovery.CookieConsent.cookieAgree\(\)\;\" class=\'tool btn btn-primary\' id=\'modalConsentAgree\' >Accept essential cookies</button>', true);
+            return;
+        }
+    }
+}(AspenDiscovery.CookieConsent));

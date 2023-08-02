@@ -243,7 +243,6 @@ try {
 		$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
 	}
 } catch (Exception $e) {
-	AspenError::raiseError("Error loading cookie consent banner");
 }
 
 //system variable for supporting company name
