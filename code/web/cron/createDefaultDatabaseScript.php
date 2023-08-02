@@ -14,6 +14,8 @@ $installDirectory = $localDirectory . '/../../install/';
 $dbUser = $configArray['Database']['database_user'];
 $dbPassword = $configArray['Database']['database_password'];
 $dbName = $configArray['Database']['database_aspen_dbname'];
+$dbHost = $configArray['Database']['database_aspen_host'];
+$dbPort = $configArray['Database']['database_aspen_dbport'];
 
 //Delete the old aspen.sql file
 $exportFile = $installDirectory . 'aspen.sql';
@@ -30,7 +32,7 @@ foreach ($allTables as $table) {
 	}
 
 	if ($exportData) {
-		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword --skip-comments $dbName $table >> $exportFile";
+		$dumpCommand = "mysqldump -u$dbUser -p$dbPassword -h$dbHost -P$dbPort --skip-comments $dbName $table >> $exportFile";
 		exec_advanced($dumpCommand, $debug);
 	}else{
 		$createTableStmt = $aspen_db->query("SHOW CREATE TABLE " . $table);
