@@ -276,8 +276,8 @@ class SystemVariables extends DataObject {
 			'supportingCompany' => [
 				'property' => 'supportingCompany',
 				'type' => 'text',
-				'label' => 'Company completing installation',
-				'description' => 'Sets supporing company name in footer',
+				'label' => 'Support Company',
+				'description' => 'Sets supporting company name in footer',
 				'default' => 'ByWater Solutions',
 			],
 			'trackIpAddresses' => [
