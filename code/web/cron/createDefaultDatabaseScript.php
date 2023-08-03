@@ -27,7 +27,7 @@ $allTables = $listTablesStmt->fetchAll(PDO::FETCH_COLUMN);
 foreach ($allTables as $table) {
 	$exportData = false;
 	//Ignore
-	if ($table == 'db_update' || $table == 'modules' || $table == 'permissions' || $table == 'role_permissions' || $table == 'roles') {
+	if ($table == 'bad_words' || $table == 'db_update' || $table == 'modules' || $table == 'permissions' || $table == 'role_permissions' || $table == 'roles') {
 		$exportData = true;
 	}
 
