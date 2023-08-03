@@ -114,7 +114,7 @@ class DataObjectUtil {
 			}
 			$value = isset($_REQUEST[$property['property']]) ? $_REQUEST[$property['property']] : null;
 			if (isset($property['required']) && $property['required'] == true) {
-				if ($value == null && strlen($value) > 0) {
+				if ($value == null && strlen_aspen($value) > 0) {
 					$validationResults['errors'][] = $property['property'] . ' is required.';
 				}
 			}
@@ -199,7 +199,7 @@ class DataObjectUtil {
 			'folder',
 			'crSeparated',
 		])) {
-			if (empty($_REQUEST[$propertyName]) || strlen(trim($_REQUEST[$propertyName])) == 0) {
+			if (empty($_REQUEST[$propertyName]) || strlen_aspen(trim($_REQUEST[$propertyName])) == 0) {
 				$object->setProperty($propertyName, "", $property);
 			} else {
 				$object->setProperty($propertyName, trim($_REQUEST[$propertyName]), $property);
@@ -284,7 +284,7 @@ class DataObjectUtil {
 			}
 
 		} elseif ($property['type'] == 'date') {
-			if (empty(strlen($_REQUEST[$propertyName])) || strlen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00') {
+			if (empty(strlen_aspen($_REQUEST[$propertyName])) || strlen_aspen($_REQUEST[$propertyName]) == 0 || $_REQUEST[$propertyName] == '0000-00-00') {
 				$object->setProperty($propertyName, null, $property);
 			} else {
 				$dateParts = date_parse($_REQUEST[$propertyName]);
@@ -456,7 +456,7 @@ class DataObjectUtil {
 				}
 			}
 		} elseif ($property['type'] == 'password') {
-			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])) {
+			if (strlen_aspen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])) {
 				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
 				if ($newValue != null) {
 					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
@@ -464,7 +464,7 @@ class DataObjectUtil {
 				$object->setProperty($propertyName, md5($newValue), $property);
 			}
 		} elseif ($property['type'] == 'storedPassword') {
-			if (strlen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])) {
+			if (strlen_aspen($_REQUEST[$propertyName]) > 0 && ($_REQUEST[$propertyName] == $_REQUEST[$propertyName . 'Repeat'])) {
 				$newValue = strip_tags(trim($_REQUEST[$propertyName]));
 				if ($newValue != null) {
 					$newValue = preg_replace('/\x{2029}/usm', '', $newValue);
@@ -528,7 +528,7 @@ class DataObjectUtil {
 								} elseif (in_array($subProperty['type'], ['checkbox'])) {
 									$subObject->setProperty($subPropertyName, isset($_REQUEST[$requestKey][$id]) ? 1 : 0, $subProperty);
 								} elseif ($subProperty['type'] == 'date') {
-									if (strlen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00') {
+									if (strlen_aspen($_REQUEST[$requestKey][$id]) == 0 || $_REQUEST[$requestKey][$id] == '0000-00-00') {
 										$subObject->setProperty($subPropertyName, null, $subProperty);
 									} else {
 										$dateParts = date_parse($_REQUEST[$requestKey][$id]);
