@@ -754,13 +754,16 @@ abstract class DataObject implements JsonSerializable {
 			}
 		}
 
-		if (strlen($this->__where) > 0 && strlen($where) > 0) {
-			$query .= ' WHERE ' . $this->__where . ' AND ' . $where;
-		} elseif (strlen($this->__where) > 0) {
-			$query .= ' WHERE ' . $this->__where;
-		} elseif (strlen($where) > 0) {
-			$query .= ' WHERE ' . $where;
+		if ($this->__where != null) {
+			if (strlen($this->__where) > 0 && strlen($where) > 0) {
+				$query .= ' WHERE ' . $this->__where . ' AND ' . $where;
+			} elseif (strlen($this->__where) > 0) {
+				$query .= ' WHERE ' . $this->__where;
+			} elseif (strlen($where) > 0) {
+				$query .= ' WHERE ' . $where;
+			}
 		}
+		
 		if ($this->__groupBy != null) {
 			$query .= $this->__groupBy;
 		}
@@ -1222,7 +1225,7 @@ abstract class DataObject implements JsonSerializable {
 		return !empty($this->_changedFields);
 	}
 
-	public function jsonSerialize() {
+	public function jsonSerialize() : mixed {
 		$properties = get_object_vars($this);
 		$serializedData = [];
 		foreach ($properties as $name => $value) {
