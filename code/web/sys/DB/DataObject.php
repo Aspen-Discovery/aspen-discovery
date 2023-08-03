@@ -754,16 +754,14 @@ abstract class DataObject implements JsonSerializable {
 			}
 		}
 
-		if ($this->__where != null) {
-			if (strlen($this->__where) > 0 && strlen($where) > 0) {
-				$query .= ' WHERE ' . $this->__where . ' AND ' . $where;
-			} elseif (strlen($this->__where) > 0) {
-				$query .= ' WHERE ' . $this->__where;
-			} elseif (strlen($where) > 0) {
-				$query .= ' WHERE ' . $where;
-			}
+		if (strlen($this->__where) > 0 && strlen($where) > 0) {
+			$query .= ' WHERE ' . $this->__where . ' AND ' . $where;
+		} elseif (strlen($this->__where) > 0) {
+			$query .= ' WHERE ' . $this->__where;
+		} elseif (strlen($where) > 0) {
+			$query .= ' WHERE ' . $where;
 		}
-		
+
 		if ($this->__groupBy != null) {
 			$query .= $this->__groupBy;
 		}
