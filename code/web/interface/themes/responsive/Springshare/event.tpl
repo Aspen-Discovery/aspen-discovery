@@ -111,7 +111,7 @@
 		<div class="col-sm-9">
 			<div class="btn-group btn-group-sm">
 				<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-tools" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="More Info" isPublicFacing=true}</a>
-				{if $isStaffWithPermissions && $eventsInLists == 1 || $eventsInLists == 2}
+				{if $isStaff && $eventsInLists == 1 || $eventsInLists == 2}
 					<button onclick="return AspenDiscovery.Account.showSaveToListForm(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-tools addToListBtn">{translate text="Add to List" isPublicFacing=true}</button>
 				{/if}
 			</div>
@@ -126,7 +126,7 @@
 </div>
 
 {*Staff View Div*}
-{if !empty($loggedIn) && (in_array('Administer Communico Settings', $userPermissions))}
+{if !empty($loggedIn) && (in_array('Administer Springshare LibCal Settings', $userPermissions))}
 	<div class="row">
 		<div class="col-sm-12">
 			<div id="more-details-accordion" class="panel-group">
