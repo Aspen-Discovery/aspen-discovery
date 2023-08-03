@@ -7290,11 +7290,11 @@ class Koha extends AbstractIlsDriver {
 
 			$pTypeToSet = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');;
 			if ($addressValidated) {
-				if ($library->thirdPartyPTypeAddressValidated != -1) {
+				if ($library->thirdPartyPTypeAddressValidated > 0) {
 					$pTypeToSet = $library->thirdPartyPTypeAddressValidated;
 				}
 			} else {
-				if ($library->thirdPartyPTypeAddressNotValidated != -1) {
+				if ($library->thirdPartyPTypeAddressNotValidated > 0) {
 					$pTypeToSet = $library->thirdPartyPTypeAddressNotValidated;
 				}
 			}
