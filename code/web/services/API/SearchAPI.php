@@ -376,8 +376,10 @@ class SearchAPI extends Action {
 							}
 						}
 					}else{
-						$hasErrors = true;
-						$sideloadIndexNote .= $sideload->name . ' has never been indexed<br/>';
+						if ($sideload->lastUpdateOfAllRecords == null && $sideload->lastUpdateOfChangedRecords == null){
+							$hasErrors = true;
+							$sideloadIndexNote .= $sideload->name . ' has never been indexed<br/>';
+						}
 					}
 				}
 				if (!$hasErrors) {

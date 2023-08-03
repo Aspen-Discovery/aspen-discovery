@@ -31,7 +31,7 @@ abstract class Admin_Dashboard extends Admin_Admin {
 		$statsInstance->find();
 		if ($statsInstance->getNumResults() > 1) {
 			while ($statsInstance->fetch()) {
-				if (!empty($statsInstance->instance)) {
+				if (($statsInstance->instance) != null) {
 					$allInstances[$statsInstance->instance] = $statsInstance->instance;
 				}
 			}
