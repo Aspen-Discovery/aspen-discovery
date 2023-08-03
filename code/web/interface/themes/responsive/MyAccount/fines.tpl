@@ -138,7 +138,7 @@
                                     <td></td>
                                     <th>{translate text="Grand Total" isPublicFacing=true}</th>
                                     <td></td>
-                                    <th id="grandTotal{$userId}">{$grandTotalVal|formatCurrency}</th>
+                                    <th id="grandTotal{$userId}">{$grandTotalVal.$userId|formatCurrency}</th>
                                     <th></th>
                                 </tr>
                                 {/if}
