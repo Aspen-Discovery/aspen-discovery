@@ -25,6 +25,7 @@ class Hold extends CircEntry {
 	public $canFreeze;
 	public $reactivateDate;
 	public $isIll;
+	public $pendingCancellation;
 
 	//Try to get rid of
 	public $_freezeError;
@@ -45,6 +46,7 @@ class Hold extends CircEntry {
 			'canFreeze',
 			'reactivateDate',
 			'isIll',
+			'pendingCancellation',
 		];
 	}
 
