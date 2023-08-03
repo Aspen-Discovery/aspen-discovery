@@ -1012,6 +1012,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		$relatedRecords = $recordDriver->getRelatedRecords(true);
 		foreach ($relatedRecords as $record) {
+			require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 			$bookCoverInfo = new BookCoverInfo();
 			if (strpos($record->id, ':') > 0) {
 				[
@@ -1136,7 +1137,8 @@ class GroupedWork_AJAX extends JSON_Action {
 							$relatedRecords = $recordDriver->getRelatedRecords(true);
 
 							foreach ($relatedRecords as $record) {
-								$hasDefaultCover = new BookCoverInfo;
+								require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+								$hasDefaultCover = new BookCoverInfo();
 								$hasDefaultCover->id = $record->id;
 								$hasDefaultCover->imageSource = 'default';
 								if ($hasDefaultCover->find(true)){
@@ -1340,7 +1342,8 @@ class GroupedWork_AJAX extends JSON_Action {
 						$relatedRecords = $recordDriver->getRelatedRecords(true);
 
 						foreach ($relatedRecords as $record) {
-							$hasDefaultCover = new BookCoverInfo;
+							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
+							$hasDefaultCover = new BookCoverInfo();
 							$hasDefaultCover->id = $record->id;
 							$hasDefaultCover->imageSource = 'default';
 							if ($hasDefaultCover->find(true)){
@@ -2313,6 +2316,7 @@ class GroupedWork_AJAX extends JSON_Action {
 
 			$relatedRecords = $recordDriver->getRelatedRecords(true);
 			foreach ($relatedRecords as $record) {
+				require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 				$bookCoverInfo = new BookCoverInfo();
 				if (strpos($record->id, ':') > 0) {
 					[
