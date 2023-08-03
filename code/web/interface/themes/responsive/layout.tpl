@@ -170,6 +170,9 @@
 	{if !empty($customJavascript)}
 		{$customJavascript}
 	{/if}
+	{if !empty($cookieStorageConsent)}
+		{include file = "cookie-consent.tpl"}
+	{/if}
 {/strip}
 </body>
 </html>

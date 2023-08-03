@@ -233,6 +233,17 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 		//This happens before the table is setup
 	}
 }
+//Check to see if we should show the cookieConsent banner
+$interface->assign('cookieStorageConsent', false);
+try {
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
+	$systemVariables = new SystemVariables();
+	if ($systemVariables->find(true) && !empty($systemVariables->cookieStorageConsent)) {
+		$interface->assign('cookieStorageConsent', true);
+		$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
+	}
+} catch (Exception $e) {
+}
 
 //system variable for supporting company name
 $interface->assign('supportingCompany', 'ByWater Solutions');

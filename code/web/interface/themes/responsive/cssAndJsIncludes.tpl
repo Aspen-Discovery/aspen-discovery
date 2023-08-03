@@ -74,6 +74,7 @@
 			Globals.bypassAspenLoginForSSO = {if $bypassAspenPatronLogin}true{else}false{/if};
 			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
 			AspenDiscovery.Browse.browseStyle = '{$browseStyle}';
+			Globals.cookiePolicyHTML = '{$cookieStorageConsentHTML|escape:javascript|regex_replace:"/[\r\n]/" : " "}';
 			{literal}
 		});
 		{/literal}

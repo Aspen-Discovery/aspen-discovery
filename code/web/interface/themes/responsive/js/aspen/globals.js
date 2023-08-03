@@ -25,6 +25,7 @@ var Globals = (function () {
 		requestFailedBody: 'There was an error with this AJAX Request.',
 		rtl:false,
 		bypassAspenLoginForSSO:false,
-		ssoLoginUrl: ''
+		ssoLoginUrl: '',
+		cookiePolicyHTML: ''
 	}
 })(Globals || {});
