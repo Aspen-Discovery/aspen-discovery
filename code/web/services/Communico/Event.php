@@ -28,7 +28,7 @@ class Communico_Event extends Action {
 		if ($eventSettings->find(true)){
 			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
 		}
-		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Communico Settings') && UserAccount::isStaff());
+		$interface->assign('isStaff', UserAccount::isStaff());
 
 		// Display Page
 		$this->display('event.tpl', $this->recordDriver->getTitle(), null, false);
