@@ -1,6 +1,6 @@
 {strip}
 	{if $browseMode == '1'}
-		<div class="{*browse-title *}browse-list grid-item {$coverStyle} col-tn-12 col-xs-6 col-sm-6 col-md-4 col-lg-3">
+		<div class="{*browse-title *}browse-list grid-item {$coverStyle} {if $browseStyle == 'grid'}browse-grid-style col-tn-6 col-xs-6 col-sm-6 col-md-4 col-lg-3{/if}">
 			<a href="{$summUrl}">
 				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle}" title="{$summTitle}">
 				<div><strong>{$summTitle}</strong></div>

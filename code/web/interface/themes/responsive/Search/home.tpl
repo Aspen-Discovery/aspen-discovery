@@ -66,7 +66,7 @@
 				</div>
 			</div>
 
-			<div id="home-page-browse-results" class="{if empty($browseCategoryRatingsMode)}HideBorder{/if}{if $browseStyle == 'grid'}home-page-browse-results-grid{else}home-page-browse-results-grid-masonry{/if}">
+			<div id="home-page-browse-results" class="{if empty($browseCategoryRatingsMode)}HideBorder{/if} home-page-browse-results-grid {if $browseStyle == 'grid'}home-page-browse-results-grid-grid{else}home-page-browse-results-grid-masonry{/if}">
 				{if $browseStyle == 'masonry'}
 					<div class="masonry grid">
 						<!-- columns -->

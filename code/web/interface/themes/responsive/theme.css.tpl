@@ -322,6 +322,11 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {/if}
 {rdelim}
 
+.home-page-browse-results-grid .browse-grid-style{ldelim}
+    height: 125px;
+    overflow-y: hidden;
+{rdelim}
+
 {/if}
 
 .browse-thumbnail{ldelim}
