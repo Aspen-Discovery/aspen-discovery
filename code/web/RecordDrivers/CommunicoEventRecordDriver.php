@@ -90,7 +90,7 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
 			$interface->assign('bypassEventPage', $eventSettings->bypassAspenEventPages);
 		}
-		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Communico Settings') && UserAccount::isStaff());
+		$interface->assign('isStaff', UserAccount::isStaff());
 
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
 		$eventsUsage = new EventsUsage();
