@@ -252,7 +252,7 @@ class MyAccount_Fines extends MyAccount {
 				$userAccountLabel = [];
 				$fineTotalsVal = [];
 				$outstandingTotalVal = [];
-				$grandTotalVal = 0;
+				$grandTotalVal = [];
 				// Get Account Labels, Add Up Totals
 				foreach ($fines as $userId => $finesDetails) {
 					$userAccountLabel[$userId] = $user->getUserReferredTo($userId)->getNameAndLibraryLabel();
@@ -274,8 +274,8 @@ class MyAccount_Fines extends MyAccount {
 					}
 
 					$fineTotalsVal[$userId] = $total;
-					$grandTotalVal += $total;
-					$grandTotalVal += $convenienceFee;
+					$grandTotalVal[$userId] = $total;
+					$grandTotalVal[$userId] += $convenienceFee;
 
 					if ($useOutstanding) {
 						$outstandingTotalVal[$userId] = $totalOutstanding;
