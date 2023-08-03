@@ -120,6 +120,7 @@ class Hold extends CircEntry {
 			$hold['format_category'] = $recordDriver->getFormatCategory();
 		}
 		$hold['isIll'] = (boolean)$this->isIll;
+		$hold['position'] = (int)$hold['position'];
 		return $hold;
 	}
 
