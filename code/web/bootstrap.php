@@ -389,11 +389,3 @@ function getGitBranch() {
 
 	return $branchName;
 }
-
-function strlen_aspen($string) : int{
-	if (is_null($string)) {
-		return 0;
-	}else{
-		return strlen($string);
-	}
-}
