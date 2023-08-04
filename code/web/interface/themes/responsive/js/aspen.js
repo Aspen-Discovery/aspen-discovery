@@ -6933,29 +6933,29 @@ AspenDiscovery.Account = (function () {
 		updateFineTotal: function (finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
-			var grandTotalAmt = 0;
+			var outstandingGrandTotalAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(
 				function () {
 					if (paymentType === "1") {
 						totalFineAmt += $(this).data('fine_amt') * 1;
 						totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
-						grandTotalAmt += $(this).data('fine_amt') * 1;
+						outstandingGrandTotalAmt += $(this).data('outstanding_amt') * 1;
 					} else {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
 						totalFineAmt += fineAmountInput.val() * 1;
 						totalOutstandingAmt += fineAmountInput.val() * 1;
-						grandTotalAmt += fineAmountInput.val() * 1;
+						outstandingGrandTotalAmt += fineAmountInput.val() * 1;
 					}
 				}
 			);
 
 			var feeAmt = document.getElementById('convenienceFee').getAttribute('data-fee_amt');
-			grandTotalAmt += feeAmt * 1;
+			outstandingGrandTotalAmt += feeAmt * 1;
 
 			AspenDiscovery.formatCurrency(totalFineAmt, $('#formattedTotal' + userId));
 			AspenDiscovery.formatCurrency(totalOutstandingAmt, $('#formattedOutstandingTotal' + userId));
-			AspenDiscovery.formatCurrency(grandTotalAmt, $('#grandTotal' + userId));
+			AspenDiscovery.formatCurrency(outstandingGrandTotalAmt, $('#outstandingGrandTotal' + userId));
 		},
 		dismissPlacard: function (patronId, placardId) {
 			var url = Globals.path + "/MyAccount/AJAX";

@@ -2039,6 +2039,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			} elseif ($curRow['found'] == 'W') {
 				$canCancelWaitingHold = false;
+				$curHold->status = 'Ready to Pickup';
 				if($this->getKohaVersion() >= 22.11) {
 					$patronType = $patron->patronType;
 					$itemType = $curRow['itype'];
@@ -2054,9 +2055,17 @@ class Koha extends AbstractIlsDriver {
 						}
 						$issuingRulesRS->close();
 					}
+
+					$isPendingCancellationSql = "SELECT * FROM hold_cancellation_requests WHERE hold_id={$curRow['reserve_id']}";
+					$isPendingCancellationRS = mysqli_query($this->dbConnection, $isPendingCancellationSql);
+					if ($isPendingCancellationRS !== false) {
+						if ($isPendingCancellationRow = $isPendingCancellationRS->fetch_assoc()) {
+							$curHold->pendingCancellation = 1;
+						}
+					}
+
 				}
 				$curHold->cancelable = $canCancelWaitingHold;
-				$curHold->status = "Ready to Pickup";
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
 				if($this->getKohaVersion() >= 22.11) {
@@ -2151,6 +2160,7 @@ class Koha extends AbstractIlsDriver {
 					$result = [
 						'success' => false,
 						'message' => 'Unknown error canceling hold.',
+						'isPending' => false,
 					];
 
 					// Result for API or app use
@@ -2162,6 +2172,7 @@ class Koha extends AbstractIlsDriver {
 						'text' => 'Unknown error canceling hold.',
 						'isPublicFacing' => true,
 					]);
+					$result['api']['isPending'] = false;
 					$oauthToken = $this->getOAuthToken();
 					if ($oauthToken == false) {
 						$result['message'] = translate([
@@ -2188,7 +2199,7 @@ class Koha extends AbstractIlsDriver {
 						$apiUrl = $this->getWebServiceUrl() . "/api/v1/holds/$holdKey";
 						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
 						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
-						if ($this->apiCurlWrapper->getResponseCode() !== 204) {
+						if ($this->apiCurlWrapper->getResponseCode() !== 204 && $this->apiCurlWrapper->getResponseCode() !== 202) {
 							$cancel_response = json_decode($response, false);
 							$allCancelsSucceed = false;
 							if (isset($cancel_response->error)) {
@@ -2202,6 +2213,11 @@ class Koha extends AbstractIlsDriver {
 									'isPublicFacing' => true,
 								]);
 							}
+						}
+
+						if($this->apiCurlWrapper->getResponseCode() === 202) {
+							$result['isPending'] = true;
+							$result['api']['isPending'] = true;
 						}
 					}
 				} else {

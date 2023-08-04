@@ -236,9 +236,14 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 }
 //Check to see if we should show the cookieConsent banner
 $interface->assign('cookieStorageConsent', false);
+$interface->assign('cookieStorageConsentHTML', '');
 if (!empty($systemVariables) && !empty($systemVariables->cookieStorageConsent)) {
-	$interface->assign('cookieStorageConsent', true);
-	$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
+	try {
+		$interface->assign('cookieStorageConsent', true);
+		$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
+	} catch (Exception $e) {
+		//Not yet setup. Ignore
+	}
 }
 
 //system variable for supporting company name
