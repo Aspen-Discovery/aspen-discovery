@@ -22,16 +22,16 @@ if (!file_exists($exportPath)) {
 } else {
 
 	//Make sure we have all the right files
-	validateFileExists($exportPath, "users.csv");
-	validateFileExists($exportPath, "userRoles.csv");
-	validateFileExists($exportPath, "staffSettings.csv");
-	validateFileExists($exportPath, "saved_searches.csv");
-	validateFileExists($exportPath, "materials_request.csv");
+	//validateFileExists($exportPath, "users.csv");
+	//validateFileExists($exportPath, "userRoles.csv");
+	//validateFileExists($exportPath, "staffSettings.csv");
+	//validateFileExists($exportPath, "saved_searches.csv");
+	//validateFileExists($exportPath, "materials_request.csv");
 	validateFileExists($exportPath, "patronLists.csv");
 	validateFileExists($exportPath, "patronListEntries.csv");
 	validateFileExists($exportPath, "patronRatingsAndReviews.csv");
 	validateFileExists($exportPath, "patronNotInterested.csv");
-	validateFileExists($exportPath, "patronReadingHistory.csv");
+	//validateFileExists($exportPath, "patronReadingHistory.csv");
 
 	$existingUsers = [];
 	$missingUsers = [];
@@ -515,8 +515,10 @@ function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$mis
 			ob_flush();
 		}
 	}
+	$elapsedTime = time() - $batchStartTime;
+	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	fclose($patronsRatingsAndReviewsHnd);
-	echo("Processed $numImports Ratings and Reviews in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Processed $numImports Ratings and Reviews in $totalElapsedTime minutes.\n");
 	echo("Skipped $numSkipped ratings and reviews because the title is no longer in the catalog\n");
 }
 
@@ -530,6 +532,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	$patronsListHnd = fopen($exportPath . "patronLists.csv", 'r');
 	$numImports = 0;
 	$batchStartTime = time();
+	$initialStartTime = time();
 	while ($patronListRow = fgetcsv($patronsListHnd)) {
 		$numImports++;
 		//Figure out the user for the list
@@ -588,8 +591,9 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			echo("Processed $numImports Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 		}
 	}
+	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	fclose($patronsListHnd);
-	echo("Processed $numImports Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Processed $numImports Lists in $totalElapsedTime minutes.\n");
 	echo("Removed " . count($removedLists) . " lists because the user is not valid\n");
 
 	echo("Starting to import list entries\n");
@@ -661,7 +665,8 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		}
 	}
 	fclose($patronListEntriesHnd);
-	echo("Processed $numImports List Entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	$totalElapsedTime = ceil((time() - $startTime) / 60);
+	echo("Processed $numImports List Entries in $totalElapsedTime minutes.\n");
 	echo("Skipped $numSkipped list entries because the title is no longer in the catalog\n");
 
 	ob_flush();
@@ -724,7 +729,8 @@ function importSavedSearches($startTime, $exportPath, &$existingUsers, &$missing
 			}
 		}
 		fclose($savedSearchesHnd);
-		echo("Processed $numImports Saved Searches in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+		$totalElapsedTime = ceil((time() - $startTime) / 60);
+		echo("Processed $numImports Saved Searches in $totalElapsedTime minutes.\n");
 		echo("Removed " . count($removedSearches) . " saved searches because the user is not valid\n");
 	} else {
 		echo("No saved searches provided, skipping\n");
@@ -824,7 +830,8 @@ function importMergedWorks($startTime, $exportPath, &$existingUsers, &$missingUs
 			}
 		}
 		fclose($mergedWorksHnd);
-		echo("Processed $numImports Merged Works in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+		$totalElapsedTime = ceil((time() - $startTime) / 60);
+		echo("Processed $numImports Merged Works in $totalElapsedTime minutes total.\n");
 		echo("$numRecordsMergedCorrectlyAlready works were already merged correctly.\n");
 		echo("$numRecordsWithAlternateTitlesAdded works had alternate titles added to them.\n");
 		echo("Skipped $numSkipped merged works because the title is no longer in the catalog");
@@ -1004,6 +1011,9 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 		$groupedWorkResourceArray = preg_split('/[,;]/', $groupedWorkResources);
 		$groupedWorkValid = false;
 		foreach ($groupedWorkResourceArray as $identifier) {
+			if (strlen(trim($identifier)) == 0) {
+				continue;
+			}
 			if (strpos($identifier, ':') === false) {
 				echo("Identifier $identifier did not have a source list of resources = $groupedWorkResources");
 				continue;
