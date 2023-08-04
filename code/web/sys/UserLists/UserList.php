@@ -190,7 +190,10 @@ class UserList extends DataObject {
 
 		//Sort the list appropriately
 		if (!empty($sort)) {
-			$listEntry->orderBy(UserList::getSortOptions()[$sort]);
+			$sortOptions = UserList::getSortOptions();
+			if (array_key_exists($sort, $sortOptions)) {
+				$listEntry->orderBy($sortOptions[$sort]);
+			}
 		}
 
 		// These conditions retrieve list items with a valid groupedWorkId or archive ID.
