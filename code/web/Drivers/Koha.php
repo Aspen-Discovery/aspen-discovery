@@ -1940,6 +1940,7 @@ class Koha extends AbstractIlsDriver {
 	 * @access public
 	 */
 	public function getHolds($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'title'): array {
+		global $library;
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$availableHolds = [];
 		$unavailableHolds = [];
@@ -2086,6 +2087,10 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
+			if ($curRow['itype'] == 'ILL') {
+				$curHold->source = $library->interLibraryLoanName;
+				$curHold->isIll = true;
+			}
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
 			if ($recordDriver->isValid()) {
