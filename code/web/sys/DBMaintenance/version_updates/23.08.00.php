@@ -84,6 +84,14 @@ function getUpdates23_08_00(): array {
 				"ALTER TABLE library ADD COLUMN eCommerceTerms VARCHAR(255) DEFAULT NULL"
 			]
 		],
+		'add_hold_pending_cancellation' => [
+			'title' => 'Add column to store if hold is pending cancellation',
+			'description' => 'Add column to store if hold is pending cancellation',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE user_hold ADD COLUMN pendingCancellation TINYINT(1) DEFAULT 0'
+			]
+		],
 
 		//kodi - ByWater
 
