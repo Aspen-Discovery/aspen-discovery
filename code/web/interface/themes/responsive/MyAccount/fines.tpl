@@ -128,17 +128,25 @@
 								</tr>
 								{if !empty($convenienceFee) && $convenienceFee > 0}
                                 <tr>
-                                    <td></td>
+	                                {if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+	                                    <td></td>
+	                                {/if}
+                                    {if empty($showOutstanding)}<td></td>{/if}
                                     <th>{translate text="Convenience Fee" isPublicFacing=true}</th>
                                     <td></td>
+                                    <th></th>
                                     <th id="convenienceFee" data-fee_amt="{$convenienceFee}">{$convenienceFee|formatCurrency}</th>
                                     <th></th>
                                 </tr>
                                 <tr>
-                                    <td></td>
+	                                {if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
+	                                    <td></td>
+	                                {/if}
+                                    {if empty($showOutstanding)}<td></td>{/if}
                                     <th>{translate text="Grand Total" isPublicFacing=true}</th>
                                     <td></td>
-                                    <th id="grandTotal{$userId}">{$grandTotalVal|formatCurrency}</th>
+                                    <th></th>
+                                    <th id="outstandingGrandTotal{$userId}">{$outstandingGrandTotalVal.$userId|formatCurrency}</th>
                                     <th></th>
                                 </tr>
                                 {/if}

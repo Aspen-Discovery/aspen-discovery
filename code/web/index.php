@@ -220,18 +220,31 @@ if ($mode['online'] === false) {
 }
 $timer->logTime('Checked availability mode');
 
+try {
+	require_once ROOT_DIR . '/sys/SystemVariables.php';
+	$systemVariables = SystemVariables::getSystemVariables();
+} catch (Exception $e) {
+	$systemVariables = false;
+}
+
 //Check to see if we should show the submit ticket option
 $interface->assign('showSubmitTicket', false);
 if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')) {
-	try {
-		require_once ROOT_DIR . '/sys/SystemVariables.php';
-		$systemVariables = new SystemVariables();
-		if ($systemVariables->find(true) && !empty($systemVariables->ticketEmail)) {
-			$interface->assign('showSubmitTicket', true);
-		}
-	} catch (Exception $e) {
-		//This happens before the table is setup
+	if (!empty($systemVariables) && !empty($systemVariables->ticketEmail)) {
+		$interface->assign('showSubmitTicket', true);
 	}
+}
+//Check to see if we should show the cookieConsent banner
+$interface->assign('cookieStorageConsent', false);
+if (!empty($systemVariables) && !empty($systemVariables->cookieStorageConsent)) {
+	$interface->assign('cookieStorageConsent', true);
+	$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
+}
+
+//system variable for supporting company name
+$interface->assign('supportingCompany', 'ByWater Solutions');
+if (!empty($systemVariables) && !empty($systemVariables->supportingCompany)) {
+	$interface->assign('supportingCompany', $systemVariables->supportingCompany);
 }
 
 $deviceName = get_device_name();

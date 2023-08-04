@@ -27,10 +27,13 @@ class SystemVariables extends DataObject {
 	public $catalogStatus;
 	public $offlineMessage;
 	public $appScheme;
+	public $supportingCompany;
 	public $googleBucket;
 	public $trackIpAddresses;
 	public $allowScheduledUpdates;
 	public $doQuickUpdates;
+	public $cookieStorageConsent;
+	public $cookiePolicyHTML;
 
 	static function getObjectStructure($context = ''): array {
 		return [
@@ -272,12 +275,43 @@ class SystemVariables extends DataObject {
 				'label' => 'App Scheme',
 				'description' => 'Scheme used for creating deep links into the app',
 			],
-			'trackIpAddresses' => [
-				'property' => 'trackIpAddresses',
-				'type' => 'checkbox',
-				'label' => 'Track IP Addresses',
-				'description' => 'Determine if IP Addresses should be tracked for each page view',
-				'default' => false,
+			'supportingCompany' => [
+				'property' => 'supportingCompany',
+				'type' => 'text',
+				'label' => 'Support Company',
+				'description' => 'Sets supporting company name in footer',
+				'default' => 'ByWater Solutions',
+			],
+			'dataProtectionRegulations' => [
+				'property' => 'dataProtectionRegulations',
+				'type' => 'section',
+				'label' => 'Data Protection Regulations',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [
+					'cookieStorageConsent' => [
+						'property' => 'cookieStorageConsent',
+						'type' => 'checkbox',
+						'label' => 'Require Cookie Storage Consent',
+						'description' => 'Require users to consent to cookie storage before using the catalog',
+						'default' => false,
+					],
+					'cookiePolicyHTML' => [
+						'property' => 'cookiePolicyHTML',
+						'type' => 'html',
+						'label' => 'Cookie Policy',
+						'description' => 'HTML of cookie policy to display to users',
+						'default' => 'This body has not yet set a cookie storage policy, please check back later.',
+						'hideInLists' => true,
+					],
+					'trackIpAddresses' => [
+						'property' => 'trackIpAddresses',
+						'type' => 'checkbox',
+						'label' => 'Track IP Addresses',
+						'description' => 'Determine if IP Addresses should be tracked for each page view',
+						'default' => false,
+					]
+				]
 			],
 		];
 	}

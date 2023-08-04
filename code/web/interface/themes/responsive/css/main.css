@@ -10937,4 +10937,80 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
   top: 0;
   font-weight: bold;
 }
+.stripPopup {
+  margin: 0;
+  box-sizing: border-box;
+  background-color: #1d7ff0;
+  padding: 15px 0;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1;
+  font-family: sans-serif;
+}
+.stripPopup .btnWrap a.button {
+  width: 188px;
+  color: white;
+  padding: 12px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: normal;
+  text-align: center;
+  border: 1px solid white;
+  margin: 2px 5px 0;
+  display: inline-block;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+}
+.stripPopup .btnWrap a.button:hover {
+  background-color: red;
+  transition: all 0.3s ease-in-out;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+}
+.stripPopup .cookieContainer {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1000px;
+  display: block;
+  padding: 0 20px;
+  margin: 0 auto;
+}
+.stripPopup .cookieContainer .contentWrap {
+  width: 490px;
+  max-width: 100%;
+  float: left;
+}
+.stripPopup .cookieContainer .contentWrap span {
+  font-size: 14px;
+  color: #fff;
+  font-weight: 700;
+  display: block;
+}
+.stripPopup .cookieContainer .contentWrap abbr {
+  font-size: 12px;
+  color: white;
+  font-weight: 400;
+  display: block;
+}
+@media only screen and (max-width: 768px) {
+  .stripPopup .contentWrap {
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+  .stripPopup .btnWrap {
+    width: 100%;
+    text-align: center;
+    display: block;
+  }
+  .stripPopup .btnWrap a.button {
+    width: auto;
+    font-size: 12px;
+  }
+}
 /*# sourceMappingURL=main.css.map */

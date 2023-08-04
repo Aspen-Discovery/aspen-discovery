@@ -168,7 +168,6 @@ function getUpdates23_07_00(): array {
 				'updateNotificationOnboardStatus',
 			],
 		], //update_notification_onboarding_status
-
         'add_force_reauth_sso' => [
             'title' => 'Add toggle to force reauth for SSO Settings',
             'description' => 'Update SSO Settings to allow a toggle for forcing re-authentication with IdP',
@@ -190,7 +189,24 @@ function getUpdates23_07_00(): array {
 				",
 			],
 		], //collection_report_permissions
-  ];
+		'cookie_storage_consent' => [
+			'title' => 'Track consent for storage of Cookies',
+			'description' => 'Enable/disable Cookie consent banner for GDPR compliance',
+			'sql' => [
+				"ALTER TABLE system_variables add column cookieStorageConsent TINYINT(1) DEFAULT 0"
+			],
+		], //enable/disable cookie consent banner
+		
+		'cookie_policy_html' => [
+			'title' => 'Cookie Policy HTML',
+			'description' => 'Allow admin to set HTML for cookie policy',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE system_variables ADD COLUMN cookiePolicyHTML TEXT",
+				"UPDATE system_variables set cookiePolicyHTML = 'This body has not yet set a cookie storage policy, please check back later.'",
+			],
+		],  //storage of HTML for cookie policy
+	];
 }
 
 function updateNotificationOnboardStatus() {

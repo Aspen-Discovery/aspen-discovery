@@ -90,7 +90,7 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 			$interface->assign('eventsInLists', $eventSettings->eventsInLists);
 			$interface->assign('bypassEventPage', $eventSettings->bypassAspenEventPages);
 		}
-		$interface->assign('isStaffWithPermissions', UserAccount::userHasPermission('Administer Springshare LibCal Settings') && UserAccount::isStaff());
+		$interface->assign('isStaff', UserAccount::isStaff());
 
 
 		require_once ROOT_DIR . '/sys/Events/EventsUsage.php';

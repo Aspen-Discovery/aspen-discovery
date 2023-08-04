@@ -761,6 +761,7 @@ abstract class DataObject implements JsonSerializable {
 		} elseif (strlen($where) > 0) {
 			$query .= ' WHERE ' . $where;
 		}
+
 		if ($this->__groupBy != null) {
 			$query .= $this->__groupBy;
 		}
@@ -1222,7 +1223,7 @@ abstract class DataObject implements JsonSerializable {
 		return !empty($this->_changedFields);
 	}
 
-	public function jsonSerialize() {
+	public function jsonSerialize() : mixed {
 		$properties = get_object_vars($this);
 		$serializedData = [];
 		foreach ($properties as $name => $value) {

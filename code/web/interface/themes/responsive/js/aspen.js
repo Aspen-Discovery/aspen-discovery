@@ -4509,7 +4509,8 @@ var Globals = (function () {
 		requestFailedBody: 'There was an error with this AJAX Request.',
 		rtl:false,
 		bypassAspenLoginForSSO:false,
-		ssoLoginUrl: ''
+		ssoLoginUrl: '',
+		cookiePolicyHTML: ''
 	}
 })(Globals || {});
 var AspenDiscovery = (function(){
@@ -6932,29 +6933,29 @@ AspenDiscovery.Account = (function () {
 		updateFineTotal: function (finesFormId, userId, paymentType) {
 			var totalFineAmt = 0;
 			var totalOutstandingAmt = 0;
-			var grandTotalAmt = 0;
+			var outstandingGrandTotalAmt = 0;
 			$(finesFormId + " .selectedFine:checked").each(
 				function () {
 					if (paymentType === "1") {
 						totalFineAmt += $(this).data('fine_amt') * 1;
 						totalOutstandingAmt += $(this).data('outstanding_amt') * 1;
-						grandTotalAmt += $(this).data('fine_amt') * 1;
+						outstandingGrandTotalAmt += $(this).data('outstanding_amt') * 1;
 					} else {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
 						totalFineAmt += fineAmountInput.val() * 1;
 						totalOutstandingAmt += fineAmountInput.val() * 1;
-						grandTotalAmt += fineAmountInput.val() * 1;
+						outstandingGrandTotalAmt += fineAmountInput.val() * 1;
 					}
 				}
 			);
 
 			var feeAmt = document.getElementById('convenienceFee').getAttribute('data-fee_amt');
-			grandTotalAmt += feeAmt * 1;
+			outstandingGrandTotalAmt += feeAmt * 1;
 
 			AspenDiscovery.formatCurrency(totalFineAmt, $('#formattedTotal' + userId));
 			AspenDiscovery.formatCurrency(totalOutstandingAmt, $('#formattedOutstandingTotal' + userId));
-			AspenDiscovery.formatCurrency(grandTotalAmt, $('#grandTotal' + userId));
+			AspenDiscovery.formatCurrency(outstandingGrandTotalAmt, $('#outstandingGrandTotal' + userId));
 		},
 		dismissPlacard: function (patronId, placardId) {
 			var url = Globals.path + "/MyAccount/AJAX";
@@ -10128,7 +10129,9 @@ AspenDiscovery.Browse = (function(){
 
 			if (AspenDiscovery.Browse.browseStyle === 'masonry') {
 				// hide current results while fetching new results
-				AspenDiscovery.Browse.colcade.destroy();
+				if (AspenDiscovery.Browse.colcade !== undefined && AspenDiscovery.Browse.colcade !== null) {
+					AspenDiscovery.Browse.colcade.destroy();
+				}
 				$('.grid-item').fadeOut().remove();
 
 				AspenDiscovery.Browse.colcade = new Colcade( '#home-page-browse-results .grid', {
@@ -10340,11 +10343,12 @@ AspenDiscovery.Browse = (function(){
 						$('#browse-sub-category-menu').html(data.subcategories).fadeIn();
 					}
 
-					$('.selected-browse-dismiss').removeAttr('onclick');
+					var dismissButton = $('.selected-browse-dismiss');
+					dismissButton.removeAttr('onclick');
 					if(data.textId === "system_user_lists" || data.textId === "system_saved_searches") {
-						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ data.textId + "_" + subCategoryTextId+'")');
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+ data.textId + "_" + subCategoryTextId+'")');
 					} else {
-						$('.selected-browse-dismiss').attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
+						dismissButton.attr('onclick', 'AspenDiscovery.Account.dismissBrowseCategory("'+data.patronId+'","'+subCategoryTextId+'")');
 					}
 
 					var newSubCategoryLabel = data.subCategoryLabel; // get label from corresponding button
@@ -10363,13 +10367,18 @@ AspenDiscovery.Browse = (function(){
 					if (data.textId) AspenDiscovery.Browse.curCategory = data.textId;
 					if (data.subCategoryTextId) AspenDiscovery.Browse.curSubCategory = data.subCategoryTextId || '';
 
-					if (AspenDiscovery.Browse.browseMode === 'masonry') {
-						AspenDiscovery.Browse.colcade.append($(data.records));
-					} else {
-						var resultsPanelGrid = $('#home-page-browse-results');
-						resultsPanelGrid.append($(data.records));
-					}
-					AspenDiscovery.Ratings.initializeRaters();
+					var resultsPanel = $('#home-page-browse-results');
+					resultsPanel.fadeOut('fast', function () {
+						$('.grid-item').remove();
+						if (AspenDiscovery.Browse.browseStyle === 'masonry') {
+							AspenDiscovery.Browse.colcade.append($(data.records));
+						}else{
+							var resultsPanelGrid = $('#home-page-browse-results');
+							resultsPanelGrid.append($(data.records));
+						}
+						resultsPanel.fadeIn('slow');
+						AspenDiscovery.Ratings.initializeRaters();
+					});
 					
 					$('#selected-browse-search-link').attr('href', data.searchUrl); // update the search link
 
@@ -14888,3 +14897,22 @@ class TabsSwitcher {
 		this.setSelectedTab(event.currentTarget);
 	}
 }
+AspenDiscovery.CookieConsent = (function() {
+    return {
+        cookieAgree: function() {
+            console.log('cookieAgree');
+            var aDate = new Date();
+            aDate.setMonth(aDate.getMonth() + 3);
+            $('.stripPopup').hide();
+            $('.modal').modal('hide');
+            document.cookie = 'cookieConsent' + '=' + encodeURIComponent(aDate) + '; expires=' + aDate.toUTCString() + '; path=/';
+            return;
+        },
+        cookieDisagree: function() {
+            console.log('cookieDisagree');  
+            $('.stripPopup').hide();
+            AspenDiscovery.showMessageWithButtons("Cookie Policy", Globals.cookiePolicyHTML,'<button onclick=\"AspenDiscovery.CookieConsent.cookieAgree\(\)\;\" class=\'tool btn btn-primary\' id=\'modalConsentAgree\' >Accept essential cookies</button>', true);
+            return;
+        }
+    }
+}(AspenDiscovery.CookieConsent));

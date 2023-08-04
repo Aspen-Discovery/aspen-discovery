@@ -4,7 +4,7 @@
 		{assign var="vSummAuthor" value="by $summAuthor"}
 	{/if}
 	{if $browseMode == '1'}
-		<div class="browse-list grid-item col-tn-12 col-xs-6 col-sm-6 col-md-4 col-lg-3">
+		<div class="browse-list grid-item {$coverStyle} {if $browseStyle == 'grid'}browse-grid-style col-tn-6 col-xs-6 col-sm-6 col-md-4 col-lg-3{/if}">
 			<a onclick="return AspenDiscovery.GroupedWork.showGroupedWorkInfo('{$summId}', '{$browseCategoryId}');" href="{$summUrl}">
 				<img class="img-responsive" src="{$bookCoverUrl}" alt="{$summTitle|escape} {$vSummAuthor|escape}" title="{$summTitle|escape} {$vSummAuthor|escape}">
 				<div class="info">{if !empty($isNew)}<span class="new-result-badge">{translate text="New!" isPublicFacing=true}</span><br/>{/if}<strong>{$summTitle|truncate:40}</strong><span>{$vSummAuthor|truncate:40}</span></div>

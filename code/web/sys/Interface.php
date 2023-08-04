@@ -1011,6 +1011,16 @@ class UInterface extends Smarty {
 			if ($footerLogoAlt) {
 				$this->assign('footerLogoAlt', $footerLogoAlt);
 			}
+			
+			
+			$systemVariables = SystemVariables::getSystemVariables();
+			if (!empty($systemVariables)) {
+				$supportingCompany = $systemVariables->supportingCompany;
+
+				if (!empty ($supportingCompany)) {
+					$this->assign('supportingCompany', $supportingCompany);
+				}
+			}
 
 			//Get favicon
 			$favicon = null;
