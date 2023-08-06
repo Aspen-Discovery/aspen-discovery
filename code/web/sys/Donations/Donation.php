@@ -15,8 +15,8 @@ class Donation extends DataObject {
 	public $lastName;
 	public $email;
 	public $anonymous;
-	public $donateToLibraryId;
-	public $donateToLibrary;
+	public $donateToLocationId;
+	public $donateToLocation;
 	public $comments;
 	public $dedicate;
 	public $dedicateType;
@@ -75,8 +75,8 @@ class Donation extends DataObject {
 				'description' => 'Whether or not the donor wants to remain anonymous',
 				'readOnly' => true,
 			],
-			'donateToLibrary' => [
-				'property' => 'donateToLibrary',
+			'donateToLocation' => [
+				'property' => 'donateToLocation',
 				'type' => 'text',
 				'label' => 'Donate To Location',
 				'description' => 'The location where the user wants to send the donation',

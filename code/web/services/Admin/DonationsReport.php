@@ -18,14 +18,25 @@ class Admin_DonationsReport extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$object = new Donation();
-		$object->orderBy($this->getSort());
-		$this->applyFilters($object);
+        $object->orderBy($this->getSort());
+        $this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$object->find();
-		$objectList = [];
-		while ($object->fetch()) {
-			$objectList[$object->id] = clone $object;
-		}
+        $objectList = [];
+        if (UserAccount::userHasPermission('View Donations Reports for All Libraries')){
+            $object->find();
+            while ($object->fetch()) {
+                $objectList[$object->id] = clone $object;
+            }
+        } elseif (UserAccount::userHasPermission('View Donations Reports for Home Library')) {
+            $locationList = Location::getLocationListAsObjects(true);
+            foreach ($locationList as $location) {
+                $object->donateToLocationId = $location->locationId;
+                $object->find();
+                while ($object->fetch()) {
+                    $objectList[$object->id] = clone $object;
+                }
+            }
+        }
 		return $objectList;
 	}
 

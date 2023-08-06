@@ -17,7 +17,7 @@ class Donations_NewDonation extends Action {
 		if ($donationSettings->find(true)) {
 			$donation = new Donation();
 			$donation->donationSettingId = $donationSettings->id;
-			$donation->donateToLibraryId = $library->libraryId;
+			$donation->donateToLocationId = $library->libraryId;
 
 			// if logged in, lets populate some fields from their profile
 			if ($user = UserAccount::getActiveUserObj()) {

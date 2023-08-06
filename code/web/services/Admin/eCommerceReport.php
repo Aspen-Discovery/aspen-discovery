@@ -18,14 +18,25 @@ class Admin_eCommerceReport extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$object = new UserPayment();
-		$object->orderBy($this->getSort());
-		$this->applyFilters($object);
-		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		$object->find();
-		$objectList = [];
-		while ($object->fetch()) {
-			$objectList[$object->id] = clone $object;
-		}
+        $object->orderBy($this->getSort());
+        $this->applyFilters($object);
+        $object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
+        $objectList = [];
+        if (UserAccount::userHasPermission('View eCommerce Reports for All Libraries')){
+            $object->find();
+            while ($object->fetch()) {
+                $objectList[$object->id] = clone $object;
+            }
+        } elseif (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
+            $locationList = Location::getLocationListAsObjects(true);
+            foreach ($locationList as $location) {
+                $object->donateToLocationId = $location->locationId;
+                $object->find();
+                while ($object->fetch()) {
+                    $objectList[$object->id] = clone $object;
+                }
+            }
+        }
 		return $objectList;
 	}
 
