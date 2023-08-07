@@ -115,13 +115,24 @@ class API_RegistrationAPI extends Action {
 			$phone = $_REQUEST['phone'];
 			$phone = preg_replace('/[^0-9]/', '', $phone);
 			if (strlen($phone) >= 7 && strlen($phone) <= 11) {
-				return $catalog->lookupAccountByPhoneNumber($phone);
+				$result = $catalog->lookupAccountByPhoneNumber($phone);
 			}else{
-				return [
+				$result = [
 					'success' => false,
 					'message' => translate(['text' => 'The phone number supplied was not valid.', 'isPublicFacing' => true])
 				];
 			}
+			if ($result['success'] == false) {
+				$phone = $_REQUEST['phone'];
+				if (substr($phone, 0, 1) == '+') {
+					$phone = preg_replace('/[^0-9]/', '', $phone);
+					if (strlen($phone) >= 10) {
+						$phone = substr($phone, strlen($phone) - 10, 10);
+						$result = $catalog->lookupAccountByPhoneNumber($phone);
+					}
+				}
+			}
+			return $result;
 		}
 		return [
 			'success' => false,
