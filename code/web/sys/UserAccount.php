@@ -481,6 +481,8 @@ class UserAccount {
 				//The user could not be authenticated in CAS
 				$logger->log("The user could not be logged in", Logger::LOG_NOTICE);
 				$usageByIPAddress->numFailedLoginAttempts++;
+				require_once ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
+				FailedLoginsByIPAddress::addFailedLogin();
 				return new AspenError('Could not authenticate in sign on service');
 			} else {
 				$logger->log("User logged in OK CAS Username $casUsername", Logger::LOG_NOTICE);
@@ -500,6 +502,8 @@ class UserAccount {
 			if($isAuthenticated instanceof AspenError) {
 				$logger->log('The user could not be logged in', Logger::LOG_NOTICE);
 				$usageByIPAddress->numFailedLoginAttempts++;
+				require_once ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
+				FailedLoginsByIPAddress::addFailedLogin();
 				return new AspenError('Could not authenticate in sign on service');
 			} else {
 				$logger->log("LDAP user logged in OK", Logger::LOG_NOTICE);
@@ -547,6 +551,7 @@ class UserAccount {
 						// Create error
 						$cardExpired = new AspenError('Your library card has expired. Please contact your local library to have your library card renewed.');
 						$usageByIPAddress->numFailedLoginAttempts++;
+						//DON'T mark this as a failed login in the IP table since they were actually valid and we're blocking them
 						return $cardExpired;
 					} elseif ($library->allowLoginToPatronsOfThisLibraryOnly && ($tempUser->getHomeLibrary() != null && ($tempUser->getHomeLibrary()->libraryId != $library->libraryId))) {
 						$disallowedMessage = empty($library->messageForPatronsOfOtherLibraries) ? 'Sorry, this catalog can only be accessed by patrons of ' . $library->displayName : $library->messageForPatronsOfOtherLibraries;
@@ -601,6 +606,8 @@ class UserAccount {
 			}
 		} else {
 			$usageByIPAddress->numFailedLoginAttempts++;
+			require_once ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
+			FailedLoginsByIPAddress::addFailedLogin();
 			return $lastError;
 		}
 	}
