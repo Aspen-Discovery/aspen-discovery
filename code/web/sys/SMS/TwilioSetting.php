@@ -139,14 +139,14 @@ class TwilioSetting extends DataObject {
 	public function validatePhoneNumber($phoneNumber) {
 		$curlWrapper = new CurlWrapper();
 		$headers = [
-			'Content-Type: application/x-www-form-urlencoded',
 			"Authorization: Basic " . base64_encode($this->accountSid . ':' . $this->authToken),
+			"Accept: application/xml"
 		];
 		$curlWrapper->addCustomHeaders($headers, false);
 		$result = $curlWrapper->curlGetPage("https://lookups.twilio.com/v2/PhoneNumbers/" . urlencode($phoneNumber));
-		$jsonResponse = json_decode($result);
+		$xmlResponse = new SimpleXMLElement($result);
 		if ($curlWrapper->getResponseCode() == 200) {
-			return $jsonResponse->valid;
+			return (bool)$xmlResponse->valid;
 		} else {
 			return false;
 		}

@@ -202,8 +202,12 @@
 								<a class="btn btn-sm btn-primary btn-wrap" href="/MyAccount/CurbsidePickups">{translate text="Schedule a Curbside Pickup" isPublicFacing=true}</a>
                             {/if}
 							{if $record->cancelable}
-								{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
-								<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+								{if $record->pendingCancellation}
+									{translate text="Pending Cancellation" isPublicFacing=true}
+								{else}
+									{* First step in cancelling a hold is now fetching confirmation message, with better labeled buttons. *}
+									<button onclick="return AspenDiscovery.Account.confirmCancelHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if $record->isIll}1{else}0{/if});" class="btn btn-sm btn-warning">{translate text="Cancel Hold" isPublicFacing=true}</button>
+								{/if}
 							{/if}
 						{else}
 							{if $record->cancelable}

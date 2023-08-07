@@ -291,9 +291,7 @@ class CatalogConnection {
 		}
 	}
 
-	public function lookupAccountByPhoneNumber($email) : array {
-		$phone = $_REQUEST['phone'];
-		$phone = preg_replace('/[^0-9]/', '', $phone);
+	public function lookupAccountByPhoneNumber($phone) : array {
 		if (strlen($phone) >= 7 && strlen($phone) <= 11) {
 			$result = $this->driver->lookupAccountByPhoneNumber($phone);
 			if ($result['success']) {
