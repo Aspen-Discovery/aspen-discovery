@@ -1376,6 +1376,8 @@ class UserAPI extends Action {
 				return $this->checkoutCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->checkoutAxis360Item();
+			} elseif ($source == 'ils') {
+				return $this->checkoutILSItem();
 			} else {
 				return [
 					'success' => false,
@@ -5052,5 +5054,31 @@ class UserAPI extends Action {
 			}
 		}
 		return ['success' => false];
+	}
+
+	function checkoutILSItem(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (empty($_REQUEST['barcode'])) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Barcode must be provided',
+				];
+			} else {
+				$result = $user->checkoutItem($_REQUEST['barcode']);
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
 	}
 }

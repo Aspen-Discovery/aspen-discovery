@@ -4171,6 +4171,15 @@ class User extends DataObject {
 		return false;
 	}
 
+	function checkoutItem($barcode): array {
+		$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode);
+		if ($result['success']) {
+			$this->forceReloadOfCheckouts();
+		}
+		$this->clearCache();
+		return $result;
+	}
+
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
 	}

@@ -1658,4 +1658,8 @@ class CatalogConnection {
 			return $this->driver->initiatePasswordResetByBarcode();
 		}
 	}
+
+	public function checkoutBySip(User $patron, $barcode): array {
+		return $this->driver->checkoutBySip($patron, $barcode);
+	}
 }
