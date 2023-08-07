@@ -243,6 +243,7 @@ class Polaris extends AbstractIlsDriver {
 					$curCheckout->author = $itemOut->Author;
 					$curCheckout->formats = [$itemOut->FormatDescription];
 					$curCheckout->callNumber = $itemOut->CallNumber;
+					$curCheckout->barcode = $itemOut->Barcode;
 					if (!empty($itemOut->Designation)) {
 						$curCheckout->callNumber .= ' ' . $itemOut->Designation;
 					}
