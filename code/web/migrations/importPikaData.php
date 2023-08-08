@@ -40,6 +40,10 @@ if (!file_exists($exportPath)) {
 	$movedGroupedWorks = [];
 
 	$startTime = time();
+	$bibNumberMap = [];
+	if (file_exists($exportPath . "bibNumMap.csv")) {
+		loadBibNumberMap($exportPath, $bibNumberMap);
+	}
 	if (file_exists($exportPath . "users.csv")) {
 		importUsers($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $flipIds);
 	}
@@ -49,11 +53,11 @@ if (!file_exists($exportPath)) {
 	if (file_exists($exportPath . 'mergedGroupedWorks.csv')) {
 		importMergedWorks($startTime, $exportPath, $existingUsers, $missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 	}
-	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
-	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importRatingsAndReviews($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
-	importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importLists($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $bibNumberMap);
+	//importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
+	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $bibNumberMap);
+	importRatingsAndReviews($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $bibNumberMap);
+	//importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
 
 	//Materials Request
 	//Linked Users
@@ -286,7 +290,7 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers) {
 	return $userId;
 }
 
-function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks) {
+function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $bibNumberMap) {
 	echo("Starting to import reading history\n");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/ReadingHistoryEntry.php';
@@ -338,7 +342,7 @@ function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missin
 		$groupedWorkId = $patronsReadingHistoryRow[9];
 		$groupedWorkResources = $patronsReadingHistoryRow[10];
 
-		if (!validateGroupedWork($groupedWorkId, $groupedWorkTitle, $groupedWorkAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)) {
+		if (!validateGroupedWork($groupedWorkId, $groupedWorkTitle, $groupedWorkAuthor, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources, $bibNumberMap)) {
 			$numSkipped++;
 			continue;
 		}
@@ -393,7 +397,7 @@ function importReadingHistory($startTime, $exportPath, &$existingUsers, &$missin
 	ob_flush();
 }
 
-function importNotInterested($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks) {
+function importNotInterested($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $bibNumberMap) {
 	echo("Starting to import not interested titles\n");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/LocalEnrichment/NotInterested.php';
@@ -417,7 +421,7 @@ function importNotInterested($startTime, $exportPath, &$existingUsers, &$missing
 		$groupedWorkId = $patronNotInterestedRow[4];
 		$groupedWorkResources = $patronNotInterestedRow[5];
 
-		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)) {
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources, $bibNumberMap)) {
 			$numSkipped++;
 			continue;
 		}
@@ -450,7 +454,7 @@ function importNotInterested($startTime, $exportPath, &$existingUsers, &$missing
 	fclose($patronNotInterestedHnd);
 }
 
-function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks) {
+function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $bibNumberMap) {
 	echo("Starting to import ratings and reviews\n");
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
@@ -476,7 +480,7 @@ function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$mis
 		$groupedWorkId = cleancsv($patronsRatingsAndReviewsRow[6]);
 		$groupedWorkResources = cleancsv($patronsRatingsAndReviewsRow[7]);
 
-		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)) {
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources, $bibNumberMap)) {
 			$numSkipped++;
 			continue;
 		}
@@ -515,14 +519,13 @@ function importRatingsAndReviews($startTime, $exportPath, &$existingUsers, &$mis
 			ob_flush();
 		}
 	}
-	$elapsedTime = time() - $batchStartTime;
 	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	fclose($patronsRatingsAndReviewsHnd);
 	echo("Processed $numImports Ratings and Reviews in $totalElapsedTime minutes.\n");
 	echo("Skipped $numSkipped ratings and reviews because the title is no longer in the catalog\n");
 }
 
-function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks) {
+function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $bibNumberMap) {
 	echo("Starting to import lists\n");
 	global $memoryWatcher;
 	$memoryWatcher->logMemory("Start of list import");
@@ -569,9 +572,9 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		}
 		if ($listExists) {
 			//MDN - do delete list entries that already exist within Aspen
-			if (count($userList->getListTitles()) > 0) {
-				$userList->removeAllListEntries(false);
-			}
+//			if (count($userList->getListTitles()) > 0) {
+//				$userList->removeAllListEntries(false);
+//			}
 			$userList->update();
 		} else {
 			$userList->insert();
@@ -622,7 +625,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			echo("List $listId has not been imported yet\r\n");
 		}
 
-		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources)) {
+		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources, $bibNumberMap)) {
 			$numSkipped++;
 			continue;
 		}
@@ -993,7 +996,7 @@ function cleancsv($field) {
 	return $field;
 }
 
-function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $groupedWorkResources) {
+function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWorks, &$invalidGroupedWorks, &$movedGroupedWorks, $groupedWorkResources, $bibNumberMap) {
 	require_once ROOT_DIR . '/sys/Grouping/GroupedWork.php';
 	require_once ROOT_DIR . '/sys/Grouping/GroupedWorkPrimaryIdentifier.php';
 
@@ -1022,10 +1025,15 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 				$source,
 				$id,
 			] = explode(':', $identifier);
+			$source = trim($source);
+			$id = trim($id);
 			$groupedWorkPrimaryIdentifier = new GroupedWorkPrimaryIdentifier();
 			$groupedWorkPrimaryIdentifier->type = $source;
 			if ($source == 'hoopla') {
 				$id = str_replace('MWT', '', $id);
+			}
+			if (array_key_exists($id, $bibNumberMap)) {
+				$id = $bibNumberMap[$id];
 			}
 			$groupedWorkPrimaryIdentifier->identifier = $id;
 			if ($groupedWorkPrimaryIdentifier->find(true)) {
@@ -1058,6 +1066,16 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 		}
 	}
 	return $groupedWorkValid;
+}
+function loadBibNumberMap($exportPath, &$bibNumberMap){
+	if (file_exists($exportPath . "bibNumMap.csv")) {
+		$bibNumberMapHnd = fopen($exportPath . 'bibNumMap.csv', 'r');
+		while ($bibNumberMapRow = fgetcsv($bibNumberMapHnd)) {
+			if (is_numeric($bibNumberMapRow[1])) {
+				$bibNumberMap[$bibNumberMapRow[0]] = $bibNumberMapRow[1];
+			}
+		}
+	}
 }
 
 /**
