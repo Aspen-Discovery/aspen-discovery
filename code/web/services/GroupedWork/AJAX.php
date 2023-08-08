@@ -452,12 +452,12 @@ class GroupedWork_AJAX extends JSON_Action {
 
 		$modalBody = $interface->fetch('GroupedWork/work-details.tpl');
 		$showFavorites = $interface->getVariable('showFavorites');
-		$buttons = "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>" . "<a href='$url'><button class='modal-buttons btn btn-primary addToListBtn'>" . translate([
+		$buttons = "<button onclick=\"return AspenDiscovery.Account.showSaveToListForm(this, 'GroupedWork', '$escapedId');\" class=\"modal-buttons btn btn-primary\" style='float: left'>$buttonLabel</button>" . "<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate([
 				'text' => "More Info",
 				'isPublicFacing' => true,
 			]) . "</button></a>";
 		if(!$showFavorites) {
-			$buttons = "<a href='$url'><button class='modal-buttons btn btn-primary addToListBtn'>" . translate([
+			$buttons = "<a href='$url'><button class='modal-buttons btn btn-primary'>" . translate([
 					'text' => 'More Info',
 					'isPublicFacing' => true,
 				]) . '</button></a>';
