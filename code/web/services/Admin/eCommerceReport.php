@@ -22,20 +22,16 @@ class Admin_eCommerceReport extends ObjectEditor {
         $this->applyFilters($object);
         $object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
         $objectList = [];
-        if (UserAccount::userHasPermission('View eCommerce Reports for All Libraries')){
-            $object->find();
-            while ($object->fetch()) {
-                $objectList[$object->id] = clone $object;
-            }
-        } elseif (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
+        if (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
+            $homeLibrary = Library::getPatronHomeLibrary()->libraryId;
             $locationList = Location::getLocationListAsObjects(true);
-            foreach ($locationList as $location) {
-                $object->donateToLocationId = $location->locationId;
-                $object->find();
-                while ($object->fetch()) {
-                    $objectList[$object->id] = clone $object;
-                }
-            }
+            $object->joinAdd(new User(), 'LEFT', 'user', 'userId', 'id');
+            $object->joinAdd(new Library(), 'LEFT', 'library', 'paidFromInstance', 'subdomain');
+            $object->whereAdd('user.homeLocationId IN (' . implode(', ', $locationList) . ') OR library.libraryId = ' . $homeLibrary);
+        }
+        $object->find();
+        while ($object->fetch()) {
+            $objectList[$object->id] = clone $object;
         }
 		return $objectList;
 	}
