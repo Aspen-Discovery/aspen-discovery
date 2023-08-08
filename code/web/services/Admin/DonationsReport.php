@@ -83,15 +83,4 @@ class Admin_DonationsReport extends ObjectEditor {
         ]);
 	}
 
-	function canBatchEdit() {
-		return false;
-	}
-
-	function canCompare() {
-		return false;
-	}
-
-	public function canEdit(DataObject $object) {
-		return false;
-	}
 }
