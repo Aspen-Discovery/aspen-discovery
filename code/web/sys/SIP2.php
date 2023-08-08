@@ -118,7 +118,7 @@ class sip2 {
 		return $this->_returnMessage();
 	}
 
-	function msgCheckout($item, $nbDateDue = '', $scRenewal = 'N', $itmProp = '', $fee = 'N', $noBlock = 'N', $cancel = 'N') {
+	function msgCheckout($item, $nbDateDue = '', $scRenewal = 'N', $itmProp = '', $fee = 'N', $noBlock = 'N', $cancel = 'N', $institutionId = '') {
 		/* Checkout an item  (11) - untested */
 		$this->_newMessage('11');
 		$this->_addFixedOption($scRenewal, 1);
@@ -131,7 +131,10 @@ class sip2 {
 			/* send a blank date due to allow ACS to use default date due computed for item */
 			$this->_addFixedOption('', 18);
 		}
-		$this->_addVarOption('AO', $this->AO);
+		if ($institutionId == '') {
+			$institutionId = $this->AO;
+		}
+		$this->_addVarOption('AO', $institutionId);
 		$this->_addVarOption('AA', $this->patron);
 		$this->_addVarOption('AB', $item);
 		$this->_addVarOption('AC', $this->AC);

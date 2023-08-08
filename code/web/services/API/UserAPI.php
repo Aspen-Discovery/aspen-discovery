@@ -5059,14 +5059,14 @@ class UserAPI extends Action {
 	function checkoutILSItem(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if (empty($_REQUEST['barcode'])) {
+			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationId']))) {
 				return [
 					'success' => false,
 					'title' => 'Error',
-					'message' => 'Barcode must be provided',
+					'message' => 'Barcode and location id must be provided',
 				];
 			} else {
-				$result = $user->checkoutItem($_REQUEST['barcode']);
+				$result = $user->checkoutItem($_REQUEST['barcode'], $_REQUEST['locationId']);
 				return [
 					'success' => $result['success'],
 					'title' => $result['api']['title'],

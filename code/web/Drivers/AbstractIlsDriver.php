@@ -712,7 +712,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function checkoutBySip(User $patron, $barcode) {
+	public function checkoutBySip(User $patron, $barcode, $locationId) {
 		$checkout_result = [];
 		$success = false;
 		$title = translate([
@@ -750,7 +750,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 				$mySip->patron = $patron->getBarcode();
 				$mySip->patronpwd = $patron->getPasswordOrPin();
 
-				$in = $mySip->msgCheckout($barcode);
+				$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $locationId);
 				$msg_result = $mySip->get_message($in);
 
 				$checkoutResponse = null;

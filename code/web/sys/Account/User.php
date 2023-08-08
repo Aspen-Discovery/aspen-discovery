@@ -4171,8 +4171,8 @@ class User extends DataObject {
 		return false;
 	}
 
-	function checkoutItem($barcode): array {
-		$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode);
+	function checkoutItem($barcode, $locationId): array {
+		$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $locationId);
 		if ($result['success']) {
 			$this->forceReloadOfCheckouts();
 		}

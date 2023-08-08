@@ -1659,7 +1659,7 @@ class CatalogConnection {
 		}
 	}
 
-	public function checkoutBySip(User $patron, $barcode): array {
-		return $this->driver->checkoutBySip($patron, $barcode);
+	public function checkoutBySip(User $patron, $barcode, $locationId): array {
+		return $this->driver->checkoutBySip($patron, $barcode, $locationId);
 	}
 }
