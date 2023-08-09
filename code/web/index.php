@@ -196,6 +196,8 @@ $interface->assign('action', $action);
 //Check for maliciously formatted parameters
 checkForMaliciouslyFormattedParameters();
 
+checkForTooManyFailedLogins();
+
 if (isset($_REQUEST['q']) && !isset($_REQUEST['lookfor'])) {
 	$_REQUEST['lookfor'] = $_REQUEST['q'];
 	$_GET['lookfor'] = $_GET['q'];
@@ -1406,6 +1408,32 @@ function checkForMaliciouslyFormattedParameters(): void {
 		trackSpammyRequest();
 		header("Location: /Error/Handle404");
 		exit();
+	}
+}
+
+function checkForTooManyFailedLogins(){
+	//Check to see if the request should be slowed or blocked due to failed logins
+	try {
+		$currentTime = time();
+		require_once  ROOT_DIR . '/sys/SystemLogging/FailedLoginsByIPAddress.php';
+		//Fail if we have more than 5 failed logins in 1 minute
+		$failedLogins = new FailedLoginsByIPAddress();
+		$failedLogins->ipAddress = IPAddress::getClientIP();
+		$failedLogins->whereAdd('timestamp > ' . ($currentTime - 60));
+		if ($failedLogins->count() >= 5) {
+			http_response_code(403);
+			echo("<h1>Forbidden</h1><p><strong>We are unable to handle your request.</strong></p>");
+			die();
+		}
+		//Slow if we have more than 10 logins in 5 minutes
+		$failedLogins = new FailedLoginsByIPAddress();
+		$failedLogins->ipAddress = IPAddress::getClientIP();
+		$failedLogins->whereAdd('timestamp > ' . ($currentTime - 300));
+		if ($failedLogins->count() >= 10) {
+			sleep(10);
+		}
+	}catch (Exception $e) {
+		//This fails if the table has not been created, ignore
 	}
 }
 
