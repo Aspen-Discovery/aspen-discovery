@@ -5059,40 +5059,69 @@ class UserAPI extends Action {
 	function checkoutILSItem(): array {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
-			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationCode']))) {
+			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationId']))) {
 				return [
 					'success' => false,
 					'title' => 'Error',
-					'message' => 'Barcode and location code must be provided',
+					'message' => 'Barcode and location id must be provided',
 				];
 			} else {
-				$result = $user->checkoutItem($_REQUEST['barcode'], $_REQUEST['locationCode']);
+				$location = new Location();
+				$location->locationId = $_REQUEST['locationId'];
+				if($location->find(true)) {
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSettings.php';
+					$scoSettings = new AspenLiDASelfCheckSetting();
+					$scoSettings->id = $location->lidaSelfCheckSettingId;
+					if($scoSettings->find(true)) {
+						if($scoSettings->isEnabled) {
+							$result = $user->checkoutItem($_REQUEST['barcode'], $location->code);
 
-				global $logger;
-				$logger->log(print_r($result, true), Logger::LOG_DEBUG);
+							global $logger;
+							$logger->log(print_r($result, true), Logger::LOG_DEBUG);
 
-				/* Use data from $result to get information about the title to send back for display purposes.
-				Grouped work driver may not be necessary here if the sip response sends enough data back.
-				AB = item identifier
-				AJ = title identifier
-				AH = due date
+							/* Use data from $result to get information about the title to send back for display purposes.
+							Grouped work driver may not be necessary here if the sip response sends enough data back.
+							AB = item identifier
+							AJ = title identifier
+							AH = due date
 
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWorkDriver = new GroupedWorkDriver($result['message']['variable']['id']);
-				$data = [];
-				if ($groupedWorkDriver->isValid()) {
-					$data['title'] = $groupedWorkDriver->getShortTitle();
-					$data['subtitle'] = $groupedWorkDriver->getSubtitle();
-					$data['author'] = $groupedWorkDriver->getPrimaryAuthor();
+							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+							$groupedWorkDriver = new GroupedWorkDriver($result['message']['variable']['id']);
+							$data = [];
+							if ($groupedWorkDriver->isValid()) {
+								$data['title'] = $groupedWorkDriver->getShortTitle();
+								$data['subtitle'] = $groupedWorkDriver->getSubtitle();
+								$data['author'] = $groupedWorkDriver->getPrimaryAuthor();
+							}
+							*/
+
+							return [
+								'success' => $result['success'],
+								'title' => $result['api']['title'],
+								'message' => $result['api']['message'],
+								'data' => $result
+							];
+						} else {
+							return [
+								'success' => false,
+								'title' => 'Error',
+								'message' => 'Self-checkout not enabled for this location',
+							];
+						}
+					} else {
+						return [
+							'success' => false,
+							'title' => 'Error',
+							'message' => 'Self-checkout settings not found for this location',
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Location not found with given id',
+					];
 				}
-				*/
-
-				return [
-					'success' => $result['success'],
-					'title' => $result['api']['title'],
-					'message' => $result['api']['message'],
-					'data' => $result
-				];
 			}
 		} else {
 			return [
