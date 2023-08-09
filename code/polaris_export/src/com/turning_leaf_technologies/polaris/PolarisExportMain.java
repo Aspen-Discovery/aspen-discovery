@@ -304,6 +304,8 @@ public class PolarisExportMain {
 			JSONObject apiInfo = apiInfoResponse.getJSONResponse();
 			polarisMajorVersion = apiInfo.getInt("Major");
 			polarisMinorVersion = apiInfo.getInt("Minor");
+
+			logEntry.addNote("Polaris version is " + polarisMajorVersion + "." + polarisMinorVersion);
 		}
 	}
 
@@ -1011,47 +1013,72 @@ public class PolarisExportMain {
 				logEntry.addNote("There are " + bibsToUpdateBasedOnDeletedItems + " records to be updated based on deleted items.");
 				logEntry.saveResults();
 
-				//noinspection SpellCheckingInspection
-				String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated?updatedate=" + formattedLastItemExtractTime;
+				//Get the highest item id from Polaris
+				@SuppressWarnings("SpellCheckingInspection")
+				WebServiceResponse maxItemResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/maxid", null, "GET", "application/json", accessSecret);
+				long maxItemId = -1;
+				if (maxItemResponse.isSuccess()){
+					maxItemId = maxItemResponse.getJSONResponse().getJSONArray("ItemIDListRows").getJSONObject(0).getLong("ItemRecordID");
+					logEntry.addNote("The maximum item id in the Polaris Database is " + maxItemId);
+				}
+
+				doneLoading = false;
+				highestIdProcessed = 0;
 				int bibsToUpdateBasedOnChangedItems = 0;
-				WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
-				if (pagedItems.isSuccess()) {
-					try {
-						JSONObject response = pagedItems.getJSONResponse();
-						JSONArray allItems = response.getJSONArray("ItemIDListRows");
-						logEntry.addNote("There were " + allItems.length() + " items that have changed");
-						logEntry.saveResults();
-						for (int i = 0; i < allItems.length(); i++) {
-							JSONObject curItem = allItems.getJSONObject(i);
-							long itemId = curItem.getLong("ItemRecordID");
-							if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
-								//Figure out the bib record based on the item id.
-								//Getting from Aspen is faster if we can get it.
-								String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
-								if (bibForItem == null) {
-									//Use the APIs to get the bib id
-									bibForItem = getBibIdForItemId(itemId);
-								}
-								if (bibForItem != null) {
-									//check we've already updated this bib, if so it's ok to skip
-									if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
-										logEntry.incProducts();
-										bibsToUpdate.add(bibForItem);
-										bibsToUpdateBasedOnChangedItems++;
-										if (logEntry.getNumProducts() % 250 == 0) {
-											logEntry.saveResults();
+				while (!doneLoading) {
+					//noinspection SpellCheckingInspection
+					String getItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/updated/paged?updatedate=" + formattedLastItemExtractTime + "&nrecs=100&lastId=" + highestIdProcessed;
+					WebServiceResponse pagedItems = callPolarisAPI(getItemsUrl, null, "GET", "application/json", accessSecret);
+					if (pagedItems.isSuccess()) {
+						try {
+							JSONObject response = pagedItems.getJSONResponse();
+							JSONArray allItems = response.getJSONArray("ItemIDListRows");
+
+							if (allItems.length() == 0) {
+								doneLoading = true;
+							}
+							for (int i = 0; i < allItems.length(); i++) {
+								JSONObject curItem = allItems.getJSONObject(i);
+								long itemId = curItem.getLong("ItemRecordID");
+								if (!itemIdsUpdatedDuringContinuous.contains(itemId)) {
+									//Figure out the bib record based on the item id.
+									//Getting from Aspen is faster if we can get it.
+									String bibForItem = getBibIdForItemIdFromAspen(itemId, sourceId);
+									if (bibForItem == null) {
+										//Use the APIs to get the bib id
+										bibForItem = getBibIdForItemId(itemId);
+									}
+									if (bibForItem != null) {
+										//check we've already updated this bib, if so it's ok to skip
+										if (!bibIdsUpdatedDuringContinuous.contains(bibForItem)) {
+											logEntry.incProducts();
+											bibsToUpdate.add(bibForItem);
+											bibsToUpdateBasedOnChangedItems++;
+											if (logEntry.getNumProducts() % 250 == 0) {
+												logEntry.saveResults();
+											}
 										}
 									}
+								} else {
+									logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
 								}
-							} else {
-								logger.info("Not updating item " + itemId + "because it was already processed when updating bibs");
+								if (itemId > highestIdProcessed) {
+									highestIdProcessed = itemId;
+								}
+								if (i > 0 && (i % 500 == 0)) {
+									logEntry.addNote("Processed " + i + " items to load bib id for the item");
+								}
 							}
-							if (i > 0 && (i % 500 == 0)) {
-								logEntry.addNote("Processed " + i + " items to load bib id for the item");
+
+							if (highestIdProcessed >= maxItemId){
+								doneLoading = true;
 							}
+						} catch (Exception e) {
+							logEntry.incErrors("Unable to parse document for paged items response", e);
 						}
-					} catch (Exception e) {
-						logEntry.incErrors("Unable to parse document for paged items response", e);
+
+					}else{
+						logEntry.incErrors("Could not get paged items");
 					}
 				}
 				logEntry.addNote("There are " + bibsToUpdateBasedOnChangedItems + " records to be updated based on changes to the items.");
