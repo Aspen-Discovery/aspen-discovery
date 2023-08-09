@@ -3116,6 +3116,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 				}
 				$whileYouWaitTitles[] = [
 					'driver' => $similarTitleDriver,
+					'id' => $similarTitleDriver->getId(),
 					'url' => $similarTitleDriver->getLinkUrl(),
 					'title' => $similarTitleDriver->getTitle(),
 					'coverUrl' => $similarTitleDriver->getBookcoverUrl('medium', true),

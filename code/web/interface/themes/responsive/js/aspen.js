@@ -10468,7 +10468,7 @@ AspenDiscovery.Browse = (function(){
 				if (data.success === false){
 					AspenDiscovery.showMessage("Error loading browse information", "Sorry, we were not able to find titles for that category");
 				}else{
-					if (AspenDiscovery.Browse.browseMode === 'masonry') {
+					if (AspenDiscovery.Browse.browseStyle === 'masonry') {
 						AspenDiscovery.Browse.colcade.append($(data.records));
 					} else {
 						var resultsPanelGrid = $('#home-page-browse-results');
