@@ -51,7 +51,7 @@ export async function getSelfCheckSettings(url = null) {
           headers: getHeaders(),
           auth: createAuthTokens(),
           params: {
-               id: locationId,
+               locationId: locationId,
           },
      });
      const response = await discovery.get('/SystemAPI?method=getSelfCheckSettings');
