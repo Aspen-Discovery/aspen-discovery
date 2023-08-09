@@ -58,7 +58,15 @@ export async function getSelfCheckSettings(url = null) {
      if (response.ok) {
           if (response.data.result) {
                return response.data.result;
+          } else {
+               return {
+                    success: false,
+                    settings: [],
+               };
           }
      }
-     return [];
+     return {
+          success: false,
+          settings: [],
+     };
 }
