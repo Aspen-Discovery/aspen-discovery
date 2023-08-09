@@ -16,7 +16,7 @@ import { UpdateAvailable } from './UpdateAvailable';
 import { getTermFromDictionary, getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
 import { reloadProfile } from '../../util/api/user';
 import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
-import { getLocationInfo } from '../../util/api/location';
+import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { GLOBALS } from '../../util/globals';
 
 const prefix = Linking.createURL('/');
@@ -41,7 +41,7 @@ export const LoadingScreen = () => {
 
      const { user, updateUser } = React.useContext(UserContext);
      const { library, updateLibrary } = React.useContext(LibrarySystemContext);
-     const { location, updateLocation, updateScope } = React.useContext(LibraryBranchContext);
+     const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
 
@@ -123,8 +123,21 @@ export const LoadingScreen = () => {
      const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
           enabled: !!browseCategoryListQuery,
           onSuccess: (data) => {
-               setProgress(100);
+               setProgress(90);
                updateLocation(data);
+          },
+     });
+
+     const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
+          enabled: !!libraryBranchQuery,
+          onSuccess: (data) => {
+               setProgress(100);
+               if (data.success) {
+                    updateEnableSelfCheck(data.settings?.isEnabled ?? false);
+                    updateSelfCheckSettings(data.settings);
+               } else {
+                    updateEnableSelfCheck(false);
+               }
           },
      });
 
