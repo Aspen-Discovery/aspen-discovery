@@ -160,5 +160,28 @@ function getUpdates23_08_00(): array {
 			]
 		],
 
+		//Jacob - PTFS
+		'add_cookie_consent_theming' => [
+			'title' => 'Add theming to Cookie Consent banner',
+			'description' => 'Adds column to specify cookie consent colors in themes',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN cookieConsentBackgroundColor CHAR(7) DEFAULT '#1D7FF0'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentBackgroundColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonColor CHAR(7) DEFAULT '#1D7FF0'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverColor CHAR(7) DEFAULT '#FF0000'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentTextColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentTextColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonTextColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonTextColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverTextColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverTextColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonBorderColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonBorderColorDefault tinyint(1) DEFAULT 1',
+			]
+		],
+		//add theming to cookieConsent banner
 	];
 }

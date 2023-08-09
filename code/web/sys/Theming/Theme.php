@@ -434,6 +434,36 @@ class Theme extends DataObject {
 
 	public $generatedCss;
 
+	//Cookie Consent Themeing Options
+	public $cookieConsentBackgroundColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentBackgroundColorDefault;
+
+	public $cookieConsentButtonColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentButtonColorDefault;
+	
+	public $cookieConsentButtonHoverColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentButtonHoverColorDefault;
+
+	public $cookieConsentTextColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentTextColorDefault;
+
+	public $cookieConsentButtonTextColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentButtonTextColorDefault;
+
+	public $cookieConsentButtonHoverTextColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentButtonHoverTextColorDefault;
+	
+	public $cookieConsentButtonBorderColor;
+	public /** @noinspection PhpUnused */
+		$cookieConsentButtonBorderColorDefault;
+
+
 	private $_libraries;
 	private $_locations;
 
@@ -2060,6 +2090,83 @@ class Theme extends DataObject {
 					],
 				]
 			],
+			'cookieConsentSection' => [
+				'property' => 'cookieConsentSection',
+				'type' => 'section',
+				'label' => 'Cookie Consent',
+				'hideInLists' => true,
+				'properties' => [
+					'cookieConsentBackgroundColor' => [
+						'property' => 'cookieConsentBackgroundColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Banner Color',
+						'description' => 'Cookie Consent Banner Background Color',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#1D7FF0',
+						'checkContrastWith' => 'cookieConsentTextColor',
+					],
+					'cookieConsentTextColor' => [
+						'property' => 'cookieConsentTextColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Text Color',
+						'description' => 'Color Of Text In Cookie Consent Bar Color',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#FFFFFF',
+						'checkContrastWith' => 'cookieConsentBackgroundColor',
+					],
+					'cookieConsentButtonColor' => [
+						'property' => 'cookieConsentButtonColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Button Color',
+						'description' => 'Base Color Of Cookie Consent Buttons',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#1D7FF0',
+						'checkContrastWith' => 'cookieConsentButtonTextColor',
+					],
+					'cookieConsentButtonTextColor' => [
+						'property' => 'cookieConsentButtonTextColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Button Text Color',
+						'description' => 'Color Of Text In Cookie Consent Buttons On Hover',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#FFFFFF',
+						'checkContrastWith' => 'cookieConsentButtonColor',
+					],
+					'cookieConsentButtonHoverColor' => [
+						'property' => 'cookieConsentButtonHoverColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Button Hover Color',
+						'description' => 'Color of Cookie Consent Buttons on Hover',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#FF0000',
+						'checkContrastWith' => 'cookieConsentButtonHoverTextColor',
+					],
+					'cookieConsentButtonHoverTextColor' => [
+						'property' => 'cookieConsentButtonHoverTextColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Button Hover Text Color',
+						'description' => 'Color Of Text In Cookie Consent Buttons On Hover',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#FFFFFF',
+						'checkContrastWith' => 'cookieConsentButtonHoverColor',
+					],
+					'cookieConsentButtonBorderColor' => [
+						'property' => 'cookieConsentButtonBorderColor',
+						'type' => 'color',
+						'label' => 'Cookie Consent Button Border Color',
+						'description' => 'Color Of Border around Buttons in Cookie Consent Banner',
+						'required' => false,
+						'hideInLists' => true,
+						'default' => '#FFFFFF',
+					],
+				],
+			],
 
 			'libraries' => [
 				'property' => 'libraries',
@@ -2473,6 +2580,13 @@ class Theme extends DataObject {
 		$this->getValueForPropertyUsingDefaults('dangerButtonHoverBackgroundColor', Theme::$defaultDangerButtonHoverBackgroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('dangerButtonHoverForegroundColor', Theme::$defaultDangerButtonHoverForegroundColor, $appliedThemes);
 		$this->getValueForPropertyUsingDefaults('dangerButtonHoverBorderColor', Theme::$defaultDangerButtonHoverBorderColor, $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentBackgroundColor', '#1D7FF0', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonColor', '#1D7FF0', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonHoverColor', '#FF0000', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentTextColor', '#FFFFFF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonTextColor', '#FFFFFF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonHoverTextColor', '#FFFFFF', $appliedThemes);
+		$this->getValueForPropertyUsingDefaults('cookieConsentButtonBorderColor', '#FFFFFF', $appliedThemes);
 	}
 
 	public function getValueForPropertyUsingDefaults($propertyName, $defaultValue, $appliedThemes) {
@@ -2606,6 +2720,14 @@ class Theme extends DataObject {
 		$interface->assign('dangerButtonHoverForegroundColor', $this->dangerButtonHoverForegroundColor);
 		$interface->assign('dangerButtonHoverBorderColor', $this->dangerButtonHoverBorderColor);
 		$interface->assign('themeIsHighContrast', $this->isHighContrast);
+		$interface->assign('cookieConsentBackgroundColor', $this->cookieConsentBackgroundColor);
+		$interface->assign('cookieConsentButtonColor', $this->cookieConsentButtonColor);
+		$interface->assign('cookieConsentButtonHoverColor', $this->cookieConsentButtonHoverColor);
+		$interface->assign('cookieConsentTextColor', $this->cookieConsentTextColor);
+		$interface->assign('cookieConsentButtonTextColor', $this->cookieConsentButtonTextColor);
+		$interface->assign('cookieConsentButtonHoverTextColor', $this->cookieConsentButtonHoverTextColor);
+		$interface->assign('cookieConsentButtonBorderColor', $this->cookieConsentButtonBorderColor);
+		
 
 		foreach ($allAppliedThemes as $theme) {
 			if ($interface->getVariable('headingFont') == null && !$theme->headingFontDefault) {
