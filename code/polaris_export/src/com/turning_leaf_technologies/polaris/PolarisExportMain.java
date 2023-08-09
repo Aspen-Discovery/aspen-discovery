@@ -92,6 +92,9 @@ public class PolarisExportMain {
 
 	private static String singleWorkId = null;
 
+	private static int polarisMajorVersion;
+	private static int polarisMinorVersion;
+
 	public static void main(String[] args) {
 		boolean extractSingleWork = false;
 		if (args.length == 0) {
@@ -177,6 +180,7 @@ public class PolarisExportMain {
 
 					WebServiceResponse authenticationResponse = authenticateStaffUser();
 					if (authenticationResponse.isSuccess()) {
+						loadPolarisVersion();
 						if (!extractSingleWork) {
 							updateBranchInfo(dbConn);
 							updatePatronCodes(dbConn);
@@ -291,6 +295,31 @@ public class PolarisExportMain {
 				}
 			}
 		} //Infinite loop
+	}
+
+	private static void loadPolarisVersion() {
+		String getApiInfoUrl = "/PAPIService/REST/public/v1/1033/100/1/api";
+		WebServiceResponse apiInfoResponse = callPolarisAPI(getApiInfoUrl, null, "GET", "application/json", null);
+		if (apiInfoResponse.isSuccess()) {
+			JSONObject apiInfo = apiInfoResponse.getJSONResponse();
+			polarisMajorVersion = apiInfo.getInt("Major");
+			polarisMinorVersion = apiInfo.getInt("Minor");
+		}
+	}
+
+	private static boolean use7_4DateFormatFunctionality() {
+		if (polarisMajorVersion >= 8) {
+			return true;
+		} else if (polarisMajorVersion == 7) {
+			//noinspection RedundantIfStatement
+			if (polarisMinorVersion >= 4) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
 	}
 
 	private static void updateBranchInfo(Connection dbConn) {
@@ -734,7 +763,12 @@ public class PolarisExportMain {
 	private static int extractDeletedBibs(long lastExtractTime) throws UnsupportedEncodingException {
 		int numChanges = 0;
 		String lastId = "0";
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		DateTimeFormatter dateFormatter;
+		if (use7_4DateFormatFunctionality()) {
+			dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		} else {
+			dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		}
 		String deleteDate = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 		logEntry.addNote("Checking for deleted records since " + deleteDate);
 		boolean doneLoading = false;
@@ -799,7 +833,12 @@ public class PolarisExportMain {
 		//Get a paged list of all bibs
 		String lastId = "0";
 		MarcFactory marcFactory = MarcFactory.newInstance();
-		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		DateTimeFormatter dateFormatter;
+		if (use7_4DateFormatFunctionality()) {
+			dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		} else {
+			dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+		}
 		String formattedLastExtractTime = "";
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime - (15 * 60)));
@@ -811,6 +850,8 @@ public class PolarisExportMain {
 			logEntry.addNote("Starting processing at bib " + lastId);
 		}
 		formattedLastExtractTime = URLEncoder.encode(formattedLastExtractTime, "UTF-8");
+		String formattedTimeNow = dateFormatter.format(Instant.now());
+
 		//Get the highest bib from Polaris
 		@SuppressWarnings("SpellCheckingInspection")
 		WebServiceResponse maxBibResponse = callPolarisAPI("/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/bibs/maxid", null, "GET", "application/json", accessSecret);
@@ -833,8 +874,14 @@ public class PolarisExportMain {
 			if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
 				//noinspection SpellCheckingInspection
 				getBibsUrl += "&startdatecreated=" + formattedLastExtractTime;
+				if (use7_4DateFormatFunctionality()) {
+					getBibsUrl += "&enddatecreated=" + formattedTimeNow;
+				}
 				//noinspection SpellCheckingInspection
 				getBibsUrl += "&startdatemodified=" + formattedLastExtractTime;
+				if (use7_4DateFormatFunctionality()) {
+					getBibsUrl += "&enddatemodified=" + formattedTimeNow;
+				}
 			}
 			ProcessBibRequestResponse response = processGetBibsRequest(getBibsUrl, marcFactory, lastExtractTime, true);
 			numChanges += response.numChanges;
@@ -893,7 +940,12 @@ public class PolarisExportMain {
 				}
 			}
 
-			DateTimeFormatter itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+			DateTimeFormatter itemDateFormatter;
+			if (use7_4DateFormatFunctionality()) {
+				itemDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+			} else {
+				itemDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+			}
 			String formattedLastItemExtractTime = URLEncoder.encode(itemDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
 			logEntry.addNote("Getting a list of all items that have been updated");
 			logEntry.saveResults();
@@ -913,7 +965,15 @@ public class PolarisExportMain {
 
 			// Get a list of items that have been deleted and update those MARC records too
 			if (sourceId != -1) {
-				String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedLastItemExtractTime;
+				DateTimeFormatter itemDeleteDateFormatter;
+				if (use7_4DateFormatFunctionality()) {
+					itemDeleteDateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+				}else{
+					itemDeleteDateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss", Locale.ENGLISH).withZone(ZoneId.systemDefault());
+				}
+				String formattedItemDeleteDate = URLEncoder.encode(itemDeleteDateFormatter.format(Instant.ofEpochSecond(lastExtractTime)), "UTF-8");
+
+				String getDeletedItemsUrl = "/PAPIService/REST/protected/v1/1033/100/1/" + accessToken + "/synch/items/deleted?deletedate=" + formattedItemDeleteDate;
 				WebServiceResponse pagedDeletedItems = callPolarisAPI(getDeletedItemsUrl, null, "GET", "application/json", accessSecret);
 				int bibsToUpdateBasedOnDeletedItems = 0;
 				if (pagedDeletedItems.isSuccess()) {
