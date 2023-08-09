@@ -1212,7 +1212,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$return['message'] = "You must provide a title for the list";
 			} else {
 				//If the record is not valid, skip the whole thing since the title could be bad too
-				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId'])) {
+				if (!empty($_REQUEST['sourceId']) && !is_array($_REQUEST['sourceId']) && $_REQUEST['source'] != 'Events') {
 					$recordToAdd = urldecode($_REQUEST['sourceId']);
 					if (!preg_match("/^[A-F0-9]{8}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{12}|[A-Z0-9_-]+:[A-Z0-9_-]+|\d+$/i", $recordToAdd)) {
 						$return['success'] = false;
