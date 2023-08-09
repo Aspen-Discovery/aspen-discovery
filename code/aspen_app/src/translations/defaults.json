@@ -380,12 +380,13 @@
   "self_checkout": "Scan & Go",
   "start_checkout_session": "New Checkout Session",
   "finish_checkout_session": "Session Finished",
-  "start": "Start",
-  "finish": "Finish",
+  "button_start": "Start",
+  "button_finish": "Finish",
   "checking_out_as": "You are checking out as %1%",
   "add_new_item": "Add a new item",
   "checked_out_during_session": "Items checked out during this session",
   "finish_checkout_session_body": "You can start a new checkout session or view your checkouts.",
   "start_new_session": "Start New Session",
-  "view_checkouts": "View Checkouts"
+  "view_checkouts": "View Checkouts",
+  "select_an_account": "Select an account"
 }
