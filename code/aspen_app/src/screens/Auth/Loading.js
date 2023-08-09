@@ -16,7 +16,7 @@ import { UpdateAvailable } from './UpdateAvailable';
 import { getTermFromDictionary, getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
 import { reloadProfile } from '../../util/api/user';
 import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
-import { getLocationInfo } from '../../util/api/location';
+import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { GLOBALS } from '../../util/globals';
 
 const prefix = Linking.createURL('/');
@@ -128,7 +128,7 @@ export const LoadingScreen = () => {
           },
      });
 
-     const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
+     const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
           enabled: !!libraryBranchQuery,
           onSuccess: (data) => {
                setProgress(100);
