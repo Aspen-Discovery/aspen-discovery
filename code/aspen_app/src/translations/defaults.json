@@ -375,5 +375,17 @@
   "alerts_about_account": "Alerts about my library account",
   "scan_again": "Scan Again",
   "scanner_request_permissions": "Requesting for camera permissions",
-  "scanner_denied_permissions": "No access to camera"
+  "scanner_denied_permissions": "No access to camera",
+  "nav_sco": "Scan & Go",
+  "self_checkout": "Scan & Go",
+  "start_checkout_session": "New Checkout Session",
+  "finish_checkout_session": "Session Finished",
+  "start": "Start",
+  "finish": "Finish",
+  "checking_out_as": "You are checking out as %1%",
+  "add_new_item": "Add a new item",
+  "checked_out_during_session": "Items checked out during this session",
+  "finish_checkout_session_body": "You can start a new checkout session or view your checkouts.",
+  "start_new_session": "Start New Session",
+  "view_checkouts": "View Checkouts"
 }

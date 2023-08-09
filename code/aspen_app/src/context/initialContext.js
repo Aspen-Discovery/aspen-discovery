@@ -48,6 +48,10 @@ export const LibraryBranchContext = React.createContext({
      resetLocation: () => {},
      scope: '',
      updateScope: () => {},
+     enableSelfCheck: false,
+     updateEnableSelfCheck: () => {},
+     selfCheckSettings: [],
+     updateSelfCheckSettings: () => {},
 });
 export const BrowseCategoryContext = React.createContext({
      updateBrowseCategories: () => {},
@@ -184,6 +188,8 @@ export const LibrarySystemProvider = ({ children }) => {
 export const LibraryBranchProvider = ({ children }) => {
      const [location, setLocation] = useState();
      const [scope, setScope] = useState();
+     const [enableSelfCheck, setEnableSelfCheck] = useState(false);
+     const [selfCheckSettings, setSelfCheckSettings] = useState([]);
 
      const updateLocation = (data) => {
           setLocation(data);
@@ -210,14 +216,28 @@ export const LibraryBranchProvider = ({ children }) => {
           console.log('reset LibraryBranchContext');
      };
 
+     const updateEnableSelfCheck = (status) => {
+          setEnableSelfCheck(status);
+          console.log('updated self check in LibraryBranchContext');
+     };
+
+     const updateSelfCheckSettings = (data) => {
+          setSelfCheckSettings(data);
+          console.log('updated self check settings in LibraryBranchContext');
+     };
+
      return (
           <LibraryBranchContext.Provider
                value={{
                     location,
                     scope,
+                    enableSelfCheck,
+                    selfCheckSettings,
                     updateLocation,
                     resetLocation,
                     updateScope,
+                    updateEnableSelfCheck,
+                    updateSelfCheckSettings,
                }}>
                {children}
           </LibraryBranchContext.Provider>
