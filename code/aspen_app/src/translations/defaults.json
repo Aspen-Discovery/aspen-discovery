@@ -388,5 +388,6 @@
   "finish_checkout_session_body": "You can start a new checkout session or view your checkouts.",
   "start_new_session": "Start New Session",
   "view_checkouts": "View Checkouts",
-  "select_an_account": "Select an account"
+  "select_an_account": "Select an account",
+  "no_items_checked_out": "No items checked out yet."
 }

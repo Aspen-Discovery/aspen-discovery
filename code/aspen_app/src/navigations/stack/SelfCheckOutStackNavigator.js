@@ -8,6 +8,7 @@ import { SelfCheckOut } from '../../screens/SCO/SelfCheckOut';
 import Scanner from '../../components/Scanner';
 import { FinishCheckOutSession } from '../../screens/SCO/FinishSelfCheckoutSession';
 import _ from 'lodash';
+import SelfCheckScanner from '../../screens/SCO/SelfCheckScanner';
 
 const SelfCheckOutStackNavigator = () => {
      const { language } = React.useContext(LanguageContext);
@@ -30,10 +31,10 @@ const SelfCheckOutStackNavigator = () => {
                <Stack.Screen name="SelfCheckOut" component={SelfCheckOut} options={{ title: getTermFromDictionary(language, 'self_checkout') }} />
                <Stack.Screen
                     name="SelfCheckOutScanner"
-                    component={Scanner}
+                    component={SelfCheckScanner}
                     options={{
-                         gestureEnabled: false,
                          presentation: 'modal',
+                         title: 'Scanner',
                     }}
                />
                <Stack.Screen name="FinishCheckOutSession" component={FinishCheckOutSession} options={{ title: getTermFromDictionary(language, 'finish_checkout_session') }} />
