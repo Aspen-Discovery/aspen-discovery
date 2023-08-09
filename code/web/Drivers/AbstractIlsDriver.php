@@ -7,6 +7,7 @@
  * interacting with the local catalog.
  */
 require_once ROOT_DIR . '/Drivers/AbstractDriver.php';
+require_once ROOT_DIR . '/sys/SIP2.php';
 
 abstract class AbstractIlsDriver extends AbstractDriver {
 	/** @var  AccountProfile $accountProfile */
@@ -709,5 +710,67 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 	public function bypassReadingHistoryUpdate($patron, $isNightlyUpdate) : bool {
 		//By default, always update
 		return false;
+	}
+
+	public function checkoutBySip(User $patron, $barcode, $locationId) {
+		$checkout_result = [];
+		$success = false;
+		$title = translate([
+			'text' => 'Unable to checkout title',
+			'isPublicFacing' => true,
+		]);
+		$message = translate([
+			'text' => 'Failed to connect to complete requested action.',
+			'isPublicFacing' => true,
+		]);
+		$apiResult = [
+			'title' => translate([
+				'text' => 'Unable to checkout title',
+				'isPublicFacing' => true,
+			]),
+		];
+
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
+		if ($mySip->connect($this->accountProfile->sipUser, $this->accountProfile->sipPassword)) {
+			//send self check status message
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+			// Make sure the response is 98 as expected
+			if (preg_match('/^98/', $msg_result)) {
+				$result = $mySip->parseACSStatusResponse($msg_result);
+
+				//  Use result to populate SIP2 settings
+				$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+				if (!empty($result['variable']['AN'])) {
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+				}
+
+				$mySip->patron = $patron->getBarcode();
+				$mySip->patronpwd = $patron->getPasswordOrPin();
+
+				$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $locationId);
+				$msg_result = $mySip->get_message($in);
+
+				$checkoutResponse = null;
+				if (preg_match('/^64/', $msg_result)) {
+					$checkoutResponse = $mySip->parseCheckoutResponse($checkoutResponse);
+					$message = $checkoutResponse;
+				}
+			}
+		}
+
+		$apiResult['message'] = $message;
+		return [
+			'title' => $title,
+			'barcode' => $barcode,
+			'success' => $success,
+			'message' => translate([
+				'text' => $message,
+				'isPublicFacing' => true,
+			]),
+			'api' => $apiResult,
+		];
 	}
 }

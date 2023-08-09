@@ -1376,6 +1376,8 @@ class UserAPI extends Action {
 				return $this->checkoutCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->checkoutAxis360Item();
+			} elseif ($source == 'ils') {
+				return $this->checkoutILSItem();
 			} else {
 				return [
 					'success' => false,
@@ -5052,5 +5054,52 @@ class UserAPI extends Action {
 			}
 		}
 		return ['success' => false];
+	}
+
+	function checkoutILSItem(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationCode']))) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Barcode and location code must be provided',
+				];
+			} else {
+				$result = $user->checkoutItem($_REQUEST['barcode'], $_REQUEST['locationCode']);
+
+				global $logger;
+				$logger->log(print_r($result, true), Logger::LOG_DEBUG);
+
+				/* Use data from $result to get information about the title to send back for display purposes.
+				Grouped work driver may not be necessary here if the sip response sends enough data back.
+				AB = item identifier
+				AJ = title identifier
+				AH = due date
+
+				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				$groupedWorkDriver = new GroupedWorkDriver($result['message']['variable']['id']);
+				$data = [];
+				if ($groupedWorkDriver->isValid()) {
+					$data['title'] = $groupedWorkDriver->getShortTitle();
+					$data['subtitle'] = $groupedWorkDriver->getSubtitle();
+					$data['author'] = $groupedWorkDriver->getPrimaryAuthor();
+				}
+				*/
+
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+					'data' => $result
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
 	}
 }
