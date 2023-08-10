@@ -853,7 +853,25 @@ color: {$bodyTextColor};
         font-size: 85%;
     {rdelim}
 {/if}
-
+/* cookieConsent */
+.stripPopup {ldelim}
+  background-color: {$cookieConsentBackgroundColor};
+{rdelim}
+.stripPopup .btnWrap a.button {ldelim}
+background-color: {$cookieConsentButtonColor};
+color: {$cookieConsentButtonTextColor};
+border: 1px solid {$cookieConsentButtonBorderColor};
+{rdelim}
+.stripPopup .btnWrap a.button:hover {ldelim}
+background-color: {$cookieConsentButtonHoverColor};
+color: {$cookieConsentButtonHoverTextColor};
+{rdelim}
+.stripPopup .cookieContainer .contentWrap span {ldelim}
+  color: {$cookieConsentTextColor};
+{rdelim}
+.stripPopup .cookieContainer .contentWrap abbr {ldelim}
+  color: {$cookieConsentTextColor};
+{rdelim}
 {$additionalCSS}
 </style>
 {/strip}
