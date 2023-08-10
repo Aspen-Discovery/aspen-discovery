@@ -8699,6 +8699,22 @@ a.placard-link {
   height: 60px;
   width: 60px;
 }
+.stripPopup {
+  background-color: #1d7ff0;
+}
+.stripPopup .btnWrap a.button {
+  color: white;
+  border: 1px solid white;
+}
+.stripPopup .btnWrap a.button:hover {
+  background-color: red;
+}
+.stripPopup .cookieContainer span {
+  color: #fff;
+}
+.stripPopup .cookieContainer abbr {
+  color: white;
+}
 #home-page-search {
   background-color: #00a4e3;
   padding: 20px 0 10px;
@@ -10940,24 +10956,21 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
 .stripPopup {
   margin: 0;
   box-sizing: border-box;
-  background-color: #1d7ff0;
   padding: 15px 0;
   position: fixed;
   bottom: 0;
   left: 0;
   width: 100%;
-  z-index: 1;
+  z-index: 1038;
   font-family: sans-serif;
 }
 .stripPopup .btnWrap a.button {
   width: 188px;
-  color: white;
   padding: 12px 10px;
   font-size: 12px;
   font-weight: 700;
   line-height: normal;
   text-align: center;
-  border: 1px solid white;
   margin: 2px 5px 0;
   display: inline-block;
   text-decoration: none;
@@ -10966,7 +10979,6 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
   -moz-transition: all 0.3s ease-in-out;
 }
 .stripPopup .btnWrap a.button:hover {
-  background-color: red;
   transition: all 0.3s ease-in-out;
   -webkit-transition: all 0.3s ease-in-out;
   -moz-transition: all 0.3s ease-in-out;
@@ -10987,13 +10999,11 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
 }
 .stripPopup .cookieContainer .contentWrap span {
   font-size: 14px;
-  color: #fff;
   font-weight: 700;
   display: block;
 }
 .stripPopup .cookieContainer .contentWrap abbr {
   font-size: 12px;
-  color: white;
   font-weight: 400;
   display: block;
 }

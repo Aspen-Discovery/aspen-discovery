@@ -239,10 +239,10 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 //Check to see if we should show the cookieConsent banner
 $interface->assign('cookieStorageConsent', false);
 $interface->assign('cookieStorageConsentHTML', '');
-if (!empty($systemVariables) && !empty($systemVariables->cookieStorageConsent)) {
+if (!empty($library) && !empty($library->cookieStorageConsent)) {
 	try {
 		$interface->assign('cookieStorageConsent', true);
-		$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
+		$interface->assign('cookieStorageConsentHTML', $library->cookiePolicyHTML);
 	} catch (Exception $e) {
 		//Not yet setup. Ignore
 	}
