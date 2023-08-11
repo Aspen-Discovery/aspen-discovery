@@ -31,6 +31,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('canFilter', $this->canFilter($structure));
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('canBatchDelete', $this->canBatchDelete());
+        $interface->assign('canExportToCSV', $this->canExportToCSV());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 		$interface->assign('showHistoryLinks', $this->showHistoryLinks());
 		$interface->assign('canShareToCommunity', $this->canShareToCommunity());
@@ -72,6 +73,12 @@ abstract class ObjectEditor extends Admin_Admin {
 				$this->viewIndividualObject($structure);
 			}
 		}
+
+        //Check to see if we are exporting to csv
+        if (isset($_REQUEST['exportToCSV'])) {
+            $this->exportToCSV($this->getAllObjects(1, $this->getNumObjects()));
+        }
+
 		$this->display($interface->getTemplate(), $this->getPageTitle());
 	}
 
@@ -601,6 +608,10 @@ abstract class ObjectEditor extends Admin_Admin {
 	public function canBatchEdit() {
 		return $this->getNumObjects() > 1;
 	}
+
+    public function canExportToCSV() {
+        return false;
+    }
 
 	public function canSort(): bool {
 		return $this->getNumObjects() > 3;

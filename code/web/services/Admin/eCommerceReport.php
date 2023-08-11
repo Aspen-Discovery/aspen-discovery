@@ -56,6 +56,10 @@ class Admin_eCommerceReport extends ObjectEditor {
 		return false;
 	}
 
+    function canExportToCSV() {
+        return true;
+    }
+
 	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}
