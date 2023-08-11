@@ -3334,55 +3334,6 @@ class Koha extends AbstractIlsDriver {
 					'required' => true,
 					'autocomplete' => false,
 				],
-				'borrower_firstname' => [
-					'property' => 'borrower_firstname',
-					'type' => 'text',
-					'label' => 'First Name',
-					'description' => 'Your first name',
-					'maxLength' => 25,
-					'required' => true,
-					'autocomplete' => false,
-				],
-				'borrower_dateofbirth' => [
-					'property' => 'borrower_dateofbirth',
-					'type' => 'date',
-					'label' => 'Date of Birth (MM/DD/YYYY)',
-					'description' => 'Date of birth',
-					'maxLength' => 10,
-					'required' => true,
-					'autocomplete' => false,
-				],
-				'borrower_initials' => [
-					'property' => 'borrower_initials',
-					'type' => 'text',
-					'label' => 'Initials',
-					'description' => 'Initials',
-					'maxLength' => 25,
-					'required' => false,
-					'autocomplete' => false,
-				],
-				'borrower_othernames' => [
-					'property' => 'borrower_othernames',
-					'type' => 'text',
-					'label' => 'Other names',
-					'description' => 'Other names you go by',
-					'maxLength' => 128,
-					'required' => false,
-					'autocomplete' => false,
-				],
-				'borrower_sex' => [
-					'property' => 'borrower_sex',
-					'type' => 'enum',
-					'label' => 'Gender',
-					'values' => [
-						'' => 'None Specified',
-						'F' => 'Female',
-						'M' => 'Male',
-					],
-					'description' => 'Gender',
-					'required' => false,
-				],
-
 			],
 		];
 
@@ -3396,6 +3347,62 @@ class Koha extends AbstractIlsDriver {
 				'required' => false,
 				'autocomplete' => false,
 			];
+		}
+
+		$fields['identitySection']['properties']['borrower_firstname'] = [
+			'property' => 'borrower_firstname',
+			'type' => 'text',
+			'label' => 'First Name',
+			'description' => 'Your first name',
+			'maxLength' => 25,
+			'required' => true,
+			'autocomplete' => false,
+		];
+
+		$fields['identitySection']['properties']['borrower_dateofbirth'] = [
+			'property' => 'borrower_dateofbirth',
+			'type' => 'date',
+			'label' => 'Date of Birth (MM/DD/YYYY)',
+			'description' => 'Date of birth',
+			'maxLength' => 10,
+			'required' => true,
+			'autocomplete' => false,
+		];
+
+		$fields['identitySection']['properties']['borrower_initials'] = [
+			'property' => 'borrower_initials',
+			'type' => 'text',
+			'label' => 'Initials',
+			'description' => 'Initials',
+			'maxLength' => 25,
+			'required' => false,
+			'autocomplete' => false,
+		];
+
+		$fields['identitySection']['properties']['borrower_othernames'] = [
+			'property' => 'borrower_othernames',
+			'type' => 'text',
+			'label' => 'Other names',
+			'description' => 'Other names you go by',
+			'maxLength' => 128,
+			'required' => false,
+			'autocomplete' => false,
+		];
+
+		$fields['identitySection']['properties']['borrower_sex'] = [
+			'property' => 'borrower_sex',
+			'type' => 'enum',
+			'label' => 'Gender',
+			'values' => [
+				'' => 'None Specified',
+				'F' => 'Female',
+				'M' => 'Male',
+			],
+			'description' => 'Gender',
+			'required' => false,
+		];
+
+		if($this->getKohaVersion() >= 22.11) {
 			$fields['identitySection']['properties']['borrower_pronouns'] = [
 				'property' => 'borrower_pronouns',
 				'type' => 'text',
