@@ -5076,9 +5076,6 @@ class UserAPI extends Action {
 						if($scoSettings->isEnabled) {
 							$result = $user->checkoutItem($_REQUEST['barcode'], $location->code);
 
-							global $logger;
-							$logger->log(print_r($result, true), Logger::LOG_DEBUG);
-
 							/* Use data from $result to get information about the title to send back for display purposes.
 							Grouped work driver may not be necessary here if the sip response sends enough data back.
 							AB = item identifier
@@ -5099,7 +5096,7 @@ class UserAPI extends Action {
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
 								'message' => $result['api']['message'],
-								'data' => $result
+								'data' => $result['itemData']
 							];
 						} else {
 							return [
