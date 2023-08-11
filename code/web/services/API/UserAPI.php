@@ -5069,7 +5069,7 @@ class UserAPI extends Action {
 				$location = new Location();
 				$location->locationId = $_REQUEST['locationId'];
 				if($location->find(true)) {
-					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSettings.php';
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 					$scoSettings = new AspenLiDASelfCheckSetting();
 					$scoSettings->id = $location->lidaSelfCheckSettingId;
 					if($scoSettings->find(true)) {

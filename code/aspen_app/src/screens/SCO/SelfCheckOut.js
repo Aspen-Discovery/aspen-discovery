@@ -24,6 +24,10 @@ export const SelfCheckOut = () => {
           navigateStack('SelfCheckTab', 'SelfCheckOutScanner');
      };
 
+     const finishSession = () => {
+          navigateStack('SelfCheckTab', 'FinishCheckOutSession');
+     };
+
      const currentCheckoutHeader = () => {
           if (_.size(items) >= 1) {
                return (
@@ -72,7 +76,7 @@ export const SelfCheckOut = () => {
                </Heading>
                <FlatList data={items} keyExtractor={(item, index) => index.toString()} ListEmptyComponent={currentCheckOutEmpty()} ListHeaderComponent={currentCheckoutHeader()} renderItem={({ item }) => currentCheckOutItem(item)} />
                <Center pt={5}>
-                    <Button colorScheme="primary" size="sm">
+                    <Button onPress={() => finishSession()} colorScheme="primary" size="sm">
                          {getTermFromDictionary(language, 'button_finish')}
                     </Button>
                </Center>

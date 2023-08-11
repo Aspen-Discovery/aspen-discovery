@@ -3,7 +3,7 @@ import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContex
 import { AlertDialog, Box, Button, Center, CheckIcon, FormControl, Select } from 'native-base';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { navigateStack } from '../../helpers/RootNavigator';
-import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { Platform } from 'react-native';
 import _ from 'lodash';
 
@@ -15,7 +15,7 @@ export const StartCheckOutSession = () => {
      const { language } = React.useContext(LanguageContext);
      const { user, accounts } = React.useContext(UserContext);
 
-     const [isOpen, setIsOpen] = React.useState(true);
+     const [isOpen, setIsOpen] = React.useState(useRoute().params?.startNew ?? true);
      const cancelRef = React.useRef(null);
 
      const [activeAccount, setActiveAccount] = React.useState(user.id);
@@ -30,12 +30,12 @@ export const StartCheckOutSession = () => {
           });
      }, [navigation]);
 
-     const goBackToHome = () => {
+     const GoBackHome = () => {
           setIsOpen(false);
           navigateStack('BrowseTab', 'HomeScreen');
      };
 
-     const startNewSession = () => {
+     const StartNewSession = () => {
           setIsOpen(false);
           navigateStack('SelfCheckTab', 'SelfCheckOut', {
                activeAccount: activeAccount,
@@ -57,7 +57,7 @@ export const StartCheckOutSession = () => {
 
      return (
           <Center>
-               <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={() => goBackToHome()}>
+               <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={() => GoBackHome()}>
                     <AlertDialog.Content>
                          <AlertDialog.Header>{getTermFromDictionary(language, 'start_checkout_session')}</AlertDialog.Header>
                          <AlertDialog.Body>
@@ -85,10 +85,10 @@ export const StartCheckOutSession = () => {
                          </AlertDialog.Body>
                          <AlertDialog.Footer>
                               <Button.Group space={3}>
-                                   <Button ref={cancelRef} onPress={() => goBackToHome()}>
+                                   <Button ref={cancelRef} onPress={() => GoBackHome()}>
                                         {getTermFromDictionary(language, 'cancel')}
                                    </Button>
-                                   <Button colorScheme="primary" onPress={() => startNewSession()}>
+                                   <Button colorScheme="primary" onPress={() => StartNewSession()}>
                                         {getTermFromDictionary(language, 'button_start')}
                                    </Button>
                               </Button.Group>
