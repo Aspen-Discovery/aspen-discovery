@@ -165,6 +165,7 @@ class Checkout extends CircEntry {
 			$checkout['itemid'] = $checkout['itemId'];
 			$checkout['renewMessage'] = '';
 		}
+		$checkout['barcode'] = $this->barcode;
 		return $checkout;
 	}
 
