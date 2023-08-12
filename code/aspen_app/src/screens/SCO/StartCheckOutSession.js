@@ -2,7 +2,7 @@ import React from 'react';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { AlertDialog, Box, Button, Center, CheckIcon, FormControl, Select } from 'native-base';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { navigateStack } from '../../helpers/RootNavigator';
+import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { useFocusEffect, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { Platform } from 'react-native';
 import _ from 'lodash';
@@ -15,10 +15,12 @@ export const StartCheckOutSession = () => {
      const { language } = React.useContext(LanguageContext);
      const { user, accounts } = React.useContext(UserContext);
 
+     let startNew = useRoute().params?.startNew ?? false;
+
      const [isOpen, setIsOpen] = React.useState(useRoute().params?.startNew ?? true);
      const cancelRef = React.useRef(null);
 
-     const [activeAccount, setActiveAccount] = React.useState(user.id);
+     const [activeAccount, setActiveAccount] = React.useState(user.cat_username);
      let availableAccounts = [];
      if (_.size(accounts) > 0) {
           availableAccounts = Object.values(accounts);
@@ -30,9 +32,20 @@ export const StartCheckOutSession = () => {
           });
      }, [navigation]);
 
+     React.useEffect(() => {
+          const startNewSession = navigation.addListener('focus', () => {
+               if (startNew) {
+                    setActiveAccount(user.cat_username);
+                    setIsOpen(true);
+               }
+          });
+
+          return startNewSession;
+     }, [navigation, startNew]);
+
      const GoBackHome = () => {
           setIsOpen(false);
-          navigateStack('BrowseTab', 'HomeScreen');
+          navigateStack('BrowseTab', 'HomeScreen', {});
      };
 
      const StartNewSession = () => {
@@ -76,9 +89,9 @@ export const StartCheckOutSession = () => {
                                         mt={1}
                                         mb={3}
                                         onValueChange={(itemValue) => setActiveAccount(itemValue)}>
-                                        <Select.Item label={user.displayName} value={user.id} />
+                                        <Select.Item label={user.displayName} value={user.cat_username} />
                                         {availableAccounts.map((item, index) => {
-                                             return <Select.Item label={item.displayName} value={item.id} key={index} />;
+                                             return <Select.Item label={item.displayName} value={item.cat_username} key={index} />;
                                         })}
                                    </Select>
                               </FormControl>
