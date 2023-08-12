@@ -5075,31 +5075,11 @@ class UserAPI extends Action {
 					if($scoSettings->find(true)) {
 						if($scoSettings->isEnabled) {
 							$result = $user->checkoutItem($_REQUEST['barcode'], $location->code);
-
-							global $logger;
-							$logger->log(print_r($result, true), Logger::LOG_DEBUG);
-
-							/* Use data from $result to get information about the title to send back for display purposes.
-							Grouped work driver may not be necessary here if the sip response sends enough data back.
-							AB = item identifier
-							AJ = title identifier
-							AH = due date
-
-							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-							$groupedWorkDriver = new GroupedWorkDriver($result['message']['variable']['id']);
-							$data = [];
-							if ($groupedWorkDriver->isValid()) {
-								$data['title'] = $groupedWorkDriver->getShortTitle();
-								$data['subtitle'] = $groupedWorkDriver->getSubtitle();
-								$data['author'] = $groupedWorkDriver->getPrimaryAuthor();
-							}
-							*/
-
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
 								'message' => $result['api']['message'],
-								'data' => $result
+								'itemData' => $result['itemData']
 							];
 						} else {
 							return [

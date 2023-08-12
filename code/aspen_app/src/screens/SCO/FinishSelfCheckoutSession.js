@@ -27,6 +27,8 @@ export const FinishCheckOutSession = () => {
           } else {
                navigateStack('SelfCheckTab', 'SelfCheckOut', {
                     startNew: true,
+                    checkoutResult: [],
+                    checkoutHasError: false,
                });
           }
      };
