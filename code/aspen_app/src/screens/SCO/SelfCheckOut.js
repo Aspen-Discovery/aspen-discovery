@@ -26,6 +26,7 @@ export const SelfCheckOut = () => {
      let activeAccount = useRoute().params?.activeAccount ?? user;
 
      let barcode = useRoute().params?.barcode ?? null;
+     let barcodeType = useRoute().params?.type ?? null;
 
      let checkoutResult = null;
      let checkoutHasError = false;
@@ -59,7 +60,7 @@ export const SelfCheckOut = () => {
                     if (barcode) {
                          setIsProcessingCheckout(true);
                          // do the checkout
-                         await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId).then((result) => {
+                         await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId, barcodeType).then((result) => {
                               if (!result.success) {
                                    // prompt error
                                    setHasError(true);

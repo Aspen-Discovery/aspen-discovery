@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { Box, Button, Center, View } from 'native-base';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { loadingSpinner } from '../../components/loadingSpinner';
@@ -31,12 +31,13 @@ export default function SelfCheckScanner() {
      const handleBarCodeScanned = async ({ type, data }) => {
           setIsLoading(true);
           if (!scanned) {
-               if (type === '8' || type === 8 || type === '64' || type === 64) {
+               if (type === '8' || type === 8 || type === '64' || type === 64 || type === 'org.gs1.EAN-8') {
                     data = cleanBarcode(data, type);
                }
                setScanned(true);
                navigate('SelfCheckOut', {
                     barcode: data,
+                    type: type,
                     activeAccount,
                     startNew: false,
                });
@@ -86,18 +87,19 @@ const styles = StyleSheet.create({
 
 function cleanBarcode(barcode, type) {
      barcode = barcode.toUpperCase();
+     if (type === '8' || type === 8) {
+          let firstValue = barcode.charAt(0);
+          if (firstValue === 'A' || firstValue === 'B' || firstValue === 'C' || firstValue === 'D') {
+               barcode = barcode.substring(1);
+          }
 
-     let firstValue = barcode.charAt(0);
-     if (firstValue === 'A' || firstValue === 'B' || firstValue === 'C' || firstValue === 'D') {
-          barcode = barcode.substring(1);
+          let lastValue = barcode.charAt(barcode.length - 1);
+          if (lastValue === 'A' || lastValue === 'B' || lastValue === 'C' || lastValue === 'D') {
+               barcode = barcode.substring(0, barcode.length - 1);
+          }
      }
 
-     let lastValue = barcode.charAt(barcode.length - 1);
-     if (lastValue === 'A' || lastValue === 'B' || lastValue === 'C' || lastValue === 'D') {
-          barcode = barcode.substring(0, barcode.length - 1);
-     }
-
-     if (type === '64' || type === 64) {
+     if (type === '64' || type === 64 || type === 'org.gs1.EAN-8') {
           barcode = barcode.substring(0, barcode.length - 1);
      }
 
