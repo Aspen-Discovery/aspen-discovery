@@ -251,6 +251,7 @@ class LDAPAuthentication extends Action {
 			'username' => $this->searchArray($user, $this->matchpoints['userId']),
 			'displayName' => $this->searchArray($user, $this->matchpoints['displayName']),
 			'cat_username' => $this->searchArray($user, $this->matchpoints['username']),
+			'ils_barcode' => $this->searchArray($user, $this->matchpoints['ils_barcode']),
 			'category_id' => $patronType,
 		];
 	}
@@ -262,6 +263,7 @@ class LDAPAuthentication extends Action {
 		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
 		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
 		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints'userId');
 		$tmpUser->phone = '';
 		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
 

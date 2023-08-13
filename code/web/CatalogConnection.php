@@ -383,8 +383,7 @@ class CatalogConnection {
 		];
 
 		$userToResetPin = new User();
-		$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
-		$userToResetPin->$barcodeProperty = $barcode;
+		$userToResetPin->ils_barcode = $barcode;
 		if (!$userToResetPin->find(true)) {
 			$userToResetPin = $this->driver->findNewUser($barcode);
 		}
@@ -1402,11 +1401,7 @@ class CatalogConnection {
 		global $timer;
 		global $logger;
 		$user = new User();
-		if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
-			$user->cat_username = $barcode;
-		} else {
-			$user->cat_password = $barcode;
-		}
+		$user->ils_barcode = $barcode;
 		if ($user->find(true)) {
 			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
 				//We load the account based on the barcode make sure the pin matches
@@ -1418,7 +1413,7 @@ class CatalogConnection {
 				}
 			} else {
 				//We still load based on barcode, make sure the username is similar
-				$userValid = $this->areNamesSimilar($username, $user->cat_username);
+				$userValid = $this->areNamesSimilar($username, $user->ils_password);
 				if (!$userValid) {
 					$timer->logTime("offline patron login failed due to invalid name");
 					$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);

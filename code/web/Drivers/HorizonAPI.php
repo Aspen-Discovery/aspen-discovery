@@ -55,6 +55,7 @@ abstract class HorizonAPI extends Horizon {
 				$user = new User();
 //				$user->source = $this->accountProfile->name;
 				$user->username = $userID;
+				$user->unique_ils_id = $userID;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
@@ -75,7 +76,9 @@ abstract class HorizonAPI extends Horizon {
 				}
 				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $username;
+				$user->ils_barcode = $username;
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 				$user->email = $email;
 
 				if (isset($lookupMyAccountInfoResponse->AddressInfo)) {
@@ -293,7 +296,7 @@ abstract class HorizonAPI extends Horizon {
 			[
 				$userValid,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_p);
 			if (!$userValid) {
 				return $holds;
 			}
@@ -409,7 +412,7 @@ abstract class HorizonAPI extends Horizon {
 			[
 				$userValid,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 			if (!$userValid) {
 				return [
 					'success' => false,
@@ -521,7 +524,7 @@ abstract class HorizonAPI extends Horizon {
 			[
 				$userValid,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 			if (!$userValid) {
 				return [
 					'success' => false,
@@ -802,7 +805,7 @@ abstract class HorizonAPI extends Horizon {
 			[
 				$userValid,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 			if (!$userValid) {
 //				echo("No session id found for user");
 				return $checkedOutTitles;
@@ -903,7 +906,7 @@ abstract class HorizonAPI extends Horizon {
 			[
 				$userValid,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 			if (!$userValid) {
 				return [
 					'success' => false,
@@ -964,7 +967,7 @@ abstract class HorizonAPI extends Horizon {
 			[
 				$userValid,
 				$sessionToken,
-			] = $this->loginViaWebService($user->cat_username, $user->cat_password);
+			] = $this->loginViaWebService($user->ils_barcode, $user->ils_password);
 			if (!$userValid) {
 				return [
 					'success' => false,

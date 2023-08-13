@@ -30,7 +30,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 		[
 			$userValid,
 			$sessionToken,
-		] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if (!$userValid) {
 			return [
 				'success' => false,
@@ -103,7 +103,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.',
 			];
 		} elseif (!empty($changeMyPinResponse['sessionToken'])) {
-			if ($user->username == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Aspen Discovery user
+			if ($user->unique_ils_id == $changeMyPinResponse['patronKey']) { // Check that the ILS user matches the Aspen Discovery user
 				$user->cat_password = $newPin;
 				$user->update();
 			}
@@ -127,8 +127,8 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 		$barcode = $_REQUEST['barcode'];
 
 		$patron = new User;
-		$patron->get('cat_username', $barcode);
-		if (!empty($patron->id)) {
+		$patron->ils_barcode = $barcode;
+		if ($patron->find(true)) {
 			global $configArray;
 			$userID = $patron->id;
 

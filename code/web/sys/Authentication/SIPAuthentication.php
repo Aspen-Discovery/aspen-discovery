@@ -7,7 +7,7 @@ class SIPAuthentication implements Authentication {
 
 	public function __construct($additionalInfo) {}
 
-	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
+	public function validateAccount($username, $password, $accountProfile, $parentAccount, $validatedViaSSO) {
 		global $configArray;
 		global $timer;
 		global $logger;
@@ -59,7 +59,7 @@ class SIPAuthentication implements Authentication {
 								}
 
 								// Success!!!
-								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
+								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse, $accountProfile);
 								if (empty($user)) {
 									return null;
 								}
@@ -86,7 +86,7 @@ class SIPAuthentication implements Authentication {
 
 	}
 
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO, $accountProfile) {
 		global $configArray;
 		global $timer;
 
@@ -154,7 +154,7 @@ class SIPAuthentication implements Authentication {
 								}
 
 								// Success!!!
-								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse);
+								$user = $this->processSIP2User($result, $username, $password, $patronInfoResponse, $accountProfile);
 								if (empty($user)) {
 									$user = new AspenError('Could not load user information.');
 								} else {
@@ -198,13 +198,17 @@ class SIPAuthentication implements Authentication {
 	 * @param string $password The user's ILS password
 	 * @param array $patronInfoResponse The user's ILS password
 	 * @param array $info An array of user information
+	 * @param AccountProfile $accountProfile
+	 *
 	 * @return  User
 	 * @access  public
 	 */
-	private function processSIP2User($info, $username, $password, $patronInfoResponse) {
+	private function processSIP2User($info, $username, $password, $patronInfoResponse, $accountProfile) {
 		global $timer;
 		$user = new User();
+		$user->source = $accountProfile->name;
 		$user->username = $info['variable']['AA'][0];
+		$user->unique_ils_id = $info['variable']['AA'][0];
 		if ($user->find(true)) {
 			$insert = false;
 		} else {
@@ -224,7 +228,9 @@ class SIPAuthentication implements Authentication {
 		// I'm inserting the sip username and password since the ILS is the source.
 		// Should revisit this.
 		$user->cat_username = $username;
+		$user->ils_barcode = $username;
 		$user->cat_password = $password;
+		$user->ils_password = $password;
 		$user->email = isset($patronInfoResponse['variable']['BE'][0]) ? $patronInfoResponse['variable']['BE'][0] : '';
 		$user->phone = isset($patronInfoResponse['variable']['BF'][0]) ? $patronInfoResponse['variable']['BF'][0] : '';
 		$user->patronType = $patronInfoResponse['variable']['PC'][0];

@@ -8,7 +8,7 @@ class Greenhouse_AJAX extends Action {
 
 	function launch() {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				global $timer;
 				$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 				$timer->logTime("Starting method $method");
@@ -69,11 +69,11 @@ class Greenhouse_AJAX extends Action {
 			if ($userStillExists) {
 				/** @var User $oldUser */
 				foreach ($allUsersForBarcode as $oldUser) {
-					if ($oldUser->username != $newUser->username) {
+					if ($oldUser->unique_ils_id != $newUser->unique_ils_id) {
 						//$result['oldUser'] = $oldUser;
-						$result['oldUserId'] .= $oldUser->username;
+						$result['oldUserId'] .= $oldUser->unique_ils_id;
 						//$result['newUser'] = $newUser;
-						$result['newUserId'] .= $newUser->username;
+						$result['newUserId'] .= $newUser->unique_ils_id;
 
 						//Merge the records
 						$mergeResults = [
@@ -160,7 +160,7 @@ class Greenhouse_AJAX extends Action {
 					if ($oldUser->trackReadingHistory) {
 						$oldUser->trackReadingHistory = 0;
 						$oldUser->update();
-						$result['message'] .= "<br/>Disabled reading history for $oldUser->username";
+						$result['message'] .= "<br/>Disabled reading history for $oldUser->unique_ils_id";
 					}
 				}
 				//TODO: cleanup the database and remove the old users.

@@ -265,7 +265,7 @@ class UserAPI extends Action {
 						'session' => false,
 					];
 				}
-				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					return [
 						'success' => true,
@@ -381,8 +381,8 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>success - false if the username or password could not be found, or the following user information if the account is valid.</li>
 	 * <li>id - The id of the user within VuFind</li>
-	 * <li>username, cat_username - The patron's library card number</li>
-	 * <li>password, cat_password - The patron's PIN number</li>
+	 * <li>username, cat_username, ils_barcode - The patron's library card number</li>
+	 * <li>password, cat_password, ils_password - The patron's PIN number</li>
 	 * <li>firstname - The first name of the patron in the ILS</li>
 	 * <li>lastname - The last name of the patron in the ILS</li>
 	 * <li>email - The patron's email address if set within Horizon.</li>
@@ -3321,7 +3321,7 @@ class UserAPI extends Action {
 		} else {
 			$username = $_REQUEST['username'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$user->updateReadingHistoryBasedOnCurrentCheckouts(true);
 
@@ -3573,6 +3573,7 @@ class UserAPI extends Action {
 		if (isset($_REQUEST['patronId'])) {
 			$user = new User();
 			$user->username = $_REQUEST['patronId'];
+			$user->unique_ils_id = $_REQUEST['patronId'];
 			if ($user->find(true)) {
 				$results = [
 					'success' => true,
@@ -4171,7 +4172,7 @@ class UserAPI extends Action {
 				$results = [
 					'success' => true,
 					'id' => $user->id,
-					'patronId' => $user->username,
+					'patronId' => $user->unique_ils_id,
 					'displayName' => $user->displayName,
 				];
 			} else {
@@ -4199,6 +4200,7 @@ class UserAPI extends Action {
 		if (isset($_REQUEST['patronId'])) {
 			$user = new User();
 			$user->username = $_REQUEST['patronId'];
+			$user->unique_ils_id = $_REQUEST['unique_ils_id'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
@@ -4250,7 +4252,7 @@ class UserAPI extends Action {
 				foreach ($linkedAccounts as $linkedAccount) {
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
-					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['barcode'] = $linkedAccount->getBarcode();
 					$account[$linkedAccount->id]['barcodeStyle'] = $linkedAccount->getHomeLibrary()->libraryCardBarcodeStyle;
 					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
 					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
@@ -4306,7 +4308,7 @@ class UserAPI extends Action {
 					if (!$linkedUser->isBlockedAccount($user->id)) {
 						$viewers[$linkedUser->id]['displayName'] = $linkedUser->displayName;
 						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->getHomeLocation()->displayName;
-						$viewers[$linkedUser->id]['barcode'] = $linkedUser->cat_username;
+						$viewers[$linkedUser->id]['barcode'] = $linkedUser->getBarcode();
 						$viewers[$linkedUser->id]['id'] = $linkedUser->id;
 					}
 				}
@@ -4799,11 +4801,7 @@ class UserAPI extends Action {
 						while ($accountProfile->fetch()) {
 							$masqueradedUser = new User();
 							$masqueradedUser->source = $accountProfile->name;
-							if ($accountProfile->loginConfiguration == 'barcode_pin') {
-								$masqueradedUser->cat_username = $libraryCard;
-							} else {
-								$masqueradedUser->cat_password = $libraryCard;
-							}
+							$masqueradedUser->ils_barcode = $libraryCard;
 							if ($masqueradedUser->find(true)) {
 								if ($masqueradedUser->id == $user->id) {
 									return [

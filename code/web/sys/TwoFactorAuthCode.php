@@ -83,7 +83,7 @@ class TwoFactorAuthCode extends DataObject {
 
 	public function createRecoveryCode($username) : array {
 		$user = new User();
-		$user->cat_username = $username;
+		$user->ils_barcode = $username;
 		if ($user->find(true)) {
 			if ($user->twoFactorStatus == '1') {
 				$twoFactorAuthCode = new TwoFactorAuthCode();

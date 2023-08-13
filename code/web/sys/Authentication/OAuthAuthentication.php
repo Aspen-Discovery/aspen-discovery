@@ -220,6 +220,7 @@ class OAuthAuthentication extends Action {
 				$newUser['firstname'] = $this->getFirstName();
 				$newUser['lastname'] = $this->getLastName();
 				$newUser['cat_username'] = $this->getUserId();
+				$newUser['ils_barcode'] = $this->getUserId();
 				$newUser['category_id'] = null;
 				if ($this->staffPType && $this->isStaffUser()) {
 					$newUser['category_id'] = $this->staffPType;
@@ -312,6 +313,7 @@ class OAuthAuthentication extends Action {
 		$tmpUser->firstname = $this->getFirstName();
 		$tmpUser->lastname = $this->getLastName() ?? '';
 		$tmpUser->username = $this->getUserId();
+		$tmpUser->unique_ils_id = $this->getUserId();
 		$tmpUser->phone = '';
 		$tmpUser->displayName = '';
 		$tmpUser->patronType = '';

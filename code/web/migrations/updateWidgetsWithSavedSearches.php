@@ -42,7 +42,7 @@ function importSavedSearches($startTime, $exportPath, &$existingUsers, &$missing
 				$userId = $missingUsers[$userBarcode];
 			} else {
 				$tmpUser = new User();
-				$tmpUser->cat_username = $userBarcode;
+				$tmpUser->ils_barcode = $userBarcode;
 				if ($tmpUser->find(true)) {
 					$existingUsers[$userBarcode] = $tmpUser->id;
 					$userId = $tmpUser->id;

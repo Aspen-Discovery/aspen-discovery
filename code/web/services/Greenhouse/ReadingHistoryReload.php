@@ -14,8 +14,7 @@ class Greenhouse_ReadingHistoryReload extends Admin_Admin {
 				foreach (UserAccount::getAccountProfiles() as $name => $accountProfileInfo) {
 					$userToReset = new User();
 					$userToReset->source = $name;
-					$barcodeProperty = $accountProfileInfo['accountProfile']->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
-					$userToReset->$barcodeProperty = $barcode;
+					$userToReset->ils_barcode = $barcode;
 					if ($userToReset->find(true)) {
 						$foundUserForBarcode = true;
 						$userToReset->initialReadingHistoryLoaded = false;
@@ -44,7 +43,7 @@ class Greenhouse_ReadingHistoryReload extends Admin_Admin {
 
 	function canView() {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}

@@ -87,6 +87,7 @@ class CarlX extends AbstractIlsDriver {
 					$user = new User();
 					$user->source = $this->accountProfile->name;
 					$user->username = $result->Patron->GeneralUserID;
+					$user->unique_ils_id = $result->Patron->GeneralUserID;
 					if ($user->find(true)) {
 						$userExistsInDB = true;
 					}
@@ -106,10 +107,13 @@ class CarlX extends AbstractIlsDriver {
 						$user->displayName = '';
 					}
 					$user->cat_username = $username;
+					$user->ils_barcode = $username;
 					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 						$user->cat_password = $result->Patron->PatronPIN;
+						$user->ils_password = $result->Patron->PatronPIN;
 					}else {
 						$user->cat_password = $result->Patron->LastName;
+						$user->ils_password = $result->Patron->LastName;
 					}
 					$user->email = $result->Patron->Email;
 
@@ -250,8 +254,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				$in = $mySip->msgRenewAll();
 				//print_r($in . '<br/>');
@@ -1452,7 +1456,7 @@ class CarlX extends AbstractIlsDriver {
 					];
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
-				$myLostFines = $this->getLostViaSIP($patron->cat_username);
+				$myLostFines = $this->getLostViaSIP($patron->ils_barcode);
 				$myFinesIds = array_column($myFines, 'fineId');
 				foreach ($myLostFines as $myLostFine) {
 					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
@@ -1586,7 +1590,7 @@ class CarlX extends AbstractIlsDriver {
 	protected function getSearchbyPatronIdRequest(User $user) {
 		$request = new stdClass();
 		$request->SearchType = 'Patron ID';
-		$request->SearchID = $user->cat_username; // TODO: Question: barcode/pin check
+		$request->SearchID = $user->ils_barcode; // TODO: Question: barcode/pin check
 		$request->Modifiers = '';
 		return $request;
 	}
@@ -1645,8 +1649,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				$in = $mySip->msgPatronInformation('unavail', 1, 110); // hardcoded Nashville - circulation policy allows 100 holds for many borrower types
 				$sipResponse = $mySip->get_message($in);
@@ -1735,8 +1739,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				if (empty($pickupBranch)) {
 					//Get the code for the location
@@ -1878,8 +1882,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				$in = $mySip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
 				//print_r($in . '<br/>');
@@ -1968,7 +1972,7 @@ class CarlX extends AbstractIlsDriver {
 		//Load summary information for number of holds, checkouts, etc
 		$patronSummaryRequest = new stdClass();
 		$patronSummaryRequest->SearchType = 'Patron ID';
-		$patronSummaryRequest->SearchID = $patron->cat_username;
+		$patronSummaryRequest->SearchID = $patron->ils_barcode;
 		$patronSummaryRequest->Modifiers = '';
 
 		$patronSummaryResponse = $this->doSoapRequest('getPatronTransactions', $patronSummaryRequest, $this->patronWsdl);

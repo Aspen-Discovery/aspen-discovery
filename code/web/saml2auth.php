@@ -194,7 +194,7 @@ if($ssoAuthOnly === false) {
 	// If we have an Aspen user, we can set up the session
 	if ($user instanceof User) {
 		if ($uidAsEmail || $ilsUniqueAttribute) {
-			$_REQUEST['username'] = $user->cat_username;
+			$_REQUEST['username'] = $user->ils_barcode;
 		} else {
 			$_REQUEST['username'] = $uid;
 		}
@@ -231,6 +231,7 @@ if($ssoAuthOnly === false) {
 	$tmpUser->firstname = $this->getFirstName();
 	$tmpUser->lastname = $this->getLastName() ?? '';
 	$tmpUser->username = $this->getUserId();
+	$tmpUser->unique_ils_id = $this->getUserId();
 	$tmpUser->phone = '';
 	$tmpUser->displayName = '';
 	$tmpUser->patronType = '';

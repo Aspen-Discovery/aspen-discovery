@@ -91,7 +91,7 @@ class UserAccount {
 						require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 						global $logger;
 						$casAuthentication = new CASAuthentication(null);
-						$casUsername = $casAuthentication->validateAccount(null, null, null, false);
+						$casUsername = $casAuthentication->validateAccount(null, null, null, null, false);
 						$_SESSION['lastCASCheck'] = time();
 						$logger->log("Checked CAS Authentication from UserAccount::isLoggedIn result was $casUsername", Logger::LOG_DEBUG);
 						if ($casUsername == false || $casUsername instanceof AspenError) {
@@ -349,11 +349,10 @@ class UserAccount {
 
 				$userData->id = $activeUserId;
 				if ($userData->find(true)) {
-					//$logger->log("Loading user {$userData->cat_username} because we didn't have data in memcache", Logger::LOG_DEBUG);
 					if (UserAccount::isUserMasquerading() || !empty($_SESSION['loggedInViaSSO'])) {
 						return $userData;
 					} else {
-						$userData = UserAccount::validateAccount($userData->cat_username, $userData->cat_password, $userData->source);
+						$userData = UserAccount::validateAccount($userData->ils_barcode, $userData->ils_password, $userData->source);
 
 						if ($userData == false) {
 							//This happens when the PIN has been reset in the ILS, redirect to the login page
@@ -403,7 +402,7 @@ class UserAccount {
 				$casAuthentication = new CASAuthentication(null);
 				global $logger;
 				$logger->log("Checking CAS Authentication from UserAccount::getLoggedInUser", Logger::LOG_DEBUG);
-				$casUsername = $casAuthentication->validateAccount(null, null, null, false);
+				$casUsername = $casAuthentication->validateAccount(null, null, null, null, false);
 				if ($casUsername == false || $casUsername instanceof AspenError) {
 					//The user could not be authenticated in CAS
 					UserAccount::$isLoggedIn = false;
@@ -498,7 +497,7 @@ class UserAccount {
 			$logger->log('Logging the user in via LDAP', Logger::LOG_NOTICE);
 			require_once ROOT_DIR . '/sys/Authentication/LDAPAuthentication.php';
 			$ldapAuthentication = new LDAPAuthentication();
-			$isAuthenticated = $ldapAuthentication->validateAccount($_POST['username'], $_POST['password']);
+			$isAuthenticated = $ldapAuthentication->validateAccount($_POST['username'], $_POST['password'], null);
 			if($isAuthenticated instanceof AspenError) {
 				$logger->log('The user could not be logged in', Logger::LOG_NOTICE);
 				$usageByIPAddress->numFailedLoginAttempts++;
@@ -528,7 +527,7 @@ class UserAccount {
 			//  3) AspenError which means the authentication method handled the user, but didn't find the user
 
 			if(!$localAuthOnly) {
-				$tempUser = $authN->authenticate($validatedViaSSO);
+				$tempUser = $authN->authenticate($validatedViaSSO, $driverData['accountProfile']);
 			} else {
 				$tempUser = UserAccount::findNewAspenUser('username', $_POST['username']);
 			}
@@ -653,7 +652,7 @@ class UserAccount {
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$logger->log("Checking CAS Authentication from UserAccount::validateAccount", Logger::LOG_DEBUG);
-			$casUsername = $casAuthentication->validateAccount(null, null, $parentAccount, false);
+			$casUsername = $casAuthentication->validateAccount(null, null, null, $parentAccount, false);
 			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
 				$logger->log("User could not be authenticated in CAS", Logger::LOG_DEBUG);
@@ -677,7 +676,7 @@ class UserAccount {
 					echo("Unknown validation method $e");
 					die();
 				}
-				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					//global $memCache;
 					//global $serverName;
@@ -710,18 +709,11 @@ class UserAccount {
 		$driversToTest = self::getAccountProfiles();
 		foreach ($driversToTest as $driverName => $additionalInfo) {
 			$accountProfile = $additionalInfo['accountProfile'];
-			if ($accountProfile->loginConfiguration == 'barcode_pin') {
-				$user = new User();
-				$user->cat_username = $username;
-				if ($user->find(true)) {
-					return $user;
-				}
-			} else {
-				$user = new User();
-				$user->cat_password = $username;
-				if ($user->find(true)) {
-					return $user;
-				}
+			$user = new User();
+			$user->source = $accountProfile->name;
+			$user->ils_barcode = $username;
+			if ($user->find(true)) {
+				return $user;
 			}
 		}
 		return false;
