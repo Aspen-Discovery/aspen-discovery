@@ -55,9 +55,9 @@
 			</div>
 		</div>
 		{foreach from=$duplicateUsers item=barcodeInfo}
-			<div class="row barcodeRow" id="barcode_{$barcodeInfo.cat_username|escapeCSS}" data-barcode="{$barcodeInfo.cat_username}" data-processed="false">
+			<div class="row barcodeRow" id="barcode_{$barcodeInfo.ils_barcode|escapeCSS}" data-barcode="{$barcodeInfo.ils_barcode}" data-processed="false">
 				<div class="col-xs-2">
-					{$barcodeInfo.cat_username}
+					{$barcodeInfo.ils_barcode}
 				</div>
 				<div class="col-xs-3">
 					{$barcodeInfo.usernames}

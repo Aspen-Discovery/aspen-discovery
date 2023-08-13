@@ -25,7 +25,7 @@ class ILSAuthentication implements Authentication {
 	 * @param bool $validatedViaSSO
 	 * @return AspenError|User|false
 	 */
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO, $accountProfile) {
 		global $logger;
 		//Check to see if the username and password are provided
 		if (!array_key_exists('username', $_REQUEST) && !array_key_exists('password', $_REQUEST)) {
@@ -69,12 +69,10 @@ class ILSAuthentication implements Authentication {
 		return $user;
 	}
 
-	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
-		global $logger;
+	public function validateAccount($username, $password, $accountProfile, $parentAccount, $validatedViaSSO) {
 		$this->username = $username;
 		$this->password = $password;
 
-		//$logger->log("validating account for user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
 		//Password is not required if we have validated via single sign on or if the user is masquerading
 		if ($this->username == '' || ($this->password == '' && !$validatedViaSSO && !UserAccount::isUserMasquerading())) {
 			$validUser = new AspenError('Login information cannot be blank.');

@@ -36,7 +36,7 @@ class UserRoles extends DataObject {
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)) {
-			$links['user'] = $user->cat_username;
+			$links['user'] = $user->ils_barcode;
 		}
 		$role = new Role();
 		$role->roleId = $this->roleId;
@@ -52,7 +52,7 @@ class UserRoles extends DataObject {
 		if (array_key_exists('user', $jsonData)) {
 			$username = $jsonData['user'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$this->userId = $user->id;
 			}

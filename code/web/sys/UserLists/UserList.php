@@ -858,7 +858,7 @@ class UserList extends DataObject {
 		$user = new User();
 		$user->id = $this->user_id;
 		if ($user->find(true)) {
-			$links['user'] = $user->cat_username;
+			$links['user'] = $user->ils_barcode;
 		}
 
 		$userListEntries = [];
@@ -887,7 +887,7 @@ class UserList extends DataObject {
 		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$this->user_id = $user->id;
 			}

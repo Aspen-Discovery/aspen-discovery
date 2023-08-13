@@ -9,7 +9,7 @@ class MyAccount_CurbsidePickups extends MyAccount {
 		global $library;
 		$user = UserAccount::getActiveUserObj();
 		$interface->assign('patronId', $user->id);
-		$interface->assign('patron', $user->username);
+		$interface->assign('patron', $user->unique_ils_id);
 
 		$curbsidePickupSetting = new CurbsidePickupSetting();
 		$curbsidePickupSetting->id = $library->curbsidePickupSettingId;

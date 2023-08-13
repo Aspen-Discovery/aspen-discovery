@@ -203,7 +203,7 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$us
 		$userId = $existingUsers[$userBarcode];
 	} else {
 		$user = new User();
-		$user->cat_username = $userBarcode;
+		$user->ils_barcode = $userBarcode;
 		if (!$user->find(true)) {
 			$user = UserAccount::findNewUser($userBarcode);
 			if ($user == false) {

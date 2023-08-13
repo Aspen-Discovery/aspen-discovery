@@ -8,7 +8,7 @@ class CASAuthentication implements Authentication {
 
 	public function __construct($additionalInfo) {}
 
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO, $accountProfile) {
 		$this->initializeCASClient();
 
 		try {
@@ -37,10 +37,11 @@ class CASAuthentication implements Authentication {
 	 * @param $username       string Should be null for CAS
 	 * @param $password       string Should be null for CAS
 	 * @param $parentAccount  User|null
+	 * @param $accountProfile AccountProfile
 	 * @param $validatedViaSSO boolean
 	 * @return bool|AspenError|string return false if the user cannot authenticate, the barcode if they can, and an error if configuration is incorrect
 	 */
-	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
+	public function validateAccount($username, $password, $accountProfile, $parentAccount, $validatedViaSSO) {
 		if ($username == '' || $password == '') {
 			$this->initializeCASClient();
 

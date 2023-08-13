@@ -107,6 +107,7 @@ class SirsiDynixROA extends HorizonAPI {
 				$user = new User();
 				$user->source = $this->accountProfile->name;
 				$user->username = $userID;
+				$user->unique_ils_id = $userID;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
@@ -133,8 +134,10 @@ class SirsiDynixROA extends HorizonAPI {
 
 				$user->_fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $patronBarcode;
+				$user->ils_barcode = $patronBarcode;
 				if (!empty($lookupMyAccountInfoResponse->fields->pin)) {
 					$user->cat_password = $lookupMyAccountInfoResponse->fields->pin;
+					$user->ils_password = $lookupMyAccountInfoResponse->fields->pin;
 				}
 
 				global $library;
@@ -386,11 +389,14 @@ class SirsiDynixROA extends HorizonAPI {
 				$user = new User();
 				$user->source = $this->accountProfile->name;
 				$user->username = $sirsiRoaUserID;
+				$user->unique_ils_id = $sirsiRoaUserID;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
 				$user->cat_username = $username;
+				$user->ils_barcode = $username;
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 
 				$forceDisplayNameUpdate = false;
 				$firstName = isset($lookupMyAccountInfoResponse->fields->firstName) ? $lookupMyAccountInfoResponse->fields->firstName : '';
@@ -443,7 +449,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 		$webServiceURL = $this->getWebServiceURL();
 		$includeFields = urlencode("privilegeExpiresDate,circRecordList{overdue},blockList{owed},holdRecordList{status}");
-		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields;
+		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields;
 
 		$sessionToken = $this->getSessionToken($patron);
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('accountSummary', $accountInfoLookupURL, null, $sessionToken);
@@ -814,7 +820,7 @@ class SirsiDynixROA extends HorizonAPI {
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of holds for the user
 		$includeFields = urlencode('circRecordList{*,item{barcode,bib{title,author},itemType,call{dispCallNumber}}}');
-		$patronCheckouts = $this->getWebServiceResponse('getCheckouts', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
+		$patronCheckouts = $this->getWebServiceResponse('getCheckouts', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
 
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 			$sCount = 0;
@@ -909,7 +915,7 @@ class SirsiDynixROA extends HorizonAPI {
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
 		$includeFields = urlencode("holdRecordList{*,bib{title,author},selectedItem{call{*},itemType{*}}}");
-		$patronHolds = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
+		$patronHolds = $this->getWebServiceResponse('getHolds', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $hold) {
@@ -1106,7 +1112,7 @@ class SirsiDynixROA extends HorizonAPI {
 			$holdData = [
 				'patron' => [
 					'resource' => '/user/patron',
-					'key' => $patron->username,
+					'key' => $patron->unique_ils_id,
 				],
 				'pickupLibrary' => [
 					'resource' => '/policy/library',
@@ -1287,12 +1293,12 @@ class SirsiDynixROA extends HorizonAPI {
 	}
 
 
-	private function getSessionToken($patron) {
+	private function getSessionToken(User $patron) {
 		if (UserAccount::isUserMasquerading()) {
 			//If the user is masquerading, we will use the staff login since we might not have the patron PIN
-			$sirsiRoaUserId = UserAccount::getGuidingUserObject()->username;
+			$sirsiRoaUserId = UserAccount::getGuidingUserObject()->unique_ils_id;
 		} else {
-			$sirsiRoaUserId = $patron->username;
+			$sirsiRoaUserId = $patron->unique_ils_id;
 		}
 
 
@@ -1309,7 +1315,7 @@ class SirsiDynixROA extends HorizonAPI {
 			[
 				,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 			global $timer;
 			$timer->logTime("Created session token");
 			return $sessionToken;
@@ -1809,7 +1815,7 @@ class SirsiDynixROA extends HorizonAPI {
 			$webServiceURL = $this->getWebServiceURL();
 
 			$includeFields = urlencode("blockList{*,item{bib{title,author},barcode}}");
-			$blockList = $this->getWebServiceResponse('getFines', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, null, $sessionToken);
+			$blockList = $this->getWebServiceResponse('getFines', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, null, $sessionToken);
 			// Include Title data if available
 
 			$totalFinesOwed = 0;
@@ -1889,7 +1895,7 @@ class SirsiDynixROA extends HorizonAPI {
 		}
 
 		$updatePinResponse = $this->getWebServiceResponse('changePin', $webServiceURL . "/user/patron/changeMyPin", $params, $sessionToken, 'POST', $additionalHeaders);
-		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey == $patron->username) {
+		if (!empty($updatePinResponse->patronKey) && $updatePinResponse->patronKey == $patron->unique_ils_id) {
 			$patron->cat_password = $newPin;
 			$patron->lastLoginValidation = 0;
 			$patron->update();
@@ -1962,7 +1968,7 @@ class SirsiDynixROA extends HorizonAPI {
 			];
 		} elseif (!empty($resetPinResponse->sessionToken)) {
 			if ($user != null) {
-				if ($user->username == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
+				if ($user->unique_ils_id == $resetPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 					$user->cat_password = $newPin;
 					$user->lastLoginValidation = 0;
 					$user->update();
@@ -1989,8 +1995,8 @@ class SirsiDynixROA extends HorizonAPI {
 		$barcode = $_REQUEST['barcode'];
 
 		$patron = new User;
-		$patron->get('cat_username', $barcode);
-		if (!empty($patron->id)) {
+		$patron->ils_barcode = $barcode;
+		if ($patron->find(true)) {
 			$aspenUserID = $patron->id;
 
 			// If possible, check if ILS has an email address for the patron
@@ -2083,7 +2089,7 @@ class SirsiDynixROA extends HorizonAPI {
 			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
 				$webServiceURL = $this->getWebServiceURL();
-				if ($userID = $patron->username) {
+				if ($userID = $patron->unique_ils_id) {
 					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
 					$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInfo', $this->getWebServiceURL() . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,address1,address2,address3', null, $sessionToken);
 					if ($updatePatronInfoParametersClass) {
@@ -2305,7 +2311,7 @@ class SirsiDynixROA extends HorizonAPI {
 		$webServiceURL = $this->getWebServiceURL();
 		$staffSessionToken = $this->getStaffSessionToken();
 		$includeFields = urlEncode("firstName,lastName,privilegeExpiresDate,preferredAddress,preferredName,address1,address2,address3,library,primaryPhone,profile,blockList{owed}");
-		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->username . '?includeFields=' . $includeFields;
+		$accountInfoLookupURL = $webServiceURL . '/user/patron/key/' . $user->unique_ils_id . '?includeFields=' . $includeFields;
 
 		// phoneList is for texting notification preferences
 		$lookupMyAccountInfoResponse = $this->getWebServiceResponse('loadContactInformation', $accountInfoLookupURL, null, $staffSessionToken);
@@ -2542,7 +2548,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 			//Get a list of phone numbers for the patron from the APIs.
 			$includeFields = urlencode("phoneList{*}");
-			$getPhoneListResponse = $this->getWebServiceResponse('getPhoneList', $webServiceURL . "/user/patron/key/{$patron->username}?includeFields=$includeFields", null, $staffSessionToken);
+			$getPhoneListResponse = $this->getWebServiceResponse('getPhoneList', $webServiceURL . "/user/patron/key/{$patron->unique_ils_id}?includeFields=$includeFields", null, $staffSessionToken);
 
 			if ($getPhoneListResponse != null) {
 				foreach ($getPhoneListResponse->fields->phoneList as $index => $phoneInfo) {
@@ -2587,7 +2593,7 @@ class SirsiDynixROA extends HorizonAPI {
 		$staffSessionToken = $this->getStaffSessionToken();
 		$includeFields = urlencode("phoneList{*}");
 		$webServiceURL = $this->getWebServiceURL();
-		$getPhoneListResponse = $this->getWebServiceResponse('GET', $webServiceURL . "/user/patron/key/$patron->username?includeFields=$includeFields", null, $staffSessionToken);
+		$getPhoneListResponse = $this->getWebServiceResponse('GET', $webServiceURL . "/user/patron/key/$patron->unique_ils_id?includeFields=$includeFields", null, $staffSessionToken);
 
 		for ($i = 1; $i <= 5; $i++) {
 			$deletePhoneKey = $_REQUEST['phoneNumberDeleted'][$i] == true;
@@ -2623,7 +2629,7 @@ class SirsiDynixROA extends HorizonAPI {
 				}
 				$phoneToModify->fields->patron = new stdClass();
 				$phoneToModify->fields->patron->resource = "/user/patron";
-				$phoneToModify->fields->patron->key = $patron->username;
+				$phoneToModify->fields->patron->key = $patron->unique_ils_id;
 				$phoneToModify->fields->label = $_REQUEST['phoneLabel'][$i];
 				$phoneToModify->fields->countryCode = new stdClass();
 				$phoneToModify->fields->countryCode->resource = '/policy/countryCode';
@@ -2645,7 +2651,7 @@ class SirsiDynixROA extends HorizonAPI {
 		//Compact the array
 		$getPhoneListResponse->fields->phoneList = array_values($getPhoneListResponse->fields->phoneList);
 
-		$updateAccountInfoResponse = $this->getWebServiceResponse('processMessagingSettings', $webServiceURL . '/user/patron/key/' . $patron->username . '?includeFields=' . $includeFields, $getPhoneListResponse, $staffSessionToken, 'PUT');
+		$updateAccountInfoResponse = $this->getWebServiceResponse('processMessagingSettings', $webServiceURL . '/user/patron/key/' . $patron->unique_ils_id . '?includeFields=' . $includeFields, $getPhoneListResponse, $staffSessionToken, 'PUT');
 		if (isset($updateAccountInfoResponse->messageList)) {
 			$result['message'] = '';
 			foreach ($updateAccountInfoResponse->messageList as $message) {
@@ -2785,7 +2791,7 @@ class SirsiDynixROA extends HorizonAPI {
 			$sessionToken = $this->getStaffSessionToken();
 			if ($sessionToken) {
 				$webServiceURL = $this->getWebServiceURL();
-				if ($userID = $patron->username) {
+				if ($userID = $patron->unique_ils_id) {
 					//To update the patron, we need to load the patron from Symphony so we only overwrite changed values.
 					$updatePatronInfoParametersClass = $this->getWebServiceResponse('getPatronInformation', $this->getWebServiceURL() . '/user/patron/key/' . $userID . '?includeFields=*,preferredAddress,preferredName,address1,address2,address3', null, $sessionToken);
 					if ($updatePatronInfoParametersClass) {
