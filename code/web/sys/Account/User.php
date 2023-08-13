@@ -4,17 +4,21 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class User extends DataObject {
 	public $__table = 'user';                            // table name
-	public $id;                              // int(11)  not_null primary_key auto_increment
+	public $id;
 	public $source;
-	public $username;                        // string(30)  not_null unique_key
-	public $displayName;                     // string(30)
-	public $password;                        // string(32)  not_null
-	public $firstname;                       // string(50)  not_null
-	public $lastname;                        // string(50)  not_null
-	public $email;                           // string(250)  not_null
-	public $phone;                           // string(30)
-	public $cat_username;                    // string(50)
-	public $cat_password;                    // string(50)
+	public $username;
+	public $unique_ils_id;
+	public $cat_username; //Old field for barcode/username from the ILS deprecated
+	public $cat_password;  //Old field barcode/username from the ILS deprecated
+	public $ils_barcode;  //The barcode for the user as stored within the ILS. Will be null for admin users and users not stored in the ils
+	public $ils_username; //A custom username for the user as stored within the ILS that can be used for login rather than using the barcode.
+	public $ils_password; //The password to use when logging in
+	public $displayName;
+	public $password;
+	public $firstname;
+	public $lastname;
+	public $email;
+	public $phone;
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                     // int(11)
@@ -354,51 +358,19 @@ class User extends DataObject {
 	}
 
 	function getBarcode() {
-		if ($this->getAccountProfile() == null) {
-			return trim($this->cat_username);
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return trim($this->cat_username);
-			} else {
-				return trim($this->cat_password);
-			}
-		}
+		return $this->ils_barcode;
 	}
 
 	function getPasswordOrPin() {
-		if ($this->getAccountProfile() == null) {
-			return trim($this->cat_password);
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return trim($this->cat_password);
-			} else {
-				return trim($this->cat_username);
-			}
-		}
+		return $this->ils_password;
 	}
 
 	function getPasswordOrPinField() {
-		if ($this->getAccountProfile() == null) {
-			return 'cat_password';
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return 'cat_password';
-			} else {
-				return 'cat_username';
-			}
-		}
+		return 'ils_password';
 	}
 
 	function getBarcodeField() {
-		if ($this->getAccountProfile() == null) {
-			return 'cat_username';
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return 'cat_username';
-			} else {
-				return 'cat_password';
-			}
-		}
+		return 'ils_barcode';
 	}
 
 	function saveRoles() {
@@ -483,7 +455,7 @@ class User extends DataObject {
 								//$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
 								//if ($userData === false || isset($_REQUEST['reload'])) {
 									//Load full information from the catalog
-									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+									$linkedUser = UserAccount::validateAccount($linkedUser->ils_barcode, $linkedUser->ils_password, $linkedUser->source, $this);
 								//} else {
 								//	$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
 								//	$linkedUser = $userData;
@@ -582,12 +554,12 @@ class User extends DataObject {
 	function getRelatedEcontentUsers($source) {
 		$users = [];
 		if ($this->isValidForEContentSource($source)) {
-			$users[$this->cat_username . ':' . $this->cat_password] = $this;
+			$users[$this->ils_barcode . ':' . $this->ils_password] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser) {
 			if ($linkedUser->isValidForEContentSource($source)) {
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $users)) {
-					$users[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->ils_barcode . ':' . $linkedUser->ils_password, $users)) {
+					$users[$linkedUser->ils_barcode . ':' . $linkedUser->ils_password] = $linkedUser;
 				}
 			}
 		}
@@ -946,10 +918,8 @@ class User extends DataObject {
 			],
 		];
 
-		global $configArray;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 		$structure['barcode'] = [
-			'property' => $barcodeProperty,
+			'property' => 'ils_barcode',
 			'type' => 'label',
 			'label' => 'Barcode',
 			'description' => 'The barcode for the user.',
@@ -4182,6 +4152,10 @@ class User extends DataObject {
 
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
+	}
+
+	public function isAspenAdminUser() : bool {
+		return $this->source == 'admin' && $this->username == 'aspen_admin';
 	}
 }
 

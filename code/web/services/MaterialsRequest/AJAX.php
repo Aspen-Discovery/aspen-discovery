@@ -225,11 +225,7 @@ class MaterialsRequest_AJAX extends Action {
 									$interface->assign('availableStatuses', $availableStatuses);
 
 									// Get Barcode Column
-									$barCodeColumn = null;
-									if ($accountProfile = $user->getAccountProfile()) {
-										$barCodeColumn = $accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
-									}
-									$interface->assign('barCodeColumn', $barCodeColumn);
+									$interface->assign('barCodeColumn', 'ils_barcode');
 
 								} else {
 									$interface->assign('error', translate([
@@ -357,11 +353,7 @@ class MaterialsRequest_AJAX extends Action {
 								$interface->assign('requestUser', $requestUser);
 
 								// Get Barcode Column
-								$barCodeColumn = null;
-								if ($accountProfile = $requestUser->getAccountProfile()) {
-									$barCodeColumn = $accountProfile->loginConfiguration == 'name_barcode' ? 'cat_password' : 'cat_username';
-								}
-								$interface->assign('barCodeColumn', $barCodeColumn);
+								$interface->assign('barCodeColumn', 'ils_barcode');
 
 							}
 						} else {
@@ -589,14 +581,13 @@ class MaterialsRequest_AJAX extends Action {
 									$barcode = (int)$barcode;
 								}
 								$requestUser = new User();
-								$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 
-								$requestUser->$barcodeProperty = $barcode;
+								$requestUser->ils_barcode = $barcode;
 								$requestUser->find();
 								if ($requestUser->getNumResults() == 0) {
 									//Try looking by last name, first
 									$requestUser = new User();
-									$requestUser->cat_username = $username;
+									$requestUser->ils_barcode = $username;
 									$requestUser->find();
 									if ($requestUser->getNumResults() == 0) {
 										$requestUser = new User();

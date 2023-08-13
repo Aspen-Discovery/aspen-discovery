@@ -1601,6 +1601,7 @@ class ListAPI extends Action {
 
 		//Get the user to attach the list to
 		$nytListUser = new User();
+		$nytListUser->source = 'admin';
 		$nytListUser->username = 'nyt_user';
 		if (!$nytListUser->find(true)) {
 			if ($nytUpdateLog != null) {

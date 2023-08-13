@@ -54,12 +54,12 @@ class UserLink extends DataObject {
 		$user = new User();
 		$user->id = $this->primaryAccountId;
 		if ($user->find(true)) {
-			$links['primaryAccount'] = $user->cat_username;
+			$links['primaryAccount'] = $user->ils_barcode;
 		}
 		$user = new User();
 		$user->id = $this->linkedAccountId;
 		if ($user->find(true)) {
-			$links['linkedAccount'] = $user->cat_username;
+			$links['linkedAccount'] = $user->ils_barcode;
 		}
 		return $links;
 	}
@@ -69,14 +69,14 @@ class UserLink extends DataObject {
 		if (isset($jsonData['primaryAccount'])) {
 			$username = $jsonData['primaryAccount'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$this->primaryAccountId = $user->id;
 			}
 
 			$username = $jsonData['linkedAccount'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$this->linkedAccountId = $user->id;
 			}

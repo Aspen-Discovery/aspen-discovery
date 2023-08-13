@@ -35,7 +35,7 @@ class Evolve extends AbstractIlsDriver {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if (is_array($sessionInfo) && $sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnLoan=YES';
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
@@ -118,7 +118,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -205,7 +205,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -368,7 +368,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -455,7 +455,7 @@ class Evolve extends AbstractIlsDriver {
 			'unavailable' => $unavailableHolds,
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if (is_array($sessionInfo) && $sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnReserve=YES';
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
@@ -542,7 +542,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -616,7 +616,7 @@ class Evolve extends AbstractIlsDriver {
 		$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 
 		$fines = [];
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/AccountFinancial/Token=' . $sessionInfo['accessToken'];
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
@@ -683,16 +683,18 @@ class Evolve extends AbstractIlsDriver {
 			$user = new User();
 			$user->source = $this->accountProfile->name;
 			if (empty($sessionInfo['patronId'])) {
-				$user->username = $patronBarcode;
+				$user->ils_barcode = $patronBarcode;
 			} else {
-				$user->username = $sessionInfo['patronId'];
+				$user->unique_ils_id = $sessionInfo['patronId'];
 			}
 			if ($user->find(true)) {
 				$userExistsInDB = true;
 			}
 			$user->cat_username = $patronBarcode;
+			$user->ils_barcode = $patronBarcode;
 			if (!empty($password)) {
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 			}
 
 			$forceDisplayNameUpdate = false;

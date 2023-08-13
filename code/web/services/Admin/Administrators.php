@@ -111,9 +111,8 @@ class Admin_Administrators extends ObjectEditor {
 		$errors = [];
 		foreach ($logins as $login) {
 			$newAdmin = new User();
-			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 
-			$newAdmin->$barcodeProperty = $login;
+			$newAdmin->ils_barcode = $login;
 			$newAdmin->find();
 			$numResults = $newAdmin->getNumResults();
 			if ($numResults == 0) {

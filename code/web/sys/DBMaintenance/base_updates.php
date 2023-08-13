@@ -2517,7 +2517,8 @@ function updateSearchableLists() {
 
 	//finally update nyt user
 	$user = new User();
-	$user->cat_username = 'nyt_user';
+	$user->source = 'admin';
+	$user->username = 'nyt_user';
 	if ($user->find(true)) {
 		makeListsSearchableForUser($user->id);
 	}

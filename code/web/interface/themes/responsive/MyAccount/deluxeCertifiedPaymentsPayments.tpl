@@ -3,7 +3,7 @@
 	<input type="hidden" name="remittance_id" value="{$deluxeRemittanceId}"/>
 	<input type="hidden" name="message_version" value="2.7"/>
 	<input type="hidden" name="patronId" value="{$userId}"/>
-	<input type="hidden" name="user_defined1" value="{$profile->cat_username}"/>
+	<input type="hidden" name="user_defined1" value="{$profile->getBarcode()}"/>
 	<input type="hidden" name="user_defined2" value="Unknown" id="{$userId}ItemBarcodes"/>
 	<input type="hidden" name="user_defined3" value="Unknown" id="{$userId}BillReasons"/>
 	<input type="hidden" name="user_defined4" value="Unknown" id="{$userId}ItemTitles"/>

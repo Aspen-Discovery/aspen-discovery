@@ -70,6 +70,7 @@ class Enrichment_NYTLists extends Admin_Admin {
 
 			// Get user id
 			$nyTimesUser = new User();
+			$nyTimesUser->source = 'admin';
 			$nyTimesUser->username = 'nyt_user';
 			if ($nyTimesUser->find(1)) {
 				$prevYear = date("Y-m-d", strtotime("-1 year"));
