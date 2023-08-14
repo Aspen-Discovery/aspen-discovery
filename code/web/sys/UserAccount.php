@@ -352,7 +352,17 @@ class UserAccount {
 					if (UserAccount::isUserMasquerading() || !empty($_SESSION['loggedInViaSSO'])) {
 						return $userData;
 					} else {
-						$userData = UserAccount::validateAccount($userData->ils_barcode, $userData->ils_password, $userData->source);
+						//Get the account profile for the user
+						$driversToTest = UserAccount::getAccountProfiles();
+						if (!array_key_exists($userData->source, $driversToTest)) {
+							AspenError::raiseError("We could not validate your account, please logout and login again. If this error persists, please contact the library. Error ($activeUserId)");
+						}
+						$accountProfile = $driversToTest[$userData->source]['accountProfile'];
+						if ($accountProfile->authenticationMethod == 'db') {
+							$userData = UserAccount::validateAccount($userData->username, $userData->password, $userData->source);
+						} else {
+							$userData = UserAccount::validateAccount($userData->ils_barcode, $userData->ils_password, $userData->source);
+						}
 
 						if ($userData == false) {
 							//This happens when the PIN has been reset in the ILS, redirect to the login page
@@ -576,7 +586,7 @@ class UserAccount {
 				}
 			} elseif ($tempUser != null) {
 				$username = isset($_REQUEST['username']) ? $_REQUEST['username'] : 'No username provided';
-				$logger->log("Error authenticating patron $username for driver {$driverName}\r\n", Logger::LOG_ERROR);
+				$logger->log("Error authenticating patron $username for driver {$driverName}", Logger::LOG_ERROR);
 				$lastError = $tempUser;
 				$logger->log($lastError->toString(), Logger::LOG_ERROR);
 			}
@@ -652,14 +662,22 @@ class UserAccount {
 			require_once ROOT_DIR . '/sys/Authentication/CASAuthentication.php';
 			$casAuthentication = new CASAuthentication(null);
 			$logger->log("Checking CAS Authentication from UserAccount::validateAccount", Logger::LOG_DEBUG);
-			$casUsername = $casAuthentication->validateAccount(null, null, null, $parentAccount, false);
+			$authenticationProfile = null;
+			if (!array_key_exists($accountSource, $driversToTest)) {
+				$logger->log("Could not find account profile for $accountSource", Logger::LOG_DEBUG);
+				UserAccount::$validatedAccounts[$username . $password . $accountSource] = false;
+				return false;
+			}
+			$userDriver = $driversToTest[$accountSource];
+			$authenticationProfile = $userDriver['accountProfile'];
+			$casUsername = $casAuthentication->validateAccount(null, null, $authenticationProfile, $parentAccount, false);
 			if ($casUsername == false || $casUsername instanceof AspenError) {
 				//The user could not be authenticated in CAS
-				$logger->log("User could not be authenticated in CAS", Logger::LOG_DEBUG);
-				UserAccount::$validatedAccounts[$username . $password] = false;
+				$logger->log("User could not be validated", Logger::LOG_DEBUG);
+				UserAccount::$validatedAccounts[$username . $password . $accountSource] = false;
 				return false;
 			} else {
-				$logger->log("User was authenticated in CAS", Logger::LOG_DEBUG);
+				$logger->log("User was validated", Logger::LOG_DEBUG);
 				//Set both username and password since authentication methods could use either.
 				//Each authentication method will need to deal with the possibility that it gets a barcode for both user and password
 				$username = $casUsername;
@@ -692,7 +710,7 @@ class UserAccount {
 							$_SESSION['loggedInViaLDAP'] = true;
 						}
 					}
-					UserAccount::$validatedAccounts[$username . $password] = $validatedUser;
+					UserAccount::$validatedAccounts[$username . $password. $accountSource] = $validatedUser;
 					return $validatedUser;
 				}
 			}
