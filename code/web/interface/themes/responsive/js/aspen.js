@@ -13097,6 +13097,23 @@ AspenDiscovery.Record = (function(){
 			}
 			params = this.loadHoldNotificationOptions(params);
 
+			var cancelDate = $('#cancelDate').val();
+			if(cancelDate) {
+				var today = new Date().getTime();
+				var cancelOn = new Date(cancelDate).getTime();
+
+				if(today > cancelOn) {
+					$("#cancelHoldDateHelpBlock").show();
+					requestTitleButton.prop('disabled', false);
+					requestTitleButton.removeClass('disabled');
+					document.body.style.cursor = "pointer";
+					document.querySelector('.fa-spinner').classList.add('hidden');
+					return false;
+				} else {
+					$("#cancelHoldDateHelpBlock").hide();
+				}
+			}
+
 			$("#placeHoldForm").hide();
 			$("#placingHoldMessage").show();
 			$.getJSON(Globals.path + "/" + module +  "/" + id + "/AJAX", params, function(data){
