@@ -96,17 +96,20 @@ class CatalogConnection {
 
 		$barcodesToTest = [];
 		$barcodesToTest[$username] = $username;
-		$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
-		//Special processing to allow users to login with short barcodes
-		global $library;
-		if ($library) {
-			if ($library->barcodePrefix) {
-				if (strpos($username, $library->barcodePrefix) !== 0) {
-					//Add the barcode prefix to the barcode
-					$barcodesToTest[$library->barcodePrefix . $username] = $library->barcodePrefix . $username;
+		if ($this->accountProfile->authenticationMethod != 'db') {
+			$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
+			//Special processing to allow users to login with short barcodes
+			global $library;
+			if ($library) {
+				if ($library->barcodePrefix) {
+					if (strpos($username, $library->barcodePrefix) !== 0) {
+						//Add the barcode prefix to the barcode
+						$barcodesToTest[$library->barcodePrefix . $username] = $library->barcodePrefix . $username;
+					}
 				}
 			}
 		}
+		$barcodesToTest = array_unique($barcodesToTest);
 
 		//Get the existing user from the database.  This validates that the username and password on record are correct
 		$user = null;
@@ -1401,6 +1404,8 @@ class CatalogConnection {
 		global $timer;
 		global $logger;
 		$user = new User();
+		//First check the barcode field
+		$user->source = $this->driver->accountProfile->name;
 		$user->ils_barcode = $barcode;
 		if ($user->find(true)) {
 			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
@@ -1421,8 +1426,8 @@ class CatalogConnection {
 				}
 			}
 		} else {
-			$timer->logTime("Loading patron from database failed because we haven't seen this user before");
-			$logger->log("Loading patron from database failed because we haven't seen this user before", Logger::LOG_NOTICE);
+			$timer->logTime("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile");
+			$logger->log("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile", Logger::LOG_NOTICE);
 			$user = null;
 		}
 		return $user;
