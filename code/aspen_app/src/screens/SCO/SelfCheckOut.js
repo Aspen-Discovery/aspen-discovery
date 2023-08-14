@@ -11,7 +11,7 @@ import { checkoutItem, placeHold } from '../../util/recordActions';
 import { confirmHold } from '../../util/api/circulation';
 import { getPatronCheckedOutItems, refreshProfile } from '../../util/api/user';
 import { Platform } from 'react-native';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const SelfCheckOut = () => {
      const queryClient = useQueryClient();
@@ -20,6 +20,7 @@ export const SelfCheckOut = () => {
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
      const { user, cards, updateUser } = React.useContext(UserContext);
+     const { checkouts } = React.useContext(CheckoutsContext);
      const [items, setItems] = React.useState([]);
 
      let startNew = useRoute().params?.startNew ?? false;
@@ -59,24 +60,39 @@ export const SelfCheckOut = () => {
                } else {
                     if (barcode) {
                          setIsProcessingCheckout(true);
-                         // do the checkout
-                         await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId, barcodeType).then((result) => {
-                              if (!result.success) {
-                                   // prompt error
-                                   setHasError(true);
-                                   setErrorBody(result.message ?? 'Unknown error while trying to checkout title');
-                                   setErrorTitle(result.title ?? 'Unable to checkout title');
-                                   setIsOpen(true);
-                              } else {
-                                   let tmp = result.itemData;
-                                   tmp = _.concat(tmp, checkoutResult);
-                                   setItems(tmp);
 
-                                   queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
-                                   queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-                              }
-                              setIsProcessingCheckout(false);
-                         });
+                         // check if item is already checked out
+                         if (_.includes(items, { barcode: barcode }) || _.includes(checkouts, { barcode: barcode })) {
+                              // prompt error
+                              setHasError(true);
+                              setErrorBody(getTermFromDictionary(language, 'item_already_checked_out'));
+                              setErrorTitle(getTermFromDictionary(language, 'unable_to_checkout_title'));
+                              setIsOpen(true);
+                         } else {
+                              // do the checkout
+                              await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId, barcodeType).then((result) => {
+                                   if (!result.success) {
+                                        // prompt error
+                                        setHasError(true);
+                                        setErrorBody(result.message ?? getTermFromDictionary(language, 'unknown_error_checking_out'));
+                                        setErrorTitle(result.title ?? getTermFromDictionary(language, 'unable_to_checkout_title'));
+                                        setIsOpen(true);
+                                   } else {
+                                        let tmp = result.itemData;
+                                        tmp = _.concat(tmp, checkoutResult);
+                                        setItems(tmp);
+
+                                        queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
+                                        queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                        useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+                                             onSuccess: (data) => {
+                                                  updateCheckouts(data);
+                                             },
+                                        });
+                                   }
+                                   setIsProcessingCheckout(false);
+                              });
+                         }
                     }
                }
           });
@@ -112,7 +128,7 @@ export const SelfCheckOut = () => {
 
      const currentCheckOutItem = (item) => {
           if (item) {
-               let title = item?.title ?? 'Unknown Title';
+               let title = item?.title ?? getTermFromDictionary(language, 'unknown_title');
                let barcode = item?.barcode ?? '';
                let dueDate = item?.due ?? '';
                return (
@@ -138,7 +154,11 @@ export const SelfCheckOut = () => {
      return (
           <Box safeArea={5} w="100%">
                <Center pb={5}>
-                    {activeAccount?.displayName ? <Text pb={3}>You are checking out as {activeAccount.displayName}</Text> : null}
+                    {activeAccount?.displayName ? (
+                         <Text pb={3}>
+                              {getTermFromDictionary(language, 'checking_out_as')} {activeAccount.displayName}
+                         </Text>
+                    ) : null}
                     <Button leftIcon={<Icon as={<Ionicons name="barcode-outline" />} size={6} mr="1" />} colorScheme="secondary" onPress={() => openScanner()}>
                          {getTermFromDictionary(language, 'add_new_item')}
                     </Button>
