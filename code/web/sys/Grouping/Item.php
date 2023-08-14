@@ -46,6 +46,13 @@ class Grouping_Item {
 	public $volumeOrder;
 	public $lastCheckInDate;
 	public $atLibraryMainBranch;
+	public $atActiveLocation;
+	public $atUserHomeLocation;
+	public $atUserNearbyLocation1;
+	public $atUserNearbyLocation2;
+	public $atActiveNearbyLocation1;
+	public $atActiveNearbyLocation2;
+
 	/**
 	 * @var array
 	 */
@@ -64,7 +71,7 @@ class Grouping_Item {
 	 * @param Location $searchLocation
 	 * @param Library $library
 	 */
-	public function __construct($itemDetails, $scopingInfo, $searchLocation, $library, $mainLocationScopeId) {
+	public function __construct($itemDetails, $scopingInfo, $searchLocation, $library, $activeLocationScopeId, $mainLocationScopeId, $homeLocationScopeId, $userNearbyLocation1ScopeId, $userNearbyLocation2ScopeId, $atNearbyLocation1, $atNearbyLocation2) {
 		if (is_null($scopingInfo)) {
 			//Item details stored in the database
 			$this->itemId = $itemDetails['itemId'];
@@ -85,9 +92,26 @@ class Grouping_Item {
 			$this->status = $itemDetails['status'];
 			$this->locallyOwned = strpos($itemDetails['locationOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
 			$this->libraryOwned = $this->locallyOwned || strpos($itemDetails['libraryOwnedScopes'], "~{$itemDetails['scopeId']}~") !== false;
-			//check to see if it is at the main library
+			if ($activeLocationScopeId !== false) {
+				$this->atActiveLocation = strpos($itemDetails['locationOwnedScopes'], "~{$activeLocationScopeId}~") !== false;
+			}
 			if ($mainLocationScopeId !== false) {
 				$this->atLibraryMainBranch = strpos($itemDetails['locationOwnedScopes'], "~{$mainLocationScopeId}~") !== false;
+			}
+			if ($homeLocationScopeId !== false) {
+				$this->atUserHomeLocation = strpos($itemDetails['locationOwnedScopes'], "~{$homeLocationScopeId}~") !== false;
+			}
+			if ($userNearbyLocation1ScopeId !== false) {
+				$this->atUserNearbyLocation1 = strpos($itemDetails['locationOwnedScopes'], "~{$userNearbyLocation1ScopeId}~") !== false;
+			}
+			if ($userNearbyLocation2ScopeId !== false) {
+				$this->atUserNearbyLocation2 = strpos($itemDetails['locationOwnedScopes'], "~{$userNearbyLocation2ScopeId}~") !== false;
+			}
+			if ($atNearbyLocation1 !== false) {
+				$this->atActiveNearbyLocation1 = strpos($itemDetails['locationOwnedScopes'], "~{$atNearbyLocation1}~") !== false;
+			}
+			if ($atNearbyLocation2 !== false) {
+				$this->atActiveNearbyLocation2 = strpos($itemDetails['locationOwnedScopes'], "~{$atNearbyLocation2}~") !== false;
 			}
 			$this->available = $itemDetails['available'] == "1";
 			$this->holdable = $itemDetails['holdable'] == "1";
@@ -186,16 +210,28 @@ class Grouping_Item {
 	public function getSummaryKey(): string {
 		$key = str_pad($this->volumeOrder, 10, '0', STR_PAD_LEFT);
 		$key .= $this->shelfLocation . ':' . $this->callNumber;
-		if ($this->locallyOwned) {
-			$key = '1 ' . $key;
+		if ($this->atActiveLocation) {
+			$key = '01 ' . $key;
+		}else if ($this->atUserHomeLocation) {
+			$key = '02 ' . $key;
+		}else if ($this->locallyOwned) {
+			$key = '03 ' . $key;
+		}else if ($this->atActiveNearbyLocation1) {
+			$key = '04 ' . $key;
+		}else if ($this->atActiveNearbyLocation2) {
+			$key = '05 ' . $key;
+		}else if ($this->atUserNearbyLocation1) {
+			$key = '06 ' . $key;
+		}else if ($this->atUserNearbyLocation2) {
+			$key = '07 ' . $key;
 		} elseif ($this->atLibraryMainBranch) {
-			$key = '4 ' . $key;
+			$key = '08 ' . $key;
 		} elseif ($this->libraryOwned) {
-			$key = '5 ' . $key;
+			$key = '09 ' . $key;
 		} elseif ($this->isOrderItem) {
-			$key = '7 ' . $key;
+			$key = '10 ' . $key;
 		} else {
-			$key = '6 ' . $key;
+			$key = '11 ' . $key;
 		}
 		return $key;
 	}
