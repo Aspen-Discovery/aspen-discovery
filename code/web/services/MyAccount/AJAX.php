@@ -4444,7 +4444,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$body = [
 					'idempotency_key' => $paymentId,
 					'amount_money' => [
-						'amount' => 2000,
+						'amount' => (int)round($payment->totalPaid * 100),
 						'currency' => 'USD'
 					],
 					'source_id' => $paymentToken
