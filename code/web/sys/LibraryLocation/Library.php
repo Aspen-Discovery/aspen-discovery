@@ -406,6 +406,10 @@ class Library extends DataObject {
 
 	public $accountProfileId;
 
+	//cookieConsent
+	public $cookieStorageConsent;
+	public $cookiePolicyHTML;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 
@@ -3168,6 +3172,30 @@ class Library extends DataObject {
 						],
 					],
 				],
+			],
+			'dataProtectionRegulations' => [
+				'property' => 'dataProtectionRegulations',
+				'type' => 'section',
+				'label' => 'Data Protection Regulations',
+				'hideInLists' => true,
+				'expandByDefault' => false,
+				'properties' => [
+					'cookieStorageConsent' => [
+						'property' => 'cookieStorageConsent',
+						'type' => 'checkbox',
+						'label' => 'Require Cookie Storage Consent',
+						'description' => 'Require users to consent to cookie storage before using the catalog',
+						'default' => false,
+					],
+					'cookiePolicyHTML' => [
+						'property' => 'cookiePolicyHTML',
+						'type' => 'html',
+						'label' => 'Cookie Policy',
+						'description' => 'HTML of cookie policy to display to users',
+						'default' => 'This body has not yet set a cookie storage policy, please check back later.',
+						'hideInLists' => true,
+					],
+				]
 			],
 			'messagingSection' => [
 				'property' => 'messagingSection',

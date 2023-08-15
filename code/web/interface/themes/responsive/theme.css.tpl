@@ -409,7 +409,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$primaryButtonBorderColor};
 {rdelim}
 
-.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
+.btn-primary:hover, a.btn-primary:hover, .btn-primary:focus, a.btn-primary:focus, .btn-primary:active, a.btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary{ldelim}
     background-color: {$primaryButtonHoverBackgroundColor} !important;
     color: {$primaryButtonHoverForegroundColor} !important;
     border-color: {$primaryButtonHoverBorderColor};
@@ -421,7 +421,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
     border-color: {$actionButtonBorderColor};
 {rdelim}
 
-.btn-action:hover, .btn-action:focus, .btn-action:active, .btn-action.active, .open .dropdown-toggle.btn-action{ldelim}
+.btn-action:hover, a.btn-action:hover, .btn-action:focus, a.btn-action:focus, .btn-action:active, a.btn-action:active, .btn-action.active, .open .dropdown-toggle.btn-action{ldelim}
     background-color: {$actionButtonHoverBackgroundColor} !important;
     color: {$actionButtonHoverForegroundColor} !important;
     border-color: {$actionButtonHoverBorderColor};
@@ -853,7 +853,25 @@ color: {$bodyTextColor};
         font-size: 85%;
     {rdelim}
 {/if}
-
+/* cookieConsent */
+.stripPopup {ldelim}
+  background-color: {$cookieConsentBackgroundColor};
+{rdelim}
+.stripPopup .btnWrap a.button {ldelim}
+background-color: {$cookieConsentButtonColor};
+color: {$cookieConsentButtonTextColor};
+border: 1px solid {$cookieConsentButtonBorderColor};
+{rdelim}
+.stripPopup .btnWrap a.button:hover {ldelim}
+background-color: {$cookieConsentButtonHoverColor};
+color: {$cookieConsentButtonHoverTextColor};
+{rdelim}
+.stripPopup .cookieContainer .contentWrap span {ldelim}
+  color: {$cookieConsentTextColor};
+{rdelim}
+.stripPopup .cookieContainer .contentWrap abbr {ldelim}
+  color: {$cookieConsentTextColor};
+{rdelim}
 {$additionalCSS}
 </style>
 {/strip}

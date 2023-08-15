@@ -68,9 +68,7 @@
 							<br>
 						{else}
 							<div class="btn-toolbar">
-								<div class="col-xs-12">
-									<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
-								</div>
+								<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="In Your Events" isPublicFacing=true}</a>
 							</div>
 							<br>
 						{/if}
@@ -90,9 +88,7 @@
 							<br>
 						{else}
 							<div class="btn-toolbar">
-								<div class="col-xs-12">
-									<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
-								</div>
+								<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
 							</div>
 							<br>
 						{/if}
