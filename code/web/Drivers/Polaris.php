@@ -887,6 +887,7 @@ class Polaris extends AbstractIlsDriver {
 				}
 			}
 		}
+		$barcodesToTest = array_unique($barcodesToTest);
 
 		foreach ($barcodesToTest as $i => $barcode) {
 			$sessionInfo = $this->loginViaWebService($username, $password);
@@ -941,7 +942,11 @@ class Polaris extends AbstractIlsDriver {
 					$user->phone = $patronBasicData->PhoneNumber3;
 				}
 			}
-			$user->email = $patronBasicData->EmailAddress;
+			if (is_null($patronBasicData->EmailAddress)) {
+				$user->email = '';
+			}else{
+				$user->email = $patronBasicData->EmailAddress;
+			}
 
 			$addresses = $patronBasicData->PatronAddresses;
 			if (count($addresses) > 0) {
