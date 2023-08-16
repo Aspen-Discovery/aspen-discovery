@@ -43,7 +43,11 @@ export const SelfCheckOut = () => {
      const [errorTitle, setErrorTitle] = React.useState(null);
 
      console.log(activeAccount);
-     activeAccount = _.find(cards, ['cat_username', activeAccount]);
+     if (_.find(cards, ['ils_barcode', activeAccount])) {
+          activeAccount = _.find(cards, ['ils_barcode', activeAccount]);
+     } else {
+          activeAccount = _.find(cards, ['cat_username', activeAccount]);
+     }
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
