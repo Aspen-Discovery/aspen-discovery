@@ -51,7 +51,7 @@ class UserOpenArchivesUsage extends DataObject {
 		$user = new User();
 		$user->id = $this->userId;
 		if ($user->find(true)) {
-			$links['user'] = $user->cat_username;
+			$links['user'] = $user->ils_barcode;
 		}
 		return $links;
 	}
@@ -61,7 +61,7 @@ class UserOpenArchivesUsage extends DataObject {
 		if (isset($jsonData['user'])) {
 			$username = $jsonData['user'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$this->userId = $user->id;
 			}

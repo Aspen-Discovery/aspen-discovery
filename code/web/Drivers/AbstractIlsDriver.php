@@ -712,7 +712,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return false;
 	}
 
-	public function checkoutBySip(User $patron, $barcode) {
+	public function checkoutBySip(User $patron, $barcode, $locationId) {
 		$checkout_result = [];
 		$success = false;
 		$title = translate([
@@ -750,27 +750,44 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 				$mySip->patron = $patron->getBarcode();
 				$mySip->patronpwd = $patron->getPasswordOrPin();
 
-				$in = $mySip->msgCheckout($barcode);
+				$in = $mySip->msgCheckout($barcode, '', 'N', '', 'N', 'N', 'N', $locationId);
 				$msg_result = $mySip->get_message($in);
 
 				$checkoutResponse = null;
-				if (preg_match('/^64/', $msg_result)) {
-					$checkoutResponse = $mySip->parseCheckoutResponse($checkoutResponse);
+				$item = [];
+				if (str_starts_with($msg_result, '64') || str_starts_with($msg_result, '12')) {
+					$checkoutResponse = $mySip->parseCheckoutResponse($msg_result);
+					if($checkoutResponse['fixed']['Ok'][0]) {
+						$success = true;
+						$title = translate(['text' => 'Checkout successful', 'isPublicFacing' => true]);
+						$message = translate(['text' => 'You have successfully checked out this title.', 'isPublicFacing' => true]);
+						if(isset($checkoutResponse['variable']['AF'][0])) {
+							$message .= ' ' . $checkoutResponse['variable']['AF'][0];
+						}
+						$dueDate = explode(" ", $checkoutResponse['variable']['AH'][0]);
+						$dueDate = date_create($dueDate[0]);
+						$dueDate = date_format($dueDate, 'm/d/Y');
+						$item['due'] = $dueDate;
+					} else {
+						$message .= ' ' . $checkoutResponse['variable']['AF'][0];
+						$item['due'] = null;
+					}
+					$item['title'] = $checkoutResponse['variable']['AJ'][0] ?? 'Unknown title';
+					$item['barcode'] = $barcode;
+				} else {
 					$message = $checkoutResponse;
 				}
 			}
 		}
 
 		$apiResult['message'] = $message;
+		$apiResult['title'] = $title;
 		return [
 			'title' => $title,
-			'barcode' => $barcode,
 			'success' => $success,
-			'message' => translate([
-				'text' => $message,
-				'isPublicFacing' => true,
-			]),
+			'message' => $message,
 			'api' => $apiResult,
+			'itemData' => $item ?? [],
 		];
 	}
 }

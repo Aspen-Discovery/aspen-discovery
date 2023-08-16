@@ -42,7 +42,7 @@ class FOLIO extends AbstractIlsDriver {
 			try {
 				// If we fetched the profile earlier, we want to use the username
 				// from there; otherwise, we'll use the passed-in version.
-				$query = $this->patronLoginWithOkapi($profile->username ?? $username, $password);
+				$query = $this->patronLoginWithOkapi($profile->unique_ils_id ?? $username, $password);
 			} catch (Exception $e) {
 				return null;
 			}
@@ -63,6 +63,7 @@ class FOLIO extends AbstractIlsDriver {
 		$user = new User();
 //		$user->id = $profile->externalSystemId;
 		$user->username = $profile->id;
+		$user->unique_ils_id = $profile->id;
 		// Look up user by username
 		if ($user->find(true)) {
 			$logger->log("user found!", Logger::LOG_ERROR);
@@ -70,7 +71,9 @@ class FOLIO extends AbstractIlsDriver {
 			$logger->log("user not found!", Logger::LOG_ERROR);
 		}
 		$user->cat_username = $username;
+		$user->ils_barcode = $username;
 		$user->cat_password = $password;
+		$user->ils_password = $password;
 		$user->alternateLibraryCard = $profile->barcode;
 		$user->firstname = $profile->personal->preferredFirstName ?? $profile->personal->firstName;
 		$user->lastname = $profile->personal->lastName;
@@ -154,7 +157,7 @@ class FOLIO extends AbstractIlsDriver {
 
 	public function getCheckouts(User $user): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
-		$query = ['query' => 'userId==' . $user->username . ' and status.name==Open'];
+		$query = ['query' => 'userId==' . $user->unique_ils_id . ' and status.name==Open'];
 		$transactions = [];
 		foreach ($this->getPagedResults('loans', '/circulation/loans', $query) as $trans) {
 			$checkout = new Checkout();
@@ -200,7 +203,7 @@ class FOLIO extends AbstractIlsDriver {
 
 		$requestbody = [
 			'itemId' => $itemId,
-			'userId' => $patron->username,
+			'userId' => $patron->unique_ils_id,
 		];
 		$response = $this->makeRequest('POST', '/circulation/renew-by-id', json_encode($requestbody));
 
@@ -239,7 +242,7 @@ class FOLIO extends AbstractIlsDriver {
 	public function getHolds(User $user): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$query = [
-			'query' => 'requesterId==' . $user->username . ' and status>Open',
+			'query' => 'requesterId==' . $user->unique_ils_id . ' and status>Open',
 		];
 
 		$availableHolds = [];
@@ -306,7 +309,7 @@ class FOLIO extends AbstractIlsDriver {
 
 		// FOLIO default cancellation reason for patron-initiated cancel
 		$hold['cancellationReasonId'] = '75187e8d-e25a-47a7-89ad-23ba612338de';
-		$hold['cancelledByUserId'] = $patron->username;
+		$hold['cancelledByUserId'] = $patron->unique_ils_id;
 		$hold['cancelledDate'] = date('c');
 		$hold['status'] = 'Closed - Cancelled';
 
@@ -438,7 +441,7 @@ class FOLIO extends AbstractIlsDriver {
 		}
 		$currencyFormatter = new NumberFormatter('en' . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 
-		$query = ['query' => 'userId==' . $patron->username . ' and status.name==Open'];
+		$query = ['query' => 'userId==' . $patron->unique_ils_id . ' and status.name==Open'];
 		$fines = [];
 		foreach ($this->getPagedResults('accounts', '/accounts', $query) as $fine) {
 			$date = date_create($fine->metadata->createdDate);

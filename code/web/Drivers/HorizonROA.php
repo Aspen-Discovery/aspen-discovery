@@ -134,8 +134,8 @@ abstract class HorizonROA extends AbstractIlsDriver {
 		return $session;
 	}
 
-	private function getSessionToken($patron) {
-		$horizonRoaUserId = $patron->username;
+	private function getSessionToken(User $patron) {
+		$horizonRoaUserId = $patron->unique_ils_id;
 		//Get the session token for the user
 		if (isset(self::$sessionIdsForUsers[$horizonRoaUserId])) {
 			return self::$sessionIdsForUsers[$horizonRoaUserId];
@@ -143,7 +143,7 @@ abstract class HorizonROA extends AbstractIlsDriver {
 			[
 				,
 				$sessionToken,
-			] = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+			] = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 			return $sessionToken;
 		}
 	}
@@ -199,6 +199,7 @@ abstract class HorizonROA extends AbstractIlsDriver {
 				$user = new User();
 				$user->source = $this->accountProfile->name;
 				$user->username = $horizonRoaUserID;
+				$user->unique_ils_id = $horizonRoaUserID;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
@@ -218,7 +219,9 @@ abstract class HorizonROA extends AbstractIlsDriver {
 				}
 				$user->fullname = isset($fullName) ? $fullName : '';
 				$user->cat_username = $username;
+				$user->ils_barcode = $username;
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 				$Address1 = "";
 				$City = "";
 				$State = "";
@@ -462,7 +465,7 @@ abstract class HorizonROA extends AbstractIlsDriver {
 		// Now that we have the session token, get checkout  information
 		$webServiceURL = $this->getWebServiceURL();
 		//Get a list of checkouts for the user
-		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=circRecordList', null, $sessionToken);
+		$patronCheckouts = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->unique_ils_id . '?includeFields=circRecordList', null, $sessionToken);
 		if (!empty($patronCheckouts->fields->circRecordList)) {
 //			$sCount = 0;
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
@@ -634,8 +637,8 @@ abstract class HorizonROA extends AbstractIlsDriver {
 //		$copyDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/catalog/copy/describe", null, $sessionToken);
 		//Get a list of holds for the user
 		// (Call now includes Item information for when the hold is an item level hold.)
-//		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
-		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=holdRecordList', null, $sessionToken);
+//		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->unique_ils_id . '?includeFields=holdRecordList{*,item{itemType,barcode,call{callNumber}}}', null, $sessionToken);
+		$patronHolds = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->unique_ils_id . '?includeFields=holdRecordList', null, $sessionToken);
 		if ($patronHolds && isset($patronHolds->fields)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronHolds->fields->holdRecordList as $holdRecord) {
@@ -1144,7 +1147,7 @@ abstract class HorizonROA extends AbstractIlsDriver {
 		$webServiceURL = $this->getWebServiceURL();
 //		$blockListDescribe  = $this->getWebServiceResponse($webServiceURL . "/v1/circulation/block/describe", null, $sessionToken);
 		//Get a list of fines for the user
-		$patronFines = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->username . '?includeFields=blockList', null, $sessionToken);
+		$patronFines = $this->getWebServiceResponse($webServiceURL . '/v1/user/patron/key/' . $patron->unique_ils_id . '?includeFields=blockList', null, $sessionToken);
 		if (!empty($patronFines->fields->blockList)) {
 			require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
 			foreach ($patronFines->fields->blockList as $blockList) {
@@ -1247,8 +1250,8 @@ abstract class HorizonROA extends AbstractIlsDriver {
 	public function emailResetPin($barcode) {
 		if (!empty($barcode)) {
 			$patron = new User;
-			$patron->get('cat_username', $barcode); // This will always be for barcode/pin configurations
-			if (!empty($patron->id)) {
+			$patron->ils_barcode = $barcode;
+			if ($patron->find(true)) {
 				global $configArray;
 				$userID = $patron->id;
 			} /** @noinspection PhpStatementHasEmptyBodyInspection */ else {
@@ -1316,7 +1319,7 @@ abstract class HorizonROA extends AbstractIlsDriver {
 				'error' => 'Sorry, we encountered an error while attempting to update your pin. Please contact your local library.',
 			];
 		} elseif (!empty($changeMyPinResponse->sessionToken)) {
-			if ($user->username == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
+			if ($user->unique_ils_id == $changeMyPinResponse->patronKey) { // Check that the ILS user matches the Aspen Discovery user
 				//TODO: check that this still applies
 				$user->cat_password = $newPin;
 				$user->update();
@@ -1362,7 +1365,7 @@ abstract class HorizonROA extends AbstractIlsDriver {
 		if ($canUpdateContactInfo) {
 			$sessionToken = $this->getSessionToken($patron);
 			if ($sessionToken) {
-				$horizonRoaUserId = $patron->username;
+				$horizonRoaUserId = $patron->unique_ils_id;
 				$updatePatronInfoParameters = [
 					'fields' => [],
 				];

@@ -74,7 +74,7 @@ class MyAccount_RegisterRosenLevelUP extends MyAccount {
 			} elseif ($this->student_is_eligible == true) {
 				$this->student_first_name = $user->firstname;
 				$this->student_last_name = $user->lastname;
-				$this->student_username = $user->cat_username;
+				$this->student_username = $user->ils_barcode;
 				if (!empty($user->getHomeLocation()->subdomain)) {
 					$this->student_school_code = $user->getHomeLocation()->subdomain;
 					$this->student_school_name = $user->getHomeLocation()->displayName;

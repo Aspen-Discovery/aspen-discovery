@@ -209,9 +209,10 @@ class UserUtils {
 				$result['numUserPaymentsMoved']++;
 			}
 
-			$newUsername = $newUser->username;
+			$newUsername = $newUser->unique_ils_id;
 			$newUser->delete();
 			$originalUser->username = $newUsername;
+			$originalUser->unique_ils_id = $newUsername;
 			$originalUser->update();
 
 			$result['numUsersMerged']++;

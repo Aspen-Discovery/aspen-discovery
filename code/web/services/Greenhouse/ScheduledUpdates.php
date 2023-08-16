@@ -70,7 +70,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 
 	function canView(): bool {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}
@@ -79,7 +79,7 @@ class Greenhouse_ScheduledUpdates extends ObjectEditor {
 
 	function canAddNew() {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}

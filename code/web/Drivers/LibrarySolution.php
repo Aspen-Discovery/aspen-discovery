@@ -43,6 +43,7 @@ class LibrarySolution extends AbstractIlsDriver {
 				$userExistsInDB = false;
 				$user = new User();
 				$user->username = $accountSummary->patron->guid;
+				$user->unique_ils_id = $accountSummary->patron->guid;
 				$user->source = $this->accountProfile->name;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
@@ -66,7 +67,9 @@ class LibrarySolution extends AbstractIlsDriver {
 				}
 				$user->_fullname = $accountSummary->patron->fullName;
 				$user->cat_username = $accountSummary->patron->patronId;
+				$user->ils_barcode = $accountSummary->patron->patronId;
 				$user->cat_password = $accountSummary->patron->pin;
+				$user->ils_password = $accountSummary->patron->pin;
 				$user->phone = $accountSummary->patron->phone;
 				$user->email = $accountSummary->patron->email;
 
@@ -203,9 +206,9 @@ class LibrarySolution extends AbstractIlsDriver {
 	 * @param string $sortOption
 	 * @return array
 	 */
-	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1) {
+	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = 'checkedOut') {
 		$readingHistory = [];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/history/0/20/OutDate?_=' . time() * 1000;
@@ -297,7 +300,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	 */
 	public function getCheckouts(User $patron): array {
 		$transactions = [];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/loans/0/20/Status?_=' . time() * 1000;
@@ -380,7 +383,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'title' => $recordDriver->getTitle(),
 			'message' => "Sorry, we were unable to renew your checkout.",
 		];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//$isAuthenticated = $this->isAuthenticated();
 			$url = $this->getVendorOpacUrl() . '/loans/renew?_=' . time() * 1000;
 			$postParams = '{"renewLoanInfos":"[{\"success\":false,\"itemId\":\"' . $itemId . '\",\"date\":' . (time() * 1000) . ',\"downloadable\":false}]"}';
@@ -455,7 +458,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'unavailable' => [],
 		];
 
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 20 loans
 			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
@@ -555,7 +558,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'title' => $recordDriver->getTitle(),
 			'message' => 'Sorry, your hold could not be placed.',
 		];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			$url = $this->getVendorOpacUrl() . '/requests/true?_=' . time() * 1000;
 			//LSS allows multiple holds to be places at once, but we will only do one at a time for now.
 			$postParams[] = [
@@ -625,7 +628,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'title' => $recordDriver->getTitle(),
 			'message' => 'Sorry, your hold could not be cancelled.',
 		];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//for lss we need additional information about the hold
 			$url = $this->getVendorOpacUrl() . '/requests/0/20/Status?_=' . time() * 1000;
 			$holdInfoRaw = $this->curlWrapper->curlGetPage($url);
@@ -665,7 +668,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'title' => $recordDriver->getTitle(),
 			'message' => 'Sorry, your hold could not be frozen.',
 		];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			$url = $this->getVendorOpacUrl() . '/requests/suspend?_=' . time() * 1000;
 			$formattedReactivationDate = $dateToReactivate;
 			$postParams = '{"suspendHoldInfos":"[{\"desireNumber\":\"' . $itemToFreezeId . '\",\"success\":false,\"suspendDate\":\"' . $formattedReactivationDate . '\",\"queuePosition\":\"1\",\"bibliographicId\":\"' . $recordId . '\",\"pickupBranchId\":100,\"downloadable\":false}]"}';
@@ -699,7 +702,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'title' => $recordDriver->getTitle(),
 			'message' => 'Sorry, your hold could not be thawed.',
 		];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			$result['message'] = 'This functionality is currently unimplemented';
 		} else {
 			$result['message'] = 'Sorry, the user supplied was not valid in the catalog. Please try again.';
@@ -714,7 +717,7 @@ class LibrarySolution extends AbstractIlsDriver {
 			'title' => $recordDriver->getTitle(),
 			'message' => 'Sorry, the pickup location for your hold could not be changed.',
 		];
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//Not possible in LSS
 			$result['message'] = 'This functionality is currently unimplemented';
 		} else {
@@ -730,7 +733,7 @@ class LibrarySolution extends AbstractIlsDriver {
 	function getFines($patron, $includeMessages = false): array {
 		$fines = [];
 
-		if ($this->loginPatronToLSS($patron->cat_username, $patron->cat_password)) {
+		if ($this->loginPatronToLSS($patron->ils_barcode, $patron->ils_password)) {
 			//Load transactions from LSS
 			//TODO: Verify that this will load more than 10000 fines
 			$url = $this->getVendorOpacUrl() . '/fees/0/10000/OutDate?_=' . time() * 1000;

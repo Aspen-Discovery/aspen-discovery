@@ -59,16 +59,19 @@ class MapAndMergeUsers extends UserMerger {
 		foreach ($userMappings as $originalUsername => $newUsername) {
 			$originalUser = new User();
 			$originalUser->username = $originalUsername;
+			$originalUser->unique_ils_id = $originalUsername;
 			if ($originalUser->find(true)) {
 				$result['numUnmappedUsers']++;
 
 				$newUser = new User();
 				$newUser->username = $newUsername;
+				$newUser->unique_ils_id = $newUsername;
 				if ($newUser->find(true)) {
 					UserUtils::mergeUsers($originalUser, $newUser, $result);
 				} else {
 					//We just have the old record in the database, we can just update the username and reset
 					$originalUser->username = $newUsername;
+					$originalUser->unique_ils_id = $originalUsername;
 					$originalUser->update();
 					$result['numUsersUpdated']++;
 				}

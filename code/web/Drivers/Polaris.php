@@ -95,7 +95,7 @@ class Polaris extends AbstractIlsDriver {
 
 		if (empty($messages)) {
 			$staffUserInfo = $this->getStaffUserInfo();
-			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/circulation/patron/{$user->username}/renewblocks";
+			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/circulation/patron/{$user->unique_ils_id}/renewblocks";
 			$renewBlocksResponse = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, UserAccount::isUserMasquerading());
 			ExternalRequestLogEntry::logRequest('polaris.getRenewBlocks', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $renewBlocksResponse, []);
 			if ($renewBlocksResponse && $this->lastResponseCode == 200) {
@@ -650,7 +650,7 @@ class Polaris extends AbstractIlsDriver {
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
 		$body = new stdClass();
-		$body->PatronID = (int)$patron->username;
+		$body->PatronID = (int)$patron->unique_ils_id;
 		$body->BibID = (int)$shortId;
 		if (!empty($itemId)) {
 			//Check to see if we also have a volume
@@ -720,7 +720,7 @@ class Polaris extends AbstractIlsDriver {
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
 		$body = new stdClass();
-		$body->PatronID = (int)$patron->username;
+		$body->PatronID = (int)$patron->unique_ils_id;
 		$body->BibID = (int)$recordId;
 		$body->PickupOrgID = (int)$pickupBranch;
 		$body->VolumeNumber = $volumeId;
@@ -908,6 +908,7 @@ class Polaris extends AbstractIlsDriver {
 				$user = new User();
 				$user->source = $this->accountProfile->name;
 				$user->username = $patronId;
+				$user->unique_ils_id = $patronId;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
@@ -915,8 +916,10 @@ class Polaris extends AbstractIlsDriver {
 				$userExistsInDB = isset($user->id);
 			}
 			$user->cat_username = $patronBarcode;
+			$user->ils_barcode = $patronBarcode;
 			if (!empty($password)) {
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 			}
 			$user->patronType = $patronBasicData->PatronCodeID;
 
@@ -1709,7 +1712,7 @@ class Polaris extends AbstractIlsDriver {
 	 * @param User $user
 	 */
 	public function loadContactInformation(User $user) {
-		$this->loadPatronBasicData($user->getBarcode(), $user->getPasswordOrPin(), $user->username, UserAccount::isUserMasquerading(), $user);
+		$this->loadPatronBasicData($user->getBarcode(), $user->getPasswordOrPin(), $user->unique_ils_id, UserAccount::isUserMasquerading(), $user);
 	}
 
 	private function getWorkstationID(User $patron): int {

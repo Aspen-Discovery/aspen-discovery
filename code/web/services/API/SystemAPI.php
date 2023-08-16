@@ -37,6 +37,7 @@ class SystemAPI extends Action {
 					'getBulkTranslations',
 					'getLanguages',
 					'getVdxForm',
+					'getSelfCheckSettings'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -537,7 +538,7 @@ class SystemAPI extends Action {
 
 	public function displayAdminAlert(): bool {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}
@@ -942,6 +943,41 @@ class SystemAPI extends Action {
 		}
 
 		return $result;
+	}
+
+	public function getSelfCheckSettings(): array {
+		if (isset($_REQUEST['locationId'])) {
+			$location = new Location();
+			$location->locationId = $_REQUEST['locationId'];
+			if ($location->find(true)) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+				$scoSettings = new AspenLiDASelfCheckSetting();
+				$scoSettings->id = $location->lidaSelfCheckSettingId;
+				if ($scoSettings->find(true)) {
+					return [
+						'success' => true,
+						'settings' => [
+							'isEnabled' => $scoSettings->isEnabled,
+						],
+					];
+				} else {
+					return [
+						'success' => false,
+						'message' => 'No self-check settings found for location',
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'message' => 'No location found with provided id',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Must provide a location id',
+			];
+		}
 	}
 
 	function getBreadcrumbs(): array {

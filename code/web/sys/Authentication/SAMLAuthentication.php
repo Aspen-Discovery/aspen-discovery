@@ -293,7 +293,7 @@ class SAMLAuthentication{
 		if($this->ssoAuthOnly) {
 			$login = UserAccount::loginWithAspen($user);
 		} else {
-			$_REQUEST['username'] = $user->cat_username;
+			$_REQUEST['username'] = $user->ils_password;
 			$login = UserAccount::login(true);
 		}
 
@@ -452,6 +452,7 @@ class SAMLAuthentication{
 		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
 		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
 		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints['userId']);
 		$tmpUser->phone = '';
 		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
 

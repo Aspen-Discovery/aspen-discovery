@@ -32,7 +32,7 @@ function getUpdates23_08_00(): array {
 				"UPDATE indexing_profiles set customFacet2ValuesToInclude = '.*'",
 				"UPDATE indexing_profiles set customFacet3ValuesToInclude = '.*'",
 			]
-		],
+		], //custom_facets
 		'twilio_settings' => [
 			'title' => 'Twilio Settings',
 			'description' => 'Add twilio settings and permissions',
@@ -49,7 +49,7 @@ function getUpdates23_08_00(): array {
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'Administer Twilio', '', 34, 'Controls if the user can change Twilio settings. <em>This has potential security and cost implications.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Twilio'))",
 			]
-		],
+		], //twilio_settings
 
 		//kirstien - ByWater
 		'aspen_lida_self_check_settings' => [

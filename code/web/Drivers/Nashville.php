@@ -33,7 +33,7 @@ class Nashville extends CarlX {
 		$systemVariables = SystemVariables::getSystemVariables();
 		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$patron->id = $payment->userId;
-		$patronId = $patron->cat_username;
+		$patronId = $patron->ils_barcode;
 		$allPaymentsSucceed = true;
 		foreach ($accountLinesPaid as $line) {
 			// MSB Payments are in the form of fineId|paymentAmount
@@ -116,7 +116,7 @@ class Nashville extends CarlX {
     // Following successful online payment, update Patron with new Expiration Date
 	protected function updateNonResident(User $user): array {
 		global $logger;
-		$patronId = $user->cat_username;
+		$patronId = $user->ils_barcode;
 		$request = $this->getSearchbyPatronIdRequest($user);
 		$request->Patron = new stdClass();
 		$request->Patron->ExpirationDate = date('c', strtotime('+1 year'));
@@ -333,7 +333,7 @@ class Nashville extends CarlX {
 
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
-				$myLostFines = $this->getLostViaSIP($patron->cat_username);
+				$myLostFines = $this->getLostViaSIP($patron->ils_barcode);
 				$myFinesIds = array_column($myFines, 'fineId');
 				foreach ($myLostFines as $myLostFine) {
 					$keys = array_keys($myFinesIds, $myLostFine['fineId'] . '-L');

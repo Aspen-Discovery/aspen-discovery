@@ -50,7 +50,7 @@ class LoadPreferredPickupLocations extends Admin_Admin {
 						$homeLibraryCode = $preferredPickupLocationRow[3];
 						if ($homeLibraryCode != $preferredPickupLocationCode) {
 							$user = new User();
-							$user->cat_username = $userBarcode;
+							$user->ils_barcode = $userBarcode;
 							if (!$user->find(true)) {
 								$user = UserAccount::findNewUser($userBarcode);
 								if ($user == false) {
@@ -100,7 +100,7 @@ class LoadPreferredPickupLocations extends Admin_Admin {
 
 	function canView(): bool {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}

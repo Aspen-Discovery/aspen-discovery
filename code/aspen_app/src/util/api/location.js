@@ -35,3 +35,38 @@ export async function getLocationInfo(url = null) {
      }
      return [];
 }
+
+export async function getSelfCheckSettings(url = null) {
+     const apiUrl = url ?? LIBRARY.url;
+     let locationId;
+     try {
+          locationId = await AsyncStorage.getItem('@locationId');
+     } catch (e) {
+          console.log(e);
+     }
+
+     const discovery = create({
+          baseURL: apiUrl + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(),
+          auth: createAuthTokens(),
+          params: {
+               locationId: locationId,
+          },
+     });
+     const response = await discovery.get('/SystemAPI?method=getSelfCheckSettings');
+     if (response.ok) {
+          if (response.data.result) {
+               return response.data.result;
+          } else {
+               return {
+                    success: false,
+                    settings: [],
+               };
+          }
+     }
+     return {
+          success: false,
+          settings: [],
+     };
+}

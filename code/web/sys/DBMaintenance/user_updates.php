@@ -977,6 +977,7 @@ function updateDefaultPermissions() {
 /** @noinspection PhpUnused */
 function makeNytUserListPublisher() {
 	$user = new User();
+	$user->source = 'admin';
 	$user->username = 'nyt_user';
 	if ($user->find(true)) {
 		$role = new Role();
@@ -995,6 +996,7 @@ function makeNytUserListPublisher() {
 function fixNytUserPermissions() {
 	//Get the New York Times User
 	$user = new User();
+	$user->source = 'admin';
 	$user->username = 'nyt_user';
 	if ($user->find(true)) {
 		if ($user->id == 0) {
