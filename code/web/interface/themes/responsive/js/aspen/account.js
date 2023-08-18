@@ -1777,7 +1777,7 @@ AspenDiscovery.Account = (function () {
 				}).fail(AspenDiscovery.ajaxFail);
 			}else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					return AspenDiscovery.Account.regInfoModal(trigger, source, id);
+					return AspenDiscovery.Account.regInfoModal(trigger, source, id, vendor, regLink);
 				}, false);
 			}
 			return false;
