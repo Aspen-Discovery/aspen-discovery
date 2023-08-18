@@ -5881,6 +5881,7 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function saveEvent() {
 		$result = [];
+		$regRequired = 0; // set a default
 
 		if (!UserAccount::isLoggedIn()) {
 			$result['success'] = false;
@@ -5974,13 +5975,17 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['title'] = translate([
 					'text' => "Added Successfully",
 				]);
+				$result['regRequired'] = false;
 				if ($regRequired){
 					$result['message'] = translate([
-						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.</br></br> 
-						We are taking you to the library’s event management page where you will need to complete your registration. 
-						If you are not redirected to the event registration page, please follow <a href='$externalUrl'>this link.</a>",
+						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.",
 						'isPublicFacing' => true,
 					]);
+					$result['buttons'] = '<a class="btn btn-primary" href="'.$externalUrl.'" role="button" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
+							'text' => 'Registration Information',
+							'isPublicFacing' => true,
+						]) . '</a>';
+					$result['regRequired'] = true;
 				}else{
 					$result['message'] = translate([
 						'text' => 'This event was saved to your events successfully.',

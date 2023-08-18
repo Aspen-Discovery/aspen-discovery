@@ -7069,7 +7069,11 @@ AspenDiscovery.Account = (function () {
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessage(data.title, data.message, 2000, true); // auto-close after 2 seconds.
+						if(data.regRequired) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
 					}
