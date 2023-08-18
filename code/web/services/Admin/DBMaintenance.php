@@ -92,6 +92,10 @@ class Admin_DBMaintenance extends Admin_Admin {
 		$theme = new Theme();
 		$theme->find();
 		while ($theme->fetch()) {
+			if($theme->getParentTheme()) {
+				$parentTheme = $theme->getParentTheme();
+				$parentTheme->generatedCss(true);
+			}
 			$theme->generateCss(true);
 		}
 	}
