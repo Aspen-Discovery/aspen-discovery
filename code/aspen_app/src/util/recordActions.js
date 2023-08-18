@@ -51,8 +51,9 @@ export async function getGroupedWork221200(url, itemId) {
  * @param {number} patronId
  * @param {string} barcode
  * @param {string} locationId
+ * @param {string} barcodeType
  **/
-export async function checkoutItem(url, itemId, source, patronId, barcode = '', locationId = '') {
+export async function checkoutItem(url, itemId, source, patronId, barcode = '', locationId = '', barcodeType) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -65,6 +66,7 @@ export async function checkoutItem(url, itemId, source, patronId, barcode = '', 
                userId: patronId,
                locationId,
                barcode,
+               barcodeType,
           },
      });
      const response = await api.post('/UserAPI?method=checkoutItem', postBody);

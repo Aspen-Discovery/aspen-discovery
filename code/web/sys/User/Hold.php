@@ -121,6 +121,7 @@ class Hold extends CircEntry {
 		}
 		$hold['isIll'] = (boolean)$this->isIll;
 		$hold['position'] = (int)$hold['position'];
+		$hold['pendingCancellation'] = $this->pendingCancellation;
 		return $hold;
 	}
 
