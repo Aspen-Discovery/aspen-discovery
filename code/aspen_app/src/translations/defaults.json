@@ -382,12 +382,16 @@
   "finish_checkout_session": "Session Finished",
   "button_start": "Start",
   "button_finish": "Finish",
-  "checking_out_as": "You are checking out as %1%",
+  "checking_out_as": "You are checking out as",
   "add_new_item": "Add a new item",
   "checked_out_during_session": "Items checked out during this session",
   "finish_checkout_session_body": "You can start a new checkout session or view your checkouts.",
   "start_new_session": "Start New Session",
   "view_checkouts": "View Checkouts",
   "select_an_account": "Select an account",
-  "no_items_checked_out": "No items checked out yet."
+  "no_items_checked_out": "No items checked out yet.",
+  "item_already_checked_out": "This item is already checked out to you.",
+  "unable_to_checkout_title": "Unable to checkout title",
+  "unknown_error_checking_out": "Unknown error while trying to checkout. Try again later.",
+  "unknown_title": "Unknown Title"
 }

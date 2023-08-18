@@ -1779,7 +1779,7 @@ class UserAPI extends Action {
 								'action' => $action,
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => (bool)$result['items'],
+								'shouldBeItemHold' => (bool)$result['items'] ?? false,
 								'items' => $result['items'] ?? null,
 							];
 						}
@@ -4257,7 +4257,7 @@ class UserAPI extends Action {
 					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
 					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
 					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
-					$account[$linkedAccount->id]['cat_username'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['ils_barcode'] = $linkedAccount->ils_barcode;
 				}
 				return [
 					'success' => true,

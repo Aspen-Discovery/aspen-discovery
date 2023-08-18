@@ -1,30 +1,53 @@
 import React from 'react';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { Box, Button, Text, Heading, Center, HStack, Icon, FlatList } from 'native-base';
+import { CheckoutsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { Box, Button, Text, Heading, Center, HStack, Icon, FlatList, AlertDialog } from 'native-base';
 import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { navigateStack } from '../../helpers/RootNavigator';
 import { Ionicons } from '@expo/vector-icons';
 import _ from 'lodash';
+import { loadingSpinner } from '../../components/loadingSpinner';
+import { checkoutItem, placeHold } from '../../util/recordActions';
+import { confirmHold } from '../../util/api/circulation';
+import { getPatronCheckedOutItems, refreshProfile } from '../../util/api/user';
+import { Platform } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const SelfCheckOut = () => {
+     const queryClient = useQueryClient();
      const navigation = useNavigation();
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
-     const { user, cards } = React.useContext(UserContext);
+     const { user, cards, updateUser } = React.useContext(UserContext);
+     const { checkouts } = React.useContext(CheckoutsContext);
      const [items, setItems] = React.useState([]);
 
      let startNew = useRoute().params?.startNew ?? false;
-     let activeAccount = useRoute().params?.activeAccount ?? false;
+     let activeAccount = useRoute().params?.activeAccount ?? user;
 
-     let checkoutResult = useRoute().params?.checkoutResult ?? null;
-     let checkoutHasError = useRoute().params?.checkoutHasError ?? false;
-     let checkoutErrorMessageBody = useRoute().params?.checkoutErrorMessageBody ?? null;
-     let checkoutErrorMessageTitle = useRoute().params?.checkoutErrorMessageTitle ?? null;
+     let barcode = useRoute().params?.barcode ?? null;
+     let barcodeType = useRoute().params?.type ?? null;
+
+     let checkoutResult = null;
+     let checkoutHasError = false;
+     let checkoutErrorMessageBody = null;
+     let checkoutErrorMessageTitle = null;
+     const [isProcessingCheckout, setIsProcessingCheckout] = React.useState(false);
+
+     const [isOpen, setIsOpen] = React.useState(false);
+     const onClose = () => setIsOpen(false);
+     const cancelRef = React.useRef(null);
+     const [hasError, setHasError] = React.useState(false);
+     const [errorBody, setErrorBody] = React.useState(null);
+     const [errorTitle, setErrorTitle] = React.useState(null);
 
      console.log(activeAccount);
-     activeAccount = _.find(cards, ['cat_username', activeAccount]);
+     if (_.find(cards, ['ils_barcode', activeAccount])) {
+          activeAccount = _.find(cards, ['ils_barcode', activeAccount]);
+     } else {
+          activeAccount = _.find(cards, ['cat_username', activeAccount]);
+     }
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -33,29 +56,58 @@ export const SelfCheckOut = () => {
      }, [navigation]);
 
      React.useEffect(() => {
-          const updateCheckouts = navigation.addListener('focus', () => {
+          const updateCheckouts = navigation.addListener('focus', async () => {
                if (startNew) {
                     setItems([]);
                     startNew = false;
                     checkoutHasError = false;
                } else {
-                    if (checkoutHasError) {
-                         // prompt error alert
-                    } else {
-                         if (checkoutResult) {
-                              let tmp = items;
-                              tmp = _.concat(tmp, checkoutResult);
-                              setItems(tmp);
+                    if (barcode) {
+                         setIsProcessingCheckout(true);
+
+                         // check if item is already checked out
+                         if (_.includes(items, { barcode: barcode }) || _.includes(checkouts, { barcode: barcode })) {
+                              // prompt error
+                              setHasError(true);
+                              setErrorBody(getTermFromDictionary(language, 'item_already_checked_out'));
+                              setErrorTitle(getTermFromDictionary(language, 'unable_to_checkout_title'));
+                              setIsOpen(true);
+                         } else {
+                              // do the checkout
+                              await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId, barcodeType).then((result) => {
+                                   if (!result.success) {
+                                        // prompt error
+                                        setHasError(true);
+                                        setErrorBody(result.message ?? getTermFromDictionary(language, 'unknown_error_checking_out'));
+                                        setErrorTitle(result.title ?? getTermFromDictionary(language, 'unable_to_checkout_title'));
+                                        setIsOpen(true);
+                                   } else {
+                                        let tmp = result.itemData;
+                                        tmp = _.concat(tmp, checkoutResult);
+                                        setItems(tmp);
+
+                                        queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
+                                        queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                        useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+                                             onSuccess: (data) => {
+                                                  updateCheckouts(data);
+                                             },
+                                        });
+                                   }
+                                   setIsProcessingCheckout(false);
+                              });
                          }
                     }
                }
           });
 
           return updateCheckouts;
-     }, [navigation, checkoutResult]);
+     }, [navigation, barcode]);
 
      const openScanner = async () => {
-          navigateStack('SelfCheckTab', 'SelfCheckOutScanner');
+          navigateStack('SelfCheckTab', 'SelfCheckOutScanner', {
+               activeAccount,
+          });
      };
 
      const finishSession = () => {
@@ -79,16 +131,22 @@ export const SelfCheckOut = () => {
      };
 
      const currentCheckOutItem = (item) => {
-          return (
-               <HStack space={4} justifyContent="space-between">
-                    <Text fontSize="xs" w="70%">
-                         <Text bold>{item.title}</Text> ({item.barcode})
-                    </Text>
-                    <Text fontSize="xs" w="25%">
-                         {item.due}
-                    </Text>
-               </HStack>
-          );
+          if (item) {
+               let title = item?.title ?? getTermFromDictionary(language, 'unknown_title');
+               let barcode = item?.barcode ?? '';
+               let dueDate = item?.due ?? '';
+               return (
+                    <HStack space={4} justifyContent="space-between">
+                         <Text fontSize="xs" w="70%">
+                              <Text bold>{title}</Text> ({barcode})
+                         </Text>
+                         <Text fontSize="xs" w="25%">
+                              {dueDate}
+                         </Text>
+                    </HStack>
+               );
+          }
+          return null;
      };
 
      const currentCheckOutEmpty = () => {
@@ -100,7 +158,11 @@ export const SelfCheckOut = () => {
      return (
           <Box safeArea={5} w="100%">
                <Center pb={5}>
-                    {activeAccount.displayName ? <Text pb={3}>You are checking out as {activeAccount.displayName}</Text> : null}
+                    {activeAccount?.displayName ? (
+                         <Text pb={3}>
+                              {getTermFromDictionary(language, 'checking_out_as')} {activeAccount.displayName}
+                         </Text>
+                    ) : null}
                     <Button leftIcon={<Icon as={<Ionicons name="barcode-outline" />} size={6} mr="1" />} colorScheme="secondary" onPress={() => openScanner()}>
                          {getTermFromDictionary(language, 'add_new_item')}
                     </Button>
@@ -108,11 +170,26 @@ export const SelfCheckOut = () => {
                <Heading fontSize="md" pb={2}>
                     {getTermFromDictionary(language, 'checked_out_during_session')}
                </Heading>
-               <FlatList data={items} keyExtractor={(item, index) => index.toString()} ListEmptyComponent={currentCheckOutEmpty()} ListHeaderComponent={currentCheckoutHeader()} renderItem={({ item }) => currentCheckOutItem(item)} />
+               {isProcessingCheckout ? loadingSpinner() : <FlatList data={items} keyExtractor={(item, index) => index.toString()} ListEmptyComponent={currentCheckOutEmpty()} ListHeaderComponent={currentCheckoutHeader()} renderItem={({ item }) => currentCheckOutItem(item)} />}
                <Center pt={5}>
                     <Button onPress={() => finishSession()} colorScheme="primary" size="sm">
                          {getTermFromDictionary(language, 'button_finish')}
                     </Button>
+               </Center>
+               <Center>
+                    <AlertDialog leastDestructiveRef={cancelRef} isOpen={isOpen} onClose={onClose}>
+                         <AlertDialog.Content>
+                              <AlertDialog.Header>{errorTitle}</AlertDialog.Header>
+                              <AlertDialog.Body>{errorBody}</AlertDialog.Body>
+                              <AlertDialog.Footer>
+                                   <Button.Group space={3}>
+                                        <Button variant="outline" colorScheme="primary" onPress={() => setIsOpen(false)}>
+                                             {getTermFromDictionary(language, 'button_ok')}
+                                        </Button>
+                                   </Button.Group>
+                              </AlertDialog.Footer>
+                         </AlertDialog.Content>
+                    </AlertDialog>
                </Center>
           </Box>
      );

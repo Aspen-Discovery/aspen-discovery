@@ -360,7 +360,7 @@ export async function getLinkedAccounts(primaryUser, cards, library, language = 
           const primaryCard = {
                key: 0,
                displayName: primaryUser.displayName,
-               cat_username: primaryUser.cat_username ?? primaryUser.barcode,
+               ils_barcode: primaryUser.ils_barcode ?? primaryUser.cat_username,
                expired: primaryUser.expired,
                expires: primaryUser.expires,
                barcodeStyle: library.barcodeStyle,
@@ -371,7 +371,18 @@ export async function getLinkedAccounts(primaryUser, cards, library, language = 
                PATRON.linkedAccounts = accounts;
                if (_.size(accounts) >= 1) {
                     accounts.forEach((account) => {
-                         if (_.includes(cards, account.cat_username) === false) {
+                         if (_.includes(cards, account.ils_barcode) === false) {
+                              count = count + 1;
+                              const card = {
+                                   key: count,
+                                   displayName: account.displayName,
+                                   ils_barcode: account.ils_barcode ?? account.barcode,
+                                   expired: account.expired,
+                                   expires: account.expires,
+                                   barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
+                              };
+                              cardStack.push(card);
+                         } else if (_.includes(cards, account.cat_username) === false) {
                               count = count + 1;
                               const card = {
                                    key: count,
