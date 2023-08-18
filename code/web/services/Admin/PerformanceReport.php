@@ -16,6 +16,9 @@ class Admin_PerformanceReport extends Admin_Admin {
 		foreach ($slowPages as $key => $slowPage) {
 			$totalCount = $slowPage['this_month_fast'] + $slowPage['this_month_acceptable'] + $slowPage['this_month_slow'] + $slowPage['this_month_slower'] + $slowPage['this_month_very_slow'];
 			$weightedCount = $slowPage['this_month_fast'] + $slowPage['this_month_acceptable'] * 2 + $slowPage['this_month_slow'] * 3 + $slowPage['this_month_slower'] * 4 + $slowPage['this_month_very_slow'] * 5;
+			if($totalCount === 0) {
+				$totalCount = 1;
+			}
 			$averageSlowness = round($weightedCount / $totalCount);
 			$slowPages[$key]['average'] = $averageSlowness;
 			$slowPages[$key]['total'] = $totalCount;
