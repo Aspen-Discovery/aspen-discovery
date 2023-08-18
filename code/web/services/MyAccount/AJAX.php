@@ -3072,6 +3072,15 @@ class MyAccount_AJAX extends JSON_Action {
 	{
 		global $interface;
 		global $timer;
+		global $library;
+
+		$eventSource = "";
+		require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+		$libraryEventSettings = new LibraryEventsSetting();
+		$libraryEventSettings->libraryId = $library->libraryId;
+		if($libraryEventSettings->find(true)) {
+			$eventSource = $libraryEventSettings->settingSource;
+		}
 
 		//Load user ratings
 		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
@@ -3130,6 +3139,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => false,
+					'vendor' => $eventSource
 				];
 			} else {
 				$events[$entry->sourceId] = [
@@ -3142,7 +3152,8 @@ class MyAccount_AJAX extends JSON_Action {
 				'regRequired' => $entry->regRequired,
 				'isRegistered' => $registration,
 				'eventDate' => $entry->eventDate,
-				'pastEvent' => true,
+				'pastEvent' => true, 
+					'vendor' => $eventSource
 			];
 		}
 	}
@@ -5807,18 +5818,64 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function eventRegistrationModal() {
 		$eventUrl = $_REQUEST['regLink'];
-		return [
-			'success' => true,
-			'title' => translate([
-				'text' => 'Registration Information',
-				'isPublicFacing' => true,
-			]),
-			'buttons' => '<a href="' .$eventUrl. '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>'
-				. translate([
-					'text' => 'Take Me To Event Registration',
+		if(isset($_REQUEST['vendor'])) {
+			$vendor = $_REQUEST['vendor'];
+			$body = "";
+			global $library;
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventSettings = new LibraryEventsSetting();
+			$libraryEventSettings->settingSource = $vendor;
+			$libraryEventSettings->libraryId = $library->libraryId;
+			if ($libraryEventSettings->find(true)){
+				if ($vendor == 'communico'){
+					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+					$communicoSettings = new CommunicoSetting();
+					$communicoSettings->id = $libraryEventSettings->settingId;
+					if($communicoSettings->find(true)) {
+						$body = $communicoSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'springshare') {
+					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+					$springshareSettings = new SpringshareLibCalSetting();
+					$springshareSettings->id = $libraryEventSettings->settingId;
+					if($springshareSettings->find(true)) {
+						$body = $springshareSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'library_market') {
+					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+					$libraryMarketSettings = new LMLibraryCalendarSetting();
+					$libraryMarketSettings->id = $libraryEventSettings->settingId;
+					if($libraryMarketSettings->find(true)) {
+						$body = $libraryMarketSettings->registrationModalBody;
+					}
+				}
+			}
+
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Registration Information',
 					'isPublicFacing' => true,
-				]) . '</a>',
-		];
+				]),
+				'body' => $body,
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>' . translate([
+						'text' => 'Take Me To Event Registration',
+						'isPublicFacing' => true,
+					]) . '</a>',
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Registration Information',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>' . translate([
+						'text' => 'Take Me To Event Registration',
+						'isPublicFacing' => true,
+					]) . '</a>',
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
