@@ -1779,7 +1779,7 @@ class UserAPI extends Action {
 								'action' => $action,
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => (bool)$result['items'],
+								'shouldBeItemHold' => (bool)$result['items'] ?? false,
 								'items' => $result['items'] ?? null,
 							];
 						}
