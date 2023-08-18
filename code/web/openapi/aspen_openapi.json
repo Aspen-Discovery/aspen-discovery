@@ -1,0 +1,37 @@
+{
+  "swagger" : "2.0",
+  "info" : {
+    "title": "Aspen Discovery API",
+    "description": "The API provided by Aspen Discovery for use in other applications, mobile apps, etc",
+    "version": "1.0.0",
+  },
+  "basePath": "/API",
+  "paths": {
+    "/API/UserAPI?method=isLoggedIn": {
+      "get": {
+        "description": "Determines if a user is logged in or out in the active browser. Typically not useful since the calling application will not be on the same browser as the patron.",
+        "produces": [
+          "application/json",
+        ],
+        "responses" : {
+          "200" : {
+            "description": "successful response",
+            "schema": {
+              "$ref": "#/definitions/BasicResult"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "BasicResult": {
+      "type": "object",
+      "properties": {
+        "result" : {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
