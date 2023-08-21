@@ -15,6 +15,7 @@ class ReadingHistoryEntry extends DataObject {
 	public $checkOutDate;
 	public $checkInDate;
 	public $deleted;
+	public $isIll;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -22,6 +23,7 @@ class ReadingHistoryEntry extends DataObject {
 			'groupedWorkPermanentId',
 			'source',
 			'sourceId',
+			'isIll',
 		];
 	}
 

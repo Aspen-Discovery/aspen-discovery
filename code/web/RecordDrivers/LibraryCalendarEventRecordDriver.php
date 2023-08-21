@@ -39,6 +39,9 @@ class LibraryCalendarEventRecordDriver extends IndexRecordDriver {
 		//Use getSearchResult to do the bulk of the assignments
 		$this->getSearchResult('list', false);
 
+		global $interface;
+		$interface->assign('eventVendor', 'library_market');
+
 		//Switch template
 		return 'RecordDrivers/Events/listEntry.tpl';
 	}

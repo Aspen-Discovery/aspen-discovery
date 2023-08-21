@@ -89,7 +89,7 @@ class LDAPAuthentication extends Action {
 						if ($this->selfRegister($attributes)) {
 							return $this->validateWithILS($username);
 						} else {
-							AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+							AspenError::raiseError(new AspenError('Unable to register a new account with ILS during LDAP authentication.'));
 						}
 					} return $this->validateWithILS($username);
 				} else {
@@ -263,7 +263,8 @@ class LDAPAuthentication extends Action {
 		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
 		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
 		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
-		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints'userId');
+		$tmpUser->ils_username = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints['userId']);
 		$tmpUser->phone = '';
 		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
 

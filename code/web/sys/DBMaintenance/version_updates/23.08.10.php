@@ -31,22 +31,22 @@ function getUpdates23_08_10(): array {
 			]
 		], //split_user_fields
 
-        //kodi - ByWater
-        'permissions_events_facets' => [
-            'title' => 'Alters permissions for Events Facets',
-            'description' => 'Create permissions for altering events facets',
-            'sql' => [
-                "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Events Facet Settings', 'Events', 20, 'Allows the user to alter events facets for all libraries.')",
-                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Events Facet Settings'))",
-            ],
-        ], //permissions_events_facets
-        'events_facets' => [
-            'title' => 'Events Facet Tables',
-            'description' => 'Adds tables for events facets',
-            'sql' => [
-                "CREATE TABLE events_facet_groups (
-					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-					name VARCHAR(255) NOT NULL UNIQUE
+    //kodi - ByWater
+    'permissions_events_facets' => 
+      'title' => 'Alters permissions for Events Facets'
+      'description' => 'Create permissions for altering events facets',
+      'sql' => [
+         "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Events Facet Settings', 'Events', 20, 'Allows the user to alter events facets for all libraries.')",
+         "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Events Facet Settings'))",
+       ],
+    ], //permissions_events_facets
+    'events_facets' => [
+        'title' => 'Events Facet Tables',
+        'description' => 'Adds tables for events facets',
+        'sql' => [
+            "CREATE TABLE events_facet_groups (
+            id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL UNIQUE
 				)",
                 "CREATE TABLE events_facet (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
@@ -95,5 +95,21 @@ function getUpdates23_08_10(): array {
                 "ALTER TABLE library_events_setting ADD COLUMN eventsFacetSettingsId INT(11) DEFAULT 1",
             ],
         ],//events_facet_settingsId
+  
+		// kirstien - ByWater
+		'checkoutIsILL' => [
+			'title' => 'Checkout - Is ILL',
+			'description' => 'Add a property to determine if a checkout is ILL',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN isIll TINYINT(1) DEFAULT 0',
+			],
+		], //checkoutIsILL
+		'readingHistoryIsILL' => [
+			'title' => 'Reading History Work - Is ILL',
+			'description' => 'Add a property to determine if a reading history work is ILL',
+			'sql' => [
+				'ALTER TABLE user_reading_history_work ADD COLUMN isIll TINYINT(1) DEFAULT 0',
+			],
+		], //readingHistoryIsILL
 	];
 }
