@@ -545,6 +545,10 @@ class Koha extends AbstractIlsDriver {
 				$issuingRulesRS->close();
 			}
 
+			if ($curRow['itype'] == 'ILL') {
+				$curCheckout->isIll = true;
+			}
+
 			//Get the patron expiration date to check for active card
 			if ($curCheckout->autoRenew == 1) {
 				/** @noinspection SqlResolve */
@@ -1247,6 +1251,9 @@ class Koha extends AbstractIlsDriver {
 						$curTitle['checkin'] = $returnDate->getTimestamp();
 					} else {
 						$curTitle['checkin'] = null;
+					}
+					if ($readingHistoryTitleRow['iType'] == 'ILL') {
+						$curTitle['isIll'] = true;
 					}
 					$readingHistoryTitles[] = $curTitle;
 				}
