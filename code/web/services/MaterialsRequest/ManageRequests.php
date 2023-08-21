@@ -234,10 +234,14 @@ class MaterialsRequest_ManageRequests extends Admin_Admin {
 					// Get Available Assignees
 					$materialsRequestManagers = new User();
 
-					if ($materialsRequestManagers->query("SELECT id, displayName from user WHERE id IN (SELECT userId FROM user_roles WHERE roleId = {$rolePermissions->roleId}) AND homeLocationId IN (" . implode(', ', $locationsForLibrary) . ")")) {
+					if ($materialsRequestManagers->query("SELECT * from user WHERE id IN (SELECT userId FROM user_roles WHERE roleId = {$rolePermissions->roleId}) AND homeLocationId IN (" . implode(', ', $locationsForLibrary) . ")")) {
 
 						while ($materialsRequestManagers->fetch()) {
-							$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->displayName;
+							if (empty($materialsRequestManagers->displayName)) {
+								$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->firstname . ' ' . $materialsRequestManagers->lastname;
+							} else {
+								$assignees[$materialsRequestManagers->id] = $materialsRequestManagers->getDisplayName();
+							}
 						}
 					}
 				}
