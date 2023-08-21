@@ -6988,6 +6988,16 @@ class Koha extends AbstractIlsDriver {
 			$categoryId = 'studentPType';
 		}
 		return [
+			'userid' => [
+				'primary' => 'ssoUniqueAttribute',
+				'fallback' => 'ssoUsernameAttr',
+				'useGivenUserId' => $useGivenUserId
+			],
+			'cardnumber' => [
+				'primary' => 'ssoUniqueAttribute',
+				'fallback' => 'ssoIdAttr',
+				'useGivenCardnumber' => $useGivenCardnumber
+			],
 			'cat_username' => [
 				'primary' => 'ssoUniqueAttribute',
 				'fallback' => 'ssoUsernameAttr',
