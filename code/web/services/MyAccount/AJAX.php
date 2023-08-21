@@ -5989,7 +5989,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.",
 						'isPublicFacing' => true,
 					]);
-					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$source}\", \"{$sourceId}\", \"{$vendor}\", , \"{$externalUrl}\");'><i class='fas fa-external-link-alt'></i> " . translate([
+					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$source}\", \"{$sourceId}\", \"{$vendor}\", \"{$externalUrl}\");'><i class='fas fa-external-link-alt'></i> " . translate([
 							'text' => 'Registration Information',
 							'isPublicFacing' => true,
 						]) . "</button>";
