@@ -186,9 +186,37 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	//TODO: Convert this to use definitions so they can be customized in admin
 	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
+			$facetConfig = [];
+			$searchLibrary = Library::getActiveLibrary();
+			global $locationSingleton;
+			$searchLocation = $locationSingleton->getActiveLocation();
+			if ($searchLocation != null) {
+				$facets = $searchLocation->EventsFacetGroup()->getFacets();
+			} else {
+				$facets = $searchLibrary->EventsFacetGroup()->getFacets();
+			}
+			foreach ($facets as &$facet) {
+				//Adjust facet name for local scoping
+				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
+
+				global $action;
+				if ($action == 'Advanced') {
+					if ($facet->showInAdvancedSearch == 1) {
+						$facetConfig[$facet->facetName] = $facet;
+					}
+				} else {
+					if ($facet->showInResults == 1) {
+						$facetConfig[$facet->facetName] = $facet;
+					}
+				}
+			}
+			$this->facetConfig = $facetConfig;
+		}
+
+		return $this->facetConfig;
+		/*if ($this->facetConfig == null) {
 			$facetConfig = [];
 //
 //            $eventDate = new LibraryFacetSetting();
@@ -304,7 +332,7 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 
 			$this->facetConfig = $facetConfig;
 		}
-		return $this->facetConfig;
+		return $this->facetConfig;*/
 	}
 
 	public function getEngineName() {

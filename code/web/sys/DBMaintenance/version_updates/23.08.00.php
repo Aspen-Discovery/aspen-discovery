@@ -136,6 +136,44 @@ function getUpdates23_08_00(): array {
 				'ALTER TABLE communico_settings ADD COLUMN registrationModalBody mediumtext',
 			],
 		], //event_registration_modal
+		'permissions_events_facets' => [
+			'title' => 'Alters permissions for Events Facets',
+			'description' => 'Create permissions for altering events facets',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Events Facet Settings', 'Events', 20, 'Allows the user to alter events facets for all libraries.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Events Facet Settings'))",
+			],
+		], //permissions_events_facets
+		'events_facets' => [
+			'title' => 'Events Facet Tables',
+			'description' => 'Adds tables for events facets',
+			'sql' => [
+				"CREATE TABLE events_facet_groups (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE
+				)",
+				"CREATE TABLE events_facet (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					facetGroupId INT NOT NULL, 
+					displayName VARCHAR(50) NOT NULL, 
+					displayNamePlural VARCHAR(50),
+					facetName VARCHAR(50) NOT NULL,
+					weight INT NOT NULL DEFAULT '0',
+					numEntriesToShowByDefault INT NOT NULL DEFAULT '5',
+					showAsDropDown TINYINT NOT NULL DEFAULT '0',
+					sortMode ENUM ('alphabetically', 'num_results') NOT NULL DEFAULT 'num_results',
+					showAboveResults TINYINT NOT NULL DEFAULT '0',
+					showInResults TINYINT NOT NULL DEFAULT '1',
+					showInAdvancedSearch TINYINT NOT NULL DEFAULT '1',
+					collapseByDefault TINYINT DEFAULT '1',
+					useMoreFacetPopup TINYINT DEFAULT 1,
+					translate TINYINT DEFAULT 0,
+					multiSelect TINYINT DEFAULT 0,
+					canLock TINYINT DEFAULT 0
+				) ENGINE = InnoDB",
+				"ALTER TABLE events_facet ADD UNIQUE groupFacet (facetGroupId, facetName)",
+			],
+		],//events_facets
 
 		//other organizations
 
