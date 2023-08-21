@@ -843,7 +843,6 @@ class Koha extends AbstractIlsDriver {
 					$user->username = $userFromDb['borrowernumber'];
 					$user->unique_ils_id = $userFromDb['borrowernumber'];
 				}
-				$user->ils_username = $userFromDb['userid'];
 			}
 
 			$forceDisplayNameUpdate = false;

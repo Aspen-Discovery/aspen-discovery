@@ -293,7 +293,7 @@ class SAMLAuthentication{
 		if($this->ssoAuthOnly) {
 			$login = UserAccount::loginWithAspen($user);
 		} else {
-			$_REQUEST['username'] = $user->ils_password;
+			$_REQUEST['username'] = empty($user->ils_username) ? $user->ils_barcode : $user->ils_username;
 			$login = UserAccount::login(true);
 		}
 
