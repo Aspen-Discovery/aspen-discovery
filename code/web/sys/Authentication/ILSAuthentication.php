@@ -46,7 +46,9 @@ class ILSAuthentication implements Authentication {
 		}
 
 		$logger->log("Authenticating user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
-		if (!$validatedViaSSO && ($this->username == '' || $this->password == '')) {
+		if ($validatedViaSSO && $this->username == '') {
+			$user = new AspenError('Username for SSO user cannot be blank.');
+		} else if (!$validatedViaSSO && ($this->username == '' || $this->password == '')) {
 			$user = new AspenError('Login information cannot be blank.');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
