@@ -5858,7 +5858,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'body' => $body,
-				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>' . translate([
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
 						'text' => 'Take Me To Event Registration',
 						'isPublicFacing' => true,
 					]) . '</a>',
@@ -5870,7 +5870,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'Registration Information',
 					'isPublicFacing' => true,
 				]),
-				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>' . translate([
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
 						'text' => 'Take Me To Event Registration',
 						'isPublicFacing' => true,
 					]) . '</a>',
