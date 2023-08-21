@@ -6,5 +6,6 @@ class LibraryEventsSetting extends DataObject {
 	public $id;
 	public $settingSource;
 	public $settingId;
+    public $eventsFacetSettingsId;
 	public $libraryId;
 }

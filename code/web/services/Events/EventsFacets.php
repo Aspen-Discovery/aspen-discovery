@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/Action.php';
+require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Events/EventsFacetGroup.php';
 
@@ -24,12 +25,10 @@ class Events_EventsFacets extends ObjectEditor {
 		if (!UserAccount::userHasPermission('Administer All Events Facets')) {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 
-			//TODO: What do we want to do here? Do we want each grouped work display setting to apply to events too? (i.e.
-			// academic event searches can have their own facet settings)
-			$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
-			$groupedWorkDisplaySettings->id = $library->groupedWorkDisplaySettingId;
-			$groupedWorkDisplaySettings->find(true);
-			$object->id = $groupedWorkDisplaySettings->facetGroupId;
+            $eventsFacetSetting = new LibraryEventsSetting();
+            $eventsFacetSetting->libraryId = $library->libraryId;
+            $eventsFacetSetting->find(true);
+			$object->id = $eventsFacetSetting->eventsFacetSettingsId;
 		}
 		$object->find();
 		$list = [];

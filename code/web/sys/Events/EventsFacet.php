@@ -18,6 +18,9 @@ class EventsFacet extends FacetSetting {
 			"program_type_facet" => "Program Type",
             "branch" => "Branch",
             "room" => "Room",
+            "internal_category" => "Category",
+            "event_state" => "State",
+            "reservation_state" => "Reservation State",
 			"registration_required" => "Registration Required?",
 			"event_type" => "Event Type",
 		];

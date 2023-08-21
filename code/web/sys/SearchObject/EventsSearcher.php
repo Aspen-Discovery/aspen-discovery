@@ -190,13 +190,16 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
 			$searchLibrary = Library::getActiveLibrary();
-			global $locationSingleton;
-			$searchLocation = $locationSingleton->getActiveLocation();
-			if ($searchLocation != null) {
-				$facets = $searchLocation->EventsFacetGroup()->getFacets();
-			} else {
-				$facets = $searchLibrary->EventsFacetGroup()->getFacets();
-			}
+
+            require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+            $eventsFacetSetting = new LibraryEventsSetting();
+            $eventsFacetSetting->libraryId = $searchLibrary->libraryId;
+            if ($eventsFacetSetting->find(true)) {
+                $this->id = $eventsFacetSetting->eventsFacetSettingsId;
+            }
+
+            $facets = $searchLibrary->EventsFacetGroup()->getFacets();
+
 			foreach ($facets as &$facet) {
 				//Adjust facet name for local scoping
 				$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
@@ -216,123 +219,6 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		}
 
 		return $this->facetConfig;
-		/*if ($this->facetConfig == null) {
-			$facetConfig = [];
-//
-//            $eventDate = new LibraryFacetSetting();
-//            $eventDate->id = count($facetConfig) +1;
-//            $eventDate->multiSelect = false;
-//            $eventDate->facetName = "start_date";
-//            $eventDate->displayName = "Event Date";
-//            $eventDate->numEntriesToShowByDefault = 5;
-//            $eventDate->translate = false;
-//            $eventDate->collapseByDefault = false;
-//            $eventDate->useMoreFacetPopup = false;
-//            $facetConfig["start_date"] = $eventDate;
-
-			$ageGroup = new LibraryFacetSetting();
-			$ageGroup->id = count($facetConfig) + 1;
-			$ageGroup->multiSelect = true;
-			$ageGroup->facetName = "age_group_facet";
-			$ageGroup->displayName = "Age Group/Audience";
-			$ageGroup->numEntriesToShowByDefault = 5;
-			$ageGroup->translate = true;
-			$ageGroup->collapseByDefault = false;
-			$ageGroup->useMoreFacetPopup = true;
-			$facetConfig["age_group_facet"] = $ageGroup;
-
-			$programType = new LibraryFacetSetting();
-			$programType->id = count($facetConfig) + 1;
-			$programType->multiSelect = true;
-			$programType->facetName = "program_type_facet";
-			$programType->displayName = "Program Type";
-			$programType->numEntriesToShowByDefault = 5;
-			$programType->translate = true;
-			$programType->collapseByDefault = false;
-			$programType->useMoreFacetPopup = true;
-			$facetConfig["program_type_facet"] = $programType;
-
-			$branch = new LibraryFacetSetting();
-			$branch->id = count($facetConfig) + 1;
-			$branch->multiSelect = true;
-			$branch->facetName = "branch";
-			$branch->displayName = "Branch";
-			$branch->numEntriesToShowByDefault = 5;
-			$branch->translate = false;
-			$branch->collapseByDefault = false;
-			$branch->useMoreFacetPopup = true;
-			$facetConfig["branch"] = $branch;
-
-			$room = new LibraryFacetSetting();
-			$room->id = count($facetConfig) + 1;
-			$room->multiSelect = true;
-			$room->facetName = "room";
-			$room->displayName = "Room";
-			$room->numEntriesToShowByDefault = 5;
-			$room->translate = false;
-			$room->collapseByDefault = true;
-			$room->useMoreFacetPopup = true;
-			$facetConfig["room"] = $room;
-
-
-			$internalCategory = new LibraryFacetSetting();
-			$internalCategory->id = count($facetConfig) + 1;
-			$internalCategory->multiSelect = true;
-			$internalCategory->facetName = "internal_category";
-			$internalCategory->displayName = "Category";
-			$internalCategory->numEntriesToShowByDefault = 5;
-			$internalCategory->translate = false;
-			$internalCategory->collapseByDefault = true;
-			$internalCategory->useMoreFacetPopup = true;
-			$facetConfig["internal_category"] = $internalCategory;
-
-			$eventState = new LibraryFacetSetting();
-			$eventState->id = count($facetConfig) + 1;
-			$eventState->multiSelect = true;
-			$eventState->facetName = "event_state";
-			$eventState->displayName = "State";
-			$eventState->numEntriesToShowByDefault = 5;
-			$eventState->translate = false;
-			$eventState->collapseByDefault = true;
-			$eventState->useMoreFacetPopup = true;
-			$facetConfig["event_state"] = $eventState;
-
-			$reservationState = new LibraryFacetSetting();
-			$reservationState->id = count($facetConfig) + 1;
-			$reservationState->multiSelect = true;
-			$reservationState->facetName = "reservation_state";
-			$reservationState->displayName = "Reservation State";
-			$reservationState->numEntriesToShowByDefault = 5;
-			$reservationState->translate = false;
-			$reservationState->collapseByDefault = true;
-			$reservationState->useMoreFacetPopup = true;
-			$facetConfig["reservation_state"] = $reservationState;
-
-			$registrationRequired = new LibraryFacetSetting();
-			$registrationRequired->id = count($facetConfig) + 1;
-			$registrationRequired->multiSelect = true;
-			$registrationRequired->facetName = "registration_required";
-			$registrationRequired->displayName = "Registration Required?";
-			$registrationRequired->numEntriesToShowByDefault = 5;
-			$registrationRequired->translate = false;
-			$registrationRequired->collapseByDefault = true;
-			$registrationRequired->useMoreFacetPopup = true;
-			$facetConfig["registration_required"] = $registrationRequired;
-
-			$eventType = new LibraryFacetSetting();
-			$eventType->id = count($facetConfig) + 1;
-			$eventType->multiSelect = true;
-			$eventType->facetName = "event_type";
-			$eventType->displayName = "Event Type";
-			$eventType->numEntriesToShowByDefault = 5;
-			$eventType->translate = false;
-			$eventType->collapseByDefault = true;
-			$eventType->useMoreFacetPopup = true;
-			$facetConfig["event_type"] = $eventType;
-
-			$this->facetConfig = $facetConfig;
-		}
-		return $this->facetConfig;*/
 	}
 
 	public function getEngineName() {
