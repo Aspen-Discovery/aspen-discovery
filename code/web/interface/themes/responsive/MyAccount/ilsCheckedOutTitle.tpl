@@ -101,7 +101,7 @@
 
 					{if !empty($showOut)}
 						<div class="row">
-							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out' isPublicFacing=true}</div>
+							<div class="result-label col-sm-12 col-md-5">{translate text="checked_out_user_account" defaultText="Checked Out" isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">{$record->checkoutDate|date_format}</div>
 						</div>
 					{/if}
