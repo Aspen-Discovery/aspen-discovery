@@ -6994,8 +6994,8 @@ class Koha extends AbstractIlsDriver {
 				'useGivenUserId' => $useGivenUserId
 			],
 			'cardnumber' => [
-				'primary' => 'ssoUniqueAttribute',
-				'fallback' => 'ssoIdAttr',
+				'primary' => 'ssoIdAttr',
+				'fallback' => 'ssoUniqueAttribute',
 				'useGivenCardnumber' => $useGivenCardnumber
 			],
 			'cat_username' => [
@@ -7004,8 +7004,8 @@ class Koha extends AbstractIlsDriver {
 				'useGivenUserId' => $useGivenUserId
 			],
 			'ils_barcode' => [
-				'primary' => 'ssoUniqueAttribute',
-				'fallback' => 'ssoIdAttr',
+				'primary' => 'ssoIdAttr',
+				'fallback' => 'ssoUniqueAttribute',
 				'useGivenCardnumber' => $useGivenCardnumber
 			],
 			'borrower_firstname' => [

@@ -5858,7 +5858,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'body' => $body,
-				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>' . translate([
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
 						'text' => 'Take Me To Event Registration',
 						'isPublicFacing' => true,
 					]) . '</a>',
@@ -5870,7 +5870,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'text' => 'Registration Information',
 					'isPublicFacing' => true,
 				]),
-				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>' . translate([
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
 						'text' => 'Take Me To Event Registration',
 						'isPublicFacing' => true,
 					]) . '</a>',
@@ -5974,23 +5974,24 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['title'] = translate([
 					'text' => "Added Successfully",
+					'isPublicFacing' => true,
+				]);
+				$result['message'] = translate([
+					'text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,
 				]);
 				$result['regRequired'] = false;
+
 				if ($regRequired){
 					$result['message'] = translate([
 						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.",
 						'isPublicFacing' => true,
 					]);
-					$result['buttons'] = '<a class="btn btn-primary" href="'.$externalUrl.'" role="button" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
+					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$_REQUEST['source']}\", \"{$_REQUEST['sourceId']}\", \"{$_REQUEST['vendor']}\", , \"{$externalUrl}\");'><i class='fas fa-external-link-alt'></i> " . translate([
 							'text' => 'Registration Information',
 							'isPublicFacing' => true,
-						]) . '</a>';
+						]) . "</button>";
 					$result['regRequired'] = true;
-				}else{
-					$result['message'] = translate([
-						'text' => 'This event was saved to your events successfully.',
-						'isPublicFacing' => true,
-					]);
 				}
 			}
 		}

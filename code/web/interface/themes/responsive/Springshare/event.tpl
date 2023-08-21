@@ -99,10 +99,10 @@
 						{else}
 							<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i> {translate text="Registration Information" isPublicFacing=true}</a>
 						{/if}
-						<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+						<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'springshare');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
 					</div>
 				{else}
-					<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '');">{translate text="Add to Your Events" isPublicFacing=true}</a>
+					<a class="btn btn-sm btn-action btn-wrap" style="width:70%" onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'springshare');">{translate text="Add to Your Events" isPublicFacing=true}</a>
 				{/if}
 			{/if}
 		</div>
