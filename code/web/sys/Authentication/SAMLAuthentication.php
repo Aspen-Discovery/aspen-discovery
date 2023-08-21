@@ -276,7 +276,7 @@ class SAMLAuthentication{
 	}
 
 	private function validateWithAspen($username): bool {
-		$findBy = 'username';
+		$findBy = 'ils_username';
 		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
 			$findBy = 'email';
 		}
@@ -384,8 +384,7 @@ class SAMLAuthentication{
 				$_REQUEST[$key] = $ssoArray[$primaryAttr];
 				$ilsUser[$key] = $ssoArray[$primaryAttr];
 				if(isset($mappings['useGivenCardnumber'])) {
-					$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
-					if($useSecondaryOverPrimary == '0') {
+					if($this->config->ssoUseGivenUserId == '0' || $this->config->ssoUseGivenUserId == 0) {
 						$_REQUEST[$key] = null;
 						$ilsUser[$key] = null;
 					}
