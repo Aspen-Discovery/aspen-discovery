@@ -207,7 +207,7 @@ class SAMLAuthentication{
 				if($this->selfRegister($ilsUserArray)) {
 					return $this->validateWithILS($ssoArray);
 				} else {
-					AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+					AspenError::raiseError(new AspenError('Unable to register a new account with ILS during SAML authentication.'));
 					return false;
 				}
 			} else {
@@ -436,7 +436,7 @@ class SAMLAuthentication{
 
 	private function selfRegister($user): bool {
 		global $logger;
-		$logger->log("Permorming self registration of user " . print_r($user, true), Logger::LOG_ERROR);
+		$logger->log("Performing self registration of user " . print_r($user, true), Logger::LOG_ERROR);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		$selfReg = $catalogConnection->selfRegister(true, $user);
 		if($selfReg['success'] != '1') {
