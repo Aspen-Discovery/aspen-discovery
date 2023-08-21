@@ -6998,6 +6998,16 @@ class Koha extends AbstractIlsDriver {
 				'fallback' => 'ssoIdAttr',
 				'useGivenCardnumber' => $useGivenCardnumber
 			],
+			'cat_username' => [
+				'primary' => 'ssoUniqueAttribute',
+				'fallback' => 'ssoUsernameAttr',
+				'useGivenUserId' => $useGivenUserId
+			],
+			'ils_barcode' => [
+				'primary' => 'ssoUniqueAttribute',
+				'fallback' => 'ssoIdAttr',
+				'useGivenCardnumber' => $useGivenCardnumber
+			],
 			'borrower_firstname' => [
 				'primary' => 'ssoFirstnameAttr',
 				'fallback' => '',
