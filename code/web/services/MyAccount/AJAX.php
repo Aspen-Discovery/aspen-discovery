@@ -5893,14 +5893,16 @@ class MyAccount_AJAX extends JSON_Action {
 			require_once ROOT_DIR . '/services/MyAccount/MyEvents.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$vendor = $_REQUEST['vendor'];
 
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = UserAccount::getActiveUserId();
 
-			if (empty($sourceId)) {
+			if (empty($sourceId) || empty($source) || empty($vendor)) {
 				$result['success'] = false;
 				$result['message'] = translate([
-					'text' => 'Unable to save event, not correctly specified.',
+					'text' => 'Unable to save event, not correctly specified. Must include the source id, source, and event vendor.',
 					'isPublicFacing' => true,
 				]);
 			} else {
@@ -5987,7 +5989,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.",
 						'isPublicFacing' => true,
 					]);
-					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$_REQUEST['source']}\", \"{$_REQUEST['sourceId']}\", \"{$_REQUEST['vendor']}\", , \"{$externalUrl}\");'><i class='fas fa-external-link-alt'></i> " . translate([
+					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$source}\", \"{$sourceId}\", \"{$vendor}\", \"{$externalUrl}\");'><i class='fas fa-external-link-alt'></i> " . translate([
 							'text' => 'Registration Information',
 							'isPublicFacing' => true,
 						]) . "</button>";

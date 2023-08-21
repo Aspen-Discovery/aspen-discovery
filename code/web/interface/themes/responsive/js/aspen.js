@@ -7065,7 +7065,7 @@ AspenDiscovery.Account = (function () {
 					'method': 'saveEvent',
 					sourceId: id,
 					source: source,
-					vendor
+					vendor: vendor
 				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
@@ -7095,7 +7095,7 @@ AspenDiscovery.Account = (function () {
 					sourceId: id,
 					source: source,
 					regLink: regLink,
-					vendor
+					vendor: vendor
 				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
