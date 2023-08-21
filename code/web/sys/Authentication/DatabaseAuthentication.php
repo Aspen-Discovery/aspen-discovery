@@ -6,7 +6,7 @@ class DatabaseAuthentication implements Authentication {
 
 	public function authenticate($validatedViaSSO, $accountProfile) {
 		if (!isset($_POST['username']) || !isset($_POST['password'])) {
-			return new AspenError('Login information cannot be blank.');
+			return new AspenError('Login information cannot be blank authenticating user with Database Authentication.');
 		}
 		$username = $_POST['username'];
 		$password = $_POST['password'];
@@ -19,7 +19,7 @@ class DatabaseAuthentication implements Authentication {
 
 	private function login($username, $password, AccountProfile $accountProfile) {
 		if (($username == '') || ($password == '')) {
-			$user = new AspenError('Login information cannot be blank.');
+			$user = new AspenError('Login information cannot be blank when logging in user with databse authentication.');
 		} else {
 			if ($username == 'nyt_user') {
 				$user = new AspenError('Cannot login as the New York Times User');

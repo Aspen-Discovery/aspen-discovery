@@ -89,7 +89,7 @@ class LDAPAuthentication extends Action {
 						if ($this->selfRegister($attributes)) {
 							return $this->validateWithILS($username);
 						} else {
-							AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+							AspenError::raiseError(new AspenError('Unable to register a new account with ILS during LDAP authentication.'));
 						}
 					} return $this->validateWithILS($username);
 				} else {

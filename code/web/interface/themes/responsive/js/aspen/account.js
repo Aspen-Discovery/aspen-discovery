@@ -1733,13 +1733,14 @@ AspenDiscovery.Account = (function () {
 			}
 		},
 
-		saveEvent: function (trigger, source, id) {
+		saveEvent: function (trigger, source, id, vendor) {
 			if (Globals.loggedIn) {
 				var url = Globals.path + "/MyAccount/AJAX";
 				var params = {
 					'method': 'saveEvent',
 					sourceId: id,
-					source: source
+					source: source,
+					vendor: vendor
 				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {
@@ -1755,7 +1756,7 @@ AspenDiscovery.Account = (function () {
 				}).fail(AspenDiscovery.ajaxFail);
 			}else {
 				AspenDiscovery.Account.ajaxLogin(null, function () {
-					return AspenDiscovery.Account.saveEvent(trigger, source, id);
+					return AspenDiscovery.Account.saveEvent(trigger, source, id, vendor);
 				}, false);
 			}
 			return false;
@@ -1769,7 +1770,7 @@ AspenDiscovery.Account = (function () {
 					sourceId: id,
 					source: source,
 					regLink: regLink,
-					vendor
+					vendor: vendor
 				};
 				// noinspection JSUnresolvedFunction
 				$.getJSON(url, params, function (data) {

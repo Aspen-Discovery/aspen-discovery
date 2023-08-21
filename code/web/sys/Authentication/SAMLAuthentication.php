@@ -207,7 +207,7 @@ class SAMLAuthentication{
 				if($this->selfRegister($ilsUserArray)) {
 					return $this->validateWithILS($ssoArray);
 				} else {
-					AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+					AspenError::raiseError(new AspenError('Unable to register a new account with ILS during SAML authentication.'));
 					return false;
 				}
 			} else {
@@ -276,7 +276,7 @@ class SAMLAuthentication{
 	}
 
 	private function validateWithAspen($username): bool {
-		$findBy = 'username';
+		$findBy = 'ils_username';
 		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
 			$findBy = 'email';
 		}
@@ -293,7 +293,7 @@ class SAMLAuthentication{
 		if($this->ssoAuthOnly) {
 			$login = UserAccount::loginWithAspen($user);
 		} else {
-			$_REQUEST['username'] = $user->ils_password;
+			$_REQUEST['username'] = empty($user->ils_username) ? $user->ils_barcode : $user->ils_username;
 			$login = UserAccount::login(true);
 		}
 
@@ -384,8 +384,7 @@ class SAMLAuthentication{
 				$_REQUEST[$key] = $ssoArray[$primaryAttr];
 				$ilsUser[$key] = $ssoArray[$primaryAttr];
 				if(isset($mappings['useGivenCardnumber'])) {
-					$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
-					if($useSecondaryOverPrimary == '0') {
+					if($this->config->ssoUseGivenUserId == '0' || $this->config->ssoUseGivenUserId == 0) {
 						$_REQUEST[$key] = null;
 						$ilsUser[$key] = null;
 					}
@@ -436,7 +435,7 @@ class SAMLAuthentication{
 
 	private function selfRegister($user): bool {
 		global $logger;
-		$logger->log("Permorming self registration of user " . print_r($user, true), Logger::LOG_ERROR);
+		$logger->log("Performing self registration of user " . print_r($user, true), Logger::LOG_ERROR);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		$selfReg = $catalogConnection->selfRegister(true, $user);
 		if($selfReg['success'] != '1') {

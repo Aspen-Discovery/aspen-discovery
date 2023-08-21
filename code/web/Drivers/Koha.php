@@ -545,6 +545,10 @@ class Koha extends AbstractIlsDriver {
 				$issuingRulesRS->close();
 			}
 
+			if ($curRow['itype'] == 'ILL') {
+				$curCheckout->isIll = true;
+			}
+
 			//Get the patron expiration date to check for active card
 			if ($curCheckout->autoRenew == 1) {
 				/** @noinspection SqlResolve */
@@ -843,7 +847,6 @@ class Koha extends AbstractIlsDriver {
 					$user->username = $userFromDb['borrowernumber'];
 					$user->unique_ils_id = $userFromDb['borrowernumber'];
 				}
-				$user->ils_username = $userFromDb['userid'];
 			}
 
 			$forceDisplayNameUpdate = false;
@@ -1248,6 +1251,9 @@ class Koha extends AbstractIlsDriver {
 						$curTitle['checkin'] = $returnDate->getTimestamp();
 					} else {
 						$curTitle['checkin'] = null;
+					}
+					if ($readingHistoryTitleRow['iType'] == 'ILL') {
+						$curTitle['isIll'] = true;
 					}
 					$readingHistoryTitles[] = $curTitle;
 				}
@@ -6980,7 +6986,7 @@ class Koha extends AbstractIlsDriver {
 	 *
 	 * @return array|bool
 	 */
-	public function lmsToSso($isStaffUser, $isStudentUser, $useGivenUserId, $useGivenCardnumber) {
+	public function lmsToSso($isStaffUser, $isStudentUser, $useGivenCardnumber, $useGivenUserId) {
 		$categoryId = 'ssoCategoryIdAttr';
 		$categoryIdFallback = 'ssoCategoryIdFallback';
 		if($isStaffUser) {
@@ -6995,8 +7001,18 @@ class Koha extends AbstractIlsDriver {
 				'useGivenUserId' => $useGivenUserId
 			],
 			'cardnumber' => [
+				'primary' => 'ssoIdAttr',
+				'fallback' => 'ssoUniqueAttribute',
+				'useGivenCardnumber' => $useGivenCardnumber
+			],
+			'cat_username' => [
 				'primary' => 'ssoUniqueAttribute',
-				'fallback' => 'ssoIdAttr',
+				'fallback' => 'ssoUsernameAttr',
+				'useGivenUserId' => $useGivenUserId
+			],
+			'ils_barcode' => [
+				'primary' => 'ssoIdAttr',
+				'fallback' => 'ssoUniqueAttribute',
 				'useGivenCardnumber' => $useGivenCardnumber
 			],
 			'borrower_firstname' => [
