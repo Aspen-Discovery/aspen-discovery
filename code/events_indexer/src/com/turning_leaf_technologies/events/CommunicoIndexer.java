@@ -169,6 +169,10 @@ class CommunicoIndexer {
 			}
 		}
 
+		Date lastDateToIndex = new Date();
+		long numberOfDays = numberOfDaysToIndex * 24;
+		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
+
 		logEntry.incNumEvents(communicoEvents.length());
 		for (int i = 0; i < communicoEvents.length(); i++){
 			try {
@@ -203,8 +207,13 @@ class CommunicoIndexer {
 
 						solrDocument.addField("last_indexed", new Date());
 
+						//Make sure the start date is within the range of dates we are indexing
 						Date startDate = getDateForKey(curEvent,"eventStart");
 						solrDocument.addField("start_date", startDate);
+						if (startDate.after(lastDateToIndex)) {
+							continue;
+						}
+
 						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 						Date endDate = getDateForKey(curEvent,"eventEnd");
 						solrDocument.addField("end_date", endDate);
