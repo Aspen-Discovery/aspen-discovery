@@ -515,6 +515,11 @@ class Koha extends AbstractIlsDriver {
 							'1' => $renewalDate,
 							'isPublicFacing' => true,
 						]);
+					} elseif ($error == 'too_soon') {
+						$curCheckout->renewError = translate([
+							'text' => 'Item cannot be renewed yet',
+							'isPublicFacing' => true,
+						]);
 					} else {
 						$curCheckout->renewError = translate([
 							'text' => $error,
@@ -563,6 +568,38 @@ class Koha extends AbstractIlsDriver {
 				}
 				$issuingRulesRS->close();
 			}
+
+
+			// check for if no auto-renewal before day is set
+			if($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
+				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'noautorenewalbefore' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+				if ($issuingRulesRS !== false) {
+					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+						$noRenewalsBefore = $issuingRulesRow['rule_value'];
+						if ($curCheckout->renewError == translate([
+								'text' => 'Item cannot be renewed yet.',
+								'isPublicFacing' => true,
+							]) && $noRenewalsBefore && $renewalDate) {
+							$curCheckout->renewError = null;
+							$days_before = date('M j, y', strtotime($renewalDate . " -$noRenewalsBefore days"));
+							$curCheckout->autoRenewError = translate([
+								'text' => 'No renewals before %1%.',
+								'1' => $days_before,
+								'isPublicFacing' => true,
+							]);
+							$curCheckout->autoRenewError .= ' ' . translate([
+									'text' => 'Item scheduled for auto renewal.',
+									'isPublicFacing' => true,
+								]);
+						}
+
+					}
+					$issuingRulesRS->close();
+				}
+			}
+
 
 			if ($curRow['itype'] == 'ILL') {
 				$curCheckout->isIll = true;

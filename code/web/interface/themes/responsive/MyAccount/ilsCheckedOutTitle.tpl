@@ -219,6 +219,9 @@
 						{if empty($record->returnClaim)}
 							{if !isset($record->canRenew) || $record->canRenew == true}
 								<a href="#" onclick="return AspenDiscovery.Account.renewTitle('{$record->userId}', '{$record->recordId}', '{$record->renewIndicator}');" class="btn btn-sm btn-primary">{translate text='Renew' isPublicFacing=true}</a>
+								{if isset($record->autoRenew) && $record->autoRenew == true && !empty($record->autoRenewError)}
+									{$record->autoRenewError}
+								{/if}
 							{elseif isset($record->autoRenew) && $record->autoRenew == true}
 								{if !empty($record->autoRenewError)}
 									{$record->autoRenewError}
