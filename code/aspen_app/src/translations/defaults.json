@@ -393,5 +393,6 @@
   "item_already_checked_out": "This item is already checked out to you.",
   "unable_to_checkout_title": "Unable to checkout title",
   "unknown_error_checking_out": "Unknown error while trying to checkout. Try again later.",
-  "unknown_title": "Unknown Title"
+  "unknown_title": "Unknown Title",
+  "pending_cancellation": "Pending Cancellation"
 }
