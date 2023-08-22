@@ -6,6 +6,7 @@ class EventsFacetGroup extends DataObject {
 	public $__table = 'events_facet_groups';
 	public $id;
 	public $name;
+    public $eventFacetCountsToShow;
 
 	public $_facets;
     private $_libraries;
@@ -49,6 +50,17 @@ class EventsFacetGroup extends DataObject {
 				'canAddNew' => true,
 				'canDelete' => true,
 			],
+            'eventFacetCountsToShow' => [
+                'property' => 'eventFacetCountsToShow',
+                'type' => 'enum',
+                'values' => [
+                    '1' => 'Show all counts (exact and approximate)',
+                    '2' => 'Show exact counts only',
+                    '3' => 'Show no counts',
+                ],
+                'label' => 'Facet Counts To Show',
+                'description' => 'The counts to show for facets',
+            ],
             'libraries' => [
                 'property' => 'libraries',
                 'type' => 'multiSelect',
