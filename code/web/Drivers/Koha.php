@@ -522,7 +522,7 @@ class Koha extends AbstractIlsDriver {
 						]);
 					} elseif ($error == 'too_soon') {
 						$curCheckout->renewError = translate([
-							'text' => 'Item cannot be renewed yet',
+							'text' => 'Item cannot be renewed yet.',
 							'isPublicFacing' => true,
 						]);
 					} else {
@@ -583,10 +583,11 @@ class Koha extends AbstractIlsDriver {
 				if ($issuingRulesRS !== false) {
 					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
 						$noRenewalsBefore = $issuingRulesRow['rule_value'];
-						if ($curCheckout->renewError == translate([
-								'text' => 'Item cannot be renewed yet.',
-								'isPublicFacing' => true,
-							]) && $noRenewalsBefore && $renewalDate) {
+						$renewError = translate([
+							'text' => 'Item cannot be renewed yet.',
+							'isPublicFacing' => true,
+						]);
+						if ($curCheckout->renewError == $renewError && $noRenewalsBefore && $renewalDate) {
 							$days_before = date('M j, y', strtotime($renewalDate . " -$noRenewalsBefore days"));
 							$curCheckout->renewError = translate([
 								'text' => 'No renewals before %1%.',
