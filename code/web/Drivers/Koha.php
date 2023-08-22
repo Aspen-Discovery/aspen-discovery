@@ -6986,8 +6986,10 @@ class Koha extends AbstractIlsDriver {
 			$response = json_decode($response);
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$result['success'] = true;
+				$result['error'] = $response->error;
+				$result['allows_renewals'] = $response->allows_renewals;
 				if ($response->error == "on_reserve") {
-					$result['success'] = true;
 					$result['error'] = "On hold for another patron";
 				}
 			}
