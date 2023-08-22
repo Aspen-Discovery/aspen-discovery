@@ -9,6 +9,10 @@ class Events_EventsFacets extends ObjectEditor {
 		return 'EventsFacetGroup';
 	}
 
+	function getModule(): string {
+		return 'Events';
+	}
+
 	function getToolName(): string {
 		return 'EventsFacets';
 	}
@@ -22,14 +26,14 @@ class Events_EventsFacets extends ObjectEditor {
 		$object->orderBy($this->getSort());
 		$this->applyFilters($object);
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
-		if (!UserAccount::userHasPermission('Administer All Events Facets')) {
+		if (!UserAccount::userHasPermission('Administer Events Facet Settings')) {
 			$library = Library::getPatronHomeLibrary(UserAccount::getActiveUserObj());
 
-            $eventsFacetSetting = new LibraryEventsSetting();
-            $eventsFacetSetting->libraryId = $library->libraryId;
-            if ($eventsFacetSetting->find(true)){
-                $object->id = $eventsFacetSetting->eventsFacetSettingsId;
-            }
+			$eventsFacetSetting = new LibraryEventsSetting();
+			$eventsFacetSetting->libraryId = $library->libraryId;
+			if ($eventsFacetSetting->find(true)) {
+				$object->id = $eventsFacetSetting->eventsFacetSettingsId;
+			}
 		}
 		$object->find();
 		$list = [];
