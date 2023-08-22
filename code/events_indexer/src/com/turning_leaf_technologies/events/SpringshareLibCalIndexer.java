@@ -155,7 +155,8 @@ class SpringshareLibCalIndexer {
 		}
 
 		Date lastDateToIndex = new Date();
-		lastDateToIndex.setTime(lastDateToIndex.getTime() + numberOfDaysToIndex * 60 * 60 * 1000);
+		long numberOfDays = numberOfDaysToIndex * 24;
+		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
 
 		for (int i = 0; i < libCalEvents.length(); i++){
 			try {
