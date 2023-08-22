@@ -21,6 +21,7 @@ class SpringshareLibCalSetting extends DataObject {
 	public $registrationModalBody;
 	public $username;
 	public $password;
+	public $numberOfDaysToIndex;
 
 	private $_libraries;
 	private $_locationMap;
@@ -70,6 +71,14 @@ class SpringshareLibCalSetting extends DataObject {
 				'description' => 'Client Secret',
 				'maxLength' => 36,
 				'hideInLists' => true,
+			],
+			'numberOfDaysToIndex' => [
+				'property' => 'numberOfDaysToIndex',
+				'type' => 'integer',
+				'label' => 'Number of Days To Index',
+				'description' => 'The number of days into the future to index',
+				'default' => 365,
+				'minimum' => 30,
 			],
 			'eventsInLists' => [
 				'property' => 'eventsInLists',

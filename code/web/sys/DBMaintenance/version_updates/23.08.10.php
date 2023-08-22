@@ -28,29 +28,41 @@ function getUpdates23_08_10(): array {
 				"UPDATE user set ils_password = cat_password where source NOT IN ('admin', 'admin_sso')",
 				"UPDATE user set cat_username = '' where source IN ('admin', 'admin_sso')",
 				"UPDATE user set cat_password = '' where source IN ('admin', 'admin_sso')",
-			]
-		], //split_user_fields
+			],
+		],
+		//split_user_fields
+		'add_number_of_days_to_index_to_event_indexers' => [
+			'title' => 'Add number of days to index to event indexers',
+			'description' => 'Add number of days to index to event indexers',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE communico_settings ADD COLUMN numberOfDaysToIndex INT DEFAULT 365',
+				'ALTER TABLE springshare_libcal_settings ADD COLUMN numberOfDaysToIndex INT DEFAULT 365',
+				'ALTER TABLE lm_library_calendar_settings ADD COLUMN numberOfDaysToIndex INT DEFAULT 365',
+			],
+		],
+		//add_number_of_days_to_index_to_event_indexers
 
-    //kodi - ByWater
-        'permissions_events_facets' => [
-            'title' => 'Alters permissions for Events Facets',
-            'description' => 'Create permissions for altering events facets',
-            'sql' => [
-                "INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Events Facet Settings', 'Events', 20, 'Allows the user to alter events facets for all libraries.')",
-                "INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Events Facet Settings'))",
-            ],
-        ], //permissions_events_facets
-        'events_facets' => [
-            'title' => 'Events Facet Tables',
-            'description' => 'Adds tables for events facets',
-            'sql' => [
-                "CREATE TABLE events_facet_groups (
+		//kodi - ByWater
+		'permissions_events_facets' => [
+			'title' => 'Alters permissions for Events Facets',
+			'description' => 'Create permissions for altering events facets',
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Events Facet Settings', 'Events', 20, 'Allows the user to alter events facets for all libraries.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Events Facet Settings'))",
+			],
+		],
+		//permissions_events_facets
+		'events_facets' => [
+			'title' => 'Events Facet Tables',
+			'description' => 'Adds tables for events facets',
+			'sql' => [
+				"CREATE TABLE events_facet_groups (
 					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					name VARCHAR(255) NOT NULL UNIQUE,
-                    eventFacetCountsToShow TINYINT DEFAULT 1
-
+					eventFacetCountsToShow TINYINT DEFAULT 1
 				)",
-                "CREATE TABLE events_facet (
+				"CREATE TABLE events_facet (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					facetGroupId INT NOT NULL, 
 					displayName VARCHAR(50) NOT NULL, 
@@ -69,15 +81,16 @@ function getUpdates23_08_10(): array {
 					multiSelect TINYINT DEFAULT 0,
 					canLock TINYINT DEFAULT 0
 				) ENGINE = InnoDB",
-                "ALTER TABLE events_facet ADD UNIQUE groupFacet (facetGroupId, facetName)",
-            ],
-        ],//events_facets
-        'events_facets_default' => [
-          'title' => 'Events Facet Default Values',
-          'description' => 'Adds a default event facet group that applies to all libraries unless edited',
-          'sql' => [
-              "INSERT INTO events_facet_groups (id, name) VALUES (1, 'default')",
-              "INSERT INTO events_facet VALUES 
+				"ALTER TABLE events_facet ADD UNIQUE groupFacet (facetGroupId, facetName)",
+			],
+		],
+		//events_facets
+		'events_facets_default' => [
+			'title' => 'Events Facet Default Values',
+			'description' => 'Adds a default event facet group that applies to all libraries unless edited',
+			'sql' => [
+				"INSERT INTO events_facet_groups (id, name) VALUES (1, 'default')",
+				"INSERT INTO events_facet VALUES 
                              (1,1, 'Age Group/Audience', 'Age Groups/Audiences', 'age_group_facet', 1, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),
                              (2,1, 'Branch', 'Branches', 'branch', 2, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),
                              (3,1, 'Room', 'Rooms', 'room', 3, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),
@@ -88,16 +101,18 @@ function getUpdates23_08_10(): array {
                              (8,1, 'Reservation State', 'Reservation State', 'reservation_state', 8, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1),
                              (9,1, 'Event State', 'Event State', 'event_state', 9, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1)",
 
-          ],
-        ],//events_facets_default
-        'events_facet_settingsId' => [
-            'title' => "Events Facet Settings Id for Library",
-            'description' => "Adds column for events facet settings id to library_events_setting table",
-            'sql' => [
-                "ALTER TABLE library_events_setting ADD COLUMN eventsFacetSettingsId INT(11) DEFAULT 1",
-            ],
-        ],//events_facet_settingsId
-  
+			],
+		],
+		//events_facets_default
+		'events_facet_settingsId' => [
+			'title' => "Events Facet Settings Id for Library",
+			'description' => "Adds column for events facet settings id to library_events_setting table",
+			'sql' => [
+				"ALTER TABLE library_events_setting ADD COLUMN eventsFacetSettingsId INT(11) DEFAULT 1",
+			],
+		],
+		//events_facet_settingsId
+
 		// kirstien - ByWater
 		'checkoutIsILL' => [
 			'title' => 'Checkout - Is ILL',
@@ -105,13 +120,15 @@ function getUpdates23_08_10(): array {
 			'sql' => [
 				'ALTER TABLE user_checkout ADD COLUMN isIll TINYINT(1) DEFAULT 0',
 			],
-		], //checkoutIsILL
+		],
+		//checkoutIsILL
 		'readingHistoryIsILL' => [
 			'title' => 'Reading History Work - Is ILL',
 			'description' => 'Add a property to determine if a reading history work is ILL',
 			'sql' => [
 				'ALTER TABLE user_reading_history_work ADD COLUMN isIll TINYINT(1) DEFAULT 0',
 			],
-		], //readingHistoryIsILL
+		],
+		//readingHistoryIsILL
 	];
 }
