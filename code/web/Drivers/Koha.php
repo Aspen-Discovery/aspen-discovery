@@ -522,7 +522,7 @@ class Koha extends AbstractIlsDriver {
 						]);
 					} elseif ($error == 'too_soon') {
 						$curCheckout->renewError = translate([
-							'text' => 'Item cannot be renewed yet',
+							'text' => 'Item cannot be renewed yet.',
 							'isPublicFacing' => true,
 						]);
 					} else {
