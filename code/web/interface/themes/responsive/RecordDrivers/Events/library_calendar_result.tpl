@@ -68,7 +68,7 @@
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
 									{if !empty($recordDriver->getRegistrationModalBody())}
-										<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'library_market', '{$recordDriver->getExternalUrl()}');"><i class="fas fa-external-link-alt"></i>{translate text="Registration Information" isPublicFacing=true}
+										<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'library_market', '{$recordDriver->getExternalUrl()}');">{translate text="Registration Information" isPublicFacing=true}
 										</a>
 									{else}
 										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i> {translate text="Registration Information" isPublicFacing=true}</a>
