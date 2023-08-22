@@ -47,6 +47,8 @@ class CommunicoIndexer {
 	private String baseUrl;
 	private String clientId;
 	private String clientSecret;
+	private int numberOfDaysToIndex;
+
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, CommunicoEvent> existingEvents = new HashMap<>();
@@ -67,7 +69,7 @@ class CommunicoIndexer {
 	private ConcurrentUpdateSolrClient solrUpdateServer;
 	private boolean doFullReload = true;
 
-	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -82,6 +84,7 @@ class CommunicoIndexer {
 		this.clientSecret = clientSecret;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
+		this.numberOfDaysToIndex = numberOfDaysToIndex;
 
 		logEntry = new EventsIndexerLogEntry("Communico " + name, aspenConn, logger);
 
