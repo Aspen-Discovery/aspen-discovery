@@ -490,40 +490,44 @@ class Koha extends AbstractIlsDriver {
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
 
-			if ($curCheckout->autoRenew == 1) {
-				$autoRenewError = $curRow['auto_renew_error'];
-				if ($autoRenewError == 'null') {
-					$curCheckout->autoRenewError = translate([
-						'text' => 'If eligible, this item will renew on<br/>%1%',
-						'1' => $renewalDate,
-						'isPublicFacing' => true,
-					]);
-				}
-			}
-
 			$library = $patron->getHomeLibrary();
 			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
 			if ($allowRenewals['success']) {
-				$willAutoRenew = false;
+				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
+				$willAutoRenew = 0;
 				if($allowRenewals['error'] == 'auto_renew') {
-					$willAutoRenew = true;
+					$willAutoRenew = 1;
 				}
-				$curCheckout->canRenew = $allowRenewals['allows_renewals'];
+				$curCheckout->canRenew = $eligibleForRenewal;
 				$curCheckout->autoRenew = $willAutoRenew;
 
-				if(!$willAutoRenew) {
-					// show renew error if auto-renew is not reason
-					$curCheckout->renewError = translate([
-						'text' => $allowRenewals['error'],
-						'isPublicFacing' => true,
-					]);
+				if(!$willAutoRenew && !$eligibleForRenewal) {
+					$error = $allowRenewals['error'];
+					if($error == 'onsite_checkout') {
+						$curCheckout->renewError = translate([
+							'text' => 'Item is an onsite checkout',
+							'isPublicFacing' => true,
+						]);
+					} elseif ($error == 'auto_too_soon') {
+						$curCheckout->autoRenew = 1;
+						$curCheckout->autoRenewError = translate([
+							'text' => 'If eligible, this item will renew on<br/>%1%',
+							'1' => $renewalDate,
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$curCheckout->renewError = translate([
+							'text' => $error,
+							'isPublicFacing' => true,
+						]);
+					}
 				}
 
-				if ($library->displayHoldsOnCheckout) {
+				if ($library->displayHoldsOnCheckout && $allowRenewals['error'] == 'on_reserve') {
 					$curCheckout->canRenew = 0;
 					$curCheckout->autoRenew = 0;
 					$curCheckout->renewError = translate([
-						'text' => $allowRenewals['error'],
+						'text' => 'On hold for another patron',
 						'isPublicFacing' => true,
 					]);
 				}
@@ -6961,6 +6965,7 @@ class Koha extends AbstractIlsDriver {
 		$result = [
 			'success' => false,
 			'error' => null,
+			'allows_renewal' => false,
 		];
 
 		$oauthToken = $this->getOAuthToken();
@@ -6988,10 +6993,7 @@ class Koha extends AbstractIlsDriver {
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$result['success'] = true;
 				$result['error'] = $response->error;
-				$result['allows_renewals'] = $response->allows_renewals;
-				if ($response->error == "on_reserve") {
-					$result['error'] = "On hold for another patron";
-				}
+				$result['allows_renewal'] = $response->allows_renewal;
 			}
 		}
 		return $result;
