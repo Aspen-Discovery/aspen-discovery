@@ -4238,6 +4238,27 @@ class Library extends DataObject {
 		return $this->_groupedWorkDisplaySettings;
 	}
 
+    protected $_eventFacetSettings = null;
+
+    /** @return EventsFacetGroup */
+    public function getEventFacetSettings() {
+        if ($this->_eventFacetSettings == null) {
+            try {
+                require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+                $eventsFacetSetting = new LibraryEventsSetting();
+                $eventsFacetSetting->libraryId = $this->libraryId;
+                if ($eventsFacetSetting->find(true)) {
+                    $this->_eventFacetSettings = $eventsFacetSetting;
+                }
+
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_eventFacetSettings;
+    }
+
 	protected $_layoutSettings = null;
 
 	/** @return LayoutSetting */
