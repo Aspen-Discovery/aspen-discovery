@@ -92,8 +92,14 @@ class SideFacets implements RecommendationInterface {
 		$lockedFacets = isset($lockedFacets[$lockSection]) ? $lockedFacets[$lockSection] : [];
 
 		//Figure out which counts to show.
-		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
-		$interface->assign('facetCountsToShow', $facetCountsToShow);
+        $searchSource = $_REQUEST['searchSource'];
+        if ($searchSource == 'events'){
+            $facetCountsToShow = $library->getEventFacetSettings()->getFacetGroup()->eventFacetCountsToShow;
+            $interface->assign('facetCountsToShow', $facetCountsToShow);
+        }else{
+            $facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
+            $interface->assign('facetCountsToShow', $facetCountsToShow);
+        }
 
 		//Do additional processing of facets
 		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
