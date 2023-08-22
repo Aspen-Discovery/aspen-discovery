@@ -27,8 +27,9 @@ class Events_EventsFacets extends ObjectEditor {
 
             $eventsFacetSetting = new LibraryEventsSetting();
             $eventsFacetSetting->libraryId = $library->libraryId;
-            $eventsFacetSetting->find(true);
-			$object->id = $eventsFacetSetting->eventsFacetSettingsId;
+            if ($eventsFacetSetting->find(true)){
+                $object->id = $eventsFacetSetting->eventsFacetSettingsId;
+            }
 		}
 		$object->find();
 		$list = [];
