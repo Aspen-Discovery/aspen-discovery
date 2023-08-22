@@ -122,6 +122,10 @@ class LibraryMarketLibraryCalendarIndexer {
 				}
 			}
 
+			Date lastDateToIndex = new Date();
+			long numberOfDays = numberOfDaysToIndex * 24;
+			lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
+
 			for (int i = 0; i < rssFeed.length(); i++){
 				try {
 					JSONObject curEvent = rssFeed.getJSONObject(i);
@@ -175,8 +179,14 @@ class LibraryMarketLibraryCalendarIndexer {
 							}*/
 							solrDocument.addField("last_indexed", new Date());
 							solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
+
+							//Make sure the start date is within the range of dates we are indexing
 							Date startDate = getDateForKey(curEvent,"start_date");
 							solrDocument.addField("start_date", startDate);
+							if (startDate.after(lastDateToIndex)) {
+								continue;
+							}
+
 							solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 							Date endDate = getDateForKey(curEvent,"end_date");
 							solrDocument.addField("end_date", endDate);
