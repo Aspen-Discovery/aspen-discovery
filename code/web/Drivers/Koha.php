@@ -497,6 +497,11 @@ class Koha extends AbstractIlsDriver {
 				$willAutoRenew = 0;
 				if($allowRenewals['error'] == 'auto_renew') {
 					$willAutoRenew = 1;
+					$curCheckout->autoRenewError = translate([
+						'text' => 'If eligible, this item will renew on<br/>%1%',
+						'1' => $renewalDate,
+						'isPublicFacing' => true,
+					]);
 				}
 				$curCheckout->canRenew = $eligibleForRenewal;
 				$curCheckout->autoRenew = $willAutoRenew;
@@ -582,14 +587,13 @@ class Koha extends AbstractIlsDriver {
 								'text' => 'Item cannot be renewed yet.',
 								'isPublicFacing' => true,
 							]) && $noRenewalsBefore && $renewalDate) {
-							$curCheckout->renewError = null;
 							$days_before = date('M j, y', strtotime($renewalDate . " -$noRenewalsBefore days"));
-							$curCheckout->autoRenewError = translate([
+							$curCheckout->renewError = translate([
 								'text' => 'No renewals before %1%.',
 								'1' => $days_before,
 								'isPublicFacing' => true,
 							]);
-							$curCheckout->autoRenewError .= ' ' . translate([
+							$curCheckout->renewError .= ' ' . translate([
 									'text' => 'Item scheduled for auto renewal.',
 									'isPublicFacing' => true,
 								]);
