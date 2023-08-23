@@ -40,6 +40,8 @@
 									{include file="Search/Recommend/ratingFacet.tpl" cluster=$cluster title=$title}
 								{elseif $title == 'lexile_score' || $title == 'accelerated_reader_reading_level' || $title == 'accelerated_reader_point_value'}
 									{include file="Search/Recommend/sliderFacet.tpl" cluster=$cluster title=$title}
+								{elseif $title == 'start_date'}
+                                    {include file="Search/Recommend/calendarFacet.tpl" cluster=$cluster title=$title}
 								{elseif !empty($cluster.showAsDropDown)}
 									{include file="Search/Recommend/dropDownFacet.tpl" cluster=$cluster title=$title}
 								{elseif !empty($cluster.multiSelect)}

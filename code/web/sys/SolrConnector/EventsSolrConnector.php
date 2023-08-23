@@ -41,34 +41,39 @@ class EventsSolrConnector extends Solr {
 		return $filter;
 	}
 
-	public function getBoostFactors($searchLibrary) {
+	public function getBoostFactors($searchLibrary, $searchLocation) {
 		$boostFactors = [];
 
+		$userLocation = null;
 		if (UserAccount::isLoggedIn()) {
 			if (UserAccount::getActiveUserObj()->getHomeLocation() != null) {
 				$userLocation = UserAccount::getActiveUserObj()->getHomeLocation()->displayName;
 			} else {
-				if ($searchLibrary != null) {
-					$userLocation = $searchLibrary->displayName;
-				} else {
-					global $library;
-					$userLocation = $library->displayName;
+				if ($searchLocation != null) {
+					$userLocation = $searchLocation->displayName;
 				}
 			}
 		}else {
-			$userLocation = $searchLibrary->displayName;
+			if ($searchLocation != null) {
+				$userLocation = $searchLocation->displayName;
+			}
 		}
 
-		$locationMap = new EventsBranchMapping();
-		$locationMap->aspenLocation = $userLocation;
-		if ($locationMap->find(true)){
-			$locationName = $locationMap->eventsLocation;
-		}else{
-			$locationName = $userLocation;
+		if ($userLocation != null) {
+			$locationMap = new EventsBranchMapping();
+			$locationMap->aspenLocation = $userLocation;
+			if ($locationMap->find(true)) {
+				$locationName = $locationMap->eventsLocation;
+			} else {
+				$locationName = $userLocation;
+			}
 		}
 
 		if ($userLocation != null) {
 			$boostFactors[] = 'product(boost,termfreq(branch,' . urlencode($locationName). '))';
+			$now = time();
+			$ninetyDays = $now + 90 * 24 * 60 * 60;
+			//$boostFactors[] = "scale(start_date_sort,$now,$ninetyDays))";
 		}else{
 			$boostFactors[] = "boost";
 		}

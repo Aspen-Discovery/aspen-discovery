@@ -39,6 +39,7 @@ class LibraryMarketLibraryCalendarIndexer {
 	private String clientSecret;
 	private String username;
 	private String password;
+	private int numberOfDaysToIndex;
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, LibraryMarketLibraryCalendarEvent> existingEvents = new HashMap<>();
@@ -52,7 +53,7 @@ class LibraryMarketLibraryCalendarIndexer {
 	//TODO: Update full reload based on settings
 	private boolean doFullReload = true;
 
-	LibraryMarketLibraryCalendarIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, String username, String password, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	LibraryMarketLibraryCalendarIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, String username, String password, int numberOfDaysToIndex, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -62,6 +63,7 @@ class LibraryMarketLibraryCalendarIndexer {
 		this.password = password;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
+		this.numberOfDaysToIndex = numberOfDaysToIndex;
 
 		logEntry = new EventsIndexerLogEntry("LibraryMarket LibraryCalendar " + name, aspenConn, logger);
 
@@ -120,6 +122,10 @@ class LibraryMarketLibraryCalendarIndexer {
 				}
 			}
 
+			Date lastDateToIndex = new Date();
+			long numberOfDays = numberOfDaysToIndex * 24;
+			lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
+
 			for (int i = 0; i < rssFeed.length(); i++){
 				try {
 					JSONObject curEvent = rssFeed.getJSONObject(i);
@@ -173,8 +179,14 @@ class LibraryMarketLibraryCalendarIndexer {
 							}*/
 							solrDocument.addField("last_indexed", new Date());
 							solrDocument.addField("last_change", getDateForKey(curEvent,"changed"));
+
+							//Make sure the start date is within the range of dates we are indexing
 							Date startDate = getDateForKey(curEvent,"start_date");
 							solrDocument.addField("start_date", startDate);
+							if (startDate.after(lastDateToIndex)) {
+								continue;
+							}
+
 							solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 							Date endDate = getDateForKey(curEvent,"end_date");
 							solrDocument.addField("end_date", endDate);

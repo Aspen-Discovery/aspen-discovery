@@ -9357,6 +9357,7 @@ a.placard-link {
   display: inline-block;
   text-align: center;
   position: relative;
+  min-height: 200px;
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {
@@ -9377,11 +9378,9 @@ a.browse-thumbnail.active {
 }
 .browse-thumbnail img {
   width: 100%;
-  min-height: 158px;
 }
 .browse-thumbnail img.floating {
   box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 15px 22px rgba(0, 0, 0, 0.072), 0 20px 33px 0 rgba(0, 0, 0, 0.086);
-  min-height: 200px;
   background: transparent;
   border-width: 0;
   padding: 0;
@@ -9395,41 +9394,6 @@ a.browse-thumbnail.active {
 }
 .browse-thumbnail.floating {
   border: none;
-}
-.browse-thumbnail-sorted {
-  display: block;
-  padding: 4px;
-  margin-bottom: 20px;
-  line-height: 1.42857143;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  -webkit-transition: all 0.2s ease-in-out;
-  transition: all 0.2s ease-in-out;
-  border-width: 0;
-  height: 210px;
-  overflow: hidden;
-  text-align: center;
-}
-.browse-thumbnail-sorted > img,
-.browse-thumbnail-sorted a > img {
-  display: inline-block;
-  max-width: 100%;
-  height: auto;
-  margin-left: auto;
-  margin-right: auto;
-}
-a.browse-thumbnail-sorted:hover,
-a.browse-thumbnail-sorted:focus,
-a.browse-thumbnail-sorted.active {
-  border-color: #3174AF;
-}
-.browse-thumbnail-sorted .caption {
-  padding: 9px;
-  color: #333333;
-}
-.browse-thumbnail-sorted img {
-  max-height: 150px;
 }
 .browse-list {
   break-inside: avoid-column;

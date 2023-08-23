@@ -16,6 +16,60 @@ class Events_Results extends ResultsAction {
 		require_once ROOT_DIR . '/sys/SolrConnector/Solr.php';
 		$timer->logTime('Include search engine');
 
+		//Check to see if the year has been set and if so, convert to a filter and resend.
+		$dateFilters = [
+			'start_date',
+		];
+		foreach ($dateFilters as $dateFilter) {
+			if ((isset($_REQUEST[$dateFilter . 'Start']) && !empty($_REQUEST[$dateFilter . 'Start'])) || (isset($_REQUEST[$dateFilter . 'End']) && !empty($_REQUEST[$dateFilter . 'End']))) {
+				$queryParams = $_GET;
+				$startDate = preg_match('/^\d{2,4}-\d{1,2}-\d{1,2}$/', $_REQUEST[$dateFilter . 'Start']) ? $_REQUEST[$dateFilter . 'Start'] : '*';
+				$endDate = preg_match('/^\d{4}-\d{1,2}-\d{1,2}$/', $_REQUEST[$dateFilter . 'End']) ? $_REQUEST[$dateFilter . 'End'] : '*';
+				if ($endDate != '*' && $startDate != '*' && $endDate < $startDate) {
+					$tmpYear = $endDate;
+					$endDate = $startDate;
+					$startDate = $tmpYear;
+				}
+				if ($startDate != '*') {
+					$dt = new DateTime();
+					$dt->setTimezone(new DateTimeZone('UTC'));
+					$dt->setTimestamp(strtotime($startDate . ' 00:00:00'));
+					$startDate = $dt->format("Y-m-d\TH:i:s\Z");
+				}
+				if ($endDate != '*') {
+					$dt = new DateTime();
+					$dt->setTimezone(new DateTimeZone('UTC'));
+					$dt->setTimestamp(strtotime($endDate . '23:59:59'));
+					$endDate = $dt->format("Y-m-d\TH:i:s\Z");
+				}
+				unset($queryParams[$dateFilter . 'Start']);
+				unset($queryParams[$dateFilter . 'End']);
+				if (!isset($queryParams['sort'])) {
+					$queryParams['sort'] = 'start_date';
+				}
+				$queryParamStrings = [];
+				foreach ($queryParams as $paramName => $queryValue) {
+					if (is_array($queryValue)) {
+						foreach ($queryValue as $arrayValue) {
+							if (strlen($arrayValue) > 0) {
+								$queryParamStrings[] = $paramName . '[]=' . urlencode($arrayValue);
+							}
+						}
+					} else {
+						if (strlen($queryValue)) {
+							$queryParamStrings[] = $paramName . '=' . urlencode($queryValue);
+						}
+					}
+				}
+				if ($startDate != '*' || $endDate != '*') {
+					$queryParamStrings[] = "&filter[]=$dateFilter:[$startDate+TO+$endDate]";
+				}
+				$queryParamString = join('&', $queryParamStrings);
+				header("Location: /Events/Results?$queryParamString");
+				exit;
+			}
+		}
+
 		// Initialise from the current search globals
 		/** @var SearchObject_EventsSearcher $searchObject */
 		$searchObject = SearchObjectFactory::initSearchObject('Events');

@@ -21,7 +21,10 @@
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
-						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$id|escape}');">{$summScore}</a>)
+					{/if}
+					{if isset($summExplain)}
+						<div class="hidden" id="scoreExplanationValue{$id|escape}">{$summExplain}</div>
 					{/if}
 				</div>
 			</div>
@@ -74,7 +77,7 @@
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
 									{if !empty($recordDriver->getRegistrationModalBody())}
-										<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'springshare', '{$recordDriver->getExternalUrl()}');"><i class="fas fa-external-link-alt"></i>{translate text="Registration Information" isPublicFacing=true}
+										<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'springshare', '{$recordDriver->getExternalUrl()}');">{translate text="Registration Information" isPublicFacing=true}
 										</a>
 									{else}
 										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i> {translate text="Registration Information" isPublicFacing=true}</a>
