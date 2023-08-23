@@ -2238,12 +2238,14 @@ class Koha extends AbstractIlsDriver {
 				if(array_search($curRow['itype'], $illItemTypes)) {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
+					$curHold->canFreeze = false;
 					if($library->interLibraryLoanName) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
 				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
+					$curHold->canFreeze = false;
 					if($library->interLibraryLoanName) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
@@ -2252,6 +2254,7 @@ class Koha extends AbstractIlsDriver {
 				if ($curRow['itype'] == 'ILL') {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
+					$curHold->canFreeze = false;
 					if($library->interLibraryLoanName) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
