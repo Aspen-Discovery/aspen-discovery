@@ -384,6 +384,18 @@ class Koha extends AbstractIlsDriver {
 
 		$kohaVersion = $this->getKohaVersion();
 
+		$illItemTypes = [];
+		if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+			global $library;
+			$illItemType = new ILLItemType();
+			$illItemType->libraryId = $library->libraryId;
+			$illItemType->find();
+			while ($illItemType->fetch()) {
+				$illItemTypes[$illItemType->code] = $illItemType->code;
+			}
+		}
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -615,8 +627,25 @@ class Koha extends AbstractIlsDriver {
 			}
 
 
-			if ($curRow['itype'] == 'ILL') {
-				$curCheckout->isIll = true;
+			// check if item is ILL
+			if ($illItemTypes) {
+				if(array_search($curRow['itype'], $illItemTypes)) {
+					$curCheckout->isIll = true;
+					$curCheckout->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curCheckout->source = $library->interLibraryLoanName;
+					}
+				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
+					$curCheckout->isIll = true;
+					$curCheckout->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curCheckout->source = $library->interLibraryLoanName;
+					}
+				}
+			} else {
+				if ($curRow['itype'] == 'ILL') {
+					$curCheckout->isIll = true;
+				}
 			}
 
 			//Get the patron expiration date to check for active card
@@ -1230,6 +1259,19 @@ class Koha extends AbstractIlsDriver {
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 		// TODO implement sorting, currently only done in catalogConnection for koha reading history
 		//TODO prepend indexProfileType
+
+		$illItemTypes = [];
+		if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+			global $library;
+			require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+			$illItemType = new ILLItemType();
+			$illItemType->libraryId = $library->libraryId;
+			$illItemType->find();
+			while ($illItemType->fetch()) {
+				$illItemTypes[$illItemType->code] = $illItemType->code;
+			}
+		}
+
 		$this->initDatabaseConnection();
 
 		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
@@ -1322,8 +1364,16 @@ class Koha extends AbstractIlsDriver {
 					} else {
 						$curTitle['checkin'] = null;
 					}
-					if ($readingHistoryTitleRow['iType'] == 'ILL') {
-						$curTitle['isIll'] = true;
+
+					// check if item is ILL
+					if ($illItemTypes) {
+						if(array_search($readingHistoryTitleRow['iType'], $illItemTypes)) {
+							$curTitle['isIll'] = true;
+						}
+					} else {
+						if ($readingHistoryTitleRow['iType'] == 'ILL') {
+							$curTitle['isIll'] = true;
+						}
 					}
 					$readingHistoryTitles[] = $curTitle;
 				}
@@ -2045,6 +2095,17 @@ class Koha extends AbstractIlsDriver {
 			$iTypeTranslationMap = null;
 		}
 
+		$illItemTypes = [];
+		if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+			$illItemType = new ILLItemType();
+			$illItemType->libraryId = $library->libraryId;
+			$illItemType->find();
+			while ($illItemType->fetch()) {
+				$illItemTypes[$illItemType->code] = $illItemType->code;
+			}
+		}
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron, items.itype, reserves.branchcode FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -2171,9 +2232,30 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
-			if ($curRow['itype'] == 'ILL') {
-				$curHold->source = $library->interLibraryLoanName;
-				$curHold->isIll = true;
+
+			// check if item is ILL
+			if ($illItemTypes) {
+				if(array_search($curRow['itype'], $illItemTypes)) {
+					$curHold->isIll = true;
+					$curHold->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curHold->source = $library->interLibraryLoanName;
+					}
+				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
+					$curHold->isIll = true;
+					$curHold->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curHold->source = $library->interLibraryLoanName;
+					}
+				}
+			} else {
+				if ($curRow['itype'] == 'ILL') {
+					$curHold->isIll = true;
+					$curHold->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curHold->source = $library->interLibraryLoanName;
+					}
+				}
 			}
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
