@@ -81,7 +81,7 @@ class Translation_ImportTranslations extends Admin_Admin {
 							//Make sure there is at least one translation for the term before importing it.
 							$hasTranslations = false;
 							foreach ($languagesToImport as $code => $columnIndex) {
-								$newValue = $curRow[$columnIndex];
+								$newValue = utf8_encode($curRow[$columnIndex]);
 								if (!empty($newValue)) {
 									$hasTranslations = true;
 								}
@@ -93,7 +93,7 @@ class Translation_ImportTranslations extends Admin_Admin {
 									$translationTerm->insert();
 								}
 								foreach ($languagesToImport as $code => $columnIndex) {
-									$newValue = $curRow[$columnIndex];
+									$newValue = utf8_encode($curRow[$columnIndex]);
 									if (!empty($newValue)) {
 										$translation = new Translation();
 										$translation->languageId = $codeToLanguageId[$code];
