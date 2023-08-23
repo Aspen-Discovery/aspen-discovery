@@ -63,7 +63,9 @@ abstract class ObjectEditor extends Admin_Admin {
 		} elseif ($objectAction == 'shareToCommunity') {
 			$this->shareToCommunity($structure);
 		} elseif ($objectAction == 'importFromCommunity') {
-			$this->importFromCommunity($structure);
+            $this->importFromCommunity($structure);
+        } elseif ($objectAction == 'exportToCSV') {
+            $this->viewExistingObjects($structure);
 		} else {
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)) {
@@ -73,12 +75,6 @@ abstract class ObjectEditor extends Admin_Admin {
 				$this->viewIndividualObject($structure);
 			}
 		}
-
-        //Check to see if we are exporting to csv
-        if (isset($_REQUEST['exportToCSV'])) {
-            $this->exportToCSV($this->getAllObjects(1, $this->getNumObjects()));
-        }
-
 		$this->display($interface->getTemplate(), $this->getPageTitle());
 	}
 
@@ -250,7 +246,11 @@ abstract class ObjectEditor extends Admin_Admin {
 			$interface->assign('canCompare', false);
 		}
 		$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
-		$interface->setTemplate('../Admin/propertiesList.tpl');
+        if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportToCSV') {
+            Exporter::downloadCSV('Admin/propertiesListCSV.tpl', $structure, $allObjects);
+        } else {
+            $interface->setTemplate('../Admin/propertiesList.tpl');
+        }
 	}
 
 	function copyObject($structure) {
@@ -1075,4 +1075,5 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 		return $hasSections || count($structure) > 6;
 	}
+
 }

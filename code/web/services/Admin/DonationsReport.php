@@ -64,37 +64,6 @@ class Admin_DonationsReport extends ObjectEditor {
         return true;
     }
 
-    function exportToCSV($data) {
-        try {
-            header('Content-Type: text/csv; charset=utf-8');
-            header('Content-Disposition: attachment; filename="DonationsReport.csv"');
-            header('Cache-Control: max-age=0');
-            $fp = fopen('php://output', 'w');
-            //add BOM to fix UTF-8 in Excel
-            fputs($fp, $bom = (chr(0xEF) . chr(0xBB) . chr(0xBF)));
-            $count_row = 0;
-            foreach ($data as $row) {
-                $array = get_object_vars($row);
-                $keys = array_keys($array);
-                foreach ($keys as $key) {
-                    if (str_starts_with($key, '_')) {
-                        unset($array[$key]);
-                    }
-                }
-                if ($count_row == 0) {
-                    $keys = array_keys($array);
-                    fputcsv($fp, $keys);
-                }
-                fputcsv($fp, $array);
-                $count_row++;
-            }
-            exit;
-        } catch (Exception $e) {
-            global $logger;
-            $logger->log("Error exporting to csv " . $e, Logger::LOG_ERROR);
-        }
-    }
-
 	function getPrimaryKeyColumn(): string {
 		return 'id';
 	}

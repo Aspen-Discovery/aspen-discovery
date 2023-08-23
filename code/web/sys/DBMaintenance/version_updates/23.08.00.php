@@ -138,7 +138,7 @@ function getUpdates23_08_00(): array {
 		], //event_registration_modal
 
 		//other organizations
-        
+
         //Lucas - Theke
         'secondary phone number' => [
 			'title' => 'Add a secondary phone number to Location',
