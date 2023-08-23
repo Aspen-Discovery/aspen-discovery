@@ -35,6 +35,10 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
 }
 
+if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+	require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+}
+
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class Library extends DataObject {
@@ -435,6 +439,9 @@ class Library extends DataObject {
 		// we don't want to make the libraryId property editable
 		// because it is associated with this library system only
 		unset($holidaysStructure['libraryId']);
+
+		$ILLItemTypesStructure = ILLItemType::getObjectStructure($context);
+		unset($ILLItemTypesStructure['libraryId']);
 
 		$libraryLinksStructure = LibraryLink::getObjectStructure($context);
 		unset($libraryLinksStructure['weight']);
@@ -3105,6 +3112,22 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'size' => '200',
 					],
+					'interLibraryLoanItemTypes' => [
+						'property' => 'interLibraryLoanItemTypes',
+						'type' => 'oneToMany',
+						'label' => 'Interlibrary Loan Item Types',
+						'renderAsHeading' => true,
+						'description' => 'Item type codes that define an item as being interlibrary loan item',
+						'note' => 'Applies to Koha Only',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'ILLItemType',
+						'structure' => $ILLItemTypesStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
 
 					'innReachSection' => [
 						'property' => 'innReachSection',
@@ -3900,6 +3923,18 @@ class Library extends DataObject {
 			return $this->getThemes();
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
+		} elseif ($name == 'interLibraryLoanItemTypes') {
+			if (!isset($this->interLibraryLoanItemTypes) && $this->libraryId) {
+				$this->interLibraryLoanItemTypes = [];
+				$interLibraryLoanItemType = new ILLItemType();
+				$interLibraryLoanItemType->libraryId = $this->libraryId;
+				$interLibraryLoanItemType->orderBy('code');
+				$interLibraryLoanItemType->find();
+				while ($interLibraryLoanItemType->fetch()) {
+					$this->interLibraryLoanItemTypes[$interLibraryLoanItemType->id] = clone($interLibraryLoanItemType);
+				}
+			}
+			return $this->interLibraryLoanItemTypes;
 		} else {
 			return parent::__get($name);
 		}
@@ -3931,6 +3966,8 @@ class Library extends DataObject {
 			$this->_themes = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
+		}  elseif ($name == 'interLibraryLoanItemTypes') {
+			$this->interLibraryLoanItemTypes = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -3987,6 +4024,7 @@ class Library extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
+			$this->saveILLItemTypes();
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4043,6 +4081,7 @@ class Library extends DataObject {
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
 			$this->processSso();
+			$this->saveILLItemTypes();
 		}
 		return $ret;
 	}
@@ -4184,6 +4223,13 @@ class Library extends DataObject {
 		if (isset ($this->holidays) && is_array($this->holidays)) {
 			$this->saveOneToManyOptions($this->holidays, 'libraryId');
 			unset($this->holidays);
+		}
+	}
+
+	public function saveILLItemTypes() {
+		if (isset ($this->interLibraryLoanItemTypes) && is_array($this->interLibraryLoanItemTypes)) {
+			$this->saveOneToManyOptions($this->interLibraryLoanItemTypes, 'libraryId');
+			unset($this->interLibraryLoanItemTypes);
 		}
 	}
 
