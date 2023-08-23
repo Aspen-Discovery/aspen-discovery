@@ -599,6 +599,7 @@ class CatalogConnection {
 									} else {
 										$userReadingHistoryEntry->checkInDate = null;
 									}
+									$userReadingHistoryEntry->isIll = $title['isIll'];
 									$userReadingHistoryEntry->deleted = 0;
 									$userReadingHistoryEntry->insert();
 								}
@@ -992,6 +993,7 @@ class CatalogConnection {
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
 		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
+		$historyEntry['isIll'] = $readingHistoryDB->isIll;
 		if (!$forExport) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);

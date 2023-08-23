@@ -24,6 +24,7 @@ class Checkout extends CircEntry {
 	public $fine;
 	public $returnClaim;
 	public $holdQueueLength;
+	public $isIll;
 
 	//For OverDrive
 	public $allowDownload;
@@ -71,6 +72,7 @@ class Checkout extends CircEntry {
 			'formatSelected',
 			'canReturnEarly',
 			'isSupplemental',
+			'isIll',
 		];
 	}
 
@@ -165,6 +167,7 @@ class Checkout extends CircEntry {
 			$checkout['itemid'] = $checkout['itemId'];
 			$checkout['renewMessage'] = '';
 		}
+		$checkout['barcode'] = $this->barcode;
 		return $checkout;
 	}
 

@@ -20,7 +20,7 @@ export const StartCheckOutSession = () => {
      const [isOpen, setIsOpen] = React.useState(useRoute().params?.startNew ?? true);
      const cancelRef = React.useRef(null);
 
-     const [activeAccount, setActiveAccount] = React.useState(user.cat_username);
+     const [activeAccount, setActiveAccount] = React.useState(user.ils_barcode ?? user.cat_username);
      let availableAccounts = [];
      if (_.size(accounts) > 0) {
           availableAccounts = Object.values(accounts);
@@ -35,7 +35,7 @@ export const StartCheckOutSession = () => {
      React.useEffect(() => {
           const startNewSession = navigation.addListener('focus', () => {
                if (startNew) {
-                    setActiveAccount(user.cat_username);
+                    setActiveAccount(user.ils_barcode ?? user.cat_username);
                     setIsOpen(true);
                }
           });
@@ -89,9 +89,9 @@ export const StartCheckOutSession = () => {
                                         mt={1}
                                         mb={3}
                                         onValueChange={(itemValue) => setActiveAccount(itemValue)}>
-                                        <Select.Item label={user.displayName} value={user.cat_username} />
+                                        <Select.Item label={user.displayName} value={user.ils_barcode ?? user.cat_username} />
                                         {availableAccounts.map((item, index) => {
-                                             return <Select.Item label={item.displayName} value={item.cat_username} key={index} />;
+                                             return <Select.Item label={item.displayName} value={user.ils_barcode ?? item.cat_username} key={index} />;
                                         })}
                                    </Select>
                               </FormControl>

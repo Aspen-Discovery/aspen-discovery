@@ -101,7 +101,7 @@
 
 					{if !empty($showOut)}
 						<div class="row">
-							<div class="result-label col-sm-12 col-md-5">{translate text='Checked Out' isPublicFacing=true}</div>
+							<div class="result-label col-sm-12 col-md-5">{translate text="checked_out_user_account" defaultText="Checked Out" isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">{$record->checkoutDate|date_format}</div>
 						</div>
 					{/if}
@@ -235,11 +235,13 @@
 						{/if}
 					</div>
 					{if !empty($showWhileYouWait)}
-						<div class="btn-group btn-group-vertical btn-block">
-							{if !empty($record->getGroupedWorkId())}
-								<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
-							{/if}
-						</div>
+						{if !$record->isIll}
+							<div class="btn-group btn-group-vertical btn-block">
+								{if !empty($record->getGroupedWorkId())}
+									<button onclick="return AspenDiscovery.GroupedWork.getYouMightAlsoLike('{$record->getGroupedWorkId()}');" class="btn btn-sm btn-default btn-wrap">{translate text="You Might Also Like" isPublicFacing=true}</button>
+								{/if}
+							</div>
+						{/if}
 					{/if}
 				</div>
 			</div>

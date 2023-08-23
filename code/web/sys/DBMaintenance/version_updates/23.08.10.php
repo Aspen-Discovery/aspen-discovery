@@ -30,5 +30,21 @@ function getUpdates23_08_10(): array {
 				"UPDATE user set cat_password = '' where source IN ('admin', 'admin_sso')",
 			]
 		], //split_user_fields
+
+		// kirstien - ByWater
+		'checkoutIsILL' => [
+			'title' => 'Checkout - Is ILL',
+			'description' => 'Add a property to determine if a checkout is ILL',
+			'sql' => [
+				'ALTER TABLE user_checkout ADD COLUMN isIll TINYINT(1) DEFAULT 0',
+			],
+		], //checkoutIsILL
+		'readingHistoryIsILL' => [
+			'title' => 'Reading History Work - Is ILL',
+			'description' => 'Add a property to determine if a reading history work is ILL',
+			'sql' => [
+				'ALTER TABLE user_reading_history_work ADD COLUMN isIll TINYINT(1) DEFAULT 0',
+			],
+		], //readingHistoryIsILL
 	];
 }

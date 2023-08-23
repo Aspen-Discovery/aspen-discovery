@@ -21,21 +21,20 @@ export const FinishCheckOutSession = () => {
      const StartNewSession = () => {
           setIsOpen(false);
           if (_.size(accounts) >= 1) {
-               navigateStack('SelfCheckTab', 'StartCheckOutSession', {
+               navigation.replace('StartCheckOutSession', {
                     startNew: true,
                });
           } else {
-               navigateStack('SelfCheckTab', 'SelfCheckOut', {
+               navigation.replace('SelfCheckOut', {
                     startNew: true,
-                    checkoutResult: [],
-                    checkoutHasError: false,
+                    barcode: null,
                });
           }
      };
 
      const GoToCheckouts = () => {
           setIsOpen(false);
-          navigateStack('AccountTab', 'MyCheckouts');
+          navigateStack('AccountScreenTab', 'MyCheckouts');
      };
 
      return (

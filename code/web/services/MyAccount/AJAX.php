@@ -3072,6 +3072,15 @@ class MyAccount_AJAX extends JSON_Action {
 	{
 		global $interface;
 		global $timer;
+		global $library;
+
+		$eventSource = "";
+		require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+		$libraryEventSettings = new LibraryEventsSetting();
+		$libraryEventSettings->libraryId = $library->libraryId;
+		if($libraryEventSettings->find(true)) {
+			$eventSource = $libraryEventSettings->settingSource;
+		}
 
 		//Load user ratings
 		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
@@ -3130,6 +3139,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => false,
+					'vendor' => $eventSource
 				];
 			} else {
 				$events[$entry->sourceId] = [
@@ -3142,7 +3152,8 @@ class MyAccount_AJAX extends JSON_Action {
 				'regRequired' => $entry->regRequired,
 				'isRegistered' => $registration,
 				'eventDate' => $entry->eventDate,
-				'pastEvent' => true,
+				'pastEvent' => true, 
+					'vendor' => $eventSource
 			];
 		}
 	}
@@ -5807,23 +5818,70 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function eventRegistrationModal() {
 		$eventUrl = $_REQUEST['regLink'];
-		return [
-			'success' => true,
-			'title' => translate([
-				'text' => 'Registration Information',
-				'isPublicFacing' => true,
-			]),
-			'buttons' => '<a href="' .$eventUrl. '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>'
-				. translate([
-					'text' => 'Take Me To Event Registration',
+		if(isset($_REQUEST['vendor'])) {
+			$vendor = $_REQUEST['vendor'];
+			$body = "";
+			global $library;
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventSettings = new LibraryEventsSetting();
+			$libraryEventSettings->settingSource = $vendor;
+			$libraryEventSettings->libraryId = $library->libraryId;
+			if ($libraryEventSettings->find(true)){
+				if ($vendor == 'communico'){
+					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+					$communicoSettings = new CommunicoSetting();
+					$communicoSettings->id = $libraryEventSettings->settingId;
+					if($communicoSettings->find(true)) {
+						$body = $communicoSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'springshare') {
+					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+					$springshareSettings = new SpringshareLibCalSetting();
+					$springshareSettings->id = $libraryEventSettings->settingId;
+					if($springshareSettings->find(true)) {
+						$body = $springshareSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'library_market') {
+					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+					$libraryMarketSettings = new LMLibraryCalendarSetting();
+					$libraryMarketSettings->id = $libraryEventSettings->settingId;
+					if($libraryMarketSettings->find(true)) {
+						$body = $libraryMarketSettings->registrationModalBody;
+					}
+				}
+			}
+
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Registration Information',
 					'isPublicFacing' => true,
-				]) . '</a>',
-		];
+				]),
+				'body' => $body,
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
+						'text' => 'Take Me To Event Registration',
+						'isPublicFacing' => true,
+					]) . '</a>',
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Registration Information',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
+						'text' => 'Take Me To Event Registration',
+						'isPublicFacing' => true,
+					]) . '</a>',
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
 	function saveEvent() {
 		$result = [];
+		$regRequired = 0; // set a default
 
 		if (!UserAccount::isLoggedIn()) {
 			$result['success'] = false;
@@ -5835,14 +5893,16 @@ class MyAccount_AJAX extends JSON_Action {
 			require_once ROOT_DIR . '/services/MyAccount/MyEvents.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$vendor = $_REQUEST['vendor'];
 
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = UserAccount::getActiveUserId();
 
-			if (empty($sourceId)) {
+			if (empty($sourceId) || empty($source) || empty($vendor)) {
 				$result['success'] = false;
 				$result['message'] = translate([
-					'text' => 'Unable to save event, not correctly specified.',
+					'text' => 'Unable to save event, not correctly specified. Must include the source id, source, and event vendor.',
 					'isPublicFacing' => true,
 				]);
 			} else {
@@ -5916,19 +5976,24 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['title'] = translate([
 					'text' => "Added Successfully",
+					'isPublicFacing' => true,
 				]);
+				$result['message'] = translate([
+					'text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,
+				]);
+				$result['regRequired'] = false;
+
 				if ($regRequired){
 					$result['message'] = translate([
-						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.</br></br> 
-						We are taking you to the library’s event management page where you will need to complete your registration. 
-						If you are not redirected to the event registration page, please follow <a href='$externalUrl'>this link.</a>",
+						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.",
 						'isPublicFacing' => true,
 					]);
-				}else{
-					$result['message'] = translate([
-						'text' => 'This event was saved to your events successfully.',
-						'isPublicFacing' => true,
-					]);
+					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$source}\", \"{$sourceId}\", \"{$vendor}\", \"{$externalUrl}\");'><i class='fas fa-external-link-alt'></i> " . translate([
+							'text' => 'Registration Information',
+							'isPublicFacing' => true,
+						]) . "</button>";
+					$result['regRequired'] = true;
 				}
 			}
 		}
