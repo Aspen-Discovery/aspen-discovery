@@ -23,6 +23,7 @@ class EventsFacet extends FacetSetting {
 			"reservation_state" => "Reservation State",
 			"registration_required" => "Registration Required?",
 			"event_type" => "Event Type",
+			"start_date" => "Event Date"
 		];
 
 		asort($availableFacets);

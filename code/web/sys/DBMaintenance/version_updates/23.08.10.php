@@ -103,6 +103,15 @@ function getUpdates23_08_10(): array {
 
 			],
 		],
+		'events_start_date_facet' => [
+			'title' => 'Events Start Date Facet',
+			'description' => 'Adds a facet for Event date to the default facet group',
+			'sql' => [
+				"INSERT INTO events_facet VALUES 
+                             (10,1, 'Event Date', 'Event Dates', 'start_date', 10, 5, 0, 'num_results', 0, 1, 1, 1, 1, 0, 1, 1)",
+
+			],
+		],
 		//events_facets_default
 		'events_facet_settingsId' => [
 			'title' => "Events Facet Settings Id for Library",
