@@ -482,7 +482,7 @@ class Search_Results extends ResultsAction {
 
 			$timer->logTime('no hits processing');
 
-		} elseif ($searchObject->getResultTotal() == 1 && (strpos($searchObject->displayQuery(), 'id') === 0 || $searchObject->getSearchType() == 'id')) {
+		} elseif ($searchObject->getResultTotal() == 1 && $searchObject->getSearchType() == 'id') {
 			// Exactly One Result //
 			//Redirect to the home page for the record
 			$recordSet = $searchObject->getResultRecordSet();
@@ -493,7 +493,7 @@ class Search_Results extends ResultsAction {
 				header("Location: " . "/MyAccount/MyList/{$listId}");
 				exit();
 			} else {
-				header("Location: " . "/Record/{$record['id']}/Home");
+				header("Location: " . "/GroupedWork/{$record['id']}/Home");
 				exit();
 			}
 
