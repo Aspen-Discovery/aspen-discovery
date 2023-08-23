@@ -21,7 +21,10 @@
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
-						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$id|escape}');">{$summScore}</a>)
+					{/if}
+					{if isset($summExplain)}
+						<div class="hidden" id="scoreExplanationValue{$id|escape}">{$summExplain}</div>
 					{/if}
 				</div>
 			</div>
