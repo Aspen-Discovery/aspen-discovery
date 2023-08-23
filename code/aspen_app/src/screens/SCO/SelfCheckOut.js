@@ -20,7 +20,7 @@ export const SelfCheckOut = () => {
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
      const { user, cards, updateUser } = React.useContext(UserContext);
-     const { checkouts } = React.useContext(CheckoutsContext);
+     const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const [items, setItems] = React.useState([]);
 
      let startNew = useRoute().params?.startNew ?? false;
@@ -28,6 +28,7 @@ export const SelfCheckOut = () => {
 
      let barcode = useRoute().params?.barcode ?? null;
      let barcodeType = useRoute().params?.type ?? null;
+     let sessionCheckouts = [];
 
      let checkoutResult = null;
      let checkoutHasError = false;
@@ -42,7 +43,7 @@ export const SelfCheckOut = () => {
      const [errorBody, setErrorBody] = React.useState(null);
      const [errorTitle, setErrorTitle] = React.useState(null);
 
-     console.log(activeAccount);
+     //console.log(activeAccount);
      if (_.find(cards, ['ils_barcode', activeAccount])) {
           activeAccount = _.find(cards, ['ils_barcode', activeAccount]);
      } else {
@@ -63,10 +64,17 @@ export const SelfCheckOut = () => {
                     checkoutHasError = false;
                } else {
                     if (barcode) {
-                         setIsProcessingCheckout(true);
-
+                         console.log('barcode: ' + barcode);
+                         console.log('items:');
+                         console.log(items);
+                         console.log('session checkouts: ');
+                         console.log(sessionCheckouts);
+                         console.log('matching items: ');
+                         console.log(_.find(sessionCheckouts, ['barcode', barcode]) ?? false);
+                         //console.log(checkouts);
+                         //console.log(_.find(checkouts, ['barcode', barcode]));
                          // check if item is already checked out
-                         if (_.includes(items, { barcode: barcode }) || _.includes(checkouts, { barcode: barcode })) {
+                         if (_.find(sessionCheckouts, ['barcode', barcode]) || _.find(checkouts, ['barcode', barcode])) {
                               // prompt error
                               setHasError(true);
                               setErrorBody(getTermFromDictionary(language, 'item_already_checked_out'));
@@ -74,6 +82,7 @@ export const SelfCheckOut = () => {
                               setIsOpen(true);
                          } else {
                               // do the checkout
+                              setIsProcessingCheckout(true);
                               await checkoutItem(library.baseUrl, barcode, 'ils', activeAccount, barcode, location.locationId, barcodeType).then((result) => {
                                    if (!result.success) {
                                         // prompt error
@@ -83,16 +92,19 @@ export const SelfCheckOut = () => {
                                         setIsOpen(true);
                                    } else {
                                         let tmp = result.itemData;
-                                        tmp = _.concat(tmp, checkoutResult);
-                                        setItems(tmp);
+                                        let updatedSession = _.concat(tmp, items);
+                                        //console.log(tmp);
+                                        //setItems(tmp);
+                                        setItems([...items, tmp]);
+                                        sessionCheckouts = updatedSession;
 
-                                        queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
+                                        queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language] });
                                         queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-                                        useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
+                                        /*useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems('all', library.baseUrl, true, language), {
                                              onSuccess: (data) => {
                                                   updateCheckouts(data);
                                              },
-                                        });
+                                        });*/
                                    }
                                    setIsProcessingCheckout(false);
                               });
@@ -102,15 +114,17 @@ export const SelfCheckOut = () => {
           });
 
           return updateCheckouts;
-     }, [navigation, barcode]);
+     }, [navigation, barcode, startNew]);
 
      const openScanner = async () => {
+          barcode = null;
           navigateStack('SelfCheckTab', 'SelfCheckOutScanner', {
                activeAccount,
           });
      };
 
      const finishSession = () => {
+          barcode = null;
           navigateStack('SelfCheckTab', 'FinishCheckOutSession');
      };
 
