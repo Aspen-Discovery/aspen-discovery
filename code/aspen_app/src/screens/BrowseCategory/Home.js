@@ -190,7 +190,7 @@ export const DiscoverHomeScreen = () => {
      };
 
      const search = async () => {
-          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'SearchHome' });
+          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen' });
           clearText();
      };
 
