@@ -533,6 +533,15 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 
+				if($eligibleForRenewal && $allowRenewals['error'] == 'null') {
+					$curCheckout->autoRenew = 1;
+					$curCheckout->autoRenewError = translate([
+						'text' => 'If eligible, this item will renew on<br/>%1%',
+						'1' => $renewalDate,
+						'isPublicFacing' => true,
+					]);
+				}
+
 				if ($library->displayHoldsOnCheckout && $allowRenewals['error'] == 'on_reserve') {
 					$curCheckout->canRenew = 0;
 					$curCheckout->autoRenew = 0;
