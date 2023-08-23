@@ -5,7 +5,7 @@
 		<fieldType name="integer" class="IntPointField"/>
 		<fieldType name="long" class="LongPointField"/>
 		<fieldType name="float" class="FloatPointField"/>
-		<fieldType name="date" class="DateRangeField"/>
+		<fieldType name="date" class="DatePointField"/>
 		<fieldType name="random" class="RandomSortField"/>
 		<fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
 			<analyzer type="index">
@@ -115,8 +115,8 @@
 		<field name="reservation_state" type="unchanged_string" indexed="true" stored="true" multiValued="true"/>
 
 		<field name="registration_required" type="unchanged_string" indexed="true" stored="true" multiValued="false"/>
-		<field name="registration_start_date" type="date" indexed="false" stored="true"/>
-		<field name="registration_end_date" type="date" indexed="false" stored="true"/>
+		<field name="registration_start_date" type="date" indexed="false" stored="true" docValues="true"/>
+		<field name="registration_end_date" type="date" indexed="false" stored="true" docValues="true"/>
 
 		<field name="teaser" type="searchable_text" indexed="true" stored="true"/>
 		<field name="description" type="searchable_text" indexed="true" stored="true"/>
