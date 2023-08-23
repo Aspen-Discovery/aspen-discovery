@@ -130,5 +130,17 @@ function getUpdates23_08_10(): array {
 			],
 		],
 		//readingHistoryIsILL
+		'add_ill_itype' => [
+			'title' => 'Add table to store ILL item type codes',
+			'description' => 'Adds tables for ILL item type codes',
+			'sql' => [
+				'CREATE TABLE library_ill_item_type (
+					id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL,
+					code VARCHAR(75)
+				) ENGINE = InnoDB',
+			],
+		],
+		//add_ill_itype
 	];
 }
