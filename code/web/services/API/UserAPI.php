@@ -4131,6 +4131,7 @@ class UserAPI extends Action {
 				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 				$token = new UserNotificationToken();
 				$token->pushToken = $userToken;
+				$token->userId = $user->id;
 				if($token->find(true)) {
 					if ($newStatus == 'false' || !$newStatus) {
 						$token->onboardAppNotifications = 0;
