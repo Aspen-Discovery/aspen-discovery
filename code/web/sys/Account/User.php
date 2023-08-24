@@ -3931,6 +3931,18 @@ class User extends DataObject {
 
 			$preferences[] = $preference;
 		}
+
+		if(empty($preferences)) {
+			$preference['device'] = 'Unknown';
+			$preference['token'] = 'Unknown';
+			$preference['notifySavedSearch'] = '0';
+			$preference['notifyCustom'] = '0';
+			$preference['notifyAccount'] = '0';
+			$preference['onboardStatus'] = $this->onboardAppNotifications;
+
+			$preferences[] = $preference;
+		}
+
 		return $preferences;
 	}
 

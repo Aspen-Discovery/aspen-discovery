@@ -4135,6 +4135,7 @@ class UserAPI extends Action {
 				if($token->find(true)) {
 					if ($newStatus == 'false' || !$newStatus) {
 						$token->onboardAppNotifications = 0;
+						$user->onboardAppNotifications = 0;
 					}
 					$token->update();
 					return [
@@ -4143,10 +4144,15 @@ class UserAPI extends Action {
 						'message' => 'Updated user notification onboarding status'
 					];
 				} else {
+					// user does not have this device enabling notifications, but we don't want to keep prompting them. Update the onboardAppNotifications for the user.
+					if ($newStatus == 'false' || !$newStatus) {
+						$user->onboardAppNotifications = 0;
+					}
+					$user->update();
 					return [
-						'success' => false,
-						'title' => 'Error',
-						'message' => 'Push token not valid.',
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Push token not valid or is not assigned to a user yet. Updating notification onboarding status for the user instead.',
 					];
 				}
 			} else {

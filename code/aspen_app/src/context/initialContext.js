@@ -34,6 +34,8 @@ export const UserContext = React.createContext({
      updateAspenToken: () => {},
      notificationOnboard: 0,
      updateNotificationOnboard: () => {},
+     notificationOnboardStatus: false,
+     updateNotificationOnboardStatus: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -245,18 +247,18 @@ export const LibraryBranchProvider = ({ children }) => {
 };
 
 export const UserProvider = ({ children }) => {
-     const [user, setUser] = useState();
-     const [accounts, setLinkedAccounts] = useState();
-     const [viewers, setLinkedViewerAccounts] = useState();
-     const [lists, setLists] = useState();
-     const [language, setLanguage] = useState();
-     const [locations, setPickupLocations] = useState();
-     const [readingHistory, setReadingHistory] = useState();
-     const [cards, setCards] = useState();
-     const [notificationSettings, setNotificationSettings] = useState();
-     const [notificationOnboard, setNotificationOnboard] = useState();
-     const [expoToken, setExpoToken] = useState();
-     const [aspenToken, setAspenToken] = useState();
+     const [user, setUser] = useState([]);
+     const [accounts, setLinkedAccounts] = useState([]);
+     const [viewers, setLinkedViewerAccounts] = useState([]);
+     const [lists, setLists] = useState([]);
+     const [language, setLanguage] = useState('en');
+     const [locations, setPickupLocations] = useState([]);
+     const [readingHistory, setReadingHistory] = useState([]);
+     const [cards, setCards] = useState([]);
+     const [notificationSettings, setNotificationSettings] = useState([]);
+     const [notificationOnboard, setNotificationOnboard] = useState(0);
+     const [expoToken, setExpoToken] = useState(false);
+     const [aspenToken, setAspenToken] = useState(false);
 
      const updateUser = (data) => {
           if (_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
@@ -319,7 +321,7 @@ export const UserProvider = ({ children }) => {
      };
 
      const updateNotificationSettings = async (data, language) => {
-          if (Constants.isDevice) {
+          if (Device.isDevice) {
                if (!_.isEmpty(data)) {
                     const device = Device.modelName;
                     if (_.find(data, _.matchesProperty('device', device))) {
@@ -366,7 +368,16 @@ export const UserProvider = ({ children }) => {
                          console.log('No settings found for this device model yet');
                          setExpoToken(false);
                          setAspenToken(false);
-                         setNotificationOnboard(1);
+
+                         // let's not intentionally bombard the user with prompts at every boot without knowing their preferences
+                         setNotificationOnboard(0);
+
+                         const deviceSettings = _.filter(data, { device: 'Unknown' });
+                         if (deviceSettings) {
+                              if (deviceSettings[0].onboardStatus) {
+                                   setNotificationOnboard(deviceSettings[0].onboardStatus);
+                              }
+                         }
                     }
                } else {
                     // something went wrong when receiving data from Discovery API
