@@ -168,21 +168,21 @@ export const DiscoverHomeScreen = () => {
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
                               setShowNotificationsOnboarding(true);
-                              setAlreadyCheckedNotifications(false);
+                              //setAlreadyCheckedNotifications(false);
                          } else {
                               setShowNotificationsOnboarding(false);
-                              setAlreadyCheckedNotifications(true);
+                              //setAlreadyCheckedNotifications(true);
                          }
                     } else {
                          updateNotificationOnboard(1);
                          setShowNotificationsOnboarding(true);
-                         setAlreadyCheckedNotifications(false);
+                         //setAlreadyCheckedNotifications(false);
                     }
                };
                checkSettings().then(() => {
                     return () => checkSettings();
                });
-          }, [language])
+          }, [language, notificationOnboard])
      );
 
      const clearText = () => {
@@ -199,10 +199,9 @@ export const DiscoverHomeScreen = () => {
      };
 
      // load notification onboarding prompt
-     console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
-     if (showNotificationsOnboarding && Device.isDevice && notificationOnboard !== '0' && notificationOnboard !== 0) {
+     if (notificationOnboard !== '0' && notificationOnboard !== 0) {
           if (isFocused) {
-               return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} setShowNotificationsOnboarding={setShowNotificationsOnboarding} />;
+               return <NotificationsOnboard />;
           }
      }
 

@@ -17,15 +17,15 @@ export const NotificationsOnboard = (props) => {
      const [onboardingBody, setOnboardingBody] = React.useState('');
      const [onboardingButton, setOnboardingButton] = React.useState('');
      const onClose = async () => {
-          setIsOpen(false);
-          setAlreadyCheckedNotifications(true);
-          setShowNotificationsOnboarding(false);
           updateNotificationOnboard(0);
           try {
                await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
           } catch (e) {
                // onboarding isn't setup yet (Discovery older than 23.07.00)
           }
+          setIsOpen(false);
+          //setAlreadyCheckedNotifications(true);
+          //setShowNotificationsOnboarding(false);
      };
      const cancelRef = React.useRef(null);
 
@@ -40,7 +40,7 @@ export const NotificationsOnboard = (props) => {
                          setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_new'));
                     } else {
                          setIsOpen(false);
-                         setAlreadyCheckedNotifications(true);
+                         //setAlreadyCheckedNotifications(true);
                          updateNotificationOnboard(0);
                          try {
                               await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
