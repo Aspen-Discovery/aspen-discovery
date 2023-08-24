@@ -341,6 +341,35 @@ abstract class SearchObject_BaseSearcher {
 				} elseif ($field == 'available_at' && $value == '*') {
 					$anyLocationLabel = $this->getFacetSetting("Availability", "anyLocationLabel");
 					$display = $anyLocationLabel == '' ? "Any Marmot Location" : $anyLocationLabel;
+				} elseif ($field == 'start_date') {
+					$filterValue = substr($value, strpos($value, '[') + 1);
+					$filterValue = substr($filterValue, 0, -2);
+					$range = explode(' TO ', $filterValue);
+					$utcTimeZone = new DateTimeZone('UTC');
+					$defaultTimezone = new DateTimeZone(date_default_timezone_get());
+					if ($range[0] != '*') {
+						$dt = new DateTime($range[0], $utcTimeZone);
+						$dt->setTimezone($defaultTimezone);
+						$startDate =  $dt->format("m/d/Y");
+					}else{
+						$startDate = '';
+					}
+					if ($range[1] != '*') {
+						$dt = new DateTime($range[1], $utcTimeZone);
+						$dt->setTimezone($defaultTimezone);
+						$endDate = $dt->format("m/d/Y");
+					}else{
+						$endDate = '';
+					}
+					if (empty($startDate)) {
+						$display = translate(['text'=>'Before %1%', 1=>$endDate, 'isPublicFacing'=>true]);
+					}else if (empty($endDate)) {
+						$display = translate(['text'=>'After %1%', 1=>$startDate, 'isPublicFacing'=>true]);
+					}else{
+						$display = translate(['text'=>'Between %1% and %2%', 1=>$startDate, 2=>$endDate, 'isPublicFacing'=>true]);
+					}
+
+
 				} else {
 					$display = $translate ? translate([
 						'text' => $value,

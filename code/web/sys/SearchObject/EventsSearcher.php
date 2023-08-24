@@ -51,9 +51,217 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		$this->indexEngine->debugSolrQuery = $this->debugSolrQuery;
 
 		$now = new DateTime();
-		$this->addHiddenFilter('end_date', "[{$now->format('Y-m-d')} TO *]");
+		$this->addHiddenFilter('end_date', "[{$now->format("Y-m-d\TH:i:s\Z")} TO *]");
 
 		$timer->logTime('Setup Events Search Object');
+	}
+
+	/**
+	 * Actually process and submit the search
+	 *
+	 * @access  public
+	 * @param bool $returnIndexErrors Should we die inside the index code if
+	 *                                     we encounter an error (false) or return
+	 *                                     it for access via the getIndexError()
+	 *                                     method (true)?
+	 * @param bool $recommendations Should we process recommendations along
+	 *                                     with the search itself?
+	 * @param bool $preventQueryModification Should we allow the search engine
+	 *                                             to modify the query or is it already
+	 *                                             a well formatted query
+	 * @return  array solr result structure (for now)
+	 */
+	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
+		// Our search has already been processed in init()
+		$search = $this->searchTerms;
+
+		// Build a recommendations module appropriate to the current search:
+		if ($recommendations) {
+			$this->initRecommendations();
+		}
+
+		// Build Query
+		if ($preventQueryModification) {
+			$query = $search;
+		} else {
+			$query = $this->indexEngine->buildQuery($search, false);
+		}
+		if (($query instanceof AspenError)) {
+			return $query;
+		}
+
+		// Only use the query we just built if there isn't an override in place.
+		if ($this->query == null) {
+			$this->query = $query;
+		}
+
+		// Define Filter Query
+		$filterQuery = $this->hiddenFilters;
+		//Remove any empty filters if we get them
+		//(typically happens when a subdomain has a function disabled that is enabled in the main scope)
+		foreach ($this->filterList as $field => $filter) {
+			if (empty ($field)) {
+				unset($this->filterList[$field]);
+			}
+		}
+		$facetConfig = $this->getFacetConfig();
+		foreach ($this->filterList as $field => $filter) {
+			/** @var FacetSetting $facetInfo */
+			$facetInfo = $facetConfig[$field];
+			$fieldPrefix = "";
+			if ($facetInfo->multiSelect) {
+				$facetKey = empty($facetInfo->id) ? $facetInfo->facetName : $facetInfo->id;
+				$fieldPrefix = "{!tag={$facetKey}}";
+			}
+			$fieldValue = "";
+			$okToAdd = false;
+			foreach ($filter as $value) {
+				// Special case -- allow trailing wildcards:
+				if (substr($value, -1) == '*') {
+					$okToAdd = true;
+				} elseif (preg_match('/\\A\\[.*?\\sTO\\s.*?]\\z/', $value)) {
+					$okToAdd = true;
+				} else {
+					if (!empty($value)) {
+						$okToAdd = true;
+						$value = "\"$value\"";
+					}
+				}
+				if ($okToAdd) {
+					if ($facetInfo->multiSelect) {
+						if (!empty($fieldValue)) {
+							$fieldValue .= ' OR ';
+						}
+						$fieldValue .= $value;
+					} else {
+						$filterQuery[] = "$fieldPrefix$field:$value";
+					}
+				}
+			}
+			if ($facetInfo->multiSelect) {
+				$filterQuery[] = "$fieldPrefix$field:($fieldValue)";
+			}
+		}
+
+		// If we are only searching one field use the DisMax handler
+		//    for that field. If left at null let solr take care of it
+		if (count($search) == 1 && isset($search[0]['index'])) {
+			$this->index = $search[0]['index'];
+		}
+
+		// Build a list of facets we want from the index
+		$facetSet = [];
+		$facetConfig = $this->getFacetConfig();
+		if (!empty($facetConfig)) {
+			$facetSet['limit'] = $this->facetLimit;
+			foreach ($facetConfig as $facetField => $facetInfo) {
+				if ($facetField == 'start_date') {
+					//special processing for start_date
+					$facetName = $facetInfo->facetName;
+					$facetSet['field'][$facetField] = $facetName;
+					$this->facetOptions["facet.range"] = $facetName;
+					$this->facetOptions["f.{$facetName}.facet.range.start"] = "NOW/DAY";
+					$this->facetOptions["f.{$facetName}.facet.range.end"] = "NOW/DAY+180DAYS";
+					$this->facetOptions["f.{$facetName}.facet.range.gap"] = "+1DAY";
+				} else {
+					if ($facetInfo instanceof EventsFacet) {
+						$facetName = $facetInfo->facetName;
+						$facetSet['field'][$facetField] = $facetName;
+					} else {
+						$facetSet['field'][$facetField] = $facetInfo;
+					}
+				}
+			}
+			if ($this->facetOffset != null) {
+				$facetSet['offset'] = $this->facetOffset;
+			}
+			if ($this->facetPrefix != null) {
+				$facetSet['prefix'] = $this->facetPrefix;
+			}
+			if ($this->facetSort != null) {
+				$facetSet['sort'] = $this->facetSort;
+			}
+		}
+
+		if (!empty($this->facetSearchTerm) && !empty($this->facetSearchField)) {
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains"] = $this->facetSearchTerm;
+			$this->facetOptions["f.{$this->facetSearchField}.facet.contains.ignoreCase"] = 'true';
+		}
+
+		if (!empty($this->facetOptions)) {
+			$facetSet['additionalOptions'] = $this->facetOptions;
+		}
+
+		// Build our spellcheck query
+		if ($this->spellcheckEnabled) {
+			$spellcheck = $this->buildSpellingQuery();
+
+			// If the spellcheck query is purely numeric, skip it if
+			// the appropriate setting is turned on.
+			if (is_numeric($spellcheck)) {
+				$spellcheck = "";
+			}
+		} else {
+			$spellcheck = "";
+		}
+
+		// Get time before the query
+		$this->startQueryTimer();
+
+		// The "relevance" sort option is a VuFind reserved word; we need to make
+		// this null in order to achieve the desired effect with Solr:
+		$finalSort = ($this->sort == 'relevance') ? null : $this->sort;
+
+		// The first record to retrieve:
+		//  (page - 1) * limit = start
+		$recordStart = ($this->page - 1) * $this->limit;
+		$this->indexResult = $this->indexEngine->search($this->query,      // Query string
+			$this->index,      // DisMax Handler
+			$filterQuery,      // Filter query
+			$recordStart,      // Starting record
+			$this->limit,      // Records per page
+			$facetSet,         // Fields to facet on
+			$spellcheck,       // Spellcheck query
+			$this->dictionary, // Spellcheck dictionary
+			$finalSort,        // Field to sort on
+			$this->fields,     // Fields to return
+			'POST',     // HTTP Request method
+			$returnIndexErrors // Include errors in response?
+		);
+
+		// Get time after the query
+		$this->stopQueryTimer();
+
+		// How many results were there?
+		if (isset($this->indexResult['response']['numFound'])) {
+			$this->resultsTotal = $this->indexResult['response']['numFound'];
+		} else {
+			$this->resultsTotal = 0;
+		}
+
+		// If extra processing is needed for recommendations, do it now:
+		if ($recommendations && is_array($this->recommend)) {
+			foreach ($this->recommend as $currentSet) {
+				foreach ($currentSet as $current) {
+					/** @var RecommendationInterface $current */
+					$current->process();
+				}
+			}
+		}
+
+		//Add debug information to the results if available
+		if ($this->debug && isset($this->indexResult['debug'])) {
+			$explainInfo = $this->indexResult['debug']['explain'];
+			foreach ($this->indexResult['response']['docs'] as $key => $result) {
+				if (array_key_exists($result['identifier'], $explainInfo)) {
+					$result['explain'] = $explainInfo[$result['identifier']];
+					$this->indexResult['response']['docs'][$key] = $result;
+				}
+			}
+		}
+
+		// Return the result set
+		return $this->indexResult;
 	}
 
 	/**
@@ -186,124 +394,33 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	//TODO: Convert this to use definitions so they can be customized in admin
 	public function getFacetConfig() {
 		if ($this->facetConfig == null) {
 			$facetConfig = [];
-//
-//            $eventDate = new LibraryFacetSetting();
-//            $eventDate->id = count($facetConfig) +1;
-//            $eventDate->multiSelect = false;
-//            $eventDate->facetName = "start_date";
-//            $eventDate->displayName = "Event Date";
-//            $eventDate->numEntriesToShowByDefault = 5;
-//            $eventDate->translate = false;
-//            $eventDate->collapseByDefault = false;
-//            $eventDate->useMoreFacetPopup = false;
-//            $facetConfig["start_date"] = $eventDate;
+			$searchLibrary = Library::getActiveLibrary();
 
-			$ageGroup = new LibraryFacetSetting();
-			$ageGroup->id = count($facetConfig) + 1;
-			$ageGroup->multiSelect = true;
-			$ageGroup->facetName = "age_group_facet";
-			$ageGroup->displayName = "Age Group/Audience";
-			$ageGroup->numEntriesToShowByDefault = 5;
-			$ageGroup->translate = true;
-			$ageGroup->collapseByDefault = false;
-			$ageGroup->useMoreFacetPopup = true;
-			$facetConfig["age_group_facet"] = $ageGroup;
+			if ($searchLibrary->getEventFacetSettings() != null){
+				$facets = $searchLibrary->getEventFacetSettings()->getFacets();
 
-			$programType = new LibraryFacetSetting();
-			$programType->id = count($facetConfig) + 1;
-			$programType->multiSelect = true;
-			$programType->facetName = "program_type_facet";
-			$programType->displayName = "Program Type";
-			$programType->numEntriesToShowByDefault = 5;
-			$programType->translate = true;
-			$programType->collapseByDefault = false;
-			$programType->useMoreFacetPopup = true;
-			$facetConfig["program_type_facet"] = $programType;
+				foreach ($facets as &$facet) {
+					//Adjust facet name for local scoping
+					//$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
 
-			$branch = new LibraryFacetSetting();
-			$branch->id = count($facetConfig) + 1;
-			$branch->multiSelect = true;
-			$branch->facetName = "branch";
-			$branch->displayName = "Branch";
-			$branch->numEntriesToShowByDefault = 5;
-			$branch->translate = false;
-			$branch->collapseByDefault = false;
-			$branch->useMoreFacetPopup = true;
-			$facetConfig["branch"] = $branch;
-
-			$room = new LibraryFacetSetting();
-			$room->id = count($facetConfig) + 1;
-			$room->multiSelect = true;
-			$room->facetName = "room";
-			$room->displayName = "Room";
-			$room->numEntriesToShowByDefault = 5;
-			$room->translate = false;
-			$room->collapseByDefault = true;
-			$room->useMoreFacetPopup = true;
-			$facetConfig["room"] = $room;
-
-
-			$internalCategory = new LibraryFacetSetting();
-			$internalCategory->id = count($facetConfig) + 1;
-			$internalCategory->multiSelect = true;
-			$internalCategory->facetName = "internal_category";
-			$internalCategory->displayName = "Category";
-			$internalCategory->numEntriesToShowByDefault = 5;
-			$internalCategory->translate = false;
-			$internalCategory->collapseByDefault = true;
-			$internalCategory->useMoreFacetPopup = true;
-			$facetConfig["internal_category"] = $internalCategory;
-
-			$eventState = new LibraryFacetSetting();
-			$eventState->id = count($facetConfig) + 1;
-			$eventState->multiSelect = true;
-			$eventState->facetName = "event_state";
-			$eventState->displayName = "State";
-			$eventState->numEntriesToShowByDefault = 5;
-			$eventState->translate = false;
-			$eventState->collapseByDefault = true;
-			$eventState->useMoreFacetPopup = true;
-			$facetConfig["event_state"] = $eventState;
-
-			$reservationState = new LibraryFacetSetting();
-			$reservationState->id = count($facetConfig) + 1;
-			$reservationState->multiSelect = true;
-			$reservationState->facetName = "reservation_state";
-			$reservationState->displayName = "Reservation State";
-			$reservationState->numEntriesToShowByDefault = 5;
-			$reservationState->translate = false;
-			$reservationState->collapseByDefault = true;
-			$reservationState->useMoreFacetPopup = true;
-			$facetConfig["reservation_state"] = $reservationState;
-
-			$registrationRequired = new LibraryFacetSetting();
-			$registrationRequired->id = count($facetConfig) + 1;
-			$registrationRequired->multiSelect = true;
-			$registrationRequired->facetName = "registration_required";
-			$registrationRequired->displayName = "Registration Required?";
-			$registrationRequired->numEntriesToShowByDefault = 5;
-			$registrationRequired->translate = false;
-			$registrationRequired->collapseByDefault = true;
-			$registrationRequired->useMoreFacetPopup = true;
-			$facetConfig["registration_required"] = $registrationRequired;
-
-			$eventType = new LibraryFacetSetting();
-			$eventType->id = count($facetConfig) + 1;
-			$eventType->multiSelect = true;
-			$eventType->facetName = "event_type";
-			$eventType->displayName = "Event Type";
-			$eventType->numEntriesToShowByDefault = 5;
-			$eventType->translate = false;
-			$eventType->collapseByDefault = true;
-			$eventType->useMoreFacetPopup = true;
-			$facetConfig["event_type"] = $eventType;
-
-			$this->facetConfig = $facetConfig;
+					global $action;
+					if ($action == 'Advanced') {
+						if ($facet->showInAdvancedSearch == 1) {
+							$facetConfig[$facet->facetName] = $facet;
+						}
+					} else {
+						if ($facet->showInResults == 1) {
+							$facetConfig[$facet->facetName] = $facet;
+						}
+					}
+				}
+				$this->facetConfig = $facetConfig;
+			}
 		}
+
 		return $this->facetConfig;
 	}
 

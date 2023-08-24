@@ -62,6 +62,7 @@ public class EventsIndexerMain {
 							eventsSitesRS.getString("clientSecret"),
 							eventsSitesRS.getString("username"),
 							eventsSitesRS.getString("password"),
+							eventsSitesRS.getInt("numberOfDaysToIndex"),
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
@@ -77,6 +78,7 @@ public class EventsIndexerMain {
 							eventsSitesRS.getString("calId"),
 							eventsSitesRS.getString("clientId"),
 							eventsSitesRS.getString("clientSecret"),
+							eventsSitesRS.getInt("numberOfDaysToIndex"),
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
@@ -91,6 +93,7 @@ public class EventsIndexerMain {
 							eventsSitesRS.getString("baseUrl"),
 							eventsSitesRS.getString("clientId"),
 							eventsSitesRS.getString("clientSecret"),
+							eventsSitesRS.getInt("numberOfDaysToIndex"),
 							solrUpdateServer, aspenConn, logger);
 					indexer.indexEvents();
 				}
