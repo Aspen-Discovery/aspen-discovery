@@ -1772,6 +1772,10 @@ class UserAPI extends Action {
 							$action = $result['api']['action'] ?? null;
 							$responseMessage = strip_tags($result['api']['message']);
 							$responseMessage = trim($responseMessage);
+							$hasItems = false;
+							if(isset($result['items'])) {
+								$hasItems = (bool)$result['items'];
+							}
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
@@ -1779,7 +1783,7 @@ class UserAPI extends Action {
 								'action' => $action,
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => (bool)$result['items'] ?? false,
+								'shouldBeItemHold' => $hasItems,
 								'items' => $result['items'] ?? null,
 							];
 						}
