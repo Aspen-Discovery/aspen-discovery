@@ -64,7 +64,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$this->shareToCommunity($structure);
 		} elseif ($objectAction == 'importFromCommunity') {
             $this->importFromCommunity($structure);
-        } elseif ($objectAction == 'exportToCSV') {
+        } elseif ($objectAction == 'exportToCSV' || $objectAction == 'exportSelectedToCSV') {
             $this->viewExistingObjects($structure);
 		} else {
 			//check to see if a custom action is being called.
@@ -227,29 +227,37 @@ abstract class ObjectEditor extends Admin_Admin {
 			$page = 1;
 		}
 		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : $this->getDefaultRecordsPerPage();
-		//Basic List
-		$allObjects = $this->getAllObjects($page, $recordsPerPage);
-
-		if ($this->supportsPagination()) {
-			$options = [
-				'totalItems' => $numObjects,
-				'perPage' => $recordsPerPage,
-				'canChangeRecordsPerPage' => true,
-				'canJumpToPage' => true,
-			];
-			$pager = new Pager($options);
-			$interface->assign('pageLinks', $pager->getLinks());
-		}
-
-		$interface->assign('dataList', $allObjects);
-		if (count($allObjects) < 2) {
-			$interface->assign('canCompare', false);
-		}
-		$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
-        if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportToCSV') {
+        if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportToCSV') { // Export [all, filtered] to CSV
+            $allObjects = $this->getAllObjects('1', min(1000, $numObjects));
             Exporter::downloadCSV('Admin/propertiesListCSV.tpl', $structure, $allObjects);
-        } else {
-            $interface->setTemplate('../Admin/propertiesList.tpl');
+        } else { // Export Selected to CSV OR Display on screen
+            $allObjects = $this->getAllObjects($page, $recordsPerPage);
+            if ($this->supportsPagination()) {
+                $options = [
+                    'totalItems' => $numObjects,
+                    'perPage' => $recordsPerPage,
+                    'canChangeRecordsPerPage' => true,
+                    'canJumpToPage' => true,
+                ];
+                $pager = new Pager($options);
+                $interface->assign('pageLinks', $pager->getLinks());
+            }
+            if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportSelectedToCSV') {
+                $exportObjects = [];
+                foreach ($_REQUEST['selectedObject'] as $k=>$v) {
+                    if ($v == 'on'){
+                        $exportObjects[] = $allObjects[$k];
+                    }
+                }
+                Exporter::downloadCSV('Admin/propertiesListCSV.tpl', $structure, $exportObjects);
+            } else { // Display on screen
+                $interface->assign('dataList', $allObjects);
+                if (count($allObjects) < 2) {
+                    $interface->assign('canCompare', false);
+                }
+                $interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
+                $interface->setTemplate('../Admin/propertiesList.tpl');
+            }
         }
 	}
 

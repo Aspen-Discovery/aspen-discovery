@@ -204,8 +204,8 @@
 	{/if}
 	{if !empty($canExportToCSV)}
 		<div class="btn-group">
-			<input type='submit' name='exportToCSV' value="{translate text='Export Selected to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportToCSV');" />
-			<input type='submit' name='exportToCSV' value="{translate text='Export All to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportToCSV');" />
+			<input type='submit' name='exportToCSV' value="{translate text='Export Selected to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportSelectedToCSV');" />
+			<input type='submit' name='exportToCSV' value="{translate text='Export to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportToCSV');" />
 		</div>
 	{/if}
 	{if !empty($canAddNew)}
