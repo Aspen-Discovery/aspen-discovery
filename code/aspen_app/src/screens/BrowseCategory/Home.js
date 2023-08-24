@@ -190,7 +190,7 @@ export const DiscoverHomeScreen = () => {
      };
 
      const search = async () => {
-          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'SearchHome' });
+          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen' });
           clearText();
      };
 
@@ -202,7 +202,7 @@ export const DiscoverHomeScreen = () => {
      console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
      if (showNotificationsOnboarding && Device.isDevice && notificationOnboard !== '0' && notificationOnboard !== 0) {
           if (isFocused) {
-               return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
+               return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} setShowNotificationsOnboarding={setShowNotificationsOnboarding} />;
           }
      }
 

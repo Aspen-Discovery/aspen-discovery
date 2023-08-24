@@ -141,7 +141,7 @@ export const PlaceHold = (props) => {
                                    setLoading(false);
                                    if (ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
                                         setHoldConfirmationIsOpen(true);
-                                   } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
+                                   } else if (ilsResponse?.shouldBeItemHold && ilsResponse.shouldBeItemHold) {
                                         setHoldItemSelectIsOpen(true);
                                    } else {
                                         setResponseIsOpen(true);

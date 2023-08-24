@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export const NotificationsOnboard = (props) => {
      const queryClient = useQueryClient();
-     const { setAlreadyCheckedNotifications } = props;
+     const { setAlreadyCheckedNotifications, setShowNotificationsOnboarding } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { user, notificationSettings, expoToken, notificationOnboard, updateNotificationOnboard } = React.useContext(UserContext);
@@ -19,6 +19,7 @@ export const NotificationsOnboard = (props) => {
      const onClose = async () => {
           setIsOpen(false);
           setAlreadyCheckedNotifications(true);
+          setShowNotificationsOnboarding(false);
           updateNotificationOnboard(0);
           try {
                await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);

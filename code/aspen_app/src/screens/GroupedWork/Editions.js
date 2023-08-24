@@ -36,7 +36,7 @@ export const Editions = () => {
      const [response, setResponse] = React.useState('');
 
      const handleNavigation = (action) => {
-          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults') {
+          if (prevRoute === 'DiscoveryScreen' || prevRoute === 'SearchResults' || prevRoute === 'HomeScreen') {
                if (action.includes('Checkouts')) {
                     setResponseIsOpen(false);
                     navigateStack('AccountScreenTab', 'MyCheckouts', {});
