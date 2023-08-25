@@ -1739,6 +1739,7 @@ class UserAPI extends Action {
 							'action' => $action,
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
+							'shouldBeItemHold' => false,
 							];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
 						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch);
@@ -1752,6 +1753,7 @@ class UserAPI extends Action {
 							'action' => $action,
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
+							'shouldBeItemHold' => false,
 						];
 					} else {
 							//Make sure that there are not volumes available
