@@ -3773,17 +3773,17 @@ class MyAccount_AJAX extends JSON_Action {
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
-		$donateToLibrary = $_REQUEST['toLocation'];
+		$donateToLocation = $_REQUEST['toLocation'];
 		$toLocation = 'None';
-		if($donateToLibrary) {
+		if($donateToLocation) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 			$location = new Location();
-			$location->displayName = $donateToLibrary;
+			$location->displayName = $donateToLocation;
 			if ($location->find(true)) {
 				$toLocation = $location->locationId;
 			}
 		} else {
-			$donateToLibrary = 'None';
+			$donateToLocation = 'None';
 		}
 
 		$earmarkId = $_REQUEST['earmark'] ?? null;
@@ -3898,8 +3898,8 @@ class MyAccount_AJAX extends JSON_Action {
 			'lastName' => $_REQUEST['lastName'],
 			'email' => $_REQUEST['emailAddress'],
 			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
-			'donateToLibraryId' => $toLocation,
-			'donateToLibrary' => $donateToLibrary,
+			'donateToLocationId' => $toLocation,
+			'donateToLocation' => $donateToLocation,
 			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
 			'shouldBeNotified' => isset($_REQUEST['shouldBeNotified']) ? 1 : 0,
 			'comments' => $comments,
@@ -3981,8 +3981,8 @@ class MyAccount_AJAX extends JSON_Action {
 			$donation->notificationState = $tempDonation['notification']['notificationState'];
 			$donation->notificationZip = $tempDonation['notification']['notificationZip'];
 		}
-		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
-		$donation->donateToLibrary = $tempDonation['donateToLibrary'];
+		$donation->donateToLocationId = $tempDonation['donateToLocationId'];
+		$donation->donateToLocation = $tempDonation['donateToLocation'];
 		$donation->comments = $tempDonation['comments'];
 		$donation->donationSettingId = $tempDonation['donationSettingId'];
 		$donation->sendEmailToUser = 1;
