@@ -1305,12 +1305,12 @@ class GroupedWork_AJAX extends JSON_Action {
 			$ext = pathinfo($filename, PATHINFO_EXTENSION);
 			if ($ext == "jpg" or $ext == "png" or $ext == "gif" or $ext == "jpeg") {
 				if ($uploadOption == 'andgrouped') { //update image for grouped work and individual bib record
-					$upload = file_put_contents($destFullPath, file_get_contents($url));
+					$upload = file_put_contents($destFullPath, $uploadedFile);
 					if ($upload) {
 						$id = $_REQUEST['id'];
 						$recordType = 'grouped_work';
 						$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-						$upload = file_put_contents($destFullPath, file_get_contents($url));
+						$upload = file_put_contents($destFullPath, $uploadedFile);
 						if ($upload){
 							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 							$bookCoverInfo = new BookCoverInfo();
@@ -1341,13 +1341,20 @@ class GroupedWork_AJAX extends JSON_Action {
 							'isAdminFacing' => true,
 						]);
 					}
-				}elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
-					$upload = file_put_contents($destFullPath, file_get_contents($url));
+				} elseif ($uploadOption == 'alldefault'){//update image for all records in grouped work with default covers
+					$upload = file_put_contents($destFullPath, $uploadedFile);
 					if ($upload) {
 						require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 						$id = $_REQUEST['id'];
 						$recordDriver = new GroupedWorkDriver($id);
 						$relatedRecords = $recordDriver->getRelatedRecords(true);
+
+                        //set result as success for initial upload
+                        $result['success'] = true;
+                        $result['message'] = translate([
+                            'text' => 'Your cover has been uploaded successfully',
+                            'isAdminFacing' => true,
+                        ]);
 
 						foreach ($relatedRecords as $record) {
 							require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
@@ -1358,7 +1365,7 @@ class GroupedWork_AJAX extends JSON_Action {
 								$id = substr(strstr($record->id, ':'), 1);
 								$recordType = $record->source;
 								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-								$upload = file_put_contents($destFullPath, file_get_contents($url));
+								$upload = file_put_contents($destFullPath, $uploadedFile);
 								if ($upload){
 									require_once ROOT_DIR . '/sys/Covers/BookCoverInfo.php';
 									$bookCoverInfo = new BookCoverInfo();
@@ -1391,10 +1398,16 @@ class GroupedWork_AJAX extends JSON_Action {
 						]);
 					}
 				}else{ //only updating grouped work or individual bib cover
-					$upload = file_put_contents($destFullPath, file_get_contents($url));
+					$upload = file_put_contents($destFullPath, $uploadedFile);
 
 					if($recordType == 'grouped_work') {
 						if ($upload){
+                            //set result as success for initial upload
+                            $result['success'] = true;
+                            $result['message'] = translate([
+                                'text' => 'Your cover has been uploaded successfully',
+                                'isAdminFacing' => true,
+                            ]);
 							require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 							$recordDriver = new GroupedWorkDriver($id);
 							$relatedRecords = $recordDriver->getRelatedRecords(true);
@@ -1402,7 +1415,7 @@ class GroupedWork_AJAX extends JSON_Action {
 								$id = substr(strstr($relatedRecords[0]->id, ':'), 1);
 								$recordType = $relatedRecords[0]->source;
 								$destFullPath = $configArray['Site']['coverPath'] . '/original/' . $id . '.png';
-								$upload = file_put_contents($destFullPath, file_get_contents($url));
+								$upload = file_put_contents($destFullPath, $uploadedFile);
 								if ($upload){
 									$result['success'] = true;
 
