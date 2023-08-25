@@ -293,6 +293,12 @@ class MyAccount_Fines extends MyAccount {
 					$interface->assign('outstandingGrandTotalVal', $outstandingGrandTotalVal);
 				}
 				$interface->assign('grandTotalVal', $grandTotalVal);
+
+				$overPayWarning = translate([
+					'text' => 'You cannot pay more than the outstanding fine amount.',
+					'isPublicFacing' => true,
+				]);
+				$interface->assign('overPayWarning', $overPayWarning);
 			}
 		}
 		$interface->assign('showSystem', $showSystem);
