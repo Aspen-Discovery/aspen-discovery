@@ -24,10 +24,11 @@ class Admin_eCommerceReport extends ObjectEditor {
         $objectList = [];
         if (UserAccount::userHasPermission('View eCommerce Reports for Home Library')) {
             $homeLibrary = Library::getPatronHomeLibrary()->libraryId;
-            $locationList = Location::getLocationListAsObjects(true);
+            $locationList = Location::getLocationList(true);
+			$locationListIds = array_keys($locationList);
             $object->joinAdd(new User(), 'LEFT', 'user', 'userId', 'id');
             $object->joinAdd(new Library(), 'LEFT', 'library', 'paidFromInstance', 'subdomain');
-            $object->whereAdd('user.homeLocationId IN (' . implode(', ', $locationList) . ') OR library.libraryId = ' . $homeLibrary);
+            $object->whereAdd('user.homeLocationId IN (' . implode(', ', $locationListIds) . ') OR library.libraryId = ' . $homeLibrary);
         }
         $object->find();
         while ($object->fetch()) {
