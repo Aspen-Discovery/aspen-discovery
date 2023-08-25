@@ -335,6 +335,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 
 .results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail{ldelim}
 	align-items: flex-start !important;
+	max-height: 250px !important;
 {rdelim}
 
 #home-page-browse-results .floating .browse-cover-badge {ldelim}
