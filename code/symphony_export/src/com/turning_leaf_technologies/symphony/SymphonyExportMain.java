@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 public class SymphonyExportMain {
 	private static Logger logger;
@@ -805,6 +806,32 @@ public class SymphonyExportMain {
 				}
 				try {
 					UnzipUtility.unzip(unzipFile.getPath(), export.getPath());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		File [] gzippedFiles = export.listFiles((dir, name) -> name.endsWith("gz"));
+		if (gzippedFiles != null && gzippedFiles.length >0) {
+			for (File gzippedFile : gzippedFiles) {
+				long fileTimeStamp = gzippedFile.lastModified();
+				boolean fileChanging = true;
+				while (fileChanging) {
+					fileChanging = false;
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						logger.debug("Thread interrupted while checking if marc file is changing");
+					}
+					if (fileTimeStamp != gzippedFile.lastModified()) {
+						fileTimeStamp = gzippedFile.lastModified();
+						fileChanging = true;
+					}
+				}
+				try {
+					String exportFile = gzippedFile.getAbsolutePath().replace(".gz", "");
+					UnzipUtility.gUnzip(gzippedFile, new File(exportFile));
+					gzippedFile.delete();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
