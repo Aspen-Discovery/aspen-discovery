@@ -83,7 +83,7 @@
 					{foreach from=$dataList item=dataItem key=id}
 						{assign var=canEdit value=$dataItem->canActiveUserEdit()}
 					<tr class='{cycle values="odd,even"} {if !empty($dataItem->class)}{$dataItem->class}{/if}'>
-						{if $canCompare || $canBatchUpdate}
+						{if $canCompare || $canBatchUpdate || $canExportToCSV}
 							<td><input type="checkbox" class="selectedObject" name="selectedObject[{$id}]" aria-label="Select Item {$id}"> </td>
 						{/if}
 						{foreach from=$structure item=property}
@@ -200,6 +200,12 @@
 		<div class="btn-group">
 			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'selected')">{translate text='Batch Update Selected' isAdminFacing=true}</button>
 			<button type='submit' value='batchUpdate' class="btn btn-default" onclick="return AspenDiscovery.Admin.showBatchUpdateFieldForm('{$module}', '{$toolName}', 'all')">{translate text='Batch Update All' isAdminFacing=true}</button>
+		</div>
+	{/if}
+	{if !empty($canExportToCSV)}
+		<div class="btn-group">
+			<input type='submit' name='exportToCSV' value="{translate text='Export Selected to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportSelectedToCSV');" />
+			<input type='submit' name='exportToCSV' value="{translate text='Export to CSV' isAdminFacing=true}" class="btn btn-default" onclick="$('#objectAction').val('exportToCSV');" />
 		</div>
 	{/if}
 	{if !empty($canAddNew)}
