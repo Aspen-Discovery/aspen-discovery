@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class MyAccount_ContactInformation extends MyAccount {
 	function launch() {
-		global $configArray;
 		global $interface;
 		global $offlineMode;
 		$user = UserAccount::getLoggedInUser();
