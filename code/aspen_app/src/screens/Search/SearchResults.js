@@ -64,7 +64,6 @@ export const SearchResults = () => {
           staleTime: 1000,
           onSuccess: (data) => {
                if ((data.totalResults === 1 || data.totalResults === '1') && isScannerSearch) {
-                    console.log('only 1 result! take me there!');
                     const result = data.results[0];
                     if (result.key) {
                          navigate('GroupedWorkScreen', {
