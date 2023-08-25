@@ -1381,6 +1381,8 @@ class Polaris extends AbstractIlsDriver {
 			$body->LogonUserID = (string)$staffInfo['polarisId'];
 			$body->LogonWorkstationID = $this->getWorkstationID($patron);
 
+			//User the patron's home library rather than the active library just in case they are on the wrong interface
+			$library = $patron->getHomeLibrary();
 			$this->setupBodyForSelfRegAndPatronUpdateCall('patronUpdate', $body, $library);
 			if (isset($_REQUEST['email'])) {
 				$patron->email = $_REQUEST['email'];
@@ -1393,10 +1395,11 @@ class Polaris extends AbstractIlsDriver {
 			$patronBasicData = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin(), $fromMasquerade);
 			//Get the ID of the address to update
 			$addresses = $patronBasicData->PatronAddresses;
+			$address = null;
 			if (count($addresses) > 0) {
 				$address = reset($addresses);
 				$body->AddressID = $address->AddressID;
-				$body->FreeTextID = $address->FreeTextLabel;
+				//$body->FreeTextID = $address->FreeTextLabel;
 			}
 
 			if (isset($_REQUEST['address'])) {
@@ -1433,6 +1436,70 @@ class Polaris extends AbstractIlsDriver {
 				}
 			}
 
+			if (!$library->allowNameUpdates) {
+				unset($body->NameFirst);
+				unset($body->NameLast);
+				unset($body->NameMiddle);
+				unset($body->LegalNameFirst);
+				unset($body->LegalNameMiddle);
+				unset($body->LegalNameLast);
+				unset($body->UseLegalNameOnNotices);
+			}else{
+				if ($body->NameFirst == $patronBasicData->NameFirst) {
+					unset($body->NameFirst);
+				}
+				if ($body->NameLast == $patronBasicData->NameLast) {
+					unset($body->NameLast);
+				}
+				if ($body->NameMiddle == $patronBasicData->NameMiddle) {
+					unset($body->NameMiddle);
+				}
+				if ($body->LegalNameFirst == $patronBasicData->LegalNameFirst) {
+					unset($body->LegalNameFirst);
+				}
+				if ($body->LegalNameMiddle == $patronBasicData->LegalNameMiddle) {
+					unset($body->LegalNameMiddle);
+				}
+				if ($body->LegalNameLast == $patronBasicData->LegalNameLast) {
+					unset($body->LegalNameLast);
+				}
+			}
+
+			if (!$library->allowPatronAddressUpdates) {
+				unset($body->PostalCode);
+				unset($body->City);
+				unset($body->State);
+				unset($body->StreetOne);
+				unset($body->StreetTwo);
+				unset($body->StreetThree);
+			}else{
+				if ($address != null) {
+					if ($body->PostalCode == $address->PostalCode) {
+						unset($body->PostalCode);
+					}
+					if ($body->City == $address->City) {
+						unset($body->City);
+					}
+					if ($body->State == $address->State) {
+						unset($body->State);
+					}
+					if ($body->StreetOne == $address->StreetOne) {
+						unset($body->StreetOne);
+					}
+					if ($body->StreetTwo == $address->StreetTwo) {
+						unset($body->StreetTwo);
+					}
+					if ($body->StreetThree == $address->StreetThree) {
+						unset($body->StreetThree);
+					}
+					if ($body->ZipPlusFour == $address->ZipPlusFour) {
+						unset($body->ZipPlusFour);
+					}
+					if ($body->County == $address->County) {
+						unset($body->County);
+					}
+				}
+			}
 			if (!$library->allowPatronPhoneNumberUpdates) {
 				unset($body->PhoneVoice1);
 				unset($body->PhoneVoice2);
@@ -1441,9 +1508,39 @@ class Polaris extends AbstractIlsDriver {
 				unset($body->PhoneVoice2Carrier);
 				unset($body->PhoneVoice3Carrier);
 				unset($body->TxtPhoneNumber);
+			}else{
+				if ($body->PhoneVoice1 == $patronBasicData->PhoneVoice1) {
+					unset($body->PhoneVoice1);
+				}
+				if ($body->PhoneVoice2 == $patronBasicData->PhoneVoice2) {
+					unset($body->PhoneVoice2);
+				}
+				if ($body->PhoneVoice3 == $patronBasicData->PhoneVoice3) {
+					unset($body->PhoneVoice3);
+				}
+				if ($body->PhoneVoice1Carrier == $patronBasicData->PhoneVoice1Carrier) {
+					unset($body->PhoneVoice1Carrier);
+				}
+				if ($body->PhoneVoice2Carrier == $patronBasicData->PhoneVoice2Carrier) {
+					unset($body->PhoneVoice2Carrier);
+				}
+				if ($body->PhoneVoice3Carrier == $patronBasicData->PhoneVoice3Carrier) {
+					unset($body->PhoneVoice3Carrier);
+				}
+				if ($body->TxtPhoneNumber == $patronBasicData->TxtPhoneNumber) {
+					unset($body->TxtPhoneNumber);
+				}
 			}
 			if (!$library->showNoticeTypeInProfile) {
 				unset($body->DeliveryOptionID);
+				unset($body->EReceiptOptionID);
+			}else{
+				if ($body->DeliveryOptionID == $patronBasicData->DeliveryOptionID) {
+					unset($body->DeliveryOptionID);
+				}
+				if ($body->EReceiptOptionID == $patronBasicData->EReceiptOptionID) {
+					unset($body->EReceiptOptionID);
+				}
 			}
 			$encodedBody = json_encode($body);
 			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
@@ -1458,7 +1555,7 @@ class Polaris extends AbstractIlsDriver {
 					$result['messages'][] = 'Your account was updated successfully.';
 					$patron->update();
 				} else {
-					$result['messages'][] = "Error updating profile information (Error {$jsonResponse->PAPIErrorCode}).";
+					$result['messages'][] = "Error updating profile information (Error {$jsonResponse->PAPIErrorCode}). {$jsonResponse->ErrorMessage}";
 				}
 			} else {
 				$result['messages'][] = "Error updating profile information ({$this->lastResponseCode}).";
@@ -1974,6 +2071,10 @@ class Polaris extends AbstractIlsDriver {
 				$section['renderAsHeading'] = true;
 			}
 		}
+		if (!$user->getHomeLibrary()->showNoticeTypeInProfile) {
+			unset($patronUpdateFields['preferencesSection']['properties']['notices']);
+			unset($patronUpdateFields['preferencesSection']['properties']['eReceipts']);
+		}
 
 		$basicDataResponse = $this->getBasicDataResponse($user->getBarcode(), $user->getPasswordOrPin(), UserAccount::isUserMasquerading());
 		if ($basicDataResponse != null) {
@@ -2447,6 +2548,7 @@ class Polaris extends AbstractIlsDriver {
 					'description' => 'My preference for receiving library notices',
 					'required' => false,
 					'default' => 2,
+					'readOnly' => $type == 'patronUpdate' && !$library->showNoticeTypeInProfile,
 				],
 				'txtPhone' => [
 					'property' => 'txtPhone',
@@ -2481,6 +2583,7 @@ class Polaris extends AbstractIlsDriver {
 					'description' => 'How you would like to receive E-receipts',
 					'maxLength' => 128,
 					'required' => false,
+					'readOnly' => $type == 'patronUpdate' && !$library->showNoticeTypeInProfile,
 				],
 			],
 		];
@@ -2576,6 +2679,7 @@ class Polaris extends AbstractIlsDriver {
 		if (isset($_REQUEST['branchcode'])) {
 			$body->PatronBranchID = $_REQUEST['branchcode'];
 		}
+
 		if (isset($_REQUEST['zipcode'])) {
 			$body->PostalCode = $_REQUEST['zipcode'];
 		}
@@ -2588,6 +2692,7 @@ class Polaris extends AbstractIlsDriver {
 		}
 		$body->County = '';
 		//$body->CountryID = '';
+
 		if (isset($_REQUEST['address'])) {
 			$body->StreetOne = $_REQUEST['address'];
 		}
@@ -2597,6 +2702,7 @@ class Polaris extends AbstractIlsDriver {
 		if (isset($_REQUEST['address3'])) {
 			$body->StreetThree = $_REQUEST['address3'];
 		}
+
 		if (isset($_REQUEST['firstName'])) {
 			$body->NameFirst = $_REQUEST['firstName'];
 		}
@@ -2617,6 +2723,7 @@ class Polaris extends AbstractIlsDriver {
 				$body->Birthdate = $_REQUEST['birthDate'];
 			}
 		}
+
 		if (isset($_REQUEST['phone1'])) {
 			$body->PhoneVoice1 = $_REQUEST['phone1'];
 		}
@@ -2636,6 +2743,7 @@ class Polaris extends AbstractIlsDriver {
 				$body->$property = $_REQUEST['txtCarrier'];
 			}
 		}
+
 		if (isset($_REQUEST['email'])) {
 			$body->EmailAddress = $_REQUEST['email'];
 		}
@@ -2674,17 +2782,19 @@ class Polaris extends AbstractIlsDriver {
 		//$body->ExpirationDate = '';
 		//$body->AddrCheckDate = '';
 		//$body->GenderID = '';
-		if (isset($_REQUEST['firstNameOnIdentification'])) {
-			$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
-		}
-		if (isset($_REQUEST['middleNameOnIdentification'])) {
-			$body->LegalNameMiddle = $_REQUEST['middleNameOnIdentification'];
-		}
-		if (isset($_REQUEST['lastNameOnIdentification'])) {
-			$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
-		}
-		if (isset($_REQUEST['useNameOnIdForNotices'])) {
-			$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+		if ($type == 'selfReg' || $library->allowNameUpdates) {
+			if (isset($_REQUEST['firstNameOnIdentification'])) {
+				$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
+			}
+			if (isset($_REQUEST['middleNameOnIdentification'])) {
+				$body->LegalNameMiddle = $_REQUEST['middleNameOnIdentification'];
+			}
+			if (isset($_REQUEST['lastNameOnIdentification'])) {
+				$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
+			}
+			if (isset($_REQUEST['useNameOnIdForNotices'])) {
+				$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+			}
 		}
 		if (isset($_REQUEST['branchcode'])) {
 			$body->RequestPickupBranchID = $_REQUEST['branchcode'];
