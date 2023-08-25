@@ -14,11 +14,12 @@
 					<img src="{$bookCoverUrlMedium}" alt="{$summTitle}" title="{$summTitle}" class="{$coverStyle} browse-{$browseStyle} {if $browseCategoryRatingsMode != 0}ratings-on{/if}">
 				</div>
 			</a>
-		{if !empty($showRatings) && $browseCategoryRatingsMode != 0}
-			{*can't rate events but still want the spacing to match what we have for rated items*}
-			<div class="browse-rating">
-				<span class="ui-rater-starsOff" style="width:90px; visibility:hidden"></span>
-			</div>
-		{/if}
+			{if !empty($showRatings) && $browseCategoryRatingsMode != 0}
+				{*can't rate events but still want the spacing to match what we have for rated items*}
+				<div class="browse-rating">
+					<span class="ui-rater-starsOff" style="width:90px; visibility:hidden"></span>
+				</div>
+			{/if}
+		</div>
 	{/if}
 {/strip}
