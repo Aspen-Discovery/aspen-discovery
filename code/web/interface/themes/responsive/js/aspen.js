@@ -13619,7 +13619,7 @@ AspenDiscovery.Searches = (function(){
 		curPage: 1,
 		displayMode: 'list', // default display Mode for results
 		displayModeClasses: { // browse mode to css class correspondence
-			covers:'home-page-browse-thumbnails',
+			covers:'results-covers-view',
 			list:''
 		},
 

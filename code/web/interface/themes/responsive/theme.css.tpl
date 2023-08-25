@@ -333,6 +333,19 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	background-color: transparent;
 {rdelim}
 
+.results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail{ldelim}
+	align-items: flex-start !important;
+	max-height: 250px !important;
+{rdelim}
+
+#home-page-browse-results .floating .browse-cover-badge {ldelim}
+	left: -6px !important;
+{rdelim}
+
+.results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating {ldelim}
+	align-self: flex-end;
+{rdelim}
+
 {* Alerts *}
 .alert-info{ldelim}
     background-color: {$infoButtonBackgroundColor};
