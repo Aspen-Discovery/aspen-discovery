@@ -244,11 +244,13 @@ abstract class ObjectEditor extends Admin_Admin {
             }
             if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportSelectedToCSV') {
                 $exportObjects = [];
-                foreach ($_REQUEST['selectedObject'] as $k=>$v) {
-                    if ($v == 'on'){
-                        $exportObjects[] = $allObjects[$k];
-                    }
-                }
+				if (isset($_REQUEST['selectedObject'])) {
+					foreach ($_REQUEST['selectedObject'] as $k => $v) {
+						if ($v == 'on') {
+							$exportObjects[] = $allObjects[$k];
+						}
+					}
+				}
                 Exporter::downloadCSV('Admin/propertiesListCSV.tpl', $structure, $exportObjects);
             } else { // Display on screen
                 $interface->assign('dataList', $allObjects);
