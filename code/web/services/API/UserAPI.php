@@ -1772,6 +1772,10 @@ class UserAPI extends Action {
 							$action = $result['api']['action'] ?? null;
 							$responseMessage = strip_tags($result['api']['message']);
 							$responseMessage = trim($responseMessage);
+							$hasItems = false;
+							if(isset($result['items'])) {
+								$hasItems = (bool)$result['items'];
+							}
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
@@ -1779,7 +1783,7 @@ class UserAPI extends Action {
 								'action' => $action,
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => (bool)$result['items'] ?? false,
+								'shouldBeItemHold' => $hasItems,
 								'items' => $result['items'] ?? null,
 							];
 						}
@@ -4127,9 +4131,11 @@ class UserAPI extends Action {
 				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 				$token = new UserNotificationToken();
 				$token->pushToken = $userToken;
+				$token->userId = $user->id;
 				if($token->find(true)) {
 					if ($newStatus == 'false' || !$newStatus) {
 						$token->onboardAppNotifications = 0;
+						$user->onboardAppNotifications = 0;
 					}
 					$token->update();
 					return [
@@ -4138,10 +4144,15 @@ class UserAPI extends Action {
 						'message' => 'Updated user notification onboarding status'
 					];
 				} else {
+					// user does not have this device enabling notifications, but we don't want to keep prompting them. Update the onboardAppNotifications for the user.
+					if ($newStatus == 'false' || !$newStatus) {
+						$user->onboardAppNotifications = 0;
+					}
+					$user->update();
 					return [
-						'success' => false,
-						'title' => 'Error',
-						'message' => 'Push token not valid.',
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Push token not valid or is not assigned to a user yet. Updating notification onboarding status for the user instead.',
 					];
 				}
 			} else {

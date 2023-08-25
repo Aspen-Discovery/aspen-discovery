@@ -86,6 +86,11 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
 
+		if (IPAddress::showDebuggingInformation()) {
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
+
 		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
 		$eventSettings = new CommunicoSetting;
 		$eventSettings->id = $this->getSource();

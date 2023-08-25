@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 import { Ionicons } from '@expo/vector-icons';
 import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center, Input, FormControl } from 'native-base';
@@ -24,6 +24,7 @@ import { getDefaultFacets } from '../../util/search';
 let maxCategories = 5;
 
 export const DiscoverHomeScreen = () => {
+     const isFocused = useIsFocused();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
      const [loading, setLoading] = React.useState(false);
@@ -167,20 +168,21 @@ export const DiscoverHomeScreen = () => {
                     if (!_.isUndefined(notificationOnboard)) {
                          if (notificationOnboard === 1 || notificationOnboard === 2 || notificationOnboard === '1' || notificationOnboard === '2') {
                               setShowNotificationsOnboarding(true);
-                              setAlreadyCheckedNotifications(false);
+                              //setAlreadyCheckedNotifications(false);
                          } else {
                               setShowNotificationsOnboarding(false);
+                              //setAlreadyCheckedNotifications(true);
                          }
                     } else {
                          updateNotificationOnboard(1);
                          setShowNotificationsOnboarding(true);
-                         setAlreadyCheckedNotifications(false);
+                         //setAlreadyCheckedNotifications(false);
                     }
                };
                checkSettings().then(() => {
                     return () => checkSettings();
                });
-          }, [notificationSettings])
+          }, [language, notificationOnboard])
      );
 
      const clearText = () => {
@@ -188,7 +190,7 @@ export const DiscoverHomeScreen = () => {
      };
 
      const search = async () => {
-          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'SearchHome' });
+          navigateStack('BrowseTab', 'SearchResults', { term: searchTerm, type: 'catalog', prevRoute: 'DiscoveryScreen' });
           clearText();
      };
 
@@ -197,9 +199,10 @@ export const DiscoverHomeScreen = () => {
      };
 
      // load notification onboarding prompt
-     //console.log('showNotificationsOnboarding: ' + showNotificationsOnboarding);
-     if (showNotificationsOnboarding && !alreadyCheckedNotifications && Device.isDevice && notificationOnboard !== '0' && notificationOnboard !== '0') {
-          return <NotificationsOnboard setAlreadyCheckedNotifications={setAlreadyCheckedNotifications} />;
+     if (notificationOnboard !== '0' && notificationOnboard !== 0) {
+          if (isFocused) {
+               return <NotificationsOnboard />;
+          }
      }
 
      const renderHeader = (title, key, user, url) => {

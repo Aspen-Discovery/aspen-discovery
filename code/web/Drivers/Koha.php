@@ -384,6 +384,18 @@ class Koha extends AbstractIlsDriver {
 
 		$kohaVersion = $this->getKohaVersion();
 
+		$illItemTypes = [];
+		if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+			global $library;
+			$illItemType = new ILLItemType();
+			$illItemType->libraryId = $library->libraryId;
+			$illItemType->find();
+			while ($illItemType->fetch()) {
+				$illItemTypes[$illItemType->code] = $illItemType->code;
+			}
+		}
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -490,25 +502,63 @@ class Koha extends AbstractIlsDriver {
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
 
-			if ($curCheckout->autoRenew == 1) {
-				$autoRenewError = $curRow['auto_renew_error'];
-				if ($autoRenewError == 'null') {
+			$library = $patron->getHomeLibrary();
+			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
+			if ($allowRenewals['success']) {
+				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
+				$willAutoRenew = 0;
+				if($allowRenewals['error'] == 'auto_renew') {
+					$willAutoRenew = 1;
 					$curCheckout->autoRenewError = translate([
 						'text' => 'If eligible, this item will renew on<br/>%1%',
 						'1' => $renewalDate,
 						'isPublicFacing' => true,
 					]);
 				}
-			}
+				$curCheckout->canRenew = $eligibleForRenewal;
+				$curCheckout->autoRenew = $willAutoRenew;
 
-			$library = $patron->getHomeLibrary();
-			if ($library->displayHoldsOnCheckout) {
-				$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
-				if ($allowRenewals['success'] == true) {
+				if(!$willAutoRenew && !$eligibleForRenewal) {
+					$error = $allowRenewals['error'];
+					if($error == 'onsite_checkout') {
+						$curCheckout->renewError = translate([
+							'text' => 'Item is an onsite checkout',
+							'isPublicFacing' => true,
+						]);
+					} elseif ($error == 'auto_too_soon') {
+						$curCheckout->autoRenew = 1;
+						$curCheckout->autoRenewError = translate([
+							'text' => 'If eligible, this item will renew on<br/>%1%',
+							'1' => $renewalDate,
+							'isPublicFacing' => true,
+						]);
+					} elseif ($error == 'too_soon') {
+						$curCheckout->renewError = translate([
+							'text' => 'Item cannot be renewed yet.',
+							'isPublicFacing' => true,
+						]);
+					} else {
+						$curCheckout->renewError = translate([
+							'text' => $error,
+							'isPublicFacing' => true,
+						]);
+					}
+				}
+
+				if($eligibleForRenewal && $allowRenewals['error'] == null) {
+					$curCheckout->autoRenew = 1;
+					$curCheckout->autoRenewError = translate([
+						'text' => 'If eligible, this item will renew on<br/>%1%',
+						'1' => $renewalDate,
+						'isPublicFacing' => true,
+					]);
+				}
+
+				if ($library->displayHoldsOnCheckout && $allowRenewals['error'] == 'on_reserve') {
 					$curCheckout->canRenew = 0;
 					$curCheckout->autoRenew = 0;
 					$curCheckout->renewError = translate([
-						'text' => $allowRenewals['error'],
+						'text' => 'On hold for another patron',
 						'isPublicFacing' => true,
 					]);
 				}
@@ -545,8 +595,57 @@ class Koha extends AbstractIlsDriver {
 				$issuingRulesRS->close();
 			}
 
-			if ($curRow['itype'] == 'ILL') {
-				$curCheckout->isIll = true;
+
+			// check for if no auto-renewal before day is set
+			if($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
+				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'noautorenewalbefore' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
+				if ($issuingRulesRS !== false) {
+					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
+						$noRenewalsBefore = $issuingRulesRow['rule_value'];
+						$renewError = translate([
+							'text' => 'Item cannot be renewed yet.',
+							'isPublicFacing' => true,
+						]);
+						if ($curCheckout->renewError == $renewError && $noRenewalsBefore && $renewalDate) {
+							$days_before = date('M j, y', strtotime($renewalDate . " -$noRenewalsBefore days"));
+							$curCheckout->renewError = translate([
+								'text' => 'No renewals before %1%.',
+								'1' => $days_before,
+								'isPublicFacing' => true,
+							]);
+							$curCheckout->renewError .= ' ' . translate([
+									'text' => 'Item scheduled for auto renewal.',
+									'isPublicFacing' => true,
+								]);
+						}
+
+					}
+					$issuingRulesRS->close();
+				}
+			}
+
+
+			// check if item is ILL
+			if ($illItemTypes) {
+				if(array_search($curRow['itype'], $illItemTypes)) {
+					$curCheckout->isIll = true;
+					$curCheckout->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curCheckout->source = $library->interLibraryLoanName;
+					}
+				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
+					$curCheckout->isIll = true;
+					$curCheckout->source = 'ILL';
+					if($library->interLibraryLoanName) {
+						$curCheckout->source = $library->interLibraryLoanName;
+					}
+				}
+			} else {
+				if ($curRow['itype'] == 'ILL') {
+					$curCheckout->isIll = true;
+				}
 			}
 
 			//Get the patron expiration date to check for active card
@@ -1160,6 +1259,19 @@ class Koha extends AbstractIlsDriver {
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 		// TODO implement sorting, currently only done in catalogConnection for koha reading history
 		//TODO prepend indexProfileType
+
+		$illItemTypes = [];
+		if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+			global $library;
+			require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+			$illItemType = new ILLItemType();
+			$illItemType->libraryId = $library->libraryId;
+			$illItemType->find();
+			while ($illItemType->fetch()) {
+				$illItemTypes[$illItemType->code] = $illItemType->code;
+			}
+		}
+
 		$this->initDatabaseConnection();
 
 		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
@@ -1252,8 +1364,16 @@ class Koha extends AbstractIlsDriver {
 					} else {
 						$curTitle['checkin'] = null;
 					}
-					if ($readingHistoryTitleRow['iType'] == 'ILL') {
-						$curTitle['isIll'] = true;
+
+					// check if item is ILL
+					if ($illItemTypes) {
+						if(array_search($readingHistoryTitleRow['iType'], $illItemTypes)) {
+							$curTitle['isIll'] = true;
+						}
+					} else {
+						if ($readingHistoryTitleRow['iType'] == 'ILL') {
+							$curTitle['isIll'] = true;
+						}
 					}
 					$readingHistoryTitles[] = $curTitle;
 				}
@@ -1975,6 +2095,17 @@ class Koha extends AbstractIlsDriver {
 			$iTypeTranslationMap = null;
 		}
 
+		$illItemTypes = [];
+		if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+			require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+			$illItemType = new ILLItemType();
+			$illItemType->libraryId = $library->libraryId;
+			$illItemType->find();
+			while ($illItemType->fetch()) {
+				$illItemTypes[$illItemType->code] = $illItemType->code;
+			}
+		}
+
 		/** @noinspection SqlResolve */
 		$sql = "SELECT reserves.*, biblio.title, biblio.author, items.itemcallnumber, items.enumchron, items.itype, reserves.branchcode FROM reserves inner join biblio on biblio.biblionumber = reserves.biblionumber left join items on items.itemnumber = reserves.itemnumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
@@ -2101,9 +2232,33 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			$curHold->cancelId = $curRow['reserve_id'];
-			if ($curRow['itype'] == 'ILL') {
-				$curHold->source = $library->interLibraryLoanName;
-				$curHold->isIll = true;
+
+			// check if item is ILL
+			if ($illItemTypes) {
+				if(array_search($curRow['itype'], $illItemTypes)) {
+					$curHold->isIll = true;
+					$curHold->source = 'ILL';
+					$curHold->canFreeze = false;
+					if($library->interLibraryLoanName) {
+						$curHold->source = $library->interLibraryLoanName;
+					}
+				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
+					$curHold->isIll = true;
+					$curHold->source = 'ILL';
+					$curHold->canFreeze = false;
+					if($library->interLibraryLoanName) {
+						$curHold->source = $library->interLibraryLoanName;
+					}
+				}
+			} else {
+				if ($curRow['itype'] == 'ILL') {
+					$curHold->isIll = true;
+					$curHold->source = 'ILL';
+					$curHold->canFreeze = false;
+					if($library->interLibraryLoanName) {
+						$curHold->source = $library->interLibraryLoanName;
+					}
+				}
 			}
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
@@ -6946,6 +7101,7 @@ class Koha extends AbstractIlsDriver {
 		$result = [
 			'success' => false,
 			'error' => null,
+			'allows_renewal' => false,
 		];
 
 		$oauthToken = $this->getOAuthToken();
@@ -6971,10 +7127,9 @@ class Koha extends AbstractIlsDriver {
 			$response = json_decode($response);
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
-				if ($response->error == "on_reserve") {
-					$result['success'] = true;
-					$result['error'] = "On hold for another patron";
-				}
+				$result['success'] = true;
+				$result['error'] = $response->error;
+				$result['allows_renewal'] = $response->allows_renewal;
 			}
 		}
 		return $result;

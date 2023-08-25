@@ -42,7 +42,7 @@
 									{if ($event.regRequired == 1)}
 										{if $event.externalLink != null && !($event.isRegistered)}
 											{if !empty($event.regModalBody)}
-												<a class="btn btn-xs btn-action" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$event.id}', '{$event.vendor}', '{$event.externalLink}');"><i class="fas fa-external-link-alt"></i> {translate text="Check Registration" isPublicFacing=true}
+												<a class="btn btn-xs btn-action" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$event.id}', '{$event.vendor}', '{$event.externalLink}');">{translate text="Check Registration" isPublicFacing=true}
 												</a>
 											{else}
 												<a href="{$event.externalLink}" class="btn btn-xs btn-action" target="_blank"><i class="fas fa-external-link-alt"></i> {translate text="Check Registration" isPublicFacing=true}</a>

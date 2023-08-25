@@ -97,7 +97,8 @@ class Grouping_Manifestation {
 	}
 
 	function showActionButton(): bool {
-		if ($this->_relatedRecords[0]->isHoldable() || $this->_relatedRecords[0]->isEContent()){
+		$firstRecord = reset($this->_relatedRecords);
+		if ($firstRecord->isHoldable() || $firstRecord->isEContent()){
 			return true;
 		}
 		return false;
