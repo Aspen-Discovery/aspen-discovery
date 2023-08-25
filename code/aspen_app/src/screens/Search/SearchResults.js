@@ -34,6 +34,8 @@ export const SearchResults = () => {
      let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
 
+     let isScannerSearch = useRoute().params.scannerSearch ?? false;
+
      let params = useRoute().params.pendingParams ?? [];
 
      const prevRoute = useRoute().params.prevRoute ?? 'SearchHome';
@@ -55,9 +57,25 @@ export const SearchResults = () => {
           params = [];
      }
 
-     const { status, data, error, isFetching, isPreviousData } = useQuery(['searchResults', url, page, term, scope, params, type, id, language], () => fetchSearchResults(term, page, scope, url, type, id, language), {
+     const { status, data, error, isFetching, isPreviousData } = useQuery({
+          queryKey: ['searchResults', url, page, term, scope, params, type, id, language],
+          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language),
           keepPreviousData: true,
           staleTime: 1000,
+          onSuccess: (data) => {
+               if ((data.totalResults === 1 || data.totalResults === '1') && isScannerSearch) {
+                    console.log('only 1 result! take me there!');
+                    const result = data.results[0];
+                    if (result.key) {
+                         navigate('GroupedWorkScreen', {
+                              id: result.key,
+                              title: getCleanTitle(result.title),
+                              url: library.baseUrl,
+                              libraryContext: library,
+                         });
+                    }
+               }
+          },
      });
 
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
