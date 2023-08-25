@@ -4196,7 +4196,37 @@ class Library extends DataObject {
 
 	public function saveThemes() {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
-			$this->saveOneToManyOptions($this->_themes, 'libraryId');
+			foreach($this->_themes as $obj) {
+				/** @var DataObject $obj */
+				if($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if($obj->{$obj->__primaryKey} <= 0) {
+							$obj->libraryId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLibrary = new LibraryTheme();
+						$existingThemesForLibrary->libraryId = $this->libraryId;
+						if ($existingThemesForLibrary->find()) {
+							while ($existingThemesForLibrary->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->libraryId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+			}
 			unset($this->_themes);
 		}
 	}
