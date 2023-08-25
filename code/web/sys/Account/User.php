@@ -2061,7 +2061,14 @@ class User extends DataObject {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error modifying hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error modifying hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		$allHolds = $user->getHolds();
@@ -2131,6 +2138,10 @@ class User extends DataObject {
 			}
 
 			$tmpResult['message'] = $message;
+			$tmpResult['title'] = translate([
+				'text' => 'Success',
+				'isPublicFacing' => true,
+			]);
 		} else {
 			if ($total == 0) {
 				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
@@ -2155,7 +2166,14 @@ class User extends DataObject {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error modifying hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error modifying hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		$allHolds = $user->getHolds();
@@ -2228,6 +2246,10 @@ class User extends DataObject {
 					}
 
 					$tmpResult['message'] = $message;
+					$tmpResult['title'] = translate([
+						'text' => 'Success',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => 'All holds already thawed',
