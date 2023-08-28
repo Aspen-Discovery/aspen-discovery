@@ -1409,7 +1409,16 @@ class CatalogConnection {
 		//First check the barcode field
 		$user->source = $this->driver->accountProfile->name;
 		$user->ils_barcode = $barcode;
-		if ($user->find(true)) {
+		$foundUser = false;
+		try {
+			if ($user->find(true)) {
+				$foundUser = true;
+			}
+		} catch (Exception $e) {
+			//ils_barcode probably has not been created yet
+			$user = null;
+		}
+		if ($foundUser) {
 			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
 				//We load the account based on the barcode make sure the pin matches
 				$userValid = $password != null && $user->cat_password == $password;
