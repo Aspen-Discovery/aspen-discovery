@@ -4675,6 +4675,7 @@ class Library extends DataObject {
 
 		$pinValidationRules = null;
 		$forgotPasswordType = 'none';
+		$ils = 'unknown';
 
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if($catalog != null) {
@@ -4684,8 +4685,17 @@ class Library extends DataObject {
 			$pinValidationRules = $catalog->getPasswordPinValidationRules();
 		}
 
+		if($this->accountProfileId) {
+			$accountProfile = new AccountProfile();
+			$accountProfile->id = $this->accountProfileId;
+			if ($accountProfile->find(true)) {
+				$ils = $accountProfile->ils;
+			}
+		}
+
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
+		$apiInfo['ils'] = $ils;
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
