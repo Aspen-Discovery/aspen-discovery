@@ -2390,37 +2390,8 @@ class Polaris extends AbstractIlsDriver {
 				],
 			],
 		];
-		$carriers = [
-			0 => '(Select a carrier)',
-			1 => 'AT&amp;T',
-			2 => 'Bell Canada',
-			15 => 'Bell South',
-			17 => 'Boost Mobile',
-			3 => 'Cellular One',
-			27 => 'Consumer Cingular',
-			19 => 'Fido',
-			26 => 'Google Fi',
-			18 => 'Helio',
-			16 => 'MetroPCS',
-			5 => 'Nextel',
-			6 => 'Qwest',
-			28 => 'Republic Wireless',
-			21 => 'Rogers AT&amp;T Wireless',
-			22 => 'Rogers Canada',
-			7 => 'Southwestern Bell',
-			8 => 'Sprint',
-			24 => 'Straight Talk AT&amp;T',
-			23 => 'Straight Talk Verizon',
-			20 => 'Telus',
-			9 => 'T-Mobile',
-			10 => 'Tracfone',
-			14 => 'USA Mobility',
-			11 => 'Verizon',
-			12 => 'Virgin Mobile',
-			13 => 'Virgin Mobile Canada',
-			25 => 'Wind Mobile Canada',
-			29 => 'Xfinity (Comcast) Mobile',
-		];
+		$carriers = $this->getCarrierList();
+
 		$fields['preferencesSection'] = [
 			'property' => 'preferencesSection',
 			'type' => 'section',
@@ -2766,5 +2737,22 @@ class Polaris extends AbstractIlsDriver {
 
 	public function showTimesRenewed(): bool {
 		return true;
+	}
+
+	private function getCarrierList() : array {
+		$staffUserInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/sysadmin/mobilephonecarriers";
+		$carriersResponse = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+		ExternalRequestLogEntry::logRequest('polaris.getCarrierList', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $carriersResponse, []);
+		$carriers = [];
+		if ($carriersResponse && $this->lastResponseCode == 200) {
+			$carriersResponse = json_decode($carriersResponse);
+			foreach ($carriersResponse->SAMobilePhoneCarriersGetRows as $carrierInfo) {
+				$carriers[$carrierInfo->CarrierID] = $carrierInfo->CarrierName;
+			}
+		}
+
+		asort($carriers);
+		return $carriers;
 	}
 }
