@@ -29,7 +29,7 @@ export default function Scanner() {
           setLoading(true);
           if (!scanned) {
                setScanned(true);
-               navigateStack('BrowseTab', 'SearchResults', { term: data, type: 'catalog', prevRoute: 'DiscoveryScreen' });
+               navigateStack('BrowseTab', 'SearchResults', { term: data, type: 'catalog', prevRoute: 'DiscoveryScreen', scannerSearch: true });
                setLoading(false);
           } else {
                setLoading(false);

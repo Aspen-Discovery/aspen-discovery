@@ -2061,7 +2061,14 @@ class User extends DataObject {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error modifying hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error modifying hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		$allHolds = $user->getHolds();
@@ -2131,6 +2138,10 @@ class User extends DataObject {
 			}
 
 			$tmpResult['message'] = $message;
+			$tmpResult['title'] = translate([
+				'text' => 'Success',
+				'isPublicFacing' => true,
+			]);
 		} else {
 			if ($total == 0) {
 				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
@@ -2155,7 +2166,14 @@ class User extends DataObject {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error modifying hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error modifying hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		$allHolds = $user->getHolds();
@@ -2228,6 +2246,10 @@ class User extends DataObject {
 					}
 
 					$tmpResult['message'] = $message;
+					$tmpResult['title'] = translate([
+						'text' => 'Success',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => 'All holds already thawed',
@@ -3196,8 +3218,14 @@ class User extends DataObject {
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
 
 		$sections['ecommerce'] = new AdminSection('eCommerce');
-		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View all payments initiated and completed within the system', '/Admin/eCommerceReport'), 'View eCommerce Reports');
-		$sections['ecommerce']->addAction(new AdminAction('Donations Report', 'View all donations initiated and completed within the system', '/Admin/DonationsReport'), 'View Donations Reports');
+		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View payments initiated and completed within the system', '/Admin/eCommerceReport'), [
+            'View eCommerce Reports for All Libraries',
+            'View eCommerce Reports for Home Library'
+        ]);
+		$sections['ecommerce']->addAction(new AdminAction('Donations Report', 'View donations initiated and completed within the system', '/Admin/DonationsReport'), [
+            'View Donations Reports for All Libraries',
+            'View Donations Reports for Home Library'
+        ]);
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
