@@ -234,6 +234,7 @@ class Library extends DataObject {
 	public $maxPinLength;
 	public $onlyDigitsAllowedInPin;
 	public $enableForgotPasswordLink;
+	public $enableForgotBarcode;
 	public /** @noinspection PhpUnused */
 		$preventExpiredCardLogin;
 	public /** @noinspection PhpUnused */
@@ -1694,6 +1695,16 @@ class Library extends DataObject {
 								'description' => 'Checking this will enable a &quot;Forgot Password?&quot; link on the login screen, which will allow users to reset their PIN/password. The user account must have an email address on file to reset their PIN/password with this link.',
 								'hideInLists' => true,
 								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'enableForgotBarcode' => [
+								'property' => 'enableForgotBarcode',
+								'type' => 'checkbox',
+								'label' => 'Enable "Forgot Barcode?" Link on Login Screen',
+								'description' => 'Checking this will enable a &quot;Forgot Barcode?&quot; link on the login screen, which will allow users to receive their barcode by text. The user account must have a text-capable phone number on file to receive their barcode with this link.',
+								'note' => 'Requires Twilio to be configured',
+								'hideInLists' => true,
+								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
 							'showAlternateLibraryOptionsInProfile' => [
