@@ -26,6 +26,7 @@ AspenDiscovery.Searches = (function(){
 			covers:'results-covers-view',
 			list:''
 		},
+		colcade: null,
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
 			var url = Globals.path + '/Union/AJAX';
@@ -111,9 +112,17 @@ AspenDiscovery.Searches = (function(){
 				if (data.success === 'false'){
 					AspenDiscovery.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
 				}else{
-					var newDiv = $(data.records).hide();
-					$('.'+divClass).filter(':last').after(newDiv);
-					newDiv.fadeIn('slow');
+					if (AspenDiscovery.Browse.browseStyle === 'masonry') {
+						AspenDiscovery.Searches.colcade = new Colcade('#home-page-browse-results .grid', {
+							columns: '.grid-col',
+							items: '.grid-item'
+						});
+						AspenDiscovery.Searches.colcade.append($(data.records));
+					} else {
+						var newDiv = $(data.records).hide();
+						$('.'+divClass).filter(':last').after(newDiv);
+						newDiv.fadeIn('slow');
+					}
 					if (data.lastPage) $('#more-browse-results').hide(); // hide the load more results
 					else AspenDiscovery.Searches.curPage++;
 				}
