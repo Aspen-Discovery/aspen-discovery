@@ -81,7 +81,8 @@ class UserAPI extends Action {
 					'deleteSelectedFromReadingHistory',
 					'getReadingHistorySortOptions',
 					'confirmHold',
-					'updateNotificationOnboardingStatus'
+					'updateNotificationOnboardingStatus',
+					'resetPassword'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -363,6 +364,51 @@ class UserAPI extends Action {
 				'text' => 'No PIN reset token provided.',
 				'isPublicFacing' => true,
 			]);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Allows a user to initiate a password/PIN reset.
+	 *
+	 * @noinspection PhpUnused
+	 **/
+	function resetPassword(): array {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error trying to initiate username/barcode reset',
+			'action' => null,
+		];
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if($catalog != null) {
+			$result = $catalog->processEmailResetPinForm();
+			if(empty($result['success']) && $result['error']) {
+				$result = [
+					'message' => $result['error'],
+					'action' => translate(['text' => 'Try Again', 'isPublicFacing' => true]),
+				];
+			} elseif(!empty($result['message'])) {
+				$result = [
+					'success' => true,
+					'message' => $result['message'],
+					'action' => translate(['text' => 'Sign in', 'isPublicFacing' => true]),
+				];
+			} else {
+				$result = [
+					'success' => true,
+					'action' => translate(['text' => 'Sign in', 'isPublicFacing' => true]),
+				];
+
+				$result['message'] = translate([
+					'text' => 'A email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
+					'isPublicFacing' => true,
+				]) . ' ' . translate([
+					'text' => 'If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin.',
+					'isPublicFacing' => true,
+				]);
+			}
 		}
 
 		return $result;
