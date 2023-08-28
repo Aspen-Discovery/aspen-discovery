@@ -4616,6 +4616,8 @@ class Library extends DataObject {
 			'enableSavedSearches' => $this->enableSavedSearches,
 			'allowPinReset' => $this->allowPinReset,
 			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'enableForgotPasswordLink' => $this->enableForgotPasswordLink,
+			'enableForgotBarcode' => $this->enableForgotBarcode,
 			'showShareOnExternalSites' => $this->showShareOnExternalSites,
 			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit'),
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
@@ -4671,9 +4673,19 @@ class Library extends DataObject {
 			];
 		}
 
+		$pinValidationRules = null;
+		$forgotPasswordType = 'none';
+
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		if($catalog != null) {
+			if($this->enableForgotPasswordLink) {
+				$forgotPasswordType = $catalog->getForgotPasswordType();
+			}
+			$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		}
+
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
+		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
