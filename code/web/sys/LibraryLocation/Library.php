@@ -234,6 +234,7 @@ class Library extends DataObject {
 	public $maxPinLength;
 	public $onlyDigitsAllowedInPin;
 	public $enableForgotPasswordLink;
+	public $enableForgotBarcode;
 	public /** @noinspection PhpUnused */
 		$preventExpiredCardLogin;
 	public /** @noinspection PhpUnused */
@@ -1694,6 +1695,16 @@ class Library extends DataObject {
 								'description' => 'Checking this will enable a &quot;Forgot Password?&quot; link on the login screen, which will allow users to reset their PIN/password. The user account must have an email address on file to reset their PIN/password with this link.',
 								'hideInLists' => true,
 								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'enableForgotBarcode' => [
+								'property' => 'enableForgotBarcode',
+								'type' => 'checkbox',
+								'label' => 'Enable "Forgot Barcode?" Link on Login Screen',
+								'description' => 'Checking this will enable a &quot;Forgot Barcode?&quot; link on the login screen, which will allow users to receive their barcode by text. The user account must have a text-capable phone number on file to receive their barcode with this link.',
+								'note' => 'Requires Twilio to be configured',
+								'hideInLists' => true,
+								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
 							'showAlternateLibraryOptionsInProfile' => [
@@ -4198,7 +4209,37 @@ class Library extends DataObject {
 
 	public function saveThemes() {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
-			$this->saveOneToManyOptions($this->_themes, 'libraryId');
+			foreach($this->_themes as $obj) {
+				/** @var DataObject $obj */
+				if($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if($obj->{$obj->__primaryKey} <= 0) {
+							$obj->libraryId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLibrary = new LibraryTheme();
+						$existingThemesForLibrary->libraryId = $this->libraryId;
+						if ($existingThemesForLibrary->find()) {
+							while ($existingThemesForLibrary->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->libraryId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+			}
 			unset($this->_themes);
 		}
 	}
@@ -4575,6 +4616,8 @@ class Library extends DataObject {
 			'enableSavedSearches' => $this->enableSavedSearches,
 			'allowPinReset' => $this->allowPinReset,
 			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'enableForgotPasswordLink' => $this->enableForgotPasswordLink,
+			'enableForgotBarcode' => $this->enableForgotBarcode,
 			'showShareOnExternalSites' => $this->showShareOnExternalSites,
 			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit'),
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
@@ -4630,9 +4673,19 @@ class Library extends DataObject {
 			];
 		}
 
+		$pinValidationRules = null;
+		$forgotPasswordType = 'none';
+
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		if($catalog != null) {
+			if($this->enableForgotPasswordLink) {
+				$forgotPasswordType = $catalog->getForgotPasswordType();
+			}
+			$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		}
+
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
+		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;

@@ -54,6 +54,11 @@
 		                            {/if}
 		                        </p>
 		                    {/if}
+		                    {if $enableForgotBarcode}
+		                         <p class="text-muted help-block">
+		                            <strong>{translate text="Forgot %1%?" 1=$usernameLabel isPublicFacing=true}</strong>&nbsp;&nbsp;<a href="/MyAccount/ForgotBarcode">{translate text="Send My %1% by Text" 1=$usernameLabel isPublicFacing=true}</a>
+		                         </p>
+		                    {/if}
 
 		                    {if $enableSelfRegistration == 1 && !$isStandalonePage}
 		                        <p class="help-block">
