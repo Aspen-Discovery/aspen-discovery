@@ -19,6 +19,7 @@ import { PATRON } from '../../util/loadPatron';
 import { PermissionsPrompt } from '../../components/PermissionsPrompt';
 import { fetchAllLibrariesFromGreenhouse, fetchNearbyLibrariesFromGreenhouse } from '../../util/greenhouse';
 import { SplashScreen } from './Splash';
+import { ResetPassword } from './ResetPassword';
 
 export const LoginScreen = () => {
      const [isLoading, setIsLoading] = React.useState(true);
@@ -34,6 +35,12 @@ export const LoginScreen = () => {
      const [query, setQuery] = React.useState('');
      const [allowBarcodeScanner, setAllowBarcodeScanner] = React.useState(false);
      const [allowCode39, setAllowCode39] = React.useState(false);
+     const [enableForgotPasswordLink, setEnableForgotPasswordLink] = React.useState(false);
+     const [enableForgotBarcode, setEnableForgotBarcode] = React.useState(false);
+     const [forgotPasswordType, setForgotPasswordType] = React.useState(false);
+     const [showForgotPasswordModal, setShowForgotPasswordModal] = React.useState(false);
+     const [showForgotBarcodeModal, setShowForgotBarcodeModal] = React.useState(false);
+     const [ils, setIls] = React.useState('koha');
      let isCommunity = true;
      if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           isCommunity = false;
@@ -98,6 +105,22 @@ export const LoginScreen = () => {
                     if (result.passwordLabel) {
                          setPasswordLabel(result.passwordLabel);
                     }
+
+                    if (result.enableForgotPasswordLink) {
+                         setEnableForgotPasswordLink(result.enableForgotPasswordLink);
+                    }
+
+                    if (result.enableForgotBarcode) {
+                         setEnableForgotBarcode(result.enableForgotBarcode);
+                    }
+
+                    if (result.forgotPasswordType) {
+                         setForgotPasswordType(result.forgotPasswordType);
+                    }
+
+                    if (result.ils) {
+                         setIls(result.ils);
+                    }
                }
           });
           /*await getLibraryLoginLabels(data.libraryId, data.baseUrl).then(async (labels) => {
@@ -127,8 +150,12 @@ export const LoginScreen = () => {
                {isCommunity || shouldShowSelectLibrary ? <SelectYourLibraryModal updateSelectedLibrary={updateSelectedLibrary} selectedLibrary={selectedLibrary} query={query} setQuery={setQuery} showModal={showModal} setShowModal={setShowModal} isCommunity={isCommunity} setShouldRequestPermissions={setShouldRequestPermissions} shouldRequestPermissions={shouldRequestPermissions} permissionRequested={permissionRequested} libraries={libraries} allLibraries={allLibraries} /> : null}
                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'padding'} width="100%">
                     {selectedLibrary ? <GetLoginForm selectedLibrary={selectedLibrary} usernameLabel={usernameLabel} passwordLabel={passwordLabel} allowBarcodeScanner={allowBarcodeScanner} allowCode39={allowCode39} /> : null}
+                    <Button.Group space={3} justifyContent="center" pt={5}>
+                         {enableForgotPasswordLink === '1' || enableForgotPasswordLink === 1 ? <ResetPassword ils={ils} enableForgotPasswordLink={enableForgotPasswordLink} usernameLabel={usernameLabel} passwordLabel={passwordLabel} forgotPasswordType={forgotPasswordType} showForgotPasswordModal={showForgotPasswordModal} setShowForgotPasswordModal={setShowForgotPasswordModal} /> : null}
+                         {enableForgotBarcode === '1' || enableForgotBarcode === 1 ? <ForgotBarcodeModal enableForgotBarcode={enableForgotBarcode} usernameLabel={usernameLabel} showForgotBarcodeModal={showForgotBarcodeModal} setShowForgotBarcodeModal={setShowForgotBarcodeModal} /> : null}
+                    </Button.Group>
                     {isCommunity && Platform.OS !== 'android' ? (
-                         <Button mt={8} size="xs" variant="ghost" colorScheme="secondary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
+                         <Button mt={5} size="xs" variant="ghost" colorScheme="tertiary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
                               {getTermFromDictionary('en', 'reset_geolocation')}
                          </Button>
                     ) : null}
@@ -188,6 +215,54 @@ const SelectYourLibraryModal = (payload) => {
                </Modal>
           </Center>
      );
+};
+
+const ForgotPasswordModal = (payload) => {
+     const { ils, forgotPasswordType, enableForgotPasswordLink, passwordLabel, showForgotPasswordModal, setShowForgotPasswordModal } = payload;
+
+     if (enableForgotPasswordLink) {
+          return (
+               <Center>
+                    <Button variant="ghost" onPress={() => setShowForgotPasswordModal(true)} colorScheme="primary">
+                         <Text color="primary.600">Forgot {passwordLabel}?</Text>
+                    </Button>
+                    <Modal isOpen={showForgotPasswordModal} size="md" avoidKeyboard onClose={() => setShowForgotPasswordModal(false)}>
+                         <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
+                              <Modal.CloseButton />
+                              <Modal.Header>Forgot Password</Modal.Header>
+                              <Box>
+                                   {ils}
+                                   {forgotPasswordType}
+                                   <ResetPassword ils={ils} forgotPasswordType={forgotPasswordType} />
+                              </Box>
+                         </Modal.Content>
+                    </Modal>
+               </Center>
+          );
+     }
+
+     return null;
+};
+
+const ForgotBarcodeModal = (payload) => {
+     const { enableForgotBarcode, usernameLabel, showForgotBarcodeModal, setShowForgotBarcodeModal } = payload;
+     if (enableForgotBarcode) {
+          return (
+               <Center>
+                    <Button variant="ghost" onPress={() => setShowForgotBarcodeModal(true)} colorScheme="primary">
+                         <Text color="primary.600">Forgot {usernameLabel}?</Text>
+                    </Button>
+                    <Modal isOpen={showForgotBarcodeModal} size="md" avoidKeyboard onClose={() => setShowForgotBarcodeModal(false)}>
+                         <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
+                              <Modal.CloseButton />
+                              <Modal.Header>Forgot Barcode</Modal.Header>
+                         </Modal.Content>
+                    </Modal>
+               </Center>
+          );
+     }
+
+     return null;
 };
 
 const Item = (data) => {
