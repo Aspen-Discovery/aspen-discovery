@@ -1,7 +1,6 @@
 import React from 'react';
-import { AlertDialog, Button, Center, FormControl, Input, Icon, WarningOutlineIcon, Spinner, VStack, Text, Modal, Box } from 'native-base';
+import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
 import { create } from 'apisauce';
 import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders } from '../../util/apiAuth';
