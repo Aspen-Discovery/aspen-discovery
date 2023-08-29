@@ -91,7 +91,8 @@ class Translator {
 					if (!$translationTerm->find(true)) {
 						$translationTerm->defaultText = $defaultText;
 						//Insert the translation term
-						$translationTerm->samplePageUrl = $_SERVER['REQUEST_URI'];
+
+						$translationTerm->samplePageUrl = mb_strimwidth($_SERVER['REQUEST_URI'], 0, 255);
 						$translationTerm->isPublicFacing = $isPublicFacing;
 						$translationTerm->isAdminFacing = $isAdminFacing;
 						$translationTerm->isMetadata = $isMetadata;
