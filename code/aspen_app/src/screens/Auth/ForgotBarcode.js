@@ -1,17 +1,42 @@
 import React from 'react';
 import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
-import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { create } from 'apisauce';
 import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders } from '../../util/apiAuth';
 import { LIBRARY } from '../../util/loadLibrary';
+import _ from 'lodash';
 export const ForgotBarcode = (props) => {
      const { usernameLabel, showForgotBarcodeModal, setShowForgotBarcodeModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
+     const language = 'en';
 
      const [phoneNumber, setPhoneNumber] = React.useState('');
      const [showResults, setShowResults] = React.useState(false);
      const [results, setResults] = React.useState('');
+
+     const [buttonLabel, setButtonLabel] = React.useState('Forgot Barcode?');
+     const [modalTitle, setModalTitle] = React.useState('Forgot Barcode');
+     const [fieldLabel, setFieldLabel] = React.useState('Phone Number');
+     const [modalButtonLabel, setModalButtonLabel] = React.useState('Send My Barcode');
+
+     React.useEffect(() => {
+          async function fetchTranslations() {
+               await getTranslationsWithValues('forgot_barcode_link', usernameLabel, language, LIBRARY.url).then((result) => {
+                    setButtonLabel(_.toString(result));
+               });
+               await getTranslationsWithValues('forgot_barcode_title', usernameLabel, language, LIBRARY.url).then((result) => {
+                    setModalTitle(_.toString(result));
+               });
+               await getTranslation('Phone Number', language, LIBRARY.url).then((result) => {
+                    setModalButtonLabel(_.toString(result));
+               });
+               await getTranslationsWithValues('send_my_barcode', usernameLabel, language, LIBRARY.url).then((result) => {
+                    setModalButtonLabel(_.toString(result));
+               });
+          }
+          fetchTranslations();
+     }, [language, LIBRARY.url]);
 
      const closeWindow = () => {
           setShowForgotBarcodeModal(false);
@@ -37,12 +62,12 @@ export const ForgotBarcode = (props) => {
      return (
           <Center>
                <Button variant="ghost" onPress={() => setShowForgotBarcodeModal(true)} colorScheme="primary">
-                    <Text color="primary.600">Forgot {usernameLabel}?</Text>
+                    <Text color="primary.600">{buttonLabel}</Text>
                </Button>
                <Modal isOpen={showForgotBarcodeModal} size="md" avoidKeyboard onClose={() => setShowForgotBarcodeModal(false)}>
                     <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton onPress={closeWindow} />
-                         <Modal.Header>Forgot Barcode</Modal.Header>
+                         <Modal.Header>{modalTitle}</Modal.Header>
                          <Modal.Body>
                               {showResults && !results.success ? (
                                    <>
@@ -60,7 +85,7 @@ export const ForgotBarcode = (props) => {
                                                   fontSize: 'sm',
                                                   fontWeight: 600,
                                              }}>
-                                             {usernameLabel}
+                                             {fieldLabel}
                                         </FormControl.Label>
                                         <Input id="phoneNumber" variant="filled" size="xl" returnKeyType="done" enterKeyHint="done" onChangeText={(text) => setPhoneNumber(text)} onSubmitEditing={() => initiateForgotBarcode()} textContentType="telephoneNumber" />
                                    </>
@@ -78,7 +103,7 @@ export const ForgotBarcode = (props) => {
                                                   {getTermFromDictionary('en', 'cancel')}
                                              </Button>
                                              <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateForgotBarcode}>
-                                                  {getTermFromDictionary('en', 'send_my_barcode')}
+                                                  {modalButtonLabel}
                                              </Button>
                                         </>
                                    )}
