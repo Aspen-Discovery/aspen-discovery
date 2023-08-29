@@ -62,7 +62,7 @@
 
 					<div class="row">
 						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
-						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - Axis 360</div>
+						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - {translate text="Axis 360" isPublicFacing=true}</div>
 					</div>
 
 					{if !empty($showRatings) && $record->getGroupedWorkId() && $record->getRatingData()}
