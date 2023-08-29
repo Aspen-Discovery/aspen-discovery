@@ -20,6 +20,7 @@ import { PermissionsPrompt } from '../../components/PermissionsPrompt';
 import { fetchAllLibrariesFromGreenhouse, fetchNearbyLibrariesFromGreenhouse } from '../../util/greenhouse';
 import { SplashScreen } from './Splash';
 import { ResetPassword } from './ResetPassword';
+import { ForgotBarcode } from './ForgotBarcode';
 
 export const LoginScreen = () => {
      const [isLoading, setIsLoading] = React.useState(true);
@@ -152,7 +153,7 @@ export const LoginScreen = () => {
                     {selectedLibrary ? <GetLoginForm selectedLibrary={selectedLibrary} usernameLabel={usernameLabel} passwordLabel={passwordLabel} allowBarcodeScanner={allowBarcodeScanner} allowCode39={allowCode39} /> : null}
                     <Button.Group space={3} justifyContent="center" pt={5}>
                          {enableForgotPasswordLink === '1' || enableForgotPasswordLink === 1 ? <ResetPassword ils={ils} enableForgotPasswordLink={enableForgotPasswordLink} usernameLabel={usernameLabel} passwordLabel={passwordLabel} forgotPasswordType={forgotPasswordType} showForgotPasswordModal={showForgotPasswordModal} setShowForgotPasswordModal={setShowForgotPasswordModal} /> : null}
-                         {enableForgotBarcode === '1' || enableForgotBarcode === 1 ? <ForgotBarcodeModal enableForgotBarcode={enableForgotBarcode} usernameLabel={usernameLabel} showForgotBarcodeModal={showForgotBarcodeModal} setShowForgotBarcodeModal={setShowForgotBarcodeModal} /> : null}
+                         {enableForgotBarcode === '1' || enableForgotBarcode === 1 ? <ForgotBarcode usernameLabel={usernameLabel} showForgotBarcodeModal={showForgotBarcodeModal} setShowForgotBarcodeModal={setShowForgotBarcodeModal} /> : null}
                     </Button.Group>
                     {isCommunity && Platform.OS !== 'android' ? (
                          <Button mt={5} size="xs" variant="ghost" colorScheme="tertiary" startIcon={<Icon as={Ionicons} name="navigate-circle-outline" size={5} />}>
@@ -215,54 +216,6 @@ const SelectYourLibraryModal = (payload) => {
                </Modal>
           </Center>
      );
-};
-
-const ForgotPasswordModal = (payload) => {
-     const { ils, forgotPasswordType, enableForgotPasswordLink, passwordLabel, showForgotPasswordModal, setShowForgotPasswordModal } = payload;
-
-     if (enableForgotPasswordLink) {
-          return (
-               <Center>
-                    <Button variant="ghost" onPress={() => setShowForgotPasswordModal(true)} colorScheme="primary">
-                         <Text color="primary.600">Forgot {passwordLabel}?</Text>
-                    </Button>
-                    <Modal isOpen={showForgotPasswordModal} size="md" avoidKeyboard onClose={() => setShowForgotPasswordModal(false)}>
-                         <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
-                              <Modal.CloseButton />
-                              <Modal.Header>Forgot Password</Modal.Header>
-                              <Box>
-                                   {ils}
-                                   {forgotPasswordType}
-                                   <ResetPassword ils={ils} forgotPasswordType={forgotPasswordType} />
-                              </Box>
-                         </Modal.Content>
-                    </Modal>
-               </Center>
-          );
-     }
-
-     return null;
-};
-
-const ForgotBarcodeModal = (payload) => {
-     const { enableForgotBarcode, usernameLabel, showForgotBarcodeModal, setShowForgotBarcodeModal } = payload;
-     if (enableForgotBarcode) {
-          return (
-               <Center>
-                    <Button variant="ghost" onPress={() => setShowForgotBarcodeModal(true)} colorScheme="primary">
-                         <Text color="primary.600">Forgot {usernameLabel}?</Text>
-                    </Button>
-                    <Modal isOpen={showForgotBarcodeModal} size="md" avoidKeyboard onClose={() => setShowForgotBarcodeModal(false)}>
-                         <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
-                              <Modal.CloseButton />
-                              <Modal.Header>Forgot Barcode</Modal.Header>
-                         </Modal.Content>
-                    </Modal>
-               </Center>
-          );
-     }
-
-     return null;
 };
 
 const Item = (data) => {
