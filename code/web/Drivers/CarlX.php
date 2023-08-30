@@ -2025,7 +2025,7 @@ class CarlX extends AbstractIlsDriver {
 				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v l on i.location = l.locnumber
 				where ob.branchcode = '$location'
-				and t.pickupbranch = ob.branchnumber -- pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
+				-- and t.pickupbranch = ob.branchnumber -- commented out in 23.08.01 to include MNPS Exploratorium holds; originally meant to ensure a lock between school collection and pickup branch ; pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
 				and i.status = 'S'
 				order by 
