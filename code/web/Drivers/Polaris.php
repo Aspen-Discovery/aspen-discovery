@@ -483,8 +483,8 @@ class Polaris extends AbstractIlsDriver {
 						//Held
 						$curHold->status = $holdInfo->StatusDescription;
 						$isAvailable = true;
-						$curHold->locationUpdateable = false;
-						$curHold->cancelable = false;
+						$curHold->locationUpdateable = true;
+						$curHold->cancelable = true;
 						$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupByDate);
 						break;
 					case 7:
