@@ -854,7 +854,7 @@ class Koha extends AbstractIlsDriver {
 									$patronId = $lookupUserRow['borrowernumber'];
 
 									/** @noinspection SqlResolve */
-									$sql = "SELECT password_expiration_date from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
+									$sql = "SELECT password_expiration_date, cardnumber, userid from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 									$passwordExpirationResult = mysqli_query($this->dbConnection, $sql);
 									if ($passwordExpirationResult->num_rows > 0) {
 										$passwordExpirationRow = $passwordExpirationResult->fetch_assoc();
@@ -866,7 +866,8 @@ class Koha extends AbstractIlsDriver {
 												$user->username = $patronId;
 												$user->unique_ils_id = $patronId;
 												if (!$user->find(true)) {
-													$this->findNewUser($barcode);
+													$cardNumber = $passwordExpirationRow['cardnumber'];
+													$this->findNewUser($cardNumber, '');
 												}
 
 												require_once ROOT_DIR . '/sys/Account/PinResetToken.php';
@@ -5462,23 +5463,40 @@ class Koha extends AbstractIlsDriver {
 		return $postFields;
 	}
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		// Check the Koha database to see if the patron exists
 		//Use MySQL connection to load data
 		$this->initDatabaseConnection();
 
 		/** @noinspection SqlResolve */
-		$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $patronBarcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $patronBarcode) . "'";
+		if (!empty($patronBarcode)) {
+			//search by barcode
+			$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $patronBarcode) . "'";
 
-		$lookupUserResult = mysqli_query($this->dbConnection, $sql);
-		if ($lookupUserResult->num_rows == 1) {
-			$lookupUserRow = $lookupUserResult->fetch_assoc();
-			$patronId = $lookupUserRow['borrowernumber'];
-			$newUser = $this->loadPatronInfoFromDB($patronId, null);
-			if (!empty($newUser) && !($newUser instanceof AspenError)) {
-				return $newUser;
+			$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+			if ($lookupUserResult->num_rows == 1) {
+				$lookupUserRow = $lookupUserResult->fetch_assoc();
+				$patronId = $lookupUserRow['borrowernumber'];
+				$newUser = $this->loadPatronInfoFromDB($patronId, null);
+				if (!empty($newUser) && !($newUser instanceof AspenError)) {
+					return $newUser;
+				}
+			}
+		}else{
+			//search by username
+			$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where userId = '" . mysqli_escape_string($this->dbConnection, $patronUsername) . "'";
+
+			$lookupUserResult = mysqli_query($this->dbConnection, $sql);
+			if ($lookupUserResult->num_rows == 1) {
+				$lookupUserRow = $lookupUserResult->fetch_assoc();
+				$patronId = $lookupUserRow['borrowernumber'];
+				$newUser = $this->loadPatronInfoFromDB($patronId, null);
+				if (!empty($newUser) && !($newUser instanceof AspenError)) {
+					return $newUser;
+				}
 			}
 		}
+
 		return false;
 	}
 
@@ -6496,6 +6514,10 @@ class Koha extends AbstractIlsDriver {
 			'maxLength' => $maxPasswordLength,
 			'onlyDigitsAllowed' => $library->onlyDigitsAllowedInPin,
 		];
+	}
+
+	public function supportsLoginWithUsername() : bool {
+		return true;
 	}
 
 	public function hasEditableUsername() {

@@ -117,7 +117,7 @@ class Admin_Administrators extends ObjectEditor {
 			$numResults = $newAdmin->getNumResults();
 			if ($numResults == 0) {
 				//See if we can fetch the user from the ils
-				$newAdmin = UserAccount::findNewUser($login);
+				$newAdmin = UserAccount::findNewUser($login, '');
 				if ($newAdmin == false) {
 					$errors[$login] = translate([
 						'text' => 'Could not find a user with that barcode.',

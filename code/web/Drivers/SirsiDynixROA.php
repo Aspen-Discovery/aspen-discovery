@@ -87,7 +87,7 @@ class SirsiDynixROA extends HorizonAPI {
 		}
 	}
 
-	function findNewUser($patronBarcode) {
+	function findNewUser($patronBarcode, $patronUsername) {
 		// Creates a new user like patronLogin but looks up user by barcode.
 		// Note: The user pin is not supplied in the Account Info Lookup call.
 		$sessionToken = $this->getStaffSessionToken();

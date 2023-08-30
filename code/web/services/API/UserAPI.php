@@ -4799,9 +4799,12 @@ class UserAPI extends Action {
 	function initMasquerade() {
 		global $library;
 		if (!empty($library) && $library->allowMasqueradeMode) {
-			if (!empty($_REQUEST['cardNumber'])) {
+			if (!empty($_REQUEST['cardNumber']) || !empty($_REQUEST['username'])) {
+				//If both barcode and username are provided, we will only use barcode
+				$loginWithBarcode = !empty($_REQUEST['cardNumber']);
 				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
-				$libraryCard = trim($_REQUEST['cardNumber']);
+				$libraryCard = empty($_REQUEST['cardNumber']) ? '' : trim($_REQUEST['cardNumber']);
+				$username = empty($_REQUEST['username']) ? '' : trim($_REQUEST['username']);
 				global $guidingUser;
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
@@ -4814,7 +4817,12 @@ class UserAPI extends Action {
 						while ($accountProfile->fetch()) {
 							$masqueradedUser = new User();
 							$masqueradedUser->source = $accountProfile->name;
-							$masqueradedUser->ils_barcode = $libraryCard;
+							if ($loginWithBarcode) {
+								$masqueradedUser->ils_barcode = $libraryCard;
+							}else{
+								$masqueradedUser->ils_username = $username;
+							}
+
 							if ($masqueradedUser->find(true)) {
 								if ($masqueradedUser->id == $user->id) {
 									return [
@@ -4834,7 +4842,7 @@ class UserAPI extends Action {
 
 						if (!$foundExistingUser) {
 							// Test for a user that hasn't logged into Aspen Discovery before
-							$masqueradedUser = UserAccount::findNewUser($libraryCard);
+							$masqueradedUser = UserAccount::findNewUser($libraryCard, $username);
 							if (!$masqueradedUser) {
 								return [
 									'success' => false,
@@ -4846,7 +4854,7 @@ class UserAPI extends Action {
 							}
 						} else {
 							//Call find new user just to be sure that all patron information is up to date.
-							$tmpUser = UserAccount::findNewUser($libraryCard);
+							$tmpUser = UserAccount::findNewUser($libraryCard, $username);
 							if (!$tmpUser) {
 								//This user no longer exists? return an error?
 								return [
@@ -5022,13 +5030,24 @@ class UserAPI extends Action {
 					];
 				}
 			} else {
-				return [
-					'success' => false,
-					'error' => translate([
-						'text' => 'Please enter a valid Library Card Number.',
-						'isAdminFacing' => true,
-					]),
-				];
+				$catalog = CatalogFactory::getCatalogConnectionInstance();
+				if ($catalog->supportsLoginWithUsername()) {
+					return [
+						'success' => false,
+						'error' => translate([
+							'text' => 'Please enter a valid Library Card Number or Username.',
+							'isAdminFacing' => true,
+						]),
+					];
+				}else {
+					return [
+						'success' => false,
+						'error' => translate([
+							'text' => 'Please enter a valid Library Card Number.',
+							'isAdminFacing' => true,
+						]),
+					];
+				}
 			}
 		} else {
 			return [

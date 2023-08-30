@@ -1949,7 +1949,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		// Use the validateViaSSO switch to bypass Pin check. If a user is found, patronLogin will return a new User object.
 		$newUser = $this->patronLogin($patronBarcode, null, true);
 		if (!empty($newUser) && !($newUser instanceof AspenError)) {

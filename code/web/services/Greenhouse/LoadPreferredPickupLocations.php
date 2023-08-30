@@ -52,7 +52,7 @@ class LoadPreferredPickupLocations extends Admin_Admin {
 							$user = new User();
 							$user->ils_barcode = $userBarcode;
 							if (!$user->find(true)) {
-								$user = UserAccount::findNewUser($userBarcode);
+								$user = UserAccount::findNewUser($userBarcode, '');
 								if ($user == false) {
 									//Could not find a user for this barcode
 									$numUsersNotFound++;

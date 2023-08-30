@@ -212,7 +212,7 @@ class OAuthAuthentication extends Action {
 				return false;
 			}
 
-			$user = $catalogConnection->findNewUser($this->getUserId());
+			$user = $catalogConnection->findNewUser($this->getUserId(), '');
 
 			if (!$user instanceof User) {
 				$logger->log('No user found in database... attempting to self-register...', Logger::LOG_ERROR);
@@ -231,13 +231,13 @@ class OAuthAuthentication extends Action {
 					$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
 					return false;
 				}
-				$user = $catalogConnection->findNewUser($this->getUserId());
+				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			} else {
 				$user->oAuthAccessToken = $this->accessToken;
 				$user->oAuthRefreshToken = $this->refreshToken;
 				$user->update();
 				$user->updatePatronInfo(true);
-				$user = $catalogConnection->findNewUser($this->getUserId());
+				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			}
 			return $this->login($user);
 		} else {

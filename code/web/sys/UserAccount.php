@@ -914,16 +914,17 @@ class UserAccount {
 	 * Look up in ILS for a user that has never logged into Aspen before, based on the patron's barcode.
 	 *
 	 * @param $patronBarcode
+	 * @param $patronUsername
 	 *
 	 * @return false|User
 	 */
-	public static function findNewUser($patronBarcode) {
+	public static function findNewUser($patronBarcode, $patronUsername) {
 		require_once ROOT_DIR . '/CatalogFactory.php';
 		$driversToTest = self::getAccountProfiles();
 		foreach ($driversToTest as $driverData) {
 			$catalogConnectionInstance = CatalogFactory::getCatalogConnectionInstance($driverData['driver'], $driverData['accountProfile']);
 			if ($catalogConnectionInstance != null && !is_null($catalogConnectionInstance->driver) && method_exists($catalogConnectionInstance->driver, 'findNewUser')) {
-				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode);
+				$tmpUser = $catalogConnectionInstance->driver->findNewUser($patronBarcode, $patronUsername);
 				if (!empty($tmpUser) && !($tmpUser instanceof AspenError)) {
 					return $tmpUser;
 				}

@@ -1461,7 +1461,7 @@ class Millennium extends AbstractIlsDriver {
 		return $summary;
 	}
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$patronDump = $this->_getPatronDump($patronBarcode);
 		if ($patronDump != null) {
 			if (count($patronDump) > 0) {

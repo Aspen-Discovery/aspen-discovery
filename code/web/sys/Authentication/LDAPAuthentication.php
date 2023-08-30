@@ -153,7 +153,7 @@ class LDAPAuthentication extends Action {
 
 	private function validateWithILS($username): bool {
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		$user = $catalogConnection->findNewUser($username);
+		$user = $catalogConnection->findNewUser($username, '');
 
 		if(!$user instanceof User) {
 			return false;
@@ -161,7 +161,7 @@ class LDAPAuthentication extends Action {
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		$user = $catalogConnection->findNewUser($username);
+		$user = $catalogConnection->findNewUser($username, '');
 		return $this->login($user, $username);
 	}
 

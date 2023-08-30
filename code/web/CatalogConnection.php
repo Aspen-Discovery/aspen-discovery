@@ -181,10 +181,11 @@ class CatalogConnection {
 
 	/**
 	 * @param string $patronBarcode
+	 * @param string $patronUsername
 	 * @return bool|User
 	 */
-	public function findNewUser(string $patronBarcode) {
-		return $this->driver->findNewUser($patronBarcode);
+	public function findNewUser(string $patronBarcode, string $patronUsername) {
+		return $this->driver->findNewUser($patronBarcode, $patronUsername);
 	}
 
 	/**
@@ -388,7 +389,7 @@ class CatalogConnection {
 		$userToResetPin = new User();
 		$userToResetPin->ils_barcode = $barcode;
 		if (!$userToResetPin->find(true)) {
-			$userToResetPin = $this->driver->findNewUser($barcode);
+			$userToResetPin = $this->driver->findNewUser($barcode, '');
 		}
 		if ($userToResetPin == false) {
 			$result['error'] = translate([
@@ -1442,6 +1443,10 @@ class CatalogConnection {
 			$user = null;
 		}
 		return $user;
+	}
+
+	public function supportsLoginWithUsername() : bool {
+		return $this->driver->supportsLoginWithUsername();
 	}
 
 	public function hasEditableUsername() {
