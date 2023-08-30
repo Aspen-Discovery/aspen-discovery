@@ -38,6 +38,12 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
 if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
 	require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
 }
+if (file_exists(ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php')) {
+    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
+}
+if (file_exists(ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php')) {
+    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
+}
 
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
@@ -378,9 +384,13 @@ class Library extends DataObject {
 
 	//OAI
 	public $enableOpenArchives;
+    public $openArchivesFacetSettingId;
 
 	//Web Builder
 	public $enableWebBuilder;
+
+    //WebsiteIndexing
+    public $websiteIndexingFacetSettingId;
 
 	//Donations
 	public $donationSettingId;
@@ -4342,10 +4352,60 @@ class Library extends DataObject {
 
             } catch (Exception $e) {
                 global $logger;
-                $logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+                $logger->log('Error loading event facet settings ' . $e, Logger::LOG_ERROR);
             }
         }
         return $this->_eventFacetSettings;
+    }
+
+    protected $_openArchivesFacetSettings = null;
+
+    /** @return OpenArchivesFacetGroup */
+    public function getOpenArchivesFacetSettings() {
+        if ($this->_openArchivesFacetSettings == null) {
+            try {
+                $searchLibrary = new Library();
+                $searchLibrary->libraryId = $this->libraryId;
+                if ($searchLibrary->find(true)){
+                    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacetGroup.php';
+                    $openArchivesFacetSetting = new OpenArchivesFacetGroup();
+                    $openArchivesFacetSetting->id = $searchLibrary->openArchivesFacetSettingId;
+                    if ($openArchivesFacetSetting->find(true)) {
+                        $this->_openArchivesFacetSettings = $openArchivesFacetSetting;
+                    }
+                }
+
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading Open Archives facet settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_openArchivesFacetSettings;
+    }
+
+    protected $_websiteFacetSettings = null;
+
+    /** @return WebsiteFacetGroup */
+    public function getWebsiteFacetSettings() {
+        if ($this->_websiteFacetSettings == null) {
+            try {
+                $searchLibrary = new Library();
+                $searchLibrary->libraryId = $this->libraryId;
+                if ($searchLibrary->find(true)){
+                    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacetGroup.php';
+                    $websiteFacetSetting = new WebsiteFacetGroup();
+                    $websiteFacetSetting->id = $searchLibrary->websiteIndexingFacetSettingId;
+                    if ($websiteFacetSetting->find(true)) {
+                        $this->_websiteFacetSettings = $websiteFacetSetting;
+                    }
+                }
+
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading website facet settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_websiteFacetSettings;
     }
 
 	protected $_layoutSettings = null;

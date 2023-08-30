@@ -18,6 +18,12 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php')) {
 if (file_exists(ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 }
+if (file_exists(ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php')) {
+    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
+}
+if (file_exists(ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php')) {
+    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
+}
 
 require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
 require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
@@ -125,6 +131,10 @@ class Location extends DataObject {
 	//LiDA Settings
 	public $lidaLocationSettingId;
 	public $lidaSelfCheckSettingId;
+
+    //Facet Settings
+    public $openArchivesFacetSettingId;
+    public $websiteIndexingFacetSettingId;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -2209,6 +2219,60 @@ class Location extends DataObject {
 		}
 		return $this->_groupedWorkDisplaySettings;
 	}
+
+    protected $_openArchivesFacetSettings = null;
+
+    /** @return OpenArchivesFacetGroup */
+    public function getOpenArchivesFacetSettings(): OpenArchivesFacetGroup {
+        require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacetGroup.php';
+        if ($this->_openArchivesFacetSettings == null) {
+            try {
+                $searchLocation = new Location();
+                $searchLocation->locationId = $this->locationId;
+                if ($searchLocation->find(true)){
+                    if ($this->openArchivesFacetSettingId == -1) {
+                        $library = Library::getLibraryForLocation($this->locationId);
+                        $this->openArchivesFacetSettingId = $library->openArchivesFacetSettingId;
+                    }
+                    $openArchivesFacetSettings = new OpenArchivesFacetGroup();
+                    $openArchivesFacetSettings->id = $this->openArchivesFacetSettingId;
+                    $openArchivesFacetSettings->find(true);
+                    $this->_openArchivesFacetSettings = clone $openArchivesFacetSettings;
+                }
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_openArchivesFacetSettings;
+    }
+
+    protected $_websiteFacetSettings = null;
+
+    /** @return WebsiteFacetGroup */
+    public function getWebsiteFacetSettings(): WebsiteFacetGroup {
+        require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacetGroup.php';
+        if ($this->_websiteFacetSettings == null) {
+            try {
+                $searchLocation = new Location();
+                $searchLocation->locationId = $this->locationId;
+                if ($searchLocation->find(true)){
+                    if ($this->websiteIndexingFacetSettingId == -1) {
+                        $library = Library::getLibraryForLocation($this->locationId);
+                        $this->websiteIndexingFacetSettingId = $library->websiteIndexingFacetSettingId;
+                    }
+                    $websiteFacetSetting = new WebsiteFacetGroup();
+                    $websiteFacetSetting->id = $this->websiteIndexingFacetSettingId;
+                    $websiteFacetSetting->find(true);
+                    $this->_websiteFacetSettings = clone $websiteFacetSetting;
+                }
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_websiteFacetSettings;
+    }
 
 	function getEditLink($context): string {
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;

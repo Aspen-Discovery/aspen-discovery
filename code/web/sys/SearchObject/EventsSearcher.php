@@ -403,20 +403,8 @@ class SearchObject_EventsSearcher extends SearchObject_SolrSearcher {
 				$facets = $searchLibrary->getEventFacetSettings()->getFacets();
 
 				foreach ($facets as &$facet) {
-					//Adjust facet name for local scoping
-					//$facet->facetName = $this->getScopedFieldName($facet->getFacetName($this->searchVersion));
-
-					global $action;
-					if ($action == 'Advanced') {
-						if ($facet->showInAdvancedSearch == 1) {
-							$facetConfig[$facet->facetName] = $facet;
-						}
-					} else {
-						if ($facet->showInResults == 1) {
-							$facetConfig[$facet->facetName] = $facet;
-						}
-					}
-				}
+                    $facetConfig[$facet->facetName] = $facet;
+                }
 				$this->facetConfig = $facetConfig;
 			}
 		}
