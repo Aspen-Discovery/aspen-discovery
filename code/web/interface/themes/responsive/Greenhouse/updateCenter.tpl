@@ -14,7 +14,7 @@
 
 	<form class="form well" id="updateCenterFilters" style="padding-bottom:1em">
 		<div class="row align-middle">
-			<div class="col-xs-12 col-md-4">
+			<div class="col-xs-12 col-md-3">
 				<div class="form-group">
 	                <label for="implementationStatusToShow">{translate text='Implementation Status' isAdminFacing=true}</label>
 	                <select name="implementationStatusToShow" id="implementationStatusToShowSelect" class="form-control">
@@ -25,7 +25,7 @@
 	                </select>
 	            </div>
 			</div>
-			<div class="col-xs-12 col-md-3">
+			<div class="col-xs-12 col-md-2">
 				<div class="form-group">
 	                <label for="siteTypeToShow">{translate text='Site Type' isAdminFacing=true}</label>
 	                <select name="siteTypeToShow" id="siteTypeToShowSelect" class="form-control">
@@ -36,7 +36,7 @@
 	                </select>
 	            </div>
 			</div>
-			<div class="col-xs-12 col-md-3">
+			<div class="col-xs-12 col-md-2">
 				<div class="form-group">
 	                <label for="releaseToShow">{translate text='Version' isAdminFacing=true}</label>
 	                <select name="releaseToShow" id="releaseToShowSelect" class="form-control">
@@ -48,6 +48,17 @@
 	            </div>
 			</div>
 			<div class="col-xs-12 col-md-2">
+				<div class="form-group">
+	                <label for="timezoneToShow">{translate text='Timezone' isAdminFacing=true}</label>
+	                <select name="timezoneToShow" id="timezoneToShowSelect" class="form-control">
+                        <option value="any"{if !empty($timezoneToShow) && ($timezoneToShow == 'any')} selected='selected'{/if}>Any</option>
+	                    {foreach from=$timezones item=timezone key=index}
+	                        <option value="{$index}"{if !empty($timezoneToShow) && ($timezoneToShow == $index)} selected='selected'{/if}>{$timezone}</option>
+	                    {/foreach}
+	                </select>
+	            </div>
+			</div>
+			<div class="col-xs-12 col-md-3">
 				<div class="btn-group btn-group-sm btn-group-justified" role="group">
 		            <div class="btn-group" role="group">
 		                <button class="btn btn-primary" type="submit">{translate text="Apply" isAdminFacing=true}</button>
@@ -66,7 +77,7 @@
 			<div class="btn-toolbar" role="toolbar">
                 <div class="btn-group" role="group">
                     <a onclick="return AspenDiscovery.Admin.showSelectedScheduleUpdateForm();" class="btn btn-warning">{translate text="Schedule Update for Selected" isAdminFacing=true}</a>
-{*                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}');" class="btn btn-warning">{translate text="Schedule Update for All Listed" isAdminFacing=true}</a>*}
+                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}');" class="btn btn-warning">{translate text="Schedule Update for All Listed" isAdminFacing=true}</a>
                 </div>
 			</div>
 		</div>
@@ -85,7 +96,7 @@
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
 					<th>{translate text="Hosting" isAdminFacing=true}</th>
 					<th>{translate text="Last Scheduled Update" isAdminFacing=true}</th>
-					<th>{translate text="Last Successful Update" isAdminFacing=true}</th>
+					<th>{translate text="Last Ran Update" isAdminFacing=true}</th>
 					<th>{translate text="DB Maintenance" isAdminFacing=true}</th>
 				</tr>
 			</thead>
@@ -125,11 +136,12 @@
 							{/if}
 						</td>
 						<td>
-							{assign var='lastSuccessfulUpdate' value=$site->getLastSuccessfulUpdate()}
-							{if $lastSuccessfulUpdate['time'] !== 'Never'}
-                                <a onclick="return AspenDiscovery.Admin.showScheduledUpdateDetails('{$lastSuccessfulUpdate['id']}');">{$lastSuccessfulUpdate['time']|date_format:"%D %T"}</a>
+							{assign var='lastRanUpdate' value=$site->getLastRanUpdate()}
+							{if $lastRanUpdate['time'] !== 'Never'}
+								<span class="label {if $lastRanUpdate['status'] == 'pending'}label-warning{elseif $lastRanUpdate['status'] == 'failed'}label-danger{elseif $lastRanUpdate['status'] == 'complete'}label-success{else}label-default{/if}">{$lastRanUpdate['status']}</span><br>
+                                <a onclick="return AspenDiscovery.Admin.showScheduledUpdateDetails('{$lastRanUpdate['id']}');">{$lastRanUpdate['time']|date_format:"%D %T"}</a>
                             {else}
-                                {$lastSuccessfulUpdate['time']}
+                                {$lastRanUpdate['time']}
                             {/if}
 						</td>
 						<td>
