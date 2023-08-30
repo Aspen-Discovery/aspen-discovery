@@ -1391,9 +1391,10 @@ class Evergreen extends AbstractIlsDriver {
 
 	/**
 	 * @param $patronBarcode
+	 * @param $patronUsername
 	 * @return bool|User
 	 */
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$staffSessionInfo = $this->getStaffUserInfo();
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$headers = [

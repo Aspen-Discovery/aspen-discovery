@@ -1744,6 +1744,8 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getMasqueradeAsForm() {
 		global $interface;
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$interface->assign('supportsLoginWithUsername', $catalog->supportsLoginWithUsername());
 		return [
 			'title' => translate([
 				'text' => 'Masquerade As',

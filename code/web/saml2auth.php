@@ -150,7 +150,8 @@ if($ssoAuthOnly === false) {
 			exit();
 		}
 	} else {
-		$user = $catalogConnection->findNewUser($uid);
+		//Assume $uid is the barcode
+		$user = $catalogConnection->findNewUser($uid, '');
 	}
 
 	// The user does not exist in Koha, so we should create it
@@ -176,7 +177,8 @@ if($ssoAuthOnly === false) {
 		} elseif ($uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($uid);
 		} else {
-			$user = $catalogConnection->findNewUser($uid);
+			//Assume this is the barcode
+			$user = $catalogConnection->findNewUser($uid, '');
 		}
 	} else {
 		// We need to update the user in the LMS
@@ -187,7 +189,8 @@ if($ssoAuthOnly === false) {
 		} elseif ($uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($uid);
 		} else {
-			$user = $catalogConnection->findNewUser($uid);
+			//Assume this is the barcode
+			$user = $catalogConnection->findNewUser($uid, '');
 		}
 	}
 

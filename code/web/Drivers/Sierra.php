@@ -1241,7 +1241,7 @@ class Sierra extends Millennium {
 		}
 	}
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
 
 		if (!$patronInfo) {

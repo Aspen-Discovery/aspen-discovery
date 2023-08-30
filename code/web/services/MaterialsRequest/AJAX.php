@@ -595,7 +595,7 @@ class MaterialsRequest_AJAX extends Action {
 										$requestUser->find();
 										if (empty($email) || $requestUser->getNumResults() == 0) {
 											//See if we can fetch the user from the ils
-											$requestUser = UserAccount::findNewUser($barcode);
+											$requestUser = UserAccount::findNewUser($barcode, '');
 											if ($requestUser == false) {
 												//We didn't get a user, skip this one.
 												$numSkippedCouldNotFindUser++;

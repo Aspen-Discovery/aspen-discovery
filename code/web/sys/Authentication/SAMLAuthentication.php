@@ -250,7 +250,7 @@ class SAMLAuthentication{
 		} else {
 			$logger->log("Finding user in ILS by barcode ($this->uid)", Logger::LOG_ERROR);
 			$_REQUEST['username'] = $this->uid;
-			$user = $catalogConnection->findNewUser($this->uid);
+			$user = $catalogConnection->findNewUser($this->uid, '');
 		}
 
 		if(!$user instanceof User) {
@@ -270,7 +270,7 @@ class SAMLAuthentication{
 		} elseif($this->uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 		} else {
-			$user = $catalogConnection->findNewUser($this->uid);
+			$user = $catalogConnection->findNewUser($this->uid, '');
 		}
 		return $this->aspenLogin($user);
 	}

@@ -1319,9 +1319,15 @@ AspenDiscovery.Account = (function () {
 
 		initiateMasquerade: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
+			var usernameField =  $("#username");
+			var username = '';
+			if (usernameField !== undefined) {
+				username = usernameField.val();
+			}
 			var params = {
 				method: "initiateMasquerade",
-				cardNumber: $('#cardNumber').val()
+				cardNumber: $('#cardNumber').val(),
+				username : username
 			};
 			$('#masqueradeAsError').hide();
 			$('#masqueradeLoading').show();
