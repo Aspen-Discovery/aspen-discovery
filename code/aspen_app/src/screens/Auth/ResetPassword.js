@@ -1,14 +1,60 @@
 import React from 'react';
 import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
-import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { create } from 'apisauce';
 import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
 import _ from 'lodash';
 import { LIBRARY } from '../../util/loadLibrary';
 export const ResetPassword = (props) => {
      const { ils, forgotPasswordType, usernameLabel, passwordLabel, showForgotPasswordModal, setShowForgotPasswordModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
+
+     const language = 'en';
+
+     const [buttonLabel, setButtonLabel] = React.useState('Forgot PIN?');
+     const [modalTitle, setModalTitle] = React.useState('Forgot PIN');
+     const [modalButtonLabel, setModalButtonLabel] = React.useState('Reset My PIN');
+     const [resetBody, setResetBody] = React.useState('To reset your PIN, enter your card number or your email address.  You must have an email associated with your account to reset your PIN.  If you do not, please contact the library.');
+
+     React.useEffect(() => {
+          async function fetchTranslations() {
+               await getTranslationsWithValues('forgot_password_link', passwordLabel, language, LIBRARY.url).then((result) => {
+                    setButtonLabel(_.toString(result));
+               });
+               await getTranslationsWithValues('forgot_password_title', passwordLabel, language, LIBRARY.url).then((result) => {
+                    setModalTitle(_.toString(result));
+               });
+               await getTranslationsWithValues('reset_my_password', passwordLabel, language, LIBRARY.url).then((result) => {
+                    setModalButtonLabel(_.toString(result));
+               });
+               if (ils === 'koha') {
+                    await getTranslationsWithValues('koha_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, LIBRARY.url).then((result) => {
+                         setResetBody(_.toString(result));
+                    });
+               } else if (ils === 'sirsi' || ils === 'horizon') {
+                    await getTranslationsWithValues('sirsi_password_reset_body', _.lowerCase(passwordLabel), language, LIBRARY.url).then((result) => {
+                         setResetBody(_.toString(result));
+                    });
+               } else if (ils === 'evergreen') {
+                    await getTranslationsWithValues('evergreen_password_reset_body', _.lowerCase(passwordLabel), language, LIBRARY.url).then((result) => {
+                         setResetBody(_.toString(result));
+                    });
+               } else if (ils === 'millennium') {
+                    await getTranslationsWithValues('millennium_password_reset_body', [_.lowerCase(usernameLabel), _.lowerCase(passwordLabel)], language, LIBRARY.url).then((result) => {
+                         setResetBody(_.toString(result));
+                    });
+                    await getTranslationsWithValues('request_pin_reset', passwordLabel, language, LIBRARY.url).then((result) => {
+                         setModalButtonLabel(_.toString(result));
+                    });
+               } else {
+                    await getTranslationsWithValues('aspen_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, LIBRARY.url).then((result) => {
+                         setResetBody(_.toString(result));
+                    });
+               }
+          }
+          fetchTranslations();
+     }, [language, LIBRARY.url]);
 
      const closeWindow = () => {
           setShowForgotPasswordModal(false);
@@ -18,24 +64,24 @@ export const ResetPassword = (props) => {
      return (
           <Center>
                <Button variant="ghost" onPress={() => setShowForgotPasswordModal(true)} colorScheme="primary">
-                    <Text color="primary.600">Forgot {passwordLabel}?</Text>
+                    <Text color="primary.600">{buttonLabel}</Text>
                </Button>
                <Modal isOpen={showForgotPasswordModal} size="md" avoidKeyboard onClose={() => setShowForgotPasswordModal(false)}>
                     <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton onPress={closeWindow} />
-                         <Modal.Header>Forgot Password</Modal.Header>
+                         <Modal.Header>{modalTitle}</Modal.Header>
                          {ils === 'koha' && forgotPasswordType === 'emailResetLink' ? (
-                              <KohaResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <KohaResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'sirsi' && forgotPasswordType === 'emailResetLink' ? (
-                              <SirsiResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <SirsiResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'horizon' && forgotPasswordType === 'emailResetLink' ? (
-                              <SirsiResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <SirsiResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'evergreen' && forgotPasswordType === 'emailResetLink' ? (
-                              <EvergreenResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <EvergreenResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'millennium' && forgotPasswordType === 'emailResetLink' ? (
-                              <MillenniumResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <MillenniumResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : forgotPasswordType === 'emailAspenResetLink' ? (
-                              <AspenResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <AspenResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : null}
                     </Modal.Content>
                </Modal>
@@ -44,7 +90,7 @@ export const ResetPassword = (props) => {
 };
 
 const AspenResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
      const [username, setUsername] = React.useState('');
 
      const [showResults, setShowResults] = React.useState(false);
@@ -126,7 +172,7 @@ const AspenResetPassword = (props) => {
      return (
           <>
                <Modal.Body>
-                    <Text>{getTermFromDictionary('en', 'aspen_password_reset_body')}</Text>
+                    <Text>{resetBody}</Text>
                     <FormControl.Label
                          _text={{
                               fontSize: 'sm',
@@ -142,7 +188,7 @@ const AspenResetPassword = (props) => {
                               {getTermFromDictionary('en', 'cancel')}
                          </Button>
                          <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateResetPassword}>
-                              {getTermFromDictionary('en', 'reset_my_pin')}
+                              {modalButtonLabel}
                          </Button>
                     </Button.Group>
                </Modal.Footer>
@@ -150,7 +196,7 @@ const AspenResetPassword = (props) => {
      );
 };
 const KohaResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
      const [email, setEmail] = React.useState('');
      const [username, setUsername] = React.useState('');
      const [resend, setResend] = React.useState(false);
@@ -185,7 +231,7 @@ const KohaResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.error}</Text>
+                              <Text>{stripHTML(results.error)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -203,7 +249,7 @@ const KohaResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.message}</Text>
+                              <Text>{stripHTML(results.message)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -246,7 +292,7 @@ const KohaResetPassword = (props) => {
      return (
           <>
                <Modal.Body>
-                    <Text>{getTermFromDictionary('en', 'koha_password_reset_body')}</Text>
+                    <Text>{resetBody}</Text>
                     <FormControl.Label
                          _text={{
                               fontSize: 'sm',
@@ -270,7 +316,7 @@ const KohaResetPassword = (props) => {
                               {getTermFromDictionary('en', 'cancel')}
                          </Button>
                          <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateResetPassword}>
-                              {getTermFromDictionary('en', 'reset_my_pin')}
+                              {modalButtonLabel}
                          </Button>
                     </Button.Group>
                </Modal.Footer>
@@ -279,7 +325,7 @@ const KohaResetPassword = (props) => {
 };
 
 const SirsiResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
      const [username, setUsername] = React.useState('');
 
      const [showResults, setShowResults] = React.useState(false);
@@ -361,7 +407,7 @@ const SirsiResetPassword = (props) => {
      return (
           <>
                <Modal.Body>
-                    <Text>{getTermFromDictionary('en', 'sirsi_password_reset_body')}</Text>
+                    <Text>{resetBody}</Text>
                     <FormControl.Label
                          _text={{
                               fontSize: 'sm',
@@ -377,7 +423,7 @@ const SirsiResetPassword = (props) => {
                               {getTermFromDictionary('en', 'cancel')}
                          </Button>
                          <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateResetPassword}>
-                              {getTermFromDictionary('en', 'reset_my_pin')}
+                              {modalButtonLabel}
                          </Button>
                     </Button.Group>
                </Modal.Footer>
@@ -386,7 +432,7 @@ const SirsiResetPassword = (props) => {
 };
 
 const EvergreenResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
      const [email, setEmail] = React.useState('');
      const [username, setUsername] = React.useState('');
      const [resend, setResend] = React.useState(false);
@@ -482,7 +528,7 @@ const EvergreenResetPassword = (props) => {
      return (
           <>
                <Modal.Body>
-                    <Text>{getTermFromDictionary('en', 'evergreen_password_reset_body')}</Text>
+                    <Text>{resetBody}</Text>
                     <FormControl.Label
                          _text={{
                               fontSize: 'sm',
@@ -506,7 +552,7 @@ const EvergreenResetPassword = (props) => {
                               {getTermFromDictionary('en', 'cancel')}
                          </Button>
                          <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateResetPassword}>
-                              {getTermFromDictionary('en', 'reset_my_pin')}
+                              {modalButtonLabel}
                          </Button>
                     </Button.Group>
                </Modal.Footer>
@@ -515,7 +561,7 @@ const EvergreenResetPassword = (props) => {
 };
 
 const MillenniumResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
      const [username, setUsername] = React.useState('');
 
      const [showResults, setShowResults] = React.useState(false);
@@ -566,7 +612,7 @@ const MillenniumResetPassword = (props) => {
      return (
           <>
                <Modal.Body>
-                    <Text>{getTermFromDictionary('en', 'millennium_password_reset_body')}</Text>
+                    <Text>{resetBody}</Text>
                     <FormControl.Label
                          _text={{
                               fontSize: 'sm',
@@ -582,7 +628,7 @@ const MillenniumResetPassword = (props) => {
                               {getTermFromDictionary('en', 'cancel')}
                          </Button>
                          <Button isLoading={isProcessing} isLoadingText={getTermFromDictionary('en', 'button_processing', true)} colorScheme="primary" onPress={initiateResetPassword}>
-                              {getTermFromDictionary('en', 'request_pin_reset')}
+                              {modalButtonLabel}
                          </Button>
                     </Button.Group>
                </Modal.Footer>
