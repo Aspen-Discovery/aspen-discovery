@@ -37,6 +37,7 @@ if (count($_SERVER['argv']) > 1){
 			'library' => $configArray['Site']['sitename'],
 			'title' => $configArray['Site']['title'],
 			'url' => $configArray['Site']['url'],
+            'solrHost' => $configArray['Site']['solrHost'],
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
             'aspenDBHost' => $configArray['Aspen']['DBHost'],
@@ -114,6 +115,11 @@ if (!$foundConfig) {
 			$linuxOS = readline("Enter the name of your Linux OS (e.g., ".implode (" / ", $linuxArray)." ) > ");
 		}
 	}
+
+    $variables['solrHost'] = readline("Which host should Solr run on (typically localhost)? ");
+    if (empty($variables['solrHost'])){
+        $variables['solrHost'] = "localhost";
+    }
 
 	$variables['solrPort'] = readline("Which port should Solr run on (typically 8080)? ");
 	if (empty($variables['solrPort'])){
