@@ -1625,12 +1625,14 @@ AspenDiscovery.Account = (function () {
 				}
 			);
 
-			var feeAmt = document.getElementById('convenienceFee').getAttribute('data-fee_amt');
-			outstandingGrandTotalAmt += feeAmt * 1;
+			if(document.getElementById('convenienceFee')) {
+				var feeAmt = document.getElementById('convenienceFee').getAttribute('data-fee_amt');
+				outstandingGrandTotalAmt += feeAmt * 1;
+			}
 
 			AspenDiscovery.formatCurrency(totalFineAmt, $('#formattedTotal' + userId));
 			AspenDiscovery.formatCurrency(totalOutstandingAmt, $('#formattedOutstandingTotal' + userId));
-			AspenDiscovery.formatCurrency(outstandingGrandTotalAmt, $('#outstandingGrandTotal' + userId));
+			AspenDiscovery.formatCurrency(outstandingGrandTotalAmt, $('#outstandingGrandTotal' + userId))
 		},
 		dismissPlacard: function (patronId, placardId) {
 			var url = Globals.path + "/MyAccount/AJAX";
