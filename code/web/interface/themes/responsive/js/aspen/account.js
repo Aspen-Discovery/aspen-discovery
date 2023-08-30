@@ -1632,7 +1632,7 @@ AspenDiscovery.Account = (function () {
 
 			AspenDiscovery.formatCurrency(totalFineAmt, $('#formattedTotal' + userId));
 			AspenDiscovery.formatCurrency(totalOutstandingAmt, $('#formattedOutstandingTotal' + userId));
-			AspenDiscovery.formatCurrency(outstandingGrandTotalAmt, $('#outstandingGrandTotal' + userId))
+			AspenDiscovery.formatCurrency(outstandingGrandTotalAmt, $('#outstandingGrandTotal' + userId));
 		},
 		dismissPlacard: function (patronId, placardId) {
 			var url = Globals.path + "/MyAccount/AJAX";
