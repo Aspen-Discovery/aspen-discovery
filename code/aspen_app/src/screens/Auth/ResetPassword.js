@@ -121,7 +121,7 @@ const AspenResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.error}</Text>
+                              <Text>{stripHTML(results.error)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -139,7 +139,7 @@ const AspenResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.message}</Text>
+                              <Text>{stripHTML(results.message)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -356,7 +356,7 @@ const SirsiResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.error}</Text>
+                              <Text>{stripHTML(results.error)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -374,7 +374,7 @@ const SirsiResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.message}</Text>
+                              <Text>{stripHTML(results.message)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -467,7 +467,7 @@ const EvergreenResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.error}</Text>
+                              <Text>{stripHTML(results.error)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -485,7 +485,7 @@ const EvergreenResetPassword = (props) => {
                return (
                     <>
                          <Modal.Body>
-                              <Text>{results.message}</Text>
+                              <Text>{stripHTML(results.message)}</Text>
                          </Modal.Body>
                          <Modal.Footer>
                               <Button.Group space={2}>
@@ -591,7 +591,7 @@ const MillenniumResetPassword = (props) => {
           return (
                <>
                     <Modal.Body>
-                         <Text>{results.message}</Text>
+                         <Text>{stripHTML(results.message)}</Text>
                     </Modal.Body>
                     <Modal.Footer>
                          <Button.Group space={2}>
