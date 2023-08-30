@@ -3,10 +3,7 @@
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class Session extends DataObject {
-	###START_AUTOCODE
-	/* the code below is auto generated do not remove the above tag */
-
-	public $__table = 'session';                        // table name
+	public $__table = 'session';
 	protected $id;
 	protected $session_id;
 	protected $data;
@@ -20,9 +17,6 @@ class Session extends DataObject {
 			'last_used',
 		];
 	}
-
-	/* the code above is auto generated do not remove the tag below */
-	###END_AUTOCODE
 
 	function update($context = '') {
 		if ($this->data == null) {
