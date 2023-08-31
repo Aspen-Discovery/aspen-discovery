@@ -31,6 +31,21 @@ if (isset($_REQUEST['test_role'])) {
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
+//Check to see if we need to end masquerade mode
+/** SessionInterface $session */
+global $session;
+$activeSessionObject = $session::$activeSessionObject;
+if ($activeSessionObject != null) {
+	if (UserAccount::isUserMasquerading() && (time() - $activeSessionObject->last_used > SessionInterface::$masqueradeLifeTime)) {
+		$_SESSION['activeUserId'] = $_SESSION['guidingUserId'];
+		unset($_SESSION['guidingUserId']);
+	}
+
+	//Check to see when the session expires so we can automatically refresh the page to log the user out as needed
+	$timeUntilSessionExpiration = $activeSessionObject->getTimeUntilSessionExpiration();
+	$interface->assign('timeUntilSessionExpiration', $timeUntilSessionExpiration);
+}
+
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
@@ -1218,22 +1233,15 @@ function loadModuleActionId() {
 }
 
 function initializeSession() {
-	global $configArray;
 	global $timer;
-	// Initiate Session State
-	$session_type = $configArray['Session']['type'];
-	$session_lifetime = $configArray['Session']['lifetime'];
-	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	//register_shutdown_function('session_write_close');
-	$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-	require_once $sessionClass;
-	if (class_exists($session_type)) {
-		/** @var SessionInterface $session */
-		session_name('aspen_session');
-		$session = new $session_type();
-		$session->init($session_lifetime, $session_rememberMeLifetime);
-	}
-	$timer->logTime('Session initialization ' . $session_type);
+	/** SessionInterface $session */
+	global $session;
+	require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+	session_name('aspen_session');
+	$session = new MySQLSession();
+	$session->init();
+
+	$timer->logTime('Session initialization MySQLSession');
 }
 
 //Look for spammy searches and kill them

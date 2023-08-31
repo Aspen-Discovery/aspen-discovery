@@ -8,10 +8,11 @@ class SessionInterface implements SessionHandlerInterface {
 
 	static public $lifetime = 3600; //one hour
 	static public $rememberMeLifetime = 1209600; //2 weeks
+	static public $masqueradeLifeTime = 900; //15 minutes
 
-	public function init($lt, $rememberMeLifetime) {
-		self::$lifetime = $lt;
-		self::$rememberMeLifetime = $rememberMeLifetime;
+	static public $activeSessionObject = null;
+
+	public function init() {
 		session_set_save_handler($this);
 		//Have to set the default timeout before we call session start, set a really long timeout by default since PHP doesn't like to extend the PHPSESSION timeout
 		//Set one year by default

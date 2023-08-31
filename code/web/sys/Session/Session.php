@@ -36,4 +36,18 @@ class Session extends DataObject {
 		}
 		return parent::insert();
 	}
+
+	public function getTimeUntilSessionExpiration() : int {
+		if (UserAccount::isUserMasquerading()) {
+			$sessionLifespan = SessionInterface::$masqueradeLifeTime;
+		} else {
+			if ($this->remember_me == '1') {
+				$sessionLifespan = SessionInterface::$rememberMeLifetime;
+			} else {
+				$sessionLifespan = SessionInterface::$lifetime;
+			}
+		}
+
+		return $sessionLifespan * 1000;
+	}
 }
