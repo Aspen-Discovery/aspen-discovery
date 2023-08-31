@@ -60,7 +60,7 @@ class Greenhouse_AJAX extends Action {
 			$result['message'] = 'User is already unique';
 		} else {
 			$userStillExists = false;
-			$loginResult = $catalog->findNewUser($barcode, '';
+			$loginResult = $catalog->findNewUser($barcode, '');
 			if ($loginResult instanceof User) {
 				//The internal ILS ID has changed
 				$newUser = $loginResult;
@@ -342,6 +342,8 @@ class Greenhouse_AJAX extends Action {
 					'updateToVersion' => $scheduledUpdate->updateToVersion,
 					'status' => $scheduledUpdate->status,
 					'greenhouseId' => $scheduledUpdate->id,
+					//'isRemoteUpdate' => true,
+					'greenhouseSiteId' => $scheduledUpdate->siteId,
 				];
 				$response = json_decode($curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
 				if(!empty($response->success)) {
@@ -412,6 +414,8 @@ class Greenhouse_AJAX extends Action {
 				$siteToUpdate = new AspenSite();
 				$siteToUpdate->id = $site;
 				if($siteToUpdate->find(true)) {
+					//TODO: convert $runUpdateOn to $siteToUpdate->timezone. Will likely need to move away from UNIX timestamps since they don't support timezones?
+
 					require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 					$scheduledUpdate = new ScheduledUpdate();
 					$scheduledUpdate->updateType = $runType;
@@ -419,6 +423,7 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate->siteId = $site;
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
+					//$scheduledUpdate->remoteUpdate = true;
 					$scheduledUpdate->insert();
 
 					require_once ROOT_DIR . '/sys/CurlWrapper.php';
@@ -429,9 +434,10 @@ class Greenhouse_AJAX extends Action {
 						'updateToVersion' => $scheduledUpdate->updateToVersion,
 						'status' => $scheduledUpdate->status,
 						'greenhouseId' => $scheduledUpdate->id,
+						//'isRemoteUpdate' => true,
+						'greenhouseSiteId' => $scheduledUpdate->siteId,
 					];
-					$response = $curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
-					$response = json_decode($response);
+					$response = json_decode($curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
 					if($response->success) {
 						// update scheduled
 						$numSitesUpdated++;
@@ -455,7 +461,11 @@ class Greenhouse_AJAX extends Action {
 				]),
 			];
 		} else {
-			return false;
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to schedule updates.'
+			];
 		}
 	}
 
