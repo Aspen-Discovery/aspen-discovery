@@ -81,7 +81,8 @@ class UserAPI extends Action {
 					'deleteSelectedFromReadingHistory',
 					'getReadingHistorySortOptions',
 					'confirmHold',
-					'updateNotificationOnboardingStatus'
+					'updateNotificationOnboardingStatus',
+					'resetPassword'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -363,6 +364,51 @@ class UserAPI extends Action {
 				'text' => 'No PIN reset token provided.',
 				'isPublicFacing' => true,
 			]);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Allows a user to initiate a password/PIN reset.
+	 *
+	 * @noinspection PhpUnused
+	 **/
+	function resetPassword(): array {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error trying to initiate username/barcode reset',
+			'action' => null,
+		];
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if($catalog != null) {
+			$result = $catalog->processEmailResetPinForm();
+			if(empty($result['success']) && $result['error']) {
+				$result = [
+					'message' => $result['error'],
+					'action' => translate(['text' => 'Try Again', 'isPublicFacing' => true]),
+				];
+			} elseif(!empty($result['message'])) {
+				$result = [
+					'success' => true,
+					'message' => $result['message'],
+					'action' => translate(['text' => 'Sign in', 'isPublicFacing' => true]),
+				];
+			} else {
+				$result = [
+					'success' => true,
+					'action' => translate(['text' => 'Sign in', 'isPublicFacing' => true]),
+				];
+
+				$result['message'] = translate([
+					'text' => 'A email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
+					'isPublicFacing' => true,
+				]) . ' ' . translate([
+					'text' => 'If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin.',
+					'isPublicFacing' => true,
+				]);
+			}
 		}
 
 		return $result;
@@ -4799,9 +4845,12 @@ class UserAPI extends Action {
 	function initMasquerade() {
 		global $library;
 		if (!empty($library) && $library->allowMasqueradeMode) {
-			if (!empty($_REQUEST['cardNumber'])) {
+			if (!empty($_REQUEST['cardNumber']) || !empty($_REQUEST['username'])) {
+				//If both barcode and username are provided, we will only use barcode
+				$loginWithBarcode = !empty($_REQUEST['cardNumber']);
 				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
-				$libraryCard = trim($_REQUEST['cardNumber']);
+				$libraryCard = empty($_REQUEST['cardNumber']) ? '' : trim($_REQUEST['cardNumber']);
+				$username = empty($_REQUEST['username']) ? '' : trim($_REQUEST['username']);
 				global $guidingUser;
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
@@ -4814,7 +4863,12 @@ class UserAPI extends Action {
 						while ($accountProfile->fetch()) {
 							$masqueradedUser = new User();
 							$masqueradedUser->source = $accountProfile->name;
-							$masqueradedUser->ils_barcode = $libraryCard;
+							if ($loginWithBarcode) {
+								$masqueradedUser->ils_barcode = $libraryCard;
+							}else{
+								$masqueradedUser->ils_username = $username;
+							}
+
 							if ($masqueradedUser->find(true)) {
 								if ($masqueradedUser->id == $user->id) {
 									return [
@@ -4834,7 +4888,7 @@ class UserAPI extends Action {
 
 						if (!$foundExistingUser) {
 							// Test for a user that hasn't logged into Aspen Discovery before
-							$masqueradedUser = UserAccount::findNewUser($libraryCard);
+							$masqueradedUser = UserAccount::findNewUser($libraryCard, $username);
 							if (!$masqueradedUser) {
 								return [
 									'success' => false,
@@ -4846,7 +4900,7 @@ class UserAPI extends Action {
 							}
 						} else {
 							//Call find new user just to be sure that all patron information is up to date.
-							$tmpUser = UserAccount::findNewUser($libraryCard);
+							$tmpUser = UserAccount::findNewUser($libraryCard, $username);
 							if (!$tmpUser) {
 								//This user no longer exists? return an error?
 								return [
@@ -5022,13 +5076,24 @@ class UserAPI extends Action {
 					];
 				}
 			} else {
-				return [
-					'success' => false,
-					'error' => translate([
-						'text' => 'Please enter a valid Library Card Number.',
-						'isAdminFacing' => true,
-					]),
-				];
+				$catalog = CatalogFactory::getCatalogConnectionInstance();
+				if ($catalog->supportsLoginWithUsername()) {
+					return [
+						'success' => false,
+						'error' => translate([
+							'text' => 'Please enter a valid Library Card Number or Username.',
+							'isAdminFacing' => true,
+						]),
+					];
+				}else {
+					return [
+						'success' => false,
+						'error' => translate([
+							'text' => 'Please enter a valid Library Card Number.',
+							'isAdminFacing' => true,
+						]),
+					];
+				}
 			}
 		} else {
 			return [

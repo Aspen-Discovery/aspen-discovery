@@ -18,6 +18,15 @@ function getUpdates23_09_00(): array {
 		//kodi - ByWater
 
 		// kirstien - ByWater
+		'add_forgot_barcode' => [
+			'title' => 'Add Forgot Barcode option to Library Systems',
+			'description' => 'Add option to allow users to receive their barcode via text',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library ADD enableForgotBarcode TINYINT(1) default 0',
+			],
+		],
+		//add_forgot_barcode
 
         // James Staub
         'donations_disambiguate_library_and_location' => [

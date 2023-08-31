@@ -60,7 +60,7 @@ class Greenhouse_AJAX extends Action {
 			$result['message'] = 'User is already unique';
 		} else {
 			$userStillExists = false;
-			$loginResult = $catalog->findNewUser($barcode);
+			$loginResult = $catalog->findNewUser($barcode, '';
 			if ($loginResult instanceof User) {
 				//The internal ILS ID has changed
 				$newUser = $loginResult;

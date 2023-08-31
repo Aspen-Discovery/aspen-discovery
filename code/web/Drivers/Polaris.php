@@ -1773,21 +1773,42 @@ class Polaris extends AbstractIlsDriver {
 		return Polaris::$accessTokensForUsers[$this->accountProfile->staffUsername];
 	}
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$staffUserInfo = $this->getStaffUserInfo();
 
 		//Validate that the patron exists. This can also be used to get the barcode for the user based on username
-		$polarisUrl = '/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronBarcode;
-		$validatePatronResponseRaw = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
-		$patronId = false;
-		ExternalRequestLogEntry::logRequest('polaris.findNewUser', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $validatePatronResponseRaw, ['accessSecret' => $staffUserInfo['accessSecret']]);
-		if ($validatePatronResponseRaw) {
-			$validationResponse = json_decode($validatePatronResponseRaw);
-			if ($validationResponse->PAPIErrorCode != -3000) {
-				if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $patronBarcode) {
-					$patronBarcode = $validationResponse->PatronBarcode;
+		if (!empty($patronBarcode)) {
+			$polarisUrl = '/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronBarcode;
+			$validatePatronResponseRaw = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+			$patronId = false;
+			ExternalRequestLogEntry::logRequest('polaris.findNewUser', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $validatePatronResponseRaw, ['accessSecret' => $staffUserInfo['accessSecret']]);
+			if ($validatePatronResponseRaw) {
+				$validationResponse = json_decode($validatePatronResponseRaw);
+				if ($validationResponse->PAPIErrorCode != -3000) {
+					//Since we're testing barcode the patron barcode should match.
+					if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $patronBarcode) {
+						//Since we're testing barcode the patron barcode should match.
+						return false;
+					}
+					$patronId = $validationResponse->PatronID;
 				}
-				$patronId = $validationResponse->PatronID;
+			}
+		} else {
+			$polarisUrl = '/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronUsername;
+			$validatePatronResponseRaw = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+			$patronId = false;
+			ExternalRequestLogEntry::logRequest('polaris.findNewUser', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $validatePatronResponseRaw, ['accessSecret' => $staffUserInfo['accessSecret']]);
+			if ($validatePatronResponseRaw) {
+				$validationResponse = json_decode($validatePatronResponseRaw);
+				if ($validationResponse->PAPIErrorCode != -3000) {
+					if (!empty($validationResponse->PatronBarcode)) {
+						//Need to get the patron barcode
+						$patronBarcode = $validationResponse->PatronBarcode;
+					} else {
+						return false;
+					}
+					$patronId = $validationResponse->PatronID;
+				}
 			}
 		}
 
@@ -2494,37 +2515,8 @@ class Polaris extends AbstractIlsDriver {
 				],
 			],
 		];
-		$carriers = [
-			0 => '(Select a carrier)',
-			1 => 'AT&amp;T',
-			2 => 'Bell Canada',
-			15 => 'Bell South',
-			17 => 'Boost Mobile',
-			3 => 'Cellular One',
-			27 => 'Consumer Cingular',
-			19 => 'Fido',
-			26 => 'Google Fi',
-			18 => 'Helio',
-			16 => 'MetroPCS',
-			5 => 'Nextel',
-			6 => 'Qwest',
-			28 => 'Republic Wireless',
-			21 => 'Rogers AT&amp;T Wireless',
-			22 => 'Rogers Canada',
-			7 => 'Southwestern Bell',
-			8 => 'Sprint',
-			24 => 'Straight Talk AT&amp;T',
-			23 => 'Straight Talk Verizon',
-			20 => 'Telus',
-			9 => 'T-Mobile',
-			10 => 'Tracfone',
-			14 => 'USA Mobility',
-			11 => 'Verizon',
-			12 => 'Virgin Mobile',
-			13 => 'Virgin Mobile Canada',
-			25 => 'Wind Mobile Canada',
-			29 => 'Xfinity (Comcast) Mobile',
-		];
+		$carriers = $this->getCarrierList();
+
 		$fields['preferencesSection'] = [
 			'property' => 'preferencesSection',
 			'type' => 'section',
@@ -2809,6 +2801,10 @@ class Polaris extends AbstractIlsDriver {
 		return true;
 	}
 
+	public function supportsLoginWithUsername() : bool {
+		return true;
+	}
+
 	/**
 	 * Returns true if reset username is a separate page independent of the patron information page
 	 *
@@ -2879,5 +2875,22 @@ class Polaris extends AbstractIlsDriver {
 
 	public function showTimesRenewed(): bool {
 		return true;
+	}
+
+	private function getCarrierList() : array {
+		$staffUserInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/sysadmin/mobilephonecarriers";
+		$carriersResponse = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+		ExternalRequestLogEntry::logRequest('polaris.getCarrierList', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $carriersResponse, []);
+		$carriers = [];
+		if ($carriersResponse && $this->lastResponseCode == 200) {
+			$carriersResponse = json_decode($carriersResponse);
+			foreach ($carriersResponse->SAMobilePhoneCarriersGetRows as $carrierInfo) {
+				$carriers[$carrierInfo->CarrierID] = $carrierInfo->CarrierName;
+			}
+		}
+
+		asort($carriers);
+		return $carriers;
 	}
 }

@@ -67,7 +67,7 @@ class MergeDuplicateBarcodes extends UserMerger {
 						$newUser = $loginResult;
 					}
 				} else {
-					$loginResult = $catalog->findNewUser($tmpUser->ils_barcode);
+					$loginResult = $catalog->findNewUser($tmpUser->ils_barcode, '');
 					if ($loginResult instanceof User) {
 						if ($loginResult->unique_ils_id != $tmpUser->unique_ils_id) {
 							//The internal ILS ID has changed

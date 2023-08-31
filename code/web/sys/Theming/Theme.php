@@ -2887,14 +2887,76 @@ class Theme extends DataObject {
 
 	public function saveLibraries() {
 		if (isset ($this->_libraries) && is_array($this->_libraries)) {
-			$this->saveOneToManyOptions($this->_libraries, 'themeId');
+			foreach($this->_libraries as $obj) {
+				/** @var DataObject $obj */
+				if($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if($obj->{$obj->__primaryKey} <= 0) {
+							$obj->themeId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLibrary = new LibraryTheme();
+						$existingThemesForLibrary->libraryId = $obj->libraryId;
+						if ($existingThemesForLibrary->find()) {
+							while ($existingThemesForLibrary->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->themeId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+
+			}
 			unset($this->_libraries);
 		}
 	}
 
 	public function saveLocations() {
 		if (isset ($this->_locations) && is_array($this->_locations)) {
-			$this->saveOneToManyOptions($this->_locations, 'themeId');
+			foreach($this->_locations as $obj) {
+				/** @var DataObject $obj */
+				if($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if($obj->{$obj->__primaryKey} <= 0) {
+							$obj->themeId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLocation = new LocationTheme();
+						$existingThemesForLocation->locationId = $obj->locationId;
+						if ($existingThemesForLocation->find()) {
+							while ($existingThemesForLocation->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->themeId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+
+			}
 			unset($this->_locations);
 		}
 	}

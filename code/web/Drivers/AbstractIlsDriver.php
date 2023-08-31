@@ -147,10 +147,6 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return [];
 	}
 
-	function hasUsernameField() {
-		return false;
-	}
-
 	function updatePin(User $patron, string $oldPin, string $newPin) {
 		return [
 			'success' => false,
@@ -304,6 +300,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		];
 	}
 
+	public function supportsLoginWithUsername() : bool {
+		return false;
+	}
+
 	public function hasEditableUsername() {
 		return false;
 	}
@@ -418,9 +418,10 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 
 	/**
 	 * @param string $patronBarcode
+	 * @param string $patronUsername
 	 * @return bool|User
 	 */
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		return false;
 	}
 

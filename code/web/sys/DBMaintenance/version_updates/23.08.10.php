@@ -47,6 +47,7 @@ function getUpdates23_08_10(): array {
 		'permissions_events_facets' => [
 			'title' => 'Alters permissions for Events Facets',
 			'description' => 'Create permissions for altering events facets',
+			'continueOnError' => true,
 			'sql' => [
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Events', 'Administer Events Facet Settings', 'Events', 20, 'Allows the user to alter events facets for all libraries.')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Events Facet Settings'))",

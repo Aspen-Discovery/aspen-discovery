@@ -6644,9 +6644,15 @@ AspenDiscovery.Account = (function () {
 
 		initiateMasquerade: function () {
 			var url = Globals.path + "/MyAccount/AJAX";
+			var usernameField =  $("#username");
+			var username = '';
+			if (usernameField !== undefined) {
+				username = usernameField.val();
+			}
 			var params = {
 				method: "initiateMasquerade",
-				cardNumber: $('#cardNumber').val()
+				cardNumber: $('#cardNumber').val(),
+				username : username
 			};
 			$('#masqueradeAsError').hide();
 			$('#masqueradeLoading').show();
@@ -7002,9 +7008,15 @@ AspenDiscovery.Account = (function () {
 					} else {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
-						totalFineAmt += fineAmountInput.val() * 1;
-						totalOutstandingAmt += fineAmountInput.val() * 1;
-						outstandingGrandTotalAmt += fineAmountInput.val() * 1;
+						if(fineAmountInput.val() > $(this).data('outstanding_amt')) {
+							// don't update the total to be paid if the user provided value is higher than the outstanding amount
+							$('#overPayWarning').show();
+						} else {
+							$('#overPayWarning').hide();
+							totalFineAmt += fineAmountInput.val() * 1;
+							totalOutstandingAmt += fineAmountInput.val() * 1;
+							outstandingGrandTotalAmt += fineAmountInput.val() * 1;
+						}
 					}
 				}
 			);
@@ -13703,6 +13715,7 @@ AspenDiscovery.Searches = (function(){
 			covers:'results-covers-view',
 			list:''
 		},
+		colcade: null,
 
 		getCombinedResults: function(fullId, shortId, source, searchTerm, searchType, numberOfResults){
 			var url = Globals.path + '/Union/AJAX';
@@ -13788,9 +13801,17 @@ AspenDiscovery.Searches = (function(){
 				if (data.success === 'false'){
 					AspenDiscovery.showMessage("Error loading search information", "Sorry, we were not able to retrieve additional results.");
 				}else{
-					var newDiv = $(data.records).hide();
-					$('.'+divClass).filter(':last').after(newDiv);
-					newDiv.fadeIn('slow');
+					if (AspenDiscovery.Browse.browseStyle === 'masonry') {
+						AspenDiscovery.Searches.colcade = new Colcade('#home-page-browse-results .grid', {
+							columns: '.grid-col',
+							items: '.grid-item'
+						});
+						AspenDiscovery.Searches.colcade.append($(data.records));
+					} else {
+						var newDiv = $(data.records).hide();
+						$('.'+divClass).filter(':last').after(newDiv);
+						newDiv.fadeIn('slow');
+					}
 					if (data.lastPage) $('#more-browse-results').hide(); // hide the load more results
 					else AspenDiscovery.Searches.curPage++;
 				}

@@ -1719,6 +1719,12 @@ class MyAccount_AJAX extends JSON_Action {
 			$interface->assign('loginNotes', $loginNotes);
 		}
 
+		$enableForgotBarcode = 0;
+		if($library->enableForgotBarcode && $library->twilioSettingId != -1) {
+			$enableForgotBarcode = $library->enableForgotBarcode;
+		}
+		$interface->assign('enableForgotBarcode', $enableForgotBarcode);
+
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
 			$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
@@ -1738,6 +1744,8 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getMasqueradeAsForm() {
 		global $interface;
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$interface->assign('supportsLoginWithUsername', $catalog->supportsLoginWithUsername());
 		return [
 			'title' => translate([
 				'text' => 'Masquerade As',

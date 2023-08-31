@@ -91,7 +91,7 @@ export const StartCheckOutSession = () => {
                                         onValueChange={(itemValue) => setActiveAccount(itemValue)}>
                                         <Select.Item label={user.displayName} value={user.ils_barcode ?? user.cat_username} />
                                         {availableAccounts.map((item, index) => {
-                                             return <Select.Item label={item.displayName} value={user.ils_barcode ?? item.cat_username} key={index} />;
+                                             return <Select.Item label={item.displayName} value={item.ils_barcode ?? item.cat_username} key={index} />;
                                         })}
                                    </Select>
                               </FormControl>
