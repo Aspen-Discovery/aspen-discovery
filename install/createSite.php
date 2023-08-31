@@ -37,10 +37,11 @@ if (count($_SERVER['argv']) > 1){
 			'library' => $configArray['Site']['sitename'],
 			'title' => $configArray['Site']['title'],
 			'url' => $configArray['Site']['url'],
+			'solrHost' => $configArray['Site']['solrHost'],
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
-            'aspenDBHost' => $configArray['Aspen']['DBHost'],
-            'aspenDBPort' => $configArray['Aspen']['DBPort'],
+			'aspenDBHost' => $configArray['Aspen']['DBHost'],
+			'aspenDBPort' => $configArray['Aspen']['DBPort'],
 			'aspenDBName' => $configArray['Aspen']['DBName'],
 			'aspenDBUser' => $configArray['Aspen']['DBUser'],
 			'aspenDBPwd' => $configArray['Aspen']['DBPwd'],
@@ -115,6 +116,11 @@ if (!$foundConfig) {
 		}
 	}
 
+	$variables['solrHost'] = readline("Which host should Solr run on (typically localhost)? ");
+	if (empty($variables['solrHost'])){
+		$variables['solrHost'] = "localhost";
+	}
+
 	$variables['solrPort'] = readline("Which port should Solr run on (typically 8080)? ");
 	if (empty($variables['solrPort'])){
 		$variables['solrPort'] = "8080";
@@ -167,15 +173,15 @@ if (!$foundConfig) {
 	//This can be blank
 	$variables['staffUrl'] = readline("Enter the url of the staff client for the ILS  > ");
 
-    $variables['aspenDBHost'] =  readline("Database host for Aspen (default: localhost) > ");
-    if (empty($variables['aspenDBHost'])){
-        $variables['aspenDBHost'] = "localhost";
-    }
+	$variables['aspenDBHost'] =  readline("Database host for Aspen (default: localhost) > ");
+	if (empty($variables['aspenDBHost'])){
+		$variables['aspenDBHost'] = "localhost";
+	}
 
-    $variables['aspenDBPort'] =  readline("Database host for Aspen (default: 3306) > ");
-    if (empty($variables['aspenDBPort'])){
-        $variables['aspenDBPort'] = "3306";
-    }
+	$variables['aspenDBPort'] =  readline("Database host for Aspen (default: 3306) > ");
+	if (empty($variables['aspenDBPort'])){
+		$variables['aspenDBPort'] = "3306";
+	}
 
 	$variables['aspenDBName'] =  readline("Database name for Aspen (default: aspen) > ");
 	if (empty($variables['aspenDBName'])){
@@ -288,8 +294,8 @@ if (!$siteOnWindows) {
 //Import the database
 $mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\" --port \"{$variables['aspenDBPort']}\"";
 if ($clearExisting) {
-    echo("Removing existing database\r\n");
-    exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
+	echo("Removing existing database\r\n");
+	exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
 }
 echo("Creating database\r\n");
 exec("$mysqlConnectionCommand -e\"CREATE DATABASE {$variables['aspenDBName']} DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci\"");
