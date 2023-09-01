@@ -20,6 +20,7 @@ class IPAddress extends DataObject {
 	public $endIpVal;
 	public $authenticatedForEBSCOhost;
 	public $masqueradeMode;
+	public $ssoLogin;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -28,6 +29,7 @@ class IPAddress extends DataObject {
 			'allowAPIAccess',
 			'startIpVal',
 			'endIpVal',
+			'ssoLogin'
 		];
 	}
 
@@ -140,6 +142,13 @@ class IPAddress extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Allow Masquerade',
 				'description' => 'Traffic from this IP will be allowed to use Masquerade Mode.',
+				'default' => false,
+			],
+			'ssoLogin' => [
+				'property' => 'ssoLogin',
+				'type' => 'checkbox',
+				'label' => 'Allow Single Sign-on (SSO)',
+				'description' => 'Traffic from this IP will be allowed to use single sign-on.',
 				'default' => false,
 			]
 		];
@@ -383,6 +392,22 @@ class IPAddress extends DataObject {
 			return $ipInfo->allowAPIAccess;
 		} else {
 			return false;
+		}
+	}
+
+	public static function allowSSOAccessForClientIP() {
+		global $library;
+		$isSSORestricted = $library->getSSORestrictionStatus();
+		if(!$isSSORestricted) {
+			return true;
+		} else {
+			$clientIP = IPAddress::getClientIP();
+			$ipInfo = IPAddress::getIPAddressForIP($clientIP);
+			if (!empty($ipInfo)) {
+				return $ipInfo->ssoLogin;
+			} else {
+				return false;
+			}
 		}
 	}
 

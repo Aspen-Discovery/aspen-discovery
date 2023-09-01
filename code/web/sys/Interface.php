@@ -797,6 +797,7 @@ class UInterface extends Smarty {
 		$ssoService = null;
 		$samlEntityId = null;
 		$ssoSettingId = -1;
+		$ssoRestrictedByIP = false;
 
 		try {
 			if(UserAccount::isPrimaryAccountAuthenticationSSO()) {
@@ -822,6 +823,7 @@ class UInterface extends Smarty {
 					$bypassAspenPatronLogin = $ssoSettings->bypassAspenPatronLogin ?? false;
 					$samlEntityId = $ssoSettings->ssoEntityId;
 					$ssoIsEnabled = true;
+					$ssoRestrictedByIP = $ssoSettings->restrictByIP;
 					if($bypassAspenPatronLogin) {
 						if ($ssoSettings->service === 'oauth') {
 							$bypassLoginUrl = $configArray['Site']['url'] . '/init_oauth.php';
@@ -843,6 +845,7 @@ class UInterface extends Smarty {
 		$this->assign('bypassAspenPatronLogin', $bypassAspenPatronLogin);
 		$this->assign('bypassLoginUrl', $bypassLoginUrl);
 		$this->assign('samlEntityId', $samlEntityId);
+		$this->assign('ssoRestrictedByIP', $ssoRestrictedByIP);
 
 		$loadRecaptcha = false;
 		require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';

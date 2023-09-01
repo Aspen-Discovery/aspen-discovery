@@ -19,13 +19,15 @@
 			</div>
 		{/if}
 		{if !(empty($ssoService)) && $ssoService != 'ldap'}
-		{* ldap uses the regular login form *}
-            {include file='MyAccount/sso-login.tpl'}
-            {if $ssoLoginOptions == 0}
-	            <div class="hr-label">
-	                <span class="text">{translate text="or" isPublicFacing=true}</span>
-	            </div>
-            {/if}
+			{if $canLoginSSO}
+				{* ldap uses the regular login form *}
+		            {include file='MyAccount/sso-login.tpl'}
+		            {if $ssoLoginOptions == 0}
+			            <div class="hr-label">
+			                <span class="text">{translate text="or" isPublicFacing=true}</span>
+			            </div>
+		            {/if}
+	        {/if}
         {/if}
         {if $ssoLoginOptions == 0 || ($isPrimaryAccountAuthenticationSSO && $ssoService == 'ldap')}
 	        <form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal">
@@ -85,7 +87,7 @@
 
 		            <div id="loginActions" class="form-group">
 		                <div class="col-xs-12 col-sm-offset-4 col-sm-8">
-		                {if !empty($ldapLabel)}
+		                {if !empty($ldapLabel) && $canLoginSSO}
 		                    <input type="submit" name="submit" value="{translate text="Sign in with %1%" 1=$ldapLabel isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
 		                {else}
 		                	<input type="submit" name="submit" value="{translate text="Login" isPublicFacing=true}" id="loginFormSubmit" class="btn btn-primary" onclick="return AspenDiscovery.Account.preProcessLogin();">
@@ -96,7 +98,7 @@
 		                    {if !empty($pageId)}<input type="hidden" name="pageId" value="{$pageId|escape:"html"}">{/if}
 		                    {if !empty($comment)}<input type="hidden" id="comment" name="comment" value="{$comment|escape:"html"}">{/if}
 		                    {if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
-		                    {if $ssoService == 'ldap'}<input type="hidden" name="ldapLogin" value="true">{/if}
+		                    {if $ssoService == 'ldap' && $canLoginSSO}<input type="hidden" name="ldapLogin" value="true">{/if}
 		                </div>
 		            </div>
 		        </div>
