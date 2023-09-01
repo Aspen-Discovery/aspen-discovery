@@ -12,6 +12,10 @@ class OpenArchives_OpenArchivesFacets extends ObjectEditor {
 		return 'OpenArchivesFacets';
 	}
 
+	function getModule(): string {
+		return 'OpenArchives';
+	}
+
 	function getPageTitle(): string {
 		return 'Open Archives Facets';
 	}

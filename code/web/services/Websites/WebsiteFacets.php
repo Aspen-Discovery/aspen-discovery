@@ -12,6 +12,10 @@ class Websites_WebsiteFacets extends ObjectEditor {
 		return 'WebsiteFacets';
 	}
 
+	function getModule(): string {
+		return 'Websites';
+	}
+
 	function getPageTitle(): string {
 		return 'Website Facets';
 	}
