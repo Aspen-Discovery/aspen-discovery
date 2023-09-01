@@ -26,6 +26,7 @@ var Globals = (function () {
 		rtl:false,
 		bypassAspenLoginForSSO:false,
 		ssoLoginUrl: '',
-		cookiePolicyHTML: ''
+		cookiePolicyHTML: '',
+		timeUntilSessionExpiration: 0
 	}
 })(Globals || {});

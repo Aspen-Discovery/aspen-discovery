@@ -4510,7 +4510,8 @@ var Globals = (function () {
 		rtl:false,
 		bypassAspenLoginForSSO:false,
 		ssoLoginUrl: '',
-		cookiePolicyHTML: ''
+		cookiePolicyHTML: '',
+		timeUntilSessionExpiration: 0
 	}
 })(Globals || {});
 var AspenDiscovery = (function(){
@@ -4518,10 +4519,6 @@ var AspenDiscovery = (function(){
 	// This provides a check to interrupt AjaxFail Calls on page redirects;
 	 window.onbeforeunload = function(){
 		Globals.LeavingPage = true;
-		 //
-		 // if (Globals.masqueradeMode) {
-			//  AspenDiscovery.Account.endMasquerade()
-		 // }
 	};
 
 	$(document).ready(function(){
