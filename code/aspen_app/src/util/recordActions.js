@@ -92,8 +92,19 @@ export async function checkoutItem(url, itemId, source, patronId, barcode = '', 
  *     <li>patronId - the id for the patron</li>
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
+ * @param {string} url
+ * @param {number} itemId
+ * @param {string} source
+ * @param {number} patronId
+ * @param {string} pickupBranch
+ * @param {string} volumeId
+ * @param {string} holdType
+ * @param {string} recordId
+ * @param {array} holdNotificationPreferences
+ * @param {string} variationId
+ * @param {string} bibId
  **/
-export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null, holdNotificationPreferences = null, variationId = null, bibId = null) {
+export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = '', recordId = '', holdNotificationPreferences = null, variationId = null, bibId = null) {
      let id = itemId;
      if (variationId) {
           id = variationId;
