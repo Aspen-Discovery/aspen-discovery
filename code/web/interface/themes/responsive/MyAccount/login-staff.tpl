@@ -43,7 +43,7 @@
 		                <label for="password" class="control-label col-xs-12 col-sm-4">{translate text="$passwordLabel" isPublicFacing=true} </label>
 		                <div class="col-xs-12 col-sm-8">
 		                    <input type="password" name="password" id="password" size="28" onkeypress="return AspenDiscovery.submitOnEnter(event, '#loginForm');" class="form-control" maxlength="60">
-		                    {if $ssoLoginOptions != 1 && empty($ssoService)}
+		                    {if !$canLoginSSO}
 		                    {* disable forgot password if sso only since its managed else where *}
 			                    {if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
 			                        <p class="text-muted help-block">
@@ -57,6 +57,21 @@
 			                            {/if}
 			                        </p>
 			                    {/if}
+		                    {else}
+			                    {if $ssoLoginOptions != 1 && empty($ssoService)}
+	                                {if $forgotPasswordType != 'null' && $forgotPasswordType != 'none'}
+                                        <p class="text-muted help-block">
+                                            <strong>{translate text="Forgot %1%?" 1=$passwordLabel isPublicFacing=true}</strong>&nbsp;&nbsp;
+                                            {if $forgotPasswordType == 'emailAspenResetLink'}
+                                                <a href="/MyAccount/InitiateResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+                                            {elseif $forgotPasswordType == 'emailResetLink'}
+                                                <a href="/MyAccount/EmailResetPin">{translate text="Reset My %1%" 1=$passwordLabel isPublicFacing=true}</a>
+                                            {else}
+                                                <a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
+                                            {/if}
+                                        </p>
+                                    {/if}
+	                            {/if}
 		                    {/if}
 		                </div>
 		            </div>
@@ -74,13 +89,22 @@
 		                        {translate text="Reveal Password" isPublicFacing=true}
 		                    </label>
 
-							{if $ssoLoginOptions != 1 && empty($ssoService)}
+							{if !$canLoginSSO}
 			                    {if empty($inLibrary) && !$isOpac && !$isStandalonePage}
 			                        <label for="rememberMe" class="checkbox">
 			                            <input type="checkbox" id="rememberMe" name="rememberMe">
 			                            {translate text="Keep Me Signed In" isPublicFacing=true}
 			                        </label>
 			                    {/if}
+		                    {else}
+		                        {if $ssoLoginOptions != 1 && empty($ssoService)}
+			                        {if empty($inLibrary) && !$isOpac && !$isStandalonePage}
+	                                    <label for="rememberMe" class="checkbox">
+	                                        <input type="checkbox" id="rememberMe" name="rememberMe">
+	                                        {translate text="Keep Me Signed In" isPublicFacing=true}
+	                                    </label>
+	                                {/if}
+		                        {/if}
 		                    {/if}
 		                </div>
 		            </div>
