@@ -1957,12 +1957,14 @@ AspenDiscovery.Admin = (function () {
 			});
 		},
 
-		showBatchScheduleUpdateForm: function (implementationStatus, siteType) {
+		showBatchScheduleUpdateForm: function (implementationStatus, siteType, version, timezone) {
 			var url = Globals.path + '/Greenhouse/AJAX';
 			var params = {
 				'method': 'getBatchScheduleUpdateForm',
 				'implementationStatus': implementationStatus,
-				'siteType': siteType
+				'siteType': siteType,
+				'currentVersion': version,
+				'timezone': timezone
 			}
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, params,

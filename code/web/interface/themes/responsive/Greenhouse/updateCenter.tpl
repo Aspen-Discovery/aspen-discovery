@@ -77,7 +77,7 @@
 			<div class="btn-toolbar" role="toolbar">
                 <div class="btn-group" role="group">
                     <a onclick="return AspenDiscovery.Admin.showSelectedScheduleUpdateForm();" class="btn btn-warning">{translate text="Schedule Update for Selected" isAdminFacing=true}</a>
-                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}');" class="btn btn-warning">{translate text="Schedule Update for All Listed" isAdminFacing=true}</a>
+                    <a onclick="return AspenDiscovery.Admin.showBatchScheduleUpdateForm('{$implementationStatusToShow}', '{$siteTypeToShow}', '{$releaseToShow}', '{$timezoneToShow}');" class="btn btn-warning">{translate text="Schedule Update for All Listed" isAdminFacing=true}</a>
                 </div>
 			</div>
 		</div>

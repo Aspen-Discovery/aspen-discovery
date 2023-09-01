@@ -215,17 +215,25 @@ class Greenhouse_AJAX extends Action {
 		$releases = AspenRelease::getReleasesList();
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 		$sites = new AspenSite();
-		if(isset($_REQUEST['implementationStatus'])) {
+		if(isset($_REQUEST['implementationStatus']) && $_REQUEST['implementationStatus'] != 'any') {
 			$sites->whereAdd('implementationStatus = ' . $_REQUEST['implementationStatus']);
 		} else {
 			$sites->whereAdd('implementationStatus != 4');
 		}
 
-		if(isset($_REQUEST['siteType'])) {
+		if(isset($_REQUEST['siteType']) && $_REQUEST['siteType'] != 'any') {
 			$sites->whereAdd('siteType = ' . $_REQUEST['siteType']);
 		}
 
-		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
+		if(isset($_REQUEST['currentVersion']) && $_REQUEST['currentVersion'] != 'any') {
+			$escapedRelease = $sites->escape('%' . $_REQUEST['currentVersion'] . '%');
+			$sites->whereAdd('version LIKE ' . $escapedRelease);
+		}
+
+		if(isset($_REQUEST['timezone']) && $_REQUEST['timezone'] != 'any') {
+			$sites->whereAdd('timezone = ' . $_REQUEST['timezone']);
+		}
+
 		$sites->find();
 		$allBatchUpdateSites = [];
 		$eligibleReleases = [];
