@@ -198,9 +198,18 @@
 				<div class="col-xs-9 col-sm-8 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if $section == 'available'}
-                            {if $source == 'all' && $showCurbsidePickups}
+							{if $source == 'all' && $showCurbsidePickups}
 								<a class="btn btn-sm btn-primary btn-wrap" href="/MyAccount/CurbsidePickups">{translate text="Schedule a Curbside Pickup" isPublicFacing=true}</a>
-                            {/if}
+							{/if}
+							{if $record->canFreeze}
+								{if !$record->isIll}
+									{if $record->frozen}
+										<button onclick="return AspenDiscovery.Account.thawHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', this);" class="btn btn-sm btn-default">{translate text="Thaw Hold" isPublicFacing=true}</button>
+									{else}
+										<button onclick="return AspenDiscovery.Account.freezeHold('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', {if !empty($suspendRequiresReactivationDate)}true{else}false{/if}, this);" class="btn btn-sm btn-default">{translate text="Freeze Hold" isPublicFacing=true}</button>
+									{/if}
+								{/if}
+							{/if}
 							{if $record->cancelable}
 								{if $record->pendingCancellation}
 									{translate text="Pending Cancellation" isPublicFacing=true}
