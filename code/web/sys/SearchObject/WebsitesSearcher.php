@@ -167,58 +167,30 @@ class SearchObject_WebsitesSearcher extends SearchObject_SolrSearcher {
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}
 
-	public function getFacetConfig() {
-		if ($this->facetConfig == null) {
-			$facetConfig = [];
+    public function getFacetConfig() {
+        if ($this->facetConfig == null) {
+            $facetConfig = [];
+            $facets = [];
+            $searchLibrary = Library::getActiveLibrary();
+            global $locationSingleton;
+            $searchLocation = $locationSingleton->getActiveLocation();
+            if ($searchLocation != null) {
+                if ($searchLocation->getWebsiteFacetSettings() != null){
+                    $facets = $searchLocation->getWebsiteFacetSettings()->getFacets();
+                }
+            } else if ($searchLibrary->getWebsiteFacetSettings() != null){
+                $facets = $searchLibrary->getWebsiteFacetSettings()->getFacets();
+            }
+            if ($facets != null){
+                foreach ($facets as &$facet) {
+                    $facetConfig[$facet->facetName] = $facet;
+                }
+                $this->facetConfig = $facetConfig;
+            }
+        }
 
-			$websiteNameFacet = new LibraryFacetSetting();
-			$websiteNameFacet->id = count($facetConfig) + 1;
-			$websiteNameFacet->multiSelect = true;
-			$websiteNameFacet->facetName = "website_name";
-			$websiteNameFacet->displayName = "Site Name";
-			$websiteNameFacet->numEntriesToShowByDefault = 5;
-			$websiteNameFacet->translate = true;
-			$websiteNameFacet->collapseByDefault = true;
-			$websiteNameFacet->useMoreFacetPopup = true;
-			$facetConfig["website_name"] = $websiteNameFacet;
-
-			$searchCategoryFacet = new LibraryFacetSetting();
-			$searchCategoryFacet->id = count($facetConfig) + 1;
-			$searchCategoryFacet->multiSelect = true;
-			$searchCategoryFacet->facetName = "search_category";
-			$searchCategoryFacet->displayName = "Website Type";
-			$searchCategoryFacet->numEntriesToShowByDefault = 5;
-			$searchCategoryFacet->translate = true;
-			$searchCategoryFacet->collapseByDefault = true;
-			$searchCategoryFacet->useMoreFacetPopup = true;
-			$facetConfig["search_category"] = $searchCategoryFacet;
-
-			$audienceFacet = new LibraryFacetSetting();
-			$audienceFacet->id = count($facetConfig) + 1;
-			$audienceFacet->multiSelect = true;
-			$audienceFacet->facetName = "audience_facet";
-			$audienceFacet->displayName = "Audience";
-			$audienceFacet->numEntriesToShowByDefault = 5;
-			$audienceFacet->translate = true;
-			$audienceFacet->collapseByDefault = true;
-			$audienceFacet->useMoreFacetPopup = true;
-			$facetConfig["audience_facet"] = $audienceFacet;
-
-			$categoryFacet = new LibraryFacetSetting();
-			$categoryFacet->id = count($facetConfig) + 1;
-			$categoryFacet->multiSelect = true;
-			$categoryFacet->facetName = "category_facet";
-			$categoryFacet->displayName = "Category";
-			$categoryFacet->numEntriesToShowByDefault = 5;
-			$categoryFacet->translate = true;
-			$categoryFacet->collapseByDefault = true;
-			$categoryFacet->useMoreFacetPopup = true;
-			$facetConfig["category_facet"] = $categoryFacet;
-
-			$this->facetConfig = $facetConfig;
-		}
-		return $this->facetConfig;
-	}
+        return $this->facetConfig;
+    }
 
 	public function getEngineName() {
 		return 'Websites';
