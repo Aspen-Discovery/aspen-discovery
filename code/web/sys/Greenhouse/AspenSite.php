@@ -651,17 +651,18 @@ class AspenSite extends DataObject {
 		return $lastUpdate;
 	}
 
-	public function getLastSuccessfulUpdate() {
+	public function getLastRanUpdate() {
 		$lastUpdate['time'] = 'Never';
 		$lastUpdate['id'] = null;
 		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 		$scheduledUpdates = new ScheduledUpdate();
 		$scheduledUpdates->siteId = $this->id;
-		$scheduledUpdates->status = 'complete';
 		$scheduledUpdates->orderBy('dateRun DESC');
 		if($scheduledUpdates->find(true)) {
 			$lastUpdate['time'] = $scheduledUpdates->dateRun;
+			$lastUpdate['scheduled'] = $scheduledUpdates->dateScheduled;
 			$lastUpdate['id'] = $scheduledUpdates->id;
+			$lastUpdate['status'] = $scheduledUpdates->status;
 		}
 		return $lastUpdate;
 	}

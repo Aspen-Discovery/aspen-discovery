@@ -140,6 +140,16 @@ function getUpdates23_09_00(): array {
 			],
 		],
 		//add_forgot_barcode
+		'add_restrict_sso_ip' => [
+			'title' => 'Add option to restrict SSO by IP',
+			'description' => 'Add option to restrict single sign-on login by IP address',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD restrictByIP TINYINT(1) default 0',
+				'ALTER TABLE ip_lookup ADD ssoLogin TINYINT(1) default 0',
+			],
+		],
+		//add_restrict_sso_ip
 
         // James Staub
         'donations_disambiguate_library_and_location' => [

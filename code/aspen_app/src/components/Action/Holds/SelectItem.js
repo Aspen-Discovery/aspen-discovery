@@ -16,9 +16,9 @@ export const SelectItem = (props) => {
           defaultItem = item;
      }
 
-     if (defaultItem && !item) {
+     /*if (defaultItem && !item) {
           setItem(defaultItem);
-     }
+     }*/
 
      return (
           <>
@@ -26,7 +26,6 @@ export const SelectItem = (props) => {
                     <FormControl>
                          <Radio.Group
                               name="holdTypeGroup"
-                              defaultValue={holdType}
                               value={holdType}
                               onChange={(nextValue) => {
                                    setHoldType(nextValue);

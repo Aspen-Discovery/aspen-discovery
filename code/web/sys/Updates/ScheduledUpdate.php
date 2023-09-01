@@ -147,6 +147,11 @@ class ScheduledUpdate extends DataObject {
 			unset($structure['dateRun']);
 			unset($structure['notes']);
 		}
+
+		if($context != 'addNew') {
+			// only force dropdown if trying to add new update
+			$structure['updateToVersion']['type'] = 'text';
+		}
 		return $structure;
 	}
 

@@ -85,7 +85,7 @@ export const MyHolds = () => {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
           }
-          queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
      };
 
      useFocusEffect(

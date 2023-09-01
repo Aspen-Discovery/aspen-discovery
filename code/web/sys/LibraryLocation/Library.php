@@ -3719,6 +3719,29 @@ class Library extends DataObject {
 		}
 	}
 
+	public static function getSSORestrictionStatus():int {
+		global $library;
+		$libLookUp = new Library();
+		$libLookUp->libraryId = $library->libraryId;
+		if($libLookUp->find(true)) {
+			if($libLookUp->ssoSettingId != -1) {
+				$ssoSettings = new SSOSetting();
+				$ssoSettings->id = $libLookUp->ssoSettingId;
+				if($ssoSettings->find(true)) {
+					try {
+						return $ssoSettings->restrictByIP;
+					}catch (Exception $e) {
+						// not setup yet
+					}
+				}
+			}
+			return 0;
+		} else {
+			echo('No libraries are configured for the system.  Please configure at least one library before proceeding.');
+			die();
+		}
+	}
+
 	static function getSearchLibrary($searchSource = null) {
 		if ($searchSource == null) {
 			global $searchSource;

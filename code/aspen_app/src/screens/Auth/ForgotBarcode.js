@@ -3,7 +3,7 @@ import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
 import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { create } from 'apisauce';
 import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
 import { LIBRARY } from '../../util/loadLibrary';
 import _ from 'lodash';
 export const ForgotBarcode = (props) => {
@@ -71,13 +71,13 @@ export const ForgotBarcode = (props) => {
                          <Modal.Body>
                               {showResults && !results.success ? (
                                    <>
-                                        <Text>{results.message}</Text>
+                                        <Text>{stripHTML(results.message)}</Text>
                                         <Button colorScheme="primary" onPress={resetWindow}>
                                              {getTermFromDictionary('en', 'try_again')}
                                         </Button>
                                    </>
                               ) : showResults ? (
-                                   <Text>{results.message}</Text>
+                                   <Text>{stripHTML(results.message)}</Text>
                               ) : (
                                    <>
                                         <FormControl.Label
