@@ -3416,7 +3416,11 @@ class User extends DataObject {
 		if (array_key_exists('Open Archives', $enabledModules)) {
 			$sections['open_archives'] = new AdminSection('Open Archives');
 			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Administer Open Archives');
-			$sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), [
+            $sections['open_archives']->addAction(new AdminAction('Open Archives Facet Settings', 'Define facets for open archives searches.', '/OpenArchives/OpenArchivesFacets'),  [
+                'Administer All Open Archives Facet Settings',
+                'Administer Library Open Archives Facet Settings',
+            ]);
+            $sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
@@ -3441,7 +3445,11 @@ class User extends DataObject {
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$sections['web_indexer'] = new AdminSection('Website Indexing');
 			$sections['web_indexer']->addAction(new AdminAction('Settings', 'Define settings for indexing websites within Aspen Discovery.', '/Websites/Settings'), 'Administer Website Indexing Settings');
-			$sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
+            $sections['web_indexer']->addAction(new AdminAction('Website Facet Settings', 'Define facets for website searches.', '/Websites/WebsiteFacets'), [
+                'Administer All Website Facet Settings',
+                'Administer Library Website Facet Settings',
+            ]);
+            $sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
 			$sections['web_indexer']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Websites.', '/Websites/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
