@@ -22,7 +22,9 @@ class WebBuilder_QuickPollSubmissions extends ObjectEditor {
 
 	function getAllObjects($page, $recordsPerPage): array {
 		$object = new QuickPollSubmission();
-		$pollId = $_REQUEST['pollId'];
+		if (!empty($_REQUEST['pollId'])) {
+			$pollId = $_REQUEST['pollId'];
+		}
 		$this->applyFilters($object);
 		$object->pollId = $pollId;
 		$object->orderBy($this->getSort());
