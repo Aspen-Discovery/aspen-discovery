@@ -14,6 +14,60 @@ function getUpdates23_09_00(): array {
 
 
 		//mark - ByWater
+		'web_builder_quick_polls' => [
+			'title' => 'Web Builder Quick Polls',
+			'description' => 'Setup tables to allow for quick polling within Web Builder',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE web_builder_quick_poll (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					title VARCHAR(100) NOT NULL,
+					urlAlias VARCHAR(100),
+					introText MEDIUMTEXT COLLATE utf8mb4_general_ci,
+					submissionResultText MEDIUMTEXT COLLATE utf8mb4_general_ci,
+					requireLogin TINYINT(1),
+					requireName TINYINT(1),
+					requireEmail TINYINT(1),
+					allowSuggestingNewOptions TINYINT(1),
+					allowMultipleSelections TINYINT(1),
+					status TINYINT(1) DEFAULT 1
+				) ENGINE = InnoDB',
+				'CREATE TABLE web_builder_quick_poll_option (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					weight INT DEFAULT 0,
+					pollId INT(11) NOT NULL,
+					label VARCHAR(100)
+				) ENGINE = InnoDB',
+				'CREATE TABLE library_web_builder_quick_poll (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					libraryId INT(11) NOT NULL ,
+					pollId INT(11) NOT NULL,
+					label VARCHAR(100),
+					UNIQUE (libraryId, pollId)
+				) ENGINE = InnoDB',
+				'CREATE TABLE web_builder_quick_poll_submission (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					pollId INT(11) NOT NULL,
+					libraryId INT(11) NOT NULL,
+					userId INT(11) DEFAULT NULL,
+					name VARCHAR(255),
+					email VARCHAR(255),
+					dateSubmitted INT(11) NOT NULL
+				) ENGINE = InnoDB',
+				'CREATE TABLE web_builder_quick_poll_submission_selection (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					pollSubmissionId INT(11) NOT NULL,
+					pollOptionId INT(11) NOT NULL,
+					UNIQUE (pollSubmissionId, pollOptionId)
+				) ENGINE = InnoDB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('Web Builder', 'Administer All Quick Polls', 'Web Builder', 45, 'Allows the user to administer polls for all libraries.'),
+					('Web Builder', 'Administer Library Quick Polls', 'Web Builder', 46, 'Allows the user to administer polls for their home library.')
+					",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Quick Polls'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Library Quick Polls'))",
+			]
+		], //web_builder_quick_polls
 
 		//kodi - ByWater
         'permissions_open_archives_facets' => [

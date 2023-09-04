@@ -3127,6 +3127,10 @@ class User extends DataObject {
 				'Administer All Custom Forms',
 				'Administer Library Custom Forms',
 			]);
+			$sections['web_builder']->addAction(new AdminAction('Quick Polls', 'Create quick polls within Aspen Discovery for patrons to respond to.', '/WebBuilder/QuickPolls'), [
+				'Administer All Quick Polls',
+				'Administer Library Quick Polls',
+			]);
 			$sections['web_builder']->addAction(new AdminAction('Web Resources', 'Add resources within Aspen Discovery that the library provides.', '/WebBuilder/WebResources'), [
 				'Administer All Web Resources',
 				'Administer Library Web Resources',
