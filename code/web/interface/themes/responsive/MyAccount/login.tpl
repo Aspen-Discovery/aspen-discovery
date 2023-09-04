@@ -19,7 +19,7 @@
 			</div>
 		{/if}
 		{if $ssoIsEnabled}
-			{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO}
+			{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO && $canLoginSSO}
 	            {include file='MyAccount/sso-login.tpl'}
 	            {if $ssoLoginOptions == 0}
 		            <div class="hr-label">

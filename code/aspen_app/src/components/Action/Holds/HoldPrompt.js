@@ -212,10 +212,11 @@ export const HoldPrompt = (props) => {
                                                   setResponse(result);
                                                   if (result) {
                                                        if (result.success === true || result.success === 'true') {
-                                                            queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
-                                                            await refreshProfile(library.baseUrl).then((profile) => {
+                                                            queryClient.invalidateQueries({ queryKey: ['holds', activeAccount, library.baseUrl, language] });
+                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                            /*await refreshProfile(library.baseUrl).then((profile) => {
                                                                  updateUser(profile);
-                                                            });
+                                                            });*/
                                                        }
 
                                                        if (result?.confirmationNeeded && result.confirmationNeeded === true) {

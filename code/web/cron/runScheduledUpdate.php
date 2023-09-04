@@ -100,7 +100,7 @@ if (count($updatesToRun) == 0) {
 						'greenhouseId' => $scheduledUpdate->greenhouseId,
 						'notes' => $scheduledUpdate->notes,
 						'dateRun' => $scheduledUpdate->dateRun,
-
+						'greenhouseSiteId' => $scheduledUpdate->siteId
 					];
 					$response = $curl->curlPostPage($greenhouseUrl . '/API/GreenhouseAPI?method=updateScheduledUpdate', $body);
 
