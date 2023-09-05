@@ -3,6 +3,7 @@
 	<input type="hidden" name="remittance_id" value="{$deluxeRemittanceId}"/>
 	<input type="hidden" name="message_version" value="2.7"/>
 	<input type="hidden" name="patronId" value="{$userId}"/>
+	<input type="hidden" name="user_defined1" value="{$profile->getBarcode()}"/>
 	<div class="row">
         <div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
             <div id="certifiedPaymentsByDeluxe-button-container{$userId}">
