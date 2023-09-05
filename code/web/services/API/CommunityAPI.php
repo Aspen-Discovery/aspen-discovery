@@ -132,6 +132,8 @@ class CommunityAPI extends Action {
 										//$result['message'] = 'Translation matches the original default text';
 									} else if ($translationTerm->term == $translation->translation) {
 										//$result['message'] = 'Translation matches the original text';
+									} else if (strcasecmp($translation->translation, 'null') == 0) {
+										//$result['message'] = 'Translation value is null';
 									} else {
 										$result['success'] = true;
 										$result['translations'][$originalTermId] = $translation->translation;
@@ -178,6 +180,8 @@ class CommunityAPI extends Action {
 								$result['message'] = 'Translation matches the original default text';
 							} else if ($translationTerm->term == $translation->translation) {
 								$result['message'] = 'Translation matches the original text';
+							} else if (strcasecmp($translation->translation, 'null') == 0) {
+								$result['message'] = 'Translation value is null';
 							} else {
 								$result['success'] = true;
 								$result['translation'] = $translation->translation;
@@ -217,11 +221,15 @@ class CommunityAPI extends Action {
 					$translation->languageId = $language->id;
 					if ($translation->find(true)) {
 						if (!$translation->translated) {
-							$translation->translation = $_REQUEST['translation'];
-							$translation->translated = 1;
-							$translation->update();
-							$result['success'] = true;
-							$result['message'] = 'Translation updated';
+							if (strcasecmp($translation->translation, 'null') != 0) {
+								$translation->translation = $_REQUEST['translation'];
+								$translation->translated = 1;
+								$translation->update();
+								$result['success'] = true;
+								$result['message'] = 'Translation updated';
+							} else {
+								$result['message'] = 'Term cannot be saved as null';
+							}
 						} else {
 							$result['message'] = 'Term already translated';
 						}
