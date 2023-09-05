@@ -333,6 +333,8 @@ class Greenhouse_AJAX extends Action {
 				}else{
 					$runUpdateOn = new DateTime($runUpdateOn, $timezone);
 				}
+				$runUpdateOn = $runUpdateOn->format('Y-m-d H:i e');
+				$runUpdateOn = strtotime($runUpdateOn);
 
 				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 				$scheduledUpdate = new ScheduledUpdate();
