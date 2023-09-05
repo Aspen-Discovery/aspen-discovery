@@ -266,5 +266,7 @@ function deleteNullTranslations() {
 			// delete saved translation if it's been translated to null
 			$translation->delete();
 		}
+		$translation->__destruct();
+		$translation = null;
 	}
 }
