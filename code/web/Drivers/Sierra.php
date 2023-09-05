@@ -1175,10 +1175,29 @@ class Sierra extends Millennium {
 		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
-		$user->cat_username = $username;
-		$user->ils_barcode = $username;
+		$barcodeField = null;
+		$usernameField = null;
+		if (!empty($patronInfo->varFields)) {
+			foreach ($patronInfo->varFields as $varField) {
+				if ($varField->fieldTag == 'b') {
+					$barcodeField = $varField;
+				}else if ($varField->fieldTag == 'w') {
+					$usernameField = $varField;
+				}
+			}
+		}
+		if ($barcodeField != null) {
+			$user->cat_username = $barcodeField->content;
+			$user->ils_barcode = $barcodeField->content;
+		} else {
+			$user->cat_username = $username;
+			$user->ils_barcode = $username;
+		}
 		$user->cat_password = $password;
 		$user->ils_password = $password;
+		if ($usernameField != null) {
+			$user->ils_username = $usernameField->content;
+		}
 
 		$forceDisplayNameUpdate = false;
 		$primaryName = reset($patronInfo->names);
@@ -1241,8 +1260,35 @@ class Sierra extends Millennium {
 		}
 	}
 
+	public function getPatronInfoByUsername($username) {
+		$params = [
+			'varFieldTag' => 'w',
+			'varFieldContent' => $username,
+			'fields' => 'id,names,deleted,suppressed,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,patronCodes,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate',
+		];
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?";
+		$sierraUrl .= http_build_query($params);
+
+		$response = $this->_callUrl('sierra.findPatronByBarcode', $sierraUrl);
+		if (!$response) {
+			return false;
+		} else {
+			if ($response->deleted || $response->suppressed) {
+				return false;
+			} else {
+				return $response;
+			}
+		}
+	}
+
 	public function findNewUser($patronBarcode, $patronUsername) {
-		$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
+		if (!empty($patronBarcode)) {
+			$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
+		}else{
+			$patronInfo = $this->getPatronInfoByUsername($patronUsername);
+		}
 
 		if (!$patronInfo) {
 			return false;
@@ -1256,8 +1302,33 @@ class Sierra extends Millennium {
 		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
-		$user->cat_username = $patronBarcode;
-		$user->ils_barcode = $patronBarcode;
+		$barcodeField = null;
+		$usernameField = null;
+		if (!empty($patronInfo->varFields)) {
+			foreach ($patronInfo->varFields as $varField) {
+				if ($varField->fieldTag == 'b') {
+					$barcodeField = $varField;
+				}else if ($varField->fieldTag == 'w') {
+					$usernameField = $varField;
+				}
+			}
+		}
+		if ($barcodeField != null) {
+			$user->cat_username = $barcodeField->content;
+			$user->ils_barcode = $barcodeField->content;
+		} else {
+			if (!empty($patronBarcode)) {
+				$user->cat_username = $patronBarcode;
+				$user->ils_barcode = $patronBarcode;
+			}
+		}
+		if ($usernameField != null) {
+			$user->ils_username = $usernameField->content;
+		} else {
+			if (!empty($patronUsername)) {
+				$user->ils_username = $patronUsername;
+			}
+		}
 
 		$forceDisplayNameUpdate = false;
 		$primaryName = reset($patronInfo->names);
@@ -1826,5 +1897,9 @@ class Sierra extends Millennium {
 		}
 
 		return $result;
+	}
+
+	public function supportsLoginWithUsername() : bool {
+		return true;
 	}
 }
