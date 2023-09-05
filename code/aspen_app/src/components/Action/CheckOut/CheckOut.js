@@ -70,10 +70,8 @@ export const CheckOut = (props) => {
                               await completeAction(record, type, user.id, null, null, null, library.baseUrl).then(async (eContentResponse) => {
                                    setResponse(eContentResponse);
                                    if (eContentResponse.success) {
-                                        queryClient.invalidateQueries({ queryKey: ['checkouts', library.baseUrl, language] });
-                                        await refreshProfile(library.baseUrl).then((result) => {
-                                             updateUser(result);
-                                        });
+                                        queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language] });
+                                        queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                    }
                                    setLoading(false);
                                    setResponseIsOpen(true);

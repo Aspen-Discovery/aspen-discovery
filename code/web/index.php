@@ -1168,6 +1168,21 @@ function loadModuleActionId() {
 						$_REQUEST['module'] = 'WebBuilder';
 						$_REQUEST['action'] = 'Form';
 						$_REQUEST['id'] = $form->id;
+					} else {
+						require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+						$quickPoll = new QuickPoll();
+						$quickPoll->urlAlias = $requestPath;
+						$quickPollLibrary = new LibraryQuickPoll();
+						$quickPollLibrary->libraryId = $library->libraryId;
+						$quickPoll->joinAdd($quickPollLibrary, 'INNER', 'libraryFilter', 'id', 'pollId');
+						if ($quickPoll->find(true)) {
+							$_GET['module'] = 'WebBuilder';
+							$_GET['action'] = 'QuickPoll';
+							$_GET['id'] = $quickPoll->id;
+							$_REQUEST['module'] = 'WebBuilder';
+							$_REQUEST['action'] = 'QuickPoll';
+							$_REQUEST['id'] = $quickPoll->id;
+						}
 					}
 				}
 			}
