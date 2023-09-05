@@ -204,6 +204,14 @@ function getUpdates23_09_00(): array {
 			],
 		],
 		//add_restrict_sso_ip
+		'delete_null_translations' => [
+			'title' => 'Delete any translations set to null',
+			'description' => 'Delete stored translations that have been saved as null value',
+			'continueOnError' => true,
+			'sql' => [
+				'deleteNullTranslations',
+			],
+		], //delete_null_translations
 
         // James Staub
         'donations_disambiguate_library_and_location' => [
@@ -246,4 +254,17 @@ function getUpdates23_09_00(): array {
             ],
         ], //ecommerce_report_permissions
 	];
+}
+
+function deleteNullTranslations() {
+	$translation = new Translation();
+	$translation->whereAdd("LOWER(translation) LIKE '%null%'");
+	$translation->find();
+	$translations = $translation->fetchAll();
+	foreach ($translations as $translation) {
+		if(strcasecmp($translation->translation, 'null') == 0) {
+			// delete saved translation if it's been translated to null
+			$translation->delete();
+		}
+	}
 }
