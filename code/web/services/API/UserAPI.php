@@ -5117,9 +5117,16 @@ class UserAPI extends Action {
 				if($guidingUser->isLoggedInViaSSO) {
 					$user = UserAccount::loginWithAspen($guidingUser);
 				} else {
-					$_REQUEST['username'] = $guidingUser->getBarcode();
-					$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
-					$user = UserAccount::login();
+					if ($guidingUser->hasIlsConnection()) {
+						$_REQUEST['username'] = $guidingUser->getBarcode();
+						$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
+					}else{
+						$_REQUEST['username'] = $guidingUser->username;
+						$_REQUEST['password'] = $guidingUser->password;
+						$_POST['username'] = $guidingUser->username;
+						$_POST['password'] = $guidingUser->password;
+						$user = UserAccount::login();
+					}
 				}
 
 				if ($user && !($user instanceof AspenError)) {
