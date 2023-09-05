@@ -2236,4 +2236,10 @@ class Evergreen extends AbstractIlsDriver {
 
 		return $results;
 	}
+
+	// Evergreen currently supports fetching users by ID or by barcode, but not by username
+	// therefore we will disable masquerade with just  username.
+	public function supportsLoginWithUsername() : bool {
+		return false;
+	}
 }
