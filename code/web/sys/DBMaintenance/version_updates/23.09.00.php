@@ -116,13 +116,13 @@ function getUpdates23_09_00(): array {
 			'sql' => [
 				"INSERT INTO open_archives_facet_groups (id, name) VALUES (1, 'default')",
 				"INSERT INTO open_archives_facets VALUES 
-                             (1,1, 'Collection', 'Collections', 'collection_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (2,1, 'Creator', 'Creators', 'creator_facet', 2, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (3,1, 'Contributor', 'Contributors', 'contributor_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (4,1, 'Type', 'Types', 'type', 4, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (5,1, 'Subject', 'Subjects', 'subject_facet', 5, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (6,1, 'Publisher', 'Publishers', 'publisher_facet', 6, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (7,1, 'Source', 'Sources', 'source', 7, 5, 'num_results', 1, 1, 1, 1, 1)",
+							 (1,1, 'Collection', 'Collections', 'collection_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (2,1, 'Creator', 'Creators', 'creator_facet', 2, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (3,1, 'Contributor', 'Contributors', 'contributor_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (4,1, 'Type', 'Types', 'type', 4, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (5,1, 'Subject', 'Subjects', 'subject_facet', 5, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (6,1, 'Publisher', 'Publishers', 'publisher_facet', 6, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (7,1, 'Source', 'Sources', 'source', 7, 5, 'num_results', 1, 1, 1, 1, 1)",
 			],
 		],
 		//open_archives_facets_default
@@ -171,10 +171,10 @@ function getUpdates23_09_00(): array {
 			'sql' => [
 				"INSERT INTO website_facet_groups (id, name) VALUES (1, 'default')",
 				"INSERT INTO website_facets VALUES 
-                             (1,1, 'Site Name', 'Site Names', 'website_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (2,1, 'Website Type', 'Website Types', 'search_category', 2, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (3,1, 'Audience', 'Audiences', 'audience_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),
-                             (4,1, 'Category', 'Categories', 'category_facet', 4, 5, 'num_results', 1, 1, 1, 1, 1)",
+							 (1,1, 'Site Name', 'Site Names', 'website_name', 1, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (2,1, 'Website Type', 'Website Types', 'search_category', 2, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (3,1, 'Audience', 'Audiences', 'audience_facet', 3, 5, 'num_results', 1, 1, 1, 1, 1),
+							 (4,1, 'Category', 'Categories', 'category_facet', 4, 5, 'num_results', 1, 1, 1, 1, 1)",
 			],
 		],
 		//website_facets_default
@@ -229,8 +229,8 @@ function getUpdates23_09_00(): array {
 				"ALTER TABLE donations CHANGE COLUMN donateToLibrary donateToLocation varchar(60)",
 				"ALTER TABLE donations CHANGE COLUMN donateToLibraryId donateToLocationId int(11)",
 				// mariadb >= 10.5.2:
-//                "ALTER TABLE donations RENAME COLUMN donateToLibrary TO donateToLocation",
-//                "ALTER TABLE donations RENAME COLUMN donateToLibraryId TO donateToLocationId",
+//				"ALTER TABLE donations RENAME COLUMN donateToLibrary TO donateToLocation",
+//				"ALTER TABLE donations RENAME COLUMN donateToLibraryId TO donateToLocationId",
 			],
 		],
 		//donations_disambiguate_library_and_location
@@ -240,25 +240,25 @@ function getUpdates23_09_00(): array {
 			'continueOnError' => true,
 			'sql' => [
 				"UPDATE permissions
-                SET name = 'View eCommerce Reports for All Libraries',
-                    weight = 5,
-                    description = 'Allows the user to view eCommerce reports for all libraries.'
-                WHERE name = 'View eCommerce Reports'
-                ",
+				SET name = 'View eCommerce Reports for All Libraries',
+					weight = 5,
+					description = 'Allows the user to view eCommerce reports for all libraries.'
+				WHERE name = 'View eCommerce Reports'
+				",
 				"UPDATE permissions
-                SET name = 'View Donations Reports for All Libraries',
-                    weight = 7,
-                    description = 'Allows the user to view donations reports for all libraries.'
-                WHERE name = 'View Donations Reports'
-                ",
+				SET name = 'View Donations Reports for All Libraries',
+					weight = 7,
+					description = 'Allows the user to view donations reports for all libraries.'
+				WHERE name = 'View Donations Reports'
+				",
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
 					('eCommerce', 'View eCommerce Reports for Home Library', '', 6, 'Allows the user to view eCommerce reports for their home library'),
 					('eCommerce', 'View Donations Reports for Home Library', '', 8, 'Allows the user to view donations reports for their home library')
 				",
 				"insert into role_permissions (roleId, permissionId) values
-                     ((select roleId from roles where name = 'libraryAdmin'), (select id from permissions where name = 'View eCommerce Reports for Home Library')),
-                     ((select roleId from roles where name = 'libraryAdmin'), (select id from permissions where name = 'View Donations Reports for Home Library'))
-                ",
+					 ((select roleId from roles where name = 'libraryAdmin'), (select id from permissions where name = 'View eCommerce Reports for Home Library')),
+					 ((select roleId from roles where name = 'libraryAdmin'), (select id from permissions where name = 'View Donations Reports for Home Library'))
+				",
 			],
 		],
 		//ecommerce_report_permissions
