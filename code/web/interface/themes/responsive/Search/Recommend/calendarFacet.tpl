@@ -2,11 +2,11 @@
 	<div class="facet-form">
 		<div class="form-group">
 			<label class="control-label" for="{$title}Start">{translate text="From" isPublicFacing=true}</label>
-			<input type="date" name="{$title}Start" id="{$title}Start" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}" {if !empty($cluster.start)}value="{$cluster.start}"{/if}>
+			<input type="date" name="{$title}Start" id="{$title}Start" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}" max="{$maxEventDate|date_format:"%Y-%m-%d"}" {if !empty($cluster.start)}value="{$cluster.start}"{/if}>
 		</div>
 		<div class="form-group">
 			<label class="control-label" for="{$title}End">{translate text="To" isPublicFacing=true}</label>
-			<input type="date" name="{$title}End" id="{$title}End" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}" {if !empty($cluster.end)}value="{$cluster.end}"{/if}>
+			<input type="date" name="{$title}End" id="{$title}End" placeholder="mm/dd/yyyy" class="form-control" size="10" min="{$smarty.now|date_format:"%Y-%m-%d"}" max="{$maxEventDate|date_format:"%Y-%m-%d"}" {if !empty($cluster.end)}value="{$cluster.end}"{/if}>
 		</div>
 
 		{* To make sure that applying this filter does not remove existing filters we need to copy the get variables as hidden variables *}
