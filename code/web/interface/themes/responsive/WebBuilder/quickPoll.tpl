@@ -20,17 +20,21 @@
     {/if}
 	<form id="quickPoll{$id}" class="form-horizontal" role="form" action="/WebBuilder/SubmitQuickPoll"  onsubmit="setFormSubmitting();">
 		<input type="hidden" name="id" id="id" value="{$id}">
-		{foreach from=$pollOptions item=$pollOption}
-			<div class="form-group">
+		<div id="pollOptions">
+			{foreach from=$pollOptions item=$pollOption}
+				{include file="WebBuilder/quickPollOption.tpl"}
+			{/foreach}
+			{if $poll->allowSuggestingNewOptions}
+				<span id="newOptionPlaceholder"></span>
+			{/if}
+		</div>
+		{if $poll->allowSuggestingNewOptions}
+			<div class="form-group" id="initialCustomPollOptionRow">
 				<div class="col-xs-12">
-					<div class="checkbox">
-						<label for='pollOption_{$pollOption->id}'>{translate text="{$pollOption->label}" isAdminFacing=true}
-							<input type="checkbox" name='pollOption[]' id='pollOption_{$pollOption->id}' value="{$pollOption->id}"/>
-						</label>
-					</div>
+					<button class="btn btn-default" onclick="return AspenDiscovery.WebBuilder.getAddQuickPollOptionForm('{$id}');">{translate text="Add Option" isPublicFacing=true}</button>
 				</div>
 			</div>
-		{/foreach}
+		{/if}
 		<div class="form-group">
 			<label class="control-label" for="name">{translate text="Your Name" isAdminFacing=true} <span class="required-input">*</span></label>
 			<input type="text" class="form-control {if $poll->requireName == 1}required{/if}" name="name" id="name" value="">

@@ -297,6 +297,92 @@ class WebBuilder_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getAddQuickPollOptionForm() {
+		global $interface;
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown error getting add option form', 'isPublicFacing'=>true]),
+		];
+		$pollId = $_REQUEST['pollId'];
+		if (!is_numeric($pollId)) {
+			$result['message'] = 'Invalid poll provided';
+		} else {
+			require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+			$quickPoll = new QuickPoll();
+			$quickPoll->id = $pollId;
+			if ($quickPoll->find(true)) {
+				$interface->assign('pollId', $pollId);
+				if ($quickPoll->allowSuggestingNewOptions) {
+					$interface->assign('poll', $quickPoll);
+					$interface->assign('saveButtonText', 'Add Option');
+					$result['success'] = true;
+					$result['message'] = translate(['text'=>'Display form', 'isPublicFacing'=>true]);
+					$result['title'] = translate(['text'=>'Add Poll Option', 'isPublicFacing'=>true]);
+					$result['modalBody'] = $interface->fetch('WebBuilder/addQuickPollOptionForm.tpl');
+					$result['modalButtons'] = "<button class='tool btn btn-primary' onclick=\"AspenDiscovery.WebBuilder.addQuickPollOption('{$pollId}')\">" . translate([
+							'text' => 'Add Option',
+							'isPublicFacing' => true,
+						]) . "</button>";
+				} else {
+					$result['message'] = translate(['text'=>'This poll does not allow new options to be added', 'isPublicFacing'=>true]);
+				}
+			} else {
+				$result['message'] = translate(['text'=>'Invalid poll provided', 'isPublicFacing'=>true]);
+			}
+		}
+
+		return $result;
+	}
+
+	function addQuickPollOption() {
+		global $interface;
+		$result = [
+			'success' => false,
+			'message' => translate(['text'=>'Unknown error adding poll option', 'isPublicFacing'=>true]),
+		];
+		$pollId = $_REQUEST['pollId'];
+		if (!is_numeric($pollId)) {
+			$result['message'] = 'Invalid poll provided';
+		} else {
+			require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+			$quickPoll = new QuickPoll();
+			$quickPoll->id = $pollId;
+			if ($quickPoll->find(true)) {
+				$interface->assign('pollId', $pollId);
+				if ($quickPoll->allowSuggestingNewOptions) {
+					//Get the text of the option
+					$newOption = $_REQUEST['newOption'];
+					//Make sure the new option is valid
+					if (isSpammySearchTerm($newOption)) {
+						$result['message'] = translate(['text'=>'Invalid option. Options can be plain text only', 'isPublicFacing'=>true]);
+					} else if (!preg_match_all('/^[a-zA-Z0-9\s?.-]*$/',$newOption)){
+						$result['message'] = translate(['text'=>'Invalid option. Options can be plain text only', 'isPublicFacing'=>true]);
+					} else {
+						$pollOption = new QuickPollOption();
+						$pollOption->pollId = $pollId;
+						$pollOption->label = $newOption;
+						if ($pollOption->find(true)) {
+							$result['message'] = translate(['text'=>'That option already exists.', 'isPublicFacing'=>true]);
+						} else {
+							$pollOption->insert();
+							$interface->assign('pollOption', $pollOption);
+							$result['success'] = true;
+							$result['message'] = translate(['text'=>'The option was created successfully.', 'isPublicFacing'=>true]);
+							$result['formattedOption'] = $interface->fetch('WebBuilder/quickPollOption.tpl');
+						}
+					}
+				} else {
+					$result['message'] = translate(['text'=>'This poll does not allow new options to be added', 'isPublicFacing'=>true]);
+				}
+			} else {
+				$result['message'] = translate(['text'=>'Invalid poll provided', 'isPublicFacing'=>true]);
+			}
+		}
+
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function deleteCell() {
 		$result = [
 			'success' => false,
