@@ -94,8 +94,33 @@ class SideFacets implements RecommendationInterface {
 		//Figure out which counts to show.
 		$searchSource = $_REQUEST['searchSource'];
 		if ($searchSource == 'events') {
-			$facetCountsToShow = $library->getEventFacetSettings()->getFacetGroup()->eventFacetCountsToShow;
-			$interface->assign('facetCountsToShow', $facetCountsToShow);
+			$facetSettings = $library->getEventFacetSettings();
+
+			$interface->assign('facetCountsToShow', $facetSettings->getFacetGroup()->eventFacetCountsToShow);
+
+			//if there are multiple integrations being used for one library, the first setting found will be used
+			if ($facetSettings->settingSource == 'communico'){
+				require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+				$eventSettings = new CommunicoSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
+			}else if ($facetSettings->settingSource == 'springshare'){
+				require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+				$eventSettings = new SpringshareLibCalSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
+			}else {
+				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+				$eventSettings = new LMLibraryCalendarSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
+			}
 		} else {
 			$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
 			$interface->assign('facetCountsToShow', $facetCountsToShow);
