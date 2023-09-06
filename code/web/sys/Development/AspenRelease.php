@@ -157,6 +157,7 @@ class AspenRelease extends DataObject {
 			$releases[$release->name]['version'] = $release->name;
 			$releases[$release->name]['name'] = $release->name;
 			$releases[$release->name]['date'] = $release->releaseDate;
+			$releases[$release->name]['dateTesting'] = $release->releaseDateTest;
 			$releases[$release->name]['isActive'] = false;
 		}
 
