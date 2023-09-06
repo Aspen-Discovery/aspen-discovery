@@ -267,21 +267,24 @@ function getUpdates23_09_00(): array {
 
 function deleteNullTranslations(/** @noinspection PhpUnusedParameterInspection */ &$update) {
 	$translation = new Translation();
-	$translation->whereAdd("LOWER(translation) LIKE '%null%'");
-	$translation->find();
-	$translationIds = $translation->fetchAll('id', 'translation');
-	$numDeleted = 0;
-	foreach ($translationIds as $translationId => $translationValue) {
-		if (strcasecmp($translationValue, 'null') == 0) {
-			// delete saved translation if it's been translated to null
-			$translation = new Translation();
-			$translation->id = $translationId;
-			$translation->delete();
-			$translation->__destruct();
-			$translation = null;
-			$numDeleted++;
-		}
-	}
+	$translation->whereAdd("LOWER(translation) = 'null'");
+	$numDeleted = $translation->delete(true);
+
+//	$translation->whereAdd("LOWER(translation) LIKE '%null%'");
+//	$translation->find();
+//	$translationIds = $translation->fetchAll('id', 'translation');
+//	$numDeleted = 0;
+//	foreach ($translationIds as $translationId => $translationValue) {
+//		if (strcasecmp($translationValue, 'null') == 0) {
+//			// delete saved translation if it's been translated to null
+//			$translation = new Translation();
+//			$translation->id = $translationId;
+//			$translation->delete();
+//			$translation->__destruct();
+//			$translation = null;
+//			$numDeleted++;
+//		}
+//	}
 	$update['status'] = "<strong>Removed $numDeleted null translations</strong><br/>";
 	$update['success'] = true;
 }
