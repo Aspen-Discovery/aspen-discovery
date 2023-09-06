@@ -265,17 +265,23 @@ function getUpdates23_09_00(): array {
 	];
 }
 
-function deleteNullTranslations() {
+function deleteNullTranslations(/** @noinspection PhpUnusedParameterInspection */ &$update) {
 	$translation = new Translation();
 	$translation->whereAdd("LOWER(translation) LIKE '%null%'");
 	$translation->find();
-	$translations = $translation->fetchAll();
-	foreach ($translations as $translation) {
-		if (strcasecmp($translation->translation, 'null') == 0) {
+	$translationIds = $translation->fetchAll('id', 'translation');
+	$numDeleted = 0;
+	foreach ($translationIds as $translationId => $translationValue) {
+		if (strcasecmp($translationValue, 'null') == 0) {
 			// delete saved translation if it's been translated to null
+			$translation = new Translation();
+			$translation->id = $translationId;
 			$translation->delete();
+			$translation->__destruct();
+			$translation = null;
+			$numDeleted++;
 		}
-		$translation->__destruct();
-		$translation = null;
 	}
+	$update['status'] = "<strong>Removed $numDeleted null translations</strong><br/>";
+	$update['success'] = true;
 }
