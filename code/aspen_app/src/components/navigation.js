@@ -157,7 +157,7 @@ export function App() {
      React.useEffect(() => {
           const bootstrapAsync = async () => {
                console.log('Checking updates...');
-               if (Updates.manifest) {
+               if (Updates.manifest && Updates.channel !== 'development' && !__DEV__) {
                     await updateAspenLiDABuild(Updates.updateId, Updates.channel, Updates.createdAt);
                     console.log('Update information sent to Greenhouse.');
                } else {
