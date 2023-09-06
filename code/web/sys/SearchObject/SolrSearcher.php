@@ -461,42 +461,46 @@ abstract class SearchObject_SolrSearcher extends SearchObject_BaseSearcher {
 	public function getSpellingSuggestions() {
 		$returnArray = [];
 
-		$correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
-		$spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : [];
-		if (count($spellingCollations) > 0) {
-			foreach ($spellingCollations as $collation) {
-				if ($collation[0] == 'collation') {
-					$label = $collation[1]['collationQuery'];
-					$freq = $collation[1]['hits'];
-					$oldTerms = [];
-					$newTerms = [];
-					$okToUseSuggestion = true;
-					foreach ($collation[1]['misspellingsAndCorrections'] as $replacements) {
-						$oldTerms[] = $replacements[0];
-						$newTerms[] = $replacements[1];
-						//Solr sometimes just
-						if (strpos($replacements[1], ' ') > 0) {
-							$replacementWords = explode(' ', $replacements[1]);
-							foreach ($replacementWords as $word) {
-								if (strlen($word) == 1) {
-									$okToUseSuggestion = false;
+		if (in_array($this->getSearchIndex(), ['Keyword', 'Author', "Title", "Subject", "Series"])) {
+			$correctlySpelled = isset($this->indexResult['spellcheck']) ? $this->indexResult['spellcheck']['correctlySpelled'] : true;
+			$spellingCollations = isset($this->indexResult['spellcheck']['collations']) ? $this->indexResult['spellcheck']['collations'] : [];
+			if (count($spellingCollations) > 0) {
+				foreach ($spellingCollations as $collation) {
+					if ($collation[0] == 'collation') {
+						$label = $collation[1]['collationQuery'];
+						$freq = $collation[1]['hits'];
+						$oldTerms = [];
+						$newTerms = [];
+						$okToUseSuggestion = true;
+						foreach ($collation[1]['misspellingsAndCorrections'] as $replacements) {
+							$oldTerms[] = $replacements[0];
+							$newTerms[] = $replacements[1];
+							//Solr sometimes just
+							if (strpos($replacements[1], ' ') > 0) {
+								$replacementWords = explode(' ', $replacements[1]);
+								foreach ($replacementWords as $word) {
+									if (strlen($word) == 1) {
+										$okToUseSuggestion = false;
+									}
 								}
 							}
 						}
-					}
-					if ($okToUseSuggestion) {
-						$returnArray[sprintf('%08d', $freq) . $label] = [
-							'freq' => $freq,
-							'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
-							'phrase' => $label,
-						];
+						if ($okToUseSuggestion) {
+							$returnArray[sprintf('%08d', $freq) . $label] = [
+								'freq' => $freq,
+								'replace_url' => $this->renderLinkWithReplacedTerm($oldTerms, $newTerms),
+								'phrase' => $label,
+							];
+						}
 					}
 				}
 			}
-		}
 
-		//Sort the collations based to get the result that has the most docs in it.
-		krsort($returnArray);
+			//Sort the collations based to get the result that has the most docs in it.
+			krsort($returnArray);
+		} else {
+			$correctlySpelled = true;
+		}
 
 		return [
 			'correctlySpelled' => $correctlySpelled,

@@ -94,7 +94,7 @@ class Translation_ImportTranslations extends Admin_Admin {
 								}
 								foreach ($languagesToImport as $code => $columnIndex) {
 									$newValue = utf8_encode($curRow[$columnIndex]);
-									if (!empty($newValue)) {
+									if (!empty($newValue) && strcasecmp($newValue, 'null') != 0) {
 										$translation = new Translation();
 										$translation->languageId = $codeToLanguageId[$code];
 										$translation->termId = $translationTerm->id;

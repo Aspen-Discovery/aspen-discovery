@@ -404,6 +404,8 @@ foreach ($_REQUEST as $parameter => $value) {
 	}
 }
 
+$interface->assign('canLoginSSO', IPAddress::allowSSOAccessForClientIP());
+
 $isLoggedIn = UserAccount::isLoggedIn();
 $timer->logTime('Check if user is logged in');
 
