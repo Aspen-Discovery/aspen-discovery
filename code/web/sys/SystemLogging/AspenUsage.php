@@ -67,4 +67,42 @@ class AspenUsage extends DataObject {
 		}
 		return $okToExport;
 	}
+
+	public function getAspenUsageStats($instanceName, $month, $year) {
+		$usage = new AspenUsage();
+		if (!empty($instanceName)) {
+			$usage->instance = $instanceName;
+		}
+		if ($month != null) {
+			$usage->month = $month;
+		}
+		if ($year != null) {
+			$usage->year = $year;
+		}
+		$usage->selectAdd();
+		$usage->selectAdd('SUM(pageViews) as totalViews');
+		$usage->selectAdd('SUM(pageViewsByBots) as totalPageViewsByBots');
+		$usage->selectAdd('SUM(pageViewsByAuthenticatedUsers) as totalPageViewsByAuthenticatedUsers');
+		$usage->selectAdd('SUM(sessionsStarted) as totalSessionsStarted');
+		$usage->selectAdd('SUM(coverViews) as totalCovers');
+		$usage->selectAdd('SUM(pagesWithErrors) as totalErrors');
+		$usage->selectAdd('SUM(ajaxRequests) as totalAsyncRequests');
+		$usage->selectAdd('SUM(genealogySearches) as totalGenealogySearches');
+		$usage->selectAdd('SUM(groupedWorkSearches) as totalGroupedWorkSearches');
+		$usage->selectAdd('SUM(openArchivesSearches) as totalOpenArchivesSearches');
+		$usage->selectAdd('SUM(userListSearches) as totalUserListSearches');
+		$usage->selectAdd('SUM(websiteSearches) as totalWebsiteSearches');
+		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
+		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
+		$usage->selectAdd('SUM(ebscohostSearches) as totalEbscohostSearches');
+		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
+		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
+		$usage->selectAdd('SUM(timedOutSearches) as totalTimedOutSearches');
+		$usage->selectAdd('SUM(timedOutSearchesWithHighLoad) as totalTimedOutSearchesWithHighLoad');
+		$usage->selectAdd('SUM(searchesWithErrors) as totalSearchesWithErrors');
+
+		$usage->find(true);
+
+		return $usage;
+	}
 }
