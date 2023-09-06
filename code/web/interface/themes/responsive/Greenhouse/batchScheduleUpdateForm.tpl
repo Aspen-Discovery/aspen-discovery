@@ -6,7 +6,13 @@
             <div class="col-sm-8">
                 <select name="updateToVersion" id="updateToVersion" class="form-control" aria-label="{translate text="Update to Version" isAdminFacing=true}">
                     {foreach from=$releases item=release}
-                        <option value="{$release.version}">{$release.version} ({$release.date})</option>
+	                    {if $batchSiteType == 1}
+	                        <option value="{$release.version}" {if $release.dateTesting > $smarty.now|date_format:"%Y-%m-%d"}disabled{/if}>{$release.name}  {if $release.dateTesting > $smarty.now|date_format:"%Y-%m-%d"}- Not available until {$release.dateTesting|date_format:"%b %d, %Y"}{else}({$release.date|date_format:"%b %d, %Y"}){/if}</option>
+	                    {elseif $batchSiteType == 0 || $batchSiteType == 2}
+	                        <option value="{$release.version}" {if $release.date > $smarty.now|date_format:"%Y-%m-%d"}disabled{/if}>{$release.name}  {if $release.date > $smarty.now|date_format:"%Y-%m-%d"}- Not available until {$release.date|date_format:"%b %d, %Y"}{else}({$release.date|date_format:"%b %d, %Y"}){/if}</option>
+	                    {else}
+	                        <option value="{$release.version}">{$release.name} ({$release.date|date_format:"%b %d, %Y"})</option>
+	                    {/if}
                     {/foreach}
                 </select>
             </div>
@@ -31,7 +37,7 @@
         </div>
         <div id="runUpdateOnField" class="form-group">
             <label for="runUpdateOn" class="col-sm-4">{translate text='When To Update' isAdminFacing=true}</label>
-            <div class="col-sm-8"><input class="form-control" name="runUpdateOn" id="runUpdateOn"></div>
+            <div class="col-sm-8"><input class="form-control" name="runUpdateOn" id="runUpdateOn" placeholder={$smarty.now|date_format:"%Y-%m-%d"}></div>
             <script type="text/javascript">
                 $(document).ready(function(){ldelim}
                     rome(runUpdateOn);

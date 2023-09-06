@@ -256,6 +256,7 @@ class Greenhouse_AJAX extends Action {
 
 		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
+		$interface->assign('batchSiteType', $_REQUEST['siteType']);
 
 		return [
 			'title' => translate([
@@ -294,6 +295,7 @@ class Greenhouse_AJAX extends Action {
 
 		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
+		$interface->assign('batchSiteType', 'any');
 
 		return [
 			'title' => translate([

@@ -3,14 +3,20 @@ import { Button, Center, FormControl, Input, Text, Modal } from 'native-base';
 import { getTermFromDictionary, getTranslation, getTranslationsWithValues } from '../../translations/TranslationService';
 import { create } from 'apisauce';
 import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
+import { createAuthTokens, getHeaders, postData, stripHTML } from '../../util/apiAuth';
 import _ from 'lodash';
 import { LIBRARY } from '../../util/loadLibrary';
+import { LibrarySystemContext } from '../../context/initialContext';
+import { useKeyboard } from '../../util/useKeyboard';
+import { Platform } from 'react-native';
 export const ResetPassword = (props) => {
+     const isKeyboardOpen = useKeyboard();
+     const { library } = React.useContext(LibrarySystemContext);
      const { ils, forgotPasswordType, usernameLabel, passwordLabel, showForgotPasswordModal, setShowForgotPasswordModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
 
      const language = 'en';
+     let libraryUrl = library.baseUrl ?? LIBRARY.url;
 
      const [buttonLabel, setButtonLabel] = React.useState('Forgot PIN?');
      const [modalTitle, setModalTitle] = React.useState('Forgot PIN');
@@ -19,42 +25,42 @@ export const ResetPassword = (props) => {
 
      React.useEffect(() => {
           async function fetchTranslations() {
-               await getTranslationsWithValues('forgot_password_link', passwordLabel, language, LIBRARY.url).then((result) => {
+               await getTranslationsWithValues('forgot_password_link', passwordLabel, language, libraryUrl).then((result) => {
                     setButtonLabel(_.toString(result));
                });
-               await getTranslationsWithValues('forgot_password_title', passwordLabel, language, LIBRARY.url).then((result) => {
+               await getTranslationsWithValues('forgot_password_title', passwordLabel, language, libraryUrl).then((result) => {
                     setModalTitle(_.toString(result));
                });
-               await getTranslationsWithValues('reset_my_password', passwordLabel, language, LIBRARY.url).then((result) => {
+               await getTranslationsWithValues('reset_my_password', passwordLabel, language, libraryUrl).then((result) => {
                     setModalButtonLabel(_.toString(result));
                });
                if (ils === 'koha') {
-                    await getTranslationsWithValues('koha_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, LIBRARY.url).then((result) => {
+                    await getTranslationsWithValues('koha_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, libraryUrl).then((result) => {
                          setResetBody(_.toString(result));
                     });
                } else if (ils === 'sirsi' || ils === 'horizon') {
-                    await getTranslationsWithValues('sirsi_password_reset_body', _.lowerCase(passwordLabel), language, LIBRARY.url).then((result) => {
+                    await getTranslationsWithValues('sirsi_password_reset_body', _.lowerCase(passwordLabel), language, libraryUrl).then((result) => {
                          setResetBody(_.toString(result));
                     });
                } else if (ils === 'evergreen') {
-                    await getTranslationsWithValues('evergreen_password_reset_body', _.lowerCase(passwordLabel), language, LIBRARY.url).then((result) => {
+                    await getTranslationsWithValues('evergreen_password_reset_body', _.lowerCase(passwordLabel), language, libraryUrl).then((result) => {
                          setResetBody(_.toString(result));
                     });
                } else if (ils === 'millennium') {
-                    await getTranslationsWithValues('millennium_password_reset_body', [_.lowerCase(usernameLabel), _.lowerCase(passwordLabel)], language, LIBRARY.url).then((result) => {
+                    await getTranslationsWithValues('millennium_password_reset_body', [_.lowerCase(usernameLabel), _.lowerCase(passwordLabel)], language, libraryUrl).then((result) => {
                          setResetBody(_.toString(result));
                     });
-                    await getTranslationsWithValues('request_pin_reset', passwordLabel, language, LIBRARY.url).then((result) => {
+                    await getTranslationsWithValues('request_pin_reset', passwordLabel, language, libraryUrl).then((result) => {
                          setModalButtonLabel(_.toString(result));
                     });
                } else {
-                    await getTranslationsWithValues('aspen_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, LIBRARY.url).then((result) => {
+                    await getTranslationsWithValues('aspen_password_reset_body', [_.lowerCase(passwordLabel), _.lowerCase(usernameLabel)], language, libraryUrl).then((result) => {
                          setResetBody(_.toString(result));
                     });
                }
           }
           fetchTranslations();
-     }, [language, LIBRARY.url]);
+     }, [language, libraryUrl]);
 
      const closeWindow = () => {
           setShowForgotPasswordModal(false);
@@ -66,22 +72,22 @@ export const ResetPassword = (props) => {
                <Button variant="ghost" onPress={() => setShowForgotPasswordModal(true)} colorScheme="primary">
                     <Text color="primary.600">{buttonLabel}</Text>
                </Button>
-               <Modal isOpen={showForgotPasswordModal} size="md" avoidKeyboard onClose={() => setShowForgotPasswordModal(false)}>
+               <Modal isOpen={showForgotPasswordModal} size="lg" avoidKeyboard={true} onClose={() => setShowForgotPasswordModal(false)} pb={Platform.OS === 'android' && isKeyboardOpen ? '50%' : '0'}>
                     <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton onPress={closeWindow} />
                          <Modal.Header>{modalTitle}</Modal.Header>
                          {ils === 'koha' && forgotPasswordType === 'emailResetLink' ? (
-                              <KohaResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <KohaResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'sirsi' && forgotPasswordType === 'emailResetLink' ? (
-                              <SirsiResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <SirsiResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'horizon' && forgotPasswordType === 'emailResetLink' ? (
-                              <SirsiResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <SirsiResetPassword libraryUrl={libraryUrl} sernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'evergreen' && forgotPasswordType === 'emailResetLink' ? (
-                              <EvergreenResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <EvergreenResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : ils === 'millennium' && forgotPasswordType === 'emailResetLink' ? (
-                              <MillenniumResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <MillenniumResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : forgotPasswordType === 'emailAspenResetLink' ? (
-                              <AspenResetPassword usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
+                              <AspenResetPassword libraryUrl={libraryUrl} usernameLabel={usernameLabel} passwordLabel={passwordLabel} modalButtonLabel={modalButtonLabel} resetBody={resetBody} setShowForgotPasswordModal={setShowForgotPasswordModal} isProcessing={isProcessing} setIsProcessing={setIsProcessing} />
                          ) : null}
                     </Modal.Content>
                </Modal>
@@ -90,7 +96,7 @@ export const ResetPassword = (props) => {
 };
 
 const AspenResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
      const [username, setUsername] = React.useState('');
 
      const [showResults, setShowResults] = React.useState(false);
@@ -104,7 +110,7 @@ const AspenResetPassword = (props) => {
      };
      const initiateResetPassword = async () => {
           setIsProcessing(true);
-          await resetPassword(username, '', false, 'aspen').then((data) => {
+          await resetPassword(username, '', false, 'aspen', libraryUrl).then((data) => {
                setResults(data);
                setShowResults(true);
           });
@@ -196,7 +202,7 @@ const AspenResetPassword = (props) => {
      );
 };
 const KohaResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
      const [email, setEmail] = React.useState('');
      const [username, setUsername] = React.useState('');
      const [resend, setResend] = React.useState(false);
@@ -214,7 +220,7 @@ const KohaResetPassword = (props) => {
      };
      const initiateResetPassword = async () => {
           setIsProcessing(true);
-          await resetPassword(username, email, resend, 'koha').then((data) => {
+          await resetPassword(username, email, resend, 'koha', libraryUrl).then((data) => {
                setResults(data);
                setShowResults(true);
           });
@@ -325,7 +331,7 @@ const KohaResetPassword = (props) => {
 };
 
 const SirsiResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
      const [username, setUsername] = React.useState('');
 
      const [showResults, setShowResults] = React.useState(false);
@@ -339,7 +345,7 @@ const SirsiResetPassword = (props) => {
      };
      const initiateResetPassword = async () => {
           setIsProcessing(true);
-          await resetPassword(username, '', false, 'sirsi').then((data) => {
+          await resetPassword(username, '', false, 'sirsi', libraryUrl).then((data) => {
                setResults(data);
                setShowResults(true);
           });
@@ -432,7 +438,7 @@ const SirsiResetPassword = (props) => {
 };
 
 const EvergreenResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
      const [email, setEmail] = React.useState('');
      const [username, setUsername] = React.useState('');
      const [resend, setResend] = React.useState(false);
@@ -450,7 +456,7 @@ const EvergreenResetPassword = (props) => {
      };
      const initiateResetPassword = async () => {
           setIsProcessing(true);
-          await resetPassword(username, email, resend, 'evergreen').then((data) => {
+          await resetPassword(username, email, resend, 'evergreen', libraryUrl).then((data) => {
                setResults(data);
                setShowResults(true);
           });
@@ -561,7 +567,7 @@ const EvergreenResetPassword = (props) => {
 };
 
 const MillenniumResetPassword = (props) => {
-     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody } = props;
+     const { usernameLabel, setShowForgotPasswordModal, isProcessing, setIsProcessing, modalButtonLabel, resetBody, libraryUrl } = props;
      const [username, setUsername] = React.useState('');
 
      const [showResults, setShowResults] = React.useState(false);
@@ -575,7 +581,7 @@ const MillenniumResetPassword = (props) => {
      };
      const initiateResetPassword = async () => {
           setIsProcessing(true);
-          await resetPassword(username, '', false, 'millennium').then((data) => {
+          await resetPassword(username, '', false, 'millennium', libraryUrl).then((data) => {
                setResults(data);
                setShowResults(true);
           });
@@ -636,8 +642,8 @@ const MillenniumResetPassword = (props) => {
      );
 };
 
-async function resetPassword(username = '', email = '', resendEmail = false, ils = null) {
-     const postBody = new FormData();
+async function resetPassword(username = '', email = '', resendEmail = false, ils = null, url) {
+     const postBody = await postData();
      let params = {};
      if (ils === 'koha') {
           params = {
@@ -666,13 +672,12 @@ async function resetPassword(username = '', email = '', resendEmail = false, ils
      }
 
      const discovery = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(true),
+          headers: getHeaders(),
           auth: createAuthTokens(),
-          params: params,
      });
-     const results = await discovery.post('/UserAPI?method=resetPassword', postBody);
+     const results = await discovery.get('/UserAPI?method=resetPassword', params);
      if (results.ok) {
           if (results.data.result) {
                return results.data.result;

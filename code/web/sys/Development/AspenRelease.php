@@ -137,15 +137,38 @@ class AspenRelease extends DataObject {
 	}
 
 	static function getReleasesList() {
+		$today = new DateTime('now');
+		$today = $today->format('Y-m-d');
+		$activeVersion = false;
 		$release = new AspenRelease();
-		$release->orderBy('name DESC');
+		$release->orderBy('releaseDate ASC');
 		$release->find();
 		$releases = [];
 		while($release->fetch()) {
+			if(!$activeVersion && $release->releaseDate < $today) {
+				$activeVersion = $release->name;
+			} else {
+				if(version_compare($release->name, $activeVersion, '>=') && $release->releaseDate < $today) {
+					$activeVersion = $release->name;
+				}
+			}
+
 			$releases[$release->name]['id'] = $release->id;
 			$releases[$release->name]['version'] = $release->name;
+			$releases[$release->name]['name'] = $release->name;
 			$releases[$release->name]['date'] = $release->releaseDate;
+			$releases[$release->name]['dateTesting'] = $release->releaseDateTest;
+			$releases[$release->name]['isActive'] = false;
 		}
+
+		if($activeVersion) {
+			$releases[$activeVersion]['isActive'] = true;
+			$releases[$activeVersion]['name'] .= ' (Active)';
+		}
+
+		usort($releases, function ($a, $b) {
+			return $a['isActive'] != true;
+		});
 
 		return $releases;
 	}
