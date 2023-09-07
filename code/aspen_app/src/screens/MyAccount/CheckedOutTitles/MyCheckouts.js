@@ -45,14 +45,12 @@ export const MyCheckouts = () => {
           });
      }, [navigation]);
 
-     /*useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
-          notifyOnChangeProps: ['data'],
+     useQuery(['checkouts', user.id, library.baseUrl, language, source], () => getPatronCheckedOutItems(source, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateCheckouts(data);
           },
           onSettle: (data) => setLoading(false),
      });
-      */
 
      const toggleSource = async (value) => {
           setSource(value);
@@ -70,12 +68,6 @@ export const MyCheckouts = () => {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
           }
-          useQuery(['checkouts', user.id, library.baseUrl, language], () => getPatronCheckedOutItems(value, library.baseUrl, true, language), {
-               onSuccess: (data) => {
-                    updateCheckouts(data);
-               },
-               onSettle: (data) => setLoading(false),
-          });
      };
 
      useFocusEffect(
@@ -150,13 +142,13 @@ export const MyCheckouts = () => {
      const reloadCheckouts = async () => {
           setLoading(true);
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
      };
 
      const refreshCheckouts = async () => {
           setLoading(true);
           queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language] });
+          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
      };
 
      const actionButtons = () => {
