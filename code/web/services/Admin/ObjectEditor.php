@@ -465,6 +465,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		$contentType = DataObjectUtil::getFormContentType($structure);
 		$interface->assign('contentType', $contentType);
 
+		$userCanChangeFieldLocks = $this->userCanChangeFieldLocks();
+		$interface->assign('userCanChangeFieldLocks', $userCanChangeFieldLocks);
+		$fieldLocks = $this->getFieldLocks();
+		$interface->assign('fieldLocks', $fieldLocks);
+		if (!empty($fieldLocks)) {
+			$structure = $this->applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks);
+			$interface->assign('structure', $structure);
+		}
+
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->setTemplate('../Admin/objectEditor.tpl');
 	}
@@ -1086,4 +1095,39 @@ abstract class ObjectEditor extends Admin_Admin {
 		return $hasSections || count($structure) > 6;
 	}
 
+	public function getFieldLocks() : array {
+		$fieldLocks = [];
+		try {
+			require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
+			$fieldLock = new FieldLock();
+			$fieldLock->module = $this->getModule();
+			$fieldLock->toolName = $this->getToolName();
+			$fieldLocks = $fieldLock->fetchAll('id', 'field');
+		}catch (Exception $e) {
+			//Nothing since it's not setup yet
+		}
+		return $fieldLocks;
+	}
+
+	public function userCanChangeFieldLocks() : bool {
+		return UserAccount::userHasPermission('Lock Administration Fields');
+	}
+
+	public function applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks){
+		foreach ($structure as $key => &$property) {
+			if ($property['type'] == 'section') {
+				$property['properties'] = $this->applyFieldLocksToObjectStructure($property['properties'], $fieldLocks, $userCanChangeFieldLocks);
+			} else {
+				if (in_array($property['property'], $fieldLocks)) {
+					$property['locked'] = true;
+					if (!$userCanChangeFieldLocks) {
+						$property['readOnly'] = true;
+					}
+				} else {
+					$property['locked'] = false;
+				}
+			}
+		}
+		return $structure;
+	}
 }

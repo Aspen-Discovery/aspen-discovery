@@ -23,6 +23,7 @@
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<p style="margin-bottom: .5em">
 						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -37,6 +38,7 @@
 							<i class="fas fa-question-circle" style="vertical-align: top"></i>
 						</a>
 					{/if}
+					{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<span class="label label-danger" style="margin-right: .5em{if empty($property.description)}; margin-left: .5em{/if}">{translate text="Required" isAdminFacing=true}</span>
 					{/if}
@@ -46,6 +48,7 @@
 					{translate text=$property.label isAdminFacing=true}
 				</label>
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 				{/if}
@@ -57,6 +60,7 @@
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<div style="margin-bottom: .5em">
 							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+							{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 							{if !empty($property.description)}
 								<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 									<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -66,11 +70,13 @@
 						</div>
 					{else}
 						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
+
 						{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 							<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 						{/if}
@@ -80,6 +86,7 @@
 						{translate text=$property.label isAdminFacing=true}
 					</label>
 					{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+					{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 					{/if}
@@ -99,6 +106,7 @@
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						<span class="label label-danger" style="margin-right: .5em; vertical-align: top{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 					</div>
 				{else}
@@ -109,6 +117,7 @@
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 							<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 						{/if}
@@ -117,6 +126,7 @@
 			{else}
 				<label for='{$propName}'>{translate text=$property.label isAdminFacing=true}</label>
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 				{/if}
@@ -443,6 +453,7 @@
 				<label for='{$propName}'>
 					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}> {translate text=$property.label isAdminFacing=true} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
 				</label>
+				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 			</div>
 		{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}

@@ -69,6 +69,24 @@ function getUpdates23_09_00(): array {
 			],
 		],
 		//web_builder_quick_polls
+		'admin_field_locking' => [
+			'title' => 'Administrative Field Locking',
+			'description' => 'Allow field locking ',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE administration_field_lock (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					module VARCHAR(30) NOT NULL,
+					toolName VARCHAR(100) NOT NULL,
+					field VARCHAR(100) NOT NULL
+				) ENGINE = InnoDB',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('System Administration', 'Lock Administration Fields', '', 25, 'Allows the user to lock administration fields and change locked fields.')
+					",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Lock Administration Fields'))",
+			],
+		],
+		//admin_field_locking
 
 		//kodi - ByWater
 		'permissions_open_archives_facets' => [

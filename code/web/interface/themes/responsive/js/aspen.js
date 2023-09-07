@@ -9741,6 +9741,26 @@ AspenDiscovery.Admin = (function () {
 
 		showScheduledUpdateDetails: function(id){
 			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/Greenhouse/AJAX?method=showScheduledUpdateDetails&id=" +id, true);
+		},
+
+		toggleFieldLock: function(module, tool, field) {
+			var url = Globals.path + '/Admin/AJAX';
+			var params = {
+				method: 'toggleFieldLock',
+				moduleName: module,
+				toolName: tool,
+				fieldName: field
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					$('#fieldLock' + field).replaceWith(data.lockToggle);
+					AspenDiscovery.closeLightbox();
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
 		}
 
 	};
