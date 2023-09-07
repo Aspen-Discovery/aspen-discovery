@@ -1,5 +1,7 @@
 <?php
 
+require_once ROOT_DIR . '/sys/DB/DataObject.php';
+
 class ScheduledUpdate extends DataObject {
 	public $__table = 'aspen_site_scheduled_update';
 	public $id;
@@ -24,6 +26,7 @@ class ScheduledUpdate extends DataObject {
 
 		$statuses = [
 			'pending' => 'Pending',
+			'started' => 'Started',
 			'canceled' => 'Canceled',
 			'failed' => 'Failed',
 			'complete' => 'Complete',
