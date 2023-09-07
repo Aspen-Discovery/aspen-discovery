@@ -21,6 +21,8 @@ import { fetchAllLibrariesFromGreenhouse, fetchNearbyLibrariesFromGreenhouse } f
 import { SplashScreen } from './Splash';
 import { ResetPassword } from './ResetPassword';
 import { ForgotBarcode } from './ForgotBarcode';
+import { LibrarySystemContext } from '../../context/initialContext';
+import { useKeyboard } from '../../util/useKeyboard';
 
 export const LoginScreen = () => {
      const [isLoading, setIsLoading] = React.useState(true);
@@ -42,6 +44,7 @@ export const LoginScreen = () => {
      const [showForgotPasswordModal, setShowForgotPasswordModal] = React.useState(false);
      const [showForgotBarcodeModal, setShowForgotBarcodeModal] = React.useState(false);
      const [ils, setIls] = React.useState('koha');
+     const { updateLibrary } = React.useContext(LibrarySystemContext);
      let isCommunity = true;
      if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           isCommunity = false;
@@ -90,6 +93,7 @@ export const LoginScreen = () => {
           LIBRARY.url = data.baseUrl; // used in some cases before library context is set
           await getLibraryInfo(data.baseUrl, data.libraryId).then(async (result) => {
                if (_.isObject(result)) {
+                    updateLibrary(result);
                     if (result.barcodeStyle) {
                          setAllowBarcodeScanner(true);
                          if (result.barcodeStyle === 'CODE39') {
@@ -171,6 +175,7 @@ export const LoginScreen = () => {
 };
 
 const SelectYourLibraryModal = (payload) => {
+     const isKeyboardOpen = useKeyboard();
      const { isCommunity, showModal, setShowModal, updateSelectedLibrary, selectedLibrary, shouldRequestPermissions, permissionRequested, libraries, allLibraries, setShouldRequestPermissions } = payload;
      const [query, setQuery] = React.useState('');
 
@@ -204,7 +209,7 @@ const SelectYourLibraryModal = (payload) => {
                <Button onPress={() => setShowModal(true)} colorScheme="primary" m={5} size="md" startIcon={<Icon as={MaterialIcons} name="place" size={5} />}>
                     {selectedLibrary?.name ? selectedLibrary.name : getTermFromDictionary('en', 'select_your_library')}
                </Button>
-               <Modal isOpen={showModal} size="lg" avoidKeyboard onClose={() => setShowModal(false)}>
+               <Modal isOpen={showModal} size="lg" avoidKeyboard onClose={() => setShowModal(false)} pb={Platform.OS === 'android' && isKeyboardOpen ? '50%' : '0'}>
                     <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }} maxH="350">
                          <Modal.CloseButton />
                          <Modal.Header>{getTermFromDictionary('en', 'find_your_library')}</Modal.Header>

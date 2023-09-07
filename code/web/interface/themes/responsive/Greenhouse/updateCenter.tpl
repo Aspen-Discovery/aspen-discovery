@@ -42,7 +42,7 @@
 	                <select name="releaseToShow" id="releaseToShowSelect" class="form-control">
                         <option value="any"{if !empty($releaseToShow) && ($releaseToShow == 'any')} selected='selected'{/if}>Any</option>
 	                    {foreach from=$releases item=release}
-	                        <option value="{$release.version}"{if !empty($releaseToShow) && ($releaseToShow == $release.version)} selected='selected'{/if}>{$release.version}</option>
+	                        <option value="{$release.version}"{if !empty($releaseToShow) && ($releaseToShow == $release.version)} selected='selected'{/if}>{$release.name}</option>
 	                    {/foreach}
 	                </select>
 	            </div>

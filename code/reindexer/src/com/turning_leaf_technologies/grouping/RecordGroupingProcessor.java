@@ -557,7 +557,7 @@ public class RecordGroupingProcessor {
 			groupedWork.setGroupingCategory(groupingCategory);
 		} else {
 			if (!formatsWarned.contains(format)) {
-				logEntry.incErrors("Could not find format category for format " + format + " setting to book");
+				logger.warn("Could not find format category for format " + format + " setting to book");
 				groupedWork.setGroupingCategory("book");
 				formatsWarned.add(format);
 			}
@@ -676,6 +676,7 @@ public class RecordGroupingProcessor {
 		formatsToFormatCategory.put("magazine-overdrive", "ebook");
 		formatsToFormatCategory.put("magazine", "book");
 		formatsToFormatCategory.put("xps", "ebook");
+		formatsToFormatCategory.put("bingepass", "other");
 	}
 
 	static HashMap<String, String> categoryMap = new HashMap<>();

@@ -9741,6 +9741,26 @@ AspenDiscovery.Admin = (function () {
 
 		showScheduledUpdateDetails: function(id){
 			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/Greenhouse/AJAX?method=showScheduledUpdateDetails&id=" +id, true);
+		},
+
+		toggleFieldLock: function(module, tool, field) {
+			var url = Globals.path + '/Admin/AJAX';
+			var params = {
+				method: 'toggleFieldLock',
+				moduleName: module,
+				toolName: tool,
+				fieldName: field
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					$('#fieldLock' + field).replaceWith(data.lockToggle);
+					AspenDiscovery.closeLightbox();
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
 		}
 
 	};
@@ -14778,6 +14798,43 @@ AspenDiscovery.WebBuilder = function () {
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 
+			return false;
+		},
+
+		getAddQuickPollOptionForm: function (pollId) {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var params = {
+				method: 'getAddQuickPollOptionForm',
+				pollId: pollId
+			};
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons)
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
+
+		addQuickPollOption: function () {
+			var url = Globals.path + '/WebBuilder/AJAX';
+			var newOption = $("#newOption").val();
+			var pollId = $("#pollId").val();
+			var params = {
+				method: 'addQuickPollOption',
+				pollId: pollId,
+				newOption: newOption
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					$('#newOptionPlaceholder').before(data.formattedOption);
+					AspenDiscovery.closeLightbox();
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
 			return false;
 		}
 	};

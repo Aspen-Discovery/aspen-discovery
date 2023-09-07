@@ -6,10 +6,17 @@ import { GLOBALS } from '../../util/globals';
 import { createAuthTokens, getHeaders, stripHTML } from '../../util/apiAuth';
 import { LIBRARY } from '../../util/loadLibrary';
 import _ from 'lodash';
+import { LibrarySystemContext } from '../../context/initialContext';
+import { useKeyboard } from '../../util/useKeyboard';
+import { Platform } from 'react-native';
 export const ForgotBarcode = (props) => {
+     const isKeyboardOpen = useKeyboard();
+     const { library } = React.useContext(LibrarySystemContext);
      const { usernameLabel, showForgotBarcodeModal, setShowForgotBarcodeModal } = props;
      const [isProcessing, setIsProcessing] = React.useState(false);
      const language = 'en';
+
+     let libraryUrl = library.baseUrl ?? LIBRARY.url;
 
      const [phoneNumber, setPhoneNumber] = React.useState('');
      const [showResults, setShowResults] = React.useState(false);
@@ -22,21 +29,21 @@ export const ForgotBarcode = (props) => {
 
      React.useEffect(() => {
           async function fetchTranslations() {
-               await getTranslationsWithValues('forgot_barcode_link', usernameLabel, language, LIBRARY.url).then((result) => {
+               await getTranslationsWithValues('forgot_barcode_link', usernameLabel, language, libraryUrl).then((result) => {
                     setButtonLabel(_.toString(result));
                });
-               await getTranslationsWithValues('forgot_barcode_title', usernameLabel, language, LIBRARY.url).then((result) => {
+               await getTranslationsWithValues('forgot_barcode_title', usernameLabel, language, libraryUrl).then((result) => {
                     setModalTitle(_.toString(result));
                });
-               await getTranslation('Phone Number', language, LIBRARY.url).then((result) => {
+               await getTranslation('Phone Number', language, libraryUrl).then((result) => {
                     setModalButtonLabel(_.toString(result));
                });
-               await getTranslationsWithValues('send_my_barcode', usernameLabel, language, LIBRARY.url).then((result) => {
+               await getTranslationsWithValues('send_my_barcode', usernameLabel, language, libraryUrl).then((result) => {
                     setModalButtonLabel(_.toString(result));
                });
           }
           fetchTranslations();
-     }, [language, LIBRARY.url]);
+     }, [language, libraryUrl]);
 
      const closeWindow = () => {
           setShowForgotBarcodeModal(false);
@@ -47,7 +54,7 @@ export const ForgotBarcode = (props) => {
 
      const initiateForgotBarcode = async () => {
           setIsProcessing(true);
-          await forgotBarcode(phoneNumber).then((data) => {
+          await forgotBarcode(phoneNumber, libraryUrl).then((data) => {
                setResults(data);
                setShowResults(true);
           });
@@ -64,7 +71,7 @@ export const ForgotBarcode = (props) => {
                <Button variant="ghost" onPress={() => setShowForgotBarcodeModal(true)} colorScheme="primary">
                     <Text color="primary.600">{buttonLabel}</Text>
                </Button>
-               <Modal isOpen={showForgotBarcodeModal} size="md" avoidKeyboard onClose={() => setShowForgotBarcodeModal(false)}>
+               <Modal isOpen={showForgotBarcodeModal} size="md" avoidKeyboard onClose={() => setShowForgotBarcodeModal(false)} pb={Platform.OS === 'android' && isKeyboardOpen ? '50%' : '0'}>
                     <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }}>
                          <Modal.CloseButton onPress={closeWindow} />
                          <Modal.Header>{modalTitle}</Modal.Header>
@@ -115,18 +122,16 @@ export const ForgotBarcode = (props) => {
      );
 };
 
-async function forgotBarcode(phone) {
-     const postBody = new FormData();
+async function forgotBarcode(phone, url) {
      const discovery = create({
-          baseURL: LIBRARY.url + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(true),
+          headers: getHeaders(),
           auth: createAuthTokens(),
-          params: {
-               phone: phone,
-          },
      });
-     const results = await discovery.post('/RegistrationAPI?method=lookupAccountByPhoneNumber', postBody);
+     const results = await discovery.get('/RegistrationAPI?method=lookupAccountByPhoneNumber', {
+          phone: phone,
+     });
      if (results.ok) {
           if (results.data.result) {
                return results.data.result;
