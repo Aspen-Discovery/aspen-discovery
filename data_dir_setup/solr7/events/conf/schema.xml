@@ -88,7 +88,7 @@
 		<field name="last_indexed" type="date" indexed="false" stored="true"/>
 
 		<field name="last_change" type="date" indexed="false" stored="true"/>
-		<field name="start_date" type="date" indexed="false" stored="true" docValues="true"/>
+		<field name="start_date" type="date" indexed="true" stored="true" docValues="true"/>
 		<field name="start_date_sort" type="integer" indexed="true" stored="true"/>
 		<field name="end_date" type="date" indexed="true" stored="true" docValues="true"/>
 
