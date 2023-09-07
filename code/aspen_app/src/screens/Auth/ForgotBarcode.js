@@ -25,6 +25,7 @@ export const ForgotBarcode = (props) => {
      const [buttonLabel, setButtonLabel] = React.useState('Forgot Barcode?');
      const [modalTitle, setModalTitle] = React.useState('Forgot Barcode');
      const [fieldLabel, setFieldLabel] = React.useState('Phone Number');
+     const [modalBody, setModalBody] = React.useState('');
      const [modalButtonLabel, setModalButtonLabel] = React.useState('Send My Barcode');
 
      React.useEffect(() => {
@@ -40,6 +41,9 @@ export const ForgotBarcode = (props) => {
                });
                await getTranslationsWithValues('send_my_barcode', usernameLabel, language, libraryUrl).then((result) => {
                     setModalButtonLabel(_.toString(result));
+               });
+               await getTranslationsWithValues('forgot_barcode_body', usernameLabel, language, libraryUrl).then((result) => {
+                    setModalBody(_.toString(result));
                });
           }
           fetchTranslations();
@@ -87,6 +91,7 @@ export const ForgotBarcode = (props) => {
                                    <Text>{stripHTML(results.message)}</Text>
                               ) : (
                                    <>
+                                        <Text>{modalBody}</Text>
                                         <FormControl.Label
                                              _text={{
                                                   fontSize: 'sm',

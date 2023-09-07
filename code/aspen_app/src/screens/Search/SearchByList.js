@@ -1,8 +1,9 @@
-import { Badge, Box, FlatList, HStack, Image, Pressable, Stack, Text, VStack, ChevronLeftIcon } from 'native-base';
+import { Badge, Box, FlatList, HStack, Image, Pressable, Stack, Text, VStack, ChevronLeftIcon, Icon, Button } from 'native-base';
 import React from 'react';
 import axios from 'axios';
 import { SafeAreaView } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+
 import { useRoute, useNavigation } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 
@@ -19,17 +20,25 @@ import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
 import { loadError } from '../../components/loadError';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { SEARCH } from '../../util/search';
+import { removeTitlesFromList } from '../../util/api/list';
+import { MaterialIcons } from '@expo/vector-icons';
 
 export const SearchResultsForList = () => {
      const id = useRoute().params?.id;
 
      const navigation = useNavigation();
      const prevRoute = useRoute().params?.prevRoute ?? 'HomeScreen';
+     const screenTitle = useRoute().params?.title ?? '';
      //console.log(useRoute().params);
      const [page, setPage] = React.useState(1);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const url = library.baseUrl;
+
+     let isUserList = false;
+     if (screenTitle.includes('Your List')) {
+          isUserList = true;
+     }
 
      const { status, data, error, isFetching } = useQuery(['searchResultsForList', url, page, id, language], () => fetchSearchResults(id, page, url, language));
 
@@ -45,7 +54,7 @@ export const SearchResultsForList = () => {
                     loadError('Error', '')
                ) : (
                     <Box flex={1}>
-                         <FlatList data={data.items} ListEmptyComponent={NoResults} renderItem={({ item }) => <DisplayResult data={item} />} keyExtractor={(item, index) => index.toString()} />
+                         <FlatList data={data.items} ListEmptyComponent={NoResults} renderItem={({ item }) => <DisplayResult listId={id} data={item} isUserList={isUserList} />} keyExtractor={(item, index) => index.toString()} />
                     </Box>
                )}
           </SafeAreaView>
@@ -54,10 +63,13 @@ export const SearchResultsForList = () => {
 
 const DisplayResult = (data) => {
      const item = data.data;
+     const isUserList = data.isUserList;
+     const listId = data.listId;
      const { user } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const queryClient = useQueryClient();
 
      let recordType = 'grouped_work';
      if (item.recordtype) {
@@ -146,7 +158,23 @@ const DisplayResult = (data) => {
                                    {item.language}
                               </Badge>
                          ) : null}
-                         <AddToList itemId={item.id} btnStyle="sm" />
+                         {isUserList ? (
+                              <Button
+                                   onPress={() => {
+                                        removeTitlesFromList(listId, item.id, library.baseUrl).then(async () => {
+                                             queryClient.invalidateQueries({ queryKey: ['list', listId] });
+                                             queryClient.invalidateQueries({ queryKey: ['searchResultsForList', library.baseUrl, 1, listId, language] });
+                                        });
+                                   }}
+                                   colorScheme="danger"
+                                   leftIcon={<Icon as={MaterialIcons} name="delete" size="xs" />}
+                                   size="sm"
+                                   variant="ghost">
+                                   {getTermFromDictionary(language, 'delete')}
+                              </Button>
+                         ) : (
+                              <AddToList itemId={item.id} btnStyle="sm" />
+                         )}
                     </VStack>
                     <VStack w="65%">
                          <Text
