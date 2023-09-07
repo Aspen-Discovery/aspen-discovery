@@ -67,7 +67,7 @@
 		<table class="adminTable table table-striped table-condensed smallText table-sticky" id="adminTable" aria-label="List of Objects">
 			<thead>
 				<tr>
-					{if $canCompare || $canBatchUpdate}
+					{if $canCompare || $canBatchUpdate || $canExportToCSV}
 						<th>{translate text='Select' isAdminFacing=true}</th>
 					{/if}
 					{foreach from=$structure item=property key=id}
