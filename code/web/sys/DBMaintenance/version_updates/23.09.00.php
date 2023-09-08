@@ -280,6 +280,18 @@ function getUpdates23_09_00(): array {
 			],
 		],
 		//ecommerce_report_permissions
+		'add_companion_system' => [
+			'title' => 'Create Companion System table',
+			'description' => 'Adds tables to store companion system for Greenhouse',
+			'sql' => [
+				"CREATE TABLE companion_system (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					serverName VARCHAR(72) NOT NULL, 
+					serverUrl VARCHAR(255) NOT NULL
+				) ENGINE = InnoDB",
+			],
+		],
+		//add_companion_system
 	];
 }
 
