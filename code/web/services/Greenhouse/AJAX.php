@@ -370,7 +370,6 @@ class Greenhouse_AJAX extends Action {
 					'updateToVersion' => $scheduledUpdate->updateToVersion,
 					'status' => $scheduledUpdate->status,
 					'greenhouseId' => $scheduledUpdate->id,
-					//'isRemoteUpdate' => true,
 					'greenhouseSiteId' => $scheduledUpdate->siteId,
 				];
 				$response = json_decode($curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
@@ -467,7 +466,7 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate->siteId = $site;
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
-					//$scheduledUpdate->remoteUpdate = true;
+					$scheduledUpdate->remoteUpdate = true;
 					if(!$scheduledUpdate->insert()) {
 						if($errors == '') {
 							$errors = 'Error saving update for ' . $siteToUpdate->name . ": " . $scheduledUpdate->getLastError();
