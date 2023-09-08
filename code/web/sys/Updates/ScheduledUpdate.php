@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
 class ScheduledUpdate extends DataObject {
 	public $__table = 'aspen_site_scheduled_update';
@@ -69,6 +70,12 @@ class ScheduledUpdate extends DataObject {
 				'description' => 'The unique Aspen Site Id',
 				'default' => '',
 				'hideInLists' => true,
+			],
+			'siteName' => [
+				'property' => 'siteName',
+				'type' => 'label',
+				'label' => 'Site',
+				'description' => '',
 			],
 			'greenhouseId' => [
 				'property' => 'greenhouseId',
@@ -156,6 +163,24 @@ class ScheduledUpdate extends DataObject {
 			$structure['updateToVersion']['type'] = 'text';
 		}
 		return $structure;
+	}
+
+	function __get($name) {
+		if($name == 'siteName') {
+			if (empty($this->_data['siteName'])) {
+				$aspenSite = new AspenSite();
+				$aspenSite->id = $this->siteId;
+				if($aspenSite->find(true)) {
+					$this->_data['siteName'] = $aspenSite->name;
+				} else {
+					$this->_data['siteName'] = translate([
+						'text' => 'Unknown',
+						'isPublicFacing' => true,
+					]);
+				}
+			}
+		}
+		return $this->_data[$name] ?? null;
 	}
 
 	public function getNumericColumnNames(): array {
