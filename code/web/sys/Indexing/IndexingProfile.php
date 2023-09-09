@@ -255,6 +255,7 @@ class IndexingProfile extends DataObject {
 					'Evolve' => 'Evolve',
 					'Folio' => 'Folio',
 					'III' => 'III',
+					'NashvilleCarlX' => 'Nashville Carl.X',
 					'Polaris' => 'Polaris',
 					'Symphony' => 'Symphony'
 				],
