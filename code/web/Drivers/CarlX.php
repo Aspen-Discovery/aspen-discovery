@@ -47,20 +47,19 @@ class CarlX extends AbstractIlsDriver {
 		//  EZ Username & EZ Password
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			//Remove any spaces from the barcode
-			$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
+			$barcode = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
 			$password = trim($password);
 		} else {
 			//Remove any spaces from the barcode
-			$username = trim($username);
-			$password = preg_replace('/[^0-9a-zA-Z]/', '', trim($password));
+			$barcode = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
+			$password = trim($password);
 		}
 		//Remove any spaces from the barcode
-		$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
 		$password = trim($password);
 
 		$request = new stdClass();
 		$request->SearchType = 'Patron ID';
-		$request->SearchID = $username;
+		$request->SearchID = $barcode;
 		$request->Modifiers = '';
 
 		$result = $this->doSoapRequest('getPatronInformation', $request, '', [], ['password' => $password]);
@@ -70,11 +69,11 @@ class CarlX extends AbstractIlsDriver {
 				$loginValid = false;
 				if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 					//Check to see if the pin matches
-					if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
+					if (($result->Patron->PatronID == $barcode) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
 						$loginValid = true;
 					}
 				} else {
-					if (($result->Patron->PatronID == $username) && ((strcasecmp($result->Patron->LastName, $password) === 0) || $validatedViaSSO)) {
+					if (($result->Patron->PatronID == $barcode) && ((strcasecmp($result->Patron->LastName, $password) === 0) || $validatedViaSSO)) {
 						$loginValid = true;
 					}
 				}
@@ -106,8 +105,8 @@ class CarlX extends AbstractIlsDriver {
 					if ($forceDisplayNameUpdate) {
 						$user->displayName = '';
 					}
-					$user->cat_username = $username;
-					$user->ils_barcode = $username;
+					$user->cat_username = $barcode;
+					$user->ils_barcode = $barcode;
 					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 						$user->cat_password = $result->Patron->PatronPIN;
 						$user->ils_password = $result->Patron->PatronPIN;
@@ -2441,7 +2440,11 @@ EOT;
 	];
 
 	function getForgotPasswordType() {
-		return 'emailAspenResetLink';
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			return 'emailAspenResetLink';
+		}else{
+			return 'none';
+		}
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {
