@@ -47,17 +47,17 @@ export const MyHolds = () => {
           });
      }, [navigation]);
 
-     /*useQuery(['holds', user.id, library.baseUrl, language], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
+     useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
                updateHolds(data);
                setLoading(false);
           },
-     });*/
+     });
 
      const toggleReadySort = async (value) => {
           updateReadySortMethod(value);
           const sortedHolds = sortHolds(holds, pendingSortMethod, value);
-          queryClient.setQueryData(['holds', library.baseUrl, language], sortedHolds);
+          queryClient.setQueryData(['holds', library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], sortedHolds);
           updateHolds(sortedHolds);
      };
 
@@ -65,7 +65,7 @@ export const MyHolds = () => {
           updatePendingSortMethod(value);
           const sortedHolds = sortHolds(holds, value, readySortMethod);
           console.log(sortedHolds[1]);
-          queryClient.setQueryData(['holds', library.baseUrl, language], sortedHolds);
+          queryClient.setQueryData(['holds', library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], sortedHolds);
           updateHolds(sortedHolds);
      };
 
@@ -85,7 +85,6 @@ export const MyHolds = () => {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
           }
-          queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
      };
 
      useFocusEffect(

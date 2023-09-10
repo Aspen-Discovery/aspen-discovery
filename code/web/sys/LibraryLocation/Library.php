@@ -3725,6 +3725,7 @@ class Library extends DataObject {
 		$libLookUp->libraryId = $library->libraryId;
 		if($libLookUp->find(true)) {
 			if($libLookUp->ssoSettingId != -1) {
+				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
 				$ssoSettings = new SSOSetting();
 				$ssoSettings->id = $libLookUp->ssoSettingId;
 				if($ssoSettings->find(true)) {

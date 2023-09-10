@@ -142,6 +142,8 @@ class User extends DataObject {
 	function getEncryptedFieldNames(): array {
 		return [
 			'password',
+			'cat_password',
+			'ils_password',
 			'firstname',
 			'lastname',
 			'email',
@@ -149,7 +151,6 @@ class User extends DataObject {
 			'phone',
 			'overdriveEmail',
 			'alternateLibraryCardPassword',
-			$this->getPasswordOrPinField(),
 			'axis360Email',
 		];
 	}

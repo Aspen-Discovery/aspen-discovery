@@ -197,7 +197,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		return $tokenData;
 	}
 
-	private function _connectToPatronAPI($user, $patronBarcode, $patronPin, $methodName, $forceNewConnection = false) {
+	private function _connectToPatronAPI(User $user, $patronBarcode, $patronPin, $methodName, $forceNewConnection = false) {
 		global $memCache;
 		global $timer;
 		global $logger;
@@ -244,6 +244,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 				], true);
 
+				$patronBarcode = urlencode($patronBarcode);
 				if ($patronPin == null) {
 					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}%20ilsname:{$ilsname}";
 				} else {
@@ -251,7 +252,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 				}
 
 				$content = $this->apiCurlWrapper->curlPostPage($url, $postFields);
-				ExternalRequestLogEntry::logRequest('overdrive.connectToPatronAPI_' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), false, $this->apiCurlWrapper->getResponseCode(), $content, []);
+				ExternalRequestLogEntry::logRequest('overdrive.connectToPatronAPI_' . $methodName, 'POST', $url, $this->apiCurlWrapper->getHeaders(), $postFields, $this->apiCurlWrapper->getResponseCode(), $content, ['password'=>$patronPin]);
 				$timer->logTime("Logged $patronBarcode into OverDrive API");
 				$patronTokenData = json_decode($content);
 				$timer->logTime("Decoded return for login of $patronBarcode into OverDrive API");

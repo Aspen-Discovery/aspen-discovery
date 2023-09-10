@@ -682,16 +682,17 @@ class Evolve extends AbstractIlsDriver {
 			$userExistsInDB = false;
 			$user = new User();
 			$user->source = $this->accountProfile->name;
-			if (empty($sessionInfo['patronId'])) {
-				$user->ils_barcode = $patronBarcode;
-			} else {
-				$user->unique_ils_id = $sessionInfo['patronId'];
-			}
+			$user->unique_ils_id = $sessionInfo['patronId'];
+
 			if ($user->find(true)) {
 				$userExistsInDB = true;
 			}
-			$user->cat_username = $patronBarcode;
-			$user->ils_barcode = $patronBarcode;
+			$user->ils_barcode = $sessionInfo['barcode'];
+			$user->cat_username = $sessionInfo['barcode'];
+			if ($patronBarcode != $sessionInfo['barcode']) {
+				$user->ils_username = $patronBarcode;
+			}
+
 			if (!empty($password)) {
 				$user->cat_password = $password;
 				$user->ils_password = $password;
@@ -773,6 +774,7 @@ class Evolve extends AbstractIlsDriver {
 				'userValid' => false,
 				'accessToken' => false,
 				'patronId' => false,
+				'barcode' => '',
 			];
 
 			//Get the token
@@ -803,6 +805,7 @@ class Evolve extends AbstractIlsDriver {
 						'userValid' => true,
 						'accessToken' => $jsonData->LoginToken,
 						'patronId' => $jsonData->AccountID,
+						'barcode' => $jsonData->AccountBarcode,
 					];
 				} else {
 					return new AspenError($jsonData->Status . ' ' . $jsonData->Message);
@@ -820,7 +823,7 @@ class Evolve extends AbstractIlsDriver {
 	}
 
 	public function findNewUser($patronBarcode, $patronUsername) {
-		//For Evolve, this can only be called when initiating masquerade
+		//For Evolve, this can only be called when initiating masquerade and there is currently no way to lookup a user without a password
 		return false;
 	}
 

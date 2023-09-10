@@ -24,6 +24,9 @@ if (count($updatesToRun) == 0) {
 		$scheduledUpdate = new ScheduledUpdate();
 		$scheduledUpdate->id = $id;
 		if ($scheduledUpdate->find(true)) {
+			$scheduledUpdate->status = 'started';
+			$scheduledUpdate->update();
+
 			$versionToUpdateTo = $scheduledUpdate->updateToVersion;
 			$currentVersion = getGitBranch();
 

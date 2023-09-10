@@ -370,7 +370,6 @@ class Greenhouse_AJAX extends Action {
 					'updateToVersion' => $scheduledUpdate->updateToVersion,
 					'status' => $scheduledUpdate->status,
 					'greenhouseId' => $scheduledUpdate->id,
-					//'isRemoteUpdate' => true,
 					'greenhouseSiteId' => $scheduledUpdate->siteId,
 				];
 				$response = json_decode($curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
@@ -432,7 +431,7 @@ class Greenhouse_AJAX extends Action {
 			$numSites = count($sitesToUpdate);
 			$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
 			$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
-			$errors = [];
+			$errors = '';
 			foreach($sitesToUpdate as $site){
 				require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 				$siteToUpdate = new AspenSite();
@@ -467,9 +466,13 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate->siteId = $site;
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
-					//$scheduledUpdate->remoteUpdate = true;
+					$scheduledUpdate->remoteUpdate = true;
 					if(!$scheduledUpdate->insert()) {
-						$errors[] = 'Error saving local update for ' . $siteToUpdate->name . $scheduledUpdate->getLastError();
+						if($errors == '') {
+							$errors = 'Error saving update for ' . $siteToUpdate->name . ": " . $scheduledUpdate->getLastError();
+						} else {
+							$errors .= '<br>Error saving update for ' . $siteToUpdate->name . ': ' . $scheduledUpdate->getLastError();
+						}
 					} else {
 						require_once ROOT_DIR . '/sys/CurlWrapper.php';
 						$curl = new CurlWrapper();
@@ -489,9 +492,23 @@ class Greenhouse_AJAX extends Action {
 						} else {
 							$scheduledUpdate->notes = $response->message;
 							$scheduledUpdate->update();
+							if ($errors == '') {
+								$errors = '<br><br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $response->message;
+							} else {
+								$errors .= '<br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $response->message;
+							}
 						}
 					}
 				}
+			}
+			$message = translate([
+				'text' => 'Successfully scheduled updates for %1% of %2% sites.',
+				1 => $numSitesUpdated,
+				2 => $numSites,
+				'isAdminFacing' => true,
+			]);
+			if($errors) {
+				$message .= $errors;
 			}
 			return [
 				'success' => true,
@@ -499,13 +516,7 @@ class Greenhouse_AJAX extends Action {
 					'text' => 'Schedule Batch Update',
 					'isAdminFacing' => true,
 				]),
-				'message' => translate([
-					'text' => 'Successfully scheduled updates for %1% of %2% sites.',
-					1 => $numSitesUpdated,
-					2 => $numSites,
-					'isAdminFacing' => true,
-				]),
-				'errors' => $errors,
+				'message' => $message
 			];
 		} else {
 			return [

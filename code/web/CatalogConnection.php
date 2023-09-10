@@ -1420,7 +1420,7 @@ class CatalogConnection {
 			$user = null;
 		}
 		if ($foundUser) {
-			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
+			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 				//We load the account based on the barcode make sure the pin matches
 				$userValid = $password != null && $user->cat_password == $password;
 				if (!$userValid) {
