@@ -635,11 +635,13 @@ class Koha extends AbstractIlsDriver {
 					if($library->interLibraryLoanName) {
 						$curCheckout->source = $library->interLibraryLoanName;
 					}
-				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
-					$curCheckout->isIll = true;
-					$curCheckout->source = 'ILL';
-					if($library->interLibraryLoanName) {
-						$curCheckout->source = $library->interLibraryLoanName;
+				} elseif(isset($curRow['itemtype'])) {
+					if(array_search($curRow['itemtype'], $illItemTypes)) {
+						$curCheckout->isIll = true;
+						$curCheckout->source = 'ILL';
+						if($library->interLibraryLoanName) {
+							$curCheckout->source = $library->interLibraryLoanName;
+						}
 					}
 				}
 			} else {
@@ -2293,6 +2295,73 @@ class Koha extends AbstractIlsDriver {
 				$holds['unavailable'][$curHold->source . $curHold->cancelId . $curHold->userId] = $curHold;
 			} else {
 				$holds['available'][$curHold->source . $curHold->cancelId . $curHold->userId] = $curHold;
+			}
+		}
+
+
+		//Load additional ILL Requests that are not shipped
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken !== false) {
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/ill/requests?q={%22status%22%3A%22B_ITEM_REQUESTED%22%2C%22patron_id%22%3A$patron->unique_ils_id}";
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'x-koha-embed: +strings,extended_attributes',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
+			$responseCode = $this->apiCurlWrapper->getResponseCode();
+			ExternalRequestLogEntry::logRequest('koha.getILLRequests', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $illRequestResponse, []);
+			if ($responseCode == 200) {
+				$jsonResponse = json_decode($illRequestResponse);
+				foreach ($jsonResponse as $illHold) {
+					$newHold = new Hold();
+					$newHold->userId = $patron->id;
+					$newHold->type = 'ils';
+					$newHold->source = $this->getIndexingProfile()->name;
+					$newHold->sourceId = $illHold->ill_request_id;
+					$newHold->recordId = $illHold->ill_request_id;
+					$newHold->shortId = $illHold->ill_request_id;
+					$newHold->isIll = true;
+					foreach ($illHold->extended_attributes as $extendedAttribute) {
+						if ($extendedAttribute->type == 'author') {
+							$newHold->author = $extendedAttribute->value;
+						}elseif ($extendedAttribute->type == 'callNumber') {
+							$newHold->callNumber = $extendedAttribute->value;
+						}elseif ($extendedAttribute->type == 'callNumber') {
+							$newHold->callNumber = $extendedAttribute->value;
+						}elseif ($extendedAttribute->type == 'itemId') {
+							$newHold->itemId = $extendedAttribute->value;
+						}elseif ($extendedAttribute->type == 'needBefore') {
+							$newHold->automaticCancellationDate = $extendedAttribute->value;
+						}elseif ($extendedAttribute->type == 'title') {
+							$newHold->title = $extendedAttribute->value;
+						}
+						$curPickupBranch = new Location();
+						$curPickupBranch->code = $illHold->library_id;
+						if ($curPickupBranch->find(true)) {
+							$curPickupBranch->fetch();
+							$newHold->pickupLocationId = $curPickupBranch->locationId;
+							$newHold->pickupLocationName = $curPickupBranch->displayName;
+						} else {
+							$newHold->pickupLocationName = $curPickupBranch->code;
+						}
+					}
+					$newHold->createDate = strtotime($illHold->requested_date);
+					if (isset($illHold->_strings->status)) {
+						$newHold->status = $illHold->_strings->status->str;
+					} else {
+						$newHold->status = $illHold->status;
+					}
+					$holds['unavailable'][$newHold->source . $newHold->cancelId . $newHold->userId] = $newHold;
+				}
+//				if (!empty($jsonResponse->outstanding_credits)) {
+//					return $jsonResponse->outstanding_credits->total;
+//				}
 			}
 		}
 
@@ -5386,6 +5455,27 @@ class Koha extends AbstractIlsDriver {
 			}
 		}
 		$timer->logTime("Loaded total holds for Koha");
+
+		//Get ILL Hold counts as well
+		$oauthToken = $this->getOAuthToken();
+		if ($oauthToken !== false) {
+			$apiUrl = $this->getWebServiceUrl() . "/api/v1/ill/requests?q={%22status%22%3A%22B_ITEM_REQUESTED%22%2C%22patron_id%22%3A$patron->unique_ils_id}";
+			$this->apiCurlWrapper->addCustomHeaders([
+				'Authorization: Bearer ' . $oauthToken,
+				'User-Agent: Aspen Discovery',
+				'Accept: */*',
+				'Cache-Control: no-cache',
+				'Content-Type: application/json',
+				'x-koha-embed: +strings,extended_attributes',
+				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+				'Accept-Encoding: gzip, deflate',
+			], true);
+			$illRequestResponse = $this->apiCurlWrapper->curlGetPage($apiUrl);
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$jsonResponse = json_decode($illRequestResponse);
+				$summary->numUnavailableHolds+= count($jsonResponse);
+			}
+		}
 
 		//Get fines
 		//Load fines from database
