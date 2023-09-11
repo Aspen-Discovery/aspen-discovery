@@ -471,8 +471,10 @@ class SystemAPI extends Action {
 		require_once ROOT_DIR . '/sys/SystemVariables.php';
 		$systemVariables = SystemVariables::getSystemVariables();
 		if ($systemVariables && !empty($systemVariables->runNightlyFullIndex)) {
-			$systemVariables->runNightlyFullIndex = 1;
-			$systemVariables->update();
+			if($systemVariables->runNightlyFullIndex == 0) {
+				$systemVariables->runNightlyFullIndex = 1;
+				$systemVariables->update();
+			}
 		}
 
 		if ($numFailed == 0) {
