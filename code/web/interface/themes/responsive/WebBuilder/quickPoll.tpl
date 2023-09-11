@@ -1,3 +1,4 @@
+{strip}
 <div class="col-xs-12">
 	<h1>{$poll->title}</h1>
     {if !empty($loggedIn) && (array_key_exists('Administer All Quick Polls', $userPermissions) || array_key_exists('Administer Library Quick Polls', $userPermissions))}
@@ -50,3 +51,4 @@
 		</div>
 	</form>
 </div>
+{/strip}

@@ -71,6 +71,20 @@ class WebBuilder_SubmitQuickPoll extends Action {
 				if (empty($_REQUEST['pollOption'])) {
 					$interface->assign('submissionError', 'At least one option must be selected.');
 					$formDataIsValid = false;
+				} else {
+					if (is_array($_REQUEST['pollOption'])) {
+						foreach ($_REQUEST['pollOption'] as $selectedOption => $value) {
+							if (!is_numeric($value)) {
+								$interface->assign('submissionError', 'Invalid option selected.');
+								$formDataIsValid = false;
+							}
+						}
+					}else{
+						if (!is_numeric($_REQUEST['pollOption'])) {
+							$interface->assign('submissionError', 'Invalid option selected.');
+							$formDataIsValid = false;
+						}
+					}
 				}
 				if ($formDataIsValid) {
 					$submission = new QuickPollSubmission();
@@ -90,10 +104,17 @@ class WebBuilder_SubmitQuickPoll extends Action {
 					$submission->insert();
 
 					//Save the selected options
-					foreach ($_REQUEST['pollOption'] as $selectedOption => $value) {
+					if (is_array($_REQUEST['pollOption'])) {
+						foreach ($_REQUEST['pollOption'] as $selectedOption => $value) {
+							$submissionSelection = new QuickPollSubmissionSelection();
+							$submissionSelection->pollSubmissionId = $submission->id;
+							$submissionSelection->pollOptionId = $value;
+							$submissionSelection->insert();
+						}
+					}else{
 						$submissionSelection = new QuickPollSubmissionSelection();
 						$submissionSelection->pollSubmissionId = $submission->id;
-						$submissionSelection->pollOptionId = $value;
+						$submissionSelection->pollOptionId = $_REQUEST['pollOption'];
 						$submissionSelection->insert();
 					}
 				}
