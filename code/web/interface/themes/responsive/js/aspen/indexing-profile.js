@@ -54,6 +54,7 @@ AspenDiscovery.IndexingClass = (function () {
 				Evolve: [],
 				ArlingtonKoha: ['propertyRowlastUpdateOfAuthorities'],
 				CarlX: [],
+				NashvilleCarlX: [],
 				Folio: [],
 				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection', 'propertyRowsierraSection', 'propertyRoworderRecordsStatusesToInclude', 'propertyRowhideOrderRecordsForBibsWithPhysicalItems', 'propertyRoworderRecordsToSuppressByDate', 'propertyRowsierraFieldMappings', 'propertyRowcheckSierraMatTypeForFormat'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],

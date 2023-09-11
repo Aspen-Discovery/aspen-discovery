@@ -9755,7 +9755,6 @@ AspenDiscovery.Admin = (function () {
 			$.getJSON(url, params, function (data) {
 				if (data.success){
 					$('#fieldLock' + field).replaceWith(data.lockToggle);
-					AspenDiscovery.closeLightbox();
 				} else {
 					AspenDiscovery.showMessage('An error occurred', data.message);
 				}
@@ -14916,6 +14915,7 @@ AspenDiscovery.IndexingClass = (function () {
 				Evolve: [],
 				ArlingtonKoha: ['propertyRowlastUpdateOfAuthorities'],
 				CarlX: [],
+				NashvilleCarlX: [],
 				Folio: [],
 				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection', 'propertyRowsierraSection', 'propertyRoworderRecordsStatusesToInclude', 'propertyRowhideOrderRecordsForBibsWithPhysicalItems', 'propertyRoworderRecordsToSuppressByDate', 'propertyRowsierraFieldMappings', 'propertyRowcheckSierraMatTypeForFormat'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],

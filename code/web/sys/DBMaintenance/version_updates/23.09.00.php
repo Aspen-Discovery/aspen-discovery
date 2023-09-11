@@ -87,6 +87,13 @@ function getUpdates23_09_00(): array {
 			],
 		],
 		//admin_field_locking
+		'update_carlx_indexing_class' => [
+			'title' => 'Update Nashville Indexing Class',
+			'description' => 'Update Nashville Indexing Class',
+			'sql' => [
+				"UPDATE indexing_profiles set indexingClass = 'NashvilleCarlX' where indexingClass = 'CarlX' and marcPath like '%nashville%'"
+			]
+		],
 
 		//kodi - ByWater
 		'permissions_open_archives_facets' => [
