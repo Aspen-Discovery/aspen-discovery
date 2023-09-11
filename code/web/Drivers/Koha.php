@@ -635,11 +635,13 @@ class Koha extends AbstractIlsDriver {
 					if($library->interLibraryLoanName) {
 						$curCheckout->source = $library->interLibraryLoanName;
 					}
-				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
-					$curCheckout->isIll = true;
-					$curCheckout->source = 'ILL';
-					if($library->interLibraryLoanName) {
-						$curCheckout->source = $library->interLibraryLoanName;
+				} elseif(isset($curRow['itemtype'])) {
+					if(array_search($curRow['itemtype'], $illItemTypes)) {
+						$curCheckout->isIll = true;
+						$curCheckout->source = 'ILL';
+						if($library->interLibraryLoanName) {
+							$curCheckout->source = $library->interLibraryLoanName;
+						}
 					}
 				}
 			} else {
