@@ -164,6 +164,8 @@ class Library extends DataObject {
 	public $showLogMeOutAfterPlacingHolds;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
+
+	public $alwaysDisplayRenewalCount;
 	public $enableSelfRegistration;
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
@@ -1411,6 +1413,14 @@ class Library extends DataObject {
 						'label' => 'Display if patron checkouts have holds on them',
 						'note' => 'Applies to Koha Only',
 						'description' => 'Whether or not patrons can see if checked out items have holds on them.',
+						'hideInLists' => true,
+						'permissions' => ['Library ILS Connection'],
+					],
+					'alwaysDisplayRenewalCount' => [
+						'property' => 'alwaysDisplayRenewalCount',
+						'type' => 'checkbox',
+						'label' => 'Always display the number of renewals on a checkout',
+						'description' => 'Whether or not patrons always see the number of renewals on a checkout.',
 						'hideInLists' => true,
 						'permissions' => ['Library ILS Connection'],
 					],
