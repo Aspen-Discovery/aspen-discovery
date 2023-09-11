@@ -2325,8 +2325,8 @@ class Koha extends AbstractIlsDriver {
 						$newHold->source = $library->interLibraryLoanName;
 					}
 					$newHold->sourceId = $illHold->ill_request_id;
-					$newHold->recordId = $illHold->ill_request_id;
-					$newHold->shortId = $illHold->ill_request_id;
+//					$newHold->recordId = $illHold->ill_request_id;
+//					$newHold->shortId = $illHold->ill_request_id;
 					$newHold->isIll = true;
 					foreach ($illHold->extended_attributes as $extendedAttribute) {
 						if ($extendedAttribute->type == 'author') {
