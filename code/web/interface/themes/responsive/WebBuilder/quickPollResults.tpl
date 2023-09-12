@@ -7,13 +7,15 @@
 			</div>
 		</div>
 	{/if}
-	{if !empty($submissionResultText)}
+	{if !empty($submissionError)}
+		{foreach from=$submissionError item=$error}
+			<div class="alert alert-danger">
+                {$error}
+			</div>
+		{/foreach}
+	{elseif !empty($submissionResultText)}
 		<div class="alert alert-success">
-			{translate text=$submissionResultText isPublicFacing=true}
-		</div>
-	{elseif !empty($submissionError)}
-		<div class="alert alert-danger">
-            {translate text=$submissionError isPublicFacing=true}
+            {translate text=$submissionResultText isPublicFacing=true}
 		</div>
 	{/if}
 </div>
