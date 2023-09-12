@@ -466,6 +466,17 @@ class SystemAPI extends Action {
 				$errors .= $pendingUpdates[$key]['title'] . '<br/>' . $pendingUpdates[$key]['status'] . '<br/>';
 			}
 		}
+
+		// make sure full nightly index is set to run after completing db updates
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		$systemVariables = SystemVariables::getSystemVariables();
+		if ($systemVariables->find(true)) {
+			if($systemVariables->runNightlyFullIndex == 0) {
+				$systemVariables->runNightlyFullIndex = 1;
+				$systemVariables->update();
+			}
+		}
+
 		if ($numFailed == 0) {
 			return [
 				'success' => true,
