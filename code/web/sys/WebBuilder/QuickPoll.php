@@ -12,6 +12,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 	public $requireName;
 	public $requireEmail;
 	public $introText;
+	public $submissionResultText;
 	public $allowSuggestingNewOptions;
 	public $allowMultipleSelections;
 	public $status;
@@ -77,6 +78,13 @@ class QuickPoll extends DB_LibraryLinkedObject {
 				'type' => 'markdown',
 				'label' => 'Introductory Text',
 				'description' => 'Introductory Text displayed above the fields',
+				'hideInLists' => true,
+			],
+			'submissionResultText' => [
+				'property' => 'submissionResultText',
+				'type' => 'markdown',
+				'label' => 'Submission Result Text',
+				'description' => 'Text to be displayed to the user when submission is complete',
 				'hideInLists' => true,
 			],
 			'requireLogin' => [
@@ -252,6 +260,37 @@ class QuickPoll extends DB_LibraryLinkedObject {
 		return $pollOption->delete(true);
 	}
 
+	public function getFormattedPoll() {
+		global $interface;
+		if (!UserAccount::isLoggedIn()) {
+			if (!$this->requireLogin) {
+				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
+				$recaptcha = new RecaptchaSetting();
+				if ($recaptcha->find(true) && !empty($recaptcha->publicKey)) {
+					$captchaCode = recaptcha_get_html($recaptcha->publicKey, $this->id);
+					$interface->assign('captcha', $captchaCode);
+					$interface->assign('captchaKey', $recaptcha->publicKey);
+				}
+			} else {
+				return "<div class='alert alert-warning'>" . translate([
+						'text' => 'You must be logged to view this poll',
+						'isPublicFacing' => true,
+					]) . '</div>';
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+		$parsedown = AspenParsedown::instance();
+		$parsedown->setBreaksEnabled(true);
+		$introText = $parsedown->parse($this->introText);
+
+		$interface->assign('introText', $introText);
+		$interface->assign('poll', $this);
+		$interface->assign('pollOptions', $this->getPollOptions());
+
+		return $interface->fetch('WebBuilder/quickPoll.tpl');
+	}
+
 	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 
@@ -283,5 +322,54 @@ class QuickPoll extends DB_LibraryLinkedObject {
 		}
 
 		return $result;
+	}
+
+	public function getPollResults() {
+		$results = [];
+		$obj = new QuickPollSubmission();
+		$obj->pollId = $this->id;
+		$obj->find();
+		while($obj->fetch()) {
+			$results[] = clone $obj;
+		}
+		return $results;
+	}
+
+	public function getPollResultsForGraph() {
+		$results = [];
+		$pollOptions = $this->getPollOptions();
+
+		$submissions = [];
+		$submission = new QuickPollSubmission();
+		$submission->pollId = $this->id;
+		$submission->find();
+		while($submission->fetch()) {
+			$submissions[] = $submission->id;
+		}
+
+		$selections = [];
+		foreach($submissions as $obj) {
+			$selection = new QuickPollSubmissionSelection();
+			$selection->pollSubmissionId = $obj;
+			$selection->find();
+			while($selection->fetch()) {
+				if(!array_key_exists($selection->pollOptionId, $selections)) {
+					$selections[$selection->pollOptionId]['count'] = 1;
+				} else {
+					$selections[$selection->pollOptionId]['count'] += 1;
+				}
+			}
+		}
+
+		foreach($pollOptions as $option) {
+			$results[$option->id]['id'] = $option->id;
+			$results[$option->id]['label'] = $option->label;
+			$results[$option->id]['count'] = 0;
+			if(isset($selections[$option->id])) {
+				$results[$option->id]['count'] = $selections[$option->id]['count'];
+			}
+
+		}
+		return $results;
 	}
 }
