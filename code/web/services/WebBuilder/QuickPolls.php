@@ -65,6 +65,10 @@ class WebBuilder_QuickPolls extends ObjectEditor {
 				'text' => 'View Submissions',
 				'url' => '/WebBuilder/QuickPollSubmissions?pollId=' . $existingObject->id,
 			];
+			$objectActions[] = [
+				'text' => 'View Graph',
+				'url' => '/WebBuilder/QuickPollSubmissionsGraph?pollId=' . $existingObject->id,
+			];
 		}
 		return $objectActions;
 	}
