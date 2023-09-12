@@ -13,7 +13,7 @@
 		</div>
 	{elseif !empty($submissionError)}
 		<div class="alert alert-danger">
-            {translate $submissionError isPublicFacing=true}
+            {translate text=$submissionError isPublicFacing=true}
 		</div>
 	{/if}
 </div>
