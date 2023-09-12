@@ -118,11 +118,11 @@ class WebBuilder_SubmitQuickPoll extends Action {
 						$submissionSelection->insert();
 					}
 				}
-				//if (empty($this->quickPoll->submissionResultText)) {
+				if (empty($this->quickPoll->submissionResultText)) {
 					$interface->assign('submissionResultText', 'Thank you for your response.');
-				//} else {
-				//	$interface->assign('submissionResultText', $this->form->submissionResultText);
-				//}
+				} else {
+					$interface->assign('submissionResultText', $this->quickPoll->submissionResultText);
+				}
 			}
 		} else {
 			$interface->assign('submissionError', 'The poll was not submitted correctly');

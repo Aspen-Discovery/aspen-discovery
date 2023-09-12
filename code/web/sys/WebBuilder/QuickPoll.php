@@ -12,6 +12,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 	public $requireName;
 	public $requireEmail;
 	public $introText;
+	public $submissionResultText;
 	public $allowSuggestingNewOptions;
 	public $allowMultipleSelections;
 	public $status;
@@ -77,6 +78,13 @@ class QuickPoll extends DB_LibraryLinkedObject {
 				'type' => 'markdown',
 				'label' => 'Introductory Text',
 				'description' => 'Introductory Text displayed above the fields',
+				'hideInLists' => true,
+			],
+			'submissionResultText' => [
+				'property' => 'submissionResultText',
+				'type' => 'markdown',
+				'label' => 'Submission Result Text',
+				'description' => 'Text to be displayed to the user when submission is complete',
 				'hideInLists' => true,
 			],
 			'requireLogin' => [
