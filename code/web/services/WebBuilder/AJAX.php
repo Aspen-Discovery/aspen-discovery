@@ -364,6 +364,7 @@ class WebBuilder_AJAX extends JSON_Action {
 			$quickPoll->id = $pollId;
 			if ($quickPoll->find(true)) {
 				$interface->assign('pollId', $pollId);
+				$interface->assign('poll', $quickPoll);
 				if ($quickPoll->allowSuggestingNewOptions) {
 					//Get the text of the option
 					$newOption = $_REQUEST['newOption'];
