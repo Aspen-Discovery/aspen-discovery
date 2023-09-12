@@ -135,6 +135,21 @@ class WebBuilder_AJAX extends JSON_Action {
 					'values' => $list,
 				];
 				break;
+			case 'quick_poll':
+				require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+				$list = [];
+				$list['-1'] = 'Select a quick poll';
+				$object = new QuickPoll();
+				$object->orderBy('title');
+				$object->find();
+				while ($object->fetch()) {
+					$list[$object->id] = $object->title;
+				}
+				$result = [
+					'success' => true,
+					'values' => $list,
+				];
+				break;
 			default:
 				$result['message'] = 'Unhandled Source Type ' . $sourceType;
 		}
