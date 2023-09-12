@@ -242,7 +242,7 @@
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-tn-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" {if !empty($property.readOnly)}disabled{/if}>
 				</div>
 				<div class="col-tn-3">
 					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
@@ -256,7 +256,7 @@
 					{/if}
 					<div class="checkbox" style="margin: 0">
 						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
-							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/>
+							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly disabled{/if}/>
 						</label>
 					</div>
 				</div>
@@ -272,28 +272,30 @@
 				</div>
 			</div>
 			{assign var=fetchDefaultColor value='default|cat:$propName'}
-		{literal}
-			<script type="text/javascript">
-				var setDefaultColor = $('#{/literal}{$propName}{literal}-default');
-				$('#{/literal}{$propName}{literal}-default').on("click", function() {
+			{if !empty($property.readOnly)}
+				{literal}
+					<script type="text/javascript">
+						var setDefaultColor = $('#{/literal}{$propName}{literal}-default');
+						$('#{/literal}{$propName}{literal}-default').on("click", function() {
 
-					if($(this).is(":checked")) {
-						$(this).attr("checked", true);
-						AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$parentTheme->$propName}{literal}');
-						{/literal}
-						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
-						{literal}
-					} else {
-						$(this).attr("checked", false);
-						document.getElementById('{/literal}{$propName}{literal}').value = '{/literal}{$propValue}{literal}';
-						document.getElementById('{/literal}{$propName}{literal}Hex').value = '{/literal}{$propValue}{literal}';
-						{/literal}
-						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
-						{literal}
-					}
-				});
-			</script>
-		{/literal}
+							if($(this).is(":checked")) {
+								$(this).attr("checked", true);
+								AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$parentTheme->$propName}{literal}');
+								{/literal}
+								{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
+								{literal}
+							} else {
+								$(this).attr("checked", false);
+								document.getElementById('{/literal}{$propName}{literal}').value = '{/literal}{$propValue}{literal}';
+								document.getElementById('{/literal}{$propName}{literal}Hex').value = '{/literal}{$propValue}{literal}';
+								{/literal}
+								{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
+								{literal}
+							}
+						});
+					</script>
+				{/literal}
+			{/if}
 		{elseif $property.type == 'font'}
 			<div class="row">
 				<div class="col-sm-4">
@@ -422,9 +424,9 @@
 				<label class="input-group-btn">
 					<span class="btn btn-primary">
 						{if $property.type == 'image'}
-							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if}>
+							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
 						{else}
-							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if}>
+							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
 						{/if}
 					</span>
 				</label>
@@ -434,7 +436,7 @@
 			{if !empty($propValue)}
 				<div class="checkbox" style="margin-top: 0">
 					<label for="remove{$propName}"><small class="text-danger"><i class="fas fa-trash"></i> {translate text="Remove" isAdminFacing=true}</small>
-						<input type='checkbox' name='remove{$propName}' id='remove{$propName}'>
+						<input type='checkbox' name='remove{$propName}' id='remove{$propName}' {if !empty($property.readOnly)}readonly disabled{/if}>
 					</label>
 				</div>
 			{/if}
@@ -451,7 +453,7 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox" {if !empty($property.forcesReindex) || !empty($property.affectsLiDA) || !empty($property.note)}style="margin-bottom: 0"{/if}>
 				<label for='{$propName}'>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}> {translate text=$property.label isAdminFacing=true} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}> {translate text=$property.label isAdminFacing=true} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
 				</label>
 				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}

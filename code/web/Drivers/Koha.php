@@ -2242,14 +2242,14 @@ class Koha extends AbstractIlsDriver {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
 					$curHold->canFreeze = false;
-					if($library->interLibraryLoanName) {
+					if(!empty($library->interLibraryLoanName)) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
 				} elseif(array_search($curRow['itemtype'], $illItemTypes)) {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
 					$curHold->canFreeze = false;
-					if($library->interLibraryLoanName) {
+					if(!empty($library->interLibraryLoanName)) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
 				}
@@ -2258,7 +2258,7 @@ class Koha extends AbstractIlsDriver {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
 					$curHold->canFreeze = false;
-					if($library->interLibraryLoanName) {
+					if(!empty($library->interLibraryLoanName)) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
 				}
@@ -2322,10 +2322,14 @@ class Koha extends AbstractIlsDriver {
 					$newHold = new Hold();
 					$newHold->userId = $patron->id;
 					$newHold->type = 'ils';
-					$newHold->source = $this->getIndexingProfile()->name;
+					$newHold->source = 'ILL';
+					$newHold->canFreeze = false;
+					if(!empty($library->interLibraryLoanName)) {
+						$newHold->source = $library->interLibraryLoanName;
+					}
 					$newHold->sourceId = $illHold->ill_request_id;
-					$newHold->recordId = $illHold->ill_request_id;
-					$newHold->shortId = $illHold->ill_request_id;
+//					$newHold->recordId = $illHold->ill_request_id;
+//					$newHold->shortId = $illHold->ill_request_id;
 					$newHold->isIll = true;
 					foreach ($illHold->extended_attributes as $extendedAttribute) {
 						if ($extendedAttribute->type == 'author') {
@@ -2357,7 +2361,7 @@ class Koha extends AbstractIlsDriver {
 					} else {
 						$newHold->status = $illHold->status;
 					}
-					$holds['unavailable'][$newHold->source . $newHold->cancelId . $newHold->userId] = $newHold;
+					$holds['unavailable'][$newHold->source . 'ill' . $newHold->sourceId . $newHold->userId] = $newHold;
 				}
 //				if (!empty($jsonResponse->outstanding_credits)) {
 //					return $jsonResponse->outstanding_credits->total;
