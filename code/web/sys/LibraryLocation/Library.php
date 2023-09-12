@@ -3717,7 +3717,7 @@ class Library extends DataObject {
 			$ssoSettings->id = $this->ssoSettingId;
 			if($ssoSettings->find(true)) {
 				try {
-					return $ssoSettings->restrictByIP;
+					return empty($ssoSettings->restrictByIP) ? 0 : 1;
 				}catch (Exception $e) {
 					// not setup yet
 				}
