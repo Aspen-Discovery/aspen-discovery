@@ -210,13 +210,15 @@
 		{elseif $property.type == 'timestamp'}
 			<div class="row">
 				<div class="col-sm-4">
-					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.max)}max="{$property.max}"{/if} {if !empty($property.min)}min="{$property.min}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.max)}max="{$property.max}"{/if} {if !empty($property.min)}min="{$property.min}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly disabled{/if}>
 				</div>
-				<script type="text/javascript">
-					$(document).ready(function(){ldelim}
-						rome({$propName});
-					{rdelim});
-				</script>
+				{if !empty($property.readOnly)}
+					<script type="text/javascript">
+						$(document).ready(function(){ldelim}
+							rome({$propName});
+						{rdelim});
+					</script>
+				{/if}
 			</div>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
@@ -370,7 +372,7 @@
 			{* disable html5 features until consistly implemented *
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if !empty($property.maxLength)}maxLength='10'{/if}	class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} date'>*}
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxLength='10'{/if}	class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} dateAspen' {if !empty($property.readOnly)}readonly{/if}>*}
-			<input type="date" name='{$propName}' id='{$propName}' value='{$propValue|date_format:"%Y-%m-%d"}'	class='form-control' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+			<input type="date" name='{$propName}' id='{$propName}' value='{$propValue|date_format:"%Y-%m-%d"}'	class='form-control' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly disabled{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
