@@ -215,21 +215,15 @@ class LDAPAuthentication extends Action {
 	}
 
 	private function newSSOSession($id) {
-		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		/** SessionInterface $session */
+		global $session;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+		session_name('aspen_session');
+		$session = new MySQLSession();
+		$session->init();
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		$timer->logTime('Session initialization MySQLSession');
 
 		$_SESSION['activeUserId'] = $id;
 		$_SESSION['rememberMe'] = false;

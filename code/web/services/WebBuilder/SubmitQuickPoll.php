@@ -9,6 +9,8 @@ class WebBuilder_SubmitQuickPoll extends Action {
 		require_once ROOT_DIR . '/sys/WebBuilder/QuickPollSubmission.php';
 		require_once ROOT_DIR . '/sys/WebBuilder/QuickPollSubmissionSelection.php';
 		$id = strip_tags($_REQUEST['id']);
+		$submissionErrors = [];
+		$submissionSuccess = false;
 		$this->quickPoll = new QuickPoll();
 		$this->quickPoll->id = $id;
 		if (!$this->quickPoll->find(true)) {
@@ -30,11 +32,17 @@ class WebBuilder_SubmitQuickPoll extends Action {
 					$recaptchaValid = RecaptchaSetting::validateRecaptcha();
 
 					if (!$recaptchaValid) {
-						$interface->assign('submissionError', 'The CAPTCHA response was incorrect, please try again.');
+						$submissionErrors[] = translate([
+							'text' => 'The CAPTCHA response was incorrect, please try again.',
+							'isPublicFacing' => true,
+						]);
 						$processQuickPoll = false;
 					}
 				} else {
-					$interface->assign('submissionError', 'You must be logged in to submit a response, please login and try again.');
+					$submissionErrors[] = translate([
+						'text' => 'You must be logged in to submit a response, please login and try again.',
+						'isPublicFacing' => true,
+					]);
 					$processQuickPoll = false;
 				}
 			}
@@ -44,44 +52,71 @@ class WebBuilder_SubmitQuickPoll extends Action {
 				$formDataIsValid = true;
 				if (!empty($_REQUEST['name'])) {
 					if (strip_tags($_REQUEST['name']) != $_REQUEST['name']) {
-						$interface->assign('submissionError', 'Invalid name entered.');
+						$submissionErrors[] = translate([
+							'text' => 'Invalid name entered.',
+							'isPublicFacing' => true,
+						]);
 						$formDataIsValid = false;
 					}
 					if (mb_strlen($_REQUEST['name']) > 255) {
-						$interface->assign('submissionError', 'Invalid name entered.');
+						$submissionErrors[] = translate([
+							'text' => 'Invalid name entered.',
+							'isPublicFacing' => true,
+						]);
 						$formDataIsValid = false;
 					}
 				} else if ($this->quickPoll->requireName) {
-					$interface->assign('submissionError', 'Please enter your name.');
+					$submissionErrors[] = translate([
+						'text' => 'Please enter your name.',
+						'isPublicFacing' => true,
+					]);
 					$formDataIsValid = false;
 				}
 				if (!empty($_REQUEST['email'])) {
 					if (strip_tags($_REQUEST['email']) != $_REQUEST['email']) {
-						$interface->assign('submissionError', 'Invalid email entered.');
+						$submissionErrors[] = translate([
+							'text' => 'Invalid email entered.',
+							'isPublicFacing' => true,
+						]);
 						$formDataIsValid = false;
 					}
 					if (mb_strlen($_REQUEST['email']) > 255) {
-						$interface->assign('submissionError', 'Invalid email entered.');
+						$submissionErrors[] = translate([
+							'text' => 'Invalid email entered.',
+							'isPublicFacing' => true,
+						]);
 						$formDataIsValid = false;
 					}
 				} else if ($this->quickPoll->requireEmail) {
-					$interface->assign('submissionError', 'Please enter your email.');
+					$submissionErrors[] = translate([
+						'text' => 'Please enter your email.',
+						'isPublicFacing' => true,
+					]);
 					$formDataIsValid = false;
 				}
 				if (empty($_REQUEST['pollOption'])) {
-					$interface->assign('submissionError', 'At least one option must be selected.');
+					$submissionErrors[] = translate([
+						'text' => 'At least one option must be selected.',
+						'isPublicFacing' => true,
+					]);
 					$formDataIsValid = false;
 				} else {
 					if (is_array($_REQUEST['pollOption'])) {
 						foreach ($_REQUEST['pollOption'] as $selectedOption => $value) {
 							if (!is_numeric($value)) {
-								$interface->assign('submissionError', 'Invalid option selected.');
+								$submissionErrors[] = translate([
+									'text' => 'Invalid option selected.',
+									'isPublicFacing' => true,
+								]);
 								$formDataIsValid = false;
 							}
 						}
 					}else{
 						if (!is_numeric($_REQUEST['pollOption'])) {
-							$interface->assign('submissionError', 'Invalid option selected.');
+							$submissionErrors[] = translate([
+								'text' => 'Invalid option selected.',
+								'isPublicFacing' => true,
+							]);
 							$formDataIsValid = false;
 						}
 					}
@@ -117,17 +152,27 @@ class WebBuilder_SubmitQuickPoll extends Action {
 						$submissionSelection->pollOptionId = $_REQUEST['pollOption'];
 						$submissionSelection->insert();
 					}
+
+					$submissionSuccess = translate([
+						'text' => 'Thank you for your response.',
+						'isPublicFacing' => true,
+					]);
+
+					if (!empty($this->quickPoll->submissionResultText)) {
+						$submissionSuccess = $this->quickPoll->submissionResultText;
+					}
 				}
-				if (empty($this->quickPoll->submissionResultText)) {
-					$interface->assign('submissionResultText', 'Thank you for your response.');
-				} else {
-					$interface->assign('submissionResultText', $this->quickPoll->submissionResultText);
-				}
+
 			}
 		} else {
-			$interface->assign('submissionError', 'The poll was not submitted correctly');
+			$submissionErrors[] = translate([
+				'text' => 'The poll was not submitted correctly',
+				'isPublicFacing' => true,
+			]);
 		}
 
+		$interface->assign('submissionError', $submissionErrors);
+		$interface->assign('submissionResultText', $submissionSuccess);
 		$this->display('quickPollResults.tpl', $this->quickPoll->title, '', false);
 	}
 
