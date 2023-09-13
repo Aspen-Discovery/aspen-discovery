@@ -3706,41 +3706,24 @@ class Library extends DataObject {
 		return false;
 	}
 
-	public static function getMasqueradeStatus(): int {
-		$libLookUp = new Library();
-		$libLookUp->find();
-
-		if($libLookUp->getNumResults() == 0){
-			echo("No libraries are configured for the system.  Please configure at least one library before proceeding.");
-			die();
-		} else {
-			$libLookUp->fetch();
-			return $libLookUp->allowMasqueradeMode;
-		}
+	public function getMasqueradeStatus(): int {
+		return $this->allowMasqueradeMode;
 	}
 
-	public static function getSSORestrictionStatus():int {
-		global $library;
-		$libLookUp = new Library();
-		$libLookUp->libraryId = $library->libraryId;
-		if($libLookUp->find(true)) {
-			if($libLookUp->ssoSettingId != -1) {
-				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-				$ssoSettings = new SSOSetting();
-				$ssoSettings->id = $libLookUp->ssoSettingId;
-				if($ssoSettings->find(true)) {
-					try {
-						return $ssoSettings->restrictByIP;
-					}catch (Exception $e) {
-						// not setup yet
-					}
+	public function getSSORestrictionStatus():int {
+		if($this->ssoSettingId > 0) {
+			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+			$ssoSettings = new SSOSetting();
+			$ssoSettings->id = $this->ssoSettingId;
+			if($ssoSettings->find(true)) {
+				try {
+					return empty($ssoSettings->restrictByIP) ? 0 : 1;
+				}catch (Exception $e) {
+					// not setup yet
 				}
 			}
-			return 0;
-		} else {
-			echo('No libraries are configured for the system.  Please configure at least one library before proceeding.');
-			die();
 		}
+		return 0;
 	}
 
 	static function getSearchLibrary($searchSource = null) {

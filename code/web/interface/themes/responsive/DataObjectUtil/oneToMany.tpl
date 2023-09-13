@@ -34,19 +34,19 @@
 								{assign var=subPropName value=$subProperty.property}
 								{assign var=subPropValue value=$subObject->$subPropName}
 								{if $subProperty.type=='text' || $subProperty.type=='regularExpression' || $subProperty.type=='integer' || $subProperty.type=='html'}
-									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}"{if !empty($subProperty.readOnly)} readonly{/if}>
+									<input type="text" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if $subProperty.type=="integer"} integer{/if}{if !empty($subProperty.required)} required{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly{/if}>
 								{elseif $subProperty.type=='date'}
-									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if !empty($subProperty.required)} required{/if}">
+									<input type="date" name="{$propName}_{$subPropName}[{$subObject->id}]" value="{$subPropValue|escape}" class="form-control{if !empty($subProperty.required)} required{/if}"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
 								{elseif $subProperty.type=='textarea' || $subProperty.type=='multilineRegularExpression'}
-									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control">{$subPropValue|escape}</textarea>
+									<textarea name="{$propName}_{$subPropName}[{$subObject->id}]" class="form-control"{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly{/if}>{$subPropValue|escape}</textarea>
 								{elseif $subProperty.type=='checkbox'}
-									{if !empty($subProperty.readOnly)}
+									{if !empty($subProperty.readOnly) || !empty($property.readOnly)}
 										{if $subPropValue == 1}{translate text='Yes' isAdminFacing=true}{else}{translate text='No' isAdminFacing=true}{/if}
 									{/if}
-									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if} {if !empty($subProperty.readOnly)} style="display: none"{/if}/>
+									<input type='checkbox' name='{$propName}_{$subPropName}[{$subObject->id}]' {if $subPropValue == 1}checked='checked'{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} style="display: none"{/if}/>
 								{else}
 									{if $subObject->canActiveUserChangeSelection()}
-										<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if}>
+										<select name='{$propName}_{$subPropName}[{$subObject->id}]' id='{$propName}{$subPropName}_{$subObject->id}' class='form-control {if !empty($subProperty.required)} required{/if}' {if !empty($subProperty.onchange)}onchange="{$subProperty.onchange}"{/if} {if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
 											{foreach from=$subProperty.values item=propertyName key=propertyValue}
 												<option value='{$propertyValue}' {if $subPropValue == $propertyValue}selected='selected'{/if}>{if !empty($subProperty.translateValues)}{translate text=$propertyName inAttribute=true isPublicFacing=$subProperty.isPublicFacing isAdminFacing=$subProperty.isAdminFacing }{else}{$propertyName}{/if}</option>
 											{/foreach}
@@ -69,7 +69,7 @@
 										{assign var=subPropName value=$subProperty.property}
 										{assign var=subPropValue value=$subObject->$subPropName}
 										{foreach from=$subProperty.values item=propertyName}
-											<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if}>
+											<input name='{$propName}_{$subPropName}[{$subObject->id}][]' type="checkbox" value='{$propertyName}' {if is_array($subPropValue) && in_array($propertyName, $subPropValue)}checked='checked'{/if}{if !empty($subProperty.readOnly) || !empty($property.readOnly)} readonly disabled{/if}>
 											{$propertyName}
 											<br>
 										{/foreach}
@@ -98,7 +98,7 @@
 						{/if}
 						{* link to delete*}
 						<input type="hidden" id="{$propName}Deleted_{$subObject->id}" name="{$propName}Deleted[{$subObject->id}]" value="false">
-						{if !empty($property.canDelete) && $subObject->canActiveUserDelete()}
+						{if !empty($property.canDelete) && $subObject->canActiveUserDelete() && empty($property.readOnly)}
 							{* link to delete *}
 							<a href="#" class="btn btn-sm btn-warning" onclick="if (confirm('{translate text='Are you sure you want to delete this?' inAttribute=true isAdminFacing=true}')){literal}{{/literal}$('#{$propName}Deleted_{$subObject->id}').val('true');$('#{$propName}{$subObject->id}').hide().find('.required').removeClass('required'){literal}}{/literal};return false;">
 								{* On delete action, also remove class 'required' to turn off form validation of the deleted input; so that the form can be submitted by the user  *}
@@ -117,7 +117,7 @@
 		</table>
 	</div>
 	<div class="{$propName}Actions">
-		{if !empty($property.canAddNew)}
+		{if !empty($property.canAddNew) && empty($property.readOnly)}
 			<a href="#" onclick="addNew{$propName}();return false;" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i> {translate text="Add New" isAdminFacing=true}</a>
 		{/if}
 		{if !empty($property.additionalOneToManyActions) && !empty($id)}{* Only display these actions for an existing object *}

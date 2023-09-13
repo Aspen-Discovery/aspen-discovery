@@ -9,11 +9,11 @@
 	{/if}
 	{if !empty($submissionResultText)}
 		<div class="alert alert-success">
-			{$submissionResultText}
+			{translate text=$submissionResultText isPublicFacing=true}
 		</div>
 	{elseif !empty($submissionError)}
 		<div class="alert alert-danger">
-			{$submissionError}
+            {translate text=$submissionError isPublicFacing=true}
 		</div>
 	{/if}
 </div>

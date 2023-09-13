@@ -1198,6 +1198,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						'onclick' => "return AspenDiscovery.Record.showVdxRequest('{$this->getModule()}', '$source', '$id');",
 						'requireLogin' => false,
 						'type' => 'vdx_request',
+						'btnType' => 'btn-vdx-request btn-action'
 					];
 				}
 			}
