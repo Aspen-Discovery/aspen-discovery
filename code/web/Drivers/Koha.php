@@ -365,7 +365,7 @@ class Koha extends AbstractIlsDriver {
 						$result['messages'][] = trim($error);
 					}
 				}else{
-					$result['messages'][] = 'Unable to login to backend system';
+					$result['messages'][] = 'There was an error logging in to the backend system. Unable to update your contact information.';
 				}
 			}
 		}
@@ -3336,7 +3336,7 @@ class Koha extends AbstractIlsDriver {
 			$info = curl_getinfo($this->opacCurlWrapper->curl_connection);
 			$result = [
 				'success' => false,
-				'message' => 'There was an error logging in to the backend system. Unable to update your contact information.',
+				'message' => 'Could not login to the backend system',
 			];
 		}
 		return $result;
