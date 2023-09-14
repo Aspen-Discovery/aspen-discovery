@@ -922,7 +922,7 @@ try {
 		}
 	}
 
-	if ($aspenUsage->id) {
+	if (!empty($aspenUsage->__get('id'))) {
 		$aspenUsage->update();
 	} else {
 		$aspenUsage->insert();
