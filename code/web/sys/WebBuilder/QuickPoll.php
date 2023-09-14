@@ -372,4 +372,15 @@ class QuickPoll extends DB_LibraryLinkedObject {
 		}
 		return $results;
 	}
+
+	public function userCanAccess(): bool {
+		if(!UserAccount::isLoggedIn()) {
+			return false;
+		}
+
+		return UserAccount::userHasPermission([
+			'Administer All Quick Polls',
+			'Administer Library Quick Polls',
+		]);
+	}
 }
