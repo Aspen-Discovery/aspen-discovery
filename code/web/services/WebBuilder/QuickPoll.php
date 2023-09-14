@@ -61,7 +61,7 @@ class WebBuilder_QuickPoll extends Action {
 			'Administer All Custom Forms',
 			'Administer Library Custom Forms',
 		])) {
-			$breadcrumbs[] = new Breadcrumb('/WebBuilder/CustomForms?id=' . $this->quickPoll->id . '&objectAction=edit', 'Edit', true);
+			$breadcrumbs[] = new Breadcrumb('/WebBuilder/QuickPolls?id=' . $this->quickPoll->id . '&objectAction=edit', 'Edit', true);
 		}
 		return $breadcrumbs;
 	}

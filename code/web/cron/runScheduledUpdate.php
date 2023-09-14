@@ -62,11 +62,11 @@ if (count($updatesToRun) == 0) {
 							executeCommand('Running system updates', 'yum -y update', $scheduledUpdate);
 						}
 					}
-					if ($operatingSystem == 'linux') {
-						executeCommand('Stopping java', 'pkill java', $scheduledUpdate);
-					}
 
 					if ($scheduledUpdate->updateType === 'complete') {
+						if ($operatingSystem == 'linux') {
+							executeCommand('Stopping java', 'pkill java', $scheduledUpdate);
+						}
 						doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, $scheduledUpdate);
 					} elseif ($scheduledUpdate->updateType === 'patch') {
 						doPatchUpgrade($operatingSystem, $versionToUpdateTo, $scheduledUpdate);

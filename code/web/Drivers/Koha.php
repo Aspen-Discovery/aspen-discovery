@@ -267,101 +267,105 @@ class Koha extends AbstractIlsDriver {
 				//This method does use the review queue
 				$catalogUrl = $this->accountProfile->vendorOpacUrl;
 
-				$this->loginToKohaOpac($patron);
+				$loginResult = $this->loginToKohaOpac($patron);
+				if ($loginResult['success']) {
 
-				$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
-				//Get the csr token
-				$csr_token = '';
-				if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
-					$csr_token = $matches[1];
-				}
+					$updatePage = $this->getKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl');
+					//Get the csr token
+					$csr_token = '';
+					if (preg_match('%<input type="hidden" name="csrf_token" value="(.*?)" />%s', $updatePage, $matches)) {
+						$csr_token = $matches[1];
+					}
 
-				$postVariables = [];
-				if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1) {
-					$postVariables['borrower_branchcode'] = $patron->getHomeLocation()->code;
-				} else {
-					$postVariables = $this->setPostField($postVariables, 'borrower_branchcode');
-				}
-				$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
-				if (!empty($_REQUEST['borrower_dateofbirth'])) {
-					$postVariables['borrower_dateofbirth'] = $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']);
-				}
-				$postVariables = $this->setPostField($postVariables, 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_address2', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_city', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_country', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactaddress1', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactaddress2', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
-				$postVariables = $this->setPostField($postVariables, 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = [];
+					if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1) {
+						$postVariables['borrower_branchcode'] = $patron->getHomeLocation()->code;
+					} else {
+						$postVariables = $this->setPostField($postVariables, 'borrower_branchcode');
+					}
+					$postVariables = $this->setPostField($postVariables, 'borrower_title', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_surname', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile);
+					if (!empty($_REQUEST['borrower_dateofbirth'])) {
+						$postVariables['borrower_dateofbirth'] = $this->aspenDateToKohaDate($_REQUEST['borrower_dateofbirth']);
+					}
+					$postVariables = $this->setPostField($postVariables, 'borrower_initials', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_othernames', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_sex', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_address', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_address2', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_city', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_state', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_zipcode', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_country', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_email', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_phonepro', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_mobile', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_emailpro', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_fax', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_address', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_address2', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_city', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_state', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_zipcode', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_country', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_phone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_B_email', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_contactnote', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactsurname', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactfirstname', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactaddress1', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactaddress2', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactaddress3', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactstate', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactzipcode', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactcountry', $library->useAllCapsWhenUpdatingProfile);
+					$postVariables = $this->setPostField($postVariables, 'borrower_altcontactphone', $library->useAllCapsWhenUpdatingProfile, $library->requireNumericPhoneNumbersWhenUpdatingProfile);
 
-				// Patron extended attributes
-				if ($this->getKohaVersion() > 21.05) {
-					$extendedAttributes = $this->setExtendedAttributes();
-					if (!empty($extendedAttributes)) {
-						foreach ($extendedAttributes as $attribute) {
-							$postVariables = $this->setPostFieldWithDifferentName($postVariables, "borrower_attribute_" . $attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile);
+					// Patron extended attributes
+					if ($this->getKohaVersion() > 21.05) {
+						$extendedAttributes = $this->setExtendedAttributes();
+						if (!empty($extendedAttributes)) {
+							foreach ($extendedAttributes as $attribute) {
+								$postVariables = $this->setPostFieldWithDifferentName($postVariables, "borrower_attribute_" . $attribute['code'], $attribute['code'], $library->useAllCapsWhenUpdatingProfile);
+							}
 						}
 					}
-				}
 
-				if($this->getKohaVersion() >= 22.11) {
-					//TODO: Should this be capitalized? This does not seem to save to Koha
-					$postVariables = $this->setPostField($postVariables, 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
-					$postVariables = $this->setPostField($postVariables, 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
-				}
+					if ($this->getKohaVersion() >= 22.11) {
+						//TODO: Should this be capitalized? This does not seem to save to Koha
+						$postVariables = $this->setPostField($postVariables, 'borrower_pronouns', $library->useAllCapsWhenUpdatingProfile);
+						$postVariables = $this->setPostField($postVariables, 'borrower_middle_name', $library->useAllCapsWhenUpdatingProfile);
+					}
 
-				$postVariables['csrf_token'] = $csr_token;
-				$postVariables['action'] = 'update';
+					$postVariables['csrf_token'] = $csr_token;
+					$postVariables['action'] = 'update';
 
-				if (isset($_REQUEST['resendEmail'])) {
-					$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
-				}
+					if (isset($_REQUEST['resendEmail'])) {
+						$postVariables['resendEmail'] = strip_tags($_REQUEST['resendEmail']);
+					}
 
-				$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
+					$postResults = $this->postToKohaPage($catalogUrl . '/cgi-bin/koha/opac-memberentry.pl', $postVariables);
 
-				$messageInformation = [];
-				if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
-					$error = $messageInformation[1];
-					$error = str_replace('<h3>', '<h4>', $error);
-					$error = str_replace('</h3>', '</h4>', $error);
-					$result['messages'][] = trim($error);
-				} elseif (preg_match('%<div class="alert alert-success">(.*?)</div>%s', $postResults, $messageInformation)) {
-					$error = $messageInformation[1];
-					$error = str_replace('<h3>', '<h4>', $error);
-					$error = str_replace('</h3>', '</h4>', $error);
-					$result['success'] = true;
-					$result['messages'][] = trim($error);
-				} elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
-					$error = $messageInformation[1];
-					$result['messages'][] = trim($error);
+					$messageInformation = [];
+					if (preg_match('%<div class="alert alert-warning">(.*?)</div>%s', $postResults, $messageInformation)) {
+						$error = $messageInformation[1];
+						$error = str_replace('<h3>', '<h4>', $error);
+						$error = str_replace('</h3>', '</h4>', $error);
+						$result['messages'][] = trim($error);
+					} elseif (preg_match('%<div class="alert alert-success">(.*?)</div>%s', $postResults, $messageInformation)) {
+						$error = $messageInformation[1];
+						$error = str_replace('<h3>', '<h4>', $error);
+						$error = str_replace('</h3>', '</h4>', $error);
+						$result['success'] = true;
+						$result['messages'][] = trim($error);
+					} elseif (preg_match('%<div class="alert">(.*?)</div>%s', $postResults, $messageInformation)) {
+						$error = $messageInformation[1];
+						$result['messages'][] = trim($error);
+					}
+				}else{
+					$result['messages'][] = 'There was an error logging in to the backend system. Unable to update your contact information.';
 				}
 			}
 		}

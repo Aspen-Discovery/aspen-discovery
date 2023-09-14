@@ -100,9 +100,11 @@ class MySQLSession extends SessionInterface {
 			global $isAJAX;
 			if (!BotChecker::isRequestFromBot() && !$isAJAX) {
 				global $aspenUsage;
-				$aspenUsage->sessionsStarted++;
-				if (!empty($aspenUsage->id)) {
+				$aspenUsage->__set('sessionsStarted', $aspenUsage->__get('sessionsStarted') + 1);
+				if (!empty($aspenUsage->__get('id'))) {
 					$aspenUsage->update();
+				} else {
+					$aspenUsage->insert();
 				}
 			}
 		}

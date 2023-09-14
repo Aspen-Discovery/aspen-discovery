@@ -135,6 +135,21 @@ class WebBuilder_AJAX extends JSON_Action {
 					'values' => $list,
 				];
 				break;
+			case 'quick_poll':
+				require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+				$list = [];
+				$list['-1'] = 'Select a quick poll';
+				$object = new QuickPoll();
+				$object->orderBy('title');
+				$object->find();
+				while ($object->fetch()) {
+					$list[$object->id] = $object->title;
+				}
+				$result = [
+					'success' => true,
+					'values' => $list,
+				];
+				break;
 			default:
 				$result['message'] = 'Unhandled Source Type ' . $sourceType;
 		}
@@ -349,14 +364,20 @@ class WebBuilder_AJAX extends JSON_Action {
 			$quickPoll->id = $pollId;
 			if ($quickPoll->find(true)) {
 				$interface->assign('pollId', $pollId);
+				$interface->assign('poll', $quickPoll);
 				if ($quickPoll->allowSuggestingNewOptions) {
 					//Get the text of the option
 					$newOption = $_REQUEST['newOption'];
+
+					require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
+					$badWords = new BadWord();
 					//Make sure the new option is valid
 					if (isSpammySearchTerm($newOption)) {
 						$result['message'] = translate(['text'=>'Invalid option. Options can be plain text only', 'isPublicFacing'=>true]);
 					} else if (!preg_match_all('/^[a-zA-Z0-9\s?.-]*$/',$newOption)){
 						$result['message'] = translate(['text'=>'Invalid option. Options can be plain text only', 'isPublicFacing'=>true]);
+					} else if ($badWords->hasBadWords($newOption)) {
+						$result['message'] = translate(['text'=>'Invalid option. Option must meet our guidelines.', 'isPublicFacing'=>true]);
 					} else {
 						$pollOption = new QuickPollOption();
 						$pollOption->pollId = $pollId;
