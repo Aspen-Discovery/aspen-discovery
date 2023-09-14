@@ -912,7 +912,9 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	function getLanguage() {
 		/** @var File_MARC_Control_Field $field008 */
 		$field008 = $this->getMarcRecord()->getField('008');
-		if ($field008 != null && strlen($field008->getData() >= 37)) {
+		$datalength = strlen($field008->getData());
+
+		if ($field008 != null && $datalength >= 37) {
 			$languageCode = substr($field008->getData(), 35, 3);
 			if ($languageCode == 'eng') {
 				$languageCode = "English";

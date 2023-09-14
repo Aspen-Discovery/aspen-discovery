@@ -299,6 +299,14 @@ function getUpdates23_09_00(): array {
 			],
 		],
 		//add_companion_system
+		'fix_requiredModule_website_facets' => [
+			'title' => 'Fix required module for website facet permissions',
+			'description' => 'Fix required module for website facet permissions',
+			'sql' => [
+				"UPDATE permissions set requiredModule = 'Web Indexer' where requiredModule = 'Website Indexing'"
+			],
+		],
+		//fix_requiredModule_website_facets
 	];
 }
 

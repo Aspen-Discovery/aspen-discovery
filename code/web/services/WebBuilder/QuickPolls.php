@@ -26,7 +26,7 @@ class WebBuilder_QuickPolls extends ObjectEditor {
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$userHasExistingObjects = true;
 		if (!UserAccount::userHasPermission('Administer All Quick Polls')) {
-			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryCustomForm', 'formId');
+			$userHasExistingObjects = $this->limitToObjectsForLibrary($object, 'LibraryQuickPoll', 'pollId');
 		}
 		$objectList = [];
 		if ($userHasExistingObjects) {

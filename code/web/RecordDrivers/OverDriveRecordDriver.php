@@ -340,17 +340,16 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 
 		//Load the holding label for the branch where the user is physically.
 		if (!is_null($homeLibrary)) {
-			return $homeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $homeLibrary->libraryId;
+			return $homeLibrary->libraryId;
 		} elseif (!is_null($activeLocation)) {
 			$activeLibrary = Library::getLibraryForLocation($activeLocation->locationId);
-			return $activeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
+			return $activeLibrary->libraryId;
 		} elseif (isset($activeLibrary)) {
-			return $activeLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $activeLibrary->libraryId;
+			return $activeLibrary->libraryId;
 		} elseif (!is_null($searchLocation)) {
-			$searchLibrary = Library::getLibraryForLocation($searchLibrary->locationId);
-			return $searchLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $searchLocation->libraryId;
+			return $searchLocation->libraryId;
 		} elseif (isset($searchLibrary)) {
-			return $searchLibrary->getGroupedWorkDisplaySettings()->includeOutOfSystemExternalLinks ? -1 : $searchLibrary->libraryId;
+			return $searchLibrary->libraryId;
 		} else {
 			return -1;
 		}
