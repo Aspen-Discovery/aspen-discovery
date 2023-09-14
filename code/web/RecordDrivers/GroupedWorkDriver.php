@@ -2628,20 +2628,22 @@ class GroupedWorkDriver extends IndexRecordDriver {
 						//Get the variation for the item
 						$relatedVariation = $allVariations[$scopedItem['groupedWorkVariationId']];
 						//Load the correct record based on the variation since the same record can exist in multiple variations
-						$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId'] . ':' . $relatedVariation->manifestation->format];
-						$scopedItem['isEcontent'] = $relatedVariation->isEcontent;
-						$scopedItem['eContentSource'] = $relatedVariation->econtentSource;
-						$scopedItem['scopeId'] = $scopeId;
-						//Look for urls for the item
-						$itemUrlQuery = "SELECT url from grouped_work_record_item_url where groupedWorkItemId = {$scopedItem['groupedWorkItemId']} AND (scopeId = -1 OR scopeId = $scopeId) ORDER BY scopeId desc limit 1";
-						$results = $aspen_db->query($itemUrlQuery, PDO::FETCH_ASSOC);
-						$itemUrls = $results->fetchAll();
-						if (count($itemUrls) > 0) {
-							$scopedItem['localUrl'] = $itemUrls[0]['url'];
+						if (isset($allRecords[$scopedItem['groupedWorkRecordId'] . ':' . $relatedVariation->manifestation->format])) {
+							$relatedRecord = $allRecords[$scopedItem['groupedWorkRecordId'] . ':' . $relatedVariation->manifestation->format];
+							$scopedItem['isEcontent'] = $relatedVariation->isEcontent;
+							$scopedItem['eContentSource'] = $relatedVariation->econtentSource;
+							$scopedItem['scopeId'] = $scopeId;
+							//Look for urls for the item
+							$itemUrlQuery = "SELECT url from grouped_work_record_item_url where groupedWorkItemId = {$scopedItem['groupedWorkItemId']} AND (scopeId = -1 OR scopeId = $scopeId) ORDER BY scopeId desc limit 1";
+							$results = $aspen_db->query($itemUrlQuery, PDO::FETCH_ASSOC);
+							$itemUrls = $results->fetchAll();
+							if (count($itemUrls) > 0) {
+								$scopedItem['localUrl'] = $itemUrls[0]['url'];
+							}
+							$results->closeCursor();
+							$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library, $mainLocationScopeId);
+							$relatedRecord->addItem($itemData);
 						}
-						$results->closeCursor();
-						$itemData = new Grouping_Item($scopedItem, null, $searchLocation, $library, $mainLocationScopeId);
-						$relatedRecord->addItem($itemData);
 					}
 
 					//Finally, add records to the correct manifestation (so status updates properly)
