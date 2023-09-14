@@ -2610,12 +2610,15 @@ class GroupedWorkDriver extends IndexRecordDriver {
 							$recordId .= ':' . $record['recordIdentifier'];
 							$recordDriver = RecordDriverFactory::initRecordDriverById($recordId, $groupedWork);
 
-							$volumeData = $this->getVolumeDataForRecord($recordId);
-							$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true, $variation);
-							$relatedRecord->recordVariations = $recordVariations;
+							//Do not add invalid records
+							if ($recordDriver != null) {
+								$volumeData = $this->getVolumeDataForRecord($recordId);
+								$relatedRecord = new Grouping_Record($recordId, $record, $recordDriver, $volumeData, $record['source'], true, $variation);
+								$relatedRecord->recordVariations = $recordVariations;
 
-							$relatedRecords[$relatedRecord->id] = $relatedRecord;
-							$allRecords[$relatedRecord->databaseId . ':' . $variation->manifestation->format] = $relatedRecord;
+								$relatedRecords[$relatedRecord->id] = $relatedRecord;
+								$allRecords[$relatedRecord->databaseId . ':' . $variation->manifestation->format] = $relatedRecord;
+							}
 						}
 					}
 
