@@ -2,6 +2,7 @@
 
 require_once ROOT_DIR . '/sys/WebBuilder/QuickPollOption.php';
 require_once ROOT_DIR . '/sys/WebBuilder/LibraryQuickPoll.php';
+require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
 class QuickPoll extends DB_LibraryLinkedObject {
 	public $__table = 'web_builder_quick_poll';
@@ -262,6 +263,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 
 	public function getFormattedPoll() {
 		global $interface;
+
 		if (!UserAccount::isLoggedIn()) {
 			if (!$this->requireLogin) {
 				require_once ROOT_DIR . '/sys/Enrichment/RecaptchaSetting.php';
