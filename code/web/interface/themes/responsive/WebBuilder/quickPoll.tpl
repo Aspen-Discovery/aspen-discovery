@@ -47,20 +47,44 @@
 					</div>
 				</div>
 			{/if}
+
 			<div class="form-group">
 				<label class="control-label" for="name">{translate text="Your Name" isAdminFacing=true} {if $poll->requireName == 1}<span class="required-input">*</span>{/if}</label>
 				<input type="text" class="form-control {if $poll->requireName == 1}required{/if}" name="name" id="name" value="">
 			</div>
+
 			<div class="form-group">
 				<label class="control-label" for="email">{translate text="Email" isAdminFacing=true} {if $poll->requireEmail == 1}<span class="required-input">*</span>{/if}</label>
 				<input type="email" class="form-control {if $poll->requireEmail == 1}required{/if}" name="email" id="email" value="">
 			</div>
+
+            {if !empty($captcha)}
+                {* Show Recaptcha spam control if set. *}
+				<div class="form-group">
+                    {$captcha}
+				</div>
+            {/if}
+
 			<div class="form-group">
 				<div class="col-xs-12">
 					<input type="submit" name="submit" value="{translate text="Submit" inAttribute=true isAdminFacing=true}" class="btn btn-primary">
 				</div>
 			</div>
+
 		</form>
     {/if}
 </div>
 {/strip}
+
+{if !empty($captcha)}
+{literal}
+	<script type="text/javascript">
+		var onloadCallback = function() {
+			var captchas = document.getElementsByClassName("g-recaptcha");
+			for(var i = 0; i < captchas.length; i++) {
+				grecaptcha.render(captchas[i], {'sitekey' : '{/literal}{$captchaKey}{literal}'});
+			}
+		};
+	</script>
+{/literal}
+{/if}
