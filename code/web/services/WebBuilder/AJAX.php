@@ -368,11 +368,16 @@ class WebBuilder_AJAX extends JSON_Action {
 				if ($quickPoll->allowSuggestingNewOptions) {
 					//Get the text of the option
 					$newOption = $_REQUEST['newOption'];
+
+					require_once ROOT_DIR . '/sys/LocalEnrichment/BadWord.php';
+					$badWords = new BadWord();
 					//Make sure the new option is valid
 					if (isSpammySearchTerm($newOption)) {
 						$result['message'] = translate(['text'=>'Invalid option. Options can be plain text only', 'isPublicFacing'=>true]);
 					} else if (!preg_match_all('/^[a-zA-Z0-9\s?.-]*$/',$newOption)){
 						$result['message'] = translate(['text'=>'Invalid option. Options can be plain text only', 'isPublicFacing'=>true]);
+					} else if ($badWords->hasBadWords($newOption)) {
+						$result['message'] = translate(['text'=>'Invalid option. Option must meet our guidelines.', 'isPublicFacing'=>true]);
 					} else {
 						$pollOption = new QuickPollOption();
 						$pollOption->pollId = $pollId;
