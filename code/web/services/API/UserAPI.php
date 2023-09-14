@@ -5125,11 +5125,11 @@ class UserAPI extends Action {
 						$_REQUEST['password'] = $guidingUser->password;
 						$_POST['username'] = $guidingUser->username;
 						$_POST['password'] = $guidingUser->password;
-						$user = UserAccount::login();
 					}
+					$user = UserAccount::login();
 				}
 
-				if ($user && !($user instanceof AspenError)) {
+				if (!empty($user) && !($user instanceof AspenError)) {
 					return ['success' => true];
 				} else {
 					UserAccount::softLogout();
