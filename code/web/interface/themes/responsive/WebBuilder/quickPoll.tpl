@@ -37,11 +37,11 @@
 			</div>
 		{/if}
 		<div class="form-group">
-			<label class="control-label" for="name">{translate text="Your Name" isAdminFacing=true} <span class="required-input">*</span></label>
+			<label class="control-label" for="name">{translate text="Your Name" isAdminFacing=true} {if $poll->requireName == 1}<span class="required-input">*</span>{/if}</label>
 			<input type="text" class="form-control {if $poll->requireName == 1}required{/if}" name="name" id="name" value="">
 		</div>
 		<div class="form-group">
-			<label class="control-label" for="email">{translate text="Email" isAdminFacing=true} <span class="required-input">*</span></label>
+			<label class="control-label" for="email">{translate text="Email" isAdminFacing=true} {if $poll->requireEmail == 1}<span class="required-input">*</span>{/if}</label>
 			<input type="email" class="form-control {if $poll->requireEmail == 1}required{/if}" name="email" id="email" value="">
 		</div>
 		<div class="form-group">
