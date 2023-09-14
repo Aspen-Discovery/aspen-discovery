@@ -114,7 +114,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 				'label' => 'Fields',
 				'description' => 'Fields within the form',
 				'keyThis' => 'id',
-				'keyOther' => 'formId',
+				'keyOther' => 'pollId',
 				'subObjectType' => 'QuickPollOption',
 				'structure' => $quickPollOptionStructure,
 				'sortable' => true,
