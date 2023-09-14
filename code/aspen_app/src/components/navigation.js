@@ -25,7 +25,7 @@ import { LIBRARY } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import { checkCachedUrl } from '../util/login';
 import LaunchStackNavigator from '../navigations/LaunchStackNavigator';
-import { BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, UserProvider } from '../context/initialContext';
+import { BrowseCategoryProvider, CheckoutsProvider, GroupedWorkProvider, HoldsProvider, LanguageProvider, LibraryBranchProvider, LibrarySystemProvider, UserContext, UserProvider } from '../context/initialContext';
 import { SplashScreen } from '../screens/Auth/Splash';
 import { RemoveData } from '../util/logout';
 import { Platform } from 'react-native';
@@ -34,6 +34,8 @@ import { updateAspenLiDABuild } from '../util/greenhouse';
 import { ResetExpiredPin } from '../screens/Auth/ResetExpiredPin';
 import { PermissionsPrompt } from './PermissionsPrompt';
 import LibraryCardScanner from './LibraryCardScanner';
+import LoadingScreen from '../screens/Auth/Loading';
+import AccountDrawer from '../navigations/drawer/DrawerNavigator';
 
 const prefix = Linking.createURL('/');
 console.log(prefix);
@@ -82,6 +84,7 @@ Sentry.Native.setTag('patch', GLOBALS.appPatch);
 
 export function App() {
      const queryClient = useQueryClient();
+     const { updateUser } = React.useContext(UserContext);
      const primaryColor = useToken('colors', 'primary.base');
      const primaryColorContrast = useToken('colors', useContrastText(primaryColor));
      const screenBackgroundColor = useToken('colors', useColorModeValue('warmGray.50', 'coolGray.800'));
@@ -103,6 +106,7 @@ export function App() {
                               ...prevState,
                               userToken: action.token,
                               isLoading: false,
+                              refreshUserData: true,
                          };
                     case 'SIGN_IN':
                          return {
@@ -110,6 +114,7 @@ export function App() {
                               isSignout: false,
                               userToken: action.token,
                               isLoading: false,
+                              refreshUserData: true,
                          };
                     case 'SIGN_OUT':
                          return {
@@ -117,6 +122,7 @@ export function App() {
                               isSignout: true,
                               userToken: null,
                               isLoading: false,
+                              refreshUserData: false,
                          };
                }
           },
@@ -124,6 +130,7 @@ export function App() {
                isLoading: true,
                isSignout: false,
                userToken: null,
+               refreshUserData: false,
           }
      );
 
@@ -215,6 +222,7 @@ export function App() {
                dispatch({
                     type: 'RESTORE_TOKEN',
                     token: userToken,
+                    refreshData: true,
                });
           };
           bootstrapAsync();
@@ -223,16 +231,19 @@ export function App() {
      const authContext = React.useMemo(
           () => ({
                signIn: async () => {
+                    //queryClient.invalidateQueries({});
                     const userToken = Constants.manifest2?.extra?.expoClient?.sessionid ?? Constants.sessionId;
                     await AsyncStorage.setItem('@userToken', userToken);
                     dispatch({
                          type: 'SIGN_IN',
                          token: userToken,
+                         refreshData: true,
                     });
                },
                signOut: async () => {
                     await RemoveData().then((res) => {
-                         queryClient.invalidateQueries({});
+                         //queryClient.invalidateQueries({});
+                         updateUser([]);
                          dispatch({ type: 'SIGN_OUT' });
                     });
                     console.log('Session ended.');
@@ -358,14 +369,7 @@ export function App() {
                                                                       />
                                                                  ) : (
                                                                       // User is signed in
-                                                                      <Stack.Screen
-                                                                           name="LaunchStack"
-                                                                           component={LaunchStackNavigator}
-                                                                           options={{
-                                                                                animationEnabled: false,
-                                                                                header: () => null,
-                                                                           }}
-                                                                      />
+                                                                      <Stack.Screen name="LaunchStack" component={LaunchStackNavigator} initialParams={{ refreshUserData: state.refreshUserData ?? false }} />
                                                                  )}
                                                                  <Stack.Screen
                                                                       name="LibraryCardScanner"
