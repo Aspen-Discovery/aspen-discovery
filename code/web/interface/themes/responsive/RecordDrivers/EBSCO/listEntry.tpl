@@ -40,12 +40,12 @@
 				</div>
 			{/if}
 
-			{if $summPublicationDates || $summPublishers || $summPublicationPlaces}
+			{if !empty($summPublicationDates) || !empty($summPublishers) || !empty($summPublicationPlaces)}
 				<div class="row">
 
 					<div class="result-label col-sm-3">{translate text='Published' isPublicFacing=true}</div>
 					<div class="col-sm-9 result-value">
-						{$summPublicationPlaces.0|escape}{$summPublishers.0|escape}{$summPublicationDates.0|escape}
+						{if !empty($summPublicationPlaces)}{$summPublicationPlaces.0|escape}{/if} {if !empty($summPublishers)}{$summPublishers.0|escape}{/if} {if !empty($summPublicationDates)}{$summPublicationDates.0|escape}{/if}
 					</div>
 				</div>
 			{/if}
