@@ -577,7 +577,7 @@ class SearchAPI extends Action {
 					$numInfectedFiles = $pieces[1];
 				}
 			}
-			if (!$numInfectedFiles > 0) {
+			if ($numInfectedFiles > 0) {
 				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
 			} else {
 				$this->addCheck($checks, "Antivirus");
