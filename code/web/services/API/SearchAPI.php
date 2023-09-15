@@ -566,6 +566,26 @@ class SearchAPI extends Action {
 			}
 		}
 
+		//Check anti virus
+		$antivirusLog = "/var/log/aspen-discovery/clam_av.log";
+		if (file_exists($antivirusLog)) {
+			$fh = fopen($antivirusLog, 'r');
+			$numInfectedFiles = 0;
+			while ($line = fgets($fh)) {
+				$pieces = [];
+				if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
+					$numInfectedFiles = $pieces[1];
+				}
+			}
+			if ($numInfectedFiles > 0) {
+				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
+			} else {
+				$this->addCheck($checks, "Antivirus");
+			}
+		} else {
+			$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "No Antivirus log file was found");
+		}
+
 		//Check third party enrichment to see if it is enabled
 		require_once ROOT_DIR . '/sys/Enrichment/NovelistSetting.php';
 		$novelistSetting = new NovelistSetting();

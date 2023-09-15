@@ -2246,6 +2246,7 @@ class Koha extends AbstractIlsDriver {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
 					$curHold->canFreeze = false;
+					$curHold->cancelable = false;
 					if(!empty($library->interLibraryLoanName)) {
 						$curHold->source = $library->interLibraryLoanName;
 					}
@@ -2253,6 +2254,7 @@ class Koha extends AbstractIlsDriver {
 					$curHold->isIll = true;
 					$curHold->source = 'ILL';
 					$curHold->canFreeze = false;
+					$curHold->cancelable = false;
 					if(!empty($library->interLibraryLoanName)) {
 						$curHold->source = $library->interLibraryLoanName;
 					}

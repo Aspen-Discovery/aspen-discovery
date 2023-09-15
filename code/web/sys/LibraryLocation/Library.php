@@ -1855,7 +1855,7 @@ class Library extends DataObject {
 							'allowPickupLocationUpdates' => [
 								'property' => 'allowPickupLocationUpdates',
 								'type' => 'checkbox',
-								'label' => 'Allow Patrons to Update Their Pickup Location',
+								'label' => 'Allow Patrons to Update Their Preferred Pickup Location',
 								'description' => 'Whether or not patrons should be able to update their preferred pickup location in their profile.',
 								'hideInLists' => true,
 								'default' => 0,
@@ -1865,6 +1865,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Allow Patrons to remember their preferred pickup location',
 								'description' => 'Whether or not patrons can remember their preferred pickup location when placing holds',
+								'note' => 'Requires Allow patrons to update their preferred pickup location to be enabled',
 								'hideInLists' => true,
 								'default',
 								'true',
