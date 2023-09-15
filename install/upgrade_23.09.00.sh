@@ -14,6 +14,8 @@ freshclam
 systemctl start clamd@scan
 systemctl enable clamd@scan
 
+php /usr/local/aspen-discovery/install/updateCron_23_09.php $1
+
 #sed -i -e '$aExcludePath ^/var/lib/mysql/*' '/etc/clamd.d/scan.conf'
 #sed -i -e '$aExcludePath ^/data/aspen-discovery/$1/solr7/*' '/etc/clamd.d/scan.conf'
 #sed -i -e '$aExcludePath ^/data/aspen-discovery/$1/covers/small/*' '/etc/clamd.d/scan.conf'
