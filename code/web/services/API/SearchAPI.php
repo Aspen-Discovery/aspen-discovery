@@ -567,7 +567,7 @@ class SearchAPI extends Action {
 		}
 
 		//Check anti virus
-		$antivirusLog = "/data/aspen-discovery/clam_av.log";
+		$antivirusLog = "/var/log/aspen-discovery/clam_av.log";
 		if (file_exists($antivirusLog)) {
 			$fh = fopen($antivirusLog, 'r');
 			$numInfectedFiles = 0;
