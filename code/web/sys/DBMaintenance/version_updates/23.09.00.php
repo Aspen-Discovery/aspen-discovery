@@ -94,6 +94,13 @@ function getUpdates23_09_00(): array {
 				"UPDATE indexing_profiles set indexingClass = 'NashvilleCarlX' where indexingClass = 'CarlX' and marcPath like '%nashville%'"
 			]
 		],
+		'fix_user_email' => [
+			'title' => 'Fix User email',
+			'description' => 'Fix User email',
+			'sql' => [
+				"ALTER TABLE user CHANGE COLUMN `email` `email` varchar(256) COLLATE utf8mb4_general_ci NOT NULL DEFAULT ''"
+			]
+		],
 
 		//kodi - ByWater
 		'permissions_open_archives_facets' => [

@@ -511,7 +511,7 @@ BODY;
 		return $availableFacets;
 	}
 
-	public function retrieveRecord($dbId, $an) {
+	public function retrieveRecord($dbId, $an, $retryOnAuthenticationFailure = true) {
 		if (!$this->authenticate()) {
 			return null;
 		} else {
@@ -533,6 +533,10 @@ BODY;
 				if (isset($recordData->Record)) {
 					return $recordData->Record;
 				} else {
+					if ($retryOnAuthenticationFailure && $recordData->ErrorNumber == 109) {
+						SearchObject_EbscoEdsSearcher::$authenticationToken = null;
+						return $this->retrieveRecord($dbId, $an, false);
+					}
 					return null;
 				}
 			}

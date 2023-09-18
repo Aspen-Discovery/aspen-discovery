@@ -56,7 +56,7 @@
 		{if !empty($summPhysical)}
 			<div class="row hidden-phone">
 				<div class="result-label col-tn-3">{translate text='Physical Desc' isPublicFacing=true}</div>
-				<div class="col-tn-9 result-value">{$summPhysical.0|escape}</div>
+				<div class="col-tn-9 result-value">{$summPhysical|escape}</div>
 			</div>
 		{/if}
 

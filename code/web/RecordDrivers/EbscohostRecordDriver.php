@@ -292,10 +292,12 @@ class EbscohostRecordDriver extends RecordInterface {
 		return 'Unknown';
 	}
 
-	private function getChildByTagName(SimpleXMLElement $parentNode, string $name): ?SimpleXMLElement {
-		foreach ($parentNode->children() as $child) {
-			if ($child->getName() == $name) {
-				return $child;
+	private function getChildByTagName(?SimpleXMLElement $parentNode, string $name): ?SimpleXMLElement {
+		if ($parentNode != null) {
+			foreach ($parentNode->children() as $child) {
+				if ($child->getName() == $name) {
+					return $child;
+				}
 			}
 		}
 		return null;
@@ -321,9 +323,11 @@ class EbscohostRecordDriver extends RecordInterface {
 	 * @return  string              Unique identifier.
 	 */
 	public function getUniqueID() {
-		$header = $this->getChildByTagName($this->recordData, 'header');
-		if ($header != null) {
-			return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTag'] . ':' . $header->attributes()['uiTerm'];
+		if (!is_null($this->recordData)) {
+			$header = $this->getChildByTagName($this->recordData, 'header');
+			if ($header != null) {
+				return $header->attributes()['shortDbName'] . ':' . $header->attributes()['uiTag'] . ':' . $header->attributes()['uiTerm'];
+			}
 		}
 		return "";
 	}

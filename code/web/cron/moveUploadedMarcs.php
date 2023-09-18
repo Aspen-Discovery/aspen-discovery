@@ -6,6 +6,11 @@ if (count($_SERVER['argv']) < 3) {
 }
 $copyFrom = $_SERVER['argv'][1];
 $copyTo = $_SERVER['argv'][2];
+if (isset($_SERVER['argv'][3])) {
+	$deleteFiles = $_SERVER['argv'][3] == 1;
+}else{
+	$deleteFiles = true;
+}
 
 //Copy full MARC exports
 $marcDirName = "/home/$copyFrom/marc/";
@@ -74,18 +79,22 @@ if (count($files) > 0) {
 		sleep(2);
 		if (filemtime($latestMarcFile['fullPath']) == $latestMarcFileModificationTime && $latestMarcFileSize == filesize($latestMarcFile['fullPath'])) {
 			//File is not changing, we can move it.
-			if (rename($latestMarcFile['fullPath'], $marcDestDirName . $latestMarcFile['name'])) {
+			if ($deleteFiles && rename($latestMarcFile['fullPath'], $marcDestDirName . $latestMarcFile['name'])) {
 				echo(date('Y-m-d H:i:s') . " moved full export to dest dir $marcDestDirName\n");
+			} elseif (!$deleteFiles && copy($latestMarcFile['fullPath'], $marcDestDirName . $latestMarcFile['name'])) {
+				echo(date('Y-m-d H:i:s') . " copied full export to dest dir $marcDestDirName\n");
 			} else {
 				echo(date('Y-m-d H:i:s') . " ERROR could not move full export to dest dir $marcDestDirName\n");
 			}
 
 			//Delete any other files that were in the directory since they are just old files.
-			$files = scandir($marcDirName);
-			foreach ($files as $file) {
-				if ($file != '.' && $file != '..' && strpos($file, ".mrc") > 0) {
-					if (unlink($marcDirName . $file)) {
-						echo(date('Y-m-d H:i:s') . "Deleted full export " . $marcDirName . $file . " that was older than the latest\n");
+			if ($deleteFiles) {
+				$files = scandir($marcDirName);
+				foreach ($files as $file) {
+					if ($file != '.' && $file != '..' && strpos($file, ".mrc") > 0) {
+						if (unlink($marcDirName . $file)) {
+							echo(date('Y-m-d H:i:s') . "Deleted full export " . $marcDirName . $file . " that was older than the latest\n");
+						}
 					}
 				}
 			}
@@ -99,18 +108,22 @@ if (count($files) > 0) {
 		sleep(2);
 		if (filemtime($latestIdsFile['fullPath']) == $latestIdsFileModificationTime && $latestIdsFileSize == filesize($latestIdsFile['fullPath'])) {
 			//File is not changing, we can move it.
-			if (rename($latestIdsFile['fullPath'], $marcDestDirName . $latestIdsFile['name'])) {
+			if ($deleteFiles && rename($latestIdsFile['fullPath'], $marcDestDirName . $latestIdsFile['name'])) {
 				echo(date('Y-m-d H:i:s') . " moved ids file to dest dir\n");
+			} elseif (!$deleteFiles && copy($latestIdsFile['fullPath'], $marcDestDirName . $latestIdsFile['name'])) {
+				echo(date('Y-m-d H:i:s') . " copied ids file to dest dir\n");
 			} else {
 				echo(date('Y-m-d H:i:s') . " ERROR could not move ids file to dest dir $marcDestDirName\n");
 			}
 
 			//Delete any other files that were in the directory since they are just old files.
-			$files = scandir($marcDirName);
-			foreach ($files as $file) {
-				if ($file != '.' && $file != '..' && strpos($file, ".ids") > 0) {
-					if (unlink($marcDirName . $file)) {
-						echo(date('Y-m-d H:i:s') . "Deleted ids file " . $marcDirName . $file . " that was older than the latest\n");
+			if ($deleteFiles) {
+				$files = scandir($marcDirName);
+				foreach ($files as $file) {
+					if ($file != '.' && $file != '..' && strpos($file, ".ids") > 0) {
+						if (unlink($marcDirName . $file)) {
+							echo(date('Y-m-d H:i:s') . "Deleted ids file " . $marcDirName . $file . " that was older than the latest\n");
+						}
 					}
 				}
 			}
@@ -124,18 +137,22 @@ if (count($files) > 0) {
 		sleep(2);
 		if (filemtime($latestLargeBibXmlFile['fullPath']) == $latestLargeBibXmlFileModificationTime && $latestLargeBibXmlFileSize == filesize($latestLargeBibXmlFile['fullPath'])) {
 			//File is not changing, we can move it.
-			if (rename($latestLargeBibXmlFile['fullPath'], $marcDestDirName . $latestLargeBibXmlFile['name'])) {
+			if ($deleteFiles && rename($latestLargeBibXmlFile['fullPath'], $marcDestDirName . $latestLargeBibXmlFile['name'])) {
 				echo(date('Y-m-d H:i:s') . " moved large bib xml file to dest dir\n");
+			} elseif (!$deleteFiles && copy($latestLargeBibXmlFile['fullPath'], $marcDestDirName . $latestLargeBibXmlFile['name'])) {
+				echo(date('Y-m-d H:i:s') . " copied large bib xml file to dest dir\n");
 			} else {
 				echo(date('Y-m-d H:i:s') . " ERROR could not move large bib xml file to dest dir $marcDestDirName\n");
 			}
 
 			//Delete any other files that were in the directory since they are just old files.
-			$files = scandir($marcDirName);
-			foreach ($files as $file) {
-				if ($file != '.' && $file != '..' && strpos($file, ".xml") > 0) {
-					if (unlink($marcDirName . $file)) {
-						echo(date('Y-m-d H:i:s') . "Deleted large bib xml file " . $marcDirName . $file . " that was older than the latest\n");
+			if ($deleteFiles) {
+				$files = scandir($marcDirName);
+				foreach ($files as $file) {
+					if ($file != '.' && $file != '..' && strpos($file, ".xml") > 0) {
+						if (unlink($marcDirName . $file)) {
+							echo(date('Y-m-d H:i:s') . "Deleted large bib xml file " . $marcDirName . $file . " that was older than the latest\n");
+						}
 					}
 				}
 			}
@@ -166,8 +183,10 @@ if (count($files) > 0) {
 			sleep(2);
 			if (filemtime($marcDeltaDirName . $file) == $lastModificationTime && $lastFileSize == filesize($marcDeltaDirName . $file)) {
 				//File is not changing, we can move it.
-				if (rename($marcDeltaDirName . $file, $marcDeltaDestDirName . $file)) {
+				if ($deleteFiles && rename($marcDeltaDirName . $file, $marcDeltaDestDirName . $file)) {
 					echo(date('Y-m-d H:i:s') . " moved delta export to dest dir\n");
+				} elseif (!$deleteFiles && copy($marcDeltaDirName . $file, $marcDeltaDestDirName . $file)) {
+					echo(date('Y-m-d H:i:s') . " copied delta export to dest dir\n");
 				} else {
 					echo(date('Y-m-d H:i:s') . " ERROR could not move delta export to dest dir $marcDeltaDestDirName\n");
 				}
@@ -199,8 +218,10 @@ if (count($files) > 0) {
 			sleep(2);
 			if (filemtime($supplementalDirName . $file) == $lastModificationTime && $lastFileSize == filesize($supplementalDirName . $file)) {
 				//File is not changing, we can move it.
-				if (rename($supplementalDirName . $file, $supplementalDestDirName . $file)) {
+				if ($deleteFiles && rename($supplementalDirName . $file, $supplementalDestDirName . $file)) {
 					echo(date('Y-m-d H:i:s') . " moved supplemental file to dest dir\n");
+				} elseif (!$deleteFiles && copy($supplementalDirName . $file, $supplementalDestDirName . $file)) {
+					echo(date('Y-m-d H:i:s') . " copied supplemental file to dest dir\n");
 				} else {
 					echo(date('Y-m-d H:i:s') . " ERROR could not move supplemental file to dest dir $supplementalDestDirName\n");
 				}

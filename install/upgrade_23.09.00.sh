@@ -14,8 +14,8 @@ freshclam
 systemctl start clamd@scan
 systemctl enable clamd@scan
 
-touch /var/log/aspen-discovery/clamscan.log
-chown clamscan:aspen_apache /var/log/aspen-discovery/clamscan.log
+touch /var/log/aspen-discovery/clam_av.log
+chown root:aspen_apache /var/log/aspen-discovery/clam_av.log
 
 php /usr/local/aspen-discovery/install/updateCron_23_09.php $1
 

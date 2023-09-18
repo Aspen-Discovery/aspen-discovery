@@ -209,19 +209,12 @@ if($ssoAuthOnly === false) {
 
 		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		session_destroy();
+		session_name('aspen_session'); // must also be set in index.php, in initializeSession()
+		$session = new MySQLSession();
+		$session->init();
 
 		$_SESSION['activeUserId'] = $login->id;
 		$_SESSION['rememberMe'] = false;
@@ -263,19 +256,12 @@ if($ssoAuthOnly === false) {
 
 		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		session_destroy();
+		session_name('aspen_session'); // must also be set in index.php, in initializeSession()
+		$session = new MySQLSession();
+		$session->init();
 
 		$_SESSION['activeUserId'] = $login->id;
 		$_SESSION['rememberMe'] = false;

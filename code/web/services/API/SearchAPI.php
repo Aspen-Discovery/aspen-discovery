@@ -569,18 +569,23 @@ class SearchAPI extends Action {
 		//Check anti virus
 		$antivirusLog = "/var/log/aspen-discovery/clam_av.log";
 		if (file_exists($antivirusLog)) {
-			$fh = fopen($antivirusLog, 'r');
-			$numInfectedFiles = 0;
-			while ($line = fgets($fh)) {
-				$pieces = [];
-				if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
-					$numInfectedFiles = $pieces[1];
+			$fileModificationTime = filemtime($antivirusLog);
+			if ($fileModificationTime < (time() - 24 * 60 * 60)) {
+				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus scan has not been run in the last 24 hours");
+			}else{
+				$fh = fopen($antivirusLog, 'r');
+				$numInfectedFiles = 0;
+				while ($line = fgets($fh)) {
+					$pieces = [];
+					if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
+						$numInfectedFiles = $pieces[1];
+					}
 				}
-			}
-			if ($numInfectedFiles > 0) {
-				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
-			} else {
-				$this->addCheck($checks, "Antivirus");
+				if ($numInfectedFiles > 0) {
+					$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
+				} else {
+					$this->addCheck($checks, "Antivirus");
+				}
 			}
 		} else {
 			$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "No Antivirus log file was found");
