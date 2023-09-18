@@ -7,18 +7,23 @@ if (count($_SERVER['argv']) > 1) {
 	if ($fhnd) {
 		$lines = [];
 		$insertClamScan = true;
+		$replaceClamScan = false;
 		while (($line = fgets($fhnd)) !== false) {
 			if (strpos($line, 'clamscan') > 0) {
 				$insertClamScan = false;
+				$replaceClamScan = true;
+			} else {
+				$lines[] = $line;
 			}
-			$lines[] = $line;
 		}
 		fclose($fhnd);
 		if ($insertClamScan) {
 			$lines[] = "######################################\n";
 			$lines[] = "# Run Clam AV Scans                  #\n";
 			$lines[] = "######################################\n";
-			$lines[] = "00 2 * * * root /bin/clamscan --recursive=yes -v -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large / > /var/log/aspen-discovery/clam_av.log\n";
+			$lines[] = "00 2 * * * root /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n";
+		}elseif ($replaceClamScan) {
+			$lines[] = "00 2 * * * root /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n";
 		}
 		if ($insertClamScan) {
 			$newContent = implode('', $lines);
