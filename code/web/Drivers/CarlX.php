@@ -491,10 +491,10 @@ class CarlX extends AbstractIlsDriver {
 						$curHold->status = 'Frozen';
 					}
 					// CarlX [9.6.4.3] will not allow update hold (suspend hold, change pickup location) on item level hold. UnavailableHoldItem ~ /^ITEM ID: / if the hold is an item level hold.
-					if (str_starts_with($curHold->cancelId, 'ITEM ID: ')) {
+					if (strpos($curHold->cancelId, 'ITEM ID: ') === 0) {
 						$curHold->canFreeze = false;
 						$curHold->locationUpdateable = false;
-					} elseif (str_starts_with($curHold->cancelId, 'BID: ')) {
+					} elseif (strpos($curHold->cancelId, 'BID: ') === 0) {
 						$curHold->canFreeze = true;
 						$curHold->locationUpdateable = true;
 					} else { // TO DO: Evaluate whether issue level holds are suspendable
