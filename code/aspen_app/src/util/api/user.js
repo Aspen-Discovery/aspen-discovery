@@ -337,14 +337,15 @@ export async function hideBrowseCategory(categoryId, patronId, url, language = '
  * Return a list of accounts that the user has initiated account linking with
  * @param {array} primaryUser
  * @param {array} cards
- * @param {array} library
+ * @param {string} barcodeStyle
+ * @param {string} url
  * @param {string} language
  * @return array
  **/
-export async function getLinkedAccounts(primaryUser, cards, library, language = 'en') {
+export async function getLinkedAccounts(primaryUser, cards, barcodeStyle, url, language = 'en') {
      const postBody = await postData();
      const discovery = create({
-          baseURL: library.baseUrl + '/API',
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
           auth: createAuthTokens(),
@@ -363,7 +364,7 @@ export async function getLinkedAccounts(primaryUser, cards, library, language = 
                ils_barcode: primaryUser.ils_barcode ?? primaryUser.cat_username,
                expired: primaryUser.expired,
                expires: primaryUser.expires,
-               barcodeStyle: library.barcodeStyle,
+               barcodeStyle: barcodeStyle,
           };
           cardStack.push(primaryCard);
           if (!_.isUndefined(response.data.result.linkedAccounts)) {
@@ -379,7 +380,7 @@ export async function getLinkedAccounts(primaryUser, cards, library, language = 
                                    ils_barcode: account.ils_barcode ?? account.barcode,
                                    expired: account.expired,
                                    expires: account.expires,
-                                   barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
+                                   barcodeStyle: account.barcodeStyle ?? barcodeStyle,
                               };
                               cardStack.push(card);
                          } else if (_.includes(cards, account.cat_username) === false) {
@@ -390,7 +391,7 @@ export async function getLinkedAccounts(primaryUser, cards, library, language = 
                                    cat_username: account.cat_username ?? account.barcode,
                                    expired: account.expired,
                                    expires: account.expires,
-                                   barcodeStyle: account.barcodeStyle ?? library.barcodeStyle,
+                                   barcodeStyle: account.barcodeStyle ?? barcodeStyle,
                               };
                               cardStack.push(card);
                          }

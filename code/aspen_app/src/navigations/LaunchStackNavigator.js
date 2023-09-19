@@ -3,9 +3,13 @@ import React from 'react';
 import { LoadingScreen } from '../screens/Auth/Loading';
 import AccountDrawer from './drawer/DrawerNavigator';
 import { LibrarySystemContext, LibraryBranchContext, UserContext, BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext } from '../context/initialContext';
+import { useRoute } from '@react-navigation/native';
 
 const LaunchStackNavigator = () => {
      const Stack = createNativeStackNavigator();
+     const route = useRoute();
+     const refreshUserData = route.params?.refreshUserData ?? false;
+     //console.log('refreshUserData: ' + route.params?.refreshUserData);
      return (
           <LanguageContext.Consumer>
                {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
@@ -27,14 +31,16 @@ const LaunchStackNavigator = () => {
                                                                                           headerShown: false,
                                                                                           headerBackTitleVisible: false,
                                                                                      }}>
-                                                                                     <Stack.Screen
-                                                                                          name="LoadingScreen"
-                                                                                          component={LoadingScreen}
-                                                                                          options={{
-                                                                                               animationEnabled: false,
-                                                                                               header: () => null,
-                                                                                          }}
-                                                                                     />
+                                                                                     {refreshUserData ? (
+                                                                                          <Stack.Screen
+                                                                                               name="LoadingScreen"
+                                                                                               component={LoadingScreen}
+                                                                                               options={{
+                                                                                                    animationEnabled: false,
+                                                                                                    header: () => null,
+                                                                                               }}
+                                                                                          />
+                                                                                     ) : null}
                                                                                      <Stack.Screen
                                                                                           name="DrawerStack"
                                                                                           component={AccountDrawer}

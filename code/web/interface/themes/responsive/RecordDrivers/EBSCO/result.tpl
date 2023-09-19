@@ -39,7 +39,7 @@
 
 				<div class="result-label col-tn-3">{translate text='Published' isPublicFacing=true}</div>
 				<div class="col-tn-9 result-value">
-					{$summPublicationPlaces.0|escape}{$summPublishers.0|escape}{$summPublicationDates.0|escape}
+					{if !empty($summPublicationPlaces)}{$summPublicationPlaces.0|escape}{/if} {if !empty($summPublishers)}{$summPublishers.0|escape}{/if} {if !empty($summPublicationDates)}{$summPublicationDates.0|escape}{/if}
 				</div>
 			</div>
 		{/if}

@@ -44,6 +44,16 @@
 					</div>
 				</div>
 			{/if}
+			{if !empty($curLocation.secondaryPhoneNumber)}
+				<div class="row">
+					<div class="col-tn-12 col-xs-3 result-label">
+						{translate text="Secondary Phone Number" isPublicFacing=true}
+					</div>
+					<div class="col-tn-12 col-xs-9">
+						<a href="tel:{$curLocation.secondaryPhoneNumber}">{$curLocation.secondaryPhoneNumber}</a>
+					</div>
+				</div>
+			{/if}
 			{if !empty($curLocation.tty)}
 				<div class="row">
 					<div class="col-tn-12 col-xs-3 result-label">

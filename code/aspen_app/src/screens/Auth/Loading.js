@@ -14,10 +14,11 @@ import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
 import { ForceLogout } from './ForceLogout';
 import { UpdateAvailable } from './UpdateAvailable';
 import { getTermFromDictionary, getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
-import { reloadProfile } from '../../util/api/user';
+import { getLinkedAccounts, reloadProfile } from '../../util/api/user';
 import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { GLOBALS } from '../../util/globals';
+import { navigateStack } from '../../helpers/RootNavigator';
 
 const prefix = Linking.createURL('/');
 
@@ -39,7 +40,7 @@ export const LoadingScreen = () => {
      const [incomingUrl, setIncomingUrl] = React.useState('');
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
 
-     const { user, updateUser } = React.useContext(UserContext);
+     const { user, updateUser, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
      const { library, updateLibrary } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
@@ -96,7 +97,7 @@ export const LoadingScreen = () => {
                if (_.isUndefined(data) || _.isEmpty(data)) {
                     setHasError(true);
                } else {
-                    setProgress(60);
+                    setProgress(40);
                     updateUser(data);
                     updateLanguage(data.interfaceLanguage ?? 'en');
                     PATRON.language = data.interfaceLanguage ?? 'en';
@@ -107,7 +108,7 @@ export const LoadingScreen = () => {
      const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
           enabled: !!userQuery,
           onSuccess: (data) => {
-               setProgress(70);
+               setProgress(60);
                updateBrowseCategories(data);
                updateMaxCategories(5);
           },
@@ -115,7 +116,7 @@ export const LoadingScreen = () => {
      const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url, 'en'], () => getBrowseCategoryListForUser(LIBRARY.url), {
           enabled: !!browseCategoryQuery,
           onSuccess: (data) => {
-               setProgress(80);
+               setProgress(70);
                updateBrowseCategoryList(data);
           },
      });
@@ -123,7 +124,7 @@ export const LoadingScreen = () => {
      const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
           enabled: !!browseCategoryListQuery,
           onSuccess: (data) => {
-               setProgress(90);
+               setProgress(80);
                updateLocation(data);
           },
      });
@@ -131,13 +132,22 @@ export const LoadingScreen = () => {
      const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
           enabled: !!libraryBranchQuery,
           onSuccess: (data) => {
-               setProgress(100);
+               setProgress(90);
                if (data.success) {
                     updateEnableSelfCheck(data.settings?.isEnabled ?? false);
                     updateSelfCheckSettings(data.settings);
                } else {
                     updateEnableSelfCheck(false);
                }
+          },
+     });
+
+     const { status: linkedAccountQueryStatus, data: linkedAccountQuery } = useQuery(['linked_accounts', user ?? [], cards ?? [], LIBRARY.url, 'en'], () => getLinkedAccounts(user ?? [], cards ?? [], library.barcodeStyle, LIBRARY.url, 'en'), {
+          enabled: !!userQuery && !!librarySystemQuery && !!selfCheckQueryStatus,
+          onSuccess: (data) => {
+               setProgress(100);
+               updateLinkedAccounts(data.accounts);
+               updateLibraryCards(data.cards);
           },
      });
 
