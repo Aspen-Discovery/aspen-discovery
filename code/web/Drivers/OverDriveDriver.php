@@ -244,7 +244,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 					"User-Agent: Aspen Discovery " . $interface->getVariable('gitBranch'),
 				], true);
 
-				//$patronBarcode = urlencode($patronBarcode);
+				$patronBarcode = urlencode($patronBarcode);
 				if ($patronPin == null) {
 					$postFields = "grant_type=password&username={$patronBarcode}&password=ignore&password_required=false&scope=websiteId:{$websiteId}%20ilsname:{$ilsname}";
 				} else {
