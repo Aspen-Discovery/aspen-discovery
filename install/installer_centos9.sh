@@ -16,6 +16,7 @@ yum -y install php-mbstring
 yum -y install php-pecl-ssh2
 yum -y install php-pgsql
 yum -y install php-imagick
+yum -y install php-ldap
 service httpd start
 chkconfig httpd on
 # New PHP ini file
@@ -84,4 +85,3 @@ yum remove mod_evasive -y
 #configure mod security
 #yum install mod_security -y
 yum remove mod_security -y
-
