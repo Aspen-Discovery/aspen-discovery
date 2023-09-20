@@ -171,7 +171,7 @@ if (count($updatesToRun) == 0) {
  * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate, CompanionSystem $companionSystem = null): void{
+function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate, ?CompanionSystem $companionSystem = null): void{
 	if($companionSystem) {
 		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
 	} else {
@@ -205,7 +205,7 @@ function updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, Sc
 	}
 }
 
-function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, CompanionSystem $companionSystem = null) {
+function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?CompanionSystem $companionSystem = null) {
 	// run db maintenance
 	$scheduledUpdate->notes .= "Running database maintenance $versionToUpdateTo\n";
 	require_once ROOT_DIR . '/services/API/SystemAPI.php';
@@ -220,7 +220,7 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, CompanionS
 	}
 
 	// run external db maintenance if needed
-	if($companionSystem) {
+	if($companionSystem != null) {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$curl = new CurlWrapper();
 		$response = json_decode($curl->curlGetPage($companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
@@ -246,8 +246,8 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, CompanionS
  * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate, CompanionSystem $companionSystem = null): void {
-	if($companionSystem) {
+function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate, ?CompanionSystem $companionSystem = null): void {
+	if($companionSystem != null) {
 		//Update the companion system
 		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
 	} else {
