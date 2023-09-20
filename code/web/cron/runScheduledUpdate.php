@@ -131,6 +131,8 @@ if (count($updatesToRun) == 0) {
 			}
 			$scheduledUpdate->dateRun = time();
 
+			//Re initialize database since it may have been closed during updates
+			initDatabase();
 			if (!$scheduledUpdate->update()) {
 				echo("Could not update scheduled update " . $scheduledUpdate->getLastError());
 			}
