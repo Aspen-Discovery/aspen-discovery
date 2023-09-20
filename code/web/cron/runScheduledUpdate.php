@@ -223,6 +223,7 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?Companion
 	if($companionSystem != null) {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$curl = new CurlWrapper();
+		console_log('Running Database Maintenance ' . $companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates');
 		$response = json_decode($curl->curlGetPage($companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
 		if(!isset($response->success) || $response->success == false) {
 			$scheduledUpdate->status = 'failed';
