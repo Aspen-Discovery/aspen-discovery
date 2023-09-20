@@ -131,6 +131,8 @@ if (count($updatesToRun) == 0) {
 			}
 			$scheduledUpdate->dateRun = time();
 
+			//Re initialize database since it may have been closed during updates
+			initDatabase();
 			if (!$scheduledUpdate->update()) {
 				echo("Could not update scheduled update " . $scheduledUpdate->getLastError());
 			}
@@ -171,7 +173,7 @@ if (count($updatesToRun) == 0) {
  * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate, CompanionSystem $companionSystem = null): void{
+function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate, ?CompanionSystem $companionSystem = null): void{
 	if($companionSystem) {
 		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
 	} else {
@@ -205,7 +207,7 @@ function updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, Sc
 	}
 }
 
-function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, CompanionSystem $companionSystem = null) {
+function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?CompanionSystem $companionSystem = null) {
 	// run db maintenance
 	$scheduledUpdate->notes .= "Running database maintenance $versionToUpdateTo\n";
 	require_once ROOT_DIR . '/services/API/SystemAPI.php';
@@ -220,17 +222,18 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, CompanionS
 	}
 
 	// run external db maintenance if needed
-	if($companionSystem) {
+	if($companionSystem != null) {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$curl = new CurlWrapper();
+		console_log('Running Database Maintenance ' . $companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates');
 		$response = json_decode($curl->curlGetPage($companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
-		if(!isset($response['success']) || $response['success'] == false) {
+		if(!isset($response->success) || $response->success == false) {
 			$scheduledUpdate->status = 'failed';
 			$scheduledUpdate->notes .= 'DB maintenance failed for ' . $companionSystem->serverName;
 		}
 
-		if(isset($response['message'])) {
-			$message = $response['message'] ?? '';
+		if(isset($response->message)) {
+			$message = $response->message ?? '';
 			$scheduledUpdate->notes .= $message . "\n";
 		}
 	}
@@ -246,8 +249,8 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, CompanionS
  * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate, CompanionSystem $companionSystem = null): void {
-	if($companionSystem) {
+function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate, ?CompanionSystem $companionSystem = null): void {
+	if($companionSystem != null) {
 		//Update the companion system
 		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
 	} else {

@@ -567,11 +567,22 @@ class Koha extends AbstractIlsDriver {
 					]);
 				}
 			}
-
-			//Get the max renewals by figuring out what rule the checkout was issued under
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
+
+			//Check if patron is allowed to auto-renew based on circulation rules
+			/** @noinspection SqlResolve */
+			$autoRenewRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'auto_renew' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+			$autoRenewRulesRS = mysqli_query($this->dbConnection, $autoRenewRulesSql);
+			if ($autoRenewRulesRS !== false) {
+				if ($autoRenewRulesRow = $autoRenewRulesRS->fetch_assoc()) {
+					$curCheckout->autoRenew = (int)$autoRenewRulesRow['rule_value'];
+				}
+				$autoRenewRulesRS->close();
+			}
+
+			//Get the max renewals by figuring out what rule the checkout was issued under
 			/** @noinspection SqlResolve */
 			$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);

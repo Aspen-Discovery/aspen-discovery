@@ -23,7 +23,7 @@ fi
 php_vers="8.0"
 
 # Have to use versions for these or the highest version available is installed.
-apt-get install -y "php${php_vers}" "php${php_vers}-mcrypt" "php${php_vers}-gd" "php${php_vers}-imagick" "php${php_vers}-curl" "php${php_vers}-mysql" "php${php_vers}-zip" "php${php_vers}-xml" "php${php_vers}-intl" "php${php_vers}-mbstring" "php${php_vers}-soap" "php${php_vers}-pgsql" "php${php_vers}-ssh2"
+apt-get install -y "php${php_vers}" "php${php_vers}-mcrypt" "php${php_vers}-gd" "php${php_vers}-imagick" "php${php_vers}-curl" "php${php_vers}-mysql" "php${php_vers}-zip" "php${php_vers}-xml" "php${php_vers}-intl" "php${php_vers}-mbstring" "php${php_vers}-soap" "php${php_vers}-pgsql" "php${php_vers}-ssh2" "php${php_vers}-ldap"
 
 # - Change max_memory to 256M
 # - Increase max file size to 75M

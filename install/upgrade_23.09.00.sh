@@ -17,6 +17,8 @@ systemctl enable clamd@scan
 touch /var/log/aspen-discovery/clam_av.log
 chown root:aspen_apache /var/log/aspen-discovery/clam_av.log
 
+yum -y install php-ldap
+
 php /usr/local/aspen-discovery/install/updateCron_23_09.php $1
 
 #sed -i -e '$aExcludePath ^/var/lib/mysql/*' '/etc/clamd.d/scan.conf'
