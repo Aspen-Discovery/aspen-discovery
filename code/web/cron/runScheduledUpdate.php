@@ -224,13 +224,13 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?Companion
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$curl = new CurlWrapper();
 		$response = json_decode($curl->curlGetPage($companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
-		if(!isset($response['success']) || $response['success'] == false) {
+		if(!isset($response->success) || $response->success == false) {
 			$scheduledUpdate->status = 'failed';
 			$scheduledUpdate->notes .= 'DB maintenance failed for ' . $companionSystem->serverName;
 		}
 
-		if(isset($response['message'])) {
-			$message = $response['message'] ?? '';
+		if(isset($response->message)) {
+			$message = $response->message ?? '';
 			$scheduledUpdate->notes .= $message . "\n";
 		}
 	}
