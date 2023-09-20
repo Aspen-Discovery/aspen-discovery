@@ -116,30 +116,31 @@ class ExploreMore {
 			'searchLinks' => [],
 		];
 
-		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		$appliedTheme = $interface->getAppliedTheme();
+		$exploreMoreOptions = $this->loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 
 		if (array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1) {
-			$exploreMoreOptions = $this->loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		} elseif (array_key_exists('EBSCOhost', $enabledModules) && $library->edsSettingsId == -1) {
-			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
 
 		if (array_key_exists('Events', $enabledModules)) {
-			$exploreMoreOptions = $this->loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
 
 		if (array_key_exists('Web Indexer', $enabledModules)) {
-			$exploreMoreOptions = $this->loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
 
-		$exploreMoreOptions = $this->loadListOptions($activeSection, $exploreMoreOptions, $searchTerm);
+		$exploreMoreOptions = $this->loadListOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 
 		if (array_key_exists('Open Archives', $enabledModules) && $library->enableOpenArchives) {
-			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
 
 		if ($library->enableGenealogy) {
-			$exploreMoreOptions = $this->loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm);
+			$exploreMoreOptions = $this->loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme);
 		}
 
 		//Consolidate explore more options, we'd like to show the search links if possible and then pad with sample records
@@ -171,7 +172,7 @@ class ExploreMore {
 		return $exploreMoreDisplayOptions;
 	}
 
-	protected function loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	protected function loadWebIndexerOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		if ($activeSection != 'websites') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['websites'] = [];
@@ -191,6 +192,12 @@ class ExploreMore {
 					$numCatalogResultsAdded = 0;
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
+						//check for custom image
+						if ($appliedTheme != null && !empty($appliedTheme->libraryWebsiteImage)) {
+							$image = '/files/original/' . $appliedTheme->libraryWebsiteImage;
+						} else{
+							$image = '/images/webpage.png';
+						}
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = [
 							'label' => translate([
@@ -203,8 +210,8 @@ class ExploreMore {
 								1 => $searchTerm,
 								'isPublicFacing' => true,
 							]),
-							//TODO: provide a better icon
-							'image' => '/images/webpage.png',
+
+							'image' => $image,
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
@@ -234,7 +241,7 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	protected function loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	protected function loadEventOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		if ($activeSection != 'events') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['events'] = [];
@@ -254,6 +261,12 @@ class ExploreMore {
 					$numCatalogResultsAdded = 0;
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
+						//check for custom image
+						if ($appliedTheme != null && !empty($appliedTheme->eventsImage)) {
+							$image = '/files/original/' . $appliedTheme->eventsImage;
+						} else{
+							$image = '/interface/themes/responsive/images/events.png';
+						}
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = [
 							'label' => translate([
@@ -266,7 +279,7 @@ class ExploreMore {
 								1 => $searchTerm,
 								'isPublicFacing' => true,
 							]),
-							'image' => '/interface/themes/responsive/images/events.png',
+							'image' => $image,
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
@@ -295,7 +308,7 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	protected function loadListOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		if ($activeSection != 'lists') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['lists'] = [];
@@ -316,6 +329,12 @@ class ExploreMore {
 					$numCatalogResultsAdded = 0;
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
+						//check for custom image
+						if ($appliedTheme != null && !empty($appliedTheme->listsImage)) {
+							$image = '/files/original/' . $appliedTheme->listsImage;
+						} else{
+							$image = '/interface/themes/responsive/images/library_symbol.png';
+						}
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = [
 							'label' => translate([
@@ -328,8 +347,7 @@ class ExploreMore {
 								1 => $searchTerm,
 								'isPublicFacing' => true,
 							]),
-							//TODO: provide a better icon
-							'image' => '/interface/themes/responsive/images/library_symbol.png',
+							'image' => $image,
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
@@ -364,7 +382,7 @@ class ExploreMore {
 	 * @param $searchTerm
 	 * @return array
 	 */
-	protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	protected function loadOpenArchiveOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		if ($activeSection != 'open_archives') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['open_archives'] = [];
@@ -384,6 +402,12 @@ class ExploreMore {
 					$numCatalogResultsAdded = 0;
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
+						//check for custom image
+						if ($appliedTheme != null && !empty($appliedTheme->historyArchivesImage)) {
+							$image = '/files/original/' . $appliedTheme->historyArchivesImage;
+						} else{
+							$image = '/interface/themes/responsive/images/library_symbol.png';
+						}
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = [
 							'label' => translate([
@@ -396,8 +420,7 @@ class ExploreMore {
 								1 => $searchTerm,
 								'isPublicFacing' => true,
 							]),
-							//TODO: Provide a better title
-							'image' => '/interface/themes/responsive/images/library_symbol.png',
+							'image' => $image,
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,
@@ -433,7 +456,7 @@ class ExploreMore {
 	 * @param $searchTerm
 	 * @return array
 	 */
-	protected function loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	protected function loadCatalogOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		if ($activeSection != 'catalog') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['catalog'] = [];
@@ -483,6 +506,12 @@ class ExploreMore {
 						$driver = RecordDriverFactory::initRecordDriver($doc);
 						$numCatalogResults = $results['response']['numFound'];
 						if ($numCatalogResultsAdded == $this->numEntriesToAdd && $numCatalogResults > ($this->numEntriesToAdd + 1)) {
+							//check for custom image
+							if ($appliedTheme != null && !empty($appliedTheme->catalogImage)) {
+								$image = '/files/original/' . $appliedTheme->catalogImage;
+							} else{
+								$image = '/interface/themes/responsive/images/library_symbol.png';
+							}
 							//Add a link to remaining catalog results
 							$exploreMoreOptions['searchLinks'][] = [
 								'label' => translate([
@@ -495,7 +524,7 @@ class ExploreMore {
 									1 => $searchTerm,
 									'isPublicFacing' => true,
 								]),
-								'image' => '/interface/themes/responsive/images/library_symbol.png',
+								'image' => $image,
 								'link' => $searchObjectSolr->renderSearchUrl(),
 								'usageCount' => 1,
 								'openInNewWindow' => false,
@@ -520,7 +549,7 @@ class ExploreMore {
 		return $exploreMoreOptions;
 	}
 
-	public function loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	public function loadEbscohostOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		global $library;
 		global $enabledModules;
 		if (!empty($searchTerm) && array_key_exists('EBSCOhost', $enabledModules) && $library->ebscohostSearchSettingId != -1 && $activeSection != 'ebscohost') {
@@ -569,6 +598,12 @@ class ExploreMore {
 					}
 				}
 				if ($hasMatches) {
+					//check for custom image
+					if ($appliedTheme != null && !empty($appliedTheme->articlesDBImage)) {
+						$image = '/files/original/' . $appliedTheme->articlesDBImage;
+					} else{
+						$image = '/interface/themes/responsive/images/ebscohost.png';
+					}
 					$ebscohostSearcher = SearchObjectFactory::initSearchObject("Ebscohost");
 					//Find related titles
 					$ebscohostSearcher->setSearchTerms([
@@ -588,7 +623,7 @@ class ExploreMore {
 							1 => $searchTerm,
 							'isPublicFacing' => true,
 						]),
-						'image' => '/interface/themes/responsive/images/ebscohost.png',
+						'image' => $image,
 						'link' => '/EBSCOhost/Results?lookfor=' . urlencode($searchTerm),
 						'openInNewWindow' => false,
 					];
@@ -604,7 +639,7 @@ class ExploreMore {
 	 * @param $exploreMoreOptions
 	 * @return array
 	 */
-	public function loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	public function loadEbscoEDSOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		global $library;
 		global $enabledModules;
 		if (!empty($searchTerm) && array_key_exists('EBSCO EDS', $enabledModules) && $library->edsSettingsId != -1 && $activeSection != 'ebsco_eds') {
@@ -649,6 +684,12 @@ class ExploreMore {
 						}
 
 						if ($numMatches > 1) {
+							//check for custom image
+							if ($appliedTheme != null && !empty($appliedTheme->articlesDBImage)) {
+								$image = '/files/original/' . $appliedTheme->articlesDBImage;
+							} else{
+								$image = '/interface/themes/responsive/images/ebsco_eds.png';
+							}
 							$exploreMoreOptions['searchLinks'][] = [
 								'label' => translate([
 									'text' => "All EBSCO Results (%1%)",
@@ -660,7 +701,7 @@ class ExploreMore {
 									1 => $searchTerm,
 									'isPublicFacing' => true,
 								]),
-								'image' => '/interface/themes/responsive/images/ebsco_eds.png',
+								'image' => $image,
 								'link' => '/EBSCO/Results?lookfor=' . urlencode($searchTerm),
 								'openInNewWindow' => false,
 							];
@@ -738,7 +779,7 @@ class ExploreMore {
 		return $similarTitles;
 	}
 
-	private function loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm) {
+	private function loadGenealogyOptions($activeSection, $exploreMoreOptions, $searchTerm, $appliedTheme) {
 		if ($activeSection != 'genealogy') {
 			if (strlen($searchTerm) > 0) {
 				$exploreMoreOptions['sampleRecords']['genealogy'] = [];
@@ -758,6 +799,12 @@ class ExploreMore {
 					$numCatalogResultsAdded = 0;
 					$numCatalogResults = $results['response']['numFound'];
 					if ($numCatalogResults > 1) {
+						//check for custom image
+						if ($appliedTheme != null && !empty($appliedTheme->genealogyImage)) {
+							$image = '/files/original/' . $appliedTheme->genealogyImage;
+						} else{
+							$image = '/interface/themes/responsive/images/person.png';
+						}
 						//Add a link to remaining results
 						$exploreMoreOptions['searchLinks'][] = [
 							'label' => translate([
@@ -770,8 +817,7 @@ class ExploreMore {
 								1 => $searchTerm,
 								'isPublicFacing' => true,
 							]),
-
-							'image' => '/interface/themes/responsive/images/person.png',
+							'image' => $image,
 							'link' => $searchObjectSolr->renderSearchUrl(),
 							'usageCount' => 1,
 							'openInNewWindow' => false,

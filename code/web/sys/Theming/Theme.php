@@ -13,6 +13,8 @@ class Theme extends DataObject {
 	public $defaultCover;
 	public $logoApp;
 	public $fullWidth;
+
+	//Format Icons
 	public $booksImage;
 	public $eBooksImage;
 	public $audioBooksImage;
@@ -23,6 +25,15 @@ class Theme extends DataObject {
 	public $audioBooksImageSelected;
 	public $musicImageSelected;
 	public $moviesImageSelected;
+
+	//Explore More Images
+	public $catalogImage;
+	public $genealogyImage;
+	public $articlesDBImage;
+	public $eventsImage;
+	public $listsImage;
+	public $libraryWebsiteImage;
+	public $historyArchivesImage;
 
 	public $headerBackgroundColor;
 	public /** @noinspection PhpUnused */
@@ -1252,6 +1263,85 @@ class Theme extends DataObject {
 						'required' => false,
 						'maxWidth' => 50,
 						'maxHeight' => 50,
+						'hideInLists' => true,
+					],
+				],
+			],
+			//Format Category Facet Theming
+			'exploreMoreImageSection' => [
+				'property' => 'exploreMoreImageSection',
+				'type' => 'section',
+				'label' => 'Explore More Images',
+				'hideInLists' => true,
+				'properties' => [
+					'catalogImage' => [
+						'property' => 'catalogImage',
+						'type' => 'image',
+						'label' => 'Library Catalog (400x400px max)',
+						'description' => 'An image for the library catalog in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
+						'hideInLists' => true,
+					],
+					'genealogyImage' => [
+						'property' => 'genealogyImage',
+						'type' => 'image',
+						'label' => 'Genealogy (400x400px max)',
+						'description' => 'An image for genealogy results in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
+						'hideInLists' => true,
+					],
+					'articlesDBImage' => [
+						'property' => 'articlesDBImage',
+						'type' => 'image',
+						'label' => 'Articles and Databases (400x400px max)',
+						'description' => 'An image for article and database results in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
+						'hideInLists' => true,
+					],
+					'eventsImage' => [
+						'property' => 'eventsImage',
+						'type' => 'image',
+						'label' => 'Events (400x400px max)',
+						'description' => 'An image for event results in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
+						'hideInLists' => true,
+					],
+					'listsImage' => [
+						'property' => 'listsImage',
+						'type' => 'image',
+						'label' => 'Lists (400x400px max)',
+						'description' => 'An image for list results in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
+						'hideInLists' => true,
+					],
+					'libraryWebsiteImage' => [
+						'property' => 'libraryWebsiteImage',
+						'type' => 'image',
+						'label' => 'Library Website (400x400px max)',
+						'description' => 'An image for website results in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
+						'hideInLists' => true,
+					],
+					'historyArchivesImage' => [
+						'property' => 'historyArchivesImage',
+						'type' => 'image',
+						'label' => 'History and Archives (400x400px max)',
+						'description' => 'An image for history and archive results in Explore More',
+						'required' => false,
+						'maxWidth' => 400,
+						'maxHeight' => 400,
 						'hideInLists' => true,
 					],
 				],
