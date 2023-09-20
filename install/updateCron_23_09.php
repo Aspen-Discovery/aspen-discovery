@@ -22,10 +22,10 @@ if (count($_SERVER['argv']) > 1) {
 			$lines[] = "# Run Clam AV Scans                  #\n";
 			$lines[] = "######################################\n";
 			$lines[] = "00 2 * * * root /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n";
-		}elseif ($replaceClamScan) {
+		}else if ($replaceClamScan) {
 			$lines[] = "00 2 * * * root /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n";
 		}
-		if ($insertClamScan) {
+		if ($insertClamScan || $replaceClamScan) {
 			$newContent = implode('', $lines);
 			file_put_contents("/usr/local/aspen-discovery/sites/$serverName/conf/crontab_settings.txt", $newContent);
 		}

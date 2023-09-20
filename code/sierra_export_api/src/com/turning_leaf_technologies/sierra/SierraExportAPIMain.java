@@ -31,6 +31,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.VariableField;
 
 public class SierraExportAPIMain {
 	private static Logger logger;
@@ -891,9 +892,15 @@ public class SierraExportAPIMain {
 		Thread itemUpdateThread = new Thread(() -> {
 			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false, true);
 		});
+		final JSONObject[] holdingIds = {null};
+		//noinspection CodeBlock2Expr
+		Thread holdingsUpdateThread = new Thread(() -> {
+			holdingIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/holdings?limit=1000&deleted=false&suppressed=false&fields=id,fixedFields,varFields&bibIds=" + id, false, true);
+		});
 		getMarcResultsThread.start();
 		fixedFieldThread.start();
 		itemUpdateThread.start();
+		holdingsUpdateThread.start();
 		try {
 			getMarcResultsThread.join();
 			fixedFieldThread.join();
@@ -990,6 +997,45 @@ public class SierraExportAPIMain {
 					}
 				}
 
+				//Get Holdings for the bib record
+				if (holdingIds[0] != null) {
+					JSONObject holdingsData = holdingIds[0];
+					if (holdingsData.getInt("total") > 0) {
+						JSONArray holdings = holdingsData.getJSONArray("entries");
+						for (int i = 0; i < holdings.length(); i++) {
+							JSONObject curHolding = holdings.getJSONObject(i);
+							int holdingId = curHolding.getInt("id");
+							//We need the label to show as well as the location
+							//Label is in the varFields
+							JSONArray varFields = curHolding.getJSONArray("varFields");
+							for (int j = 0; j < varFields.length(); j++) {
+								JSONObject curVarField = varFields.getJSONObject(j);
+								if (curVarField.has("marcTag")) {
+									DataField holdingField = marcFactory.newDataField(curVarField.getString("marcTag"), curVarField.getString("ind1").charAt(0), curVarField.getString("ind2").charAt(0));
+									marcRecord.addVariableField(holdingField);
+									JSONArray subfields = curVarField.getJSONArray("subfields");
+									for (int k = 0; k < subfields.length(); k++) {
+										JSONObject subfield = subfields.getJSONObject(k);
+										holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
+									}
+									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
+								}
+							}
+							//Location is in the fixed fields
+							JSONObject fixedFields = curHolding.getJSONObject("fixedFields");
+							if (fixedFields.has("40")) {
+								DataField holdingField = marcFactory.newDataField("852", ' ', ' ');
+								marcRecord.addVariableField(holdingField);
+								holdingField.addSubfield(marcFactory.newSubfield('b', fixedFields.getJSONObject("40").getString("value")));
+								holdingField.addSubfield(marcFactory.newSubfield('c', fixedFields.getJSONObject("40").getString("value")));
+								holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
+							}
+
+						}
+					}
+					//getItemsForBib(id, marcRecord, itemIds[0]);
+					logger.debug("Processed holdings for Bib");
+				}
 
 				//Get Items for the bib record
 				if (itemIds[0] != null) {

@@ -21,7 +21,7 @@
     </script>
     <script>
         $('#fines{$userId}').submit(function() {ldelim}
-            var itemBarcodes = "";
+            /*var itemBarcodes = "";
             var billReasons = "";
             var itemTitles = "";
 
@@ -56,7 +56,8 @@
             document.getElementById("{$userId}ItemBarcodes").value = itemBarcodes;
             document.getElementById("{$userId}BillReasons").value = billReasons;
             document.getElementById("{$userId}ItemTitles").value = itemTitles;
-
+            */
+            
             AspenDiscovery.Account.createCertifiedPaymentsByDeluxeOrder('#fines{$userId}', 'fine', '{$deluxeRemittanceId}');
         {rdelim});
     </script>
