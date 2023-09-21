@@ -486,16 +486,22 @@ class Greenhouse_AJAX extends Action {
 							'greenhouseSiteId' => $scheduledUpdate->siteId,
 						];
 						$response = json_decode($curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
-						if ($response->success) {
-							// update scheduled
-							$numSitesUpdated++;
+						if (isset($response->success)) {
+							if($response->success) {
+								// update scheduled
+								$numSitesUpdated++;
+							}
 						} else {
-							$scheduledUpdate->notes = $response->message;
+							$message = 'Unable to connect to server';
+							if (isset($response->message)) {
+								$message = $response->message;
+							}
+							$scheduledUpdate->notes = $message;
 							$scheduledUpdate->update();
 							if ($errors == '') {
-								$errors = '<br><br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $response->message;
+								$errors = '<br><br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $message;
 							} else {
-								$errors .= '<br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $response->message;
+								$errors .= '<br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $message;
 							}
 						}
 					}
