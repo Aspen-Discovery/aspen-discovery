@@ -3,6 +3,7 @@ package com.turning_leaf_technologies.reindexer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class RecordInfo {
@@ -25,6 +26,8 @@ public class RecordInfo {
 
 	private boolean hasParentRecord;
 	private boolean hasChildRecord;
+
+	private boolean hasMarcHoldings;
 
 	private final ArrayList<ItemInfo> relatedItems = new ArrayList<>();
 
@@ -379,5 +382,13 @@ public class RecordInfo {
 
 	public void setHasChildRecord(boolean hasChildRecord) {
 		this.hasChildRecord = hasChildRecord;
+	}
+
+	public void setHasMarcHoldings(boolean hasMarcHoldings) {
+		this.hasMarcHoldings = hasMarcHoldings;
+	}
+
+	public boolean getHasMarcHoldings() {
+		return hasMarcHoldings;
 	}
 }

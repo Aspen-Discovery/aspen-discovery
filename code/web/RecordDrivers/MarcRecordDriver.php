@@ -1711,6 +1711,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		//Check to see if the record has marc holdings (in 852, 853, 856, 866)
 		$marcHoldings = $this->getMarcHoldings();
 		if (count($marcHoldings) > 0) {
+			//Check to see if the copies are empty and if so remove copies section
+			if (empty($this->holdingSections) && (!$isPeriodical || empty($interface->getVariable('periodicalIssues')))){
+				unset($moreDetailsOptions['copies']);
+			}
+
 			$interface->assign('marcHoldings', $marcHoldings);
 			$moreDetailsOptions['marcHoldings'] = [
 				'label' => 'Library Holdings',

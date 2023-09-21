@@ -52,8 +52,6 @@ class IndexingProfile extends DataObject {
 		$recordNumberPrefix;
 	public /** @noinspection PhpUnused */
 		$customMarcFieldsToIndexAsKeyword;
-	public /** @noinspection PhpUnused */
-		$suppressItemlessBibs;
 	public $itemTag;
 	public /** @noinspection PhpUnused */
 		$itemRecordNumber;
@@ -208,7 +206,6 @@ class IndexingProfile extends DataObject {
 			'hideUnknownLiteraryForm',
 			'hideNotCodedLiteraryForm',
 			'includePersonalAndCorporateNamesInTopics',
-			'suppressItemlessBibs',
 			'useItemBasedCallNumbers',
 			'includeLocationNameInDetailedLocation',
 			'treatLibraryUseOnlyGroupedStatusesAsAvailable',
@@ -593,13 +590,6 @@ class IndexingProfile extends DataObject {
 				'label' => 'Item Information',
 				'hideInLists' => true,
 				'properties' => [
-					'suppressItemlessBibs' => [
-						'property' => 'suppressItemlessBibs',
-						'type' => 'checkbox',
-						'label' => 'Suppress Itemless Bibs',
-						'description' => 'Whether or not Itemless Bibs can be suppressed',
-						'forcesReindex' => true,
-					],
 					'itemTag' => [
 						'property' => 'itemTag',
 						'type' => 'text',

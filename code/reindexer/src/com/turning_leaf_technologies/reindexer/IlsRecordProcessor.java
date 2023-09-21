@@ -324,6 +324,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (firstParentId != null) {
 				recordInfo.setHasParentRecord(true);
 			}
+			boolean hasMarcHoldings = hasMarcHoldings(recordInfo, record);
+
 			logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
 			StringBuilder suppressionNotes = new StringBuilder();
 			suppressionNotes = loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record, suppressionNotes);
@@ -335,10 +337,16 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				allRelatedRecords.addAll(econtentRecords);
 			}
 
+			//check for cases where we need a virtual record
 			if (hasChildRecords) {
 				//If we have child records, it's very likely that we don't have real items, so we need to create a virtual one for scoping.
 				ItemInfo virtualItem = new ItemInfo();
-				virtualItem.setVirtual(true);
+				virtualItem.setIsVirtualChildRecord(true);
+				recordInfo.addItem(virtualItem);
+			} else if (hasMarcHoldings && recordInfo.getNumPrintCopies() == 0) {
+				//We have an itemless bib that we don't want to suppress, create a virtual item.
+				ItemInfo virtualItem = new ItemInfo();
+				virtualItem.setIsVirtualHoldingsRecord(true);
 				recordInfo.addItem(virtualItem);
 			}
 
@@ -516,6 +524,32 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			indexer.getLogEntry().incErrors("Error loading parent records for MARC record with identifier " + identifier, e);
 		}
 		return firstParentId;
+	}
+
+	private boolean hasMarcHoldings(RecordInfo recordInfo, Record marcRecord) {
+		//We have marc holdings if we have one or more 852 and 866 fields with subfield 6.
+		boolean hasValid852 = false;
+		boolean hasValid866 = false;
+		List<DataField> fields852 = marcRecord.getDataFields(852);
+		for (DataField field852 : fields852) {
+			if (field852.getSubfield('6') != null) {
+				hasValid852 = true;
+				break;
+			}
+		}
+		List<DataField> fields866 = marcRecord.getDataFields(866);
+		for (DataField field866 : fields866) {
+			if (field866.getSubfield('6') != null) {
+				hasValid866 = true;
+				break;
+			}
+		}
+		if (hasValid852 && hasValid866) {
+			recordInfo.setHasMarcHoldings(true);
+			return true;
+		}else{
+			return false;
+		}
 	}
 
 	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
@@ -1032,11 +1066,17 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void scopeItems(RecordInfo recordInfo, AbstractGroupedWorkSolr groupedWork, Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
-			if (itemInfo.isVirtual()) {
+			if (itemInfo.isVirtualChildRecord()) {
 				itemInfo.setAvailable(false);
 				itemInfo.setHoldable(false);
 				itemInfo.setDetailedStatus("See individual issues");
 				itemInfo.setGroupedStatus("See individual issues");
+				loadScopeInfoForVirtualItem(groupedWork, itemInfo, record);
+			}else if (itemInfo.isVirtualHoldingsRecord()) {
+				itemInfo.setAvailable(false);
+				itemInfo.setHoldable(false);
+				itemInfo.setDetailedStatus("See holdings");
+				itemInfo.setGroupedStatus("See holdings");
 				loadScopeInfoForVirtualItem(groupedWork, itemInfo, record);
 			}else if (itemInfo.isOrderItem()){
 				itemInfo.setAvailable(false);
