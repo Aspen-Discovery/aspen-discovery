@@ -1684,8 +1684,9 @@ AspenDiscovery.Account = (function () {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
 						var outstandingAmount = $(this).data('outstanding_amt');
-						outstandingAmount = parseInt(outstandingAmount);
-						if(fineAmountInput.val() > outstandingAmount) {
+						outstandingAmount = parseFloat(outstandingAmount);
+						var fineAmountFloat = parseFloat(fineAmountInput.val());
+						if(fineAmountFloat > outstandingAmount) {
 							// don't update the total to be paid if the user provided value is higher than the outstanding amount
 							$("#overPayWarning" + fineId).show();
 						} else {
