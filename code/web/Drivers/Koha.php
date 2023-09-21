@@ -3473,6 +3473,9 @@ class Koha extends AbstractIlsDriver {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
 		}
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
+		if ($type != 'selfReg' && array_key_exists('PatronSelfModificationBorrowerMandatoryField', $kohaPreferences)) {
+			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerMandatoryField']);
+		}
 		if ($type !== 'selfReg' || strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
 			$validLibraries = [];
 		} else {
