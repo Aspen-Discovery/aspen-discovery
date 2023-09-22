@@ -813,7 +813,7 @@ class Koha extends AbstractIlsDriver {
 					$userExistsInDB = true;
 					$lookupUserRow = $lookupUserResult->fetch_assoc();
 					$patronId = $lookupUserRow['borrowernumber'];
-					$newUser = $this->loadPatronInfoFromDB($patronId, null);
+					$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
 					if (!empty($newUser) && !($newUser instanceof AspenError)) {
 						return $newUser;
 					}
@@ -834,7 +834,7 @@ class Koha extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $responseText, ['password' => $password]);
 				if (isset($authenticationResponse->id)) {
 					$patronId = $authenticationResponse->id;
-					$result = $this->loadPatronInfoFromDB($patronId, $password);
+					$result = $this->loadPatronInfoFromDB($patronId, $password, $barcode);
 					if ($result == false) {
 						global $logger;
 						$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
@@ -859,7 +859,7 @@ class Koha extends AbstractIlsDriver {
 						$lookupUserRow = $lookupUserResult->fetch_assoc();
 						if (UserAccount::isUserMasquerading()) {
 							$patronId = $lookupUserRow['borrowernumber'];
-							$newUser = $this->loadPatronInfoFromDB($patronId, null);
+							$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
 							if (!empty($newUser) && !($newUser instanceof AspenError)) {
 								return $newUser;
 							}
@@ -924,7 +924,7 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	private function loadPatronInfoFromDB($patronId, $password) {
+	private function loadPatronInfoFromDB($patronId, $password, $suppliedUsernameOrBarcode) {
 		global $timer;
 		global $logger;
 
@@ -936,6 +936,16 @@ class Koha extends AbstractIlsDriver {
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
 			$lookupUserResult->close();
+
+			//Do a sanity check to be sure we have the correct user for the supplied patron id
+			if (is_null($userFromDb['cardnumber']) || is_null($userFromDb['userid']) || is_null($userFromDb['borrowernumber'])) {
+				//We received an invalid patron back
+				return false;
+			}
+			if (($suppliedUsernameOrBarcode != $userFromDb['cardnumber']) && ($suppliedUsernameOrBarcode != $userFromDb['userid'])) {
+				//We received an invalid patron back
+				return false;
+			}
 
 			$user = new User();
 			//Get the unique user id from Millennium
@@ -5590,7 +5600,7 @@ class Koha extends AbstractIlsDriver {
 			if ($lookupUserResult->num_rows == 1) {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
-				$newUser = $this->loadPatronInfoFromDB($patronId, null);
+				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronUsername);
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}
@@ -5603,7 +5613,7 @@ class Koha extends AbstractIlsDriver {
 			if ($lookupUserResult->num_rows == 1) {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
-				$newUser = $this->loadPatronInfoFromDB($patronId, null);
+				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronUsername);
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}
@@ -5625,7 +5635,7 @@ class Koha extends AbstractIlsDriver {
 		if ($lookupUserResult->num_rows == 1) {
 			$lookupUserRow = $lookupUserResult->fetch_assoc();
 			$patronId = $lookupUserRow['borrowernumber'];
-			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			$newUser = $this->loadPatronInfoFromDB($patronId, null, $lookupUserRow['cardnumber']);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
 				return $newUser;
 			}
@@ -5649,7 +5659,7 @@ class Koha extends AbstractIlsDriver {
 		if ($lookupUserResult->num_rows == 1) {
 			$lookupUserRow = $lookupUserResult->fetch_assoc();
 			$patronId = $lookupUserRow['borrowernumber'];
-			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			$newUser = $this->loadPatronInfoFromDB($patronId, null, $lookupUserRow['cardnumber']);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
 				return $newUser;
 			}
