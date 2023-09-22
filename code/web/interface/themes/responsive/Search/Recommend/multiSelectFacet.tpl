@@ -1,12 +1,27 @@
 {if isset($cluster.showMoreFacetPopup) && $cluster.showMoreFacetPopup}
 	{foreach from=$cluster.list item=thisFacet name="narrowLoop"}
-		<div class="facetValue">
-			<label for="{$title}_{$thisFacet.value|escapeCSS}">
-				<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
-				{$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
-			</label>
-		</div>
+        {* Simple list with more link to show remaining values (if any) *}
+            {if $smarty.foreach.narrowLoop.iteration == ($cluster.valuesToShow + 1)}
+                {* Show More link if facet isn't searchable*}
+	            {if !$hasSearchableFacets}
+		            <div class="facetValue" id="more{$title}"><a href="#" onclick="AspenDiscovery.ResultsList.moreFacets('{$title}'); return false;">{translate text='more' isPublicFacing=true} ...</a></div>
+                {/if}
+                {* Start div for hidden content*}
+				<div class="narrowGroupHidden" id="narrowGroupHidden_{$title}" style="display:none">
+            {/if}
+			<div class="facetValue">
+				<label for="{$title}_{$thisFacet.value|escapeCSS}">
+					<input type="checkbox" {if !empty($thisFacet.isApplied)}checked{/if} name="{$title}_{$thisFacet.value|escapeCSS}" id="{$title}_{$thisFacet.value|escapeCSS}" onclick="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';" onkeypress="document.location = '{if !empty($thisFacet.isApplied)}{$thisFacet.removalUrl|escape}{else}{$thisFacet.url|escape}{/if}';">
+                    {$thisFacet.display}{if $facetCountsToShow == 1 || ($facetCountsToShow == 2 && empty($thisFacet.countIsApproximate))}{if !empty($thisFacet.count)}&nbsp;({if !empty($thisFacet.countIsApproximate)}{/if}{$thisFacet.count|number_format}){/if}{/if}
+				</label>
+			</div>
 	{/foreach}
+    {if $smarty.foreach.narrowLoop.total > $cluster.valuesToShow}
+		<div class="facetValue">
+			<a href="#" onclick="AspenDiscovery.ResultsList.lessFacets('{$title}'); return false;">{translate text='less' isPublicFacing=true} ...</a>
+		</div>
+		</div>{* closes hidden div *}
+    {/if}
 	{if $hasSearchableFacets}
 		{* Show more facet popup list *}
 		<div class="facetValue" id="more{$title}"><a href="#" onclick="return AspenDiscovery.Searches.showSearchFacetPopup('{$searchId}', '{$title}');">{translate text='more' isPublicFacing=true} ...</a></div>
