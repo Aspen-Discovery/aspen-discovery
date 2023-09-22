@@ -689,7 +689,7 @@ class Evolve extends AbstractIlsDriver {
 			}
 			$user->ils_barcode = $sessionInfo['barcode'];
 			$user->cat_username = $sessionInfo['barcode'];
-			$user->username = '';
+			$user->username = $user->unique_ils_id;
 			$user->password = '';
 
 			if ($patronBarcode != $sessionInfo['barcode']) {
