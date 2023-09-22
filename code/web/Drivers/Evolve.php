@@ -738,6 +738,9 @@ class Evolve extends AbstractIlsDriver {
 			} else {
 				$user->created = date('Y-m-d');
 				if (!$user->insert()) {
+					global $logger;
+					$logger->log("Could not insert patron", Logger::LOG_ERROR);
+					$logger->log($user->getLastError(), Logger::LOG_ERROR);
 					return null;
 				}
 			}
@@ -797,7 +800,7 @@ class Evolve extends AbstractIlsDriver {
 			$postParams = json_encode($params);
 
 			$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
-			ExternalRequestLogEntry::logRequest('evolve.patronLogin', 'POST', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			ExternalRequestLogEntry::logRequest('evolve.patronLogin', 'POST', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, ['password' => $password]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonData = json_decode($response);
 				if (is_array($jsonData)) {
