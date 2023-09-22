@@ -127,16 +127,15 @@ class MyAccount_Fines extends MyAccount {
 					$aciSpeedpaySettings->id = $library->aciSpeedpaySettingId;
 
 					if ($aciSpeedpaySettings->find(true)) {
-						// do things
 						$baseUrl = 'https://api.acispeedpay.com';
 						$sdkUrl = 'cds.officialpayments.com';
-						$billerAccountId = $aciSpeedpaySettings->billerAccountId;
-						$billerAccountId = $user->$billerAccountId;
+						$billerAccountId = $user->ils_barcode;
 
 						if ($aciSpeedpaySettings->sandboxMode == 1) {
 							$baseUrl = 'https://sandbox-api.acispeedpay.com';
 							$sdkUrl = 'sandbox-cds.officialpayments.com';
-							$billerAccountId = '56050';
+							$uid = random_bytes(12);
+							$billerAccountId = bin2hex($uid);
 						}
 
 						$apiAuthKey = $aciSpeedpaySettings->apiAuthKey;

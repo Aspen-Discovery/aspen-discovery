@@ -5458,6 +5458,7 @@ class MyAccount_AJAX extends JSON_Action {
 		$fundingToken = $_REQUEST['fundingToken'];
 		$accessToken = $_REQUEST['accessToken'];
 		$paymentId = $_REQUEST['paymentId'];
+		$billerAccount = $_REQUEST['billerAccountId'];
 		global $library;
 		$paymentLibrary = $library;
 		require_once ROOT_DIR . '/sys/Account/UserPayment.php';
@@ -5500,13 +5501,6 @@ class MyAccount_AJAX extends JSON_Action {
 				$aciSpeedpaySettings = new ACISpeedpaySetting();
 				$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
 				if ($aciSpeedpaySettings->find(true)) {
-					$billerAccount = $aciSpeedpaySettings->billerAccountId;
-					$billerAccount = $patron->$billerAccount;
-
-					if ($aciSpeedpaySettings->sandboxMode == 1) {
-						$billerAccount = '56050';
-					}
-
 					$result = $aciSpeedpaySettings->submitTransaction($patron, $payment, $fundingToken, $billerAccount, $accessToken);
 					if ($result['success'] == false) {
 						return $result;
