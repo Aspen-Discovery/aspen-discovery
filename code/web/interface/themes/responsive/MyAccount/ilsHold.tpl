@@ -210,6 +210,9 @@
 									{/if}
 								{/if}
 							{/if}
+							{if $record->locationUpdateable && $numPickupBranches > 1}
+								<button onclick="return AspenDiscovery.Account.changeHoldPickupLocation('{$record->userId}', '{$record->sourceId}', '{$record->cancelId}', '{$record->pickupLocationId}', '{$record->source}');" class="btn btn-sm btn-default btn-wrap"">{translate text="Change Pickup Loc." isPublicFacing=true}</button>
+							{/if}
 							{if $record->cancelable}
 								{if $record->pendingCancellation}
 									{translate text="Pending Cancellation" isPublicFacing=true}
