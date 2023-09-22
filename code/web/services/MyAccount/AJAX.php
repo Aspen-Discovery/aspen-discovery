@@ -3050,6 +3050,7 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	public function getCheckouts(): array {
 		global $interface;
+		global $library;
 
 		$renewableCheckouts = 0;
 
@@ -3082,10 +3083,13 @@ class MyAccount_AJAX extends JSON_Action {
 			$showRenewalsRemaining = $user->showRenewalsRemaining();
 			$showWaitList = $user->showWaitListInCheckouts();
 
+			$alwaysDisplayRenewalCount = $library->alwaysDisplayRenewalCount ?? false;
+
 			$interface->assign('showOut', $showOut);
 			$interface->assign('showRenewed', $showRenewed);
 			$interface->assign('showRenewalsRemaining', $showRenewalsRemaining);
 			$interface->assign('showWaitList', $showWaitList);
+			$interface->assign('alwaysDisplayRenewalCount', $alwaysDisplayRenewalCount);
 
 			// Define sorting options
 			$sortOptions = [

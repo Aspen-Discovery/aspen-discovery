@@ -2641,7 +2641,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 				global $library;
 				$location = new Location();
-				$location->libraryId = $library->libraryId;
+				//$location->libraryId = $library->libraryId;
 				$localLocationCodes = $location->fetchAll('code', 'displayName', true);
 
 				$indexingProfile = $this->getIndexingProfile();
@@ -2668,11 +2668,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						$marcHolding = [];
 						$marcSubfieldB = $marc852Field->getSubfield('b');
 						if ($marcSubfieldB != false) {
-							$owningLibraryCode = strtolower($marcSubfieldB->getData());
-							if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)) {
-								$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
-							} else {
-								$owningLibrary = $owningLibraryCode;
+							//handle sierra quirks of location codes where the library can be indicated with the first part of a location code
+							$owningLibraryCode = trim(strtolower($marcSubfieldB->getData()));
+							for ($i = strlen($owningLibraryCode); $i >= 2; $i--) {
+								$tmpOwningLibraryCode = substr($owningLibraryCode, 0, $i);
+								if (array_key_exists($tmpOwningLibraryCode, $libraryCodeToDisplayName)) {
+									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode];
+									break;
+								//Handle sierra quirks where the actual location code is specified with a z at the end
+								} elseif (array_key_exists($tmpOwningLibraryCode . 'z', $libraryCodeToDisplayName)) {
+									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode . 'z'];
+									break;
+								} else if ($i == strlen($owningLibraryCode)){
+									$owningLibrary = $tmpOwningLibraryCode;
+								}
 							}
 							$marcHolding['library'] = $owningLibrary;
 						} else {
@@ -2680,7 +2689,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						}
 						$marcSubfieldC = $marc852Field->getSubfield('c');
 						if ($marcSubfieldC != false) {
-							$shelfLocation = strtolower($marcSubfieldC->getData());
+							$shelfLocation = trim(strtolower($marcSubfieldC->getData()));
 							if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
 								$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
 							}

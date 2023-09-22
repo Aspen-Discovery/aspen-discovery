@@ -212,7 +212,7 @@
 				<div class="col-sm-4">
 					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.max)}max="{$property.max}"{/if} {if !empty($property.min)}min="{$property.min}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly disabled{/if}>
 				</div>
-				{if !empty($property.readOnly)}
+				{if empty($property.readOnly)}
 					<script type="text/javascript">
 						$(document).ready(function(){ldelim}
 							rome({$propName});
