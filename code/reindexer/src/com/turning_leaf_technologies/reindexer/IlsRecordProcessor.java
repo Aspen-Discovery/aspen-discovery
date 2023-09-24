@@ -44,7 +44,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	private char volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
-	boolean suppressItemlessBibs;
 
 	private int determineAudienceBy;
 	private char audienceSubfield;
@@ -95,8 +94,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			marcPath = indexingProfileRS.getString("marcPath");
 			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
-
-			suppressItemlessBibs = indexingProfileRS.getBoolean("suppressItemlessBibs");
 
 			itemRecordNumberSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemRecordNumber");
 
@@ -324,7 +321,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (firstParentId != null) {
 				recordInfo.setHasParentRecord(true);
 			}
-			boolean hasMarcHoldings = hasMarcHoldings(recordInfo, record);
+			loadMarcHoldingItems(recordInfo, record);
 
 			logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
 			StringBuilder suppressionNotes = new StringBuilder();
@@ -342,11 +339,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				//If we have child records, it's very likely that we don't have real items, so we need to create a virtual one for scoping.
 				ItemInfo virtualItem = new ItemInfo();
 				virtualItem.setIsVirtualChildRecord(true);
-				recordInfo.addItem(virtualItem);
-			} else if (hasMarcHoldings && recordInfo.getNumPrintCopies() == 0) {
-				//We have an itemless bib that we don't want to suppress, create a virtual item.
-				ItemInfo virtualItem = new ItemInfo();
-				virtualItem.setIsVirtualHoldingsRecord(true);
 				recordInfo.addItem(virtualItem);
 			}
 
@@ -526,15 +518,21 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return firstParentId;
 	}
 
-	private boolean hasMarcHoldings(RecordInfo recordInfo, Record marcRecord) {
+	private void loadMarcHoldingItems(RecordInfo recordInfo, Record marcRecord) {
 		//We have marc holdings if we have one or more 852 and 866 fields with subfield 6.
 		boolean hasValid852 = false;
 		boolean hasValid866 = false;
 		List<DataField> fields852 = marcRecord.getDataFields(852);
+		HashSet<String> uniqueLocationCodes = new HashSet<>();
 		for (DataField field852 : fields852) {
 			if (field852.getSubfield('6') != null) {
-				hasValid852 = true;
-				break;
+				if (field852.getSubfield('b') != null) {
+					String locationCode = field852.getSubfield('b').getData();
+					if (locationCode != null) {
+						uniqueLocationCodes.add(locationCode);
+						hasValid852 = true;
+					}
+				}
 			}
 		}
 		List<DataField> fields866 = marcRecord.getDataFields(866);
@@ -546,9 +544,14 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (hasValid852 && hasValid866) {
 			recordInfo.setHasMarcHoldings(true);
-			return true;
-		}else{
-			return false;
+			for(String locationCode : uniqueLocationCodes) {
+				//Create virtual items with one for each location code
+				ItemInfo virtualItem = new ItemInfo();
+				virtualItem.setLocationCode(locationCode.trim());
+				virtualItem.setShelfLocation(locationCode.trim());
+				virtualItem.setIsVirtualHoldingsRecord(true);
+				recordInfo.addItem(virtualItem);
+			}
 		}
 	}
 
@@ -556,7 +559,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (recordInfo.hasChildRecord()) {
 			return false;
 		}
-		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0  && recordInfo.getNumEContentCopies() == 0 && suppressItemlessBibs;
+		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0  && recordInfo.getNumEContentCopies() == 0 && recordInfo.getNumVirtualItems() ==0;
 	}
 
 	/**
@@ -567,9 +570,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	 * @return number of items that should be counted
 	 */
 	private int checkForNonSuppressedItemlessBib(int numPrintItems) {
-		if (!suppressItemlessBibs && numPrintItems == 0){
-			numPrintItems = 1;
-		}
 		return numPrintItems;
 	}
 
@@ -1071,13 +1071,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				itemInfo.setHoldable(false);
 				itemInfo.setDetailedStatus("See individual issues");
 				itemInfo.setGroupedStatus("See individual issues");
-				loadScopeInfoForVirtualItem(groupedWork, itemInfo, record);
+				loadScopeInfoForVirtualChildItem(groupedWork, itemInfo, record);
 			}else if (itemInfo.isVirtualHoldingsRecord()) {
 				itemInfo.setAvailable(false);
 				itemInfo.setHoldable(false);
 				itemInfo.setDetailedStatus("See holdings");
 				itemInfo.setGroupedStatus("See holdings");
-				loadScopeInfoForVirtualItem(groupedWork, itemInfo, record);
+				loadScopeInfoForVirtualHoldingsItem(groupedWork, itemInfo, record);
 			}else if (itemInfo.isOrderItem()){
 				itemInfo.setAvailable(false);
 				itemInfo.setHoldable(true);
@@ -1096,16 +1096,41 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
+	protected void loadScopeInfoForVirtualHoldingsItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+		String itemLocation = itemInfo.getLocationCode();
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
+		for (Scope curScope : indexer.getScopes()){
+			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record, "");
+			if (result.isIncluded){
+				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
+				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
+					boolean itemIsOwned = curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record);
+					scopingInfo.setLocallyOwned(itemIsOwned);
+					if (curScope.isLibraryScope()){
+						scopingInfo.setLibraryOwned(itemIsOwned);
+					}
+				}
+				if (curScope.isLibraryScope()) {
+					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record));
+				}
+			}
+		}
+	}
+
 	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String itemLocation = itemInfo.getLocationCode();
 		String shelfLocation = itemInfo.getShelfLocation();
 		String collectionCode = itemInfo.getCollection();
 		String originalUrl = itemInfo.geteContentUrl();
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
 		for (Scope curScope : indexer.getScopes()){
-			String format = itemInfo.getFormat();
-			if (format == null){
-				format = itemInfo.getRecordInfo().getPrimaryFormat();
-			}
 			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
@@ -1128,7 +1153,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForVirtualItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForVirtualChildItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		for (Scope curScope : indexer.getScopes()){
 			String format = itemInfo.getFormat();
 			if (format == null){

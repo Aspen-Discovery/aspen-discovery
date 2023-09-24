@@ -256,6 +256,16 @@ public class RecordInfo {
 		return numEContentCopies;
 	}
 
+	public int getNumVirtualItems() {
+		int numVirtualItems = 0;
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.isVirtual()){
+				numVirtualItems++;
+			}
+		}
+		return numVirtualItems;
+	}
+
 	HashSet<String> getAllEContentSources() {
 		HashSet<String> values = new HashSet<>();
 		for (ItemInfo curItem : relatedItems){
@@ -391,4 +401,5 @@ public class RecordInfo {
 	public boolean getHasMarcHoldings() {
 		return hasMarcHoldings;
 	}
+
 }
