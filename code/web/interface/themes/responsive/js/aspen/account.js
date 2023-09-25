@@ -1683,11 +1683,14 @@ AspenDiscovery.Account = (function () {
 					} else {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
-						if(fineAmountInput.val() > $(this).data('outstanding_amt')) {
+						var outstandingAmount = $(this).data('outstanding_amt');
+						outstandingAmount = parseFloat(outstandingAmount);
+						var fineAmountFloat = parseFloat(fineAmountInput.val());
+						if(fineAmountFloat > outstandingAmount) {
 							// don't update the total to be paid if the user provided value is higher than the outstanding amount
-							$('#overPayWarning').show();
+							$("#overPayWarning" + fineId).show();
 						} else {
-							$('#overPayWarning').hide();
+							$("#overPayWarning" + fineId).hide();
 							totalFineAmt += fineAmountInput.val() * 1;
 							totalOutstandingAmt += fineAmountInput.val() * 1;
 							outstandingGrandTotalAmt += fineAmountInput.val() * 1;
