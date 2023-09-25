@@ -1076,7 +1076,7 @@ class Polaris extends AbstractIlsDriver {
 	 *
 	 * @return array
 	 */
-	protected function loginViaWebService(&$username, $password, $fromMasquerade = false): array {
+	protected function loginViaWebService(string &$username, ?string $password, $fromMasquerade = false): array {
 		if (array_key_exists($username, Polaris::$accessTokensForUsers)) {
 			return Polaris::$accessTokensForUsers[$username];
 		} else {
@@ -1143,7 +1143,7 @@ class Polaris extends AbstractIlsDriver {
 		}
 	}
 
-	private function getAccessToken(string $barcode, string $password, bool $fromMasquerade = false) {
+	private function getAccessToken(string $barcode, ?string $password, bool $fromMasquerade = false) {
 		//Get the session token for the user
 		if (isset(Polaris::$accessTokensForUsers[$barcode])) {
 			return Polaris::$accessTokensForUsers[$barcode]['accessToken'];
