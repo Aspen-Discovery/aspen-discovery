@@ -582,9 +582,10 @@ class SearchAPI extends Action {
 					$foundInfectedFilesLine = false;
 					$numLinesRead = 0;
 					while ($line = fgets($fh)) {
-						$pieces = [];
-						if (preg_match('/^Infected files:\s+(\d+)/sim', $line, $pieces)) {
-							$numInfectedFiles = $pieces[1];
+						$line = trim($line);
+						if (strpos($line, 'Infected files: ') === 0) {
+							$line = str_replace('Infected files: ', '', $line);
+							$numInfectedFiles = $line;
 							$foundInfectedFilesLine = true;
 							break;
 						}
