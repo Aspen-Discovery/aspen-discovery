@@ -583,13 +583,14 @@ class SearchAPI extends Action {
 					$numLinesRead = 0;
 					while ($line = fgets($fh)) {
 						$pieces = [];
-						if (preg_match('/^Infected files:\s+(\d+)$/sim', $line, $pieces)) {
+						if (preg_match('/^Infected files:\s+(\d+)/sim', $line, $pieces)) {
 							$numInfectedFiles = $pieces[1];
 							$foundInfectedFilesLine = true;
 							break;
 						}
 						$numLinesRead++;
 					}
+					fclose($fh);
 					if (!$foundInfectedFilesLine) {
 						if ($numInfectedFiles > 0) {
 							$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
