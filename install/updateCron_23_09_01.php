@@ -21,9 +21,9 @@ if (count($_SERVER['argv']) > 1) {
 			$lines[] = "######################################\n";
 			$lines[] = "# Run Clam AV Scans                  #\n";
 			$lines[] = "######################################\n";
-			$lines[] = "00 3 * * * root /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n\n";
+			$lines[] = "00 3 * * * root truncate -s0 /var/log/aspen-discovery/clam_av.log; /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n\n";
 		}else if ($replaceClamScan) {
-			$lines[] = "00 3 * * * root /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n\n";
+			$lines[] = "00 3 * * * root truncate -s0 /var/log/aspen-discovery/clam_av.log; /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/$serverName/solr7/ --exclude-dir=/var/log/aspen-discovery/$serverName --exclude-dir=/data/aspen-discovery/$serverName/covers/small --exclude-dir=/data/aspen-discovery/$serverName/covers/medium --exclude-dir=/data/aspen-discovery/$serverName/covers/large --log=/var/log/aspen-discovery/clam_av.log /\n\n";
 		}
 		if ($insertClamScan || $replaceClamScan) {
 			$newContent = implode('', $lines);
