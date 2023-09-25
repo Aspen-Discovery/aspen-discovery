@@ -580,12 +580,15 @@ class SearchAPI extends Action {
 				} else {
 					$numInfectedFiles = 0;
 					$foundInfectedFilesLine = false;
+					$numLinesRead = 0;
 					while ($line = fgets($fh)) {
 						$pieces = [];
 						if (preg_match('/^Infected files:\s+(\d+)$/sim', $line, $pieces)) {
 							$numInfectedFiles = $pieces[1];
 							$foundInfectedFilesLine = true;
+							break;
 						}
+						$numLinesRead++;
 					}
 					if (!$foundInfectedFilesLine) {
 						if ($numInfectedFiles > 0) {
@@ -594,7 +597,7 @@ class SearchAPI extends Action {
 							$this->addCheck($checks, "Antivirus");
 						}
 					}else{
-						$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Antivirus is running");
+						$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Antivirus is running, read $numLinesRead lines");
 					}
 				}
 
