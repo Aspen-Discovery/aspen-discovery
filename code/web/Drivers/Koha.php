@@ -6854,7 +6854,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param string $errorAlt
 	 * @return string
 	 */
-	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message, string $errorAlt): string {
+	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message, ?string $errorAlt): string {
 		$code = $error;
 		if($errorAlt) {
 			$code = $errorAlt;
