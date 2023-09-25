@@ -2814,14 +2814,14 @@ class Koha extends AbstractIlsDriver {
 				$error = $renewResponse->error;
 				$success = false;
 				$message = 'The item could not be renewed: ';
-				$message = $this->getRenewErrorMessage($error, $message);
+				$message = $this->getRenewErrorMessage($error, $message, null);
 
 				// Result for API or app use
 				$result['api']['title'] = translate([
 					'text' => 'Unable to renew title',
 					'isPublicFacing' => true,
 				]);
-				$result['api']['message'] = $this->getRenewErrorMessage($error, "");
+				$result['api']['message'] = $this->getRenewErrorMessage($error, "", null);
 			}
 
 			$result['itemId'] = $itemId;
