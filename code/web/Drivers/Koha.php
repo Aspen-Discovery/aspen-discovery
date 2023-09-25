@@ -5600,7 +5600,7 @@ class Koha extends AbstractIlsDriver {
 			if ($lookupUserResult->num_rows == 1) {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
-				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronUsername);
+				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronBarcode);
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}
