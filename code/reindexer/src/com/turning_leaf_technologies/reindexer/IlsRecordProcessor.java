@@ -38,13 +38,13 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected Pattern bCode3sToSuppress;
 	private boolean useItemBasedCallNumbers;
 	private char callNumberPrestampSubfield;
+	private char callNumberPrestamp2Subfield;
 	private char callNumberSubfield;
 	private char callNumberCutterSubfield;
 	private char callNumberPoststampSubfield;
 	private char volumeSubfield;
 	char itemRecordNumberSubfieldIndicator;
 	private char itemUrlSubfieldIndicator;
-	boolean suppressItemlessBibs;
 
 	private int determineAudienceBy;
 	private char audienceSubfield;
@@ -96,11 +96,10 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			numCharsToCreateFolderFrom         = indexingProfileRS.getInt("numCharsToCreateFolderFrom");
 			createFolderFromLeadingCharacters  = indexingProfileRS.getBoolean("createFolderFromLeadingCharacters");
 
-			suppressItemlessBibs = indexingProfileRS.getBoolean("suppressItemlessBibs");
-
 			itemRecordNumberSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemRecordNumber");
 
 			callNumberPrestampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
+			callNumberPrestamp2Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp2");
 			callNumberSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
 			callNumberCutterSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
@@ -324,6 +323,8 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			if (firstParentId != null) {
 				recordInfo.setHasParentRecord(true);
 			}
+			loadMarcHoldingItems(recordInfo, record);
+
 			logger.debug("Added record for " + identifier + " work now has " + groupedWork.getNumRecords() + " records");
 			StringBuilder suppressionNotes = new StringBuilder();
 			suppressionNotes = loadUnsuppressedPrintItems(groupedWork, recordInfo, identifier, record, suppressionNotes);
@@ -335,10 +336,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 				allRelatedRecords.addAll(econtentRecords);
 			}
 
+			//check for cases where we need a virtual record
 			if (hasChildRecords) {
 				//If we have child records, it's very likely that we don't have real items, so we need to create a virtual one for scoping.
 				ItemInfo virtualItem = new ItemInfo();
-				virtualItem.setVirtual(true);
+				virtualItem.setIsVirtualChildRecord(true);
 				recordInfo.addItem(virtualItem);
 			}
 
@@ -518,11 +520,48 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		return firstParentId;
 	}
 
+	private void loadMarcHoldingItems(RecordInfo recordInfo, Record marcRecord) {
+		//We have marc holdings if we have one or more 852 and 866 fields with subfield 6.
+		boolean hasValid852 = false;
+		boolean hasValid866 = false;
+		List<DataField> fields852 = marcRecord.getDataFields(852);
+		HashSet<String> uniqueLocationCodes = new HashSet<>();
+		for (DataField field852 : fields852) {
+			if (field852.getSubfield('6') != null) {
+				if (field852.getSubfield('b') != null) {
+					String locationCode = field852.getSubfield('b').getData();
+					if (locationCode != null) {
+						uniqueLocationCodes.add(locationCode);
+						hasValid852 = true;
+					}
+				}
+			}
+		}
+		List<DataField> fields866 = marcRecord.getDataFields(866);
+		for (DataField field866 : fields866) {
+			if (field866.getSubfield('6') != null) {
+				hasValid866 = true;
+				break;
+			}
+		}
+		if (hasValid852 && hasValid866) {
+			recordInfo.setHasMarcHoldings(true);
+			for(String locationCode : uniqueLocationCodes) {
+				//Create virtual items with one for each location code
+				ItemInfo virtualItem = new ItemInfo();
+				virtualItem.setLocationCode(locationCode.trim());
+				virtualItem.setShelfLocation(locationCode.trim());
+				virtualItem.setIsVirtualHoldingsRecord(true);
+				recordInfo.addItem(virtualItem);
+			}
+		}
+	}
+
 	boolean checkIfBibShouldBeRemovedAsItemless(RecordInfo recordInfo) {
 		if (recordInfo.hasChildRecord()) {
 			return false;
 		}
-		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0  && recordInfo.getNumEContentCopies() == 0 && suppressItemlessBibs;
+		return recordInfo.getNumPrintCopies() == 0 && recordInfo.getNumCopiesOnOrder() == 0  && recordInfo.getNumEContentCopies() == 0 && recordInfo.getNumVirtualItems() ==0;
 	}
 
 	/**
@@ -533,9 +572,6 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	 * @return number of items that should be counted
 	 */
 	private int checkForNonSuppressedItemlessBib(int numPrintItems) {
-		if (!suppressItemlessBibs && numPrintItems == 0){
-			numPrintItems = 1;
-		}
 		return numPrintItems;
 	}
 
@@ -1032,12 +1068,18 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 
 	private void scopeItems(RecordInfo recordInfo, AbstractGroupedWorkSolr groupedWork, Record record){
 		for (ItemInfo itemInfo : recordInfo.getRelatedItems()){
-			if (itemInfo.isVirtual()) {
+			if (itemInfo.isVirtualChildRecord()) {
 				itemInfo.setAvailable(false);
 				itemInfo.setHoldable(false);
 				itemInfo.setDetailedStatus("See individual issues");
 				itemInfo.setGroupedStatus("See individual issues");
-				loadScopeInfoForVirtualItem(groupedWork, itemInfo, record);
+				loadScopeInfoForVirtualChildItem(groupedWork, itemInfo, record);
+			}else if (itemInfo.isVirtualHoldingsRecord()) {
+				itemInfo.setAvailable(false);
+				itemInfo.setHoldable(false);
+				itemInfo.setDetailedStatus("See holdings");
+				itemInfo.setGroupedStatus("See holdings");
+				loadScopeInfoForVirtualHoldingsItem(groupedWork, itemInfo, record);
 			}else if (itemInfo.isOrderItem()){
 				itemInfo.setAvailable(false);
 				itemInfo.setHoldable(true);
@@ -1056,16 +1098,41 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
+	protected void loadScopeInfoForVirtualHoldingsItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+		String itemLocation = itemInfo.getLocationCode();
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
+		for (Scope curScope : indexer.getScopes()){
+			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record, "");
+			if (result.isIncluded){
+				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
+				groupedWork.addScopingInfo(curScope.getScopeName(), scopingInfo);
+				if (curScope.isLocationScope()) {  //Either a location scope or both library and location scope
+					boolean itemIsOwned = curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record);
+					scopingInfo.setLocallyOwned(itemIsOwned);
+					if (curScope.isLibraryScope()){
+						scopingInfo.setLibraryOwned(itemIsOwned);
+					}
+				}
+				if (curScope.isLibraryScope()) {
+					scopingInfo.setLibraryOwned(curScope.isItemOwnedByScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, "", "", false, false, false, record));
+				}
+			}
+		}
+	}
+
 	private void loadScopeInfoForEContentItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		String itemLocation = itemInfo.getLocationCode();
 		String shelfLocation = itemInfo.getShelfLocation();
 		String collectionCode = itemInfo.getCollection();
 		String originalUrl = itemInfo.geteContentUrl();
+		String format = itemInfo.getFormat();
+		if (format == null){
+			format = itemInfo.getRecordInfo().getPrimaryFormat();
+		}
 		for (Scope curScope : indexer.getScopes()){
-			String format = itemInfo.getFormat();
-			if (format == null){
-				format = itemInfo.getRecordInfo().getPrimaryFormat();
-			}
 			Scope.InclusionResult result = curScope.isItemPartOfScope(itemInfo.getItemIdentifier(), profileType, itemLocation, "", null, groupedWork.getTargetAudiences(), groupedWork.getTargetAudiencesAsString(), format, shelfLocation, collectionCode, false, false, true, record, originalUrl);
 			if (result.isIncluded){
 				ScopingInfo scopingInfo = itemInfo.addScope(curScope);
@@ -1088,7 +1155,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 	}
 
-	private void loadScopeInfoForVirtualItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
+	private void loadScopeInfoForVirtualChildItem(AbstractGroupedWorkSolr groupedWork, ItemInfo itemInfo, Record record) {
 		for (Scope curScope : indexer.getScopes()){
 			String format = itemInfo.getFormat();
 			if (format == null){
@@ -1266,6 +1333,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (useItemBasedCallNumbers && itemField != null) {
 			String callNumberPreStamp = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
+			String callNumberPreStamp2 = getItemSubfieldDataWithoutTrimming(callNumberPrestamp2Subfield, itemField);
 			String callNumber = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
 			String callNumberCutter = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
 			String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
@@ -1274,6 +1342,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			StringBuilder sortableCallNumber = new StringBuilder();
 			if (callNumberPreStamp != null) {
 				fullCallNumber.append(callNumberPreStamp);
+			}
+			if (callNumberPreStamp2 != null) {
+				fullCallNumber.append(callNumberPreStamp2);
 			}
 			if (callNumber != null){
 				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){

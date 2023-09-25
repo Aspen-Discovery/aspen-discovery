@@ -7006,11 +7006,13 @@ AspenDiscovery.Account = (function () {
 					} else {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
-						if(fineAmountInput.val() > $(this).data('outstanding_amt')) {
+						var outstandingAmount = $(this).data('outstanding_amt');
+						outstandingAmount = parseInt(outstandingAmount);
+						if(fineAmountInput.val() > outstandingAmount) {
 							// don't update the total to be paid if the user provided value is higher than the outstanding amount
-							$('#overPayWarning').show();
+							$("#overPayWarning" + fineId).show();
 						} else {
-							$('#overPayWarning').hide();
+							$("#overPayWarning" + fineId).hide();
 							totalFineAmt += fineAmountInput.val() * 1;
 							totalOutstandingAmt += fineAmountInput.val() * 1;
 							outstandingGrandTotalAmt += fineAmountInput.val() * 1;
@@ -14889,10 +14891,10 @@ AspenDiscovery.IndexingClass = (function () {
 					'propertyRowdetermineLiteraryFormBy', 'propertyRowliteraryFormSubfield', 'propertyRowhideUnknownLiteraryForm',
 					'propertyRowhideNotCodedLiteraryForm', 'propertyRowitemSection', 'propertyRowsuppressItemlessBibs',
 					'propertyRowitemTag', 'propertyRowitemRecordNumber', 'propertyRowuseItemBasedCallNumbers',
-					'propertyRowcallNumberPrestamp', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp',
+					'propertyRowcallNumberPrestamp', 'propertyRowcallNumberPrestamp2', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp',
 					'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations',
 					'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection',
-					'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowitemUrl', 'propertyRowbarcode',
+					'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowbarcode',
 					'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress',
 					'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts',
 					'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes',

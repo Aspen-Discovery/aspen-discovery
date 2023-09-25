@@ -219,6 +219,7 @@ class LDAPAuthentication extends Action {
 		/** SessionInterface $session */
 		global $session;
 		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+		@session_destroy();
 		session_name('aspen_session');
 		$session = new MySQLSession();
 		$session->init();

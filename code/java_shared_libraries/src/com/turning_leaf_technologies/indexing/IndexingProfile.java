@@ -16,6 +16,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private char callNumberPoststampSubfield;
 	private char volume;
 	private char itemUrl;
+	private char itemUrlDescription;
 	private char totalRenewalsSubfield;
 	private char iCode2Subfield;
 	private char lastYearCheckoutsSubfield;
@@ -182,6 +183,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 		this.setCallNumberPoststampSubfield(getCharFromRecordSet(indexingProfileRS, "callNumberPoststamp"));
 		this.setVolume(getCharFromRecordSet(indexingProfileRS, "volume"));
 		this.setItemUrl(getCharFromRecordSet(indexingProfileRS, "itemUrl"));
+		this.setItemUrlDescription(getCharFromRecordSet(indexingProfileRS, "itemUrlDescription"));
 
 		this.setDetermineAudienceBy(indexingProfileRS.getInt("determineAudienceBy"));
 		this.setAudienceSubfield(getCharFromRecordSet(indexingProfileRS, "audienceSubfield"));
@@ -641,6 +643,14 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	private void setItemUrl(char itemUrl) {
 		this.itemUrl = itemUrl;
+	}
+
+	public char getItemUrlDescription() {
+		return itemUrlDescription;
+	}
+
+	private void setItemUrlDescription(char itemUrlDescription) {
+		this.itemUrlDescription = itemUrlDescription;
 	}
 
 	private void setRecordNumberSubfield(char recordNumberSubfield) {

@@ -24,6 +24,8 @@ class SierraExportFieldMapping extends DataObject {
 	public /** @noinspection PhpUnused */
 		$callNumberPrestampExportSubfield;
 	public /** @noinspection PhpUnused */
+		$callNumberPrestamp2ExportSubfield;
+	public /** @noinspection PhpUnused */
 		$callNumberExportSubfield;
 	public /** @noinspection PhpUnused */
 		$callNumberCutterExportSubfield;
@@ -33,8 +35,6 @@ class SierraExportFieldMapping extends DataObject {
 		$itemPublicNoteExportSubfield;
 	public /** @noinspection PhpUnused */
 		$volumeExportFieldTag;
-	public /** @noinspection PhpUnused */
-		$urlExportFieldTag;
 	public /** @noinspection PhpUnused */
 		$eContentExportFieldTag;
 
@@ -109,6 +109,14 @@ class SierraExportFieldMapping extends DataObject {
 				'description' => 'The subfield where the call number prestamp is exported',
 				'forcesReindex' => true,
 			],
+			'callNumberPrestamp2ExportSubfield' => [
+				'property' => 'callNumberPrestamp2ExportSubfield',
+				'type' => 'text',
+				'label' => 'Call Number Prestamp 2 Export Subfield',
+				'maxLength' => 1,
+				'description' => 'The subfield where a secondary call number prestamp is exported',
+				'forcesReindex' => true,
+			],
 			'callNumberExportSubfield' => [
 				'property' => 'callNumberExportSubfield',
 				'type' => 'text',
@@ -147,14 +155,6 @@ class SierraExportFieldMapping extends DataObject {
 				'label' => 'Volume Export Field Tag',
 				'maxLength' => 1,
 				'description' => 'The Item Variable field tag where volume is exported',
-				'forcesReindex' => true,
-			],
-			'urlExportFieldTag' => [
-				'property' => 'urlExportFieldTag',
-				'type' => 'text',
-				'label' => 'URL Export Field Tag',
-				'maxLength' => 1,
-				'description' => 'The Item Variable field tag where the url is exported',
 				'forcesReindex' => true,
 			],
 			'eContentExportFieldTag' => [

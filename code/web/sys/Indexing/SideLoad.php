@@ -43,8 +43,6 @@ class SideLoad extends DataObject {
 		$treatUndeterminedLanguageAs;
 
 	public /** @noinspection PhpUnused */
-		$suppressItemlessBibs;
-	public /** @noinspection PhpUnused */
 		$itemTag;
 	public /** @noinspection PhpUnused */
 		$itemRecordNumber;
@@ -298,14 +296,6 @@ class SideLoad extends DataObject {
 				'label' => 'Item Information',
 				'hideInLists' => true,
 				'properties' => [
-					'suppressItemlessBibs' => [
-						'property' => 'suppressItemlessBibs',
-						'type' => 'checkbox',
-						'label' => 'Suppress Itemless Bibs',
-						'description' => 'Whether or not Itemless Bibs can be suppressed',
-						'default' => false,
-						'forcesReindex' => true,
-					],
 					'itemTag' => [
 						'property' => 'itemTag',
 						'type' => 'text',
