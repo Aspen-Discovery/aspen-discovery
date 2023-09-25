@@ -570,21 +570,28 @@ class SearchAPI extends Action {
 		$antivirusLog = "/var/log/aspen-discovery/clam_av.log";
 		if (file_exists($antivirusLog)) {
 			$fileModificationTime = filemtime($antivirusLog);
-			if ($fileModificationTime < (time() - 24 * 60 * 60)) {
-				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus scan has not been run in the last 24 hours");
+			$fileCreationTime = filectime($antivirusLog);
+			if (max($fileModificationTime, $fileCreationTime) < (time() - 24 * 60 * 60)) {
+				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus scan has not been run in the last 24 hours.  Last ran at " . date('Y-m-d H:i:s', max($fileModificationTime, $fileCreationTime) . "."));
 			}else{
 				$fh = fopen($antivirusLog, 'r');
 				$numInfectedFiles = 0;
+				$foundInfectedFilesLine = false;
 				while ($line = fgets($fh)) {
 					$pieces = [];
 					if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
 						$numInfectedFiles = $pieces[1];
+						$foundInfectedFilesLine = true;
 					}
 				}
-				if ($numInfectedFiles > 0) {
-					$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
-				} else {
-					$this->addCheck($checks, "Antivirus");
+				if (!$foundInfectedFilesLine) {
+					if ($numInfectedFiles > 0) {
+						$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
+					} else {
+						$this->addCheck($checks, "Antivirus");
+					}
+				}else{
+					$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Antivirus is running");
 				}
 			}
 		} else {
