@@ -575,24 +575,29 @@ class SearchAPI extends Action {
 				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus scan has not been run in the last 24 hours.  Last ran at " . date('Y-m-d H:i:s', max($fileModificationTime, $fileCreationTime) . "."));
 			}else{
 				$fh = fopen($antivirusLog, 'r');
-				$numInfectedFiles = 0;
-				$foundInfectedFilesLine = false;
-				while ($line = fgets($fh)) {
-					$pieces = [];
-					if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
-						$numInfectedFiles = $pieces[1];
-						$foundInfectedFilesLine = true;
+				if ($fh === false) {
+					$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Could not read antivirus log");
+				} else {
+					$numInfectedFiles = 0;
+					$foundInfectedFilesLine = false;
+					while ($line = fgets($fh)) {
+						$pieces = [];
+						if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
+							$numInfectedFiles = $pieces[1];
+							$foundInfectedFilesLine = true;
+						}
+					}
+					if (!$foundInfectedFilesLine) {
+						if ($numInfectedFiles > 0) {
+							$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
+						} else {
+							$this->addCheck($checks, "Antivirus");
+						}
+					}else{
+						$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Antivirus is running");
 					}
 				}
-				if (!$foundInfectedFilesLine) {
-					if ($numInfectedFiles > 0) {
-						$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
-					} else {
-						$this->addCheck($checks, "Antivirus");
-					}
-				}else{
-					$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Antivirus is running");
-				}
+
 			}
 		} else {
 			$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "No Antivirus log file was found");
