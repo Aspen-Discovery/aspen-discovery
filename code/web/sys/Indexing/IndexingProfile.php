@@ -59,6 +59,8 @@ class IndexingProfile extends DataObject {
 		$useItemBasedCallNumbers;
 	public /** @noinspection PhpUnused */
 		$callNumberPrestamp;
+	public /** @noinspection PhpUnused */
+		$callNumberPrestamp2;
 	public $callNumber;
 	public /** @noinspection PhpUnused */
 		$callNumberCutter;
@@ -80,6 +82,7 @@ class IndexingProfile extends DataObject {
 	public $volume;
 	public /** @noinspection PhpUnused */
 		$itemUrl;
+	public $itemUrlDescription;
 	public $barcode;
 	public $status;
 	public /** @noinspection PhpUnused */
@@ -621,6 +624,14 @@ class IndexingProfile extends DataObject {
 						'description' => 'Subfield for call number pre-stamp',
 						'forcesReindex' => true,
 					],
+					'callNumberPrestamp2' => [
+						'property' => 'callNumberPrestamp2',
+						'type' => 'text',
+						'label' => 'Call Number Prestamp 2',
+						'maxLength' => 1,
+						'description' => 'Subfield for secondary call number pre-stamp',
+						'forcesReindex' => true,
+					],
 					'callNumber' => [
 						'property' => 'callNumber',
 						'type' => 'text',
@@ -723,6 +734,14 @@ class IndexingProfile extends DataObject {
 						'label' => 'Item URL',
 						'maxLength' => 1,
 						'description' => 'Subfield for a URL specific to the item',
+						'forcesReindex' => true,
+					],
+					'itemUrlDescription' => [
+						'property' => 'itemUrlDescription',
+						'type' => 'text',
+						'label' => 'Item URL',
+						'maxLength' => 1,
+						'description' => 'Subfield for a URL description specific to the item',
 						'forcesReindex' => true,
 					],
 					'barcode' => [

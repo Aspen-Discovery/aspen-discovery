@@ -15,11 +15,11 @@ public class SierraExportFieldMapping {
 	private char bibLevelLocationsSubfield;
 	private String callNumberExportFieldTag;
 	private char callNumberPrestampExportSubfield;
+	private char callNumberPrestamp2ExportSubfield;
 	private char callNumberExportSubfield;
 	private char callNumberCutterExportSubfield;
 	private char callNumberPoststampExportSubfield;
 	private String volumeExportFieldTag;
-	private String urlExportFieldTag;
 	private String eContentExportFieldTag;
 	private String itemPublicNoteExportSubfield;
 
@@ -60,6 +60,14 @@ public class SierraExportFieldMapping {
 		this.callNumberPrestampExportSubfield = callNumberPrestampExportSubfield;
 	}
 
+	public char getCallNumberPrestamp2ExportSubfield() {
+		return callNumberPrestamp2ExportSubfield;
+	}
+
+	private void setCallNumberPrestamp2ExportSubfield(char callNumberPrestamp2ExportSubfield) {
+		this.callNumberPrestamp2ExportSubfield = callNumberPrestamp2ExportSubfield;
+	}
+
 	public char getCallNumberExportSubfield() {
 		return callNumberExportSubfield;
 	}
@@ -92,14 +100,6 @@ public class SierraExportFieldMapping {
 		this.volumeExportFieldTag = volumeExportFieldTag;
 	}
 
-	public String getUrlExportFieldTag() {
-		return urlExportFieldTag;
-	}
-
-	private void setUrlExportFieldTag(String urlExportFieldTag) {
-		this.urlExportFieldTag = urlExportFieldTag;
-	}
-
 	public String getEContentExportFieldTag() {
 		return eContentExportFieldTag;
 	}
@@ -121,11 +121,11 @@ public class SierraExportFieldMapping {
 				sierraFieldMapping.setBibLevelLocationsSubfield(AspenStringUtils.convertStringToChar(getSierraFieldMappingsRS.getString("bibLevelLocationsSubfield")));
 				sierraFieldMapping.setCallNumberExportFieldTag(getSierraFieldMappingsRS.getString("callNumberExportFieldTag"));
 				sierraFieldMapping.setCallNumberPrestampExportSubfield(AspenStringUtils.convertStringToChar(getSierraFieldMappingsRS.getString("callNumberPrestampExportSubfield")));
+				sierraFieldMapping.setCallNumberPrestamp2ExportSubfield(AspenStringUtils.convertStringToChar(getSierraFieldMappingsRS.getString("callNumberPrestamp2ExportSubfield")));
 				sierraFieldMapping.setCallNumberExportSubfield(AspenStringUtils.convertStringToChar(getSierraFieldMappingsRS.getString("callNumberExportSubfield")));
 				sierraFieldMapping.setCallNumberCutterExportSubfield(AspenStringUtils.convertStringToChar(getSierraFieldMappingsRS.getString("callNumberCutterExportSubfield")));
 				sierraFieldMapping.setCallNumberPoststampExportSubfield(AspenStringUtils.convertStringToChar(getSierraFieldMappingsRS.getString("callNumberPoststampExportSubfield")));
 				sierraFieldMapping.setVolumeExportFieldTag(getSierraFieldMappingsRS.getString("volumeExportFieldTag"));
-				sierraFieldMapping.setUrlExportFieldTag(getSierraFieldMappingsRS.getString("urlExportFieldTag"));
 				sierraFieldMapping.setEContentExportFieldTag(getSierraFieldMappingsRS.getString("eContentExportFieldTag"));
 				sierraFieldMapping.setItemPublicNoteExportSubfield(getSierraFieldMappingsRS.getString("itemPublicNoteExportSubfield"));
 

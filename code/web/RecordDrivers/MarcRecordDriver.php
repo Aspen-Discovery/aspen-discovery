@@ -1631,6 +1631,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 		$interface->assign('showLastCheckIn', $showLastCheckIn);
 		$interface->assign('showFormatInHoldings', count($this->getFormats()) > 1);
+		$interface->assign('holdingsHaveUrls', $this->holdingsHaveUrls);
 		$moreDetailsOptions['copies'] = [
 			'label' => 'Copies',
 			'body' => $interface->fetch('Record/view-holdings.tpl'),
@@ -2150,6 +2151,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	private $copiesInfoLoaded = false;
 	private $holdingSections;
 	private $statusSummary;
+	private $holdingsHaveUrls = false;
 
 	private function loadCopies() {
 		if (!$this->copiesInfoLoaded) {
@@ -2195,7 +2197,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					//Divide the items into sections and create the status summary
 					$this->holdingSections = [];
 					$itemsFromMarc = [];
-					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)) {
+					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate) || !empty($indexingProfile->itemUrl)) {
 						//Get items from the marc record
 						$itemFields = $this->getMarcRecord()->getFields($indexingProfile->itemTag);
 						/** @var File_MARC_Data_Field $field */
@@ -2206,6 +2208,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							}
 						}
 					}
+
 					foreach ($this->holdings as &$copyInfo) {
 						$sectionName = $copyInfo['sectionId'];
 						if (!array_key_exists($sectionName, $this->holdingSections)) {
@@ -2247,7 +2250,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							}
 						}
 						if (!empty($indexingProfile->dueDate)) {
-							//Get the item for the
+							//Get the item for the holding
 							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
 								$itemField = $itemsFromMarc[$copyInfo['itemId']];
 								$copyInfo['dueDate'] = '';
@@ -2259,6 +2262,27 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 											$copyInfo['dueDate'] = $dueDateTime->getTimestamp();
 										} else {
 											$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+										}
+									}
+								}
+							}
+						}
+						if (!empty($indexingProfile->itemUrl)) {
+							//Get the item for the holding
+							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
+								$itemField = $itemsFromMarc[$copyInfo['itemId']];
+								$copyInfo['itemUrl'] = '';
+								$copyInfo['itemUrlDescription'] = '';
+								if (!empty($itemField)) {
+									$itemUrlSubfield = $itemField->getSubfield($indexingProfile->itemUrl);
+									if ($itemUrlSubfield != null && !empty($itemUrlSubfield->getData())) {
+										$this->holdingsHaveUrls = true;
+										$copyInfo['itemUrl'] = $itemUrlSubfield->getData();
+										if (!empty($indexingProfile->itemUrlDescription)) {
+											$itemUrlDescriptionSubfield = $itemField->getSubfield($indexingProfile->itemUrlDescription);
+											if ($itemUrlDescriptionSubfield != null && !empty($itemUrlDescriptionSubfield->getData())) {
+												$copyInfo['itemUrlDescription'] = $itemUrlDescriptionSubfield->getData();
+											}
 										}
 									}
 								}

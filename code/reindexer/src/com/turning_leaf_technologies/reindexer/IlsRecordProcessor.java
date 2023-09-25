@@ -38,6 +38,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 	protected Pattern bCode3sToSuppress;
 	private boolean useItemBasedCallNumbers;
 	private char callNumberPrestampSubfield;
+	private char callNumberPrestamp2Subfield;
 	private char callNumberSubfield;
 	private char callNumberCutterSubfield;
 	private char callNumberPoststampSubfield;
@@ -98,6 +99,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			itemRecordNumberSubfieldIndicator = getSubfieldIndicatorFromConfig(indexingProfileRS, "itemRecordNumber");
 
 			callNumberPrestampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp");
+			callNumberPrestamp2Subfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPrestamp2");
 			callNumberSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumber");
 			callNumberCutterSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberCutter");
 			callNumberPoststampSubfield = getSubfieldIndicatorFromConfig(indexingProfileRS, "callNumberPoststamp");
@@ -1331,6 +1333,7 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		}
 		if (useItemBasedCallNumbers && itemField != null) {
 			String callNumberPreStamp = getItemSubfieldDataWithoutTrimming(callNumberPrestampSubfield, itemField);
+			String callNumberPreStamp2 = getItemSubfieldDataWithoutTrimming(callNumberPrestamp2Subfield, itemField);
 			String callNumber = getItemSubfieldDataWithoutTrimming(callNumberSubfield, itemField);
 			String callNumberCutter = getItemSubfieldDataWithoutTrimming(callNumberCutterSubfield, itemField);
 			String callNumberPostStamp = getItemSubfieldData(callNumberPoststampSubfield, itemField);
@@ -1339,6 +1342,9 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			StringBuilder sortableCallNumber = new StringBuilder();
 			if (callNumberPreStamp != null) {
 				fullCallNumber.append(callNumberPreStamp);
+			}
+			if (callNumberPreStamp2 != null) {
+				fullCallNumber.append(callNumberPreStamp2);
 			}
 			if (callNumber != null){
 				if (fullCallNumber.length() > 0 && fullCallNumber.charAt(fullCallNumber.length() - 1) != ' '){
