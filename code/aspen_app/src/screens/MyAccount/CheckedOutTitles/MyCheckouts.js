@@ -55,6 +55,7 @@ export const MyCheckouts = () => {
      const toggleSource = async (value) => {
           setSource(value);
           setLoading(true);
+          console.log('toggleSource: ' + value);
           if (!_.isNull(value)) {
                if (value === 'ils') {
                     navigation.setOptions({ title: checkoutsBy.ils });
@@ -62,6 +63,8 @@ export const MyCheckouts = () => {
                     navigation.setOptions({ title: checkoutsBy.overdrive });
                } else if (value === 'cloud_library') {
                     navigation.setOptions({ title: checkoutsBy.cloud_library });
+               } else if (value === 'hoopla') {
+                    navigation.setOptions({ title: checkoutsBy.hoopla });
                } else if (value === 'axis360') {
                     navigation.setOptions({ title: checkoutsBy.axis_360 });
                } else {
