@@ -30,6 +30,7 @@
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" role="form">
 					<input type="hidden" name="updateScope" value="userPreference">
+					<input type="hidden" name="patronId" value={$profile->id|escape}>
 					{if !empty($showUsernameField)}
 						<div class="form-group propertyRow">
 							<label for="username">{translate text="Username" isPublicFacing=true}</label>
