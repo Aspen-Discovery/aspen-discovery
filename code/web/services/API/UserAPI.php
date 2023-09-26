@@ -4858,6 +4858,7 @@ class UserAPI extends Action {
 						//Check to see if the user already exists in the database
 						$foundExistingUser = false;
 						$accountProfile = new AccountProfile();
+						$accountProfile->orderBy('weight');
 						$accountProfile->find();
 						$masqueradedUser = null;
 						while ($accountProfile->fetch()) {

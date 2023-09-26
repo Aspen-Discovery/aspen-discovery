@@ -2,8 +2,6 @@ package com.turning_leaf_technologies.reindexer;
 
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
-import com.turning_leaf_technologies.logging.BaseLogEntry;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.Subfield;
@@ -47,7 +45,8 @@ public class ItemInfo{
 	private boolean holdable;
 	private boolean bookable = false;
 	private boolean inLibraryUseOnly;
-	private boolean isVirtual;
+	private boolean isVirtualChildRecord;
+	private boolean isVirtualHoldingsRecord;
 
 	private RecordInfo recordInfo;
 
@@ -266,14 +265,6 @@ public class ItemInfo{
 		this.dateAdded = dateAdded;
 	}
 
-	String getIType() {
-		if (this.IType != null){
-			return IType;
-		}else {
-			return format;
-		}
-	}
-
 	String getTrimmedIType(){
 		if (this.trimmedIType != null){
 			return trimmedIType;
@@ -347,10 +338,6 @@ public class ItemInfo{
 
 	HashMap<String, ScopingInfo> getScopingInfo() {
 		return scopingInfo;
-	}
-
-	boolean isValidForScope(String scopeName){
-		return scopingInfo.containsKey(scopeName);
 	}
 
 	String getShelfLocationCode() {
@@ -502,6 +489,8 @@ public class ItemInfo{
 		this.holdable = itemInfo.holdable;
 		this.bookable = itemInfo.bookable;
 		this.inLibraryUseOnly = itemInfo.inLibraryUseOnly;
+		this.isVirtualChildRecord = itemInfo.isVirtualChildRecord;
+		this.isVirtualHoldingsRecord = itemInfo.isVirtualHoldingsRecord;
 		for (String scope : itemInfo.scopingInfo.keySet()){
 			ScopingInfo curScopingInfo = itemInfo.scopingInfo.get(scope);
 			ScopingInfo clonedScope = addScope(curScopingInfo.getScope());
@@ -515,10 +504,6 @@ public class ItemInfo{
 
 	public void setVolumeField(String volumeField) {
 		this.volumeField = volumeField;
-	}
-
-	public String getVolumeField() {
-		return this.volumeField;
 	}
 
 	private StringBuffer locationOwnedScopes = null;
@@ -606,11 +591,23 @@ public class ItemInfo{
 		return formatCategoriesForIndexing;
 	}
 
-	public boolean isVirtual() {
-		return isVirtual;
+	public void setIsVirtualChildRecord(boolean isVirtualChildRecord) {
+		this.isVirtualChildRecord = isVirtualChildRecord;
 	}
 
-	public void setVirtual(boolean virtual) {
-		isVirtual = virtual;
+	public boolean isVirtualChildRecord() {
+		return isVirtualChildRecord;
+	}
+
+	public void setIsVirtualHoldingsRecord(boolean isVirtualHoldingsRecord) {
+		this.isVirtualHoldingsRecord = isVirtualHoldingsRecord;
+	}
+
+	public boolean isVirtualHoldingsRecord() {
+		return isVirtualHoldingsRecord;
+	}
+
+	public boolean isVirtual() {
+		return isVirtualChildRecord || isVirtualHoldingsRecord;
 	}
 }

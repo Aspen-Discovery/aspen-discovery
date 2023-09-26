@@ -198,34 +198,35 @@ class ACISpeedpaySetting extends DataObject {
 		return $ret;
 	}
 
-	public function getServiceFee($amount, $token) {
-		$authToken = $this->createAuthToken();
-		if (!$authToken) {
-			return false;
+	public function getServiceFee($amount, $token, $authCode) {
+		$currencyCode = 'USD';
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		if (SystemVariables::getSystemVariables()->currencyCode) {
+			$currencyCode = SystemVariables::getSystemVariables()->currencyCode;
 		}
 
 		$serviceFeeRequest = new CurlWrapper();
 		$serviceFeeRequest->addCustomHeaders([
-			'Authorization: Bearer ' . $authToken,
-			'Content-Type: application/x-www-form-urlencoded',
+			'Authorization: Bearer ' . $authCode,
+			'Content-Type: application/json',
 			"X-Auth-Key: $this->apiAuthKey",
 		], false);
 
-		$url = $this->getApiUrl() . '/fee/v3/fees/servicefee';
+		$url = $this->getApiUrl() . '/fee/v3/fees/payments/servicefee';
 		$postParams = [
 			'billerId' => $this->billerId,
 			'paymentChannel' => 'Web',
-			'isPayerEnrolled' => true,
+			'isPayerEnrolled' => false,
 			'fundingToken' => $token,
 			'paymentOptionKind' => 'OneTimeNow',
 			'paymentAmount' => [
 				'value' => $amount,
-				'currencyCode' => 'USD',
+				'currencyCode' => $currencyCode,
 				'precision' => 2,
 			],
 		];
 
-		$serviceFeeResponse = $serviceFeeRequest->curlPostPage($url, $postParams);
+		$serviceFeeResponse = $serviceFeeRequest->curlPostBodyData($url, $postParams);
 		$serviceFeeResponse = json_decode($serviceFeeResponse, true);
 		if ($serviceFeeRequest->getResponseCode() == 200) {
 			return $serviceFeeResponse['feeAmount'];
@@ -234,7 +235,60 @@ class ACISpeedpaySetting extends DataObject {
 		}
 	}
 
-	public function createAuthCode() {
+	public function createAuthCode(): bool|array {
+		$state = random_bytes(6);
+		$state = bin2hex($state);
+		$codeVerifier = $this->generateCodeVerifier();
+		$codeChallenge = $this->generateCodeChallenge($codeVerifier);
+		$baseUrl = $this->getApiUrl();
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$authCodeRequest = new CurlWrapper();
+		$authCodeRequest->addCustomHeaders([
+			"X-Auth-Key: $this->apiAuthKey",
+			'Accept: application/json',
+		], false);
+		$postParams = [
+			'response_type' => 'code',
+			'client_id' => $this->clientId,
+			'code_challenge' => $codeChallenge,
+			'code_challenge_method' => 'S256',
+			'state' => $state,
+
+		];
+
+		$params = $this->buildQueryString($postParams);
+		$url = $this->appendQuery($baseUrl . '/auth/v1/auth/authorize', $params);
+		$authorizationResults = $authCodeRequest->curlGetPage($url);
+		$authCodeResults = json_decode($authorizationResults, true);
+		if (empty($authCodeResults['code'])) {
+			if(!empty($authCodeResults['error'])) {
+				if (isset($authCodeResults['error']['message']['default'])) {
+					$message = $authCodeResults['error']['message']['default'];
+				} else {
+					$message = $authCodeResults['error']['message'];
+				}
+				return [
+					'success' => false,
+					'message' => $message,
+				];
+			}
+			return false;
+		} else {
+			$token = $this->obtainAccessToken($codeVerifier, $authCodeResults['code']);
+			if($token) {
+				return [
+					'success' => true,
+					'token' => $token,
+				];
+			}
+			return [
+				'success' => false,
+				'message' => 'Unable to validate session with ACI Speedpay.',
+			];
+		}
+	}
+
+	private function obtainAccessToken($codeVerifier, $code) {
 		$baseUrl = $this->getApiUrl();
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		$authCodeRequest = new CurlWrapper();
@@ -244,11 +298,14 @@ class ACISpeedpaySetting extends DataObject {
 			'Accept: application/json',
 		], false);
 		$postParams = [
-			'grant_type' => 'client_credentials',
+			'grant_type' => 'authorization_code',
 			'client_id' => $this->clientId,
 			'client_secret' => $this->clientSecret,
+			'biller_id' => $this->billerId,
+			'code' => $code,
+			'code_verifier' => $codeVerifier
 		];
-		$url = $baseUrl . '/auth/v1/auth';
+		$url = $baseUrl . '/auth/v1/auth/token';
 		$authCodeResults = $authCodeRequest->curlPostPage($url, $postParams);
 		$authCodeResults = json_decode($authCodeResults, true);
 		if (empty($authCodeResults['access_token'])) {
@@ -258,107 +315,78 @@ class ACISpeedpaySetting extends DataObject {
 		}
 	}
 
-	public function createAuthToken() {
-		$user = UserAccount::getLoggedInUser();
-		$baseUrl = $this->getApiUrl();
-		$apiAuthKey = $this->apiAuthKey;
-		$billerId = $this->billerId;
-
-		$billerAccountId = $this->billerAccountId;
-		$billerAccountId = $user->$billerAccountId;
-
-		if ($this->sandboxMode == 1) {
-			$billerAccountId = '56050';
-		}
-
-		require_once ROOT_DIR . '/sys/CurlWrapper.php';
-		$serviceAccountAuthorization = new CurlWrapper();
-		$serviceAccountAuthorization->addCustomHeaders([
-			"X-Auth-Key: $this->sdkApiAuthKey",
-			'Content-Type: application/x-www-form-urlencoded',
-			'Accept: application/json',
-		], true);
-
-		$postParams = [
-			'grant_type' => 'client_credentials',
-			'client_id' => $this->sdkClientId,
-			'client_secret' => $this->sdkClientSecret,
-			'scope' => 'token_exchange',
-			'biller_id' => $this->billerId,
-			'account_number' => $billerAccountId,
-		];
-
-		$url = $baseUrl . '/auth/v1/auth/token';
-		$accessTokenResults = $serviceAccountAuthorization->curlPostPage($url, $postParams);
-		$accessTokenResults = json_decode($accessTokenResults, true);
-		if (empty($accessTokenResults['access_token'])) {
-			return false;
-		} else {
-			return $accessTokenResults['access_token'];
-		}
-	}
-
-	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount, $accessToken) {
+	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount): array|bool {
 		$result = ['success' => false];
 
-		$this->createAuthCode();
-
+		$authCode = $this->createAuthCode();
+		if(!$authCode['success']) {
+			// return error if we couldn't obtain authCode
+			return $authCode;
+		}
 
 		$paymentAmount = $payment->totalPaid;
 		$paymentAmount = (int)((string)($paymentAmount)) * 100;
 
-		//$serviceFee = $this->getServiceFee($paymentAmount, $fundingToken);
-		$transactionRequest = new CurlWrapper();
-		$transactionRequest->addCustomHeaders([
-			'Authorization: Bearer ' . $accessToken,
-			'Accept: application/json',
+		$serviceFee = $this->getServiceFee($paymentAmount, $fundingToken, $authCode['token']);
+
+		$today = new DateTime('now');
+		$today = $today->format('Y-m-d');
+
+		$currencyCode = "USD";
+		require_once ROOT_DIR . '/sys/SystemVariables.php';
+		if(SystemVariables::getSystemVariables()->currencyCode) {
+			$currencyCode = SystemVariables::getSystemVariables()->currencyCode;
+		}
+
+		$paymentRequest = new CurlWrapper();
+		$paymentRequest->addCustomHeaders([
+			'Authorization: Bearer ' . $authCode['token'],
 			'Content-Type: application/json',
 			"X-Auth-Key: $this->apiAuthKey",
 		], false);
-
 		$url = $this->getApiUrl() . '/transaction/v6/payments';
 		$postParams = [
-			'paymentDate' => date('YYYY-MM-DD'),
-			'origination' => [
-				'originator' => [
-					'id' => 'Aspen Discovery',
-					'kind' => 'AppServiceOriginator',
-				],
-				'paymentChannelKind' => 'Web',
-				'paymentOption' => ['kind' => 'OneTimeNow'],
+			"id" => "$payment->id",
+			"paymentDate" => "$today",
+			"origination" => [
+				"originator" => ["kind" => "User"],
+				"paymentChannelKind" => "Web",
+				"paymentOption" => ["kind" => "OneTimeNow"],
 			],
-			'fundingAccount' => ['token' => $fundingToken],
-			'accountPayments' => [
-				'billerAccount' => [
-					'billerId' => $this->billerId,
-					'billerAccountId' => $billerAccount,
-				],
-				'principalAmount' => [
-					'value' => $paymentAmount,
-					'currencyCode' => 'USD',
-				],
+			"payer" => [
+				"kind" => "NonEnrolledIndividual",
+				"emailAddress" => "$patron->email",
+				"firstName" => "$patron->firstname",
+				"lastName" => "$patron->lastname",
 			],
-			'payer' => [
-				'kind' => 'NonEnrolledIndividual',
-				'address' => [
-					'postalCode' => '30092',
-					'countryCode' => 'US',
+			"fundingAccount" => [
+				"token" => "$fundingToken"
+			],
+			"accountPayments" => [
+				"ordinal" => 1,
+				"billerAccount" => [
+					"billerId" => "$this->billerId",
+					"billerAccountId" => "$billerAccount",
 				],
-				'emailAddress' => $patron->email,
-
+				"serviceFeeAmount" => $serviceFee,
+				"principalAmount" => [
+					"value" => $paymentAmount,
+					"currencyCode" => $currencyCode,
+					"precision" => 2,
+				],
 			],
 		];
 
-		$requestTransaction = $transactionRequest->curlPostBodyData($url, $postParams);
-		$transactionResponse = json_decode($requestTransaction, true);
-		if ($transactionRequest->getResponseCode() == 200) {
-			if (substr($transactionResponse['message'], 0, 1) === 'S') {
-				$totalPaid = $transactionResponse['accountTransactionResults']['principalAmount']['value'] + $transactionResponse['accountTransactionResults']['serviceFeeAmount']['value'];
-				$payment->transactionId = $transactionResponse['confirmationCode'];
-				$payment->orderId = $transactionResponse['id'];
+		$paymentTransaction = $paymentRequest->curlPostBodyData($url, $postParams);
+		$paymentResponse = json_decode($paymentTransaction, true);
+		if ($paymentRequest->getResponseCode() == 200) {
+			if (substr($paymentResponse['message'], 0, 1) === 'S') {
+				$totalPaid = $paymentResponse['accountTransactionResults']['principalAmount']['value'] + $paymentResponse['accountTransactionResults']['serviceFeeAmount']['value'];
+				$payment->transactionId = $paymentResponse['confirmationCode'];
+				$payment->orderId = $paymentResponse['id'];
 				$payment->completed = 1;
 				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
-				$payment->aciToken = $transactionResponse['fundingAccount']['token'];
+				$payment->aciToken = $paymentResponse['fundingAccount']['token'];
 				$payment->update();
 				$result = [
 					'success' => true,
@@ -366,12 +394,17 @@ class ACISpeedpaySetting extends DataObject {
 				];
 			} else {
 				$payment->error = 1;
-				$payment->message = $transactionResponse['message'];
+				$payment->message = $paymentResponse['message'];
 				$payment->update();
-				$result['message'] = $transactionResponse['message'];
+				$result['message'] = $paymentResponse['message'];
 			}
 		} else {
-			$error = $transactionResponse['error']['status'] . ': ' . $transactionResponse['error']['kind'] . '. ' . $transactionResponse['error']['message'];
+			if(isset($paymentResponse['error']['message']['default'])) {
+				$message = $paymentResponse['error']['message']['default'];
+			} else {
+				$message = $paymentResponse['error']['message'];
+			}
+			$error = $paymentResponse['error']['status'] . ': ' . $message;
 			$payment->error = 1;
 			$payment->message = $error;
 			$payment->update();
@@ -387,5 +420,29 @@ class ACISpeedpaySetting extends DataObject {
 			$baseUrl = 'https://sandbox-api.acispeedpay.com';
 		}
 		return $baseUrl;
+	}
+
+	protected function buildQueryString(array $params): string {
+		return http_build_query($params, '', '&', \PHP_QUERY_RFC3986);
+	}
+
+	protected function appendQuery($url, $query): string {
+		$query = trim($query, '?&');
+
+		if ($query) {
+			$glue = strstr($url, '?') === false ? '?' : '&';
+			return $url . $glue . $query;
+		}
+
+		return $url;
+	}
+
+	protected function generateCodeVerifier() {
+		$verifier_bytes = random_bytes(64);
+		return rtrim(strtr(base64_encode($verifier_bytes), '+/', '-_'), '=');
+	}
+	protected function generateCodeChallenge($verifier) {
+		$challenge_bytes = hash('sha256', $verifier, true);
+		return rtrim(strtr(base64_encode($challenge_bytes), '+/', '-_'), '=');
 	}
 }

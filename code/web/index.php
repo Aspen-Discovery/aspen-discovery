@@ -49,7 +49,7 @@ if ($activeSessionObject != null) {
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 42);
+$interface->assign('cssJsCacheCounter', 44);
 
 // Setup Translator
 global $language;
@@ -256,7 +256,7 @@ $interface->assign('cookieStorageConsent', false);
 $interface->assign('cookieStorageConsentHTML', '');
 if (!empty($library) && !empty($library->cookieStorageConsent)) {
 	try {
-		$interface->assign('cookieStorageConsent', true);
+		// $interface->assign('cookieStorageConsent', true);
 		$interface->assign('cookieStorageConsentHTML', $library->cookiePolicyHTML);
 	} catch (Exception $e) {
 		//Not yet setup. Ignore

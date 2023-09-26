@@ -506,67 +506,6 @@ class Koha extends AbstractIlsDriver {
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
 
-			$library = $patron->getHomeLibrary();
-			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
-			if ($allowRenewals['success']) {
-				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
-				$willAutoRenew = 0;
-				if($allowRenewals['error'] == 'auto_renew') {
-					$willAutoRenew = 1;
-					$curCheckout->autoRenewError = translate([
-						'text' => 'If eligible, this item will renew on<br/>%1%',
-						'1' => $renewalDate,
-						'isPublicFacing' => true,
-					]);
-				}
-				$curCheckout->canRenew = $eligibleForRenewal;
-				$curCheckout->autoRenew = $willAutoRenew;
-
-				if(!$willAutoRenew && !$eligibleForRenewal) {
-					$error = $allowRenewals['error'];
-					if($error == 'onsite_checkout') {
-						$curCheckout->renewError = translate([
-							'text' => 'Item is an onsite checkout',
-							'isPublicFacing' => true,
-						]);
-					} elseif ($error == 'auto_too_soon') {
-						$curCheckout->autoRenew = 1;
-						$curCheckout->autoRenewError = translate([
-							'text' => 'If eligible, this item will renew on<br/>%1%',
-							'1' => $renewalDate,
-							'isPublicFacing' => true,
-						]);
-					} elseif ($error == 'too_soon') {
-						$curCheckout->renewError = translate([
-							'text' => 'Item cannot be renewed yet.',
-							'isPublicFacing' => true,
-						]);
-					} else {
-						$curCheckout->renewError = translate([
-							'text' => $error,
-							'isPublicFacing' => true,
-						]);
-					}
-				}
-
-				if($eligibleForRenewal && $allowRenewals['error'] == null) {
-					$curCheckout->autoRenew = 1;
-					$curCheckout->autoRenewError = translate([
-						'text' => 'If eligible, this item will renew on<br/>%1%',
-						'1' => $renewalDate,
-						'isPublicFacing' => true,
-					]);
-				}
-
-				if ($library->displayHoldsOnCheckout && $allowRenewals['error'] == 'on_reserve') {
-					$curCheckout->canRenew = 0;
-					$curCheckout->autoRenew = 0;
-					$curCheckout->renewError = translate([
-						'text' => 'On hold for another patron',
-						'isPublicFacing' => true,
-					]);
-				}
-			}
 			$patronType = $patron->patronType;
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
@@ -599,7 +538,7 @@ class Koha extends AbstractIlsDriver {
 						}
 					} else {
 						if ($curCheckout->maxRenewals <= $curCheckout->renewCount) {
-							$curCheckout->canRenew = "0";
+							$curCheckout->canRenew = '0';
 							$curCheckout->renewError = translate([
 								'text' => 'Renewed too many times',
 								'isPublicFacing' => true,
@@ -610,6 +549,66 @@ class Koha extends AbstractIlsDriver {
 				$issuingRulesRS->close();
 			}
 
+			$library = $patron->getHomeLibrary();
+			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
+			if ($allowRenewals['success']) {
+				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
+				$willAutoRenew = 0;
+				if($allowRenewals['error'] == 'auto_renew') {
+					$willAutoRenew = 1;
+					$curCheckout->autoRenewError = translate([
+						'text' => 'If eligible, this item will renew on<br/>%1%',
+						'1' => $renewalDate,
+						'isPublicFacing' => true,
+					]);
+				}
+				$curCheckout->canRenew = $eligibleForRenewal;
+				$curCheckout->autoRenew = $willAutoRenew;
+
+				if(!$willAutoRenew && !$eligibleForRenewal) {
+					$error = $allowRenewals['error'];
+					if ($error == 'auto_too_soon') {
+						$curCheckout->autoRenew = 1;
+						$curCheckout->autoRenewError = translate([
+							'text' => 'If eligible, this item will renew on<br/>%1%',
+							'1' => $renewalDate,
+							'isPublicFacing' => true,
+						]);
+					} elseif ($error == 'too_many') {
+						if($curCheckout->maxRenewals >= $curCheckout->renewCount) {
+							$curCheckout->renewError = translate([
+								'text' => 'Item cannot be renewed.',
+								'isPublicFacing' => true,
+							]);
+						}
+					} else {
+						if($allowRenewals['message']) {
+							$curCheckout->renewError = translate([
+								'text' => $allowRenewals['message'],
+								'isPublicFacing' => true,
+							]);
+						}
+					}
+				}
+
+				if($eligibleForRenewal && $allowRenewals['error'] == null) {
+					$curCheckout->autoRenew = 1;
+					$curCheckout->autoRenewError = translate([
+						'text' => 'If eligible, this item will renew on<br/>%1%',
+						'1' => $renewalDate,
+						'isPublicFacing' => true,
+					]);
+				}
+
+				if ($library->displayHoldsOnCheckout && $allowRenewals['error'] == 'on_reserve') {
+					$curCheckout->canRenew = 0;
+					$curCheckout->autoRenew = 0;
+					$curCheckout->renewError = translate([
+						'text' => 'On hold for another patron',
+						'isPublicFacing' => true,
+					]);
+				}
+			}
 
 			// check for if no auto-renewal before day is set
 			if($this->getKohaVersion() >= 22.11) {
@@ -800,13 +799,14 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 		}
-
 		$barcodesToTest = array_unique($barcodesToTest);
-
 		$userExistsInDB = false;
+		$authenticationSuccess = false;
+		$patronId = '';
+		$responseText = '';
 		foreach ($barcodesToTest as $i => $barcode) {
 			//Authenticate the user using KOHA DB for single sign-on
-			if($validatedViaSSO) {
+			if ($validatedViaSSO) {
 				/** @noinspection SqlResolve */
 				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
@@ -814,29 +814,72 @@ class Koha extends AbstractIlsDriver {
 					$userExistsInDB = true;
 					$lookupUserRow = $lookupUserResult->fetch_assoc();
 					$patronId = $lookupUserRow['borrowernumber'];
-					$newUser = $this->loadPatronInfoFromDB($patronId, null);
+					$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
 					if (!empty($newUser) && !($newUser instanceof AspenError)) {
 						return $newUser;
 					}
 				}
+			} else if ($this->getKohaVersion() >= 22.1110) {
+				//Authenticate the user using KOHA API
+				$oauthToken = $this->getOAuthToken();
+				if (!$oauthToken) {
+					global $logger;
+					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
+				} else {
+					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
+					$postParams = json_encode([
+						'identifier' => $username,
+						'password' => $password,
+					]);
+					$this->apiCurlWrapper->addCustomHeaders([
+						'Authorization: Bearer ' . $oauthToken,
+						'User-Agent: Aspen Discovery',
+						'Accept: */*',
+						'Cache-Control: no-cache',
+						'Content-Type: application/json;charset=UTF-8',
+						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					], true);
+				}
+				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', $postParams);
+				$responseCode = $this->apiCurlWrapper->getResponseCode();
+				$jsonResponse = json_decode($responseBody);
+				$cardNumber = $jsonResponse->cardnumber;
+				$patronId = $jsonResponse->patron_id;
+				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), $postParams, $responseCode, $responseBody, ['password' => $password]);
+				if ($responseCode == 201) {
+					$authenticationSuccess = true;
+				} else {
+					$result['messages'][] = translate([
+						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+				}
+			} else {
+				//Authenticate the user using KOHA ILSDI
+				$apiURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
+				$postParams = ([
+					'service' => 'AuthenticatePatron',
+					'username' => $username,
+					'password' => $password,
+				]);
+				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams);
+				$patronId = $responseBody->id->__toString();
+				if (isset($patronId)) {
+					$authenticationSuccess = true;
+					$responseCode = 200;
+				} else {
+					$responseCode = 400;
+					$result['messages'][] = translate([
+						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+				}
+				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 			}
-
-			//Authenticate the user using KOHA ILSDI
-			$authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
-			$params = [
-				'service' => 'AuthenticatePatron',
-				'username' => $barcode,
-				'password' => $password,
-			];
-			$authenticationResponse = $this->getPostedXMLWebServiceResponse($authenticationURL, $params);
-			$responseText = '';
-			if ($authenticationResponse != false) {
-				$responseText = $authenticationResponse->asXML();
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $responseText, ['password' => $password]);
-				if (isset($authenticationResponse->id)) {
-					$patronId = $authenticationResponse->id;
-					$result = $this->loadPatronInfoFromDB($patronId, $password);
-					if ($result == false) {
+			if ($authenticationSuccess) {
+				if (isset($patronId)) {
+					$result = $this->loadPatronInfoFromDB($patronId, $password, $barcode);
+					if (!$result) {
 						global $logger;
 						$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
 						if ($i == count($barcodesToTest) - 1) {
@@ -846,9 +889,13 @@ class Koha extends AbstractIlsDriver {
 						return $result;
 					}
 				} else {
-					if (isset($authenticationResponse->message) && preg_match('/ILS-DI is disabled/', $authenticationResponse->message)) {
+
+					if (isset($jsonResponse->message) && str_ends_with($apiURL, '/cgi-bin/koha/ilsdi.pl')) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
+					} else if (isset($jsonResponse->message) && str_ends_with($apiURL, "/api/v1/auth/password/validation")) {
+						global $logger;
+						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}
 					//User is not valid, check to see if they have a valid account in Koha so we can return a different error
 					/** @noinspection SqlResolve */
@@ -860,13 +907,13 @@ class Koha extends AbstractIlsDriver {
 						$lookupUserRow = $lookupUserResult->fetch_assoc();
 						if (UserAccount::isUserMasquerading()) {
 							$patronId = $lookupUserRow['borrowernumber'];
-							$newUser = $this->loadPatronInfoFromDB($patronId, null);
+							$newUser = $this->loadPatronInfoFromDB($patronId, null, $barcode);
 							if (!empty($newUser) && !($newUser instanceof AspenError)) {
 								return $newUser;
 							}
 						} else {
 							//Check to see if the patron password has expired, this is not available on all systems.
-							if (isset($authenticationResponse->code) && $authenticationResponse->code == 'PasswordExpired') {
+							if (isset($jsonResponse->code) && $jsonResponse->code == 'PasswordExpired') {
 								try {
 									$patronId = $lookupUserRow['borrowernumber'];
 
@@ -914,8 +961,8 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 			} else {
-				$params['password'] = '**password**';
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), "", ['password' => $password]);
+				$postParams['password'] = '**password**';
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, "", ['password' => $password]);
 			}
 		}
 		if ($userExistsInDB) {
@@ -925,7 +972,7 @@ class Koha extends AbstractIlsDriver {
 		}
 	}
 
-	private function loadPatronInfoFromDB($patronId, $password) {
+	private function loadPatronInfoFromDB($patronId, $password, $suppliedUsernameOrBarcode) {
 		global $timer;
 		global $logger;
 
@@ -937,6 +984,16 @@ class Koha extends AbstractIlsDriver {
 		if ($lookupUserResult) {
 			$userFromDb = $lookupUserResult->fetch_assoc();
 			$lookupUserResult->close();
+
+			//Do a sanity check to be sure we have the correct user for the supplied patron id
+			if (is_null($userFromDb['cardnumber']) || is_null($userFromDb['userid']) || is_null($userFromDb['borrowernumber'])) {
+				//We received an invalid patron back
+				return false;
+			}
+			if (($suppliedUsernameOrBarcode != $userFromDb['cardnumber']) && ($suppliedUsernameOrBarcode != $userFromDb['userid'])) {
+				//We received an invalid patron back
+				return false;
+			}
 
 			$user = new User();
 			//Get the unique user id from Millennium
@@ -2815,14 +2872,14 @@ class Koha extends AbstractIlsDriver {
 				$error = $renewResponse->error;
 				$success = false;
 				$message = 'The item could not be renewed: ';
-				$message = $this->getRenewErrorMessage($error, $message);
+				$message = $this->getRenewErrorMessage($error, $message, null);
 
 				// Result for API or app use
 				$result['api']['title'] = translate([
 					'text' => 'Unable to renew title',
 					'isPublicFacing' => true,
 				]);
-				$result['api']['message'] = $this->getRenewErrorMessage($error, "");
+				$result['api']['message'] = $this->getRenewErrorMessage($error, "", null);
 			}
 
 			$result['itemId'] = $itemId;
@@ -3474,6 +3531,9 @@ class Koha extends AbstractIlsDriver {
 			$unwantedFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerUnwantedField']);
 		}
 		$requiredFields = explode('|', $kohaPreferences['PatronSelfRegistrationBorrowerMandatoryField']);
+		if ($type != 'selfReg' && array_key_exists('PatronSelfModificationBorrowerMandatoryField', $kohaPreferences)) {
+			$requiredFields = explode('|', $kohaPreferences['PatronSelfModificationBorrowerMandatoryField']);
+		}
 		if ($type !== 'selfReg' || strlen($kohaPreferences['PatronSelfRegistrationLibraryList']) == 0) {
 			$validLibraries = [];
 		} else {
@@ -5588,7 +5648,7 @@ class Koha extends AbstractIlsDriver {
 			if ($lookupUserResult->num_rows == 1) {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
-				$newUser = $this->loadPatronInfoFromDB($patronId, null);
+				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronBarcode);
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}
@@ -5601,7 +5661,7 @@ class Koha extends AbstractIlsDriver {
 			if ($lookupUserResult->num_rows == 1) {
 				$lookupUserRow = $lookupUserResult->fetch_assoc();
 				$patronId = $lookupUserRow['borrowernumber'];
-				$newUser = $this->loadPatronInfoFromDB($patronId, null);
+				$newUser = $this->loadPatronInfoFromDB($patronId, null, $patronUsername);
 				if (!empty($newUser) && !($newUser instanceof AspenError)) {
 					return $newUser;
 				}
@@ -5623,7 +5683,7 @@ class Koha extends AbstractIlsDriver {
 		if ($lookupUserResult->num_rows == 1) {
 			$lookupUserRow = $lookupUserResult->fetch_assoc();
 			$patronId = $lookupUserRow['borrowernumber'];
-			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			$newUser = $this->loadPatronInfoFromDB($patronId, null, $lookupUserRow['cardnumber']);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
 				return $newUser;
 			}
@@ -5647,7 +5707,7 @@ class Koha extends AbstractIlsDriver {
 		if ($lookupUserResult->num_rows == 1) {
 			$lookupUserRow = $lookupUserResult->fetch_assoc();
 			$patronId = $lookupUserRow['borrowernumber'];
-			$newUser = $this->loadPatronInfoFromDB($patronId, null);
+			$newUser = $this->loadPatronInfoFromDB($patronId, null, $lookupUserRow['cardnumber']);
 			if (!empty($newUser) && !($newUser instanceof AspenError)) {
 				return $newUser;
 			}
@@ -6849,36 +6909,41 @@ class Koha extends AbstractIlsDriver {
 	/**
 	 * @param SimpleXMLElement $error
 	 * @param string $message
+	 * @param string $errorAlt
 	 * @return string
 	 */
-	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message): string {
-		if ($error == "too_many") {
+	protected function getRenewErrorMessage(?SimpleXMLElement $error, string $message, ?string $errorAlt): string {
+		$code = $error;
+		if($errorAlt) {
+			$code = $errorAlt;
+		}
+		if ($code == "too_many") {
 			$message .= 'Renewed the maximum number of times';
-		} elseif ($error == "no_item") {
+		} elseif ($code == "no_item") {
 			$message .= 'No matching item could be found';
-		} elseif ($error == "too_soon") {
+		} elseif ($code == "too_soon") {
 			$message .= 'Cannot be renewed yet';
-		} elseif ($error == "no_checkout") {
+		} elseif ($code == "no_checkout") {
 			$message .= 'Item is not checked out';
-		} elseif ($error == "auto_too_soon") {
+		} elseif ($code == "auto_too_soon") {
 			$message .= 'Scheduled for automatic renewal and cannot be renewed yet';
-		} elseif ($error == "auto_too_late") {
+		} elseif ($code == "auto_too_late") {
 			$message .= 'Scheduled for automatic renewal and cannot be renewed any more';
-		} elseif ($error == "auto_account_expired") {
+		} elseif ($code == "auto_account_expired") {
 			$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron\'s account has expired';
-		} elseif ($error == "auto_renew") {
+		} elseif ($code == "auto_renew") {
 			$message .= 'Scheduled for automatic renewal';
-		} elseif ($error == "auto_too_much_oweing") {
+		} elseif ($code == "auto_too_much_oweing") {
 			$message .= 'Scheduled for automatic renewal and cannot be renewed because the patron has too many outstanding charges';
-		} elseif ($error == "on_reserve") {
+		} elseif ($code == "on_reserve") {
 			$message .= 'On hold for another patron';
-		} elseif ($error == "patron_restricted") {
+		} elseif ($code == "patron_restricted") {
 			$message .= 'Patron is currently restricted';
-		} elseif ($error == "item_denied_renewal") {
+		} elseif ($code == "item_denied_renewal") {
 			$message .= 'Item is not allowed renewal';
-		} elseif ($error == "onsite_checkout") {
+		} elseif ($code == "onsite_checkout") {
 			$message .= 'Item is an onsite checkout';
-		} elseif ($error == "has_fine") {
+		} elseif ($code == "has_fine") {
 			$message .= 'Item has an outstanding fine';
 		} else {
 			$message = 'Unknown error';
@@ -7263,6 +7328,10 @@ class Koha extends AbstractIlsDriver {
 				$result['success'] = true;
 				$result['error'] = $response->error;
 				$result['allows_renewal'] = $response->allows_renewal;
+				$result['message'] = null;
+				if($response->error) {
+					$result['message'] = $this->getRenewErrorMessage(null, '', $response->error);
+				}
 			}
 		}
 		return $result;

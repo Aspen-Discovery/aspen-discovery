@@ -30,7 +30,7 @@
                 <input type="text" data-aci-speedpay="account-postal-code" class="form-control" />
             </div>
 
-			<input type="hidden" data-aci-speedpay="account-country" value="US" />
+			<input type="hidden" data-aci-speedpay="account-country-code" value="US" />
 			<input type="hidden" data-aci-speedpay="single-use" value="true" />
 
 			<input type="button" id="card-submit-button" class="btn btn-primary" value="Card Submit" data-aci-speedpay="card-submit-button"/>
@@ -83,12 +83,10 @@
                     (onUpdatedToken = function(event) {ldelim}
                         if(event) {ldelim}
                         console.log(event);
-                            console.log('Completing payment in Aspen.');
                         {rdelim}
                     {rdelim}),
                     (onError = function(event)
                         {ldelim}
-                            console.log(event);
                             AspenDiscovery.Account.handleACIError(event.message.default);
                         {rdelim}
                     )
@@ -103,11 +101,11 @@
                        .then((tokenDetails) =>
                         {ldelim}
                            var paymentId = AspenDiscovery.Account.createACIOrder('#fines{$userId}', 'fine', tokenDetails.token.id, '{$accessToken}');
-                           return AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'fine', paymentId, '{$accessToken}');
+                           return AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'fine', paymentId, '{$accessToken}', '{$billerAccountId}');
                         {rdelim})
                        .catch((error) =>
                         {ldelim}
-                           console.log(error);
+	                        AspenDiscovery.Account.handleACIError(error.message.default);
                         {rdelim});
                     {rdelim})
                 {rdelim});

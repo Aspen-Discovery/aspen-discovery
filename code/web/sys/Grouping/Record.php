@@ -172,7 +172,9 @@ class Grouping_Record {
 			if ($item->isOrderItem) {
 				$this->addOnOrderCopies($item->numCopies);
 			} else {
-				$this->addCopies($item->numCopies);
+				if (!$item->isVirtual) {
+					$this->addCopies($item->numCopies);
+				}
 			}
 
 			$searchLocation = Location::getSearchLocation();
