@@ -878,7 +878,7 @@ class Koha extends AbstractIlsDriver {
 			}
 			if ($authenticationSuccess) {
 				if (isset($patronId)) {
-					$result = $this->loadPatronInfoFromDB($patronId, $password,$username);
+					$result = $this->loadPatronInfoFromDB($patronId, $password, $barcode);
 					if (!$result) {
 						global $logger;
 						$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
