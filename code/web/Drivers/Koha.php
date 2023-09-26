@@ -556,6 +556,7 @@ class Koha extends AbstractIlsDriver {
 			if ($allowRenewals['success']) {
 				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
 				if($allowRenewals['error'] == 'auto_renew') {
+					$willAutoRenew = 1;
 					$curCheckout->autoRenew = 1;
 					$curCheckout->autoRenewError = translate([
 						'text' => 'If eligible, this item will renew on<br/>%1%',
