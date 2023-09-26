@@ -942,7 +942,7 @@ class Koha extends AbstractIlsDriver {
 				//We received an invalid patron back
 				return false;
 			}
-			if (($suppliedUsernameOrBarcode != $userFromDb['cardnumber']) && ($suppliedUsernameOrBarcode != $userFromDb['userid'])) {
+			if ((strcasecmp($suppliedUsernameOrBarcode, $userFromDb['cardnumber']) != 0) && (strcasecmp($suppliedUsernameOrBarcode, $userFromDb['userid']) != 0)) {
 				//We received an invalid patron back
 				return false;
 			}
