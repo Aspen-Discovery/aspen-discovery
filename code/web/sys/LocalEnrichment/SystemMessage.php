@@ -266,13 +266,21 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		}
 	}
 
-	public function isDismissed() {
+	public function isDismissed(?User $user) {
 		require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
 		//Make sure the user has not dismissed the system message
 		if (UserAccount::isLoggedIn()) {
 			$systemMessageDismissal = new SystemMessageDismissal();
 			$systemMessageDismissal->systemMessageId = $this->id;
 			$systemMessageDismissal->userId = UserAccount::getActiveUserId();
+			if ($systemMessageDismissal->find(true)) {
+				//The system message has been dismissed
+				return true;
+			}
+		} else if ($user) {
+			$systemMessageDismissal = new SystemMessageDismissal();
+			$systemMessageDismissal->systemMessageId = $this->id;
+			$systemMessageDismissal->userId = $user->id;
 			if ($systemMessageDismissal->find(true)) {
 				//The system message has been dismissed
 				return true;
@@ -307,11 +315,45 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		if ($this->endDate != 0 && $this->endDate < $curTime) {
 			return false;
 		}
-		if ($this->isDismissed()) {
+		if ($this->isDismissed(null)) {
 			return false;
 		}
 		if (!$this->isValidForScope()) {
 			return false;
+		}
+		return true;
+	}
+
+	public function isValidForDisplayInApp(User $user, $locationId = null, $libraryId = null) {
+		if($this->pushToApp != 1) {
+			return false;
+		}
+		$curTime = time();
+		if ($this->startDate != 0 && $this->startDate > $curTime) {
+			return false;
+		}
+		if ($this->endDate != 0 && $this->endDate < $curTime) {
+			return false;
+		}
+		if ($this->isDismissed($user)) {
+			return false;
+		}
+		if ($locationId || $libraryId) {
+			if ($locationId != null) {
+				$systemMessageLocation = new SystemMessageLocation();
+				$systemMessageLocation->systemMessageId = $this->id;
+				$systemMessageLocation->locationId = $locationId;
+				if(!$systemMessageLocation->find(true)) {
+					return false;
+				}
+			} else {
+				$systemMessageLibrary = new SystemMessageLibrary();
+				$systemMessageLibrary->systemMessageId = $this->id;
+				$systemMessageLibrary->libraryId = $libraryId;
+				if(!$systemMessageLibrary->find(true)) {
+					return false;
+				}
+			}
 		}
 		return true;
 	}
