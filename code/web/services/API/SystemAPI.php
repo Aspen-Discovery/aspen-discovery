@@ -1010,6 +1010,7 @@ class SystemAPI extends Action {
 			$message->find();
 			while ($message->fetch()) {
 				if ($message->isValidForDisplayInApp($user, $locationId, $libraryId)) {
+					$systemMessages[$message->id]['id'] = $message->id;
 					$systemMessages[$message->id]['appMessage'] = $message->appMessage;
 					$systemMessages[$message->id]['messageStyle'] = $message->messageStyle;
 					$systemMessages[$message->id]['dismissable'] = $message->dismissable;
