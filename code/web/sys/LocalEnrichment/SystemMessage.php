@@ -16,6 +16,9 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	public $startDate;
 	public $endDate;
 
+	public $appMessage;
+	public $pushToApp;
+
 	protected $_libraries;
 	protected $_locations;
 	protected $_preFormattedMessage;
@@ -47,6 +50,21 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 				'description' => 'The body of the system message',
 				'allowableTags' => '<p><em><i><strong><b><a><ul><ol><li><h1><h2><h3><h4><h5><h6><h7><pre><code><hr><table><tbody><tr><th><td><caption><img><br><div><span><sub><sup>',
 				'hideInLists' => true,
+			],
+			'pushToApp' => [
+				'property' => 'pushToApp',
+				'type' => 'checkbox',
+				'label' => 'Display in Aspen LiDA',
+				'description' => 'Whether or not the system message is displayed in Aspen LiDA',
+			],
+			'appMessage' => [
+				'property' => 'appMessage',
+				'type' => 'textarea',
+				'label' => 'Message to show in Aspen LiDA',
+				'description' => 'The body of the system message in Aspen LiDA',
+				'hideInLists' => true,
+				'maxLength' => 280,
+				'note' => '280 character limit. HTML is not allowed.',
 			],
 			'showOn' => [
 				'property' => 'showOn',
