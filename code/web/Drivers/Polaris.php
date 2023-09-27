@@ -128,7 +128,7 @@ class Polaris extends AbstractIlsDriver {
 	 * @param bool $fromMasquerade - true if we are calling this while initiating masquerade mode
 	 * @return stdClass|null
 	 */
-	private function getBasicDataResponse(string $patronBarcode, string $password, bool $fromMasquerade = false) {
+	private function getBasicDataResponse(string $patronBarcode, ?string $password, bool $fromMasquerade = false) {
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/patron/{$patronBarcode}/basicdata?addresses=1";
 		$response = $this->getWebServiceResponse($polarisUrl, 'GET', $this->getAccessToken($patronBarcode, $password, $fromMasquerade), false, $fromMasquerade);
 		ExternalRequestLogEntry::logRequest('polaris.getBasicDataResponse', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
@@ -900,7 +900,7 @@ class Polaris extends AbstractIlsDriver {
 		return null;
 	}
 
-	private function loadPatronBasicData(string $patronBarcode, string $password, $patronId, bool $fromMasquerade = false, ?User $user = null) {
+	private function loadPatronBasicData(string $patronBarcode, ?string $password, $patronId, bool $fromMasquerade = false, ?User $user = null) {
 		$patronBasicData = $this->getBasicDataResponse($patronBarcode, $password, $fromMasquerade);
 		if ($patronBasicData != null) {
 			if ($user == null) {
@@ -1076,7 +1076,7 @@ class Polaris extends AbstractIlsDriver {
 	 *
 	 * @return array
 	 */
-	protected function loginViaWebService(&$username, $password, $fromMasquerade = false): array {
+	protected function loginViaWebService(string &$username, ?string $password, $fromMasquerade = false): array {
 		if (array_key_exists($username, Polaris::$accessTokensForUsers)) {
 			return Polaris::$accessTokensForUsers[$username];
 		} else {
@@ -1143,7 +1143,7 @@ class Polaris extends AbstractIlsDriver {
 		}
 	}
 
-	private function getAccessToken(string $barcode, string $password, bool $fromMasquerade = false) {
+	private function getAccessToken(string $barcode, ?string $password, bool $fromMasquerade = false) {
 		//Get the session token for the user
 		if (isset(Polaris::$accessTokensForUsers[$barcode])) {
 			return Polaris::$accessTokensForUsers[$barcode]['accessToken'];

@@ -3240,8 +3240,8 @@ class Library extends DataObject {
 					'cookieStorageConsent' => [
 						'property' => 'cookieStorageConsent',
 						'type' => 'checkbox',
-						'label' => 'Require Cookie Storage Consent',
-						'description' => 'Require users to consent to cookie storage before using the catalog',
+						'label' => 'Require Cookie Storage Consent (FUNCTIONALITY CURRENTLY DISABLED)',
+						'description' => 'Require users to consent to cookie storage before using the catalog (THIS IS CURRENTLY DISABLED FUNCTIONALITY AND ENABLING THIS OPTION WILL NOT ENABLE COOKIE CONSENT REQUIREMENTS)',
 						'default' => false,
 					],
 					'cookiePolicyHTML' => [

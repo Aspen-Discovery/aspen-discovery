@@ -64,10 +64,21 @@ class MyAccount_ContactInformation extends MyAccount {
 			// Save/Update Actions
 			if (isset($_POST['updateScope']) && !$offlineMode) {
 				$updateScope = $_REQUEST['updateScope'];
-				if ($updateScope == 'contact') {
+				$samePatron = true;
+				if ($_REQUEST['patronId'] != $user->id){
+					$samePatron = false;
+				}
+				if ($updateScope == 'contact' && $samePatron) {
 					$result = $user->updatePatronInfo($canUpdateContactInfo, false);
 					$user->updateMessage = implode('<br/>', $result['messages']);
 					$user->updateMessageIsError = !$result['success'];
+					$user->update();
+				}else{
+					$user->updateMessage = translate([
+						'text' => 'Wrong account credentials, please try again.',
+						'isPublicFacing' => true,
+					]);
+					$user->updateMessageIsError = true;
 					$user->update();
 				}
 

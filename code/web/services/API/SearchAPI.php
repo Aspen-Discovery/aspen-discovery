@@ -570,22 +570,39 @@ class SearchAPI extends Action {
 		$antivirusLog = "/var/log/aspen-discovery/clam_av.log";
 		if (file_exists($antivirusLog)) {
 			$fileModificationTime = filemtime($antivirusLog);
-			if ($fileModificationTime < (time() - 24 * 60 * 60)) {
-				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus scan has not been run in the last 24 hours");
+			$fileCreationTime = filectime($antivirusLog);
+			if (max($fileModificationTime, $fileCreationTime) < (time() - 24 * 60 * 60)) {
+				$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus scan has not been run in the last 24 hours.  Last ran at " . date('Y-m-d H:i:s', max($fileModificationTime, $fileCreationTime) . "."));
 			}else{
-				$fh = fopen($antivirusLog, 'r');
-				$numInfectedFiles = 0;
-				while ($line = fgets($fh)) {
-					$pieces = [];
-					if (preg_match('/^Infected files:\s+(\d+)$/', $line, $pieces)) {
-						$numInfectedFiles = $pieces[1];
+				$antivirusLogFh = fopen($antivirusLog, 'r');
+				if ($antivirusLogFh === false) {
+					$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Could not read antivirus log");
+				} else {
+					$numInfectedFiles = 0;
+					$foundInfectedFilesLine = false;
+					$numLinesRead = 0;
+					while ($line = fgets($antivirusLogFh)) {
+						$line = trim($line);
+						if (strpos($line, 'Infected files: ') === 0) {
+							$line = str_replace('Infected files: ', '', $line);
+							$numInfectedFiles = $line;
+							$foundInfectedFilesLine = true;
+							break;
+						}
+						$numLinesRead++;
+					}
+					fclose($antivirusLogFh);
+					if ($foundInfectedFilesLine) {
+						if ($numInfectedFiles > 0) {
+							$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
+						} else {
+							$this->addCheck($checks, "Antivirus");
+						}
+					}else{
+						$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "Antivirus is running, read $numLinesRead lines");
 					}
 				}
-				if ($numInfectedFiles > 0) {
-					$this->addCheck($checks, "Antivirus", self::STATUS_CRITICAL, "Antivirus detected $numInfectedFiles infected files");
-				} else {
-					$this->addCheck($checks, "Antivirus");
-				}
+
 			}
 		} else {
 			$this->addCheck($checks, "Antivirus", self::STATUS_WARN, "No Antivirus log file was found");

@@ -5,4 +5,5 @@ if [ -z "$1" ]
     exit 1
 fi
 
+echo "Updating cron\n"
 php /usr/local/aspen-discovery/install/updateCron_23_09_01.php $1
