@@ -4245,6 +4245,18 @@ class MyAccount_AJAX extends JSON_Action {
 			if (isset($_REQUEST['token'])) {
 				if($paymentType == 'ACI') {
 					$payment->aciToken = $_REQUEST['token'];
+					// Generate 16 bytes (128 bits) of random data or use the data passed into the function.
+					$data = random_bytes(16);
+					assert(strlen($data) == 16);
+
+					// Set version to 0100
+					$data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+					// Set bits 6-7 to 10
+					$data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+
+					// Output the 36 character UUID.
+					$uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+					$payment->orderId = $uuid;
 				}
 				if($paymentType == 'deluxe') {
 					$payment->deluxeRemittanceId = $_REQUEST['token'];
@@ -5501,42 +5513,18 @@ class MyAccount_AJAX extends JSON_Action {
 				$aciSpeedpaySettings = new ACISpeedpaySetting();
 				$aciSpeedpaySettings->id = $paymentLibrary->aciSpeedpaySettingId;
 				if ($aciSpeedpaySettings->find(true)) {
-					$result = $aciSpeedpaySettings->submitTransaction($patron, $payment, $fundingToken, $billerAccount, $accessToken);
-					if ($result['success'] == false) {
-						return $result;
-					}
-				}
-
-				if ($transactionType == 'donation') {
-					$donation = new Donation();
-					$donation->paymentId = $payment->id;
-					$payment->completed = 1;
-					$payment->update();
-					return [
-						'success' => true,
-						'isDonation' => true,
-						'paymentId' => $payment->id,
-						'donationId' => $donation->id,
-					];
+					return $aciSpeedpaySettings->submitTransaction($patron, $payment, $fundingToken, $billerAccount, $accessToken);
 				} else {
-					if ($payment->completed) {
-						return [
-							'success' => false,
-							'message' => 'This payment has already been processed',
-						];
-					} else {
-						$user = UserAccount::getActiveUserObj();
-						$patron = $user->getUserReferredTo($patronId);
-
-						$result = $patron->completeFinePayment($payment);
-						if ($result['success'] == false) {
-							$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
-							$payment->update();
-							$result['message'] = $payment->message;
-						}
-						return $result;
-					}
+					return [
+						'success' => false,
+						'message' => 'Could not complete payment. ACI Speedpay is not setup for this library.'
+					];
 				}
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Unable to find payment in system to complete.'
+				];
 			}
 		}
 	}

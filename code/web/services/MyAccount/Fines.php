@@ -135,7 +135,7 @@ class MyAccount_Fines extends MyAccount {
 							$baseUrl = 'https://sandbox-api.acispeedpay.com';
 							$sdkUrl = 'sandbox-cds.officialpayments.com';
 							$uid = random_bytes(12);
-							$billerAccountId = bin2hex($uid);
+							//$billerAccountId = bin2hex($uid);
 						}
 
 						$apiAuthKey = $aciSpeedpaySettings->apiAuthKey;

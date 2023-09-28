@@ -339,64 +339,97 @@ class ACISpeedpaySetting extends DataObject {
 		}
 
 		$paymentRequest = new CurlWrapper();
+		$url = $this->getApiUrl() . '/transaction/v6/payments';
+
+		$postData = array();
+		$postData['id'] = $payment->orderId;
+		$postData['paymentDate'] = $today;
+		$postData['origination'] = array(
+			'originator' => array(
+				'kind' => 'User',
+			),
+			'paymentChannelKind' => 'Web',
+			'paymentOption' => array(
+				'kind' => 'OneTimeNow',
+			),
+		);
+		$postData['payer'] = array(
+			'kind' => 'NonEnrolledIndividual',
+			'emailAddress' => $patron->email,
+			'firstName' => $patron->firstname,
+			'lastName' => $patron->lastname,
+		);
+		$postData['fundingAccount'] = array(
+			'token' => $fundingToken,
+		);
+		$postData['accountPayments'] = array(
+			array(
+			'ordinal' => 1,
+			'billerAccount' => array(
+				'billerId' => $this->billerId,
+				'billerAccountId' => $billerAccount,
+			),
+			'serviceFeeAmount' => $serviceFee,
+			'principalAmount' => array(
+				'value' => $paymentAmount,
+				'currencyCode' => $currencyCode,
+				'precision' => 2,
+			),
+		));
+
 		$paymentRequest->addCustomHeaders([
+			'Accept: application/json',
 			'Authorization: Bearer ' . $authCode['token'],
 			'Content-Type: application/json',
-			"X-Auth-Key: $this->apiAuthKey",
-		], false);
-		$url = $this->getApiUrl() . '/transaction/v6/payments';
-		$postParams = [
-			"id" => "$payment->id",
-			"paymentDate" => "$today",
-			"origination" => [
-				"originator" => ["kind" => "User"],
-				"paymentChannelKind" => "Web",
-				"paymentOption" => ["kind" => "OneTimeNow"],
-			],
-			"payer" => [
-				"kind" => "NonEnrolledIndividual",
-				"emailAddress" => "$patron->email",
-				"firstName" => "$patron->firstname",
-				"lastName" => "$patron->lastname",
-			],
-			"fundingAccount" => [
-				"token" => "$fundingToken"
-			],
-			"accountPayments" => [
-				"ordinal" => 1,
-				"billerAccount" => [
-					"billerId" => "$this->billerId",
-					"billerAccountId" => "$billerAccount",
-				],
-				"serviceFeeAmount" => $serviceFee,
-				"principalAmount" => [
-					"value" => $paymentAmount,
-					"currencyCode" => $currencyCode,
-					"precision" => 2,
-				],
-			],
-		];
+			'X-Auth-Key: ' . $this->apiAuthKey,
+		], true);
 
-		$paymentTransaction = $paymentRequest->curlPostBodyData($url, $postParams);
+		$paymentTransaction = $paymentRequest->curlPostBodyData($url, $postData);
+
 		$paymentResponse = json_decode($paymentTransaction, true);
 		if ($paymentRequest->getResponseCode() == 200) {
-			if (substr($paymentResponse['message'], 0, 1) === 'S') {
-				$totalPaid = $paymentResponse['accountTransactionResults']['principalAmount']['value'] + $paymentResponse['accountTransactionResults']['serviceFeeAmount']['value'];
+			if (str_starts_with($paymentResponse['message']['code'], 'S')) {
+				$ccNumber = $paymentResponse['fundingAccountSummary']['name'];
+				$confirmationCode = $paymentResponse['confirmationCode'];
+				$totalPaid = $paymentResponse['accountTransactionResults'][0]['principalAmount']['value'] + $paymentResponse['accountTransactionResults'][0]['serviceFeeAmount']['value'];
 				$payment->transactionId = $paymentResponse['confirmationCode'];
 				$payment->orderId = $paymentResponse['id'];
-				$payment->completed = 1;
 				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
-				$payment->aciToken = $paymentResponse['fundingAccount']['token'];
-				$payment->update();
-				$result = [
-					'success' => true,
-					'message' => 'Payment completed.',
-				];
+
+				$user = new User();
+				$user->id = $payment->userId;
+				if ($user->find(true)) {
+					$finePaymentCompleted = $user->completeFinePayment($payment);
+					if ($finePaymentCompleted['success']) {
+						$payment->message .= "Payment completed, TransactionId = $payment->transactionId, Confirmation Code = $confirmationCode, CC Number = $ccNumber, Net Amount = $payment->totalPaid. ";
+						$payment->update();
+						return [
+							'success' => true,
+							'message' => translate([
+								'text' => 'Your payment has been completed. ',
+								'isPublicFacing' => true,
+							]),
+						];
+					} else {
+						$payment->error = true;
+						$payment->message .= $finePaymentCompleted['message'];
+						$payment->update();
+						return [
+							'success' => false,
+							'message' => $finePaymentCompleted['message'],
+						];
+					}
+				} else {
+					$payment->error = true;
+					$payment->message .= 'Could not find user to mark the fine paid in the ILS.';
+					$payment->update();
+				}
+
 			} else {
 				$payment->error = 1;
-				$payment->message = $paymentResponse['message'];
+				$payment->message = $paymentResponse['message']['default'];
 				$payment->update();
-				$result['message'] = $paymentResponse['message'];
+				$result['message'] = $paymentResponse['message']['default'];
 			}
 		} else {
 			if(isset($paymentResponse['error']['message']['default'])) {
