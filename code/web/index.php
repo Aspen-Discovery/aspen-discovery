@@ -204,6 +204,9 @@ if ($action == 'SimilarTitles') {
 if ($action == 'DBMaintenance') {
 	$interface->assign('hasSqlUpdates', false);
 }
+if ($action == 'OptionalUpdates'){
+	$interface->assign('hasOptionalUpdates', false);
+}
 //Set these initially in case user login fails, we will need the module to be set.
 $interface->assign('module', $module);
 $interface->assign('action', $action);

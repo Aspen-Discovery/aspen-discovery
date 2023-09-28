@@ -13,6 +13,35 @@ function getUpdates23_10_00(): array {
 		], //name*/
 
 		//mark - ByWater
+		'optionalUpdates' => [
+			'title' => 'Optional Updates',
+			'description' => 'Add the ability to publish optional updates for administrators',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE IF NOT EXISTS optional_updates(
+					id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+					name varchar(50) COLLATE utf8mb4_general_ci NOT NULL UNIQUE,
+					descriptionFile VARCHAR(50) COLLATE utf8mb4_general_ci NOT NULL,
+					versionIntroduced VARCHAR(8),
+					status INT(1)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci',
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES 
+					('System Administration', 'Run Optional Updates', '', 22, 'Allows the user to apply optional updates to their system.')
+					",
+				'addOptionalUpdatesPermission',
+			]
+		], //optionalUpdates
+		'optionalUpdates23_10' => [
+			'title' => 'Optional Updates 23.10',
+			'description' => 'Add an optional updates for 23.10',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO optional_updates(name, descriptionFile, versionIntroduced, status) VALUES ('moveSearchToolsToTop', 'MoveSearchToolsToTop.MD', '23.10.00', 1)",
+				"INSERT INTO optional_updates(name, descriptionFile, versionIntroduced, status) VALUES ('useFloatingCoverStyle', 'UseFloatingCoverStyle.MD', '23.10.00', 1)",
+				"INSERT INTO optional_updates(name, descriptionFile, versionIntroduced, status) VALUES ('displayCoversForEditions', 'DisplayCoversForEditions.MD', '23.10.00', 1)",
+				"INSERT INTO optional_updates(name, descriptionFile, versionIntroduced, status) VALUES ('enableNewBadge', 'EnableNewBadge.MD', '23.10.00', 1)",
+			]
+		], //optionalUpdates23_10
 
 		//kirstien - ByWater
 		'add_always_display_renew_count' => [
@@ -39,4 +68,28 @@ function getUpdates23_10_00(): array {
 			],
 		], //theme_explore_more_images
 	];
+}
+
+function addOptionalUpdatesPermission(&$update){
+	$dbMaintenancePermission = new Permission();
+	$dbMaintenancePermission->name = 'Run Database Maintenance';
+	$numUpdates = 0;
+	if ($dbMaintenancePermission->find(true)) {
+		$optionalUpdatesPermission = new Permission();
+		$optionalUpdatesPermission->name = 'Run Optional Updates';
+		if ($optionalUpdatesPermission->find(true)) {
+			$dbMaintenanceRolePermission = new RolePermissions();
+			$dbMaintenanceRolePermission->permissionId = $dbMaintenancePermission->id;
+			$dbMaintenanceRolePermission->find();
+			while ($dbMaintenanceRolePermission->fetch()){
+				$newOptionalUpdateRolePermission = new RolePermissions();
+				$newOptionalUpdateRolePermission->roleId = $dbMaintenanceRolePermission->roleId;
+				$newOptionalUpdateRolePermission->permissionId = $optionalUpdatesPermission->id;
+				$newOptionalUpdateRolePermission->insert();
+				$numUpdates++;
+			}
+		}
+	}
+	$update['status'] = "<strong>Adde permission to $numUpdates roles</strong><br/>";
+	$update['success'] = true;
 }
