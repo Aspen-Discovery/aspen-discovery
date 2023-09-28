@@ -967,10 +967,12 @@ class Koha extends AbstractIlsDriver {
 				if ($user->find(true)) {
 					$logger->log("User found, but username has changed, updating from $user->unique_ils_id to {$userFromDb['borrowernumber']}", Logger::LOG_ERROR);
 					$user->username = $userFromDb['borrowernumber'];
+					/** @noinspection PhpFieldImmediatelyRewrittenInspection */
 					$user->unique_ils_id = $userFromDb['borrowernumber'];
 					$userExistsInDB = true;
 				} else {
 					$user->username = $userFromDb['borrowernumber'];
+					/** @noinspection PhpFieldImmediatelyRewrittenInspection */
 					$user->unique_ils_id = $userFromDb['borrowernumber'];
 				}
 			}
@@ -992,6 +994,7 @@ class Koha extends AbstractIlsDriver {
 			$user->_fullname = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
 			if ($userFromDb['cardnumber'] != null) {
 				$user->ils_barcode = $userFromDb['cardnumber'];
+				$user->cat_username = $userFromDb['cardnumber'];
 			}
 			$user->unique_ils_id = $userFromDb['borrowernumber'];
 			$user->ils_username = $userFromDb['userid'];
@@ -7379,6 +7382,7 @@ class Koha extends AbstractIlsDriver {
 							$user->username = $borrowerNumberRow['borrowernumber'];
 							$user->unique_ils_id = $borrowerNumberRow['borrowernumber'];
 							$user->ils_barcode = $borrowerNumberRow['cardnumber'];
+							$user->cat_username = $borrowerNumberRow['cardnumber'];
 							$user->ils_username = $borrowerNumberRow['userId'];
 							if ($user->update()) {
 								$numBarcodesUpdated++;
