@@ -3030,6 +3030,7 @@ class User extends DataObject {
 		$sections['system_admin']->addAction(new AdminAction('Administration Users', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions'), 'Administer Permissions');
 		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
+		$sections['system_admin']->addAction(new AdminAction('Optional Updates', 'Recommended updates that can be optionally applied when new versions of Aspen Discovery are released.', '/Admin/OptionalUpdates'), 'Run Optional Updates');
 		$sections['system_admin']->addAction(new AdminAction('Amazon SES Settings', 'Settings to allow Aspen Discovery to send emails via Amazon SES.', '/Admin/AmazonSesSettings'), 'Administer Amazon SES');
 		$sections['system_admin']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
 		$sections['system_admin']->addAction(new AdminAction('Twilio Settings', 'Settings to allow Aspen Discovery to send texts via Twilio.', '/Admin/TwilioSettings'), 'Administer Twilio');

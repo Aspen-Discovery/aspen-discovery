@@ -1,6 +1,5 @@
 {strip}
 	<h1>{translate text="Database Maintenance" isAdminFacing=true}</h1>
-	<div id="maintenanceOptions"></div>
 	<form id="dbMaintenanceForm" action="/Admin/{$action}" method="post">
 		<input type="hidden" name="submitting" value="true">
 		<div>
