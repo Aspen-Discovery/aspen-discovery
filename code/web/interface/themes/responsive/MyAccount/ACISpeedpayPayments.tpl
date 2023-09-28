@@ -33,7 +33,7 @@
 			<input type="hidden" data-aci-speedpay="account-country-code" value="US" />
 			<input type="hidden" data-aci-speedpay="single-use" value="true" />
 
-			<input type="button" id="card-submit-button" class="btn btn-primary" value="Card Submit" data-aci-speedpay="card-submit-button"/>
+			<input type="button" id="card-submit-button" class="btn btn-primary" value="{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}" data-aci-speedpay="card-submit-button"/>
 
 			<script>
 				fundingAccountGatewayResult = aci.speedpay.fundingAccountGateway.init(
@@ -92,20 +92,26 @@
                     )
                 );
 
-                var cardForm = document.getElementById('card-submit-button');
-                cardForm.addEventListener("click", function(event) {ldelim}
-                    console.log('Creating token..');
+                var cardButton = document.getElementById('card-submit-button');
+                cardButton.addEventListener("click", function(event) {ldelim}
+	                cardButton.disabled = true;
+	                cardButton.value = "Submitting Payment...";
+	                console.log('Creating token..');
                     fundingAccountGatewayResult.then((handler) =>
                     {ldelim}
                         handler.createToken()
                        .then((tokenDetails) =>
                         {ldelim}
                            var paymentId = AspenDiscovery.Account.createACIOrder('#fines{$userId}', 'fine', tokenDetails.token.id, '{$accessToken}');
-                           return AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'fine', paymentId, '{$accessToken}', '{$billerAccountId}');
+                           AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'fine', paymentId, '{$accessToken}', '{$billerAccountId}');
+	                        cardButton.disabled = false;
+	                        cardButton.value = "{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}";
                         {rdelim})
                        .catch((error) =>
                         {ldelim}
 	                        AspenDiscovery.Account.handleACIError(error.message.default);
+	                        cardButton.disabled = false;
+	                        cardButton.value = "{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}";
                         {rdelim});
                     {rdelim})
                 {rdelim});
