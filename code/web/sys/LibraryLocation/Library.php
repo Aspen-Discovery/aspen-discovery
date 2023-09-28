@@ -2096,7 +2096,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Enable "Forgot Barcode?" Link on Login Screen',
 								'description' => 'Checking this will enable a &quot;Forgot Barcode?&quot; link on the login screen, which will allow users to receive their barcode by text. The user account must have a text-capable phone number on file to receive their barcode with this link.',
-								'note' => 'Requires Twilio to be configured',
+								'note' => 'Currently limited to Koha. Requires Twilio to be configured.',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],

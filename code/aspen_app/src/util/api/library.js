@@ -95,3 +95,60 @@ export async function getLibraryLanguages(url = null) {
      }
      return [];
 }
+
+/**
+ * Return array of pre-validated system messages
+ * @param {int|null} libraryId
+ * @param {int|null} locationId
+ * @param {string} url
+ **/
+export async function getSystemMessages(libraryId = null, locationId = null, url) {
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               libraryId,
+               locationId,
+          },
+     });
+     const response = await api.get('/SystemAPI?method=getSystemMessages');
+     if (response.ok) {
+          let messages = [];
+          if (response?.data?.result) {
+               console.log('System messages fetched and stored');
+               return response.data.result.systemMessages;
+          }
+          return messages;
+     } else {
+          console.log(response);
+     }
+     return [];
+}
+
+/**
+ * Dismiss given system message from displaying again
+ * @param {int} systemMessageId
+ * @param {string} url
+ **/
+export async function dismissSystemMessage(systemMessageId, url) {
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               systemMessageId,
+          },
+     });
+     const response = await api.get('/SystemAPI?method=dismissSystemMessage');
+     if (response.ok) {
+          if (response?.data?.result) {
+               return response.data.result;
+          }
+     } else {
+          console.log(response);
+     }
+     return [];
+}

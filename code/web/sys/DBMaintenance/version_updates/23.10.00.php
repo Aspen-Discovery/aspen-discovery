@@ -23,6 +23,15 @@ function getUpdates23_10_00(): array {
 				'ALTER TABLE library ADD alwaysDisplayRenewalCount TINYINT(1) default 0',
 			]
 		], //add_always_display_renew_count
+		'add_lida_system_messages_options' => [
+			'title' => 'System messages in LiDA',
+			'description' => 'Add options for pushing system messages to LiDA',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE system_messages ADD appMessage VARCHAR(280) default NULL',
+				'ALTER TABLE system_messages ADD pushToApp TINYINT(1) default 0',
+			]
+		], //add_lida_system_messages_options
 
 		//kodi - ByWater
 		'theme_explore_more_images' => [

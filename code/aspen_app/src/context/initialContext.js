@@ -96,6 +96,11 @@ export const LanguageContext = React.createContext({
      updateDictionary: () => {},
      resetLanguage: () => {},
 });
+export const SystemMessagesContext = React.createContext({
+     updateSystemMessages: () => {},
+     systemMessages: [],
+     resetSystemMessages: () => {},
+});
 
 export const ThemeProvider = ({ children }) => {
      const [theme, setTheme] = useState([]);
@@ -621,5 +626,30 @@ export const LanguageProvider = ({ children }) => {
                }}>
                {children}
           </LanguageContext.Provider>
+     );
+};
+
+export const SystemMessagesProvider = ({ children }) => {
+     const [systemMessages, setSystemMessages] = useState();
+
+     const updateSystemMessages = (data) => {
+          setSystemMessages(data);
+          console.log('updated SystemMessagesContext');
+     };
+
+     const resetSystemMessages = () => {
+          setSystemMessages({});
+          console.log('reset SystemMessagesContext');
+     };
+
+     return (
+          <SystemMessagesContext.Provider
+               value={{
+                    systemMessages,
+                    updateSystemMessages,
+                    resetSystemMessages,
+               }}>
+               {children}
+          </SystemMessagesContext.Provider>
      );
 };
