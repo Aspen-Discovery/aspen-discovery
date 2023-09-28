@@ -64,7 +64,7 @@ export const MyHolds = () => {
      const togglePendingSort = async (value) => {
           updatePendingSortMethod(value);
           const sortedHolds = sortHolds(holds, value, readySortMethod);
-          console.log(sortedHolds[1]);
+          //console.log(sortedHolds[1]);
           queryClient.setQueryData(['holds', library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], sortedHolds);
           updateHolds(sortedHolds);
      };
