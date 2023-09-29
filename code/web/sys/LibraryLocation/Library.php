@@ -3092,6 +3092,7 @@ class Library extends DataObject {
 				'property' => 'courseReservesSection',
 				'type' => 'section',
 				'label' => 'Course Reserves',
+				'instructions' => '<i class="fas fa-info-circle"></i> Applies to Symphony only',
 				'hideInLists' => true,
 				'permissions' => [
 					'Administer Course Reserves',
