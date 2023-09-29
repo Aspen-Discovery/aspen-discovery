@@ -7,7 +7,7 @@ import { useNavigation, useNavigationState, useLinkTo, useIsFocused, StackAction
 import { Center, Heading, Box, Spinner, VStack, Progress } from 'native-base';
 import _ from 'lodash';
 import { checkVersion } from 'react-native-check-version';
-import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
@@ -15,7 +15,7 @@ import { ForceLogout } from './ForceLogout';
 import { UpdateAvailable } from './UpdateAvailable';
 import { getTermFromDictionary, getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
 import { getLinkedAccounts, reloadProfile } from '../../util/api/user';
-import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
+import { getLibraryInfo, getLibraryLanguages, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { GLOBALS } from '../../util/globals';
 import { navigateStack } from '../../helpers/RootNavigator';
@@ -49,6 +49,7 @@ export const LoadingScreen = () => {
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const [loadingText, setLoadingText] = React.useState('');
 
@@ -79,7 +80,6 @@ export const LoadingScreen = () => {
           onSuccess: (data) => {
                updateDictionary(translationsLibrary);
                setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_1'));
-               return true;
           },
      });
 
@@ -150,7 +150,7 @@ export const LoadingScreen = () => {
      const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
           enabled: !!libraryBranchQuery,
           onSuccess: (data) => {
-               setProgress(90);
+               setProgress(85);
                if (data.success) {
                     updateEnableSelfCheck(data.settings?.isEnabled ?? false);
                     updateSelfCheckSettings(data.settings);
@@ -163,9 +163,18 @@ export const LoadingScreen = () => {
      const { status: linkedAccountQueryStatus, data: linkedAccountQuery } = useQuery(['linked_accounts', user ?? [], cards ?? [], LIBRARY.url, 'en'], () => getLinkedAccounts(user ?? [], cards ?? [], library.barcodeStyle, LIBRARY.url, 'en'), {
           enabled: !!userQuery && !!librarySystemQuery && !!selfCheckQuery,
           onSuccess: (data) => {
-               setProgress(100);
+               setProgress(90);
                updateLinkedAccounts(data.accounts);
                updateLibraryCards(data.cards);
+               setIsReloading(false);
+          },
+     });
+
+     const { status: systemMessagesQueryStatus, data: systemMessagesQuery } = useQuery(['system_messages', systemMessages ?? [], LIBRARY.url], () => getSystemMessages(library.libraryId, location.locationId, LIBRARY.url), {
+          enabled: !!userQuery && !!librarySystemQuery && !!libraryBranchQuery && !!linkedAccountQuery,
+          onSuccess: (data) => {
+               setProgress(100);
+               updateSystemMessages(data);
                setIsReloading(false);
           },
      });
@@ -174,7 +183,7 @@ export const LoadingScreen = () => {
           return <ForceLogout />;
      }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || translationsQueryStatus === 'loading') {
+     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || translationsQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -189,7 +198,7 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || translationsQueryStatus === 'success' || linkedAccountQueryStatus === 'success') {
+     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || translationsQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);
