@@ -99,6 +99,6 @@ function addOptionalUpdatesPermission(&$update){
 			}
 		}
 	}
-	$update['status'] = "<strong>Adde permission to $numUpdates roles</strong><br/>";
+	$update['status'] = "<strong>Added permission to $numUpdates roles</strong><br/>";
 	$update['success'] = true;
 }
