@@ -363,7 +363,7 @@ class User extends DataObject {
 	}
 
 	function getPasswordOrPin() {
-		return $this->ils_password;
+		return empty($this->ils_password) ? '' : $this->ils_password;
 	}
 
 	function getPasswordOrPinField() {
