@@ -288,6 +288,7 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$selfRegistrationTemplate;
 	public $selfRegistrationUserProfile;
+	public $selfRegistrationFormId;
 	public $addSMSIndicatorToPhone;
 
 	public $allowLinkedAccounts;
@@ -1736,20 +1737,6 @@ class Library extends DataObject {
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
-							'cityStateField' => [
-								'property' => 'cityStateField',
-								'type' => 'enum',
-								'values' => [
-									0 => 'CITY / STATE field',
-									1 => 'CITY and STATE fields',
-								],
-								'label' => 'City / State Field (Symphony Only)',
-								'description' => 'The field from which to load and update city and state.',
-								'note' => 'Applies to Symphony Only',
-								'hideInLists' => true,
-								'default' => 0,
-								'permissions' => ['Library ILS Connection'],
-							],
 							'addSMSIndicatorToPhone' => [
 								'property' => 'addSMSIndicatorToPhone',
 								'type' => 'checkbox',
@@ -2196,34 +2183,6 @@ class Library extends DataObject {
 								'label' => 'Prompt For Birth Date',
 								'description' => 'Whether or not to prompt for birth date when self registering',
 							],
-							'selfRegRequirePhone' => [
-								'property' => 'selfRegRequirePhone',
-								'type' => 'checkbox',
-								'label' => 'Self Registration requires Phone Number',
-								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
-							'selfRegRequireEmail' => [
-								'property' => 'selfRegRequireEmail',
-								'type' => 'checkbox',
-								'label' => 'Self Registration requires Email',
-								'description' => 'Whether or not email is required when self registering. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
-							'promptForParentInSelfReg' => [
-								'property' => 'promptForParentInSelfReg',
-								'type' => 'checkbox',
-								'label' => 'Prompt For Parent Information',
-								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
-							'promptForSMSNoticesInSelfReg' => [
-								'property' => 'promptForSMSNoticesInSelfReg',
-								'type' => 'checkbox',
-								'label' => 'Prompt For SMS Notices',
-								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
 							'useAllCapsWhenSubmittingSelfRegistration' => [
 								'property' => 'useAllCapsWhenSubmittingSelfRegistration',
 								'type' => 'checkbox',
@@ -2274,15 +2233,6 @@ class Library extends DataObject {
 								'description' => 'The ILS template to use during self registration (Sierra and Millennium).',
 								'hideInLists' => true,
 								'default' => 'default',
-							],
-							'selfRegistrationUserProfile' => [
-								'property' => 'selfRegistrationUserProfile',
-								'type' => 'text',
-								'label' => 'Self Registration Profile',
-								'description' => 'The Profile to use during self registration (Symphony Only).',
-								'note' => 'Applies to Symphony Only',
-								'hideInLists' => true,
-								'default' => 'SELFREG',
 							],
 						],
 					],
