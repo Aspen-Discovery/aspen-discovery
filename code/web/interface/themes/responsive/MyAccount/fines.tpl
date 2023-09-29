@@ -126,6 +126,10 @@
 									{if !empty($showOutstanding)}
 										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
 									{/if}
+									{if $finesToPay == 2}
+										{* just cleaning up the footer styling *}
+										<th></th>
+									{/if}
 								</tr>
 								{if !empty($convenienceFee) && $convenienceFee > 0}
                                 <tr>

@@ -1003,18 +1003,16 @@ class SystemAPI extends Action {
 			require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
 			$systemMessages = [];
 			$message = new SystemMessage();
-			$now = time();
-			$message->showOn = 0;
-			$message->whereAdd("startDate = 0 OR startDate <= $now");
-			$message->whereAdd("endDate = 0 OR endDate > $now");
 			$message->find();
 			while ($message->fetch()) {
 				if ($message->isValidForDisplayInApp($user, $locationId, $libraryId)) {
-					$systemMessages[$message->id]['id'] = $message->id;
-					$systemMessages[$message->id]['appMessage'] = $message->appMessage;
-					$systemMessages[$message->id]['messageStyle'] = $message->messageStyle;
-					$systemMessages[$message->id]['dismissable'] = $message->dismissable;
-					$systemMessages[$message->id]['showOn'] = $message->showOn;
+					$systemMessages[] = [
+						'id' => (int)$message->id,
+						'style' => $message->messageStyle,
+						'dismissable' => (int)$message->dismissable,
+						'message' => $message->appMessage,
+						'showOn' => $message->showOn,
+					];
 				}
 			}
 			return [
