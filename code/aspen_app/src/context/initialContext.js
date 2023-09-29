@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
 import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import { getTermFromDictionary } from '../translations/TranslationService';
