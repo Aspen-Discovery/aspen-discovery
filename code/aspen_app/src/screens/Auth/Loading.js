@@ -170,7 +170,7 @@ export const LoadingScreen = () => {
           },
      });
 
-     const { status: systemMessagesQueryStatus, data: systemMessagesQuery } = useQuery(['system_messages', systemMessages ?? [], LIBRARY.url], () => getSystemMessages(library.libraryId, location.locationId, LIBRARY.url), {
+     const { status: systemMessagesQueryStatus, data: systemMessagesQuery } = useQuery(['system_messages', LIBRARY.url], () => getSystemMessages(library.libraryId, location.locationId, LIBRARY.url), {
           enabled: !!userQuery && !!librarySystemQuery && !!libraryBranchQuery && !!linkedAccountQuery,
           onSuccess: (data) => {
                setProgress(100);
