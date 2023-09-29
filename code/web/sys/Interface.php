@@ -326,17 +326,17 @@ class UInterface extends Smarty {
 			$adminUser = $systemAPI->displayAdminAlert();
 			if ($adminUser) {
 				$hasSqlUpdates = $systemAPI->hasPendingDatabaseUpdates();
-				$this->assign('hasSqlUpdates', $hasSqlUpdates);
 			}
 		}
+		$this->assign('hasSqlUpdates', $hasSqlUpdates);
 		$hasOptionalUpdates = false;
 		if (UserAccount::userHasPermission('Run Optional Updates')){
 			require_once ROOT_DIR . '/sys/DBMaintenance/OptionalUpdate.php';
 			$optionalUpdate = new OptionalUpdate();
 			$optionalUpdate->status = 1;
 			$hasOptionalUpdates = $optionalUpdate->count() > 0;
-			$this->assign('hasOptionalUpdates', $hasOptionalUpdates);
 		}
+		$this->assign('hasOptionalUpdates', $hasOptionalUpdates);
 		$this->assign('shouldShowAdminAlert', $hasSqlUpdates || $hasOptionalUpdates);
 
 		$this->assign('allActiveThemes', []);
