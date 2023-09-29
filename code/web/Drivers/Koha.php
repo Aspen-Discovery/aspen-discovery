@@ -549,13 +549,15 @@ class Koha extends AbstractIlsDriver {
 				$issuingRulesRS->close();
 			}
 
+			$eligibleForRenewal = 0;
+			$willAutoRenew = 0;
 			$library = $patron->getHomeLibrary();
 			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
 			if ($allowRenewals['success']) {
 				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
-				$willAutoRenew = 0;
 				if($allowRenewals['error'] == 'auto_renew') {
 					$willAutoRenew = 1;
+					$curCheckout->autoRenew = 1;
 					$curCheckout->autoRenewError = translate([
 						'text' => 'If eligible, this item will renew on<br/>%1%',
 						'1' => $renewalDate,
@@ -563,7 +565,6 @@ class Koha extends AbstractIlsDriver {
 					]);
 				}
 				$curCheckout->canRenew = $eligibleForRenewal;
-				$curCheckout->autoRenew = $willAutoRenew;
 
 				if(!$willAutoRenew && !$eligibleForRenewal) {
 					$error = $allowRenewals['error'];
@@ -591,15 +592,6 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 
-				if($eligibleForRenewal && $allowRenewals['error'] == null) {
-					$curCheckout->autoRenew = 1;
-					$curCheckout->autoRenewError = translate([
-						'text' => 'If eligible, this item will renew on<br/>%1%',
-						'1' => $renewalDate,
-						'isPublicFacing' => true,
-					]);
-				}
-
 				if ($library->displayHoldsOnCheckout && $allowRenewals['error'] == 'on_reserve') {
 					$curCheckout->canRenew = 0;
 					$curCheckout->autoRenew = 0;
@@ -608,6 +600,14 @@ class Koha extends AbstractIlsDriver {
 						'isPublicFacing' => true,
 					]);
 				}
+			}
+
+			if($eligibleForRenewal && $allowRenewals['error'] == null && $curCheckout->autoRenew == 1) {
+				$curCheckout->autoRenewError = translate([
+					'text' => 'If eligible, this item will renew on<br/>%1%',
+					'1' => $renewalDate,
+					'isPublicFacing' => true,
+				]);
 			}
 
 			// check for if no auto-renewal before day is set
@@ -967,10 +967,12 @@ class Koha extends AbstractIlsDriver {
 				if ($user->find(true)) {
 					$logger->log("User found, but username has changed, updating from $user->unique_ils_id to {$userFromDb['borrowernumber']}", Logger::LOG_ERROR);
 					$user->username = $userFromDb['borrowernumber'];
+					/** @noinspection PhpFieldImmediatelyRewrittenInspection */
 					$user->unique_ils_id = $userFromDb['borrowernumber'];
 					$userExistsInDB = true;
 				} else {
 					$user->username = $userFromDb['borrowernumber'];
+					/** @noinspection PhpFieldImmediatelyRewrittenInspection */
 					$user->unique_ils_id = $userFromDb['borrowernumber'];
 				}
 			}
@@ -992,6 +994,7 @@ class Koha extends AbstractIlsDriver {
 			$user->_fullname = $userFromDb['firstname'] . ' ' . $userFromDb['surname'];
 			if ($userFromDb['cardnumber'] != null) {
 				$user->ils_barcode = $userFromDb['cardnumber'];
+				$user->cat_username = $userFromDb['cardnumber'];
 			}
 			$user->unique_ils_id = $userFromDb['borrowernumber'];
 			$user->ils_username = $userFromDb['userid'];
@@ -7379,6 +7382,7 @@ class Koha extends AbstractIlsDriver {
 							$user->username = $borrowerNumberRow['borrowernumber'];
 							$user->unique_ils_id = $borrowerNumberRow['borrowernumber'];
 							$user->ils_barcode = $borrowerNumberRow['cardnumber'];
+							$user->cat_username = $borrowerNumberRow['cardnumber'];
 							$user->ils_username = $borrowerNumberRow['userId'];
 							if ($user->update()) {
 								$numBarcodesUpdated++;
