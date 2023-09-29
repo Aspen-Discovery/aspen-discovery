@@ -2,17 +2,19 @@ import moment from 'moment';
 import { Badge, Box, Center, FlatList, HStack, Image, Pressable, Text, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import CreateList from './CreateList';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { getListDetails, getLists, getListTitles } from '../../../util/api/list';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
+import _ from 'lodash';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 
 export const MyLists = () => {
      const navigation = useNavigation();
@@ -21,6 +23,9 @@ export const MyLists = () => {
      const { lists, updateLists } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
      const [loading, setLoading] = React.useState(false);
+
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -153,6 +158,17 @@ export const MyLists = () => {
           }
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      if (loading) {
           return loadingSpinner();
      }
@@ -160,6 +176,7 @@ export const MyLists = () => {
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box safeArea={2} t={10} pb={10}>
+                    {showSystemMessage()}
                     <CreateList />
                     <FlatList data={lists} ListEmptyComponent={listEmptyComponent} renderItem={({ item }) => renderList(item, library.baseUrl)} keyExtractor={(item, index) => index.toString()} />
                </Box>

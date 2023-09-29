@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 import { Ionicons } from '@expo/vector-icons';
-import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center, Input, FormControl } from 'native-base';
+import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center, Input, FormControl, Alert } from 'native-base';
 import React from 'react';
 import _ from 'lodash';
 import * as Device from 'expo-device';
@@ -10,16 +10,18 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
+import { formatDiscoveryVersion, getPickupLocations, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import DisplayBrowseCategory from './Category';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getLists } from '../../util/api/list';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
 import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, updateNotificationOnboardingStatus } from '../../util/api/user';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { getDefaultFacets } from '../../util/search';
+import { addAppliedFilter, getDefaultFacets } from '../../util/search';
+import { DisplaySystemMessage, showILSMessage } from '../../components/Notifications';
+import { getSystemMessages } from '../../util/api/library';
 
 let maxCategories = 5;
 
@@ -32,12 +34,14 @@ export const DiscoverHomeScreen = () => {
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
      const { user, locations, accounts, cards, lists, updateUser, updateLanguage, updatePickupLocations, updateLinkedAccounts, updateLists, updateLibraryCards, updateLinkedViewerAccounts, updateReadingHistory, notificationSettings, expoToken, updateNotificationOnboard, notificationOnboard } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
+     const { location } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { checkouts, updateCheckouts } = React.useContext(CheckoutsContext);
      const { holds, updateHolds, pendingSortMethod, readySortMethod } = React.useContext(HoldsContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
      const [searchTerm, setSearchTerm] = React.useState('');
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const [unlimited, setUnlimitedCategories] = React.useState(false);
 
@@ -386,6 +390,15 @@ export const DiscoverHomeScreen = () => {
           });
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+               });
+          }
+          return null;
+     };
+
      if (loading === true) {
           return loadingSpinner();
      }
@@ -393,6 +406,7 @@ export const DiscoverHomeScreen = () => {
      return (
           <ScrollView>
                <Box safeArea={5}>
+                    {showSystemMessage()}
                     <FormControl pb={5}>
                          <Input
                               returnKeyType="search"

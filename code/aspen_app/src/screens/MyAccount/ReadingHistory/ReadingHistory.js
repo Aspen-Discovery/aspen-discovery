@@ -8,7 +8,7 @@ import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, getPatronCheckedOutItems, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { SafeAreaView, Platform } from 'react-native';
 import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
@@ -16,6 +16,7 @@ import { loadError } from '../../../components/loadError';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import AddToList from '../../Search/AddToList';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 
 export const MyReadingHistory = () => {
      const navigation = useNavigation();
@@ -26,6 +27,7 @@ export const MyReadingHistory = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { user, updateUser, readingHistory, updateReadingHistory } = React.useContext(UserContext);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const url = library.baseUrl;
      const pageSize = 25;
 
@@ -310,8 +312,20 @@ export const MyReadingHistory = () => {
           return null;
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2}>{showSystemMessage()}</Box>
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
                          <Button onPress={optIn} isLoading={optingIn} isLoadingText={getTermFromDictionary(language, 'updating', true)}>
@@ -322,7 +336,15 @@ export const MyReadingHistory = () => {
                ) : (
                     <>
                          {getActionButtons()}
-                         {status === 'loading' || isFetching ? loadingSpinner() : status === 'error' ? loadError('Error', '') : <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}
+                         {status === 'loading' || isFetching ? (
+                              loadingSpinner()
+                         ) : status === 'error' ? (
+                              loadError('Error', '')
+                         ) : (
+                              <>
+                                   <FlatList data={data.history} ListEmptyComponent={Empty} ListFooterComponent={Paging} ListHeaderComponent={getDisclaimer} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+                              </>
+                         )}
                     </>
                )}
           </SafeAreaView>
