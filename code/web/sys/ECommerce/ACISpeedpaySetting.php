@@ -235,7 +235,10 @@ class ACISpeedpaySetting extends DataObject {
 		}
 	}
 
-	public function createAuthCode(): bool|array {
+	/*
+	 * @return array|bool
+	 */
+	public function createAuthCode(): mixed {
 		$state = random_bytes(6);
 		$state = bin2hex($state);
 		$codeVerifier = $this->generateCodeVerifier();
@@ -315,7 +318,10 @@ class ACISpeedpaySetting extends DataObject {
 		}
 	}
 
-	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount): array|bool {
+	/*
+	 * @return array|bool
+	 */
+	public function submitTransaction($patron, $payment, $fundingToken, $billerAccount): mixed {
 		$result = ['success' => false];
 
 		$authCode = $this->createAuthCode();
