@@ -2280,7 +2280,7 @@ class Location extends DataObject {
 	protected $_parentLibrary = null;
 
 	/** @return Library */
-	public function getParentLibrary(): Library {
+	public function getParentLibrary(): ?Library {
 		if ($this->_parentLibrary == null) {
 			$this->_parentLibrary = new Library();
 			$this->_parentLibrary->libraryId = $this->libraryId;
