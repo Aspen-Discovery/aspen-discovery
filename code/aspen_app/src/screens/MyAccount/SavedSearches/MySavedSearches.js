@@ -2,23 +2,27 @@ import { Badge, Box, Center, FlatList, Pressable, Text, HStack, VStack } from 'n
 import React from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { fetchSavedSearches, getSavedSearch } from '../../../util/api/user';
 import { loadError } from '../../../components/loadError';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getListTitles } from '../../../util/api/list';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 
 export const MySavedSearches = () => {
      const navigation = useNavigation();
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -49,9 +53,21 @@ export const MySavedSearches = () => {
           );
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box safeArea={2} h="100%">
+                    {showSystemMessage()}
                     <FlatList data={data} ListEmptyComponent={Empty} renderItem={({ item }) => <Item data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
                </Box>
           </SafeAreaView>

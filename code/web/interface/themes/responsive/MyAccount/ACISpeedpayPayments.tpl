@@ -43,99 +43,89 @@
 
 			<input type="button" id="card-submit-button" class="btn btn-primary" value="{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}" data-aci-speedpay="card-submit-button"/>
 
+			{literal}
 			<script>
 				fundingAccountGatewayResult = aci.speedpay.fundingAccountGateway.init(
-					{ldelim}
-                        apiAuthKey: '{$sdkAuthKey}',
-                        accessToken: '{$accessToken}',
-                        singleUse: 'true',
-                        paymentMethod: 'Card',
-                        billerAccountId: '{$billerAccountId}',
-                        styles: {ldelim}
-                            input: {ldelim}
-	                            fontfamily: 'Helvetica',
-                                color: '{$bodyTextColor}',
-                                fontsize: '14px',
-                                border: '1px solid {$bodyTextColor}',
-                                borderradius: '4px',
-                                padding: '6px',
-                                lineheight: '1.428571429',
-                                background: '{$bodyBackgroundColor}',
-                                width: {ldelim}
-                                    all: '92%',
-                                {rdelim},
-                                onfocus: {ldelim}
-                                    boxshadow: 'inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6)',
-                                    outline: '0px',
-	                                border: '1px solid #3174AF',
-	                                background: '{$bodyBackgroundColor}',
-                                {rdelim},
-	                            valid: {ldelim}
-		                            border: '1px solid #3c763d',
-		                            boxshadow: '0px',
-		                            background: '#dff0d8',
-	                            {rdelim},
-	                            invalid: {ldelim}
-		                            border: '1px solid #a94442',
-		                            boxshadow: '0px',
-		                            background: '#f2dede',
-                                {rdelim},
-                            {rdelim},
-                            iframe: {ldelim}
-                                height: '2.5em'
-                            {rdelim}
-                        {rdelim}
-                    {rdelim},
-                    (onValidate = function(event) {ldelim}
-                          if(event.kind === 'ValidationError')
-                            console.log(event.message.default);
-                    {rdelim}),
-                    (onCreateToken = function(event) {ldelim}
-                        if(event.token.id) {ldelim}
-                            console.log('Funding account has been created.');
-                        {rdelim}
-                    {rdelim}),
-                    (onGetToken = function(event) {ldelim}
-                        if(event.token.id) {ldelim}
-                            console.log('Funding account has been obtained successfully.');
-                        {rdelim}
-                    {rdelim}),
-                    (onUpdatedToken = function(event) {ldelim}
-                        if(event) {ldelim}
-                        console.log(event);
-                        {rdelim}
-                    {rdelim}),
-                    (onError = function(event)
-                        {ldelim}
+					{
+                        "apiAuthKey": '{/literal}{$sdkAuthKey}{literal}',
+                        "accessToken": '{/literal}{$accessToken}{literal}',
+                        "singleUse": 'true',
+                        "paymentMethod": 'Card',
+                        "billerAccountId": '{/literal}{$billerAccountId}{literal}',
+						"styles": {
+							"input": {
+								"fontfamily": "Helvetica",
+								"color": "{/literal}{$bodyTextColor}{literal}",
+								"fontsize": "14px",
+								"border": "1px solid {/literal}{$bodyTextColor}{literal}",
+								"borderradius": "4px",
+								"padding": "6px",
+								"lineheight": "1.428571429",
+								"background": "{/literal}{$bodyBackgroundColor}{literal}",
+								"width": {
+									"all": "90%",
+									"card-number": "97%",
+									"expiration-date": "88%",
+									"security-code": "85%"
+								},
+								"onfocus": {
+									"boxshadow": "inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6)",
+									"outline": "0px",
+									"border": "1px solid #3174AF",
+									"background": "{/literal}{$bodyBackgroundColor}{literal}"
+								},
+								"valid":{
+									"border": "1px solid #3c763d",
+									"boxshadow": "0px",
+									"background": "#dff0d8"
+								},
+								"invalid":{
+									"border": "1px solid #a94442",
+									"boxshadow": "0px",
+									"background": "#f2dede"
+								},
+							},
+							"iframe":{
+								"height": "2.5em"
+							},
+							"placeholder": {
+								"content": {
+									"expiration-date": "MMYY"
+								}
+							}
+						},
+					},
+                    (onError = function(event) {
                             AspenDiscovery.Account.handleACIError(event.message.default);
-                        {rdelim}
-                    )
+                    })
                 );
 
                 var cardButton = document.getElementById('card-submit-button');
-                cardButton.addEventListener("click", function(event) {ldelim}
+                cardButton.addEventListener("click", function(event) {
 	                cardButton.disabled = true;
 	                cardButton.value = "Submitting Payment...";
 	                console.log('Creating token..');
                     fundingAccountGatewayResult.then((handler) =>
-                    {ldelim}
+                    {
                         handler.createToken()
                        .then((tokenDetails) =>
-                        {ldelim}
-                           var paymentId = AspenDiscovery.Account.createACIOrder('#fines{$userId}', 'fine', tokenDetails.token.id, '{$accessToken}');
-                           AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'fine', paymentId, '{$accessToken}', '{$billerAccountId}');
+                        {
+                           var paymentId = AspenDiscovery.Account.createACIOrder('#fines{/literal}{$userId}{literal}', 'fine', tokenDetails.token.id, '{/literal}{$accessToken}{literal}');
+                           AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {/literal}{$userId}{literal}, 'fine', paymentId, '{/literal}{$accessToken}{literal}', '{/literal}{$billerAccountId}{literal}');
 	                        cardButton.disabled = false;
-	                        cardButton.value = "{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}";
-                        {rdelim})
+	                        cardButton.value = "{/literal}{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}{literal}";
+                        }
+                        )
                        .catch((error) =>
-                        {ldelim}
+                        {
 	                        AspenDiscovery.Account.handleACIError(error.message.default);
 	                        cardButton.disabled = false;
-	                        cardButton.value = "{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}";
-                        {rdelim});
-                    {rdelim})
-                {rdelim});
+	                        cardButton.value = "{/literal}{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}{literal}";
+                        });
+                    })
+				});
 			</script>
+        {/literal}
 			{else}
 				<div class="alert alert-warning"><strong>{translate text=$aciError isPublicFacing=true}</strong></div>
 			{/if}

@@ -3,19 +3,20 @@ import _ from 'lodash';
 import { Badge, Box, FlatList, Container, Pressable, Text, Stack, HStack, VStack, Image, Center } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import AddToList from '../../Search/AddToList';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getCleanTitle } from '../../../helpers/item';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getSavedSearch } from '../../../util/api/user';
 import { loadError } from '../../../components/loadError';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 
 export const MySavedSearch = () => {
      const route = useRoute();
@@ -23,24 +24,41 @@ export const MySavedSearch = () => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const { status, data, error, isFetching, isPreviousData } = useQuery(['saved_search', id, user.id], () => getSavedSearch(id, language, library.baseUrl), {
           staleTime: 1000,
           placeholderData: [],
      });
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      const Empty = () => {
           return (
-               <Center mt={5} mb={5}>
-                    <Text bold fontSize="lg">
-                         {getTermFromDictionary(language, 'no_results_found')}
-                    </Text>
-               </Center>
+               <>
+                    <Box safeArea={2}>{showSystemMessage()}</Box>
+                    <Center mt={5} mb={5}>
+                         <Text bold fontSize="lg">
+                              {getTermFromDictionary(language, 'no_results_found')}
+                         </Text>
+                    </Center>
+               </>
           );
      };
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2}>{showSystemMessage()}</Box>
                <Box safeArea={2}>{status === 'error' ? loadError('Error', '') : <FlatList data={data} ListEmptyComponent={Empty} renderItem={({ item }) => <SavedSearch data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}</Box>
           </SafeAreaView>
      );

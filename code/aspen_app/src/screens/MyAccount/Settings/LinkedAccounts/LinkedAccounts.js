@@ -3,13 +3,14 @@ import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 import { Box, Divider, HStack, Button, Text, Heading, FlatList, ScrollView } from 'native-base';
 import React from 'react';
 
-import { DisplayMessage } from '../../../../components/Notifications';
+import { DisplayMessage, DisplaySystemMessage } from '../../../../components/Notifications';
 import { loadingSpinner } from '../../../../components/loadingSpinner';
 import AddLinkedAccount from './AddLinkedAccount';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../../context/initialContext';
 import { getLinkedAccounts, getViewerAccounts, removeLinkedAccount, removeViewerAccount, reloadProfile } from '../../../../util/api/user';
 import { getTermFromDictionary } from '../../../../translations/TranslationService';
 import { getLists } from '../../../../util/api/list';
+import _ from 'lodash';
 
 export const MyLinkedAccounts = () => {
      const navigation = useNavigation();
@@ -19,6 +20,8 @@ export const MyLinkedAccounts = () => {
      const { language } = React.useContext(LanguageContext);
      const isFetchingAccounts = useIsFetching({ queryKey: ['linked_accounts', user.id] });
      const isFetchingViewers = useIsFetching({ queryKey: ['viewer_accounts', user.id] });
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -53,8 +56,20 @@ export const MyLinkedAccounts = () => {
           return loadingSpinner();
      }*/
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <ScrollView p={5} flex={1}>
+               {showSystemMessage()}
                <DisplayMessage type="info" message={getTermFromDictionary(language, 'linked_info_message')} />
                <Heading fontSize="lg" pb={2}>
                     {getTermFromDictionary(language, 'linked_additional_accounts')}

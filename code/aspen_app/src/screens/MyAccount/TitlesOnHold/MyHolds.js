@@ -7,11 +7,11 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { getPickupLocations } from '../../../util/loadLibrary';
 import { getPatronHolds, refreshProfile, reloadProfile } from '../../../util/api/user';
 import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
-import { DisplayMessage } from '../../../components/Notifications';
+import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
 
@@ -28,6 +28,7 @@ export const MyHolds = () => {
      const [values, setGroupValues] = React.useState([]);
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const [sortBy, setSortBy] = React.useState({
           title: 'Sort by Title',
@@ -406,9 +407,21 @@ export const MyHolds = () => {
           return null;
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1' || obj.showOn === '3') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <SafeAreaView>
                {actionButtons('none')}
+               <Box safeArea={2}>{showSystemMessage()}</Box>
                <Box style={{ paddingBottom: 100 }}>
                     <Checkbox.Group
                          style={{

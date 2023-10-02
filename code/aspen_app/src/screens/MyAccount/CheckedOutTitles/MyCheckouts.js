@@ -11,12 +11,13 @@ import CachedImage from 'expo-cached-image';
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
-import { CheckoutsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { CheckoutsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { getPatronCheckedOutItems, reloadProfile } from '../../../util/api/user';
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 
 export const MyCheckouts = () => {
      const isFetchingCheckouts = useIsFetching({ queryKey: ['checkouts'] });
@@ -29,6 +30,7 @@ export const MyCheckouts = () => {
      const [isLoading, setLoading] = React.useState(false);
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const [checkoutsBy, setCheckoutBy] = React.useState({
           ils: 'Checked Out Titles for Physical Materials',
@@ -221,9 +223,21 @@ export const MyCheckouts = () => {
           }
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1' || obj.showOn === '2') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap">
+                    {showSystemMessage()}
                     <ScrollView horizontal>{actionButtons()}</ScrollView>
                </Box>
                <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} reloadCheckouts={reloadCheckouts} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
