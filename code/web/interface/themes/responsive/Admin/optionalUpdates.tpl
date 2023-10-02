@@ -7,13 +7,6 @@
 				<div class="alert alert-info">{translate text="There are no remaining recommended updates to be applied." isAdminFacing=true}</div>
 			{else}
 				<table class="table" aria-label="Recommended Updates">
-					<thead>
-						<tr>
-							<th></th>
-							<th>{translate text="Description" isAdminFacing=true}</th>
-							<th></th>
-						</tr>
-					</thead>
 					<tbody>
 						{foreach from=$optionalUpdates item=optionalUpdate key=updateKey name=updates}
 							<tr>
