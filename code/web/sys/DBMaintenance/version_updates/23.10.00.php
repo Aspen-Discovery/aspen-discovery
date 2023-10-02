@@ -75,7 +75,71 @@ function getUpdates23_10_00(): array {
 				"ALTER TABLE themes ADD COLUMN libraryWebsiteImage VARCHAR(100) default ''",
 				"ALTER TABLE themes ADD COLUMN historyArchivesImage VARCHAR(100) default ''",
 			],
-		], //theme_explore_more_images
+		],
+		//theme_explore_more_images
+		'permissions_self_reg_forms' => [
+			'title' => 'Alters permissions for Custom Self Registration Forms',
+			'description' => 'Create permissions for altering custom self registration forms',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Administer Self Registration Forms', 'Cataloging & eContent', 20, 'Allows the user to alter custom self registration forms for all libraries.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Self Registration Forms'))",
+			],
+		],
+		//permissions_self_reg_forms
+		'self_registration_form' => [
+			'title' => 'Self Registration Form',
+			'description' => 'Setup tables to store data for custom self registration forms',
+			'sql' => [
+				"CREATE TABLE self_registration_form (
+					id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					name VARCHAR(255) NOT NULL UNIQUE
+				)",
+				"CREATE TABLE self_reg_form_values (
+					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+					selfRegistrationFormId INT NOT NULL, 
+					weight INT NOT NULL DEFAULT '0',
+					symphonyName VARCHAR(50) NOT NULL, 
+					displayName VARCHAR(50) NOT NULL,
+					fieldType ENUM ('text', 'date') NOT NULL DEFAULT 'text',
+					patronUpdate ENUM ('read_only','hidden','editable','editable_required') NOT NULL DEFAULT 'editable',
+					required TINYINT NOT NULL DEFAULT '0',
+					note VARCHAR(75),
+					UNIQUE groupValue (selfRegistrationFormId, symphonyName)
+				) ENGINE = InnoDB",
+			],
+		],
+		// self_registration_form
+		'self_reg_default' => [
+			'title' => 'Symphony Self Registration Default Values',
+			'description' => 'Adds a default registration form for Symphony',
+			'sql' => [
+				"INSERT INTO self_registration_form (id, name) VALUES (1, 'default')",
+				"INSERT INTO self_reg_form_values VALUES 
+                             (1,1,1, 'firstName', 'First Name', 'text', 'read_only', 1, NULL),
+                             (2,1,2, 'middleName', 'Middle Name', 'text', 'read_only', 0, NULL),
+                             (3,1,3, 'lastName', 'Last Name', 'text', 'read_only', 1, NULL),
+                             (4,1,4, 'dob', 'Date of Birth', 'date', 'read_only', 0, NULL),
+                             (5,1,5, 'street', 'Street', 'text', 'editable_required', 1, NULL),
+                             (6,1,6, 'apt_suite', 'APT', 'text', 'editable', 0, NULL),
+                             (7,1,7, 'city', 'City', 'text', 'editable_required', 1, NULL),
+                             (8,1,8, 'state', 'State', 'text', 'editable_required', 1, NULL),
+                             (9,1,9, 'zip', 'Zip Code', 'text', 'editable_required', 1, NULL),
+                             (10,1,10, 'phone', 'Primary Phone','text', 'editable', 0, NULL),
+                             (11,1,11, 'cellphone', 'Cellphone', 'text', 'editable', 0, NULL),
+                             (12,1,12, 'homephone', 'Home Phone', 'text', 'editable', 0, NULL),
+                             (13,1,13, 'email', 'Email', 'text', 'editable', 0, NULL)",
+			],
+		],
+		// self_reg_default
+		'self_reg_form_id' => [
+			'title' => "Self Registration Form Id",
+			'description' => "Adds self registration form ID to library table",
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN selfRegistrationFormId INT(11) DEFAULT -1",
+			],
+		],
+		//self_reg_form_id
 	];
 }
 
