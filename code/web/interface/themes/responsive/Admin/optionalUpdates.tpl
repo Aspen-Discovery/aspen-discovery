@@ -6,6 +6,7 @@
 			{if empty($optionalUpdates)}
 				<div class="alert alert-info">{translate text="There are no remaining recommended updates to be applied." isAdminFacing=true}</div>
 			{else}
+				<div class="alert alert-info">{translate text='For each of the updates below you will need to select either "Apply Update" or "Do Not Apply Update" to dismiss the system message. If you are not ready to decide, you can leave the setting at "Skip for Now" and the system message will stay until you make a decision.' isAdminFacing=true}</div>
 				<table class="table" aria-label="Recommended Updates">
 					<tbody>
 						{foreach from=$optionalUpdates item=optionalUpdate key=updateKey name=updates}
@@ -17,7 +18,7 @@
 									<select name="updatesToApply[{$updateKey}]" class="form-control" style="width: auto">
 										<option value="1" selected>Skip for Now</option>
 										<option value="2">Apply Update</option>
-										<option value="3">Do not apply Update</option>
+										<option value="3">Do Not Apply Update</option>
 									</select>
 								</td>
 							</tr>
