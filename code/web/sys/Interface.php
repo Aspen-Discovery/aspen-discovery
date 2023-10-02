@@ -320,7 +320,7 @@ class UInterface extends Smarty {
 		$primaryTheme = null;
 
 		$hasSqlUpdates = false;
-		if (UserAccount::userHasPermission('Run Database Updates')) {
+		if (UserAccount::userHasPermission('Run Database Maintenance')) {
 			require_once ROOT_DIR . '/services/API/SystemAPI.php';
 			$systemAPI = new SystemAPI();
 			$adminUser = $systemAPI->displayAdminAlert();
