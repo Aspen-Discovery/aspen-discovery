@@ -3254,15 +3254,22 @@ class User extends DataObject {
 		}
 
 		$hasCurbside = false;
+		$customSelfRegForms = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $accountProfileInfo['accountProfile'];
 			if ($accountProfile->ils == 'koha') {
 				$hasCurbside = true;
 			}
+			if ($accountProfile->ils == 'symphony') {
+				$customSelfRegForms = true;
+			}
 		}
 		if ($hasCurbside) {
 			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/ILS/CurbsidePickupSettings'), ['Administer Curbside Pickup']);
+		}
+		if ($customSelfRegForms) {
+			$sections['ils_integration']->addAction(new AdminAction('Self Registration Forms', 'Create Self Registration Forms', '/ILS/SelfRegistrationForms'), ['Administer Self Registration Forms']);
 		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), [
