@@ -340,12 +340,12 @@ export const DisplayMessage = (props) => {
      );
 };
 
-async function hideSystemMessage(allSystemMessages, currentMessageId, isDismissable, url) {
+async function hideSystemMessage(allSystemMessages, currentMessageId, isDismissible, url) {
      let messages = allSystemMessages;
      // remove it from the array to hide it for the session
      messages = _.reject(messages, { id: currentMessageId });
 
-     if (isDismissable === 1 || isDismissable === '1') {
+     if (isDismissible === 1 || isDismissible === '1') {
           // send request to dismiss it with Discovery
           dismissSystemMessage(currentMessageId, url);
      }
