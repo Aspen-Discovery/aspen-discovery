@@ -2926,7 +2926,6 @@ class SirsiDynixROA extends HorizonAPI {
 				}
 			}
 		}
-		$pickupLocationField = null;
 		if (count($pickupLocations) == 1) {
 			$selectedPickupLocation = '';
 			foreach ($pickupLocations as $code => $name) {
