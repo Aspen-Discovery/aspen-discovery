@@ -1888,7 +1888,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 		if (!empty($this->accountProfile->overrideCode)) {
 			$additionalHeaders = [
-				'SD-Prompt-Return: USER_PRIVILEGE_OVRCD/' . $this->accountProfile->overrideCode
+				'SD-Prompt-Return: USER_PRIVILEGE_OVRCD/' . $this->accountProfile->overrideCode,
 			];
 		} else {
 			$additionalHeaders = [];
@@ -2914,13 +2914,25 @@ class SirsiDynixROA extends HorizonAPI {
 		}
 
 		global $library;
-		$fields = [];
+		$hasCustomSelfRegistrationFrom = false;
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
+			$selfRegistrationForm = new SelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$customFields = $selfRegistrationForm->getFields();
+				if ($customFields != null && count($customFields) > 0) {
+					$hasCustomSelfRegistrationFrom = true;
+				}
+			}
+		}
+		$pickupLocationField = null;
 		if (count($pickupLocations) == 1) {
 			$selectedPickupLocation = '';
 			foreach ($pickupLocations as $code => $name) {
 				$selectedPickupLocation = $code;
 			}
-			$fields['pickupLocation'] = [
+			$pickupLocationField = [
 				'property' => 'pickupLocation',
 				'type' => 'hidden',
 				'label' => 'Home Library',
@@ -2929,206 +2941,233 @@ class SirsiDynixROA extends HorizonAPI {
 				'required' => true,
 			];
 		} else {
-			$fields['librarySection'] = [
-				'property' => 'librarySection',
-				'type' => 'section',
-				'label' => 'Library',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [
-					'pickupLocation' => [
-						'property' => 'pickupLocation',
-						'type' => 'enum',
-						'label' => 'Home Library',
-						'description' => 'Please choose the Library location you would prefer to use',
-						'values' => $pickupLocations,
-						'required' => true,
-					],
-				],
+			$pickupLocationField = [
+				'property' => 'pickupLocation',
+				'type' => 'enum',
+				'label' => 'Home Library',
+				'description' => 'Please choose the Library location you would prefer to use',
+				'values' => $pickupLocations,
+				'required' => true,
 			];
 		}
 
-		$fields['identitySection'] = [
-			'property' => 'identitySection',
-			'type' => 'section',
-			'label' => 'Identity',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [],
-		];
-		if ($library->promptForParentInSelfReg) {
-			$fields['identitySection']['properties'][] = [
-				'property' => 'cardType',
-				'type' => 'enum',
-				'values' => [
-					'adult' => 'Adult (18 and Over)',
-					'minor' => 'Minor (Under 18)',
-				],
-				'label' => 'Type of Card',
-				'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+		$fields = [];
+		if (!$hasCustomSelfRegistrationFrom) {
+			if (count($pickupLocations) == 1) {
+				$fields['pickupLocation'] = $pickupLocationField;
+			} else {
+				$fields['librarySection'] = [
+					'property' => 'librarySection',
+					'type' => 'section',
+					'label' => 'Library',
+					'hideInLists' => true,
+					'expandByDefault' => true,
+					'properties' => [
+						'pickupLocation' => $pickupLocationField,
+					],
+				];
+			}
+
+			$fields['identitySection'] = [
+				'property' => 'identitySection',
+				'type' => 'section',
+				'label' => 'Identity',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
 			];
-		}
-		$fields['identitySection']['properties'][] = [
-			'property' => 'firstName',
-			'type' => 'text',
-			'label' => 'First Name',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		$fields['identitySection']['properties'][] = [
-			'property' => 'middleName',
-			'type' => 'text',
-			'label' => 'Middle Name',
-			'maxLength' => 255,
-			'required' => false,
-			'autocomplete' => false,
-		];
-		$fields['identitySection']['properties'][] = [
-			'property' => 'lastName',
-			'type' => 'text',
-			'label' => 'Last Name',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		if ($library->promptForParentInSelfReg) {
+			if ($library->promptForParentInSelfReg) {
+				$fields['identitySection']['properties'][] = [
+					'property' => 'cardType',
+					'type' => 'enum',
+					'values' => [
+						'adult' => 'Adult (18 and Over)',
+						'minor' => 'Minor (Under 18)',
+					],
+					'label' => 'Type of Card',
+					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+				];
+			}
 			$fields['identitySection']['properties'][] = [
-				'property' => 'parentName',
+				'property' => 'firstName',
 				'type' => 'text',
-				'label' => 'Parent/Guardian Name',
+				'label' => 'First Name',
 				'maxLength' => 255,
-				'required' => false,
-				'hiddenByDefault' => true,
+				'required' => true,
 				'autocomplete' => false,
 			];
-		}
-		if ($library && $library->promptForBirthDateInSelfReg) {
-			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
-			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
 			$fields['identitySection']['properties'][] = [
-				'property' => 'birthDate',
-				'type' => 'date',
-				'label' => 'Date of Birth (MM/DD/YYYY)',
-				'min' => $birthDateMin,
-				'max' => $birthDateMax,
+				'property' => 'middleName',
+				'type' => 'text',
+				'label' => 'Middle Name',
+				'maxLength' => 255,
+				'required' => false,
+				'autocomplete' => false,
+			];
+			$fields['identitySection']['properties'][] = [
+				'property' => 'lastName',
+				'type' => 'text',
+				'label' => 'Last Name',
+				'maxLength' => 255,
+				'required' => true,
+				'autocomplete' => false,
+			];
+			if ($library->promptForParentInSelfReg) {
+				$fields['identitySection']['properties'][] = [
+					'property' => 'parentName',
+					'type' => 'text',
+					'label' => 'Parent/Guardian Name',
+					'maxLength' => 255,
+					'required' => false,
+					'hiddenByDefault' => true,
+					'autocomplete' => false,
+				];
+			}
+			if ($library && $library->promptForBirthDateInSelfReg) {
+				$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+				$birthDateMax = date('Y-m-d', strtotime('-13 years'));
+				$fields['identitySection']['properties'][] = [
+					'property' => 'birthDate',
+					'type' => 'date',
+					'label' => 'Date of Birth (MM/DD/YYYY)',
+					'min' => $birthDateMin,
+					'max' => $birthDateMax,
+					'maxLength' => 10,
+					'required' => true,
+					'autocomplete' => false,
+				];
+			}
+
+			$fields['mainAddressSection'] = [
+				'property' => 'mainAddressSection',
+				'type' => 'section',
+				'label' => 'Main Address',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['mainAddressSection']['properties'][] = [
+				'property' => 'address',
+				'type' => 'text',
+				'label' => 'Mailing Address',
+				'maxLength' => 255,
+				'required' => true,
+				'autocomplete' => false,
+			];
+			$fields['mainAddressSection']['properties'][] = [
+				'property' => 'city',
+				'type' => 'text',
+				'label' => 'City',
+				'maxLength' => 255,
+				'required' => true,
+				'autocomplete' => false,
+			];
+			if (empty($library->validSelfRegistrationStates)) {
+				$fields['mainAddressSection']['properties'][] = [
+					'property' => 'state',
+					'type' => 'text',
+					'label' => 'State',
+					'maxLength' => 2,
+					'required' => true,
+					'autocomplete' => false,
+				];
+			} else {
+				$validStates = explode('|', $library->validSelfRegistrationStates);
+				$validStates = array_combine($validStates, $validStates);
+				$fields['mainAddressSection']['properties'][] = [
+					'property' => 'state',
+					'type' => 'enum',
+					'values' => $validStates,
+					'label' => 'State',
+					'description' => 'State',
+					'maxLength' => 32,
+					'required' => true,
+				];
+			}
+			$fields['mainAddressSection']['properties']['zip'] = [
+				'property' => 'zip',
+				'type' => 'text',
+				'label' => 'Zip Code',
 				'maxLength' => 10,
 				'required' => true,
 				'autocomplete' => false,
 			];
-		}
+			if (!empty($library->validSelfRegistrationZipCodes)) {
+				$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+				$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate([
+					'text' => 'Please enter a valid zip code',
+					'isPublicFacing' => true,
+				]);
+			}
 
-		$fields['mainAddressSection'] = [
-			'property' => 'mainAddressSection',
-			'type' => 'section',
-			'label' => 'Main Address',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [],
-		];
-		$fields['mainAddressSection']['properties'][] = [
-			'property' => 'address',
-			'type' => 'text',
-			'label' => 'Mailing Address',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		$fields['mainAddressSection']['properties'][] = [
-			'property' => 'city',
-			'type' => 'text',
-			'label' => 'City',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		if (empty($library->validSelfRegistrationStates)) {
-			$fields['mainAddressSection']['properties'][] = [
-				'property' => 'state',
+			$fields['contactInformationSection'] = [
+				'property' => 'contactInformationSection',
+				'type' => 'section',
+				'label' => 'Contact Information',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['contactInformationSection']['properties'][] = [
+				'property' => 'phone',
 				'type' => 'text',
-				'label' => 'State',
-				'maxLength' => 2,
-				'required' => true,
+				'label' => 'Primary Phone',
+				'maxLength' => 15,
+				'required' => $library->selfRegRequirePhone,
+				'autocomplete' => false,
+			];
+			if ($library->promptForSMSNoticesInSelfReg) {
+				$fields['contactInformationSection']['properties'][] = [
+					'property' => 'smsNotices',
+					'type' => 'checkbox',
+					'label' => 'Receive notices via text',
+					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+				];
+				$fields['contactInformationSection']['properties'][] = [
+					'property' => 'cellPhone',
+					'type' => 'text',
+					'label' => 'Cell Phone',
+					'maxLength' => 15,
+					'required' => false,
+					'hiddenByDefault' => true,
+					'autocomplete' => false,
+				];
+			}
+			$fields['contactInformationSection']['properties'][] = [
+				'property' => 'email',
+				'type' => 'email',
+				'label' => 'Email',
+				'maxLength' => 128,
+				'required' => $library->selfRegRequireEmail,
+				'autocomplete' => false,
+			];
+			$fields['contactInformationSection']['properties'][] = [
+				'property' => 'email2',
+				'type' => 'email',
+				'label' => 'Confirm Email',
+				'maxLength' => 128,
+				'required' => $library->selfRegRequireEmail,
 				'autocomplete' => false,
 			];
 		} else {
-			$validStates = explode('|', $library->validSelfRegistrationStates);
-			$validStates = array_combine($validStates, $validStates);
-			$fields['mainAddressSection']['properties'][] = [
-				'property' => 'state',
-				'type' => 'enum',
-				'values' => $validStates,
-				'label' => 'State',
-				'description' => 'State',
-				'maxLength' => 32,
-				'required' => true,
-			];
-		}
-		$fields['mainAddressSection']['properties']['zip'] = [
-			'property' => 'zip',
-			'type' => 'text',
-			'label' => 'Zip Code',
-			'maxLength' => 10,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		if (!empty($library->validSelfRegistrationZipCodes)) {
-			$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
-			$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate([
-				'text' => 'Please enter a valid zip code',
-				'isPublicFacing' => true,
-			]);
+			//Use self registration fields
+			/** @var SelfRegistrationFormValues $customField */
+			foreach ($customFields as $customField) {
+				if ($customField->symphonyName == 'pickupLocation') {
+					$fields[$customField->symphonyName] = $pickupLocationField;
+				}else{
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+				}
+			}
+
 		}
 
-		$fields['contactInformationSection'] = [
-			'property' => 'contactInformationSection',
-			'type' => 'section',
-			'label' => 'Contact Information',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [],
-		];
-		$fields['contactInformationSection']['properties'][] = [
-			'property' => 'phone',
-			'type' => 'text',
-			'label' => 'Primary Phone',
-			'maxLength' => 15,
-			'required' => $library->selfRegRequirePhone,
-			'autocomplete' => false,
-		];
-		if ($library->promptForSMSNoticesInSelfReg) {
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'smsNotices',
-				'type' => 'checkbox',
-				'label' => 'Receive notices via text',
-				'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
-			];
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'cellPhone',
-				'type' => 'text',
-				'label' => 'Cell Phone',
-				'maxLength' => 15,
-				'required' => false,
-				'hiddenByDefault' => true,
-				'autocomplete' => false,
-			];
-		}
-		$fields['contactInformationSection']['properties'][] = [
-			'property' => 'email',
-			'type' => 'email',
-			'label' => 'Email',
-			'maxLength' => 128,
-			'required' => $library->selfRegRequireEmail,
-			'autocomplete' => false,
-		];
-		$fields['contactInformationSection']['properties'][] = [
-			'property' => 'email2',
-			'type' => 'email',
-			'label' => 'Confirm Email',
-			'maxLength' => 128,
-			'required' => $library->selfRegRequireEmail,
-			'autocomplete' => false,
-		];
 		return $fields;
 	}
 
