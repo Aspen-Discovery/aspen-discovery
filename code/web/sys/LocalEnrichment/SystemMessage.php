@@ -321,6 +321,9 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 		if (!$this->isValidForScope()) {
 			return false;
 		}
+		if (empty($this->message)) {
+			return false;
+		}
 		return true;
 	}
 
@@ -354,6 +357,9 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 					return false;
 				}
 			}
+		}
+		if (empty($this->appMessage)) {
+			return false;
 		}
 		return true;
 	}
