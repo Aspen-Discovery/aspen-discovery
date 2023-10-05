@@ -1,13 +1,13 @@
 import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
 import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
 import CachedImage from 'expo-cached-image';
 
 import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container, Center, Heading } from 'native-base';
 
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getAppliedFilters, getAvailableFacets, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
 import AddToList from './AddToList';
 import { loadingSpinner } from '../../components/loadingSpinner';
@@ -20,6 +20,7 @@ import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
+import { DisplaySystemMessage } from '../../components/Notifications';
 
 export const SearchResults = () => {
      const navigation = useNavigation();
@@ -30,6 +31,9 @@ export const SearchResults = () => {
      const { language } = React.useContext(LanguageContext);
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
+
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
@@ -150,22 +154,37 @@ export const SearchResults = () => {
           return null;
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      const NoResults = () => {
           return (
-               <Center flex={1}>
-                    <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">
-                         {route.params?.term}
-                    </Text>
-                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                         {getTermFromDictionary(language, 'new_search_button')}
-                    </Button>
-               </Center>
+               <>
+                    <Box safeArea={2}>{showSystemMessage()}</Box>
+                    <Center flex={1}>
+                         <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
+                         <Text bold w="75%" textAlign="center">
+                              {route.params?.term}
+                         </Text>
+                         <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                              {getTermFromDictionary(language, 'new_search_button')}
+                         </Button>
+                    </Center>
+               </>
           );
      };
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2}>{showSystemMessage()}</Box>
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (

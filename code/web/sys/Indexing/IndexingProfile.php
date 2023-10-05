@@ -739,7 +739,7 @@ class IndexingProfile extends DataObject {
 					'itemUrlDescription' => [
 						'property' => 'itemUrlDescription',
 						'type' => 'text',
-						'label' => 'Item URL',
+						'label' => 'Item URL Description',
 						'maxLength' => 1,
 						'description' => 'Subfield for a URL description specific to the item',
 						'forcesReindex' => true,

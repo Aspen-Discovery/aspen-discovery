@@ -317,7 +317,7 @@ function getUpdates23_09_00(): array {
 	];
 }
 
-function deleteNullTranslations(/** @noinspection PhpUnusedParameterInspection */ &$update) {
+function deleteNullTranslations(&$update) {
 	$translation = new Translation();
 	$translation->whereAdd("LOWER(translation) = 'null'");
 	$numDeleted = $translation->delete(true);

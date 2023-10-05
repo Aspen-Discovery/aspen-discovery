@@ -10,13 +10,14 @@ import CachedImage from 'expo-cached-image';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import EditList from './EditList';
 import { useRoute } from '@react-navigation/native';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
 import { getListTitles, removeTitlesFromList } from '../../../util/api/list';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getCleanTitle } from '../../../helpers/item';
 import { loadError } from '../../../components/loadError';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 
 export const MyList = () => {
      const providedList = useRoute().params.details;
@@ -35,6 +36,7 @@ export const MyList = () => {
           recentlyAdded: 'Sort By Recently Added',
           custom: 'Sort By User Defined',
      });
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      React.useEffect(() => {
           async function fetchTranslations() {
@@ -251,8 +253,20 @@ export const MyList = () => {
           );
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2}>{showSystemMessage()}</Box>
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (

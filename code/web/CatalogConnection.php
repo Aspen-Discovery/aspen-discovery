@@ -910,6 +910,7 @@ class CatalogConnection {
 	 * @return array
 	 */
 	function updateHomeLibrary($user, $homeLibraryCode) {
+		$oldHomeLibrary = $user->getHomeLocation()->locationId;
 		$result = $this->driver->updateHomeLibrary($user, $homeLibraryCode);
 		if ($result['success']) {
 			$location = new Location();
@@ -919,6 +920,13 @@ class CatalogConnection {
 				$user->_homeLocationCode = $homeLibraryCode;
 				$user->_homeLocation = $location;
 				$user->update();
+
+				$parentLibrary = $location->getParentLibrary();
+				if ($parentLibrary != null) {
+					if (!$parentLibrary->allowPickupLocationUpdates || !$parentLibrary->allowRememberPickupLocation) {
+						$user->pickupLocationId = $location->locationId;
+					}
+				}
 			}
 		}
 		return $result;

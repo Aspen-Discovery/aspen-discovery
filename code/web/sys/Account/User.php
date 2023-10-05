@@ -363,7 +363,7 @@ class User extends DataObject {
 	}
 
 	function getPasswordOrPin() {
-		return $this->ils_password;
+		return empty($this->ils_password) ? '' : $this->ils_password;
 	}
 
 	function getPasswordOrPinField() {
@@ -2695,7 +2695,9 @@ class User extends DataObject {
 		$messages = [];
 		$userMessage->find();
 		while ($userMessage->fetch()) {
-			$messages[] = clone $userMessage;
+			if (!empty($userMessage->message)) {
+				$messages[] = clone $userMessage;
+			}
 		}
 		return $messages;
 	}
@@ -3030,6 +3032,7 @@ class User extends DataObject {
 		$sections['system_admin']->addAction(new AdminAction('Administration Users', 'Define who should have administration privileges.', '/Admin/Administrators'), 'Administer Users');
 		$sections['system_admin']->addAction(new AdminAction('Permissions', 'Define who what each role in the system can do.', '/Admin/Permissions'), 'Administer Permissions');
 		$sections['system_admin']->addAction(new AdminAction('DB Maintenance', 'Update the database when new versions of Aspen Discovery are released.', '/Admin/DBMaintenance'), 'Run Database Maintenance');
+		$sections['system_admin']->addAction(new AdminAction('Optional Updates', 'Recommended updates that can be optionally applied when new versions of Aspen Discovery are released.', '/Admin/OptionalUpdates'), 'Run Optional Updates');
 		$sections['system_admin']->addAction(new AdminAction('Amazon SES Settings', 'Settings to allow Aspen Discovery to send emails via Amazon SES.', '/Admin/AmazonSesSettings'), 'Administer Amazon SES');
 		$sections['system_admin']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
 		$sections['system_admin']->addAction(new AdminAction('Twilio Settings', 'Settings to allow Aspen Discovery to send texts via Twilio.', '/Admin/TwilioSettings'), 'Administer Twilio');
@@ -3253,15 +3256,22 @@ class User extends DataObject {
 		}
 
 		$hasCurbside = false;
+		$customSelfRegForms = false;
 		foreach (UserAccount::getAccountProfiles() as $accountProfileInfo) {
 			/** @var AccountProfile $accountProfile */
 			$accountProfile = $accountProfileInfo['accountProfile'];
 			if ($accountProfile->ils == 'koha') {
 				$hasCurbside = true;
 			}
+			if ($accountProfile->ils == 'symphony') {
+				$customSelfRegForms = true;
+			}
 		}
 		if ($hasCurbside) {
 			$sections['ils_integration']->addAction(new AdminAction('Curbside Pickup Settings', 'Define Settings for Curbside Pickup, requires Koha Curbside plugin', '/ILS/CurbsidePickupSettings'), ['Administer Curbside Pickup']);
+		}
+		if ($customSelfRegForms) {
+			$sections['ils_integration']->addAction(new AdminAction('Self Registration Forms', 'Create Self Registration Forms', '/ILS/SelfRegistrationForms'), ['Administer Self Registration Forms']);
 		}
 		$sections['ils_integration']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ILS records.', '/ILS/IndexingLog'), 'View Indexing Logs');
 		$sections['ils_integration']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ILS integration.', '/ILS/Dashboard'), [

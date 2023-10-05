@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
-import * as SecureStore from 'expo-secure-store';
+import { useQueryClient } from '@tanstack/react-query';
 import * as WebBrowser from 'expo-web-browser';
 import { Box, Button, Center, Icon, Heading, Text, Divider } from 'native-base';
 import React, { Component } from 'react';
@@ -8,17 +8,21 @@ import { showLocation } from 'react-native-map-link';
 
 // custom components and helper files
 import HoursAndLocation from './HoursAndLocation';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { PATRON } from '../../util/loadPatron';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { GLOBALS } from '../../util/globals';
 import { PermissionsPrompt } from '../../components/PermissionsPrompt';
+import _ from 'lodash';
+import { DisplaySystemMessage } from '../../components/Notifications';
 
 export const ContactLibrary = () => {
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const dialCall = (number) => {
           const phoneNumber = `tel:${number}`;
@@ -56,8 +60,20 @@ export const ContactLibrary = () => {
           }
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <Box safeArea={5}>
+               {showSystemMessage()}
                <Center>
                     <Heading mb={1}>{library.displayName}</Heading>
                     {library.displayName !== location.displayName ? <Text mb={2}>{location.displayName}</Text> : null}
