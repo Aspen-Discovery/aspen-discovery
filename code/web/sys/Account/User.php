@@ -2695,7 +2695,9 @@ class User extends DataObject {
 		$messages = [];
 		$userMessage->find();
 		while ($userMessage->fetch()) {
-			$messages[] = clone $userMessage;
+			if (!empty($userMessage->message)) {
+				$messages[] = clone $userMessage;
+			}
 		}
 		return $messages;
 	}
