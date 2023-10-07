@@ -10,6 +10,7 @@ class SavedRecordInfo {
 	public long groupedWorkId;
 	public long editionId;
 	public long publisherId;
+	public long placesOfPublicationId;
 	public long publicationDateId;
 	public long physicalDescriptionId;
 	public long formatId;
@@ -26,6 +27,7 @@ class SavedRecordInfo {
 		recordIdentifier = getExistingRecordsForWorkRS.getString("recordIdentifier");
 		editionId = getExistingRecordsForWorkRS.getLong("editionId");
 		publisherId = getExistingRecordsForWorkRS.getLong("publisherId");
+		placesOfPublicationId = getExistingRecordsForWorkRS.getLong("placesOfPublicationId");
 		publicationDateId = getExistingRecordsForWorkRS.getLong("publicationDateId");
 		physicalDescriptionId = getExistingRecordsForWorkRS.getLong("physicalDescriptionId");
 		formatId = getExistingRecordsForWorkRS.getLong("formatId");

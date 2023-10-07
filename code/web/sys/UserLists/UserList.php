@@ -1156,4 +1156,736 @@ class UserList extends DataObject {
 			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
 		}
 	}
+
+	function getISBNs($text) {
+		$pattern = '/\b(?:ISBN(?:-10)?:?\s*|ISBN-13:?\s*|)(?=[0-9X]{10,13})(?=(?:[0-9]+[-\s]?){4})(?!00000)[0-9-]{10,13}\b/i';
+
+		preg_match_all($pattern, $text, $matches);
+		return $matches[0];
+	}
+
+	public function buildRIS() {
+		try {
+			$titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for export, not just a page's worth
+
+			$risCitations = array();
+
+			foreach ($titleDetails as $curDoc) {
+				//check document type
+				if ($curDoc instanceof GroupedWorkDriver && $curDoc->isValid()) {
+					$risCitation = $this->formatGroupedWorkCitation($curDoc);
+				// } elseif ($curDoc instanceof ListsRecordDriver) {
+				// 	$risCitation = $this->formatListsRecordCitation($curDoc);
+				// } elseif ($curDoc instanceof PersonRecord) {
+				// 	$risCitation = $this->formatPersonRecordCitation($curDoc);
+				// } elseif ($curDoc instanceof OpenArchivesRecordDriver) {
+				// 	$risCitation = $this->formatOpenArchivesRecordCitation($curDoc);
+				// } elseif ($curDoc instanceof EbscohostRecordDriver) {
+				// 	$risCitation = $this->formatEbscohostRecordCitation($curDoc);
+				// } elseif ($curDoc instanceof EbscoRecordDriver) {
+				// 	$risCitation = $this->formatEbscoRecordCitation($curDoc);
+				// } elseif ($curDoc instanceof WebsitePageRecordDriver) {
+				// 	$risCitation = $this->formatWebsitePageRecordCitation($curDoc);
+				// } elseif ($curDoc instanceof WebResourceRecordDriver) {
+				// 	$risCitation = $this->formatWebResourceRecordCitation($curDoc);
+				} else {
+					// Other document type, pass over record
+					continue;
+				}
+
+				// Add formated entry to citation array
+				if (!empty($risCitation)) {
+					$risCitations[] = $risCitation;
+				}
+			}
+
+			// Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: text/plain; charset=utf-8');
+			header('Content-Disposition: attachment; filename="UserList.ris"');
+
+
+			echo implode("\n", $risCitations);
+			exit();
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Unable to create RIS file " . $e, Logger::LOG_ERROR);
+		}
+	}
+
+	//Helper Functions
+	private function formatGroupedWorkCitation($curDoc) {
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+				if ($curDoc->isValid()) {
+			// Initialize an array to store the RIS-formatted citation fields
+			$risFields = array();
+
+			// RIS TY - Format
+			$format = $curDoc->getFormat() ;
+			if(is_array($format) && count($format) > 0) {
+				$format = implode(', ', $format);
+			
+			switch ($format) {
+				case 'book': 
+					$format = 'BOOK';
+					break;
+				case 'BOOK':
+					$format = 'BOOK';
+					break;
+				case 'BOOKS':
+					$format = 'BOOK';
+					break;
+				case 'Book':
+					$format = 'BOOK';
+					break;
+				case 'books':
+					$format = 'BOOK';
+					break;
+				case 'BK':
+					$format = 'BOOK';
+					break;
+				case 'Books':
+					$format = 'BOOK';
+					break;
+				case 'JOURNAL':
+					$format = 'BOOK';
+					break;
+				case 'Journal Article':
+					$format = 'JOUR';
+					break;
+				case 'JOURNAL ARTICLE':
+					$format = 'JOUR';
+					break;
+				case 'Journal':
+					$format = 'BOOK';
+					break;
+				case 'Audio-Visual':
+					$format = 'SOUND';
+					break;
+				case 'AudioBook':
+					$format = 'SOUND';
+					break;
+				case 'Catalog':
+					$format = 'CTLG';
+					break;
+				case 'Dictionary':
+					$format = 'DICT';
+					break;
+				case 'Electronic Article':
+					$format = 'EJOUR';
+					break;
+				case 'Electronic Book':
+					$format = 'EBOOK';
+					break;
+				case 'E-Book':
+					$format = 'EBOOK';
+					break;
+				case 'Magazine':
+					$format = 'MGZN';
+					break;
+				case 'Magazine Article':
+					$format = 'MGZN';
+					break;
+				case 'Music':
+					$format = 'MUSIC';
+					break;
+				case 'MUSIC':
+					$format = 'MUSIC';
+					break;
+				case 'Newspaper':
+					$format = 'NEWS';
+					break;
+				case 'Newspaper Article':
+					$format = 'NEWS';
+					break;
+				case 'Web Page':
+					$format = 'ELEC';
+					break;
+				case 'Visual Materials':
+					$format = 'VIDEO';
+					break;
+				case 'Movie':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- DVD':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- VHS':
+					$format = 'VIDEO';
+					break;
+				case 'Electronic Database':
+					$format = 'EBOOK';
+						break;
+				case 'Reference':
+					$format = 'BOOK';
+					break;
+			}
+		
+		 $risFields[] = "TY  - ".$format;
+		}	
+			//RIS Tag: AU - Author
+			
+			$authors = array();
+			$primaryAuthor = $curDoc->getPrimaryAuthor();
+			if (!empty($primaryAuthor)) {
+				$authors[] = $primaryAuthor;
+			}
+
+			$contributors = $curDoc->getContributors();
+			if(is_array($contributors) && count($contributors) > 0) {
+				$authors = array_merge($authors, $contributors);
+			}
+
+			if (!empty($authors)) {
+				foreach ($authors as $author){
+				$risFields[] = "AU - " . $author;
+			}
+		}
+
+			// RIS Tag: TI - Title
+			$title = $curDoc->getTitle();
+			if (!empty($title)) {
+				$risFields[] = "TI  - " . $title;
+			}
+
+			// RIS Tag: PB - Publisher
+			$publishers = $curDoc->getPublishers();
+			if (is_array($publishers) && count($publishers) > 0) {
+				$publishers = implode(', ', $publishers);
+				$risFields[] = "PB  - " . $publishers;
+			}
+
+			// RIS Tag: PY - Publication Year(s)
+			$publishDates = $curDoc->getPublicationDates();
+			if (!is_array($publishDates)) {
+				$publishDates = [$publishDates];
+			}
+			foreach ($publishDates as $publishDate) {
+				if (!empty($publishDate)) {
+					$risFields[] = "PY  - " . $publishDate;
+				}
+			}
+
+			//RIS Tag: CY - Place of publication
+			$publicationPlace = $curDoc->getPlacesOfPublication();
+			if(is_array($publicationPlace)) {
+				$publicationPlace = implode(', ', $publicationPlace);
+				$risFields[] = "CY  - ".$publicationPlace;
+			} else{
+				if(!empty($publicationPlace)){
+					$risFields[] = "CY  - ".$publicationPlace;
+
+				}
+			}
+
+				//RIS Tag: ET - Editions
+				$editions = $curDoc->getEditions();
+				if(is_array($editions) && count($editions) > 0) {
+					$editions = implode(', ', $editions);
+					$risFields[] = "ET  - ".$editions;
+				} else {
+					if(!empty($editions)) {
+						$risFields[] = "ET  - ".$editions;
+					}
+				}
+
+				// //RIS AV - Location
+				// $location = $curDoc->getStatusInformation();
+				
+				// 	$risFields[] = "AV  - ".$location;
+				
+				
+				//RIS - Physical Description
+				// $id = $curDoc->getPhysicalDescriptions();
+				// $risFields[] = "N1  - ".$id;
+
+
+
+				//RIS UR - URL
+				// $url = $curDoc->getUrl();
+				// if(!empty($url)) {
+				// 	$risFields[] = "UR  - ".$url;
+				// }
+				//RIS UR - URL
+				$url = $curDoc->getRecordUrl();
+				if(is_array($url) && count($url) > 0) {
+					$url = implode(', ', $url);
+					$risFields[] = "UR  - ".$url;
+				}
+
+			//RIS Tag: N1 - Info
+			$info = $curDoc->getMpaaRating();
+			if(!empty($info)) {
+				$risFields[] = "N1  - ".$info;
+			}
+			
+			//RIS Tag: N2 - Notes
+			$description = $curDoc->getDescription();
+			if(!empty($description)) {
+				$risFields[] = "N2  - ".$description;
+			}
+
+			//RIS T2 - Series
+			$series = $curDoc->getSeries();
+			if(is_array($series) && count($series) >0){
+				$series = implode(', ', $series);
+				$risFields[] = "T2  - ".$series;
+			}
+
+			//RIS ST - Short Title
+			$shortTilte = $curDoc->getShortTitle();
+			if(!empty($shortTilte)) {
+				$risFields[] = "ST  - ".$shortTilte;
+			}
+
+			// RIS Tag: SN - ISBN (if available, replace "ISBN" with the appropriate identifier)
+			$ISBN = $curDoc->getPrimaryIsbn();
+			if(!empty($ISBN)){
+				$risFields[] = "SN  - ".$ISBN;
+			} else {
+				$ISBN = $curDoc->getISBNs();
+				if(!empty($ISBN)) {
+					$risFields[] = "SN  - ".$ISBN;
+				}
+			}
+
+			//RIS ED - Editors
+			// $editor = $curDoc->getDetailedContributors();
+			// if(is_array($editor) && count($editor) > 0) {
+			// 	$editor = implode(', ', $editor);
+			// 	$risFields[] = "ED  - ".$editor;
+			// }
+			//RIS N1
+
+			$risFields[] = "ER  -";
+
+			return implode("\n", $risFields);
+		} else {
+			return '';
+		}
+	}
+
+	// //Helper functions to format as RIS
+	// private function formatListsRecordCitation($curDoc) {
+	// 	$risFields = array();
+
+	// 	//TY - Format
+	// 	$format = $curDoc->getFormat() ?? '';
+	// 	$risFields[] = "TY  - " . $format;
+
+	// 	//AU - Author
+	// 	// $fields = $curDoc->getFields();
+	// 	// $author = $fields['author_display'] ?? '';
+	// 	// if (!empty($author)) {
+	// 	// 	$risFields[] = "AU  - " . $author;
+	// 	// }
+	// 	$authors = array();
+	// 		$primaryAuthor = $curDoc->getPrimaryAuthor() ?? ' ';
+	// 		if (!empty($primaryAuthor)) {
+	// 			$authors[] = $primaryAuthor;
+	// 		}
+
+	// 		$contributors = $curDoc->getContributors();
+	// 		if(is_array($contributors) && count($contributors) > 0) {
+	// 			$authors = array_merge($authors, $contributors);
+	// 		}
+
+	// 		if (!empty($authors)) {
+	// 			$authorList = implode(', ', $authors);
+	// 			$risFields[] = "AU - " . $authorList;
+	// 		}
+
+	// 	// TI - Title
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 	if (!empty($title)) {
+	// 		$risFields[] = "TI  - " . $title;
+	// 	}
+
+	// 	// PB - Publisher
+	// 	$publishers = $curDoc->getPublishers();
+	// 	if (is_array($publishers) && count($publishers) > 0) {
+	// 		$publishers = implode(', ', $publishers);
+	// 		$risFields[] = "PB  - " . $publishers;
+	// 	}
+
+	// 	// PY - Publication Year 
+	// 	$publishDates = $curDoc->getPublicationDates();
+	// 	if (!is_array($publishDates)) {
+	// 		$publishDates = [$publishDates];
+	// 	}
+	// 	foreach ($publishDates as $publishDate) {
+	// 		if (!empty($publishDate)) {
+	// 			$risFields[] = "PY  - " . $publishDate;
+	// 		}
+	// 	}
+	// 	// SN - ISBN 
+	// 	$ISBN = $curDoc->getISBNs();
+	// 		if(is_array($ISBN) && count($ISBN) > 0) {
+	// 			$ISBN = implode(', ', $ISBN);
+	// 			$risFields[] = "SN - " . $ISBN;
+	// 		}
+	// 		$risFields[] = "ER  -";
+	// 	//return with line breaks
+	// 	return implode("\n", $risFields);
+	// }
+
+	// private function formatPersonRecordCitation($curDoc) {
+	// 	$risFields = array();
+	// 	// TY - Format 
+	// 	$format = $curDoc->getFormat() ?? '';
+	// 	$risFields[] = "TY  - " .$format;
+
+	// 	// A1 - Author 
+	// 	$personName = $curDoc->getName() ?? '';
+	// 		if (!empty($personName)) {
+	// 		$risFields[] = "A1 - " . $personName;
+	// 	}
+
+	// 	// TI - Title 
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 		if (!empty($title)) {
+	// 			$risFields[] = "TI  - " . $title;
+	// 		}
+
+	// 	//PB - Publisher
+	// 	$publishers = $curDoc->getPublishers();
+	// 		if (is_array($publishers) && count($publishers) > 0) {
+	// 		$publishers = implode(', ', $publishers);
+	// 		$risFields[] = "PB  - " . $publishers;
+	// 		}
+	// 	// PY - Publication Year
+	// 	$publishDates = $curDoc->getPublicationDates();
+	// 	if (!is_array($publishDates)) {
+	// 		$publishDates = [$publishDates];
+	// 	}
+	// 	foreach ($publishDates as $publishDate) {
+	// 		if (!empty($publishDate)) {
+	// 			$risFields[] = "PY  - " . $publishDate;
+	// 		}
+	// 	}
+	// 	// SN - ISBN 
+	// 	$ISBN = $curDoc->getISBNs();
+	// 		if(is_array($ISBN) && count($ISBN) > 0) {
+	// 			$ISBN = implode(', ', $ISBN);
+	// 			$risFields[] = "SN - " . $ISBN;
+	// 		}
+	// 		$risFields[] = "ER  -";
+	// 	// Return with line breaks
+	// 	return implode("\n", $risFields);
+	// }
+
+	// private function formatOpenArchivesRecordCitation($curDoc) {
+	// 	$risFields = array();
+
+	// 	// TY - Format 
+	// 	$format = $curDoc->getFormat() ?? '';
+	// 	$risFields[] = "TY  - " .$format;
+
+	// 	// TI - Title
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 	if (!empty($title)) {
+	// 		$risFields[] = "TI  - " . $title;
+	// 	}
+
+	// 	//  PB - Publisher
+	// 		$publishers = $curDoc->getPublishers();
+	// 			if (is_array($publishers) && count($publishers) > 0) {
+	// 				$publishers = implode(', ', $publishers);
+	// 				$risFields[] = "PB  - " . $publishers;
+	// 		}
+	// 	// PY - Publication Year 
+	// 		$publishDates = $curDoc->getPublicationDates();
+	// 			if (!is_array($publishDates)) {
+	// 				$publishDates = [$publishDates];
+	// 			}
+	// 			foreach ($publishDates as $publishDate) {
+	// 				if (!empty($publishDate)) {
+	// 					$risFields[] = "PY  - " . $publishDate;
+	// 				}
+	// 		}
+	// 	//AU - Author
+	// 		// $author = $curDoc->getPrimaryAuthor() ?? '';
+	// 		// 	if (!empty($author)) {
+	// 		// 		$risFields[] = "AU  - " . $author;
+	// 		// }
+
+	// 		$authors = array();
+	// 		$primaryAuthor = $curDoc->getPrimaryAuthor() ?? ' ';
+	// 		if (!empty($primaryAuthor)) {
+	// 			$authors[] = $primaryAuthor;
+	// 		}
+
+	// 		$contributors = $curDoc->getContributors();
+	// 		if(is_array($contributors) && count($contributors) > 0) {
+	// 			$authors = array_merge($authors, $contributors);
+	// 		}
+
+	// 		if (!empty($authors)) {
+	// 			$authorList = implode(', ', $authors);
+	// 			$risFields[] = "AU - " . $authorList;
+	// 		}
+	// 	//SN - ISBN 
+	// 	$ISBN = $curDoc->getISBNs();
+	// 		if(is_array($ISBN) && count($ISBN) > 0) {
+	// 			$ISBN = implode(', ', $ISBN);
+	// 			$risFields[] = "SN - " . $ISBN;
+	// 		}
+	// 		$risFields[] = "ER  -";
+	// 	//return with line breaks
+	// 	return implode("\n", $risFields);
+	// }
+
+	// private function formatEbscoHostRecordCitation($curDoc) {
+	// 	$risFields = array();
+
+	// 	//TY - Format
+	// 		$format = $curDoc->getFormat() ?? '';
+	// 		$risFields[] = "TY  - " . $format;
+
+	// 	// AU - Author
+	// 	// $author = $curDoc->getPrimaryAuthor() ?? '';
+	// 	// if (!empty($author)) {
+	// 	// 	$risFields[] = "A1  - " . $author;
+	// 	// }
+	// 	$authors = array();
+	// 		$primaryAuthor = $curDoc->getPrimaryAuthor() ?? ' ';
+	// 		if (!empty($primaryAuthor)) {
+	// 			$authors[] = $primaryAuthor;
+	// 		}
+
+	// 		$contributors = $curDoc->getContributors();
+	// 		if(is_array($contributors) && count($contributors) > 0) {
+	// 			$authors = array_merge($authors, $contributors);
+	// 		}
+
+	// 		if (!empty($authors)) {
+	// 			$authorList = implode(', ', $authors);
+	// 			$risFields[] = "AU - " . $authorList;
+	// 		}
+
+	// 	// TI - Title
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 	if (!empty($title)) {
+	// 		$risFields[] = "TI  - " . $title;
+	// 	}
+
+	// 	//PB - Publisher
+	// 	$publishers = $curDoc->getPublishers();
+	// 		if (is_array($publishers) && count($publishers) > 0) {
+	// 			$publishers = implode(', ', $publishers);
+	// 			$risFields[] = "PB  -  " . $publishers;
+	// 	}
+
+	// 	//PY - Publication Year
+	// 	$publishDates = $curDoc->getPublicationDates();
+	// 	if (!is_array($publishDates)) {
+	// 		$publishDates = [$publishDates];
+	// 	}
+	// 	foreach ($publishDates as $publishDate) {
+	// 		if (!empty($publishDate)) {
+	// 			$risFields[] = "PY  - " . $publishDate;
+	// 		}
+	// 	}
+	// 	//SN - ISBN 
+	// 	$ISBN = $curDoc->getISBNs();
+	// 		if(is_array($ISBN) && count($ISBN) > 0) {
+	// 			$ISBN = implode(', ', $ISBN);
+	// 			$risFields[] = "SN - " . $ISBN;
+	// 		}
+	// 		$risFields[] = "ER  -";
+	// //return with line breaks
+	// return implode("\n", $risFields);
+	// }
+
+	// private function formatEbscoRecordCitation($curDoc) {
+	// 	$risFields = array();
+
+	// 	//TY - Format
+	// 	$format = $curDoc->getFormat() ?? '';
+	// 	$risFields[] = "TY  - " . $format;
+
+	// 	//A1 - Author (Primary Author)
+	// 	// $author = $curDoc->getPrimaryAuthor() ?? '';
+	// 	// if (!empty($author)) {
+	// 	// 	$risFields[] = "A1  - " . $author;
+	// 	// }
+	// 	$authors = array();
+	// 		$primaryAuthor = $curDoc->getPrimaryAuthor() ?? ' ';
+	// 		if (!empty($primaryAuthor)) {
+	// 			$authors[] = $primaryAuthor;
+	// 		}
+
+	// 		$contributors = $curDoc->getContributors();
+	// 		if(is_array($contributors) && count($contributors) > 0) {
+	// 			$authors = array_merge($authors, $contributors);
+	// 		}
+
+	// 		if (!empty($authors)) {
+	// 			$authorList = implode(', ', $authors);
+	// 			$risFields[] = "AU - " . $authorList;
+	// 		}
+
+	// 	//TI - Title
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 	if (!empty($title)) {
+	// 		$risFields[] = "TI  - " . $title;
+	// 	}
+
+	// 	// PB - Publisher
+	// 	$risFields[] = "PB  - ";
+	// 	$publishers = $curDoc->getPublishers();
+	// 	if (is_array($publishers) && count($publishers) > 0) {
+	// 		$publishers = implode(', ', $publishers);
+	// 		$risFields[] = "PB  - " . $publishers;
+	// 	}
+
+	// 	//PY - Publication Year
+	// 	$publishDates = $curDoc->getPublicationDates();
+	// 	if (!is_array($publishDates)) {
+	// 		$publishDates = [$publishDates];
+	// 	}
+	// 	foreach ($publishDates as $publishDate) {
+	// 		if (!empty($publishDate)) {
+	// 			$risFields[] = "PY  - " . $publishDate;
+	// 		}
+	// 	}
+
+	// 	//SN - ISBN 
+	// 	$ISBN = $curDoc->getISBNs();
+	// 		if(is_array($ISBN) && count($ISBN) > 0) {
+	// 			$ISBN = implode(', ', $ISBN);
+	// 			$risFields[] = "SN - " . $ISBN;
+	// 		}
+	// 		$risFields[] = "ER  -";
+
+	// 	// Return with line breaks
+	// 	return implode("\n", $risFields);
+	// }
+
+	// private function formatWebsitePageRecordCitation($curDoc) {
+	// 	$risFields = array();
+
+	// 	// TY - Type
+	// 	$risFields[] = "TY  - ELEC";
+
+	// 	// TI - Title
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 	if (!empty($title)) {
+	// 		$risFields[] = "TI  - " . $title;
+	// 	}
+
+	// 	// A1 - Author
+	// 	// $author = $curDoc->getPrimaryAuthor() ?? '';
+	// 	// 	if (!empty($author)) {
+	// 	// 		$risFields[] = "AU  - " . $author;
+	// 	// 	}
+	// 	$authors = array();
+	// 		$primaryAuthor = $curDoc->getPrimaryAuthor() ?? ' ';
+	// 		if (!empty($primaryAuthor)) {
+	// 			$authors[] = $primaryAuthor;
+	// 		}
+
+	// 		$contributors = $curDoc->getContributors();
+	// 		if(is_array($contributors) && count($contributors) > 0) {
+	// 			$authors = array_merge($authors, $contributors);
+	// 		}
+
+	// 		if (!empty($authors)) {
+	// 			$authorList = implode(', ', $authors);
+	// 			$risFields[] = "AU -  " . $authorList;
+	// 		}
+	// 	// PB - Publisher
+	// 	$risFields[] = "PB  - ";
+
+	// 	//PY - Publication Year
+	// 	$risFields[] = "PY  - ";
+
+	// 	//SN - ISBN 
+	// 	$risFields[] = "SN  - ";
+
+	// 	// UR - URL
+	// 	$link = $curDoc->getLinkUrl() ?? '';
+	// 	if (!empty($link)) {
+	// 		$risFields[] = "UR  - " . $link;
+	// 	}
+	// 	$risFields[] = "ER  -";
+
+	// 	//Return with line breaks
+	// 	return implode("\n", $risFields);
+	// }
+
+	// private function formatWebResourceRecordCitation($curDoc) {
+	// 	$risFields = array();
+
+	// 	//TY - Type 
+	// 	$risFields[] = "TY  - ELEC";
+
+	// 	// TI - Title
+	// 	$title = $curDoc->getTitle() ?? '';
+	// 	if (!empty($title)) {
+	// 		$risFields[] = "TI  - " . $title;
+	// 	}
+
+	// 	// A1 - Author
+	// 	// $author = $curDoc->getPrimaryAuthor() ?? '';
+	// 	// 	if (!empty($author)) {
+	// 	// 		$risFields[] = "AU  - " . $author;
+	// 	// 	}
+	// 	$authors = array();
+	// 		$primaryAuthor = $curDoc->getPrimaryAuthor() ?? ' ';
+	// 		if (!empty($primaryAuthor)) {
+	// 			$authors[] = $primaryAuthor;
+	// 		}
+
+	// 		$contributors = $curDoc->getContributors();
+	// 		if(is_array($contributors) && count($contributors) > 0) {
+	// 			$authors = array_merge($authors, $contributors);
+	// 		}
+
+	// 		if (!empty($authors)) {
+	// 			$authorList = implode(', ', $authors);
+	// 			$risFields[] = "AU - " . $authorList;
+	// 		}
+	// 	// PB - Publisher 
+	// 	$publishers = $curDoc->getPublishers();
+	// 	if (is_array($publishers) && count($publishers) > 0) {
+	// 		$publishers = implode(', ', $publishers);
+	// 		$risFields[] = "PB  - " . $publishers;
+	// 	}
+	// 	//PY - Publication Year
+	// 	$publishDates = $curDoc->getPublicationDates();
+	// 		if (!is_array($publishDates)) {
+	// 			$publishDates = [$publishDates];
+	// 		}
+	// 		foreach ($publishDates as $publishDate) {
+	// 			if (!empty($publishDate)) {
+	// 				$risFields[] = "PY  - " . $publishDate;
+	// 			}
+	// 		}
+	// 	//SN - ISBN 
+	// 	$risFields[] = "SN  -  ";
+
+	// 	//UR - URL
+	// 	$link = $curDoc->getLinkUrl() ?? '';
+	// 		if (!empty($link)) {
+	// 		$risFields[] = "UR  - " . $link;
+	// 	}
+	// 	$risFields[] = "ER  -";
+	// 	// Return with line breaks
+	// 	return implode("\n", $risFields);
+	// }	
+
+	
+
+	
+
+
+
+
+		
+
+			
 }

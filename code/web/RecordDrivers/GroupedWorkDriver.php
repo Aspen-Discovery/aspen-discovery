@@ -576,12 +576,12 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		// Collect all details for citation builder:
 		$publishers = $this->getPublishers();
 		$pubDates = $this->getPublicationDates();
-		//$pubPlaces = $this->getPlacesOfPublication();
+		$pubPlaces = $this->getPlacesOfPublication();
 		$details = [
 			'authors' => $authors,
 			'title' => $this->getShortTitle(),
 			'subtitle' => $this->getSubtitle(),
-			//'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition' => $this->getEditions(),
@@ -928,7 +928,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 	 * @access  protected
 	 * @return  array
 	 */
-	protected function getEditions() {
+	public function getEditions() {
 		if (isset($this->fields['edition'])) {
 			if (is_array(isset($this->fields['edition']))) {
 				return $this->fields['edition'];
@@ -938,6 +938,21 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		} else {
 			return [];
 		}
+	}
+
+	public function getPublisher() {
+		$parts = [];
+		if (isset($this->fields['pubPlace']) && !empty($this->fields['pubPlace'])) {
+			$parts[] = $this->fields['pubPlace'];
+		}
+		if (isset($this->fields['pubName']) && !empty($this->fields['pubName'])) {
+			$parts[] = $this->fields['pubName'];
+		}
+		if (empty($parts)) {
+			return false;
+		}
+		$parts = implode(', ', $parts);
+		return $parts;
 	}
 
 	/**
@@ -1349,7 +1364,6 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		];
 	}
 
-
 	public function getModule(): string {
 		return 'GroupedWork';
 	}
@@ -1487,6 +1501,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 	function getPublicationDates() {
 		return isset($this->fields['publishDate']) ? $this->fields['publishDate'] : [];
+	}
+
+	function getPlacesOfPublication() {
+		return isset($this->fields['pubPlaces']) ? $this->fields['pubPlaces'] : [];
 	}
 
 	function getEarliestPublicationDate() {
@@ -2887,6 +2905,7 @@ class GroupedWorkDriver extends IndexRecordDriver {
 								  LEFT JOIN indexed_edition ON editionId = indexed_edition.id
 								  LEFT JOIN indexed_publisher ON publisherId = indexed_publisher.id
 								  LEFT JOIN indexed_publication_date ON publicationDateId = indexed_publication_date.id
+								  LEFT JOIN indexed_places_of_publication ON placesOfPublicationId = indexed_places_of_publication.id
 								  LEFT JOIN indexed_physical_description ON physicalDescriptionId = indexed_physical_description.id
 								  LEFT JOIN indexed_format on formatId = indexed_format.id
 								  LEFT JOIN indexed_format_category on formatCategoryId = indexed_format_category.id

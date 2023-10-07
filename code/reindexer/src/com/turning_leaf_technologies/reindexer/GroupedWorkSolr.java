@@ -77,6 +77,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 			//Publication related fields
 			doc.addField("publisher", publishers);
 			doc.addField("publishDate", publicationDates);
+			doc.addField("placesOfPublication", placeOfPublication);
 			//Sorting will use the earliest date published
 			doc.addField("publishDateSort", earliestPublicationDate);
 
