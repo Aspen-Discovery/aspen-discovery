@@ -8040,16 +8040,23 @@ hr.menu {
   margin-bottom: 3px;
   cursor: pointer;
 }
-#aspenLanguagesMenuSection {
+#aspenLanguagesMenuSection,
+#aspenDisplayMenuSection {
   font-weight: bold;
   margin-top: 1em;
 }
-.header-menu-option.languageSelect {
-  margin-left: 2em;
-}
-.header-menu-option.languageSelected {
+ .header-menu-option.languageSelect,
+.header-menu-option.themeSelect {
+ margin-left: 3em;
+} 
+.header-menu-option.languageSelected,
+.header-menu-option.themeSelected {
+  margin-left: 1em;
+} 
+.header-menu-option.languageSelected i,
+.header-menu-option.themeSelected i{
   margin-left: 0.5em;
-}
+} 
 #library-name-header {
   font-size: 26px;
   color: #8b8b8b;
