@@ -153,6 +153,7 @@ function getUpdates23_10_00(): array {
 }
 
 function addOptionalUpdatesPermission(&$update){
+	require_once ROOT_DIR . '/sys/Administration/Permission.php';
 	$dbMaintenancePermission = new Permission();
 	$dbMaintenancePermission->name = 'Run Database Maintenance';
 	$numUpdates = 0;
