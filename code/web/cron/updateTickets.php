@@ -150,14 +150,15 @@ $aspenSite->siteType = "0";
 $aspenSite->whereAdd('implementationStatus <> 0 AND implementationStatus <> 4');
 $aspenSite->find();
 while ($aspenSite->fetch()) {
-	if (!empty($aspenSite->baseUrl)) {
+	if (!empty($aspenSite->getSiteBaseUrl())) {
 		$priority1Ticket = -1;
 		$priority2Ticket = -1;
 		$priority3Ticket = -1;
-		$prioritiesUrl = $aspenSite->baseUrl . '/API/SystemAPI?method=getDevelopmentPriorities';
+		$prioritiesUrl = $aspenSite->getSiteBaseUrl() . '/API/SystemAPI?method=getDevelopmentPriorities';
 		$prioritiesData = file_get_contents($prioritiesUrl);
 		if ($prioritiesData) {
 			$prioritiesData = json_decode($prioritiesData);
+			echo(print_r($prioritiesData, true));
 			//Get existing priorities for the partner
 			if ($prioritiesData->result->success) {
 				$priority1Ticket = $prioritiesData->result->priorities->priority1->id;
@@ -166,11 +167,11 @@ while ($aspenSite->fetch()) {
 			}
 		}
 		//Get a list of all tickets for the partner
-		if (!empty($aspenSite->activeTicketFeed)) {
-			$ticketsInFeed = getTicketInfoFromFeed($aspenSite->name, $aspenSite->activeTicketFeed);
+		if (!empty($aspenSite->getActiveTicketFeed())) {
+			$ticketsInFeed = getTicketInfoFromFeed($aspenSite->getSiteName(), $aspenSite->getActiveTicketFeed());
 			foreach ($ticketsInFeed as $ticketInfo) {
 				$ticket = getTicket($ticketInfo);
-				$ticket->requestingPartner = $aspenSite->id;
+				$ticket->requestingPartner = $aspenSite->getSiteId();
 				$newPriority = -1;
 				if ($ticket->ticketId == $priority1Ticket) {
 					$newPriority = 1;
@@ -194,7 +195,7 @@ while ($aspenSite->fetch()) {
 				$ticket = new Ticket();
 				$ticket->ticketId = $priority1Ticket;
 				if ($ticket->find(true)) {
-					$ticket->requestingPartner = $aspenSite->id;
+					$ticket->requestingPartner = $aspenSite->getSiteId();
 					if ($ticket->partnerPriority != 1) {
 						$ticket->partnerPriority = 1;
 						$ticket->partnerPriorityChangeDate = time();
@@ -210,7 +211,7 @@ while ($aspenSite->fetch()) {
 				$ticket = new Ticket();
 				$ticket->ticketId = $priority2Ticket;
 				if ($ticket->find(true)) {
-					$ticket->requestingPartner = $aspenSite->id;
+					$ticket->requestingPartner = $aspenSite->getSiteId();
 					if ($ticket->partnerPriority != 2) {
 						$ticket->partnerPriority = 2;
 						$ticket->partnerPriorityChangeDate = time();
@@ -226,7 +227,7 @@ while ($aspenSite->fetch()) {
 				$ticket = new Ticket();
 				$ticket->ticketId = $priority3Ticket;
 				if ($ticket->find(true)) {
-					$ticket->requestingPartner = $aspenSite->id;
+					$ticket->requestingPartner = $aspenSite->getSiteId();
 					if ($ticket->partnerPriority != 3) {
 						$ticket->partnerPriority = 3;
 						$ticket->partnerPriorityChangeDate = time();
