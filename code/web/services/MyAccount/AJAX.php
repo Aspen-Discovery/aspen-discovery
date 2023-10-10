@@ -1242,6 +1242,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$list->description = strip_tags(urldecode($desc));
 				$list->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
 				$list->searchable = isset($_REQUEST['searchable']) && $_REQUEST['searchable'] == 'true';
+				$list->displayListAuthor = isset($_REQUEST['displayListAuthor']) && $_REQUEST['displayListAuthor'] == 'true';
 				if ($existingList) {
 					$list->update();
 				} else {

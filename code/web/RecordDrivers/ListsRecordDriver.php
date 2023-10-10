@@ -59,7 +59,6 @@ class ListsRecordDriver extends IndexRecordDriver {
 		}
 
 		global $interface;
-
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
@@ -78,6 +77,9 @@ class ListsRecordDriver extends IndexRecordDriver {
 		}
 		$interface->assign('summDateUpdated', $this->getListObject()->dateUpdated);
 		$interface->assign('summUrl', $this->getAbsoluteUrl());
+
+		$listObject = $this->getListObject();
+		$interface->assign('displayListAuthor', $listObject->displayListAuthor);
 
 		if ($showListsAppearingOn) {
 			//Check to see if there are lists the record is on
@@ -195,6 +197,4 @@ class ListsRecordDriver extends IndexRecordDriver {
 		}
 		return $this->listObject;
 	}
-
-
 }

@@ -130,6 +130,7 @@ class ListAPI extends Action {
 					'id' => $list->id,
 					'title' => $list->title,
 					'description' => $list->description,
+					'displayListAuthor' => $list->displayListAuthor,
 					'numTitles' => $numTitles,
 					'dateUpdated' => $list->dateUpdated,
 				];
@@ -207,6 +208,7 @@ class ListAPI extends Action {
 					'id' => $list->id,
 					'title' => $list->title,
 					'description' => $list->description,
+					'displayListAuthor' => $list->displayListAuthor,
 					'numTitles' => $numTitles,
 					'dateUpdated' => $list->dateUpdated,
 				];
@@ -260,6 +262,7 @@ class ListAPI extends Action {
 							'id' => $list->id,
 							'title' => $list->title,
 							'description' => $list->description,
+							'displayListAuthor' => $list->displayListAuthor == 1,
 							'numTitles' => $list->numValidListItems(),
 							'public' => $list->public == 1,
 							'created' => $list->created,
@@ -273,6 +276,7 @@ class ListAPI extends Action {
 						'id' => $list->id,
 						'title' => $list->title,
 						'description' => $list->description,
+						'displayListAuthor' => $list->displayListAuthor == 1,
 						'numTitles' => $list->numValidListItems(),
 						'public' => $list->public == 1,
 						'created' => $list->created,
@@ -1082,6 +1086,7 @@ class ListAPI extends Action {
 
 			$list->description = strip_tags($_REQUEST['description'] ?? '');
 			$list->public = isset($_REQUEST['public']) ? (($_REQUEST['public'] == true || $_REQUEST['public'] == 1) ? 1 : 0) : 0;
+			$list->displayListAuthor = isset($_REQUEST['displayListAuthor']) ? (($_REQUEST['displayListAuthor'] == true || $_REQUEST['displayListAuthor'] == 1) ? 1 : 0) : 0;
 
 			if ($existingList) {
 				$list->update();
@@ -1380,6 +1385,13 @@ class ListAPI extends Action {
 						$list->public = 0;
 					} else {
 						$list->public = 1;
+					}
+				}
+				if (isset($_REQUEST['displayListAuthor'])) {
+					if ($_REQUEST['displayListAuthor'] === "false" || $_REQUEST['displayListAuthor'] === false || $_REQUEST['displayListAuthor'] === 0 || $_REQUEST['displayListAuthor'] === '0') {
+						$list->displayListAuthor = 0;
+					} else {
+						$list->displayListAuthor = 1;
 					}
 				}
 				$list->update();
