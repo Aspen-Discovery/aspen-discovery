@@ -30,7 +30,7 @@
 				{$submissionError}
 			</div>
 	    {/if}
-		<form id="quickPoll{$id}" class="form-horizontal" role="form" action="/WebBuilder/SubmitQuickPoll"  onsubmit="setFormSubmitting();">
+		<form id="quickPoll{$id}" class="form-horizontal" role="form" action="/WebBuilder/SubmitQuickPoll"  onsubmit="setFormSubmitting();" method="post">
 			<input type="hidden" name="id" id="id" value="{$id}">
 			<div id="pollOptions">
 				{foreach from=$pollOptions item=$pollOption}
