@@ -562,7 +562,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 					// Update Address Field with new data supplied by the user
 
-					elseif ($field == 'CARE/OF' && (!empty($_REQUEST['care_of']))) {
+					elseif ($field == 'care_of' && (!empty($_REQUEST['care_of']))) {
 						$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['care_of'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'PARENTNAME' && (!empty($_REQUEST['parentname']))) {
@@ -603,7 +603,7 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'STREET' && (!empty($_REQUEST['street']))) {
 						$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'APT/SUITE' && (!empty($_REQUEST['apt_suite']))) {
+					elseif ($field == 'apt_suite' && (!empty($_REQUEST['apt_suite']))) {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'CITY' && (!empty($_REQUEST['city']))) {
@@ -612,8 +612,8 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'STATE' && (!empty($_REQUEST['state']))) {
 						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'CITY/STATE' && (!empty($_REQUEST['city_state']))) {
-						$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city_state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					elseif ($field == 'city_state' && (isset($_REQUEST['city']) && isset($_REQUEST['state']))) {
+						$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'ZIP' && (!empty($_REQUEST['zip']))) {
 						$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -623,7 +623,7 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'LOCATION' && (!empty($_REQUEST['location']))) {
 						$this->setPatronUpdateField('LOCATION', $this->getPatronFieldValue($_REQUEST['location'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'NOT TYPE' && (!empty($_REQUEST['not_type']))) {
+					elseif ($field == 'not_type' && (!empty($_REQUEST['not_type']))) {
 						$this->setPatronUpdateField('NOT TYPE', $this->getPatronFieldValue($_REQUEST['not_type'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'USERFOR' && (!empty($_REQUEST['userfor']))) {
@@ -3277,6 +3277,22 @@ class SirsiDynixROA extends HorizonAPI {
 						'property' => 'smsNotices',
 						'type' => 'checkbox',
 						'label' => 'Receive notices via text',
+					];
+				}
+				elseif ($customField->symphonyName == 'city_state') {
+					$fields['City'] = [
+						'property' => 'city',
+						'type' => $customField->fieldType,
+						'label' => 'City',
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+					$fields['State'] = [
+						'property' => 'state',
+						'type' => $customField->fieldType,
+						'label' => 'State',
+						'required' => $customField->required,
+						'note' => $customField->note
 					];
 				}
 				else{
