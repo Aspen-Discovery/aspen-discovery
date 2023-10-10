@@ -19,7 +19,6 @@ public class DatabaseCleanup implements IProcessHandler {
 		CronProcessLogEntry processLog = new CronProcessLogEntry(cronEntry, "Database Cleanup", dbConn, logger);
 		processLog.saveResults();
 
-		removeExpiredSessions(configIni, dbConn, logger, processLog);
 		removeOldSearches(dbConn, logger, processLog);
 		removeSpammySearches(dbConn, logger, processLog);
 		removeLongSearches(dbConn, logger, processLog);
@@ -342,26 +341,6 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveResults();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to delete expired searches. ", e);
-		}
-	}
-
-	private void removeExpiredSessions(Ini configIni, Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
-		//Remove expired sessions
-		try{
-			//Make sure to normalize the time based to be milliseconds, not microseconds
-			long now = new Date().getTime() / 1000;
-			long defaultTimeout = Long.parseLong(ConfigUtil.cleanIniValue(configIni.get("Session", "lifetime")));
-			long earliestDefaultSessionToKeep = now - defaultTimeout;
-			long numStandardSessionsDeleted = dbConn.prepareStatement("DELETE FROM session where last_used < " + earliestDefaultSessionToKeep + " and remember_me = 0").executeUpdate();
-			processLog.addNote("Deleted " + numStandardSessionsDeleted + " expired Standard Sessions");
-			processLog.saveResults();
-			long rememberMeTimeout = Long.parseLong(ConfigUtil.cleanIniValue(configIni.get("Session", "rememberMeLifetime")));
-			long earliestRememberMeSessionToKeep = now - rememberMeTimeout;
-			long numRememberMeSessionsDeleted = dbConn.prepareStatement("DELETE FROM session where last_used < " + earliestRememberMeSessionToKeep + " and remember_me = 1").executeUpdate();
-			processLog.addNote("Deleted " + numRememberMeSessionsDeleted + " expired Remember Me Sessions");
-			processLog.saveResults();
-		}catch (SQLException e) {
-			processLog.incErrors("Unable to delete expired sessions. ", e);
 		}
 	}
 
