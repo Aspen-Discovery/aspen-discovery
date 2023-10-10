@@ -161,6 +161,7 @@ function addOptionalUpdatesPermission(&$update){
 		$optionalUpdatesPermission = new Permission();
 		$optionalUpdatesPermission->name = 'Run Optional Updates';
 		if ($optionalUpdatesPermission->find(true)) {
+			require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
 			$dbMaintenanceRolePermission = new RolePermissions();
 			$dbMaintenanceRolePermission->permissionId = $dbMaintenancePermission->id;
 			$dbMaintenanceRolePermission->find();
