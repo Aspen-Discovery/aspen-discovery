@@ -521,7 +521,7 @@ public class PolarisExportMain {
 								insertTranslationStmt.executeUpdate();
 								existingShelfLocations.put(Long.toString(shelfLocationId), shelfLocationName);
 							}catch (SQLException e){
-								logEntry.addNote("Error adding shelf location value " + shelfLocationId + " with a translation of " + shelfLocationName + " e");
+								logEntry.addNote("Error adding shelf location value " + shelfLocationId + " with a translation of " + shelfLocationName + " " + e);
 							}
 						}
 					}
@@ -535,7 +535,7 @@ public class PolarisExportMain {
 								insertTranslationStmt.executeUpdate();
 								existingShelfLocations.put(shelfLocationName, shelfLocationName);
 							}catch (SQLException e){
-								logEntry.addNote("Error adding shelf location value " + shelfLocationName + " with a translation of " + shelfLocationName + " e");
+								logEntry.addNote("Error adding shelf location value " + shelfLocationName + " with a translation of " + shelfLocationName + " "  + e);
 							}
 						}
 					}
