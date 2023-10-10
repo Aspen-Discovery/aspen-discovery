@@ -1,17 +1,14 @@
-import React from 'react';
-import { Platform, StyleSheet } from 'react-native';
-import { Box, Button, Center, View } from 'native-base';
+import { useIsFocused, useRoute } from '@react-navigation/native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { loadError } from '../../components/loadError';
-import { navigate, navigateStack } from '../../helpers/RootNavigator';
+import { Button, Center, View } from 'native-base';
+import React from 'react';
+import { StyleSheet } from 'react-native';
 import BarcodeMask from 'react-native-barcode-mask';
-import { CommonActions, useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
+import { loadError } from '../../components/loadError';
+import { loadingSpinner } from '../../components/loadingSpinner';
 import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
+import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import Constants from 'expo-constants';
-import * as Device from 'expo-device';
-import _ from 'lodash';
 
 export default function SelfCheckScanner() {
      //const navigation = useNavigation();
@@ -21,7 +18,7 @@ export default function SelfCheckScanner() {
      const { library } = React.useContext(LibrarySystemContext);
      const [hasPermission, setHasPermission] = React.useState(null);
      const [scanned, setScanned] = React.useState(false);
-     let allowedBarcodes = [BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.upc_e, BarCodeScanner.Constants.BarCodeType.upc_ean, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8];
+     let allowedBarcodes = [BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.upc_e, BarCodeScanner.Constants.BarCodeType.upc_ean, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8, BarCodeScanner.Constants.BarCodeType.codabar];
      let activeAccount = useRoute().params?.activeAccount ?? false;
 
      const testBarcodes = ['9031105', '9031106', '9031107'];
@@ -32,14 +29,14 @@ export default function SelfCheckScanner() {
                setHasPermission(status === 'granted');
                /* for testing on simulators, assign a random barcode from array since camera does not work */
                /*if (!Device.isDevice) {
-                    setScanned(true);
-                    navigate('SelfCheckOut', {
-                         barcode: _.sample(_.shuffle(testBarcodes)),
-                         type: '',
-                         activeAccount,
-                         startNew: false,
-                    });
-               }*/
+			 setScanned(true);
+			 navigate('SelfCheckOut', {
+			 barcode: _.sample(_.shuffle(testBarcodes)),
+			 type: '',
+			 activeAccount,
+			 startNew: false,
+			 });
+			 }*/
           })();
      }, []);
 
