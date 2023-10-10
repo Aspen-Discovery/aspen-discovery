@@ -360,7 +360,7 @@ class ItemAPI extends Action {
 		$copies = $marcRecord->getCopies();
 		$items = [];
 		foreach($copies as $copy) {
-			if($copy['variationId'] == $variationId) {
+			if($copy['variationId'] == $variationId && $copy['holdable']) {
 				$key = $copy['description'] . ' ' . $copy['itemId'];
 				$items[$key]['id'] = $copy['itemId'];
 				$items[$key]['location'] = $copy['description'];
