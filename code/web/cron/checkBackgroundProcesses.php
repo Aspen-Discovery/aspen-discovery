@@ -45,7 +45,7 @@ foreach ($processes as $processInfo) {
 	}
 }
 
-if (!$solrRunning) {
+if (!$solrRunning && $configArray['Index']['solrHost'] == localhost) {
 	$results .= "Solr is not running for $serverName\r\n";
 	if ($configArray['System']['operatingSystem'] == 'windows') {
 		$solrCmd = "/web/aspen-discovery/sites/$serverName/$serverName.bat start";
