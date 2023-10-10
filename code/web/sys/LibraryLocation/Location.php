@@ -2054,6 +2054,9 @@ class Location extends DataObject {
 
 	public static function getOpenHoursMessage($hours): string {
 		$formattedMessage = '';
+		if (empty($hours)) {
+			return $formattedMessage;
+		}
 		for ($i = 0; $i < sizeof($hours); $i++) {
 			if (strlen($formattedMessage) != 0 && (sizeof($hours) > 2)) {
 				$formattedMessage .= ', ';
