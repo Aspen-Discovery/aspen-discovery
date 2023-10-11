@@ -1139,6 +1139,15 @@ class ItemAPI extends Action {
 				}
 			}
 
+			if($holdType == 'either') {
+				//Check for an override at the library level
+				if ($library->treatBibOrItemHoldsAs == 2) {
+					$holdType = 'bib';
+				} elseif ($library->treatBibOrItemHoldsAs == 3) {
+					$holdType = 'item';
+				}
+			}
+
 			$relatedRecordDriver = $relatedRecord->getDriver();
 			/** @var File_MARC_Control_Field $oclcNumber */
 			$oclcNumber = $relatedRecordDriver->getOCLCNumber();
