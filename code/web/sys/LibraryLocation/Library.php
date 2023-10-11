@@ -1737,6 +1737,20 @@ class Library extends DataObject {
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
+							'cityStateField' => [
+								'property' => 'cityStateField',
+								'type' => 'enum',
+								'values' => [
+									0 => 'CITY / STATE field',
+									1 => 'CITY and STATE fields',
+								],
+								'label' => 'City / State Field (Symphony Only)',
+								'description' => 'The field from which to load and update city and state.',
+								'note' => 'Applies to Symphony Only',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
 							'addSMSIndicatorToPhone' => [
 								'property' => 'addSMSIndicatorToPhone',
 								'type' => 'checkbox',

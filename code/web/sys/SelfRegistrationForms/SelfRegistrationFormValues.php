@@ -140,4 +140,17 @@ class SelfRegistrationFormValues extends DataObject {
 			],
 		];
 	}
+
+	public function getFormFieldsInOrder($selfRegFormId) {
+		$fields = new SelfRegistrationFormValues();
+		$fields->selfRegistrationFormId = $selfRegFormId;
+		$fields->orderBy('weight');
+		$fields->find();
+		$fieldNames = [];
+		while ($fields->fetch()) {
+			$fieldNames[] = $fields->symphonyName;
+		}
+
+		return $fieldNames;
+	}
 }
