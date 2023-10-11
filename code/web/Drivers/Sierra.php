@@ -1943,11 +1943,11 @@ class Sierra extends Millennium {
 
 		if ($this->lastResponseCode == 204) {
 			$result['success'] = true;
-			$result['messages'][] = 'Your account was updated successfully.';
+			$result['message'] = 'Your account was updated successfully.';
 			$patron->ils_username = $username;
 			$patron->update();
 		} else {
-			$result['messages'][] = 'Unable to update patron. ' . $this->lastErrorMessage;
+			$result['message'] = 'Unable to update patron. ' . $this->lastErrorMessage;
 		}
 
 		return $result;
