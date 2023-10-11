@@ -906,7 +906,7 @@ public class SierraExportAPIMain {
 			fixedFieldThread.join();
 			itemUpdateThread.join();
 		}catch (InterruptedException e){
-			logEntry.incErrors("Loading data form Sierra was interrupted", e);
+			logEntry.incErrors("Loading data from Sierra was interrupted", e);
 		}
 		try {
 			if (marcResults[0] != null){
