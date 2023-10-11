@@ -533,55 +533,165 @@ class SirsiDynixROA extends HorizonAPI {
 				'key' => $library->selfRegistrationUserProfile,
 			];
 
-			if (!empty($_REQUEST['firstName'])) {
-				$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['middleName'])) {
-				$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['lastName'])) {
-				$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['suffix'])) {
-				$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['birthDate'])) {
-				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
+			$formFields = (new SelfRegistrationFormValues)->getFormFieldsInOrder($library->selfRegistrationFormId);
 
-			// Update Address Field with new data supplied by the user
-			if (isset($_REQUEST['parentName'])) {
-				$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['parentName'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
+			if ($formFields != null) {
+				foreach ($formFields as $field){
+					//General Info
+					if ($field == 'firstName' && (!empty($_REQUEST['firstName'])) ) {
+						$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'middleName' && (!empty($_REQUEST['middleName']))) {
+						$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'lastName' && (!empty($_REQUEST['lastName']))) {
+						$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'preferredName' && (!empty($_REQUEST['preferredName']))) {
+						$createPatronInfoParameters['fields']['preferredName'] = $this->getPatronFieldValue(trim($_REQUEST['preferredName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'suffix' && (!empty($_REQUEST['suffix']))) {
+						$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'title' && (!empty($_REQUEST['title']))) {
+						$createPatronInfoParameters['fields']['title'] = $this->getPatronFieldValue(trim($_REQUEST['title']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'birthDate' && (!empty($_REQUEST['dob']))) {
+						$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['dob']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
 
-			if (isset($_REQUEST['email'])) {
-				$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
+					// Update Address Field with new data supplied by the user
 
-			if (isset($_REQUEST['phone'])) {
-				$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
-			}
+					elseif ($field == 'care_of' && (!empty($_REQUEST['care_of']))) {
+						$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['care_of'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'PARENTNAME' && (!empty($_REQUEST['parentname']))) {
+						$this->setPatronUpdateField('PARENTNAME', $this->getPatronFieldValue($_REQUEST['parentname'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
 
-			if (isset($_REQUEST['address'])) {
-				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
+					elseif ($field == 'EMAIL' && (!empty($_REQUEST['email']))) {
+						$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'PHONE' && (!empty($_REQUEST['phone']))) {
+						$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'HOMEPHONE' && (!empty($_REQUEST['homephone']))) {
+						$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['homephone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'CELLPHONE' && (!empty($_REQUEST['cellphone']))) {
+						$this->setPatronUpdateField('CELLPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'DAYPHONE' && (!empty($_REQUEST['cellphone']))) {
+						$this->setPatronUpdateField('DAYPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'WORKPHONE' && (!empty($_REQUEST['workphone']))) {
+						$this->setPatronUpdateField('WORKPHONE', $_REQUEST['workphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'EXT' && (!empty($_REQUEST['ext']))) {
+						$this->setPatronUpdateField('EXT', $_REQUEST['ext'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'FAX' && (!empty($_REQUEST['fax']))) {
+						$this->setPatronUpdateField('FAX', $_REQUEST['fax'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'EMPLOYER' && (!empty($_REQUEST['employer']))) {
+						$this->setPatronUpdateField('EMPLOYER', $_REQUEST['employer'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
 
-			if ($library->cityStateField == 1) {
-				if (isset($_REQUEST['city'])) {
-					$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					elseif ($field == 'PO_BOX' && (!empty($_REQUEST['po_box']))) {
+						$this->setPatronUpdateField('PO_BOX', $this->getPatronFieldValue($_REQUEST['po_box'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'STREET' && (!empty($_REQUEST['street']))) {
+						$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'apt_suite' && (!empty($_REQUEST['apt_suite']))) {
+						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'CITY' && (!empty($_REQUEST['city']))) {
+						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'STATE' && (!empty($_REQUEST['state']))) {
+						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'city_state' && (isset($_REQUEST['city']) && isset($_REQUEST['state']))) {
+						$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'ZIP' && (!empty($_REQUEST['zip']))) {
+						$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+
+					//unsure about these
+					elseif ($field == 'LOCATION' && (!empty($_REQUEST['location']))) {
+						$this->setPatronUpdateField('LOCATION', $this->getPatronFieldValue($_REQUEST['location'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'not_type' && (!empty($_REQUEST['not_type']))) {
+						$this->setPatronUpdateField('NOT TYPE', $this->getPatronFieldValue($_REQUEST['not_type'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'USERFOR' && (!empty($_REQUEST['userfor']))) {
+						$this->setPatronUpdateField('USERFOR', $this->getPatronFieldValue($_REQUEST['userfor'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'customInformation' && (!empty($_REQUEST['customInformation']))) {
+						$this->setPatronUpdateField('customInformation', $this->getPatronFieldValue($_REQUEST['customInformation'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+
+					elseif ($field == 'primaryAddress' && (!empty($_REQUEST['primaryAddress']))) {
+						$this->setPatronUpdateField('primaryAddress', $this->getPatronFieldValue($_REQUEST['primaryAddress'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'primaryPhone' && (!empty($_REQUEST['primaryPhone']))) {
+						$this->setPatronUpdateField('primaryPhone', $this->getPatronFieldValue($_REQUEST['primaryPhone'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+				}
+			}
+			else {
+				if (!empty($_REQUEST['firstName'])) {
+					$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['middleName'])) {
+					$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['lastName'])) {
+					$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['suffix'])) {
+					$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['birthDate'])) {
+					$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
 				}
 
-				if (isset($_REQUEST['state'])) {
-					$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				// Update Address Field with new data supplied by the user
+				if (isset($_REQUEST['parentName'])) {
+					$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['parentName'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 				}
-			} else {
-				if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-					$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-				}
-			}
 
-			if (isset($_REQUEST['zip'])) {
-				$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				if (isset($_REQUEST['email'])) {
+					$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if (isset($_REQUEST['phone'])) {
+					$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if (isset($_REQUEST['address'])) {
+					$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if ($library->cityStateField == 1) {
+					if (isset($_REQUEST['city'])) {
+						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+
+					if (isset($_REQUEST['state'])) {
+						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+				} else {
+					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+						$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+				}
+
+				if (isset($_REQUEST['zip'])) {
+					$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
 			}
 
 			// Update Home Location
@@ -3152,9 +3262,40 @@ class SirsiDynixROA extends HorizonAPI {
 			//Use self registration fields
 			/** @var SelfRegistrationFormValues $customField */
 			foreach ($customFields as $customField) {
-				if ($customField->symphonyName == 'pickupLocation') {
+				if ($customField->symphonyName == 'library') {
 					$fields[$customField->symphonyName] = $pickupLocationField;
-				}else{
+				}
+				elseif ($customField->symphonyName == 'cellphone' && $library->promptForSMSNoticesInSelfReg) {
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+					$fields['SMS Notices'] = [
+						'property' => 'smsNotices',
+						'type' => 'checkbox',
+						'label' => 'Receive notices via text',
+					];
+				}
+				elseif ($customField->symphonyName == 'city_state') {
+					$fields['City'] = [
+						'property' => 'city',
+						'type' => $customField->fieldType,
+						'label' => 'City',
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+					$fields['State'] = [
+						'property' => 'state',
+						'type' => $customField->fieldType,
+						'label' => 'State',
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+				}
+				else{
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
