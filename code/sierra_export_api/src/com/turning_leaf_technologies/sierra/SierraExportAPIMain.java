@@ -895,7 +895,7 @@ public class SierraExportAPIMain {
 		final JSONObject[] holdingIds = {null};
 		//noinspection CodeBlock2Expr
 		Thread holdingsUpdateThread = new Thread(() -> {
-			holdingIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/holdings?limit=1000&deleted=false&suppressed=false&fields=id,fixedFields,varFields&bibIds=" + id, false, true);
+			holdingIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/holdings?limit=1000&deleted=false&suppressed=false&fields=id,fixedFields,varFields&bibIds=" + id, true, false);
 		});
 		getMarcResultsThread.start();
 		fixedFieldThread.start();
