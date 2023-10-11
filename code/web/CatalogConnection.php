@@ -600,9 +600,14 @@ class CatalogConnection {
 									} else {
 										$userReadingHistoryEntry->checkInDate = null;
 									}
-									$userReadingHistoryEntry->isIll = $title['isIll'];
+									if (empty($title['isIll'])) {
+										$userReadingHistoryEntry->isIll = 0;
+									}else {
+										$userReadingHistoryEntry->isIll = 1;
+									}
 									$userReadingHistoryEntry->deleted = 0;
 									$userReadingHistoryEntry->insert();
+									$userReadingHistoryEntry = null;
 								}
 							}
 						}

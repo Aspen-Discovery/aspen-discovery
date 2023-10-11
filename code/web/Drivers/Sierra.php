@@ -557,6 +557,7 @@ class Sierra extends Millennium {
 								$curTitle['author'] = 'Unknown';
 								$curTitle['format'] = 'Unknown';
 							}
+							$getBibResponse = null;
 						}
 						$recordDriver->__destruct();
 						$recordDriver = null;
