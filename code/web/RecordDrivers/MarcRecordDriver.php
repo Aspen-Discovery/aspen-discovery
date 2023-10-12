@@ -2550,7 +2550,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @return Grouping_Record|null
 	 */
 	public function getRelatedRecord() {
-		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($this->getGroupedWorkDriver()->isValid()) {
+			return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		}else{
+			return null;
+		}
 	}
 
 	public function getContinuesRecords() {
