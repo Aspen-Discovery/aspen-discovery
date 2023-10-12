@@ -2058,7 +2058,7 @@ class User extends DataObject {
 		return $result;
 	}
 
-	function freezeAllHolds() {
+	function freezeAllHolds($reactivationDate = false) {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
@@ -2088,7 +2088,7 @@ class User extends DataObject {
 
 				if ($frozen == 0 && $canFreeze == 1) {
 					if ($holdType == 'ils') {
-						$tmpResult = $user->freezeHold($recordId, $holdId, false);
+						$tmpResult = $user->freezeHold($recordId, $holdId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
 						}
@@ -2102,7 +2102,7 @@ class User extends DataObject {
 					} elseif ($holdType == 'overdrive') {
 						require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 						$driver = new OverDriveDriver();
-						$tmpResult = $driver->freezeHold($user, $recordId, null);
+						$tmpResult = $driver->freezeHold($user, $recordId, $reactivationDate);
 						if ($tmpResult['success']) {
 							$success++;
 						}
