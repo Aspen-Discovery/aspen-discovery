@@ -6,7 +6,7 @@ class AspenSite extends DataObject {
 	protected $name;
 	protected $baseUrl;
 	protected $internalServerName;
-	protected $siteType;
+	public $siteType;
 	protected $libraryType;
 	protected $libraryServes;
 	protected $timezone;
@@ -635,6 +635,28 @@ class AspenSite extends DataObject {
 
 	public function getTimezoneName() {
 		return AspenSite::$_timezones[$this->timezone];
+	}
+
+	public function getSiteBaseUrl() {
+		if($this->baseUrl) {
+			return $this->baseUrl;
+		}
+		return false;
+	}
+
+	public function getActiveTicketFeed() {
+		if($this->activeTicketFeed) {
+			return $this->activeTicketFeed;
+		}
+		return false;
+	}
+
+	public function getSiteName() {
+		return $this->name;
+	}
+
+	public function getSiteId() {
+		return $this->id;
 	}
 
 	public function getLastScheduledUpdate() {

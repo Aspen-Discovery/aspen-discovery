@@ -42,6 +42,15 @@ function getUpdates23_10_00(): array {
 				"INSERT INTO optional_updates(name, descriptionFile, versionIntroduced, status) VALUES ('enableNewBadge', 'EnableNewBadge.MD', '23.10.00', 1)",
 			]
 		], //optionalUpdates23_10
+		'increase_scoping_field_lengths_2' => [
+			'title' => 'Increase Scoping Field Lengths',
+			'description' => 'Increase Scoping Field Lengths for libraries with lots of locations',
+			'sql' => [
+				"ALTER TABLE grouped_work_record_items CHANGE COLUMN locationOwnedScopes locationOwnedScopes TEXT DEFAULT ('~')",
+				"ALTER TABLE grouped_work_record_items CHANGE COLUMN libraryOwnedScopes libraryOwnedScopes TEXT DEFAULT ('~')",
+				"ALTER TABLE grouped_work_record_items CHANGE COLUMN recordIncludedScopes recordIncludedScopes TEXT DEFAULT ('~')",
+			],
+		],
 
 		//kirstien - ByWater
 		'add_always_display_renew_count' => [
@@ -144,6 +153,7 @@ function getUpdates23_10_00(): array {
 }
 
 function addOptionalUpdatesPermission(&$update){
+	require_once ROOT_DIR . '/sys/Administration/Permission.php';
 	$dbMaintenancePermission = new Permission();
 	$dbMaintenancePermission->name = 'Run Database Maintenance';
 	$numUpdates = 0;
@@ -151,6 +161,7 @@ function addOptionalUpdatesPermission(&$update){
 		$optionalUpdatesPermission = new Permission();
 		$optionalUpdatesPermission->name = 'Run Optional Updates';
 		if ($optionalUpdatesPermission->find(true)) {
+			require_once ROOT_DIR . '/sys/Administration/RolePermissions.php';
 			$dbMaintenanceRolePermission = new RolePermissions();
 			$dbMaintenanceRolePermission->permissionId = $dbMaintenancePermission->id;
 			$dbMaintenanceRolePermission->find();

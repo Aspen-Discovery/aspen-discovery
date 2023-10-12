@@ -39,7 +39,7 @@
 				<form action="" method="post" id="usernameForm">
 					<div class="form-group propertyRow">
 						<label for="newUsername" class="control-label">{translate text='Username' isPublicFacing=true}</label>
-						<input type="text" name="newUsername" id="newUsername" value="" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="off">
+						<input type="text" name="newUsername" id="newUsername" value="{$profile->ils_username}" size="{$usernameValidationRules.minLength}" maxlength="{$usernameValidationRules.maxLength}" class="form-control required" autocomplete="off">
 					</div>
 					<div class="form-group propertyRow">
 						<button type="submit" name="submit" class="btn btn-primary">{translate text="Update" isPublicFacing=true}</button>
