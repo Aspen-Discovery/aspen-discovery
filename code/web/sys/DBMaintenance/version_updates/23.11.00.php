@@ -78,7 +78,7 @@ function getUpdates23_11_00(): array {
 				"ALTER TABLE user add column userCookiePreferenceAnalytics INT(1) DEFAULT 0",
 			],
 		],//user_cookie_preference_analytics
-		//other
+		//Lucas - Theke
 		'select_ILL_system' => [
 			'title' => 'Dropbox ILL systems',
 			'description' => 'Add a setting to allow users to specify ILL system used.',
@@ -86,6 +86,8 @@ function getUpdates23_11_00(): array {
 			'sql' => [
 				'ALTER TABLE  library ADD COLUMN ILLSystem TINYINT(1) DEFAULT 2',
 			],
-		],
+		], // select_ILL_system
+
+		//other
     ];
 }

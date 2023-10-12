@@ -43,5 +43,16 @@ function getUpdates23_12_00(): array {
 				"UPDATE modules SET name = 'Boundless' WHERE name = 'Axis 360'",
 			]
 		], //rename_axis360_module
-    ];
+
+		//lucas - Theke
+		'show_quick_poll_results' => [
+			'title' => 'Display Quick Poll Results',
+			'description' => 'Allows the user to show the results of quick polls to those patrons who are not logged in, as well as to choose whether to show graphs, tables or both.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE  web_builder_quick_poll ADD COLUMN showResultsToPatrons TINYINT(1) DEFAULT 0',
+			],
+		], // show_quick_poll_results
+
+	];
 }

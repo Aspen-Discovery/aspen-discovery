@@ -40,7 +40,6 @@ class WebBuilder_QuickPoll extends Action {
 				exit();
 			}
 		}
-
 		require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
 		$parsedown = AspenParsedown::instance();
 		$parsedown->setBreaksEnabled(true);
