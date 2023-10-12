@@ -71,7 +71,16 @@ function getUpdates23_11_00(): array {
 				"ALTER TABLE user add column userCookiePreferenceAnalytics INT(1) DEFAULT 0",
 			],
 		],//user_cookie_preference_analytics
-		//other
+		//Lucas - Theke
+		'show_quick_poll_results' => [
+			'title' => 'Display Quick Poll Results',
+			'description' => 'Allows the user to show the results of quick polls to those patrons who are not logged in, as well as to choose whether to show graphs, tables or both.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE  web_builder_quick_poll ADD COLUMN showResultsToPatrons TINYINT(1) DEFAULT 0',
+			],
+		], // show_quick_poll_results
+
 		'select_ILL_system' => [
 			'title' => 'Dropbox ILL systems',
 			'description' => 'Add a setting to allow users to specify ILL system used.',
@@ -79,6 +88,8 @@ function getUpdates23_11_00(): array {
 			'sql' => [
 				'ALTER TABLE  library ADD COLUMN ILLSystem TINYINT(1) DEFAULT 2',
 			],
-		],
+		], // select_ILL_system
+
+		//other
     ];
 }

@@ -160,9 +160,9 @@ class WebBuilder_SubmitQuickPoll extends Action {
 
 					if (!empty($this->quickPoll->submissionResultText)) {
 						$submissionSuccess = $this->quickPoll->submissionResultText;
+
 					}
 				}
-
 			}
 		} else {
 			$submissionErrors[] = translate([
@@ -170,7 +170,7 @@ class WebBuilder_SubmitQuickPoll extends Action {
 				'isPublicFacing' => true,
 			]);
 		}
-
+		$interface->assign('quickPollId',$this->quickPoll->id);
 		$interface->assign('submissionError', $submissionErrors);
 		$interface->assign('submissionResultText', $submissionSuccess);
 		$this->display('quickPollResults.tpl', $this->quickPoll->title, '', false);
