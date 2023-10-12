@@ -1,5 +1,5 @@
 <?php
-/** @noinspection PhpUnused */
+
 function getUpdates23_11_00(): array {
 	$curTime = time();
 	return [
@@ -15,3 +15,4 @@ function getUpdates23_11_00(): array {
 		],
     ];
 }
+
