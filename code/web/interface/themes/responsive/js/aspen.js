@@ -6322,11 +6322,11 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		confirmFreezeHoldSelected: function (patronId, recordId, holdId) {
+		confirmFreezeHoldSelected: function (patronId, recordId, holdId, promptForReactivationDate) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldSelected&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldSelected&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&reactivationDate=" + promptForReactivationDate, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
@@ -6358,11 +6358,28 @@ AspenDiscovery.Account = (function () {
 			return false
 		},
 
-		confirmFreezeHoldAll: function (userId) {
+		doFreezeSelectedWithReactivationDate: function (patronId, recordId, holdId) {
+			var reactivationDate = $("#reactivationDate").val();
+			var selectedTitles = AspenDiscovery.getSelectedTitles();
+			if (selectedTitles) {
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldSelectedItems&" + selectedTitles + "&reactivationDate=" + reactivationDate, function (data) {
+					if (data.success) {
+						AspenDiscovery.Account.reloadHolds();
+						AspenDiscovery.showMessage(data.title, data.message, true, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+		},
+
+		confirmFreezeHoldAll: function (userId, promptForReactivationDate) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldAll&patronId=" + userId, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldAll&patronId=" + userId + "&reactivationDate=" + promptForReactivationDate, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
@@ -6389,6 +6406,20 @@ AspenDiscovery.Account = (function () {
 				//auto close so that if user opts out of freezing, the login window closes; if the users continues, follow-up operations will reopen modal
 			}
 			return false;
+		},
+
+		doFreezeAllWithReactivationDate: function (userId) {
+			var reactivationDate = $("#reactivationDate").val();
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldAll&patronId=" + userId + "&reactivationDate=" + reactivationDate, function (data) {
+				if (data.success) {
+					AspenDiscovery.Account.reloadHolds();
+					AspenDiscovery.showMessage(data.title, data.message, true, false);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		confirmThawHoldSelected: function (patronId, recordId, holdId) {
@@ -7007,8 +7038,9 @@ AspenDiscovery.Account = (function () {
 						var fineId = $(this).data('fine_id');
 						var fineAmountInput = $("#amountToPay" + fineId);
 						var outstandingAmount = $(this).data('outstanding_amt');
-						outstandingAmount = parseInt(outstandingAmount);
-						if(fineAmountInput.val() > outstandingAmount) {
+						outstandingAmount = parseFloat(outstandingAmount);
+						var fineAmountFloat = parseFloat(fineAmountInput.val());
+						if(fineAmountFloat > outstandingAmount) {
 							// don't update the total to be paid if the user provided value is higher than the outstanding amount
 							$("#overPayWarning" + fineId).show();
 						} else {
