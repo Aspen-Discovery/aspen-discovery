@@ -1957,12 +1957,14 @@ AspenDiscovery.Admin = (function () {
 			});
 		},
 
-		showBatchScheduleUpdateForm: function (implementationStatus, siteType) {
+		showBatchScheduleUpdateForm: function (implementationStatus, siteType, version, timezone) {
 			var url = Globals.path + '/Greenhouse/AJAX';
 			var params = {
 				'method': 'getBatchScheduleUpdateForm',
 				'implementationStatus': implementationStatus,
-				'siteType': siteType
+				'siteType': siteType,
+				'currentVersion': version,
+				'timezone': timezone
 			}
 			AspenDiscovery.loadingMessage();
 			$.getJSON(url, params,
@@ -2026,6 +2028,25 @@ AspenDiscovery.Admin = (function () {
 
 		showScheduledUpdateDetails: function(id){
 			return AspenDiscovery.Account.ajaxLightbox(Globals.path + "/Greenhouse/AJAX?method=showScheduledUpdateDetails&id=" +id, true);
+		},
+
+		toggleFieldLock: function(module, tool, field) {
+			var url = Globals.path + '/Admin/AJAX';
+			var params = {
+				method: 'toggleFieldLock',
+				moduleName: module,
+				toolName: tool,
+				fieldName: field
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					$('#fieldLock' + field).replaceWith(data.lockToggle);
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
 		}
 
 	};

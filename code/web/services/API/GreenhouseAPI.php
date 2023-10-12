@@ -684,11 +684,12 @@ class GreenhouseAPI extends Action {
 		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 		$scheduledUpdate = new ScheduledUpdate();
 		$scheduledUpdate->status = $_REQUEST['status'];
-		$scheduledUpdate->updateType = $_REQUEST['runType'];
+		$scheduledUpdate->updateType = $_REQUEST['runType'] ?? 'patch';
 		$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 		$scheduledUpdate->dateScheduled = $_REQUEST['dateScheduled'];
 		$scheduledUpdate->greenhouseId = $_REQUEST['greenhouseId'];
 		$scheduledUpdate->remoteUpdate = false;
+		$scheduledUpdate->siteId = $_REQUEST['greenhouseSiteId'] ?? '';
 		if($scheduledUpdate->insert()) {
 			$result = [
 				'success' => true,
@@ -712,6 +713,7 @@ class GreenhouseAPI extends Action {
 		require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 		$scheduledUpdate = new ScheduledUpdate();
 		$scheduledUpdate->id = $_REQUEST['greenhouseId'];
+		$scheduledUpdate->siteId = $_REQUEST['greenhouseSiteId'];
 		if($scheduledUpdate->find(true)) {
 			$scheduledUpdate->status = $_REQUEST['status'];
 			$scheduledUpdate->updateType = $_REQUEST['runType'];

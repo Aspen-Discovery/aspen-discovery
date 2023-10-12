@@ -47,6 +47,8 @@ class CommunicoIndexer {
 	private String baseUrl;
 	private String clientId;
 	private String clientSecret;
+	private int numberOfDaysToIndex;
+
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, CommunicoEvent> existingEvents = new HashMap<>();
@@ -67,7 +69,7 @@ class CommunicoIndexer {
 	private ConcurrentUpdateSolrClient solrUpdateServer;
 	private boolean doFullReload = true;
 
-	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	CommunicoIndexer(long settingsId, String name, String baseUrl, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -82,6 +84,7 @@ class CommunicoIndexer {
 		this.clientSecret = clientSecret;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
+		this.numberOfDaysToIndex = numberOfDaysToIndex;
 
 		logEntry = new EventsIndexerLogEntry("Communico " + name, aspenConn, logger);
 
@@ -166,6 +169,10 @@ class CommunicoIndexer {
 			}
 		}
 
+		Date lastDateToIndex = new Date();
+		long numberOfDays = numberOfDaysToIndex * 24;
+		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
+
 		logEntry.incNumEvents(communicoEvents.length());
 		for (int i = 0; i < communicoEvents.length(); i++){
 			try {
@@ -200,8 +207,13 @@ class CommunicoIndexer {
 
 						solrDocument.addField("last_indexed", new Date());
 
+						//Make sure the start date is within the range of dates we are indexing
 						Date startDate = getDateForKey(curEvent,"eventStart");
 						solrDocument.addField("start_date", startDate);
+						if (startDate.after(lastDateToIndex)) {
+							continue;
+						}
+
 						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 						Date endDate = getDateForKey(curEvent,"eventEnd");
 						solrDocument.addField("end_date", endDate);

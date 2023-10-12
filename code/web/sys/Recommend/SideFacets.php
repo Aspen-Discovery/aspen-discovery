@@ -92,8 +92,39 @@ class SideFacets implements RecommendationInterface {
 		$lockedFacets = isset($lockedFacets[$lockSection]) ? $lockedFacets[$lockSection] : [];
 
 		//Figure out which counts to show.
-		$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
-		$interface->assign('facetCountsToShow', $facetCountsToShow);
+		$searchSource = $_REQUEST['searchSource'];
+		if ($searchSource == 'events') {
+			$facetSettings = $library->getEventFacetSettings();
+
+			$interface->assign('facetCountsToShow', $facetSettings->getFacetGroup()->eventFacetCountsToShow);
+
+			//if there are multiple integrations being used for one library, the first setting found will be used
+			if ($facetSettings->settingSource == 'communico'){
+				require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+				$eventSettings = new CommunicoSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
+			}else if ($facetSettings->settingSource == 'springshare'){
+				require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+				$eventSettings = new SpringshareLibCalSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
+			}else {
+				require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+				$eventSettings = new LMLibraryCalendarSetting;
+				$eventSettings->id = $facetSettings->settingId;
+				if ($eventSettings->find(true)){
+					$interface->assign('maxEventDate', strtotime("+" . $eventSettings->numberOfDaysToIndex . " days"));
+				}
+			}
+		} else {
+			$facetCountsToShow = $library->getGroupedWorkDisplaySettings()->facetCountsToShow;
+			$interface->assign('facetCountsToShow', $facetCountsToShow);
+		}
 
 		//Do additional processing of facets
 		if ($this->searchObject instanceof SearchObject_AbstractGroupedWorkSearcher) {
@@ -115,6 +146,18 @@ class SideFacets implements RecommendationInterface {
 				$sideFacets[$facetKey]['collapseByDefault'] = $facetSetting->collapseByDefault;
 				$sideFacets[$facetKey]['locked'] = array_key_exists($facetKey, $lockedFacets);
 				$sideFacets[$facetKey]['canLock'] = $facetSetting->canLock;
+			}
+		} elseif ($this->searchObject instanceof SearchObject_EventsSearcher) {
+			//Process other searchers to add more facet popup
+			foreach ($sideFacets as $facetKey => $facet) {
+				/** @var FacetSetting $facetSetting */
+				if ($facetKey == 'start_date') {
+					$startDateFacet = $this->updateStartDateRatingsFacet($facet);
+					$sideFacets[$facetKey] = $startDateFacet;
+				}else {
+					$facetSetting = $this->facetSettings[$facetKey];
+					$sideFacets = $this->applyFacetSettings($facetKey, $sideFacets, $facetSetting, $lockedFacets);
+				}
 			}
 		} else {
 			//Process other searchers to add more facet popup
@@ -175,6 +218,36 @@ class SideFacets implements RecommendationInterface {
 		}
 		$interface->assign('ratingLabels', $ratingLabels);
 		return $userRatingFacet;
+	}
+
+	private function updateStartDateRatingsFacet($startDateFacet) {
+		if (!isset($_REQUEST['filter'])) {
+			return $startDateFacet;
+		}
+		$filters = $_REQUEST['filter'];
+		if (!empty($filters) && is_array($filters)) {
+			foreach ($filters as $filter) {
+				if (strpos($filter, 'start_date') === 0) {
+					$filterValue = substr($filter, strpos($filter, '[') + 1);
+					$filterValue = substr($filterValue, 0, -2);
+					$range = explode(' TO ', $filterValue);
+					$utcTimeZone = new DateTimeZone('UTC');
+					$defaultTimezone = new DateTimeZone(date_default_timezone_get());
+					if ($range[0] != '*') {
+						$dt = new DateTime($range[0], $utcTimeZone);
+						$dt->setTimezone($defaultTimezone);
+						$startDateFacet['start'] = $dt->format("Y-m-d");
+					}
+					if ($range[1] != '*') {
+						$dt = new DateTime($range[1], $utcTimeZone);
+						$dt->setTimezone($defaultTimezone);
+						$startDateFacet['end'] = $dt->format("Y-m-d");
+					}
+					break;
+				}
+			}
+		}
+		return $startDateFacet;
 	}
 
 	/* getTemplate

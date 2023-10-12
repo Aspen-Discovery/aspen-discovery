@@ -117,8 +117,7 @@ class AJAX extends Action {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchObject->init();
 		$searchObject = $searchObject->restoreSavedSearch($innReachSavedSearchId, false);
-
-		if (!empty($searchObject)) {
+		if (!empty($searchObject) && !($searchObject instanceof AspenError)) {
 			//Load results from INN-Reach
 			$innReach = new InnReach();
 

@@ -43,6 +43,8 @@ class SpringshareLibCalIndexer {
 	private String calId;
 	private String clientId;
 	private String clientSecret;
+	private int numberOfDaysToIndex;
+
 	private Connection aspenConn;
 	private EventsIndexerLogEntry logEntry;
 	private HashMap<String, SpringshareLibCalEvent> existingEvents = new HashMap<>();
@@ -58,7 +60,7 @@ class SpringshareLibCalIndexer {
 	//TODO: Update full reload based on settings
 	private boolean doFullReload = true;
 
-	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
+	SpringshareLibCalIndexer(long settingsId, String name, String baseUrl, String calId, String clientId, String clientSecret, int numberOfDaysToIndex, ConcurrentUpdateSolrClient solrUpdateServer, Connection aspenConn, Logger logger) {
 		this.settingsId = settingsId;
 		this.name = name;
 		this.baseUrl = baseUrl;
@@ -70,6 +72,7 @@ class SpringshareLibCalIndexer {
 		this.clientSecret = clientSecret;
 		this.aspenConn = aspenConn;
 		this.solrUpdateServer = solrUpdateServer;
+		this.numberOfDaysToIndex = numberOfDaysToIndex;
 
 		logEntry = new EventsIndexerLogEntry("Springshare LibCal " + name, aspenConn, logger);
 
@@ -151,6 +154,10 @@ class SpringshareLibCalIndexer {
 			}
 		}
 
+		Date lastDateToIndex = new Date();
+		long numberOfDays = numberOfDaysToIndex * 24;
+		lastDateToIndex.setTime(lastDateToIndex.getTime() + (numberOfDays * 60 * 60 * 1000));
+
 		for (int i = 0; i < libCalEvents.length(); i++){
 			try {
 				JSONObject curEvent = libCalEvents.getJSONObject(i);
@@ -228,7 +235,12 @@ class SpringshareLibCalIndexer {
 						*/
 
 						Date startDate = getDateForKey(curEvent,"start");
+						//Make sure the start date is within the range of dates we are indexing
+
 						solrDocument.addField("start_date", startDate);
+						if (startDate.after(lastDateToIndex)) {
+							continue;
+						}
 						solrDocument.addField("start_date_sort", startDate.getTime() / 1000);
 						Date endDate = getDateForKey(curEvent,"end");
 						solrDocument.addField("end_date", endDate);

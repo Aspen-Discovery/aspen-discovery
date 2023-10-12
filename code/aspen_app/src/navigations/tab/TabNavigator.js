@@ -9,11 +9,13 @@ import AccountStackNavigator from '../stack/AccountStackNavigator';
 import BrowseStackNavigator from '../stack/BrowseStackNavigator';
 import LibraryCardStackNavigator from '../stack/LibraryCardStackNavigator';
 import MoreStackNavigator from '../stack/MoreStackNavigator';
-import { LanguageContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import SelfCheckOutStackNavigator from '../stack/SelfCheckOutStackNavigator';
 
 export default function TabNavigator() {
      const { language } = React.useContext(LanguageContext);
+     const { enableSelfCheck } = React.useContext(LibraryBranchContext);
      const Tab = createBottomTabNavigator();
      const [activeIcon, inactiveIcon] = useToken('colors', [useColorModeValue('gray.800', 'coolGray.200'), useColorModeValue('gray.500', 'coolGray.400')]);
      const tabBarBackgroundColor = useColorModeValue('light', 'dark');
@@ -34,6 +36,8 @@ export default function TabNavigator() {
                               iconName = focused ? 'person' : 'person-outline';
                          } else if (route.name === 'MoreTab') {
                               iconName = focused ? 'ellipsis-horizontal' : 'ellipsis-horizontal-outline';
+                         } else if (route.name === 'SelfCheckTab') {
+                              iconName = focused ? 'barcode' : 'barcode-outline';
                          }
                          return <Ionicons name={iconName} size={size} color={color} />;
                     },
@@ -64,6 +68,15 @@ export default function TabNavigator() {
                          tabBarLabel: getTermFromDictionary(language, 'nav_card'),
                     }}
                />
+               {enableSelfCheck ? (
+                    <Tab.Screen
+                         name="SelfCheckTab"
+                         component={SelfCheckOutStackNavigator}
+                         options={{
+                              tabBarLabel: getTermFromDictionary(language, 'nav_sco'),
+                         }}
+                    />
+               ) : null}
                <Tab.Screen
                     name="AccountTab"
                     component={DrawerNavigator}

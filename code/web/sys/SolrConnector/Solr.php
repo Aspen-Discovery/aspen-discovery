@@ -632,7 +632,7 @@ abstract class Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary) {
+	public function getBoostFactors(/** @noinspection PhpUnusedParameterInspection */ $searchLibrary, $searchLocation) {
 		return [];
 	}
 
@@ -1148,7 +1148,7 @@ abstract class Solr {
 		$searchLocation = Location::getSearchLocation($this->searchSource);
 
 		//Apply automatic boosting for queries
-		$boostFactors = $this->getBoostFactors($searchLibrary);
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
 		if (!empty($boostFactors)) {
 			if (isset($options['qt']) && $options['qt'] == 'dismax') {
 				$options['bf'] = "sum(" . implode(',', $boostFactors) . ")";

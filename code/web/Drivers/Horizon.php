@@ -65,7 +65,7 @@ abstract class Horizon extends AbstractIlsDriver {
 		}
 	}
 
-	public function getFinesViaHIP($patron): array {
+	public function getFinesViaHIP(User $patron): array {
 		global $configArray;
 		global $logger;
 
@@ -115,8 +115,8 @@ abstract class Horizon extends AbstractIlsDriver {
 			'menu' => 'account',
 			'profile' => $configArray['Catalog']['hipProfile'],
 			'ri' => '',
-			'sec1' => $patron->cat_username,
-			'sec2' => $patron->cat_password,
+			'sec1' => $patron->ils_barcode,
+			'sec2' => $patron->ils_password,
 			'session' => $sessionId,
 		];
 		$post_string = http_build_query($post_data);
@@ -140,9 +140,9 @@ abstract class Horizon extends AbstractIlsDriver {
 		return $messages;
 	}
 
-	public function getFinesViaDB($patron, $includeMessages = false): array {
+	public function getFinesViaDB(User $patron, $includeMessages = false): array {
 		$sql = "select title_inverted.title as TITLE, item.bib# as BIB_NUM, item.item# as ITEM_NUM, " . "burb.borrower# as BORROWER_NUM, burb.amount as AMOUNT, burb.comment, " . "burb.date as DUEDATE, " . "burb.block as FINE, burb.amount as BALANCE from burb " . "left join item on item.item#=burb.item# " . "left join title_inverted on title_inverted.bib# = item.bib# " . "join borrower on borrower.borrower#=burb.borrower# " . "join borrower_barcode on borrower_barcode.borrower#=burb.borrower# " .
-			"where borrower_barcode.bbarcode='" . $patron->cat_username . "'";
+			"where borrower_barcode.bbarcode='" . $patron->ils_barcode . "'";
 
 		if ($includeMessages == false) {
 			$sql .= " and amount != 0";
@@ -268,8 +268,8 @@ abstract class Horizon extends AbstractIlsDriver {
 				'menu' => 'account',
 				'profile' => $configArray['Catalog']['hipProfile'],
 				'ri' => '',
-				'sec1' => $patron->cat_username,
-				'sec2' => $patron->cat_password,
+				'sec1' => $patron->ils_barcode,
+				'sec2' => $patron->ils_password,
 				'session' => $sessionId,
 			];
 			$curl_url = $this->hipUrl . "/ipac20/ipac.jsp";

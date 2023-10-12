@@ -3,10 +3,10 @@
 	<input type="hidden" name="remittance_id" value="{$deluxeRemittanceId}"/>
 	<input type="hidden" name="message_version" value="2.7"/>
 	<input type="hidden" name="patronId" value="{$userId}"/>
-	<input type="hidden" name="user_defined1" value="{$profile->cat_username}"/>
-	<input type="hidden" name="user_defined2" value="Unknown" id="{$userId}ItemBarcodes"/>
-	<input type="hidden" name="user_defined3" value="Unknown" id="{$userId}BillReasons"/>
-	<input type="hidden" name="user_defined4" value="Unknown" id="{$userId}ItemTitles"/>
+	<input type="hidden" name="user_defined1" value="{$profile->getBarcode()}"/>
+	{*<input type="hidden" name="user_defined2" value="Unknown" id="{$userId}ItemBarcodes"/>*}
+	{*<input type="hidden" name="user_defined3" value="Unknown" id="{$userId}BillReasons"/>*}
+	{*<input type="hidden" name="user_defined4" value="Unknown" id="{$userId}ItemTitles"/>*}
 	<div class="row">
         <div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
             <div id="certifiedPaymentsByDeluxe-button-container{$userId}">
@@ -21,7 +21,7 @@
     </script>
     <script>
         $('#fines{$userId}').submit(function() {ldelim}
-            var itemBarcodes = "";
+            /*var itemBarcodes = "";
             var billReasons = "";
             var itemTitles = "";
 
@@ -56,7 +56,8 @@
             document.getElementById("{$userId}ItemBarcodes").value = itemBarcodes;
             document.getElementById("{$userId}BillReasons").value = billReasons;
             document.getElementById("{$userId}ItemTitles").value = itemTitles;
-
+            */
+            
             AspenDiscovery.Account.createCertifiedPaymentsByDeluxeOrder('#fines{$userId}', 'fine', '{$deluxeRemittanceId}');
         {rdelim});
     </script>

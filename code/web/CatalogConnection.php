@@ -96,17 +96,20 @@ class CatalogConnection {
 
 		$barcodesToTest = [];
 		$barcodesToTest[$username] = $username;
-		$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
-		//Special processing to allow users to login with short barcodes
-		global $library;
-		if ($library) {
-			if ($library->barcodePrefix) {
-				if (strpos($username, $library->barcodePrefix) !== 0) {
-					//Add the barcode prefix to the barcode
-					$barcodesToTest[$library->barcodePrefix . $username] = $library->barcodePrefix . $username;
+		if ($this->accountProfile->authenticationMethod != 'db') {
+			$barcodesToTest[preg_replace('/[^a-zA-Z\d]/', '', trim($username))] = preg_replace('/[^a-zA-Z\d]/', '', trim($username));
+			//Special processing to allow users to login with short barcodes
+			global $library;
+			if ($library) {
+				if ($library->barcodePrefix) {
+					if (strpos($username, $library->barcodePrefix) !== 0) {
+						//Add the barcode prefix to the barcode
+						$barcodesToTest[$library->barcodePrefix . $username] = $library->barcodePrefix . $username;
+					}
 				}
 			}
 		}
+		$barcodesToTest = array_unique($barcodesToTest);
 
 		//Get the existing user from the database.  This validates that the username and password on record are correct
 		$user = null;
@@ -178,10 +181,11 @@ class CatalogConnection {
 
 	/**
 	 * @param string $patronBarcode
+	 * @param string $patronUsername
 	 * @return bool|User
 	 */
-	public function findNewUser(string $patronBarcode) {
-		return $this->driver->findNewUser($patronBarcode);
+	public function findNewUser(string $patronBarcode, string $patronUsername) {
+		return $this->driver->findNewUser($patronBarcode, $patronUsername);
 	}
 
 	/**
@@ -383,10 +387,9 @@ class CatalogConnection {
 		];
 
 		$userToResetPin = new User();
-		$barcodeProperty = $this->accountProfile->loginConfiguration == 'barcode_pin' ? 'cat_username' : 'cat_password';
-		$userToResetPin->$barcodeProperty = $barcode;
+		$userToResetPin->ils_barcode = $barcode;
 		if (!$userToResetPin->find(true)) {
-			$userToResetPin = $this->driver->findNewUser($barcode);
+			$userToResetPin = $this->driver->findNewUser($barcode, '');
 		}
 		if ($userToResetPin == false) {
 			$result['error'] = translate([
@@ -597,6 +600,7 @@ class CatalogConnection {
 									} else {
 										$userReadingHistoryEntry->checkInDate = null;
 									}
+									$userReadingHistoryEntry->isIll = $title['isIll'];
 									$userReadingHistoryEntry->deleted = 0;
 									$userReadingHistoryEntry->insert();
 								}
@@ -990,6 +994,7 @@ class CatalogConnection {
 		/** @noinspection PhpUndefinedFieldInspection */
 		$historyEntry['checkedOut'] = $readingHistoryDB->checkedOut == null ? false : true;
 		$historyEntry['permanentId'] = $readingHistoryDB->groupedWorkPermanentId;
+		$historyEntry['isIll'] = $readingHistoryDB->isIll;
 		if (!$forExport) {
 			require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
 			$recordDriver = new GroupedWorkDriver($readingHistoryDB->groupedWorkPermanentId);
@@ -1402,13 +1407,20 @@ class CatalogConnection {
 		global $timer;
 		global $logger;
 		$user = new User();
-		if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
-			$user->cat_username = $barcode;
-		} else {
-			$user->cat_password = $barcode;
+		//First check the barcode field
+		$user->source = $this->driver->accountProfile->name;
+		$user->ils_barcode = $barcode;
+		$foundUser = false;
+		try {
+			if ($user->find(true)) {
+				$foundUser = true;
+			}
+		} catch (Exception $e) {
+			//ils_barcode probably has not been created yet
+			$user = null;
 		}
-		if ($user->find(true)) {
-			if ($this->driver->accountProfile->loginConfiguration = 'barcode_pin') {
+		if ($foundUser) {
+			if ($this->driver->accountProfile->loginConfiguration == 'barcode_pin') {
 				//We load the account based on the barcode make sure the pin matches
 				$userValid = $password != null && $user->cat_password == $password;
 				if (!$userValid) {
@@ -1418,7 +1430,7 @@ class CatalogConnection {
 				}
 			} else {
 				//We still load based on barcode, make sure the username is similar
-				$userValid = $this->areNamesSimilar($username, $user->cat_username);
+				$userValid = $this->areNamesSimilar($username, $user->ils_password);
 				if (!$userValid) {
 					$timer->logTime("offline patron login failed due to invalid name");
 					$logger->log("offline patron login failed due to invalid name", Logger::LOG_NOTICE);
@@ -1426,11 +1438,15 @@ class CatalogConnection {
 				}
 			}
 		} else {
-			$timer->logTime("Loading patron from database failed because we haven't seen this user before");
-			$logger->log("Loading patron from database failed because we haven't seen this user before", Logger::LOG_NOTICE);
+			$timer->logTime("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile");
+			$logger->log("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile", Logger::LOG_NOTICE);
 			$user = null;
 		}
 		return $user;
+	}
+
+	public function supportsLoginWithUsername() : bool {
+		return $this->driver->supportsLoginWithUsername();
 	}
 
 	public function hasEditableUsername() {
@@ -1657,5 +1673,9 @@ class CatalogConnection {
 		} else {
 			return $this->driver->initiatePasswordResetByBarcode();
 		}
+	}
+
+	public function checkoutBySip(User $patron, $barcode, $locationId): array {
+		return $this->driver->checkoutBySip($patron, $barcode, $locationId);
 	}
 }

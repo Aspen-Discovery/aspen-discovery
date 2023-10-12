@@ -32,6 +32,15 @@ class MySQLSession extends SessionInterface {
 		if ($s->find(true)) {
 			//global $logger;
 			//$logger->log("Reading existing session $sess_id", Logger::LOG_DEBUG);
+			if ($s->remember_me == '1') {
+				$earliestValidSession = time() - self::$rememberMeLifetime;
+			} else {
+				$earliestValidSession = time() - self::$lifetime;
+			}
+			if ($s->last_used < $earliestValidSession) {
+				return "";
+			}
+			SessionInterface::$activeSessionObject = $s;
 			return $s->data;
 		} else {
 			return "";
@@ -68,7 +77,7 @@ class MySQLSession extends SessionInterface {
 			$s->data = $data;
 			$s->last_used = time();
 			if (empty($s->remember_me)) {
-				if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] == true || $_REQUEST['rememberMe'] === "true")) {
+				if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === true || $_REQUEST['rememberMe'] === "true")) {
 					$s->remember_me = 1;
 				} else {
 					$activeUser = UserAccount::getActiveUserObj();
@@ -91,9 +100,11 @@ class MySQLSession extends SessionInterface {
 			global $isAJAX;
 			if (!BotChecker::isRequestFromBot() && !$isAJAX) {
 				global $aspenUsage;
-				$aspenUsage->sessionsStarted++;
-				if (!empty($aspenUsage->id)) {
+				$aspenUsage->__set('sessionsStarted', $aspenUsage->__get('sessionsStarted') + 1);
+				if (!empty($aspenUsage->__get('id'))) {
 					$aspenUsage->update();
+				} else {
+					$aspenUsage->insert();
 				}
 			}
 		}
@@ -126,5 +137,4 @@ class MySQLSession extends SessionInterface {
 		//Do nothing here, delete old sessions in Java Cron
 		return true;
 	}
-
 }

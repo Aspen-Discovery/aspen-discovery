@@ -39,6 +39,9 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		//Use getSearchResult to do the bulk of the assignments
 		$this->getSearchResult('list', false);
 
+		global $interface;
+		$interface->assign('eventVendor', 'communico');
+
 		//Switch template
 		return 'RecordDrivers/Events/listEntry.tpl';
 	}
@@ -82,6 +85,11 @@ class CommunicoEventRecordDriver extends IndexRecordDriver {
 		$interface->assign('start_date', $this->fields['start_date']);
 		$interface->assign('end_date', $this->fields['end_date']);
 		$interface->assign('source', isset($this->fields['source']) ? $this->fields['source'] : '');
+
+		if (IPAddress::showDebuggingInformation()) {
+			$interface->assign('summScore', $this->getScore());
+			$interface->assign('summExplain', $this->getExplain());
+		}
 
 		require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
 		$eventSettings = new CommunicoSetting;

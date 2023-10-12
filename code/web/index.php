@@ -31,10 +31,25 @@ if (isset($_REQUEST['test_role'])) {
 $interface = new UInterface();
 $timer->logTime('Create interface');
 
+//Check to see if we need to end masquerade mode
+/** SessionInterface $session */
+global $session;
+$activeSessionObject = $session::$activeSessionObject;
+if ($activeSessionObject != null) {
+	if (UserAccount::isUserMasquerading() && (time() - $activeSessionObject->last_used > SessionInterface::$masqueradeLifeTime)) {
+		$_SESSION['activeUserId'] = $_SESSION['guidingUserId'];
+		unset($_SESSION['guidingUserId']);
+	}
+
+	//Check to see when the session expires so we can automatically refresh the page to log the user out as needed
+	$timeUntilSessionExpiration = $activeSessionObject->getTimeUntilSessionExpiration();
+	$interface->assign('timeUntilSessionExpiration', $timeUntilSessionExpiration);
+}
+
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 40);
+$interface->assign('cssJsCacheCounter', 44);
 
 // Setup Translator
 global $language;
@@ -239,10 +254,10 @@ if (UserAccount::isLoggedIn() && UserAccount::userHasPermission('Submit Ticket')
 //Check to see if we should show the cookieConsent banner
 $interface->assign('cookieStorageConsent', false);
 $interface->assign('cookieStorageConsentHTML', '');
-if (!empty($systemVariables) && !empty($systemVariables->cookieStorageConsent)) {
+if (!empty($library) && !empty($library->cookieStorageConsent)) {
 	try {
 		$interface->assign('cookieStorageConsent', true);
-		$interface->assign('cookieStorageConsentHTML', $systemVariables->cookiePolicyHTML);
+		$interface->assign('cookieStorageConsentHTML', $library->cookiePolicyHTML);
 	} catch (Exception $e) {
 		//Not yet setup. Ignore
 	}
@@ -388,6 +403,8 @@ foreach ($_REQUEST as $parameter => $value) {
 		}
 	}
 }
+
+$interface->assign('canLoginSSO', IPAddress::allowSSOAccessForClientIP());
 
 $isLoggedIn = UserAccount::isLoggedIn();
 $timer->logTime('Check if user is logged in');
@@ -905,7 +922,7 @@ try {
 		}
 	}
 
-	if ($aspenUsage->id) {
+	if (!empty($aspenUsage->__get('id'))) {
 		$aspenUsage->update();
 	} else {
 		$aspenUsage->insert();
@@ -1153,6 +1170,21 @@ function loadModuleActionId() {
 						$_REQUEST['module'] = 'WebBuilder';
 						$_REQUEST['action'] = 'Form';
 						$_REQUEST['id'] = $form->id;
+					} else {
+						require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+						$quickPoll = new QuickPoll();
+						$quickPoll->urlAlias = $requestPath;
+						$quickPollLibrary = new LibraryQuickPoll();
+						$quickPollLibrary->libraryId = $library->libraryId;
+						$quickPoll->joinAdd($quickPollLibrary, 'INNER', 'libraryFilter', 'id', 'pollId');
+						if ($quickPoll->find(true)) {
+							$_GET['module'] = 'WebBuilder';
+							$_GET['action'] = 'QuickPoll';
+							$_GET['id'] = $quickPoll->id;
+							$_REQUEST['module'] = 'WebBuilder';
+							$_REQUEST['action'] = 'QuickPoll';
+							$_REQUEST['id'] = $quickPoll->id;
+						}
 					}
 				}
 			}
@@ -1218,22 +1250,15 @@ function loadModuleActionId() {
 }
 
 function initializeSession() {
-	global $configArray;
 	global $timer;
-	// Initiate Session State
-	$session_type = $configArray['Session']['type'];
-	$session_lifetime = $configArray['Session']['lifetime'];
-	$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-	//register_shutdown_function('session_write_close');
-	$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-	require_once $sessionClass;
-	if (class_exists($session_type)) {
-		/** @var SessionInterface $session */
-		session_name('aspen_session');
-		$session = new $session_type();
-		$session->init($session_lifetime, $session_rememberMeLifetime);
-	}
-	$timer->logTime('Session initialization ' . $session_type);
+	/** SessionInterface $session */
+	global $session;
+	require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+	session_name('aspen_session');
+	$session = new MySQLSession();
+	$session->init();
+
+	$timer->logTime('Session initialization MySQLSession');
 }
 
 //Look for spammy searches and kill them

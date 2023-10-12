@@ -126,6 +126,7 @@ abstract class SIP2Driver extends AbstractIlsDriver {
 		global $timer;
 		$user = new User();
 		$user->username = $patronInfoResponse['variable']['XI'][0];
+		$user->unique_ils_id = $patronInfoResponse['variable']['XI'][0];
 		if ($user->find(true)) {
 			$insert = false;
 		} else {
@@ -157,7 +158,9 @@ abstract class SIP2Driver extends AbstractIlsDriver {
 		// I'm inserting the sip username and password since the ILS is the source.
 		// Should revisit this.
 		$user->cat_username = $username;
+		$user->ils_barcode = $username;
 		$user->cat_password = $password;
+		$user->ils_password = $password;
 		$user->email = isset($patronInfoResponse['variable']['BE'][0]) ? $patronInfoResponse['variable']['BE'][0] : '';
 		$user->phone = isset($patronInfoResponse['variable']['BF'][0]) ? $patronInfoResponse['variable']['BF'][0] : '';
 		$user->patronType = $patronInfoResponse['variable']['PC'][0];

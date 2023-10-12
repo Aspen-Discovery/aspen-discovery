@@ -89,7 +89,7 @@ class LDAPAuthentication extends Action {
 						if ($this->selfRegister($attributes)) {
 							return $this->validateWithILS($username);
 						} else {
-							AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+							AspenError::raiseError(new AspenError('Unable to register a new account with ILS during LDAP authentication.'));
 						}
 					} return $this->validateWithILS($username);
 				} else {
@@ -153,7 +153,7 @@ class LDAPAuthentication extends Action {
 
 	private function validateWithILS($username): bool {
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
-		$user = $catalogConnection->findNewUser($username);
+		$user = $catalogConnection->findNewUser($username, '');
 
 		if(!$user instanceof User) {
 			return false;
@@ -161,7 +161,7 @@ class LDAPAuthentication extends Action {
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		$user = $catalogConnection->findNewUser($username);
+		$user = $catalogConnection->findNewUser($username, '');
 		return $this->login($user, $username);
 	}
 
@@ -215,21 +215,16 @@ class LDAPAuthentication extends Action {
 	}
 
 	private function newSSOSession($id) {
-		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		/** SessionInterface $session */
+		global $session;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+		@session_destroy();
+		session_name('aspen_session');
+		$session = new MySQLSession();
+		$session->init();
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		$timer->logTime('Session initialization MySQLSession');
 
 		$_SESSION['activeUserId'] = $id;
 		$_SESSION['rememberMe'] = false;
@@ -251,6 +246,7 @@ class LDAPAuthentication extends Action {
 			'username' => $this->searchArray($user, $this->matchpoints['userId']),
 			'displayName' => $this->searchArray($user, $this->matchpoints['displayName']),
 			'cat_username' => $this->searchArray($user, $this->matchpoints['username']),
+			'ils_barcode' => $this->searchArray($user, $this->matchpoints['ils_barcode']),
 			'category_id' => $patronType,
 		];
 	}
@@ -262,6 +258,8 @@ class LDAPAuthentication extends Action {
 		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
 		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
 		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->ils_username = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints['userId']);
 		$tmpUser->phone = '';
 		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
 

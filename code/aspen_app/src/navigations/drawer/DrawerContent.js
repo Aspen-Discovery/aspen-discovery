@@ -211,9 +211,9 @@ const UserProfileOverview = () => {
                          ) : null}
                          <HStack space={1} alignItems="center">
                               <Icon as={MaterialIcons} name="credit-card" size="xs" />
-                              {user && user.cat_username ? (
+                              {user && (user.ils_barcode || user.cat_username) ? (
                                    <Text fontSize="12" fontWeight="500">
-                                        {user.cat_username}
+                                        {user.ils_barcode ?? user.cat_username}
                                    </Text>
                               ) : null}
                          </HStack>

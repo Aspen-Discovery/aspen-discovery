@@ -48,7 +48,7 @@ export const MyLibraryCard = () => {
         )
     } */
 
-     useQuery(['linked_accounts', user.id, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
+     useQuery(['linked_accounts', user, cards, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
           onSuccess: (data) => {
                updateLinkedAccounts(data.accounts);
                updateLibraryCards(data.cards);
@@ -196,7 +196,9 @@ const CreateLibraryCard = (data) => {
      }
 
      let barcodeValue = 'UNKNOWN';
-     if (!_.isUndefined(card.cat_username)) {
+     if (!_.isUndefined(card.ils_barcode)) {
+          barcodeValue = card.ils_barcode;
+     } else if (!_.isUndefined(card.cat_username)) {
           barcodeValue = card.cat_username;
      }
 
@@ -506,11 +508,13 @@ export class MyLibraryCard221200 extends Component {
           }
 
           let barcodeValue = 'UNKNOWN';
-          if (user.cat_username) {
+          if (user.ils_barcode) {
+               barcodeValue = user.ils_barcode;
+          } else if (user.cat_username) {
                barcodeValue = user.cat_username;
           }
 
-          if (this.state.isLoading || user.cat_username === '') {
+          if (this.state.isLoading || (user.cat_username === '' && user.ils_barcode === '')) {
                return loadingSpinner();
           }
 
@@ -535,7 +539,7 @@ export class MyLibraryCard221200 extends Component {
                                         {user.displayName}
                                    </Text>
                                    <Text color="darkText" bold fontSize="xl">
-                                        {user.cat_username}
+                                        {user.ils_barcode ?? user.cat_username}
                                    </Text>
                                    {user.expires && !doesNotExpire ? (
                                         <Text color="darkText" fontSize={10}>

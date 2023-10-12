@@ -21,7 +21,10 @@
 						{if !$title|removeTrailingPunctuation} {translate text='Title not available' isPublicFacing=true}{else}{$title|removeTrailingPunctuation|highlight|truncate:180:"..."}{/if}
 					</a>
 					{if isset($summScore)}
-						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$summId|escape}');">{$summScore}</a>)
+						&nbsp;(<a href="#" onclick="return AspenDiscovery.showElementInPopup('Score Explanation', '#scoreExplanationValue{$id|escape}');">{$summScore}</a>)
+					{/if}
+					{if isset($summExplain)}
+						<div class="hidden" id="scoreExplanationValue{$id|escape}">{$summExplain}</div>
 					{/if}
 				</div>
 			</div>
@@ -52,7 +55,7 @@
 						{if $recordDriver->isRegistrationRequired()}
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
-									<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Check Registration" isPublicFacing=true}</a>
+									<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i> {translate text="Check Registration" isPublicFacing=true}</a>
 									<a href="/MyAccount/MyEvents?page=1&eventsFilter=upcoming" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Go To Your Events" isPublicFacing=true}</a>
 								</div>
 							</div>
@@ -68,18 +71,18 @@
 							<div class="btn-toolbar">
 								<div class="btn-group btn-group-vertical btn-block">
 									{if !empty($recordDriver->getRegistrationModalBody())}
-										<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$recordDriver->getUniqueID()|escape}', '{$recordDriver->getRegistrationModalBody()}', '{$recordDriver->getExternalUrl()}');"><i class="fas fa-external-link-alt"></i>{translate text="Registration Information" isPublicFacing=true}
+										<a class="btn btn-sm btn-action btn-wrap" onclick="return AspenDiscovery.Account.regInfoModal(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'library_market', '{$recordDriver->getExternalUrl()}');">{translate text="Registration Information" isPublicFacing=true}
 										</a>
 									{else}
-										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i>&nbsp{translate text="Registration Information" isPublicFacing=true}</a>
+										<a href="{$recordDriver->getExternalUrl()}" class="btn btn-sm btn-action btn-wrap" target="_blank" style="width:100%"><i class="fas fa-external-link-alt"></i> {translate text="Registration Information" isPublicFacing=true}</a>
 									{/if}
-									<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+									<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'library_market');" class="btn btn-sm btn-action btn-wrap addToYourEventsBtn" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
 								</div>
 							</div>
 							<br>
 						{else}
 							<div class="btn-toolbar">
-								<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}');" class="btn btn-sm btn-action btn-wrap" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
+								<a onclick="return AspenDiscovery.Account.saveEvent(this, 'Events', '{$recordDriver->getUniqueID()|escape}', 'library_market');" class="btn btn-sm btn-action btn-wrap addToYourEventsBtn" style="width:100%">{translate text="Add to Your Events" isPublicFacing=true}</a>
 							</div>
 							<br>
 						{/if}

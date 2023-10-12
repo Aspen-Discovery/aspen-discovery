@@ -102,12 +102,12 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 	while ($userRow = fgetcsv($userHnd)) {
 		$numImports++;
 		$userFromCSV = loadUserInfoFromCSV($userRow);
-		//echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->cat_username}\tUsername {$userFromCSV->username}\n");
+		//echo("Processing User {$userFromCSV->id}\tBarcode {$userFromCSV->ils_barcode}\tUsername {$userFromCSV->unique_ils_id}\n");
 		//ob_flush();
 		if (count($preValidatedIds) > 0) {
-			if (array_key_exists($userFromCSV->cat_username, $preValidatedIds)) {
-				$username = $preValidatedIds[$userFromCSV->cat_username];
-				if ($username != $userFromCSV->username) {
+			if (array_key_exists($userFromCSV->ils_barcode, $preValidatedIds)) {
+				$username = $preValidatedIds[$userFromCSV->ils_barcode];
+				if ($username != $userFromCSV->unique_ils_id) {
 					$existingUser = false;
 				} else {
 					$existingUser = new User();
@@ -119,9 +119,10 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 					}
 
 					$existingUser->username = $username;
-					$existingUser->cat_username = $userFromCSV->cat_username;
+					$existingUser->unique_ils_id = $username;
+					$existingUser->ils_barcode = $userFromCSV->ils_barcode;
 					if (!$existingUser->find(true)) {
-						//Didn't find the combination of username and cat_username (barcode) see if it exists with just the username
+						//Didn't find the combination of username and ils_barcode (barcode) see if it exists with just the username
 						$existingUser = new User();
 						if ($serverName == 'nashville.aspenlocal' || $serverName == 'nashville.production') {
 							$existingUser->source = 'carlx';
@@ -129,6 +130,7 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 							$existingUser->source = 'ils';
 						}
 						$existingUser->username = $username;
+						$existingUser->unique_ils_id = $username;
 						if (!$existingUser->find(true)) {
 							//The user does not exist in the database.  We can create it by first inserting it and then cloning it so the rest of the process works
 							$userFromCSV->insert();
@@ -140,7 +142,7 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 				$existingUser = false;
 			}
 		} else {
-			$existingUser = UserAccount::validateAccount($userFromCSV->cat_username, $userFromCSV->cat_password);
+			$existingUser = UserAccount::validateAccount($userFromCSV->ils_barcode, $userFromCSV->ils_password);
 		}
 		if ($existingUser != false && !($existingUser instanceof AspenError)) {
 			//echo("Found an existing user with id {$existingUser->id}\n");
@@ -173,7 +175,7 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 					$aspen_db->query("UPDATE user_work_review set userId = $userFromCSV->id WHERE userId = $existingUserId");
 				} else {
 					//User already exists and had a different id.  There should be no enrichment to copy.  This happens when we insert since the new id is auto generated
-					//echo("User {$userFromCSV->cat_username} exists, but has a different id in the database {$existingUserId} than the csv {$userFromCSV->id} changing the id");
+					//echo("User {$userFromCSV->ils_barcode} exists, but has a different id in the database {$existingUserId} than the csv {$userFromCSV->id} changing the id");
 					$aspen_db->query("UPDATE user set id = $userFromCSV->id WHERE id = $existingUserId");
 				}
 			} else {
@@ -183,10 +185,10 @@ function importUsers($startTime, $exportPath, &$existingUsers, &$missingUsers, $
 					$existingUser->update();
 				}
 			}
-			$existingUsers[$userFromCSV->cat_username] = $userFromCSV->id;
+			$existingUsers[$userFromCSV->ils_barcode] = $userFromCSV->id;
 		} else {
 			//User no longer exists in the ILS
-			$missingUsers[$userFromCSV->cat_username] = $userFromCSV->cat_username;
+			$missingUsers[$userFromCSV->ils_barcode] = $userFromCSV->ils_barcode;
 		}
 		if (!empty($existingUser)) {
 			$existingUser->__destruct();
@@ -233,12 +235,15 @@ function loadUserInfoFromCSV(?array $userRow, User $existingUser = null): User {
 
 	$userFromCSV->id = $userRow[$curCol++];
 	$userFromCSV->username = cleancsv($userRow[$curCol++]);
+	$userFromCSV->unique_ils_id = $userFromCSV->username;
 	$userFromCSV->password = cleancsv($userRow[$curCol++]);
 	$userFromCSV->firstname = cleancsv($userRow[$curCol++]);
 	$userFromCSV->lastname = cleancsv($userRow[$curCol++]);
 	$userFromCSV->email = cleancsv($userRow[$curCol++]);
 	$userFromCSV->cat_username = cleancsv($userRow[$curCol++]);
+	$userFromCSV->ils_barcode = cleancsv($userRow[$curCol++]);
 	$userFromCSV->cat_password = cleancsv($userRow[$curCol++]);
+	$userFromCSV->ils_password = cleancsv($userRow[$curCol++]);
 	$userFromCSV->college = cleancsv($userRow[$curCol++]);
 	$userFromCSV->major = cleancsv($userRow[$curCol++]);
 	$userFromCSV->created = cleancsv($userRow[$curCol++]);
@@ -275,9 +280,9 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers) {
 		$userId = $existingUsers[$userBarcode];
 	} else {
 		$user = new User();
-		$user->cat_username = $userBarcode;
+		$user->ils_barcode = $userBarcode;
 		if (!$user->find(true)) {
-			$user = UserAccount::findNewUser($userBarcode);
+			$user = UserAccount::findNewUser($userBarcode, '');
 			if ($user == false) {
 				$missingUsers[$userBarcode] = $userBarcode;
 				echo("Could not find user for $userBarcode\r\n");
@@ -744,7 +749,8 @@ function importSavedSearches($startTime, $exportPath, &$existingUsers, &$missing
 function importMergedWorks($startTime, $exportPath, &$existingUsers, &$missingUsers, $serverName, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks) {
 	if (file_exists($exportPath . 'mergedGroupedWorks.csv')) {
 		$aspenAdminUser = new User();
-		$aspenAdminUser->cat_username = 'aspen_admin';
+		$aspenAdminUser->source = 'admin';
+		$aspenAdminUser->username = 'aspen_admin';
 		$aspenAdminUser->find(true);
 		$mergedWorksHnd = fopen($exportPath . 'mergedGroupedWorks.csv', 'r');
 		$numImports = 0;

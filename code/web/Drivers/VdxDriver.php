@@ -241,8 +241,8 @@ class VdxDriver {
 		}
 
 		$postParams = [
-			'login_user' => $user->cat_username,
-			'login_password' => $user->cat_password,
+			'login_user' => $user->ils_barcode,
+			'login_password' => $user->ils_password,
 			'login_service_id' => $loginServiceId,
 			'.x' => 'Login',
 			'VDXaction' => 'Login',
@@ -336,7 +336,7 @@ class VdxDriver {
 		$userHomeLocation = $patron->getHomeLocation();
 		$vdxLocation = empty($userHomeLocation->vdxLocation) ? $userHomeLocation->code : $userHomeLocation->vdxLocation;
 
-		$body = "USERID=$patron->cat_username\r\n";
+		$body = "USERID=$patron->ils_barcode\r\n";
 		$clientCategory = $patron->patronType;
 		require_once ROOT_DIR . '/sys/Account/PType.php';
 		$pType = new PType();

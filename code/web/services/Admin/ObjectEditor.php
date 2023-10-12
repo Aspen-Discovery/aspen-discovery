@@ -31,6 +31,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('canFilter', $this->canFilter($structure));
 		$interface->assign('canBatchUpdate', $this->canBatchEdit());
 		$interface->assign('canBatchDelete', $this->canBatchDelete());
+		$interface->assign('canExportToCSV', $this->canExportToCSV());
 		$interface->assign('showReturnToList', $this->showReturnToList());
 		$interface->assign('showHistoryLinks', $this->showHistoryLinks());
 		$interface->assign('canShareToCommunity', $this->canShareToCommunity());
@@ -63,6 +64,8 @@ abstract class ObjectEditor extends Admin_Admin {
 			$this->shareToCommunity($structure);
 		} elseif ($objectAction == 'importFromCommunity') {
 			$this->importFromCommunity($structure);
+		} elseif ($objectAction == 'exportToCSV' || $objectAction == 'exportSelectedToCSV') {
+			$this->viewExistingObjects($structure);
 		} else {
 			//check to see if a custom action is being called.
 			if (method_exists($this, $objectAction)) {
@@ -224,26 +227,40 @@ abstract class ObjectEditor extends Admin_Admin {
 			$page = 1;
 		}
 		$recordsPerPage = isset($_REQUEST['pageSize']) ? $_REQUEST['pageSize'] : $this->getDefaultRecordsPerPage();
-		//Basic List
-		$allObjects = $this->getAllObjects($page, $recordsPerPage);
-
-		if ($this->supportsPagination()) {
-			$options = [
-				'totalItems' => $numObjects,
-				'perPage' => $recordsPerPage,
-				'canChangeRecordsPerPage' => true,
-				'canJumpToPage' => true,
-			];
-			$pager = new Pager($options);
-			$interface->assign('pageLinks', $pager->getLinks());
+		if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportToCSV') { // Export [all, filtered] to CSV
+			$allObjects = $this->getAllObjects('1', min(1000, $numObjects));
+			Exporter::downloadCSV($this->getToolName(), 'Admin/propertiesListCSV.tpl', $structure, $allObjects);
+		} else { // Export Selected to CSV OR Display on screen
+			$allObjects = $this->getAllObjects($page, $recordsPerPage);
+			if ($this->supportsPagination()) {
+				$options = [
+					'totalItems' => $numObjects,
+					'perPage' => $recordsPerPage,
+					'canChangeRecordsPerPage' => true,
+					'canJumpToPage' => true,
+				];
+				$pager = new Pager($options);
+				$interface->assign('pageLinks', $pager->getLinks());
+			}
+			if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportSelectedToCSV') {
+				$exportObjects = [];
+				if (isset($_REQUEST['selectedObject'])) {
+					foreach ($_REQUEST['selectedObject'] as $k => $v) {
+						if ($v == 'on') {
+							$exportObjects[] = $allObjects[$k];
+						}
+					}
+				}
+				Exporter::downloadCSV($this->getToolName(), 'Admin/propertiesListCSV.tpl', $structure, $exportObjects);
+			} else { // Display on screen
+				$interface->assign('dataList', $allObjects);
+				if (count($allObjects) < 2) {
+					$interface->assign('canCompare', false);
+				}
+				$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
+				$interface->setTemplate('../Admin/propertiesList.tpl');
+			}
 		}
-
-		$interface->assign('dataList', $allObjects);
-		if (count($allObjects) < 2) {
-			$interface->assign('canCompare', false);
-		}
-		$interface->assign('showQuickFilterOnPropertiesList', $this->showQuickFilterOnPropertiesList());
-		$interface->setTemplate('../Admin/propertiesList.tpl');
 	}
 
 	function copyObject($structure) {
@@ -334,7 +351,7 @@ abstract class ObjectEditor extends Admin_Admin {
 								'description' => $_REQUEST['contentDescription'],
 								'sharedFrom' => $interface->getVariable('librarySystemName'),
 								'sharedByUserName' => UserAccount::getActiveUserObj()->displayName,
-								'data' => $jsonRepresentation
+								'data' => $jsonRepresentation,
 							];
 							$response = $curl->curlPostPage($systemVariables->communityContentUrl . '/API/CommunityAPI?method=addSharedContent', $body);
 							header("Location: /{$this->getModule()}/{$this->getToolName()}?objectAction=edit&id=$id");
@@ -447,6 +464,15 @@ abstract class ObjectEditor extends Admin_Admin {
 		//Check to see if the request should be multipart/form-data
 		$contentType = DataObjectUtil::getFormContentType($structure);
 		$interface->assign('contentType', $contentType);
+
+		$userCanChangeFieldLocks = $this->userCanChangeFieldLocks();
+		$interface->assign('userCanChangeFieldLocks', $userCanChangeFieldLocks);
+		$fieldLocks = $this->getFieldLocks();
+		$interface->assign('fieldLocks', $fieldLocks);
+		if (!empty($fieldLocks)) {
+			$structure = $this->applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks);
+			$interface->assign('structure', $structure);
+		}
 
 		$interface->assign('additionalObjectActions', $this->getAdditionalObjectActions($existingObject));
 		$interface->setTemplate('../Admin/objectEditor.tpl');
@@ -600,6 +626,10 @@ abstract class ObjectEditor extends Admin_Admin {
 
 	public function canBatchEdit() {
 		return $this->getNumObjects() > 1;
+	}
+
+	public function canExportToCSV() {
+		return true;
 	}
 
 	public function canSort(): bool {
@@ -1032,7 +1062,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		return true;
 	}
 
-	public function getContext() : string {
+	public function getContext(): string {
 		return $this->objectAction ?? '';
 	}
 
@@ -1063,5 +1093,41 @@ abstract class ObjectEditor extends Admin_Admin {
 			}
 		}
 		return $hasSections || count($structure) > 6;
+	}
+
+	public function getFieldLocks() : array {
+		$fieldLocks = [];
+		try {
+			require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
+			$fieldLock = new FieldLock();
+			$fieldLock->module = $this->getModule();
+			$fieldLock->toolName = $this->getToolName();
+			$fieldLocks = $fieldLock->fetchAll('id', 'field');
+		}catch (Exception $e) {
+			//Nothing since it's not setup yet
+		}
+		return $fieldLocks;
+	}
+
+	public function userCanChangeFieldLocks() : bool {
+		return UserAccount::userHasPermission('Lock Administration Fields');
+	}
+
+	public function applyFieldLocksToObjectStructure($structure, $fieldLocks, $userCanChangeFieldLocks){
+		foreach ($structure as $key => &$property) {
+			if ($property['type'] == 'section') {
+				$property['properties'] = $this->applyFieldLocksToObjectStructure($property['properties'], $fieldLocks, $userCanChangeFieldLocks);
+			} else {
+				if (in_array($property['property'], $fieldLocks)) {
+					$property['locked'] = true;
+					if (!$userCanChangeFieldLocks) {
+						$property['readOnly'] = true;
+					}
+				} else {
+					$property['locked'] = false;
+				}
+			}
+		}
+		return $structure;
 	}
 }

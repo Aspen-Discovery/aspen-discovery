@@ -9,7 +9,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 export const NotificationsOnboard = (props) => {
      const queryClient = useQueryClient();
-     const { setAlreadyCheckedNotifications } = props;
+     const { setAlreadyCheckedNotifications, setShowNotificationsOnboarding } = props;
      const { language } = React.useContext(LanguageContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { user, notificationSettings, expoToken, notificationOnboard, updateNotificationOnboard } = React.useContext(UserContext);
@@ -17,14 +17,15 @@ export const NotificationsOnboard = (props) => {
      const [onboardingBody, setOnboardingBody] = React.useState('');
      const [onboardingButton, setOnboardingButton] = React.useState('');
      const onClose = async () => {
-          setIsOpen(false);
-          setAlreadyCheckedNotifications(true);
           updateNotificationOnboard(0);
           try {
                await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);
           } catch (e) {
                // onboarding isn't setup yet (Discovery older than 23.07.00)
           }
+          setIsOpen(false);
+          //setAlreadyCheckedNotifications(true);
+          //setShowNotificationsOnboarding(false);
      };
      const cancelRef = React.useRef(null);
 
@@ -39,7 +40,7 @@ export const NotificationsOnboard = (props) => {
                          setOnboardingButton(getTermFromDictionary(language, 'onboard_notifications_button_new'));
                     } else {
                          setIsOpen(false);
-                         setAlreadyCheckedNotifications(true);
+                         //setAlreadyCheckedNotifications(true);
                          updateNotificationOnboard(0);
                          try {
                               await updateNotificationOnboardingStatus(false, expoToken, library.baseUrl, language);

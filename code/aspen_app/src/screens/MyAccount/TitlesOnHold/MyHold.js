@@ -63,7 +63,13 @@ export const MyHold = (props) => {
                canCancel = true;
           }
      } else {
-          canCancel = !hold.available && hold.source === 'ils';
+          canCancel = hold.cancelable;
+     }
+
+     let isPendingCancellation = false;
+     if (hold.pendingCancellation) {
+          canCancel = !hold.pendingCancellation;
+          isPendingCancellation = hold.pendingCancellation;
      }
 
      let allowLinkedAccountAction = true;
@@ -209,6 +215,8 @@ export const MyHold = (props) => {
                          </Actionsheet.Item>
                     );
                }
+          } else if (hold.pendingCancellation) {
+               return <Actionsheet.Item>{getTermFromDictionary(language, 'pending_cancellation')}</Actionsheet.Item>;
           } else {
                return null;
           }

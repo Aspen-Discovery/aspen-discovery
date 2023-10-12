@@ -95,7 +95,7 @@ class Polaris extends AbstractIlsDriver {
 
 		if (empty($messages)) {
 			$staffUserInfo = $this->getStaffUserInfo();
-			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/circulation/patron/{$user->username}/renewblocks";
+			$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/circulation/patron/{$user->unique_ils_id}/renewblocks";
 			$renewBlocksResponse = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, UserAccount::isUserMasquerading());
 			ExternalRequestLogEntry::logRequest('polaris.getRenewBlocks', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $renewBlocksResponse, []);
 			if ($renewBlocksResponse && $this->lastResponseCode == 200) {
@@ -483,8 +483,8 @@ class Polaris extends AbstractIlsDriver {
 						//Held
 						$curHold->status = $holdInfo->StatusDescription;
 						$isAvailable = true;
-						$curHold->locationUpdateable = false;
-						$curHold->cancelable = false;
+						$curHold->locationUpdateable = true;
+						$curHold->cancelable = true;
 						$curHold->expirationDate = $this->parsePolarisDate($holdInfo->PickupByDate);
 						break;
 					case 7:
@@ -650,7 +650,7 @@ class Polaris extends AbstractIlsDriver {
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
 		$body = new stdClass();
-		$body->PatronID = (int)$patron->username;
+		$body->PatronID = (int)$patron->unique_ils_id;
 		$body->BibID = (int)$shortId;
 		if (!empty($itemId)) {
 			//Check to see if we also have a volume
@@ -720,7 +720,7 @@ class Polaris extends AbstractIlsDriver {
 
 		$polarisUrl = "/PAPIService/REST/public/v1/1033/100/1/holdrequest";
 		$body = new stdClass();
-		$body->PatronID = (int)$patron->username;
+		$body->PatronID = (int)$patron->unique_ils_id;
 		$body->BibID = (int)$recordId;
 		$body->PickupOrgID = (int)$pickupBranch;
 		$body->VolumeNumber = $volumeId;
@@ -887,6 +887,7 @@ class Polaris extends AbstractIlsDriver {
 				}
 			}
 		}
+		$barcodesToTest = array_unique($barcodesToTest);
 
 		foreach ($barcodesToTest as $i => $barcode) {
 			$sessionInfo = $this->loginViaWebService($username, $password);
@@ -907,6 +908,7 @@ class Polaris extends AbstractIlsDriver {
 				$user = new User();
 				$user->source = $this->accountProfile->name;
 				$user->username = $patronId;
+				$user->unique_ils_id = $patronId;
 				if ($user->find(true)) {
 					$userExistsInDB = true;
 				}
@@ -914,8 +916,10 @@ class Polaris extends AbstractIlsDriver {
 				$userExistsInDB = isset($user->id);
 			}
 			$user->cat_username = $patronBarcode;
+			$user->ils_barcode = $patronBarcode;
 			if (!empty($password)) {
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 			}
 			$user->patronType = $patronBasicData->PatronCodeID;
 
@@ -941,7 +945,11 @@ class Polaris extends AbstractIlsDriver {
 					$user->phone = $patronBasicData->PhoneNumber3;
 				}
 			}
-			$user->email = $patronBasicData->EmailAddress;
+			if (is_null($patronBasicData->EmailAddress)) {
+				$user->email = '';
+			}else{
+				$user->email = $patronBasicData->EmailAddress;
+			}
 
 			$addresses = $patronBasicData->PatronAddresses;
 			if (count($addresses) > 0) {
@@ -1068,7 +1076,7 @@ class Polaris extends AbstractIlsDriver {
 	 *
 	 * @return array
 	 */
-	protected function loginViaWebService(&$username, $password, $fromMasquerade = false): array {
+	protected function loginViaWebService(string &$username, ?string $password, $fromMasquerade = false): array {
 		if (array_key_exists($username, Polaris::$accessTokensForUsers)) {
 			return Polaris::$accessTokensForUsers[$username];
 		} else {
@@ -1135,7 +1143,7 @@ class Polaris extends AbstractIlsDriver {
 		}
 	}
 
-	private function getAccessToken(string $barcode, string $password, bool $fromMasquerade = false) {
+	private function getAccessToken(string $barcode, ?string $password, bool $fromMasquerade = false) {
 		//Get the session token for the user
 		if (isset(Polaris::$accessTokensForUsers[$barcode])) {
 			return Polaris::$accessTokensForUsers[$barcode]['accessToken'];
@@ -1373,6 +1381,8 @@ class Polaris extends AbstractIlsDriver {
 			$body->LogonUserID = (string)$staffInfo['polarisId'];
 			$body->LogonWorkstationID = $this->getWorkstationID($patron);
 
+			//User the patron's home library rather than the active library just in case they are on the wrong interface
+			$library = $patron->getHomeLibrary();
 			$this->setupBodyForSelfRegAndPatronUpdateCall('patronUpdate', $body, $library);
 			if (isset($_REQUEST['email'])) {
 				$patron->email = $_REQUEST['email'];
@@ -1385,10 +1395,11 @@ class Polaris extends AbstractIlsDriver {
 			$patronBasicData = $this->getBasicDataResponse($patron->getBarcode(), $patron->getPasswordOrPin(), $fromMasquerade);
 			//Get the ID of the address to update
 			$addresses = $patronBasicData->PatronAddresses;
+			$address = null;
 			if (count($addresses) > 0) {
 				$address = reset($addresses);
 				$body->AddressID = $address->AddressID;
-				$body->FreeTextID = $address->FreeTextLabel;
+				//$body->FreeTextID = $address->FreeTextLabel;
 			}
 
 			if (isset($_REQUEST['address'])) {
@@ -1425,6 +1436,70 @@ class Polaris extends AbstractIlsDriver {
 				}
 			}
 
+			if (!$library->allowNameUpdates) {
+				unset($body->NameFirst);
+				unset($body->NameLast);
+				unset($body->NameMiddle);
+				unset($body->LegalNameFirst);
+				unset($body->LegalNameMiddle);
+				unset($body->LegalNameLast);
+				unset($body->UseLegalNameOnNotices);
+			}else{
+				if ($body->NameFirst == $patronBasicData->NameFirst) {
+					unset($body->NameFirst);
+				}
+				if ($body->NameLast == $patronBasicData->NameLast) {
+					unset($body->NameLast);
+				}
+				if ($body->NameMiddle == $patronBasicData->NameMiddle) {
+					unset($body->NameMiddle);
+				}
+				if ($body->LegalNameFirst == $patronBasicData->LegalNameFirst) {
+					unset($body->LegalNameFirst);
+				}
+				if ($body->LegalNameMiddle == $patronBasicData->LegalNameMiddle) {
+					unset($body->LegalNameMiddle);
+				}
+				if ($body->LegalNameLast == $patronBasicData->LegalNameLast) {
+					unset($body->LegalNameLast);
+				}
+			}
+
+			if (!$library->allowPatronAddressUpdates) {
+				unset($body->PostalCode);
+				unset($body->City);
+				unset($body->State);
+				unset($body->StreetOne);
+				unset($body->StreetTwo);
+				unset($body->StreetThree);
+			}else{
+				if ($address != null) {
+					if ($body->PostalCode == $address->PostalCode) {
+						unset($body->PostalCode);
+					}
+					if ($body->City == $address->City) {
+						unset($body->City);
+					}
+					if ($body->State == $address->State) {
+						unset($body->State);
+					}
+					if ($body->StreetOne == $address->StreetOne) {
+						unset($body->StreetOne);
+					}
+					if ($body->StreetTwo == $address->StreetTwo) {
+						unset($body->StreetTwo);
+					}
+					if ($body->StreetThree == $address->StreetThree) {
+						unset($body->StreetThree);
+					}
+					if ($body->ZipPlusFour == $address->ZipPlusFour) {
+						unset($body->ZipPlusFour);
+					}
+					if ($body->County == $address->County) {
+						unset($body->County);
+					}
+				}
+			}
 			if (!$library->allowPatronPhoneNumberUpdates) {
 				unset($body->PhoneVoice1);
 				unset($body->PhoneVoice2);
@@ -1433,9 +1508,39 @@ class Polaris extends AbstractIlsDriver {
 				unset($body->PhoneVoice2Carrier);
 				unset($body->PhoneVoice3Carrier);
 				unset($body->TxtPhoneNumber);
+			}else{
+				if ($body->PhoneVoice1 == $patronBasicData->PhoneVoice1) {
+					unset($body->PhoneVoice1);
+				}
+				if ($body->PhoneVoice2 == $patronBasicData->PhoneVoice2) {
+					unset($body->PhoneVoice2);
+				}
+				if ($body->PhoneVoice3 == $patronBasicData->PhoneVoice3) {
+					unset($body->PhoneVoice3);
+				}
+				if ($body->PhoneVoice1Carrier == $patronBasicData->PhoneVoice1Carrier) {
+					unset($body->PhoneVoice1Carrier);
+				}
+				if ($body->PhoneVoice2Carrier == $patronBasicData->PhoneVoice2Carrier) {
+					unset($body->PhoneVoice2Carrier);
+				}
+				if ($body->PhoneVoice3Carrier == $patronBasicData->PhoneVoice3Carrier) {
+					unset($body->PhoneVoice3Carrier);
+				}
+				if ($body->TxtPhoneNumber == $patronBasicData->TxtPhoneNumber) {
+					unset($body->TxtPhoneNumber);
+				}
 			}
 			if (!$library->showNoticeTypeInProfile) {
 				unset($body->DeliveryOptionID);
+				unset($body->EReceiptOptionID);
+			}else{
+				if ($body->DeliveryOptionID == $patronBasicData->DeliveryOptionID) {
+					unset($body->DeliveryOptionID);
+				}
+				if ($body->EReceiptOptionID == $patronBasicData->EReceiptOptionID) {
+					unset($body->EReceiptOptionID);
+				}
 			}
 			$encodedBody = json_encode($body);
 			$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), $encodedBody, $fromMasquerade || UserAccount::isUserMasquerading());
@@ -1450,7 +1555,7 @@ class Polaris extends AbstractIlsDriver {
 					$result['messages'][] = 'Your account was updated successfully.';
 					$patron->update();
 				} else {
-					$result['messages'][] = "Error updating profile information (Error {$jsonResponse->PAPIErrorCode}).";
+					$result['messages'][] = "Error updating profile information (Error {$jsonResponse->PAPIErrorCode}). {$jsonResponse->ErrorMessage}";
 				}
 			} else {
 				$result['messages'][] = "Error updating profile information ({$this->lastResponseCode}).";
@@ -1668,21 +1773,42 @@ class Polaris extends AbstractIlsDriver {
 		return Polaris::$accessTokensForUsers[$this->accountProfile->staffUsername];
 	}
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$staffUserInfo = $this->getStaffUserInfo();
 
 		//Validate that the patron exists. This can also be used to get the barcode for the user based on username
-		$polarisUrl = '/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronBarcode;
-		$validatePatronResponseRaw = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
-		$patronId = false;
-		ExternalRequestLogEntry::logRequest('polaris.findNewUser', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $validatePatronResponseRaw, ['accessSecret' => $staffUserInfo['accessSecret']]);
-		if ($validatePatronResponseRaw) {
-			$validationResponse = json_decode($validatePatronResponseRaw);
-			if ($validationResponse->PAPIErrorCode != -3000) {
-				if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $patronBarcode) {
-					$patronBarcode = $validationResponse->PatronBarcode;
+		if (!empty($patronBarcode)) {
+			$polarisUrl = '/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronBarcode;
+			$validatePatronResponseRaw = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+			$patronId = false;
+			ExternalRequestLogEntry::logRequest('polaris.findNewUser', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $validatePatronResponseRaw, ['accessSecret' => $staffUserInfo['accessSecret']]);
+			if ($validatePatronResponseRaw) {
+				$validationResponse = json_decode($validatePatronResponseRaw);
+				if ($validationResponse->PAPIErrorCode != -3000) {
+					//Since we're testing barcode the patron barcode should match.
+					if (!empty($validationResponse->PatronBarcode) && $validationResponse->PatronBarcode != $patronBarcode) {
+						//Since we're testing barcode the patron barcode should match.
+						return false;
+					}
+					$patronId = $validationResponse->PatronID;
 				}
-				$patronId = $validationResponse->PatronID;
+			}
+		} else {
+			$polarisUrl = '/PAPIService/REST/public/v1/1033/100/1/patron/' . $patronUsername;
+			$validatePatronResponseRaw = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+			$patronId = false;
+			ExternalRequestLogEntry::logRequest('polaris.findNewUser', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $validatePatronResponseRaw, ['accessSecret' => $staffUserInfo['accessSecret']]);
+			if ($validatePatronResponseRaw) {
+				$validationResponse = json_decode($validatePatronResponseRaw);
+				if ($validationResponse->PAPIErrorCode != -3000) {
+					if (!empty($validationResponse->PatronBarcode)) {
+						//Need to get the patron barcode
+						$patronBarcode = $validationResponse->PatronBarcode;
+					} else {
+						return false;
+					}
+					$patronId = $validationResponse->PatronID;
+				}
 			}
 		}
 
@@ -1704,7 +1830,7 @@ class Polaris extends AbstractIlsDriver {
 	 * @param User $user
 	 */
 	public function loadContactInformation(User $user) {
-		$this->loadPatronBasicData($user->getBarcode(), $user->getPasswordOrPin(), $user->username, UserAccount::isUserMasquerading(), $user);
+		$this->loadPatronBasicData($user->getBarcode(), $user->getPasswordOrPin(), $user->unique_ils_id, UserAccount::isUserMasquerading(), $user);
 	}
 
 	private function getWorkstationID(User $patron): int {
@@ -1965,6 +2091,10 @@ class Polaris extends AbstractIlsDriver {
 			if ($section['type'] == 'section') {
 				$section['renderAsHeading'] = true;
 			}
+		}
+		if (!$user->getHomeLibrary()->showNoticeTypeInProfile) {
+			unset($patronUpdateFields['preferencesSection']['properties']['notices']);
+			unset($patronUpdateFields['preferencesSection']['properties']['eReceipts']);
 		}
 
 		$basicDataResponse = $this->getBasicDataResponse($user->getBarcode(), $user->getPasswordOrPin(), UserAccount::isUserMasquerading());
@@ -2385,37 +2515,8 @@ class Polaris extends AbstractIlsDriver {
 				],
 			],
 		];
-		$carriers = [
-			0 => '(Select a carrier)',
-			1 => 'AT&amp;T',
-			2 => 'Bell Canada',
-			15 => 'Bell South',
-			17 => 'Boost Mobile',
-			3 => 'Cellular One',
-			27 => 'Consumer Cingular',
-			19 => 'Fido',
-			26 => 'Google Fi',
-			18 => 'Helio',
-			16 => 'MetroPCS',
-			5 => 'Nextel',
-			6 => 'Qwest',
-			28 => 'Republic Wireless',
-			21 => 'Rogers AT&amp;T Wireless',
-			22 => 'Rogers Canada',
-			7 => 'Southwestern Bell',
-			8 => 'Sprint',
-			24 => 'Straight Talk AT&amp;T',
-			23 => 'Straight Talk Verizon',
-			20 => 'Telus',
-			9 => 'T-Mobile',
-			10 => 'Tracfone',
-			14 => 'USA Mobility',
-			11 => 'Verizon',
-			12 => 'Virgin Mobile',
-			13 => 'Virgin Mobile Canada',
-			25 => 'Wind Mobile Canada',
-			29 => 'Xfinity (Comcast) Mobile',
-		];
+		$carriers = $this->getCarrierList();
+
 		$fields['preferencesSection'] = [
 			'property' => 'preferencesSection',
 			'type' => 'section',
@@ -2439,6 +2540,7 @@ class Polaris extends AbstractIlsDriver {
 					'description' => 'My preference for receiving library notices',
 					'required' => false,
 					'default' => 2,
+					'readOnly' => $type == 'patronUpdate' && !$library->showNoticeTypeInProfile,
 				],
 				'txtPhone' => [
 					'property' => 'txtPhone',
@@ -2473,6 +2575,7 @@ class Polaris extends AbstractIlsDriver {
 					'description' => 'How you would like to receive E-receipts',
 					'maxLength' => 128,
 					'required' => false,
+					'readOnly' => $type == 'patronUpdate' && !$library->showNoticeTypeInProfile,
 				],
 			],
 		];
@@ -2568,6 +2671,7 @@ class Polaris extends AbstractIlsDriver {
 		if (isset($_REQUEST['branchcode'])) {
 			$body->PatronBranchID = $_REQUEST['branchcode'];
 		}
+
 		if (isset($_REQUEST['zipcode'])) {
 			$body->PostalCode = $_REQUEST['zipcode'];
 		}
@@ -2580,6 +2684,7 @@ class Polaris extends AbstractIlsDriver {
 		}
 		$body->County = '';
 		//$body->CountryID = '';
+
 		if (isset($_REQUEST['address'])) {
 			$body->StreetOne = $_REQUEST['address'];
 		}
@@ -2589,6 +2694,7 @@ class Polaris extends AbstractIlsDriver {
 		if (isset($_REQUEST['address3'])) {
 			$body->StreetThree = $_REQUEST['address3'];
 		}
+
 		if (isset($_REQUEST['firstName'])) {
 			$body->NameFirst = $_REQUEST['firstName'];
 		}
@@ -2609,6 +2715,7 @@ class Polaris extends AbstractIlsDriver {
 				$body->Birthdate = $_REQUEST['birthDate'];
 			}
 		}
+
 		if (isset($_REQUEST['phone1'])) {
 			$body->PhoneVoice1 = $_REQUEST['phone1'];
 		}
@@ -2628,6 +2735,7 @@ class Polaris extends AbstractIlsDriver {
 				$body->$property = $_REQUEST['txtCarrier'];
 			}
 		}
+
 		if (isset($_REQUEST['email'])) {
 			$body->EmailAddress = $_REQUEST['email'];
 		}
@@ -2666,17 +2774,19 @@ class Polaris extends AbstractIlsDriver {
 		//$body->ExpirationDate = '';
 		//$body->AddrCheckDate = '';
 		//$body->GenderID = '';
-		if (isset($_REQUEST['firstNameOnIdentification'])) {
-			$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
-		}
-		if (isset($_REQUEST['middleNameOnIdentification'])) {
-			$body->LegalNameMiddle = $_REQUEST['middleNameOnIdentification'];
-		}
-		if (isset($_REQUEST['lastNameOnIdentification'])) {
-			$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
-		}
-		if (isset($_REQUEST['useNameOnIdForNotices'])) {
-			$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+		if ($type == 'selfReg' || $library->allowNameUpdates) {
+			if (isset($_REQUEST['firstNameOnIdentification'])) {
+				$body->LegalNameFirst = $_REQUEST['firstNameOnIdentification'];
+			}
+			if (isset($_REQUEST['middleNameOnIdentification'])) {
+				$body->LegalNameMiddle = $_REQUEST['middleNameOnIdentification'];
+			}
+			if (isset($_REQUEST['lastNameOnIdentification'])) {
+				$body->LegalNameLast = $_REQUEST['lastNameOnIdentification'];
+			}
+			if (isset($_REQUEST['useNameOnIdForNotices'])) {
+				$body->UseLegalNameOnNotices = isset($_REQUEST['useNameOnIdForNotices']) ? true : false;
+			}
 		}
 		if (isset($_REQUEST['branchcode'])) {
 			$body->RequestPickupBranchID = $_REQUEST['branchcode'];
@@ -2688,6 +2798,10 @@ class Polaris extends AbstractIlsDriver {
 	}
 
 	public function showHoldPosition(): bool {
+		return true;
+	}
+
+	public function supportsLoginWithUsername() : bool {
 		return true;
 	}
 
@@ -2761,5 +2875,22 @@ class Polaris extends AbstractIlsDriver {
 
 	public function showTimesRenewed(): bool {
 		return true;
+	}
+
+	private function getCarrierList() : array {
+		$staffUserInfo = $this->getStaffUserInfo();
+		$polarisUrl = "/PAPIService/REST/protected/v1/1033/100/1/{$staffUserInfo['accessToken']}/sysadmin/mobilephonecarriers";
+		$carriersResponse = $this->getWebServiceResponse($polarisUrl, 'GET', $staffUserInfo['accessSecret'], false, true);
+		ExternalRequestLogEntry::logRequest('polaris.getCarrierList', 'GET', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $carriersResponse, []);
+		$carriers = [];
+		if ($carriersResponse && $this->lastResponseCode == 200) {
+			$carriersResponse = json_decode($carriersResponse);
+			foreach ($carriersResponse->SAMobilePhoneCarriersGetRows as $carrierInfo) {
+				$carriers[$carrierInfo->CarrierID] = $carrierInfo->CarrierName;
+			}
+		}
+
+		asort($carriers);
+		return $carriers;
 	}
 }

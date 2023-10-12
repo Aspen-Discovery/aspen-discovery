@@ -8,7 +8,7 @@ class Greenhouse_AJAX extends Action {
 
 	function launch() {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				global $timer;
 				$method = (isset($_GET['method']) && !is_array($_GET['method'])) ? $_GET['method'] : '';
 				$timer->logTime("Starting method $method");
@@ -60,7 +60,7 @@ class Greenhouse_AJAX extends Action {
 			$result['message'] = 'User is already unique';
 		} else {
 			$userStillExists = false;
-			$loginResult = $catalog->findNewUser($barcode);
+			$loginResult = $catalog->findNewUser($barcode, '');
 			if ($loginResult instanceof User) {
 				//The internal ILS ID has changed
 				$newUser = $loginResult;
@@ -69,11 +69,11 @@ class Greenhouse_AJAX extends Action {
 			if ($userStillExists) {
 				/** @var User $oldUser */
 				foreach ($allUsersForBarcode as $oldUser) {
-					if ($oldUser->username != $newUser->username) {
+					if ($oldUser->unique_ils_id != $newUser->unique_ils_id) {
 						//$result['oldUser'] = $oldUser;
-						$result['oldUserId'] .= $oldUser->username;
+						$result['oldUserId'] .= $oldUser->unique_ils_id;
 						//$result['newUser'] = $newUser;
-						$result['newUserId'] .= $newUser->username;
+						$result['newUserId'] .= $newUser->unique_ils_id;
 
 						//Merge the records
 						$mergeResults = [
@@ -160,7 +160,7 @@ class Greenhouse_AJAX extends Action {
 					if ($oldUser->trackReadingHistory) {
 						$oldUser->trackReadingHistory = 0;
 						$oldUser->update();
-						$result['message'] .= "<br/>Disabled reading history for $oldUser->username";
+						$result['message'] .= "<br/>Disabled reading history for $oldUser->unique_ils_id";
 					}
 				}
 				//TODO: cleanup the database and remove the old users.
@@ -215,17 +215,25 @@ class Greenhouse_AJAX extends Action {
 		$releases = AspenRelease::getReleasesList();
 		require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 		$sites = new AspenSite();
-		if(isset($_REQUEST['implementationStatus'])) {
+		if(isset($_REQUEST['implementationStatus']) && $_REQUEST['implementationStatus'] != 'any') {
 			$sites->whereAdd('implementationStatus = ' . $_REQUEST['implementationStatus']);
 		} else {
 			$sites->whereAdd('implementationStatus != 4');
 		}
 
-		if(isset($_REQUEST['siteType'])) {
+		if(isset($_REQUEST['siteType']) && $_REQUEST['siteType'] != 'any') {
 			$sites->whereAdd('siteType = ' . $_REQUEST['siteType']);
 		}
 
-		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
+		if(isset($_REQUEST['currentVersion']) && $_REQUEST['currentVersion'] != 'any') {
+			$escapedRelease = $sites->escape('%' . $_REQUEST['currentVersion'] . '%');
+			$sites->whereAdd('version LIKE ' . $escapedRelease);
+		}
+
+		if(isset($_REQUEST['timezone']) && $_REQUEST['timezone'] != 'any') {
+			$sites->whereAdd('timezone = ' . $_REQUEST['timezone']);
+		}
+
 		$sites->find();
 		$allBatchUpdateSites = [];
 		$eligibleReleases = [];
@@ -248,6 +256,7 @@ class Greenhouse_AJAX extends Action {
 
 		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $allBatchUpdateSites);
+		$interface->assign('batchSiteType', $_REQUEST['siteType']);
 
 		return [
 			'title' => translate([
@@ -286,6 +295,7 @@ class Greenhouse_AJAX extends Action {
 
 		$interface->assign('releases', $eligibleReleases);
 		$interface->assign('allBatchUpdateSites', $sitesToUpdate);
+		$interface->assign('batchSiteType', 'any');
 
 		return [
 			'title' => translate([
@@ -305,11 +315,29 @@ class Greenhouse_AJAX extends Action {
 			$site->id = $_REQUEST['siteToUpdate'];
 			if($site->find(true)) {
 				$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
-				if(empty($_REQUEST['runUpdateOn'])) {
-					$runUpdateOn = time();
-				}else{
-					$runUpdateOn = strtotime($_REQUEST['runUpdateOn']);
+				$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
+				$timezoneName = $site->getTimezoneName();
+				if($timezoneName == 'Central') {
+					$timezone = new DateTimeZone('America/Chicago');
+				} elseif ($timezoneName == 'Eastern') {
+					$timezone = new DateTimeZone('America/New_York');
+				} elseif ($timezoneName == 'Pacific') {
+					$timezone = new DateTimeZone('America/Los_Angeles');
+				} elseif ($timezoneName == 'Mountain') {
+					$timezone = new DateTimeZone('America/Denver');
+				} elseif ($timezoneName == 'Arizona') {
+					$timezone = new DateTimeZone('America/Phoenix');
+				} else {
+					$timezone = new DateTimeZone('America/Chicago');
 				}
+				if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
+					$runUpdateOn = new DateTime('now', $timezone);
+				}else{
+					$runUpdateOn = new DateTime($runUpdateOn, $timezone);
+				}
+				$runUpdateOn = $runUpdateOn->format('Y-m-d H:i e');
+				$runUpdateOn = strtotime($runUpdateOn);
+
 				require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 				$scheduledUpdate = new ScheduledUpdate();
 				$scheduledUpdate->updateType = $runType;
@@ -342,6 +370,7 @@ class Greenhouse_AJAX extends Action {
 					'updateToVersion' => $scheduledUpdate->updateToVersion,
 					'status' => $scheduledUpdate->status,
 					'greenhouseId' => $scheduledUpdate->id,
+					'greenhouseSiteId' => $scheduledUpdate->siteId,
 				];
 				$response = json_decode($curl->curlPostPage($site->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
 				if(!empty($response->success)) {
@@ -402,16 +431,34 @@ class Greenhouse_AJAX extends Action {
 			$numSites = count($sitesToUpdate);
 			$runType = $_REQUEST['updateType'] ?? 'patch'; // grab run type, if none is provided, assume patch
 			$runUpdateOn = $_REQUEST['runUpdateOn'] ?? null;
-			if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
-				$runUpdateOn = time();
-			}else{
-				$runUpdateOn = strtotime($runUpdateOn);
-			}
+			$errors = '';
 			foreach($sitesToUpdate as $site){
 				require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 				$siteToUpdate = new AspenSite();
 				$siteToUpdate->id = $site;
 				if($siteToUpdate->find(true)) {
+					$timezoneName = $siteToUpdate->getTimezoneName();
+					if($timezoneName == 'Central') {
+						$timezone = new DateTimeZone('America/Chicago');
+					} elseif ($timezoneName == 'Eastern') {
+						$timezone = new DateTimeZone('America/New_York');
+					} elseif ($timezoneName == 'Pacific') {
+						$timezone = new DateTimeZone('America/Los_Angeles');
+					} elseif ($timezoneName == 'Mountain') {
+						$timezone = new DateTimeZone('America/Denver');
+					} elseif ($timezoneName == 'Arizona') {
+						$timezone = new DateTimeZone('America/Phoenix');
+					} else {
+						$timezone = new DateTimeZone('America/Chicago');
+					}
+					if(empty($_REQUEST['runUpdateOn']) || is_null($runUpdateOn)) {
+						$runUpdateOn = new DateTime('now', $timezone);
+					}else{
+						$runUpdateOn = new DateTime($runUpdateOn, $timezone);
+					}
+
+					$runUpdateOn = $runUpdateOn->format('Y-m-d H:i e');
+					$runUpdateOn = strtotime($runUpdateOn);
 					require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 					$scheduledUpdate = new ScheduledUpdate();
 					$scheduledUpdate->updateType = $runType;
@@ -419,27 +466,55 @@ class Greenhouse_AJAX extends Action {
 					$scheduledUpdate->siteId = $site;
 					$scheduledUpdate->updateToVersion = $_REQUEST['updateToVersion'];
 					$scheduledUpdate->status = 'pending';
-					$scheduledUpdate->insert();
-
-					require_once ROOT_DIR . '/sys/CurlWrapper.php';
-					$curl = new CurlWrapper();
-					$body = [
-						'runType' => $scheduledUpdate->updateType,
-						'dateScheduled' => $scheduledUpdate->dateScheduled,
-						'updateToVersion' => $scheduledUpdate->updateToVersion,
-						'status' => $scheduledUpdate->status,
-						'greenhouseId' => $scheduledUpdate->id,
-					];
-					$response = $curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body);
-					$response = json_decode($response);
-					if($response->success) {
-						// update scheduled
-						$numSitesUpdated++;
+					$scheduledUpdate->remoteUpdate = true;
+					if(!$scheduledUpdate->insert()) {
+						if($errors == '') {
+							$errors = 'Error saving update for ' . $siteToUpdate->name . ": " . $scheduledUpdate->getLastError();
+						} else {
+							$errors .= '<br>Error saving update for ' . $siteToUpdate->name . ': ' . $scheduledUpdate->getLastError();
+						}
 					} else {
-						$scheduledUpdate->notes = $response->message;
-						$scheduledUpdate->update();
+						require_once ROOT_DIR . '/sys/CurlWrapper.php';
+						$curl = new CurlWrapper();
+						$body = [
+							'runType' => $scheduledUpdate->updateType,
+							'dateScheduled' => $scheduledUpdate->dateScheduled,
+							'updateToVersion' => $scheduledUpdate->updateToVersion,
+							'status' => $scheduledUpdate->status,
+							'greenhouseId' => $scheduledUpdate->id,
+							//'isRemoteUpdate' => true,
+							'greenhouseSiteId' => $scheduledUpdate->siteId,
+						];
+						$response = json_decode($curl->curlPostPage($siteToUpdate->baseUrl . '/API/GreenhouseAPI?method=addScheduledUpdate', $body));
+						if (isset($response->success)) {
+							if($response->success) {
+								// update scheduled
+								$numSitesUpdated++;
+							}
+						} else {
+							$message = 'Unable to connect to server';
+							if (isset($response->message)) {
+								$message = $response->message;
+							}
+							$scheduledUpdate->notes = $message;
+							$scheduledUpdate->update();
+							if ($errors == '') {
+								$errors = '<br><br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $message;
+							} else {
+								$errors .= '<br>- Error scheduling update for ' . $siteToUpdate->name . ': ' . $message;
+							}
+						}
 					}
 				}
+			}
+			$message = translate([
+				'text' => 'Successfully scheduled updates for %1% of %2% sites.',
+				1 => $numSitesUpdated,
+				2 => $numSites,
+				'isAdminFacing' => true,
+			]);
+			if($errors) {
+				$message .= $errors;
 			}
 			return [
 				'success' => true,
@@ -447,15 +522,14 @@ class Greenhouse_AJAX extends Action {
 					'text' => 'Schedule Batch Update',
 					'isAdminFacing' => true,
 				]),
-				'message' => translate([
-					'text' => 'Successfully scheduled updates for %1% of %2% sites.',
-					1 => $numSitesUpdated,
-					2 => $numSites,
-					'isAdminFacing' => true,
-				]),
+				'message' => $message
 			];
 		} else {
-			return false;
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to schedule updates.'
+			];
 		}
 	}
 

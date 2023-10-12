@@ -303,7 +303,7 @@ class MillenniumCheckouts {
 
 		//Go to the items page
 		$scope = $driver->getDefaultScope();
-		$curl_url = $driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/items";
+		$curl_url = $driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/items";
 		// Loading this page is not necessary in most cases, but if the patron has a Staff ptype we go into staff mode which makes this page load necessary.
 		$driver->curlWrapper->curlGetPage($curl_url);
 

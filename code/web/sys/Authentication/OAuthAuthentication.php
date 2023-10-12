@@ -212,7 +212,7 @@ class OAuthAuthentication extends Action {
 				return false;
 			}
 
-			$user = $catalogConnection->findNewUser($this->getUserId());
+			$user = $catalogConnection->findNewUser($this->getUserId(), '');
 
 			if (!$user instanceof User) {
 				$logger->log('No user found in database... attempting to self-register...', Logger::LOG_ERROR);
@@ -220,6 +220,7 @@ class OAuthAuthentication extends Action {
 				$newUser['firstname'] = $this->getFirstName();
 				$newUser['lastname'] = $this->getLastName();
 				$newUser['cat_username'] = $this->getUserId();
+				$newUser['ils_barcode'] = $this->getUserId();
 				$newUser['category_id'] = null;
 				if ($this->staffPType && $this->isStaffUser()) {
 					$newUser['category_id'] = $this->staffPType;
@@ -230,13 +231,13 @@ class OAuthAuthentication extends Action {
 					$logger->log('Error self registering user ' . print_r($this->getUserId(), true), Logger::LOG_ERROR);
 					return false;
 				}
-				$user = $catalogConnection->findNewUser($this->getUserId());
+				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			} else {
 				$user->oAuthAccessToken = $this->accessToken;
 				$user->oAuthRefreshToken = $this->refreshToken;
 				$user->update();
 				$user->updatePatronInfo(true);
-				$user = $catalogConnection->findNewUser($this->getUserId());
+				$user = $catalogConnection->findNewUser($this->getUserId(), '');
 			}
 			return $this->login($user);
 		} else {
@@ -312,6 +313,7 @@ class OAuthAuthentication extends Action {
 		$tmpUser->firstname = $this->getFirstName();
 		$tmpUser->lastname = $this->getLastName() ?? '';
 		$tmpUser->username = $this->getUserId();
+		$tmpUser->unique_ils_id = $this->getUserId();
 		$tmpUser->phone = '';
 		$tmpUser->displayName = '';
 		$tmpUser->patronType = '';
@@ -354,21 +356,15 @@ class OAuthAuthentication extends Action {
 	}
 
 	private function newSSOSession($id) {
-		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		/** SessionInterface $session */
+		global $session;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+		session_name('aspen_session');
+		$session = new MySQLSession();
+		$session->init();
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		$timer->logTime('Session initialization MySQLSession');
 
 		$_SESSION['activeUserId'] = $id;
 		$_SESSION['rememberMe'] = false;

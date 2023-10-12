@@ -33,6 +33,14 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 		}
 		$interface->assign('releaseToShow', $releaseToShow);
 
+		$timezones = AspenSite::$_timezones;
+		$interface->assign('timezones', $timezones);
+		$timezoneToShow = 'any';
+		if (isset($_REQUEST['timezoneToShow'])) {
+			$timezoneToShow = $_REQUEST['timezoneToShow'];
+		}
+		$interface->assign('timezoneToShow', $timezoneToShow);
+
 		$sites = new AspenSite();
 		if($implementationStatusToShow !== 'any') {
 			$sites->whereAdd('implementationStatus = ' . $implementationStatusToShow);
@@ -45,6 +53,9 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 		if($releaseToShow !== 'any') {
 			$escapedRelease = $sites->escape('%' . $releaseToShow . '%');
 			$sites->whereAdd('version LIKE ' . $escapedRelease);
+		}
+		if($timezoneToShow !== 'any') {
+			$sites->whereAdd('timezone = ' . $timezoneToShow);
 		}
 		$sites->orderBy('implementationStatus ASC, timezone, name ASC');
 		$sites->find();
@@ -71,7 +82,7 @@ class Greenhouse_UpdateCenter extends Admin_Admin {
 
 	function canView(): bool {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}

@@ -25,7 +25,7 @@ class ILSAuthentication implements Authentication {
 	 * @param bool $validatedViaSSO
 	 * @return AspenError|User|false
 	 */
-	public function authenticate($validatedViaSSO) {
+	public function authenticate($validatedViaSSO, $accountProfile) {
 		global $logger;
 		//Check to see if the username and password are provided
 		if (!array_key_exists('username', $_REQUEST) && !array_key_exists('password', $_REQUEST)) {
@@ -46,8 +46,10 @@ class ILSAuthentication implements Authentication {
 		}
 
 		$logger->log("Authenticating user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
-		if (!$validatedViaSSO && ($this->username == '' || $this->password == '')) {
-			$user = new AspenError('Login information cannot be blank.');
+		if ($validatedViaSSO && $this->username == '') {
+			$user = new AspenError('Username for SSO user cannot be blank.');
+		} else if (!$validatedViaSSO && ($this->username == '' || $this->password == '')) {
+			$user = new AspenError('Login information cannot be blank in ILS Authentication.');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
 			$catalog = $this->catalogConnection;
@@ -69,15 +71,13 @@ class ILSAuthentication implements Authentication {
 		return $user;
 	}
 
-	public function validateAccount($username, $password, $parentAccount, $validatedViaSSO) {
-		global $logger;
+	public function validateAccount($username, $password, $accountProfile, $parentAccount, $validatedViaSSO) {
 		$this->username = $username;
 		$this->password = $password;
 
-		//$logger->log("validating account for user '{$this->username}' via the ILS", Logger::LOG_DEBUG);
 		//Password is not required if we have validated via single sign on or if the user is masquerading
 		if ($this->username == '' || ($this->password == '' && !$validatedViaSSO && !UserAccount::isUserMasquerading())) {
-			$validUser = new AspenError('Login information cannot be blank.');
+			$validUser = new AspenError('Login information cannot be blank when validating account in ILS Authentication.');
 		} else {
 			// Connect to the correct catalog depending on the driver for this account
 			$catalog = CatalogFactory::getCatalogConnectionInstance($this->driverName);

@@ -4,17 +4,21 @@ require_once ROOT_DIR . '/sys/DB/DataObject.php';
 
 class User extends DataObject {
 	public $__table = 'user';                            // table name
-	public $id;                              // int(11)  not_null primary_key auto_increment
+	public $id;
 	public $source;
-	public $username;                        // string(30)  not_null unique_key
-	public $displayName;                     // string(30)
-	public $password;                        // string(32)  not_null
-	public $firstname;                       // string(50)  not_null
-	public $lastname;                        // string(50)  not_null
-	public $email;                           // string(250)  not_null
-	public $phone;                           // string(30)
-	public $cat_username;                    // string(50)
-	public $cat_password;                    // string(50)
+	public $username;
+	public $unique_ils_id;
+	public $cat_username; //Old field for barcode/username from the ILS deprecated
+	public $cat_password;  //Old field barcode/username from the ILS deprecated
+	public $ils_barcode;  //The barcode for the user as stored within the ILS. Will be null for admin users and users not stored in the ils
+	public $ils_username; //A custom username for the user as stored within the ILS that can be used for login rather than using the barcode.
+	public $ils_password; //The password to use when logging in
+	public $displayName;
+	public $password;
+	public $firstname;
+	public $lastname;
+	public $email;
+	public $phone;
 	public $patronType;
 	public $created;                         // datetime(19)  not_null binary
 	public $homeLocationId;                     // int(11)
@@ -138,6 +142,8 @@ class User extends DataObject {
 	function getEncryptedFieldNames(): array {
 		return [
 			'password',
+			'cat_password',
+			'ils_password',
 			'firstname',
 			'lastname',
 			'email',
@@ -145,7 +151,6 @@ class User extends DataObject {
 			'phone',
 			'overdriveEmail',
 			'alternateLibraryCardPassword',
-			$this->getPasswordOrPinField(),
 			'axis360Email',
 		];
 	}
@@ -354,51 +359,19 @@ class User extends DataObject {
 	}
 
 	function getBarcode() {
-		if ($this->getAccountProfile() == null) {
-			return trim($this->cat_username);
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return trim($this->cat_username);
-			} else {
-				return trim($this->cat_password);
-			}
-		}
+		return $this->ils_barcode;
 	}
 
 	function getPasswordOrPin() {
-		if ($this->getAccountProfile() == null) {
-			return trim($this->cat_password);
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return trim($this->cat_password);
-			} else {
-				return trim($this->cat_username);
-			}
-		}
+		return $this->ils_password;
 	}
 
 	function getPasswordOrPinField() {
-		if ($this->getAccountProfile() == null) {
-			return 'cat_password';
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return 'cat_password';
-			} else {
-				return 'cat_username';
-			}
-		}
+		return 'ils_password';
 	}
 
 	function getBarcodeField() {
-		if ($this->getAccountProfile() == null) {
-			return 'cat_username';
-		} else {
-			if ($this->getAccountProfile()->loginConfiguration == 'barcode_pin' || $this->getAccountProfile()->loginConfiguration == 'barcode_lastname') {
-				return 'cat_username';
-			} else {
-				return 'cat_password';
-			}
-		}
+		return 'ils_barcode';
 	}
 
 	function saveRoles() {
@@ -483,7 +456,7 @@ class User extends DataObject {
 								//$userData = $memCache->get("user_{$serverName}_{$linkedUser->id}");
 								//if ($userData === false || isset($_REQUEST['reload'])) {
 									//Load full information from the catalog
-									$linkedUser = UserAccount::validateAccount($linkedUser->cat_username, $linkedUser->cat_password, $linkedUser->source, $this);
+									$linkedUser = UserAccount::validateAccount($linkedUser->ils_barcode, $linkedUser->ils_password, $linkedUser->source, $this);
 								//} else {
 								//	$logger->log("Found cached linked user {$userData->id}", Logger::LOG_DEBUG);
 								//	$linkedUser = $userData;
@@ -582,12 +555,12 @@ class User extends DataObject {
 	function getRelatedEcontentUsers($source) {
 		$users = [];
 		if ($this->isValidForEContentSource($source)) {
-			$users[$this->cat_username . ':' . $this->cat_password] = $this;
+			$users[$this->ils_barcode . ':' . $this->ils_password] = $this;
 		}
 		foreach ($this->getLinkedUsers() as $linkedUser) {
 			if ($linkedUser->isValidForEContentSource($source)) {
-				if (!array_key_exists($linkedUser->cat_username . ':' . $linkedUser->cat_password, $users)) {
-					$users[$linkedUser->cat_username . ':' . $linkedUser->cat_password] = $linkedUser;
+				if (!array_key_exists($linkedUser->ils_barcode . ':' . $linkedUser->ils_password, $users)) {
+					$users[$linkedUser->ils_barcode . ':' . $linkedUser->ils_password] = $linkedUser;
 				}
 			}
 		}
@@ -946,10 +919,8 @@ class User extends DataObject {
 			],
 		];
 
-		global $configArray;
-		$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 		$structure['barcode'] = [
-			'property' => $barcodeProperty,
+			'property' => 'ils_barcode',
 			'type' => 'label',
 			'label' => 'Barcode',
 			'description' => 'The barcode for the user.',
@@ -2091,7 +2062,14 @@ class User extends DataObject {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error modifying hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error modifying hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		$allHolds = $user->getHolds();
@@ -2161,6 +2139,10 @@ class User extends DataObject {
 			}
 
 			$tmpResult['message'] = $message;
+			$tmpResult['title'] = translate([
+				'text' => 'Success',
+				'isPublicFacing' => true,
+			]);
 		} else {
 			if ($total == 0) {
 				$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
@@ -2185,7 +2167,14 @@ class User extends DataObject {
 		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error modifying hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error modifying hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		$allHolds = $user->getHolds();
@@ -2258,6 +2247,10 @@ class User extends DataObject {
 					}
 
 					$tmpResult['message'] = $message;
+					$tmpResult['title'] = translate([
+						'text' => 'Success',
+						'isPublicFacing' => true,
+					]);
 				} else {
 					$tmpResult['message'] = '<div class="alert alert-warning">' . translate([
 							'text' => 'All holds already thawed',
@@ -3135,6 +3128,10 @@ class User extends DataObject {
 				'Administer All Custom Forms',
 				'Administer Library Custom Forms',
 			]);
+			$sections['web_builder']->addAction(new AdminAction('Quick Polls', 'Create quick polls within Aspen Discovery for patrons to respond to.', '/WebBuilder/QuickPolls'), [
+				'Administer All Quick Polls',
+				'Administer Library Quick Polls',
+			]);
 			$sections['web_builder']->addAction(new AdminAction('Web Resources', 'Add resources within Aspen Discovery that the library provides.', '/WebBuilder/WebResources'), [
 				'Administer All Web Resources',
 				'Administer Library Web Resources',
@@ -3226,8 +3223,14 @@ class User extends DataObject {
 		$sections['third_party_enrichment']->addAction(new AdminAction('Wikipedia Integration', 'Modify which Wikipedia content is displayed for authors.', '/Admin/AuthorEnrichment'), 'Administer Wikipedia Integration');
 
 		$sections['ecommerce'] = new AdminSection('eCommerce');
-		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View all payments initiated and completed within the system', '/Admin/eCommerceReport'), 'View eCommerce Reports');
-		$sections['ecommerce']->addAction(new AdminAction('Donations Report', 'View all donations initiated and completed within the system', '/Admin/DonationsReport'), 'View Donations Reports');
+		$sections['ecommerce']->addAction(new AdminAction('eCommerce Report', 'View payments initiated and completed within the system', '/Admin/eCommerceReport'), [
+            'View eCommerce Reports for All Libraries',
+            'View eCommerce Reports for Home Library'
+        ]);
+		$sections['ecommerce']->addAction(new AdminAction('Donations Report', 'View donations initiated and completed within the system', '/Admin/DonationsReport'), [
+            'View Donations Reports for All Libraries',
+            'View Donations Reports for Home Library'
+        ]);
 		$sections['ecommerce']->addAction(new AdminAction('Comprise Settings', 'Define Settings for Comprise SMARTPAY.', '/Admin/CompriseSettings'), 'Administer Comprise');
 		$sections['ecommerce']->addAction(new AdminAction('FIS WorldPay Settings', 'Define Settings for FIS WorldPay.', '/Admin/WorldPaySettings'), 'Administer WorldPay');
 		$sections['ecommerce']->addAction(new AdminAction('PayPal Settings', 'Define Settings for PayPal.', '/Admin/PayPalSettings'), 'Administer PayPal');
@@ -3418,7 +3421,11 @@ class User extends DataObject {
 		if (array_key_exists('Open Archives', $enabledModules)) {
 			$sections['open_archives'] = new AdminSection('Open Archives');
 			$sections['open_archives']->addAction(new AdminAction('Collections', 'Define collections to be loaded into Aspen Discovery.', '/OpenArchives/Collections'), 'Administer Open Archives');
-			$sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), [
+            $sections['open_archives']->addAction(new AdminAction('Open Archives Facet Settings', 'Define facets for open archives searches.', '/OpenArchives/OpenArchivesFacets'),  [
+                'Administer All Open Archives Facet Settings',
+                'Administer Library Open Archives Facet Settings',
+            ]);
+            $sections['open_archives']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Open Archives.', '/OpenArchives/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
@@ -3433,6 +3440,7 @@ class User extends DataObject {
 			$sections['events']->addAction(new AdminAction('Library Market - Calendar Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/LMLibraryCalendarSettings'), 'Administer LibraryMarket LibraryCalendar Settings');
 			$sections['events']->addAction(new AdminAction('Springshare - LibCal Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/SpringshareLibCalSettings'), 'Administer Springshare LibCal Settings');
 			$sections['events']->addAction(new AdminAction('Communico - Attend Settings', 'Define collections to be loaded into Aspen Discovery.', '/Events/CommunicoSettings'), 'Administer Communico Settings');
+			$sections['events']->addAction(new AdminAction('Event Facet Settings', 'Define facets for event searches.', '/Events/EventsFacets'), 'Administer Events Facet Settings');
 			$sections['events']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Events.', '/Events/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
@@ -3442,7 +3450,11 @@ class User extends DataObject {
 		if (array_key_exists('Web Indexer', $enabledModules)) {
 			$sections['web_indexer'] = new AdminSection('Website Indexing');
 			$sections['web_indexer']->addAction(new AdminAction('Settings', 'Define settings for indexing websites within Aspen Discovery.', '/Websites/Settings'), 'Administer Website Indexing Settings');
-			$sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
+            $sections['web_indexer']->addAction(new AdminAction('Website Facet Settings', 'Define facets for website searches.', '/Websites/WebsiteFacets'), [
+                'Administer All Website Facet Settings',
+                'Administer Library Website Facet Settings',
+            ]);
+            $sections['web_indexer']->addAction(new AdminAction('Website Pages', 'A list of pages that have been indexed.', '/Websites/WebsitePages'), 'Administer Website Indexing Settings');
 			$sections['web_indexer']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Websites.', '/Websites/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
@@ -3960,6 +3972,18 @@ class User extends DataObject {
 
 			$preferences[] = $preference;
 		}
+
+		if(empty($preferences)) {
+			$preference['device'] = 'Unknown';
+			$preference['token'] = 'Unknown';
+			$preference['notifySavedSearch'] = '0';
+			$preference['notifyCustom'] = '0';
+			$preference['notifyAccount'] = '0';
+			$preference['onboardStatus'] = $this->onboardAppNotifications;
+
+			$preferences[] = $preference;
+		}
+
 		return $preferences;
 	}
 
@@ -4171,8 +4195,21 @@ class User extends DataObject {
 		return false;
 	}
 
+	function checkoutItem($barcode, $locationId): array {
+		$result = $this->getCatalogDriver()->checkoutBySip($this, $barcode, $locationId);
+		if ($result['success']) {
+			$this->forceReloadOfCheckouts();
+		}
+		$this->clearCache();
+		return $result;
+	}
+
 	public function find($fetchFirst = false, $requireOneMatchToReturn = true): bool {
 		return parent::find($fetchFirst, $requireOneMatchToReturn);
+	}
+
+	public function isAspenAdminUser() : bool {
+		return $this->source == 'admin' && $this->username == 'aspen_admin';
 	}
 }
 

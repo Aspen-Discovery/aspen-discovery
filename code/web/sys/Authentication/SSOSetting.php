@@ -12,6 +12,7 @@ class SSOSetting extends DataObject {
 	public $bypassAspenPatronLogin;
 	public $ssoAuthOnly;
     public $forceReAuth;
+	public $restrictByIP;
 
 	//oAuth
 	public $clientId;
@@ -211,6 +212,18 @@ class SSOSetting extends DataObject {
                 'description' => 'Whether or not users must re-authenticate with the IdP each time they log into Aspen',
                 'note' => 'If enabled, users will have to authenticate with the IdP each time they go to log back into Aspen. This is useful for single sign-on being used on public machines.',
             ],
+			'restrictByIP' => [
+				'property' => 'restrictByIP',
+				'type' => 'enum',
+				'values' => [
+					0 => 'Allowed from all IP addresses',
+					1 => 'Allowed from enabled IP addresses',
+				],
+				'label' => 'Restrict single sign-on by IP address',
+				'description' => 'Whether or not to restrict the ability to use the SSO login by IP address.',
+				'hideInLists' => true,
+				'default' => true,
+			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
 				'type' => 'section',
@@ -1030,7 +1043,7 @@ class SSOSetting extends DataObject {
 	}
 
 	public function getNumericColumnNames(): array {
-		return ['localLogin', 'staffOnly', 'oAuthGrantType', 'ssoUseGivenUserId', 'ssoUseGivenUsername', 'ssoUsernameFormat'];
+		return ['localLogin', 'staffOnly', 'oAuthGrantType', 'ssoUseGivenUserId', 'ssoUseGivenUsername', 'ssoUsernameFormat', 'restrictByIP'];
 	}
 
 	public function genericOAuthProvider() {

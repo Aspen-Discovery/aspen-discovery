@@ -111,14 +111,13 @@ class Admin_Administrators extends ObjectEditor {
 		$errors = [];
 		foreach ($logins as $login) {
 			$newAdmin = new User();
-			$barcodeProperty = $configArray['Catalog']['barcodeProperty'];
 
-			$newAdmin->$barcodeProperty = $login;
+			$newAdmin->ils_barcode = $login;
 			$newAdmin->find();
 			$numResults = $newAdmin->getNumResults();
 			if ($numResults == 0) {
 				//See if we can fetch the user from the ils
-				$newAdmin = UserAccount::findNewUser($login);
+				$newAdmin = UserAccount::findNewUser($login, '');
 				if ($newAdmin == false) {
 					$errors[$login] = translate([
 						'text' => 'Could not find a user with that barcode.',

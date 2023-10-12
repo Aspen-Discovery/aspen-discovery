@@ -32,7 +32,7 @@ function getUpdates23_08_00(): array {
 				"UPDATE indexing_profiles set customFacet2ValuesToInclude = '.*'",
 				"UPDATE indexing_profiles set customFacet3ValuesToInclude = '.*'",
 			]
-		],
+		], //custom_facets
 		'twilio_settings' => [
 			'title' => 'Twilio Settings',
 			'description' => 'Add twilio settings and permissions',
@@ -49,7 +49,7 @@ function getUpdates23_08_00(): array {
 				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('System Administration', 'Administer Twilio', '', 34, 'Controls if the user can change Twilio settings. <em>This has potential security and cost implications.</em>')",
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Twilio'))",
 			]
-		],
+		], //twilio_settings
 
 		//kirstien - ByWater
 		'aspen_lida_self_check_settings' => [
@@ -159,5 +159,43 @@ function getUpdates23_08_00(): array {
 				"ALTER TABLE system_variables ADD COLUMN supportingCompany VARCHAR(72) default 'ByWater Solutions'",
 			]
 		],
+
+
+		//Jacob - PTFS
+		'add_cookie_consent_theming' => [
+			'title' => 'Add theming to Cookie Consent banner',
+			'description' => 'Adds column to specify cookie consent colors in themes',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE themes ADD COLUMN cookieConsentBackgroundColor CHAR(7) DEFAULT '#1D7FF0'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentBackgroundColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonColor CHAR(7) DEFAULT '#1D7FF0'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverColor CHAR(7) DEFAULT '#FF0000'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentTextColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentTextColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonTextColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonTextColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverTextColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonHoverTextColorDefault tinyint(1) DEFAULT 1',
+				"ALTER TABLE themes ADD COLUMN cookieConsentButtonBorderColor CHAR(7) DEFAULT '#FFFFFF'",
+				'ALTER TABLE themes ADD COLUMN cookieConsentButtonBorderColorDefault tinyint(1) DEFAULT 1',
+			]
+		],
+		//add theming to cookieConsent banner
+		'move_cookieConsent_to_library_settings' => [
+			'title' => 'Move Cookie Consent toggle to library settings',
+			'description' => 'Moves the cookie consent toggle from system settings to library settings',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE system_variables DROP COLUMN cookieStorageConsent",
+				"ALTER TABLE system_variables DROP COLUMN cookiePolicyHTML",
+				"ALTER TABLE library ADD COLUMN cookieStorageConsent tinyint(1) DEFAULT 0",
+				"ALTER TABLE library ADD COLUMN cookiePolicyHTML TEXT",
+				"UPDATE library set cookiePolicyHTML = 'This body has not yet set a cookie storage policy, please check back later.'",
+			]
+		],
+
 	];
 }

@@ -1291,4 +1291,52 @@ class Admin_AJAX extends JSON_Action {
 			];
 		}
 	}
+
+	function toggleFieldLock() {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error changing field locking',
+		];
+		if (UserAccount::isLoggedIn()) {
+			if (UserAccount::userHasPermission('Lock Administration Fields')) {
+				if (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['moduleName'])){
+					$result['message'] = translate(['text'=>'Invalid module name', 'isAdminFacing'=>true]);
+				}elseif (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['toolName'])){
+					$result['message'] = translate(['text'=>'Invalid tool name', 'isAdminFacing'=>true]);
+				}elseif (!preg_match_all('/^[a-zA-Z0-9]*$/',$_REQUEST['fieldName'])){
+					$result['message'] = translate(['text'=>'Invalid field name', 'isAdminFacing'=>true]);
+				}
+				$moduleName = $_REQUEST['moduleName'];
+				$toolName = $_REQUEST['toolName'];
+				$fieldName = $_REQUEST['fieldName'];
+				require_once ROOT_DIR . '/sys/Administration/FieldLock.php';
+				$fieldLock = new FieldLock();
+				$fieldLock->module = $moduleName;
+				$fieldLock->toolName = $toolName;
+				$fieldLock->field = $fieldName;
+				if ($fieldLock->find(true)) {
+					//We're disabling the locking
+					if ($fieldLock->delete()) {
+						$result = [
+							'success' => true,
+							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i class=\"text-info fas fa-unlock-alt\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
+						];
+					}
+				} else {
+					//We're enabling locking
+					if ($fieldLock->insert()) {
+						$result = [
+							'success' => true,
+							'lockToggle' => "<a id=\"fieldLock$fieldName\" onclick=\"return AspenDiscovery.Admin.toggleFieldLock('$moduleName', '$toolName', '$fieldName');\" role=\"button\"><i class=\"text-info fas fa-lock\" title=\"" . translate(['text'=>"Click to toggle field locking", 'isAdminFacing'=>true, 'inAttribute'=>true]) . "\"></i></a>",
+						];
+					}
+				}
+			}else {
+				$result['message'] = 'You don\'t have the correct permissions to change field locking';
+			}
+		} else {
+			$result['message'] = 'You must be logged in to change field locking';
+		}
+		return $result;
+	}
 }

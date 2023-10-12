@@ -49,8 +49,11 @@ export async function getGroupedWork221200(url, itemId) {
  * @param {number} itemId
  * @param {string} source
  * @param {number} patronId
+ * @param {string} barcode
+ * @param {string} locationId
+ * @param {string} barcodeType
  **/
-export async function checkoutItem(url, itemId, source, patronId) {
+export async function checkoutItem(url, itemId, source, patronId, barcode = '', locationId = '', barcodeType) {
      const postBody = await postData();
      const api = create({
           baseURL: url + '/API',
@@ -61,6 +64,9 @@ export async function checkoutItem(url, itemId, source, patronId) {
                itemId,
                itemSource: source,
                userId: patronId,
+               locationId,
+               barcode,
+               barcodeType,
           },
      });
      const response = await api.post('/UserAPI?method=checkoutItem', postBody);
@@ -86,8 +92,19 @@ export async function checkoutItem(url, itemId, source, patronId) {
  *     <li>patronId - the id for the patron</li>
  *     <li>pickupBranch - the location id for where the hold will be picked up at</li>
  * </ul>
+ * @param {string} url
+ * @param {number} itemId
+ * @param {string} source
+ * @param {number} patronId
+ * @param {string} pickupBranch
+ * @param {string} volumeId
+ * @param {string} holdType
+ * @param {string} recordId
+ * @param {array} holdNotificationPreferences
+ * @param {string} variationId
+ * @param {string} bibId
  **/
-export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = null, recordId = null, holdNotificationPreferences = null, variationId = null, bibId = null) {
+export async function placeHold(url, itemId, source, patronId, pickupBranch, volumeId = '', holdType = '', recordId = '', holdNotificationPreferences = null, variationId = null, bibId = null) {
      let id = itemId;
      if (variationId) {
           id = variationId;

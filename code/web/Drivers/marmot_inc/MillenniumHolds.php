@@ -241,7 +241,7 @@ class MillenniumHolds {
 		$this->driver->_curl_login($patron);
 
 		//Issue a post request with the information about what to do with the holds
-		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/holds";
+		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/holds";
 		$sResult = $this->driver->curlWrapper->curlPostPage($curl_url, $postVariables);
 		$holds = $this->parseHoldsPage($sResult, $patron, $indexingProfile);
 

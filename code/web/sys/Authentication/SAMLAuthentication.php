@@ -207,7 +207,7 @@ class SAMLAuthentication{
 				if($this->selfRegister($ilsUserArray)) {
 					return $this->validateWithILS($ssoArray);
 				} else {
-					AspenError::raiseError(new AspenError('Unable to register a new account with ILS.'));
+					AspenError::raiseError(new AspenError('Unable to register a new account with ILS during SAML authentication.'));
 					return false;
 				}
 			} else {
@@ -250,7 +250,7 @@ class SAMLAuthentication{
 		} else {
 			$logger->log("Finding user in ILS by barcode ($this->uid)", Logger::LOG_ERROR);
 			$_REQUEST['username'] = $this->uid;
-			$user = $catalogConnection->findNewUser($this->uid);
+			$user = $catalogConnection->findNewUser($this->uid, '');
 		}
 
 		if(!$user instanceof User) {
@@ -270,13 +270,13 @@ class SAMLAuthentication{
 		} elseif($this->uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($this->uid);
 		} else {
-			$user = $catalogConnection->findNewUser($this->uid);
+			$user = $catalogConnection->findNewUser($this->uid, '');
 		}
 		return $this->aspenLogin($user);
 	}
 
 	private function validateWithAspen($username): bool {
-		$findBy = 'username';
+		$findBy = 'ils_username';
 		if (filter_var($username, FILTER_VALIDATE_EMAIL)) {
 			$findBy = 'email';
 		}
@@ -293,7 +293,7 @@ class SAMLAuthentication{
 		if($this->ssoAuthOnly) {
 			$login = UserAccount::loginWithAspen($user);
 		} else {
-			$_REQUEST['username'] = $user->cat_username;
+			$_REQUEST['username'] = empty($user->ils_username) ? $user->ils_barcode : $user->ils_username;
 			$login = UserAccount::login(true);
 		}
 
@@ -384,8 +384,7 @@ class SAMLAuthentication{
 				$_REQUEST[$key] = $ssoArray[$primaryAttr];
 				$ilsUser[$key] = $ssoArray[$primaryAttr];
 				if(isset($mappings['useGivenCardnumber'])) {
-					$useSecondaryOverPrimary = $mappings['useGivenCardnumber'];
-					if($useSecondaryOverPrimary == '0') {
+					if($this->config->ssoUseGivenUserId == '0' || $this->config->ssoUseGivenUserId == 0) {
 						$_REQUEST[$key] = null;
 						$ilsUser[$key] = null;
 					}
@@ -436,7 +435,7 @@ class SAMLAuthentication{
 
 	private function selfRegister($user): bool {
 		global $logger;
-		$logger->log("Permorming self registration of user " . print_r($user, true), Logger::LOG_ERROR);
+		$logger->log("Performing self registration of user " . print_r($user, true), Logger::LOG_ERROR);
 		$catalogConnection = CatalogFactory::getCatalogConnectionInstance();
 		$selfReg = $catalogConnection->selfRegister(true, $user);
 		if($selfReg['success'] != '1') {
@@ -452,6 +451,7 @@ class SAMLAuthentication{
 		$tmpUser->firstname = $this->searchArray($user, $this->matchpoints['firstName']) ?? '';
 		$tmpUser->lastname = $this->searchArray($user, $this->matchpoints['lastName']) ?? '';
 		$tmpUser->username = $this->searchArray($user, $this->matchpoints['userId']);
+		$tmpUser->unique_ils_id = $this->searchArray($user, $this->matchpoints['userId']);
 		$tmpUser->phone = '';
 		$tmpUser->displayName = $this->searchArray($user, $this->matchpoints['displayName']) ?? '';
 
@@ -486,21 +486,15 @@ class SAMLAuthentication{
 	}
 
 	private function newSSOSession($id) {
-		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		/** SessionInterface $session */
+		global $session;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
+		session_name('aspen_session');
+		$session = new MySQLSession();
+		$session->init();
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		$timer->logTime('Session initialization MySQLSession');
 
 		$_SESSION['activeUserId'] = $id;
 		$_SESSION['rememberMe'] = false;

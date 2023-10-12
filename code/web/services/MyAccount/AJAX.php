@@ -602,6 +602,10 @@ class MyAccount_AJAX extends JSON_Action {
 	function cancelHold(): array {
 		$result = [
 			'success' => false,
+			'title' => translate([
+				'text' => 'Cancelling hold failed',
+				'isPublicFacing' => true,
+			]),
 			'message' => translate([
 				'text' => 'Error cancelling hold.',
 				'isPublicFacing' => true,
@@ -663,14 +667,43 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmCancelHoldSelected(): array {
+		$patronId = $_REQUEST['patronId'];
+		$recordId = $_REQUEST['recordId'];
+		$cancelId = $_REQUEST['cancelId'];
+		$cancelButtonLabel = translate([
+			'text' => 'Confirm Cancel Holds',
+			'isPublicFacing' => true,
+		]);
+		return [
+			'title' => translate([
+				'text' => 'Cancel Holds',
+				'isPublicFacing' => true,
+			]),
+			'body' => translate([
+				'text' => 'Are you sure you want to cancel selected holds?',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHoldSelected(\"$patronId\", \"$recordId\", \"$cancelId\")'>$cancelButtonLabel</span>",
+		];
+	}
+
 	function cancelHoldSelectedItems() {
 		$result = [
 			'success' => false,
-			'message' => 'Error cancelling hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error cancelling hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		if (!UserAccount::isLoggedIn()) {
-			$result['message'] = 'You must be logged in to cancel a hold.  Please close this dialog and login again.';
+			$result['message'] = translate(['text' => 'You must be logged in to cancel a hold.  Please close this dialog and login again.', 'isPublicFacing' => true]);
 		} else {
 			$success = 0;
 			$user = UserAccount::getLoggedInUser();
@@ -684,7 +717,11 @@ class MyAccount_AJAX extends JSON_Action {
 					if ($patronOwningHold == false) {
 						$tmpResult = [
 							'success' => false,
-							'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+							'title' => translate([
+								'text' => 'Error',
+								'isPublicFacing' => true,
+							]),
+							'message' => translate(['text' => 'Sorry, it looks like you don\'t have access to that patron.', 'isPublicFacing' => true]),
 						];
 					} else {
 						foreach ($allUnavailableHolds as $key) {
@@ -729,6 +766,10 @@ class MyAccount_AJAX extends JSON_Action {
 								'inAttribute' => true,
 							]) . '</div>';
 						$tmpResult['message'] = $message;
+						$tmpResult['title'] = translate([
+							'text' => 'Success',
+							'isPublicFacing' => true,
+						]);
 					}
 				}
 			} else {
@@ -787,10 +828,30 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmCancelHoldAll(): array {
+		$cancelButtonLabel = translate([
+			'text' => 'Confirm Cancel Holds',
+			'isPublicFacing' => true,
+		]);
+		return [
+			'title' => translate([
+				'text' => 'Cancel Holds',
+				'isPublicFacing' => true,
+			]),
+			'body' => translate([
+				'text' => 'Are you sure you want to cancel all holds?',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.cancelHoldAll()'>$cancelButtonLabel</span>",
+		];
+	}
+
 	function cancelAllHolds() {
 		$tmpResult = [
 			'success' => false,
-			'message' => ['Unable to cancel all holds'],
+			'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+			'message' => translate(['text' => 'Unable to cancel all holds', 'isPublicFacing' => true]),
 		];
 		$user = UserAccount::getLoggedInUser();
 		if ($user) {
@@ -841,6 +902,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'inAttribute' => true,
 					]) . '</div>';
 				$tmpResult['message'] = $message;
+				$tmpResult['title'] = translate(['text' => 'Success', 'isPublicFacing' => true]);
 
 			}
 		} else {
@@ -860,6 +922,10 @@ class MyAccount_AJAX extends JSON_Action {
 			'success' => false,
 			'message' => translate([
 				'text' => 'Error freezing hold.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Error',
 				'isPublicFacing' => true,
 			]),
 		];
@@ -894,6 +960,10 @@ class MyAccount_AJAX extends JSON_Action {
 					if ($result['success']) {
 						$message = '<div class="alert alert-success">' . $result['message'] . '</div>';
 						$result['message'] = $message;
+						$result['title'] = translate([
+							'text' => 'Success',
+							'isPublicFacing' => true,
+						]);
 					}
 
 					if (!$result['success'] && is_array($result['message'])) {
@@ -918,14 +988,47 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmFreezeHoldSelected(): array {
+		$patronId = $_REQUEST['patronId'];
+		$recordId = $_REQUEST['recordId'];
+		$holdId = $_REQUEST['holdId'];
+		//$selected = $_REQUEST['selected'];
+		$freezeButtonLabel = translate([
+			'text' => 'Confirm Freeze Holds',
+			'isPublicFacing' => true,
+		]);
+		return [
+			'title' => translate([
+				'text' => 'Freeze Holds',
+				'isPublicFacing' => true,
+			]),
+			'body' => translate([
+				'text' => 'Are you sure you want to freeze selected holds?',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$freezeButtonLabel</span>",
+		];
+	}
+
 	function freezeHoldSelectedItems() {
 		$tmpResult = [ // set default response
 			'success' => false,
-			'message' => 'Error freezing hold.',
+			'message' => translate([
+				'text' => 'Error freezing hold.',
+				'isPublicFacing' => true,
+			]),
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		if (!UserAccount::isLoggedIn()) {
-			$tmpResult['message'] = 'You must be logged in to freeze a hold.  Please close this dialog and login again.';
+			$tmpResult['message'] = translate([
+				'text' => 'You must be logged in to freeze a hold.  Please close this dialog and login again.',
+				'isPublicFacing' => true,
+			]);
 		} else {
 			$user = UserAccount::getLoggedInUser();
 			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
@@ -1006,6 +1109,10 @@ class MyAccount_AJAX extends JSON_Action {
 								'inAttribute' => true,
 							]) . '</div>';
 						$tmpResult['message'] = $message;
+						$tmpResult['title'] = translate([
+							'text' => 'Success',
+							'isPublicFacing' => true,
+						]);
 
 					}
 				}
@@ -1021,17 +1128,51 @@ class MyAccount_AJAX extends JSON_Action {
 		return $tmpResult;
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmFreezeHoldAll(): array {
+		$patronId = $_REQUEST['patronId'];
+		$freezeButtonLabel = translate([
+			'text' => 'Confirm Freeze Holds',
+			'isPublicFacing' => true,
+		]);
+		return [
+			'title' => translate([
+				'text' => 'Freeze Holds',
+				'isPublicFacing' => true,
+			]),
+			'body' => translate([
+				'text' => 'Are you sure you want to freeze all holds?',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldAll(\"$patronId\")'>$freezeButtonLabel</span>",
+		];
+	}
+
 	function freezeHoldAll() {
 		$user = UserAccount::getLoggedInUser();
+		$tmpResult['title'] = translate([
+			'text' => 'Error',
+			'isPublicFacing' => true,
+		]);
+		$tmpResult['message'] = translate([
+			'text' => 'Error freezing hold.',
+			'isPublicFacing' => true,
+		]);
 		if (!$user) {
-			$tmpResult['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
+			$tmpResult['message'] = translate([
+				'text' => 'You must be logged in to modify a hold.  Please close this dialog and login again.',
+				'isPublicFacing' => true,
+			]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$tmpResult = $user->freezeAllHolds();
 		} else {
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
 			$logger->log('Modifying Hold, no patron Id was passed in AJAX call.', Logger::LOG_ERROR);
-			$tmpResult['message'] = 'No Patron was specified.';
+			$tmpResult['message'] = translate([
+				'text' => 'No Patron was specified.',
+				'isPublicFacing' => true,
+			]);
 		}
 		return $tmpResult;
 	}
@@ -1040,7 +1181,14 @@ class MyAccount_AJAX extends JSON_Action {
 		$user = UserAccount::getLoggedInUser();
 		$result = [ // set default response
 			'success' => false,
-			'message' => 'Error thawing hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error thawing hold.',
+				'isPublicFacing' => true,
+			]),
 		];
 
 		if (!$user) {
@@ -1086,14 +1234,47 @@ class MyAccount_AJAX extends JSON_Action {
 		return $result;
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmThawHoldSelected(): array {
+		$patronId = $_REQUEST['patronId'];
+		$recordId = $_REQUEST['recordId'];
+		$holdId = $_REQUEST['holdId'];
+		$thawButtonLabel = translate([
+			'text' => 'Confirm Thaw Holds',
+			'isPublicFacing' => true,
+		]);
+		return [
+			'title' => translate([
+				'text' => 'Thaw Holds',
+				'isPublicFacing' => true,
+			]),
+			'body' => translate([
+				'text' => 'Are you sure you want to thaw selected holds?',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.thawHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$thawButtonLabel</span>",
+		];
+	}
+
+	/** @noinspection PhpUnused */
 	function thawHoldSelectedItems() {
 		$result = [ // set default response
 			'success' => false,
-			'message' => 'Error thawing hold.',
+			'title' => translate([
+				'text' => 'Error',
+				'isPublicFacing' => true,
+			]),
+			'message' => translate([
+				'text' => 'Error thawing hold.',
+				'isPublicFacing' => true,
+ 			]),
 		];
 
 		if (!UserAccount::isLoggedIn()) {
-			$result['message'] = 'You must be logged in to thaw a hold.  Please close this dialog and login again.';
+			$result['message'] = translate([
+				'text' => 'You must be logged in to thaw a hold.  Please close this dialog and login again.',
+				'isPublicFacing' => true,
+			]);
 		} else {
 			$success = 0;
 			$failed = 0;
@@ -1108,7 +1289,10 @@ class MyAccount_AJAX extends JSON_Action {
 					if ($patronOwningHold == false) {
 						$tmpResult = [
 							'success' => false,
-							'message' => 'Sorry, it looks like you don\'t have access to that patron.',
+							'message' => translate([
+								'text' => 'Sorry, it looks like you don\'t have access to that patron.',
+								'isPublicFacing' => true,
+							]),
 						];
 					} else {
 						foreach ($allUnavailableHolds as $key) {
@@ -1167,7 +1351,10 @@ class MyAccount_AJAX extends JSON_Action {
 								'inAttribute' => true,
 							]) . '</div>';
 						$tmpResult['message'] = $message;
-
+						$tmpResult['title'] = translate([
+							'text' => 'Success',
+							'isPublicFacing' => true,
+						]);
 					}
 				}
 			} else {
@@ -1182,11 +1369,38 @@ class MyAccount_AJAX extends JSON_Action {
 		return $tmpResult;
 	}
 
+	/** @noinspection PhpUnused */
+	function confirmThawHoldAll(): array {
+		$patronId = $_REQUEST['patronId'];
+		$thawButtonLabel = translate([
+			'text' => 'Confirm Thaw Holds',
+			'isPublicFacing' => true,
+		]);
+		return [
+			'title' => translate([
+				'text' => 'Thaw Holds',
+				'isPublicFacing' => true,
+			]),
+			'body' => translate([
+				'text' => 'Are you sure you want to thaw all holds?',
+				'isPublicFacing' => true,
+			]),
+			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.thawHoldAll(\"$patronId\")'>$thawButtonLabel</span>",
+		];
+	}
+
 	function thawHoldAll() {
+		$tmpResult['title'] = translate([
+			'text' => 'Error',
+			'isPublicFacing' => true,
+		]);
 		$user = UserAccount::getLoggedInUser();
 
 		if (!$user) {
-			$tmpResult['message'] = 'You must be logged in to modify a hold.  Please close this dialog and login again.';
+			$tmpResult['message'] = translate([
+				'text' => 'You must be logged in to modify a hold.  Please close this dialog and login again.',
+				'isPublicFacing' => true,
+			]);
 		} elseif (!empty($_REQUEST['patronId'])) {
 			$tmpResult = $user->thawAllHolds();
 
@@ -1506,6 +1720,12 @@ class MyAccount_AJAX extends JSON_Action {
 			$interface->assign('loginNotes', $loginNotes);
 		}
 
+		$enableForgotBarcode = 0;
+		if($library->enableForgotBarcode && $library->twilioSettingId != -1) {
+			$enableForgotBarcode = $library->enableForgotBarcode;
+		}
+		$interface->assign('enableForgotBarcode', $enableForgotBarcode);
+
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		if ($catalog != null) {
 			$interface->assign('forgotPasswordType', $catalog->getForgotPasswordType());
@@ -1525,6 +1745,8 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function getMasqueradeAsForm() {
 		global $interface;
+		$catalog = CatalogFactory::getCatalogConnectionInstance();
+		$interface->assign('supportsLoginWithUsername', $catalog->supportsLoginWithUsername());
 		return [
 			'title' => translate([
 				'text' => 'Masquerade As',
@@ -3073,6 +3295,15 @@ class MyAccount_AJAX extends JSON_Action {
 	{
 		global $interface;
 		global $timer;
+		global $library;
+
+		$eventSource = "";
+		require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+		$libraryEventSettings = new LibraryEventsSetting();
+		$libraryEventSettings->libraryId = $library->libraryId;
+		if($libraryEventSettings->find(true)) {
+			$eventSource = $libraryEventSettings->settingSource;
+		}
 
 		//Load user ratings
 		require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
@@ -3131,6 +3362,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isRegistered' => $registration,
 					'eventDate' => $entry->eventDate,
 					'pastEvent' => false,
+					'vendor' => $eventSource
 				];
 			} else {
 				$events[$entry->sourceId] = [
@@ -3143,7 +3375,8 @@ class MyAccount_AJAX extends JSON_Action {
 				'regRequired' => $entry->regRequired,
 				'isRegistered' => $registration,
 				'eventDate' => $entry->eventDate,
-				'pastEvent' => true,
+				'pastEvent' => true, 
+					'vendor' => $eventSource
 			];
 		}
 	}
@@ -3549,17 +3782,17 @@ class MyAccount_AJAX extends JSON_Action {
 			$currencyCode = $systemVariables->currencyCode;
 		}
 
-		$donateToLibrary = $_REQUEST['toLocation'];
+		$donateToLocation = $_REQUEST['toLocation'];
 		$toLocation = 'None';
-		if($donateToLibrary) {
+		if($donateToLocation) {
 			require_once ROOT_DIR . '/sys/LibraryLocation/Location.php';
 			$location = new Location();
-			$location->displayName = $donateToLibrary;
+			$location->displayName = $donateToLocation;
 			if ($location->find(true)) {
 				$toLocation = $location->locationId;
 			}
 		} else {
-			$donateToLibrary = 'None';
+			$donateToLocation = 'None';
 		}
 
 		$earmarkId = $_REQUEST['earmark'] ?? null;
@@ -3674,8 +3907,8 @@ class MyAccount_AJAX extends JSON_Action {
 			'lastName' => $_REQUEST['lastName'],
 			'email' => $_REQUEST['emailAddress'],
 			'isAnonymous' => isset($_REQUEST['isAnonymous']) ? 1 : 0,
-			'donateToLibraryId' => $toLocation,
-			'donateToLibrary' => $donateToLibrary,
+			'donateToLocationId' => $toLocation,
+			'donateToLocation' => $donateToLocation,
 			'isDedicated' => isset($_REQUEST['isDedicated']) ? 1 : 0,
 			'shouldBeNotified' => isset($_REQUEST['shouldBeNotified']) ? 1 : 0,
 			'comments' => $comments,
@@ -3757,8 +3990,8 @@ class MyAccount_AJAX extends JSON_Action {
 			$donation->notificationState = $tempDonation['notification']['notificationState'];
 			$donation->notificationZip = $tempDonation['notification']['notificationZip'];
 		}
-		$donation->donateToLibraryId = $tempDonation['donateToLibraryId'];
-		$donation->donateToLibrary = $tempDonation['donateToLibrary'];
+		$donation->donateToLocationId = $tempDonation['donateToLocationId'];
+		$donation->donateToLocation = $tempDonation['donateToLocation'];
 		$donation->comments = $tempDonation['comments'];
 		$donation->donationSettingId = $tempDonation['donationSettingId'];
 		$donation->sendEmailToUser = 1;
@@ -4445,7 +4678,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$body = [
 					'idempotency_key' => $paymentId,
 					'amount_money' => [
-						'amount' => 2000,
+						'amount' => (int)round($payment->totalPaid * 100),
 						'currency' => 'USD'
 					],
 					'source_id' => $paymentToken
@@ -5808,23 +6041,70 @@ class MyAccount_AJAX extends JSON_Action {
 	/** @noinspection PhpUnused */
 	function eventRegistrationModal() {
 		$eventUrl = $_REQUEST['regLink'];
-		return [
-			'success' => true,
-			'title' => translate([
-				'text' => 'Registration Information',
-				'isPublicFacing' => true,
-			]),
-			'buttons' => '<a href="' .$eventUrl. '" class="btn btn-sm btn-info btn-wrap" target="_blank"><i class="fas fa-external-link-alt"></i>'
-				. translate([
-					'text' => 'Take Me To Event Registration',
+		if(isset($_REQUEST['vendor'])) {
+			$vendor = $_REQUEST['vendor'];
+			$body = "";
+			global $library;
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventSettings = new LibraryEventsSetting();
+			$libraryEventSettings->settingSource = $vendor;
+			$libraryEventSettings->libraryId = $library->libraryId;
+			if ($libraryEventSettings->find(true)){
+				if ($vendor == 'communico'){
+					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+					$communicoSettings = new CommunicoSetting();
+					$communicoSettings->id = $libraryEventSettings->settingId;
+					if($communicoSettings->find(true)) {
+						$body = $communicoSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'springshare') {
+					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+					$springshareSettings = new SpringshareLibCalSetting();
+					$springshareSettings->id = $libraryEventSettings->settingId;
+					if($springshareSettings->find(true)) {
+						$body = $springshareSettings->registrationModalBody;
+					}
+				} else if ($vendor == 'library_market') {
+					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+					$libraryMarketSettings = new LMLibraryCalendarSetting();
+					$libraryMarketSettings->id = $libraryEventSettings->settingId;
+					if($libraryMarketSettings->find(true)) {
+						$body = $libraryMarketSettings->registrationModalBody;
+					}
+				}
+			}
+
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Registration Information',
 					'isPublicFacing' => true,
-				]) . '</a>',
-		];
+				]),
+				'body' => $body,
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
+						'text' => 'Take Me To Event Registration',
+						'isPublicFacing' => true,
+					]) . '</a>',
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => 'Registration Information',
+					'isPublicFacing' => true,
+				]),
+				'buttons' => '<a href="' . $eventUrl . '" class="btn btn-primary" target="_blank"><i class="fas fa-external-link-alt"></i> ' . translate([
+						'text' => 'Take Me To Event Registration',
+						'isPublicFacing' => true,
+					]) . '</a>',
+			];
+		}
 	}
 
 	/** @noinspection PhpUnused */
 	function saveEvent() {
 		$result = [];
+		$regRequired = 0; // set a default
 
 		if (!UserAccount::isLoggedIn()) {
 			$result['success'] = false;
@@ -5836,14 +6116,16 @@ class MyAccount_AJAX extends JSON_Action {
 			require_once ROOT_DIR . '/services/MyAccount/MyEvents.php';
 			require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
 			$sourceId = $_REQUEST['sourceId'];
+			$source = $_REQUEST['source'];
+			$vendor = $_REQUEST['vendor'];
 
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = UserAccount::getActiveUserId();
 
-			if (empty($sourceId)) {
+			if (empty($sourceId) || empty($source) || empty($vendor)) {
 				$result['success'] = false;
 				$result['message'] = translate([
-					'text' => 'Unable to save event, not correctly specified.',
+					'text' => 'Unable to save event, not correctly specified. Must include the source id, source, and event vendor.',
 					'isPublicFacing' => true,
 				]);
 			} else {
@@ -5917,19 +6199,24 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['title'] = translate([
 					'text' => "Added Successfully",
+					'isPublicFacing' => true,
 				]);
+				$result['message'] = translate([
+					'text' => 'This event was saved to your events successfully.',
+					'isPublicFacing' => true,
+				]);
+				$result['regRequired'] = false;
+
 				if ($regRequired){
 					$result['message'] = translate([
-						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.</br></br> 
-						We are taking you to the library’s event management page where you will need to complete your registration. 
-						If you are not redirected to the event registration page, please follow <a href='$externalUrl'>this link.</a>",
+						'text' => "This event was saved to your events successfully. Saving an event to your events is not the same as registering.",
 						'isPublicFacing' => true,
 					]);
-				}else{
-					$result['message'] = translate([
-						'text' => 'This event was saved to your events successfully.',
-						'isPublicFacing' => true,
-					]);
+					$result['buttons'] = "<button class='btn btn-primary' onclick='return AspenDiscovery.Account.regInfoModal(\"this\", \"{$source}\", \"{$sourceId}\", \"{$vendor}\", \"{$externalUrl}\");'>" . translate([
+							'text' => 'Registration Information',
+							'isPublicFacing' => true,
+						]) . "</button>";
+					$result['regRequired'] = true;
 				}
 			}
 		}

@@ -234,7 +234,7 @@ class Sierra extends Millennium {
 			'unavailable' => $unavailableHolds,
 		];
 
-		$patronId = $patron->username;
+		$patronId = $patron->unique_ils_id;
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
 
 		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/holds";
@@ -485,7 +485,7 @@ class Sierra extends Millennium {
 
 	public function getReadingHistory($patron, $page = 1, $recordsPerPage = -1, $sortOption = "checkedOut") {
 		$readingHistoryEnabled = false;
-		$patronId = $patron->username;
+		$patronId = $patron->unique_ils_id;
 
 		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/checkouts/history/activationStatus";
 
@@ -582,7 +582,7 @@ class Sierra extends Millennium {
 		$checkedOutTitles = [];
 		global $library;
 
-		$patronId = $patron->username;
+		$patronId = $patron->unique_ils_id;
 
 		$numProcessed = 0;
 		$total = -1;
@@ -1046,7 +1046,7 @@ class Sierra extends Millennium {
 			$hold_result['title'] = $title;
 		}
 
-		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/{$patron->username}/holds/requests";
+		$sierraUrl = $this->accountProfile->vendorOpacUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/{$patron->unique_ils_id}/holds/requests";
 		$placeHoldResponse = $this->_postPage('sierra.placeHold', $sierraUrl, json_encode($params));
 		if ($placeHoldResponse == null && ($this->lastResponseCode == 200 || $this->lastResponseCode = 204)) {
 			$hold_result['success'] = true;
@@ -1171,11 +1171,33 @@ class Sierra extends Millennium {
 		$user = new User();
 		$user->source = $this->accountProfile->name;
 		$user->username = $patronInfo->id;
+		$user->unique_ils_id = $patronInfo->id;
 		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
-		$user->cat_username = $username;
+		$barcodeField = null;
+		$usernameField = null;
+		if (!empty($patronInfo->varFields)) {
+			foreach ($patronInfo->varFields as $varField) {
+				if ($varField->fieldTag == 'b') {
+					$barcodeField = $varField;
+				}else if ($varField->fieldTag == 'w') {
+					$usernameField = $varField;
+				}
+			}
+		}
+		if ($barcodeField != null) {
+			$user->cat_username = $barcodeField->content;
+			$user->ils_barcode = $barcodeField->content;
+		} else {
+			$user->cat_username = $username;
+			$user->ils_barcode = $username;
+		}
 		$user->cat_password = $password;
+		$user->ils_password = $password;
+		if ($usernameField != null) {
+			$user->ils_username = $usernameField->content;
+		}
 
 		$forceDisplayNameUpdate = false;
 		$primaryName = reset($patronInfo->names);
@@ -1238,8 +1260,35 @@ class Sierra extends Millennium {
 		}
 	}
 
-	public function findNewUser($patronBarcode) {
-		$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
+	public function getPatronInfoByUsername($username) {
+		$params = [
+			'varFieldTag' => 'w',
+			'varFieldContent' => $username,
+			'fields' => 'id,names,deleted,suppressed,addresses,phones,emails,expirationDate,homeLibraryCode,moneyOwed,patronType,patronCodes,blockInfo,message,pMessage,langPref,fixedFields,varFields,updatedDate,createdDate',
+		];
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl .= "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/find?";
+		$sierraUrl .= http_build_query($params);
+
+		$response = $this->_callUrl('sierra.findPatronByBarcode', $sierraUrl);
+		if (!$response) {
+			return false;
+		} else {
+			if ($response->deleted || $response->suppressed) {
+				return false;
+			} else {
+				return $response;
+			}
+		}
+	}
+
+	public function findNewUser($patronBarcode, $patronUsername) {
+		if (!empty($patronBarcode)) {
+			$patronInfo = $this->getPatronInfoByBarcode($patronBarcode);
+		}else{
+			$patronInfo = $this->getPatronInfoByUsername($patronUsername);
+		}
 
 		if (!$patronInfo) {
 			return false;
@@ -1249,10 +1298,37 @@ class Sierra extends Millennium {
 		$user = new User();
 		$user->source = $this->accountProfile->name;
 		$user->username = $patronInfo->id;
+		$user->unique_ils_id = $patronInfo->id;
 		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
-		$user->cat_username = $patronBarcode;
+		$barcodeField = null;
+		$usernameField = null;
+		if (!empty($patronInfo->varFields)) {
+			foreach ($patronInfo->varFields as $varField) {
+				if ($varField->fieldTag == 'b') {
+					$barcodeField = $varField;
+				}else if ($varField->fieldTag == 'w') {
+					$usernameField = $varField;
+				}
+			}
+		}
+		if ($barcodeField != null) {
+			$user->cat_username = $barcodeField->content;
+			$user->ils_barcode = $barcodeField->content;
+		} else {
+			if (!empty($patronBarcode)) {
+				$user->cat_username = $patronBarcode;
+				$user->ils_barcode = $patronBarcode;
+			}
+		}
+		if ($usernameField != null) {
+			$user->ils_username = $usernameField->content;
+		} else {
+			if (!empty($patronUsername)) {
+				$user->ils_username = $patronUsername;
+			}
+		}
 
 		$forceDisplayNameUpdate = false;
 		$primaryName = reset($patronInfo->names);
@@ -1377,7 +1453,7 @@ class Sierra extends Millennium {
 			}
 
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
-			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
+			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id;
 			$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
 
 			if ($this->lastResponseCode == 204) {
@@ -1411,7 +1487,7 @@ class Sierra extends Millennium {
 			'fields' => 'default,assessedDate,itemCharge,processingFee,billingFee,chargeType,paidAmount,datePaid,description,returnDate,location,description,invoiceNumber',
 		];
 
-		$patronId = $patron->username;
+		$patronId = $patron->unique_ils_id;
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
 		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/fines?";
 		$sierraUrl .= http_build_query($params);
@@ -1509,7 +1585,7 @@ class Sierra extends Millennium {
 			$paymentParams['payments'][] = $tmpPayment;
 		}
 
-		$patronId = $patron->username;
+		$patronId = $patron->unique_ils_id;
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
 		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patronId . "/fines/payment";
 
@@ -1689,7 +1765,7 @@ class Sierra extends Millennium {
 			'pin' => $newPin,
 		];
 		$sierraUrl = $this->accountProfile->vendorOpacUrl;
-		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id;
 		$updatePatronResponse = $this->_sendPage('sierra.updatePatron', 'PUT', $sierraUrl, json_encode($params));
 		if ($this->lastResponseCode == 204) {
 			$result['success'] = true;
@@ -1806,7 +1882,7 @@ class Sierra extends Millennium {
 			}
 
 			$sierraUrl = $this->accountProfile->vendorOpacUrl;
-			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->username;
+			$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id;
 			$updatePatronResponse = $this->_sendPage('sierra.updatePatronHomeLocation', 'PUT', $sierraUrl, json_encode($params));
 
 			if ($this->lastResponseCode == 204) {
@@ -1821,5 +1897,9 @@ class Sierra extends Millennium {
 		}
 
 		return $result;
+	}
+
+	public function supportsLoginWithUsername() : bool {
+		return true;
 	}
 }

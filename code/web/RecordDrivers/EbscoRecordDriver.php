@@ -22,7 +22,7 @@ class EbscoRecordDriver extends RecordInterface {
 			[
 				$dbId,
 				$an,
-			] = explode(':', $recordData);
+			] = explode(':', $recordData, 2);
 			$this->recordData = $edsSearcher->retrieveRecord($dbId, $an);
 		} else {
 			$this->recordData = $recordData;

@@ -694,7 +694,17 @@ abstract class DataObject implements JsonSerializable {
 		$joinObject = $join['object'];
 		$subQuery = $joinObject->getSelectQuery($aspen_db);
 
-		return " {$join['joinType']}  JOIN ($subQuery) AS {$join['alias']} ON $this->__table.{$join['mainTableField']} = {$join['alias']}.{$join['joinedTableField']} ";
+		$mainTableField = $join['mainTableField'];
+		if (strpos($mainTableField, '.') === false) {
+			//Add the appropriate table name unless the field name already contains a table (signified by having a dot in the name)
+			$mainTableField = "$this->__table.$mainTableField";
+		}
+		$joinedTableField = $join['joinedTableField'];
+		if (strpos($joinedTableField, '.') === false) {
+			//Add the appropriate table name unless the field name already contains a table (signified by having a dot in the name)
+			$joinedTableField = "{$join['alias']}.$joinedTableField";
+		}
+		return " {$join['joinType']}  JOIN ($subQuery) AS {$join['alias']} ON $mainTableField = $joinedTableField ";
 	}
 
 	/**

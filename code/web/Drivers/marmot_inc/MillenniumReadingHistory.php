@@ -118,7 +118,7 @@ class MillenniumReadingHistory {
 	function doReadingHistoryAction(User $patron, string $action, array $selectedTitles) : void {
 		//Load the reading history page
 		$scope = $this->driver->getDefaultScope();
-		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/readinghistory";
+		$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/readinghistory";
 
 		$cookie = tempnam("/tmp", "CURLCOOKIE");
 		$curl_connection = curl_init($curl_url);
@@ -169,13 +169,13 @@ class MillenniumReadingHistory {
 			//Issue a get request to delete the item from the reading history.
 			//Note: Millennium really does issue a malformed url, and it is required
 			//to make the history delete properly.
-			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/readinghistory/rsh&" . $title_string;
+			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/readinghistory/rsh&" . $title_string;
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_exec($curl_connection);
 		} elseif ($action == 'deleteAll') {
 			//load patron page readinghistory/rah
-			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/readinghistory/rah";
+			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/readinghistory/rah";
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_exec($curl_connection);
@@ -183,7 +183,7 @@ class MillenniumReadingHistory {
 			//Leave this unimplemented for now.
 		} elseif ($action == 'optOut') {
 			//load patron page readinghistory/OptOut
-			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/readinghistory/OptOut";
+			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/readinghistory/OptOut";
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_exec($curl_connection);
@@ -191,7 +191,7 @@ class MillenniumReadingHistory {
 			$patron->update();
 		} elseif ($action == 'optIn') {
 			//load patron page readinghistory/OptIn
-			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/readinghistory/OptIn";
+			$curl_url = $this->driver->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/readinghistory/OptIn";
 			curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
 			curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
 			curl_exec($curl_connection);

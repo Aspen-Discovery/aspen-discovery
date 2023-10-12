@@ -34,6 +34,8 @@ export const UserContext = React.createContext({
      updateAspenToken: () => {},
      notificationOnboard: 0,
      updateNotificationOnboard: () => {},
+     notificationOnboardStatus: false,
+     updateNotificationOnboardStatus: () => {},
 });
 export const LibrarySystemContext = React.createContext({
      updateLibrary: () => {},
@@ -48,6 +50,10 @@ export const LibraryBranchContext = React.createContext({
      resetLocation: () => {},
      scope: '',
      updateScope: () => {},
+     enableSelfCheck: false,
+     updateEnableSelfCheck: () => {},
+     selfCheckSettings: [],
+     updateSelfCheckSettings: () => {},
 });
 export const BrowseCategoryContext = React.createContext({
      updateBrowseCategories: () => {},
@@ -184,6 +190,8 @@ export const LibrarySystemProvider = ({ children }) => {
 export const LibraryBranchProvider = ({ children }) => {
      const [location, setLocation] = useState();
      const [scope, setScope] = useState();
+     const [enableSelfCheck, setEnableSelfCheck] = useState(false);
+     const [selfCheckSettings, setSelfCheckSettings] = useState([]);
 
      const updateLocation = (data) => {
           setLocation(data);
@@ -210,14 +218,28 @@ export const LibraryBranchProvider = ({ children }) => {
           console.log('reset LibraryBranchContext');
      };
 
+     const updateEnableSelfCheck = (status) => {
+          setEnableSelfCheck(status);
+          console.log('updated self check in LibraryBranchContext');
+     };
+
+     const updateSelfCheckSettings = (data) => {
+          setSelfCheckSettings(data);
+          console.log('updated self check settings in LibraryBranchContext');
+     };
+
      return (
           <LibraryBranchContext.Provider
                value={{
                     location,
                     scope,
+                    enableSelfCheck,
+                    selfCheckSettings,
                     updateLocation,
                     resetLocation,
                     updateScope,
+                    updateEnableSelfCheck,
+                    updateSelfCheckSettings,
                }}>
                {children}
           </LibraryBranchContext.Provider>
@@ -225,18 +247,18 @@ export const LibraryBranchProvider = ({ children }) => {
 };
 
 export const UserProvider = ({ children }) => {
-     const [user, setUser] = useState();
-     const [accounts, setLinkedAccounts] = useState();
-     const [viewers, setLinkedViewerAccounts] = useState();
-     const [lists, setLists] = useState();
-     const [language, setLanguage] = useState();
-     const [locations, setPickupLocations] = useState();
-     const [readingHistory, setReadingHistory] = useState();
-     const [cards, setCards] = useState();
-     const [notificationSettings, setNotificationSettings] = useState();
-     const [notificationOnboard, setNotificationOnboard] = useState();
-     const [expoToken, setExpoToken] = useState();
-     const [aspenToken, setAspenToken] = useState();
+     const [user, setUser] = useState([]);
+     const [accounts, setLinkedAccounts] = useState([]);
+     const [viewers, setLinkedViewerAccounts] = useState([]);
+     const [lists, setLists] = useState([]);
+     const [language, setLanguage] = useState('en');
+     const [locations, setPickupLocations] = useState([]);
+     const [readingHistory, setReadingHistory] = useState([]);
+     const [cards, setCards] = useState([]);
+     const [notificationSettings, setNotificationSettings] = useState([]);
+     const [notificationOnboard, setNotificationOnboard] = useState(0);
+     const [expoToken, setExpoToken] = useState(false);
+     const [aspenToken, setAspenToken] = useState(false);
 
      const updateUser = (data) => {
           if (_.isObject(data) && !_.isUndefined(data.lastListUsed)) {
@@ -299,7 +321,7 @@ export const UserProvider = ({ children }) => {
      };
 
      const updateNotificationSettings = async (data, language) => {
-          if (Constants.isDevice) {
+          if (Device.isDevice) {
                if (!_.isEmpty(data)) {
                     const device = Device.modelName;
                     if (_.find(data, _.matchesProperty('device', device))) {
@@ -346,13 +368,22 @@ export const UserProvider = ({ children }) => {
                          console.log('No settings found for this device model yet');
                          setExpoToken(false);
                          setAspenToken(false);
-                         setNotificationOnboard(1);
+
+                         // let's not intentionally bombard the user with prompts at every boot without knowing their preferences
+                         setNotificationOnboard(0);
+
+                         const deviceSettings = _.filter(data, { device: 'Unknown' });
+                         if (deviceSettings) {
+                              if (deviceSettings[0].onboardStatus) {
+                                   setNotificationOnboard(deviceSettings[0].onboardStatus);
+                              }
+                         }
                     }
                } else {
                     // something went wrong when receiving data from Discovery API
                     setExpoToken(false);
                     setAspenToken(false);
-                    setNotificationOnboard(1);
+                    setNotificationOnboard(0);
                }
           } else {
                setExpoToken(false);

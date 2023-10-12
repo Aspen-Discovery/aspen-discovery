@@ -47,20 +47,19 @@ class CarlX extends AbstractIlsDriver {
 		//  EZ Username & EZ Password
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			//Remove any spaces from the barcode
-			$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
+			$barcode = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
 			$password = trim($password);
 		} else {
 			//Remove any spaces from the barcode
-			$username = trim($username);
-			$password = preg_replace('/[^0-9a-zA-Z]/', '', trim($password));
+			$barcode = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
+			$password = trim($password);
 		}
 		//Remove any spaces from the barcode
-		$username = preg_replace('/[^0-9a-zA-Z]/', '', trim($username));
 		$password = trim($password);
 
 		$request = new stdClass();
 		$request->SearchType = 'Patron ID';
-		$request->SearchID = $username;
+		$request->SearchID = $barcode;
 		$request->Modifiers = '';
 
 		$result = $this->doSoapRequest('getPatronInformation', $request, '', [], ['password' => $password]);
@@ -70,11 +69,11 @@ class CarlX extends AbstractIlsDriver {
 				$loginValid = false;
 				if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 					//Check to see if the pin matches
-					if (($result->Patron->PatronID == $username) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
+					if (($result->Patron->PatronID == $barcode) && ($result->Patron->PatronPIN == $password || $validatedViaSSO)) {
 						$loginValid = true;
 					}
 				} else {
-					if (($result->Patron->PatronID == $username) && ((strcasecmp($result->Patron->LastName, $password) === 0) || $validatedViaSSO)) {
+					if (($result->Patron->PatronID == $barcode) && ((strcasecmp($result->Patron->LastName, $password) === 0) || $validatedViaSSO)) {
 						$loginValid = true;
 					}
 				}
@@ -87,6 +86,7 @@ class CarlX extends AbstractIlsDriver {
 					$user = new User();
 					$user->source = $this->accountProfile->name;
 					$user->username = $result->Patron->GeneralUserID;
+					$user->unique_ils_id = $result->Patron->GeneralUserID;
 					if ($user->find(true)) {
 						$userExistsInDB = true;
 					}
@@ -105,11 +105,14 @@ class CarlX extends AbstractIlsDriver {
 					if ($forceDisplayNameUpdate) {
 						$user->displayName = '';
 					}
-					$user->cat_username = $username;
+					$user->cat_username = $barcode;
+					$user->ils_barcode = $barcode;
 					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 						$user->cat_password = $result->Patron->PatronPIN;
+						$user->ils_password = $result->Patron->PatronPIN;
 					}else {
 						$user->cat_password = $result->Patron->LastName;
+						$user->ils_password = $result->Patron->LastName;
 					}
 					$user->email = $result->Patron->Email;
 
@@ -250,8 +253,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				$in = $mySip->msgRenewAll();
 				//print_r($in . '<br/>');
@@ -488,10 +491,10 @@ class CarlX extends AbstractIlsDriver {
 						$curHold->status = 'Frozen';
 					}
 					// CarlX [9.6.4.3] will not allow update hold (suspend hold, change pickup location) on item level hold. UnavailableHoldItem ~ /^ITEM ID: / if the hold is an item level hold.
-					if (str_starts_with($curHold->cancelId, 'ITEM ID: ')) {
+					if (strpos($curHold->cancelId, 'ITEM ID: ') === 0) {
 						$curHold->canFreeze = false;
 						$curHold->locationUpdateable = false;
-					} elseif (str_starts_with($curHold->cancelId, 'BID: ')) {
+					} elseif (strpos($curHold->cancelId, 'BID: ') === 0) {
 						$curHold->canFreeze = true;
 						$curHold->locationUpdateable = true;
 					} else { // TO DO: Evaluate whether issue level holds are suspendable
@@ -1452,7 +1455,7 @@ class CarlX extends AbstractIlsDriver {
 					];
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
-				$myLostFines = $this->getLostViaSIP($patron->cat_username);
+				$myLostFines = $this->getLostViaSIP($patron->ils_barcode);
 				$myFinesIds = array_column($myFines, 'fineId');
 				foreach ($myLostFines as $myLostFine) {
 					$keys = array_keys($myFinesIds, $myLostFine['fineId']);
@@ -1586,7 +1589,7 @@ class CarlX extends AbstractIlsDriver {
 	protected function getSearchbyPatronIdRequest(User $user) {
 		$request = new stdClass();
 		$request->SearchType = 'Patron ID';
-		$request->SearchID = $user->cat_username; // TODO: Question: barcode/pin check
+		$request->SearchID = $user->ils_barcode; // TODO: Question: barcode/pin check
 		$request->Modifiers = '';
 		return $request;
 	}
@@ -1645,8 +1648,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				$in = $mySip->msgPatronInformation('unavail', 1, 110); // hardcoded Nashville - circulation policy allows 100 holds for many borrower types
 				$sipResponse = $mySip->get_message($in);
@@ -1735,8 +1738,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				if (empty($pickupBranch)) {
 					//Get the code for the location
@@ -1878,8 +1881,8 @@ class CarlX extends AbstractIlsDriver {
 					$mySip->AN = '';
 				}
 
-				$mySip->patron = $patron->cat_username;
-				$mySip->patronpwd = $patron->cat_password;
+				$mySip->patron = $patron->ils_barcode;
+				$mySip->patronpwd = $patron->ils_password;
 
 				$in = $mySip->msgRenew($itemId, '', '', '', 'N', 'N', 'Y');
 				//print_r($in . '<br/>');
@@ -1945,7 +1948,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		// Use the validateViaSSO switch to bypass Pin check. If a user is found, patronLogin will return a new User object.
 		$newUser = $this->patronLogin($patronBarcode, null, true);
 		if (!empty($newUser) && !($newUser instanceof AspenError)) {
@@ -1968,7 +1971,7 @@ class CarlX extends AbstractIlsDriver {
 		//Load summary information for number of holds, checkouts, etc
 		$patronSummaryRequest = new stdClass();
 		$patronSummaryRequest->SearchType = 'Patron ID';
-		$patronSummaryRequest->SearchID = $patron->cat_username;
+		$patronSummaryRequest->SearchID = $patron->ils_barcode;
 		$patronSummaryRequest->Modifiers = '';
 
 		$patronSummaryResponse = $this->doSoapRequest('getPatronTransactions', $patronSummaryRequest, $this->patronWsdl);
@@ -2025,7 +2028,7 @@ class CarlX extends AbstractIlsDriver {
 				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
 				left join location_v l on i.location = l.locnumber
 				where ob.branchcode = '$location'
-				and t.pickupbranch = ob.branchnumber -- pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
+				-- and t.pickupbranch = ob.branchnumber -- commented out in 23.08.01 to include MNPS Exploratorium holds; originally meant to ensure a lock between school collection and pickup branch ; pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
 				and t.transcode = 'R*'
 				and i.status = 'S'
 				order by 
@@ -2437,7 +2440,11 @@ EOT;
 	];
 
 	function getForgotPasswordType() {
-		return 'emailAspenResetLink';
+		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+			return 'emailAspenResetLink';
+		}else{
+			return 'none';
+		}
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {

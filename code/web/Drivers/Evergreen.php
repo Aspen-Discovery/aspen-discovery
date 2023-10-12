@@ -45,7 +45,7 @@ class Evergreen extends AbstractIlsDriver {
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
 			$request = 'service=open-ils.actor&method=open-ils.actor.user.checked_out';
 			$request .= '&param=' . json_encode($authToken);
-			$request .= '&param=' . $patron->username;
+			$request .= '&param=' . $patron->unique_ils_id;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
 			$index = 0;
@@ -203,7 +203,7 @@ class Evergreen extends AbstractIlsDriver {
 			$request = 'service=open-ils.circ&method=open-ils.circ.renew';
 			$request .= '&param=' . json_encode($authToken);
 			$namedParams = [
-				'patron_id' => (int)$patron->username,
+				'patron_id' => (int)$patron->unique_ils_id,
 				"copy_id" => $itemId,
 //				'id' => $itemId,
 //				'circ' => [
@@ -388,7 +388,7 @@ class Evergreen extends AbstractIlsDriver {
 			}
 			/** @noinspection SpellCheckingInspection */
 			$namedParams = [
-				'patronid' => (int)$patron->username,
+				'patronid' => (int)$patron->unique_ils_id,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'P',
 //				"request_lib" =>  (int)$pickupBranch,
@@ -1040,7 +1040,7 @@ class Evergreen extends AbstractIlsDriver {
 			}
 			/** @noinspection SpellCheckingInspection */
 			$namedParams = [
-				'patronid' => (int)$patron->username,
+				'patronid' => (int)$patron->unique_ils_id,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'T',
 				"request_lib" => (int)$pickupBranch,
@@ -1078,7 +1078,7 @@ class Evergreen extends AbstractIlsDriver {
 			$requestB .= '&param=' . json_encode($authToken);
 			/** @noinspection SpellCheckingInspection */
 			$namedParamsB = [
-				'patronid' => (int)$patron->username,
+				'patronid' => (int)$patron->unique_ils_id,
 				"pickup_lib" => (int)$pickupBranch,
 				"hold_type" => 'T',
 				"titleid" => (int)$recordId,
@@ -1203,7 +1203,7 @@ class Evergreen extends AbstractIlsDriver {
 			$this->apiCurlWrapper->addCustomHeaders($headers, false);
 			$request = 'service=open-ils.actor&method=open-ils.actor.user.transactions.have_balance.fleshed';
 			$request .= '&param=' . json_encode($authToken);
-			$request .= '&param=' . $patron->username;
+			$request .= '&param=' . $patron->unique_ils_id;
 			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
 			ExternalRequestLogEntry::logRequest('evergreen.getFines', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
@@ -1265,7 +1265,7 @@ class Evergreen extends AbstractIlsDriver {
 		$this->apiCurlWrapper->addCustomHeaders($headers, false);
 		$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve';
 		$request .= '&param=' . json_encode($authToken);
-		$request .= '&param=' . json_encode($patron->username);
+		$request .= '&param=' . json_encode($patron->unique_ils_id);
 		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 		ExternalRequestLogEntry::logRequest('evergreen.fetchUser', 'POST', $evergreenUrl, $this->apiCurlWrapper->getHeaders(), $request, $this->apiCurlWrapper->getResponseCode(), $apiResponse, []);
 		if ($this->apiCurlWrapper->getResponseCode() == 200) {
@@ -1294,7 +1294,7 @@ class Evergreen extends AbstractIlsDriver {
 
 		$evgPaymentParams = [
 			'payment_type' => 'credit_card_payment',
-			'userid' => $patron->username,
+			'userid' => $patron->unique_ils_id,
 			'note' => 'via Aspen Discovery [' . $payment->paymentType . ']',
 			'cc_args' => [
 				'approval_code' => $payment->transactionId
@@ -1391,9 +1391,10 @@ class Evergreen extends AbstractIlsDriver {
 
 	/**
 	 * @param $patronBarcode
+	 * @param $patronUsername
 	 * @return bool|User
 	 */
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$staffSessionInfo = $this->getStaffUserInfo();
 		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
 		$headers = [
@@ -1430,6 +1431,7 @@ class Evergreen extends AbstractIlsDriver {
 	private function loadPatronInformation($userData, $username, $password): ?User {
 		$user = new User();
 		$user->username = $userData['id'];
+		$user->unique_ils_id = $userData['id'];
 		if ($user->find(true)) {
 			$insert = false;
 		} else {
@@ -1482,8 +1484,10 @@ class Evergreen extends AbstractIlsDriver {
 			$username = $cardInfo['barcode'];
 		}
 		$user->cat_username = $username;
+		$user->ils_barcode = $username;
 		if (!empty($password)) {
 			$user->cat_password = $password;
+			$user->ils_password = $password;
 		}
 		$user->email = $userData['email'];
 		if (!empty($userData['day_phone'])) {
@@ -1689,7 +1693,7 @@ class Evergreen extends AbstractIlsDriver {
 				$this->apiCurlWrapper->addCustomHeaders($headers, false);
 				$request = 'service=open-ils.actor&method=open-ils.actor.user.fines.summary';
 				$request .= '&param=' . json_encode($authToken);
-				$request .= '&param=' . $patron->username;
+				$request .= '&param=' . $patron->unique_ils_id;
 				$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
 				if ($this->apiCurlWrapper->getResponseCode() == 200) {
@@ -1759,7 +1763,6 @@ class Evergreen extends AbstractIlsDriver {
 
 		$request = 'service=open-ils.actor&method=open-ils.actor.settings.apply.user_or_ws';
 		$request .= '&param=' . json_encode($authToken);
-		//$request .= '&param=' . $user->username;
 		$request .= '&param=' . json_encode([
 				'opac.hold_notify' => $holdNotificationMethods,
 				'opac.default_sms_carrier' => $defaultSmsCarrier,
@@ -2133,7 +2136,7 @@ class Evergreen extends AbstractIlsDriver {
 			$getListsParams = 'service=open-ils.actor';
 			$getListsParams .= '&method=open-ils.actor.container.retrieve_by_class';
 			$getListsParams .= '&param=' . json_encode($authToken);
-			$getListsParams .= '&param=' . $patron->username;
+			$getListsParams .= '&param=' . $patron->unique_ils_id;
 			$getListsParams .= '&param=' . json_encode('biblio');
 			$getListsParams .= '&param=' . json_encode('bookbag');
 			$getListsApiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $getListsParams);
@@ -2232,5 +2235,11 @@ class Evergreen extends AbstractIlsDriver {
 		}
 
 		return $results;
+	}
+
+	// Evergreen currently supports fetching users by ID or by barcode, but not by username
+	// therefore we will disable masquerade with just  username.
+	public function supportsLoginWithUsername() : bool {
+		return false;
 	}
 }

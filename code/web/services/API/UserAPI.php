@@ -81,7 +81,8 @@ class UserAPI extends Action {
 					'deleteSelectedFromReadingHistory',
 					'getReadingHistorySortOptions',
 					'confirmHold',
-					'updateNotificationOnboardingStatus'
+					'updateNotificationOnboardingStatus',
+					'resetPassword'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -265,7 +266,7 @@ class UserAPI extends Action {
 						'session' => false,
 					];
 				}
-				$validatedUser = $authN->validateAccount($username, $password, $parentAccount, $validatedViaSSO);
+				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
 					return [
 						'success' => true,
@@ -369,6 +370,51 @@ class UserAPI extends Action {
 	}
 
 	/**
+	 * Allows a user to initiate a password/PIN reset.
+	 *
+	 * @noinspection PhpUnused
+	 **/
+	function resetPassword(): array {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error trying to initiate username/barcode reset',
+			'action' => null,
+		];
+
+		$catalog = CatalogFactory::getCatalogConnectionInstance(null, null);
+		if($catalog != null) {
+			$result = $catalog->processEmailResetPinForm();
+			if(empty($result['success']) && $result['error']) {
+				$result = [
+					'message' => $result['error'],
+					'action' => translate(['text' => 'Try Again', 'isPublicFacing' => true]),
+				];
+			} elseif(!empty($result['message'])) {
+				$result = [
+					'success' => true,
+					'message' => $result['message'],
+					'action' => translate(['text' => 'Sign in', 'isPublicFacing' => true]),
+				];
+			} else {
+				$result = [
+					'success' => true,
+					'action' => translate(['text' => 'Sign in', 'isPublicFacing' => true]),
+				];
+
+				$result['message'] = translate([
+					'text' => 'A email has been sent to the email address on the circulation system for your account containing a link to reset your PIN.',
+					'isPublicFacing' => true,
+				]) . ' ' . translate([
+					'text' => 'If you do not receive an email within a few minutes, please check any spam folder your email service may have.   If you do not receive any email, please contact your library to have them reset your pin.',
+					'isPublicFacing' => true,
+				]);
+			}
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Validate whether or not an account is valid based on the barcode and pin number provided.
 	 *
 	 * Parameters:
@@ -381,8 +427,8 @@ class UserAPI extends Action {
 	 * <ul>
 	 * <li>success - false if the username or password could not be found, or the following user information if the account is valid.</li>
 	 * <li>id - The id of the user within VuFind</li>
-	 * <li>username, cat_username - The patron's library card number</li>
-	 * <li>password, cat_password - The patron's PIN number</li>
+	 * <li>username, cat_username, ils_barcode - The patron's library card number</li>
+	 * <li>password, cat_password, ils_password - The patron's PIN number</li>
 	 * <li>firstname - The first name of the patron in the ILS</li>
 	 * <li>lastname - The last name of the patron in the ILS</li>
 	 * <li>email - The patron's email address if set within Horizon.</li>
@@ -1376,6 +1422,8 @@ class UserAPI extends Action {
 				return $this->checkoutCloudLibraryItem();
 			} elseif ($source == 'axis360') {
 				return $this->checkoutAxis360Item();
+			} elseif ($source == 'ils') {
+				return $this->checkoutILSItem();
 			} else {
 				return [
 					'success' => false,
@@ -1737,6 +1785,7 @@ class UserAPI extends Action {
 							'action' => $action,
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
+							'shouldBeItemHold' => false,
 							];
 					} elseif ($holdType == 'volume' && isset($_REQUEST['volumeId'])) {
 						$result = $user->placeVolumeHold($shortId, $_REQUEST['volumeId'], $pickupBranch);
@@ -1750,6 +1799,7 @@ class UserAPI extends Action {
 							'action' => $action,
 							'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 							'confirmationId' => $result['api']['confirmationId'] ?? null,
+							'shouldBeItemHold' => false,
 						];
 					} else {
 							//Make sure that there are not volumes available
@@ -1770,6 +1820,10 @@ class UserAPI extends Action {
 							$action = $result['api']['action'] ?? null;
 							$responseMessage = strip_tags($result['api']['message']);
 							$responseMessage = trim($responseMessage);
+							$hasItems = false;
+							if(isset($result['items'])) {
+								$hasItems = (bool)$result['items'];
+							}
 							return [
 								'success' => $result['success'],
 								'title' => $result['api']['title'],
@@ -1777,7 +1831,7 @@ class UserAPI extends Action {
 								'action' => $action,
 								'confirmationNeeded' => $result['api']['confirmationNeeded'] ?? false,
 								'confirmationId' => $result['api']['confirmationId'] ?? null,
-								'shouldBeItemHold' => (bool)$result['items'],
+								'shouldBeItemHold' => $hasItems,
 								'items' => $result['items'] ?? null,
 							];
 						}
@@ -3319,7 +3373,7 @@ class UserAPI extends Action {
 		} else {
 			$username = $_REQUEST['username'];
 			$user = new User();
-			$user->cat_username = $username;
+			$user->ils_barcode = $username;
 			if ($user->find(true)) {
 				$user->updateReadingHistoryBasedOnCurrentCheckouts(true);
 
@@ -3571,6 +3625,7 @@ class UserAPI extends Action {
 		if (isset($_REQUEST['patronId'])) {
 			$user = new User();
 			$user->username = $_REQUEST['patronId'];
+			$user->unique_ils_id = $_REQUEST['patronId'];
 			if ($user->find(true)) {
 				$results = [
 					'success' => true,
@@ -4124,9 +4179,11 @@ class UserAPI extends Action {
 				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 				$token = new UserNotificationToken();
 				$token->pushToken = $userToken;
+				$token->userId = $user->id;
 				if($token->find(true)) {
 					if ($newStatus == 'false' || !$newStatus) {
 						$token->onboardAppNotifications = 0;
+						$user->onboardAppNotifications = 0;
 					}
 					$token->update();
 					return [
@@ -4135,10 +4192,15 @@ class UserAPI extends Action {
 						'message' => 'Updated user notification onboarding status'
 					];
 				} else {
+					// user does not have this device enabling notifications, but we don't want to keep prompting them. Update the onboardAppNotifications for the user.
+					if ($newStatus == 'false' || !$newStatus) {
+						$user->onboardAppNotifications = 0;
+					}
+					$user->update();
 					return [
-						'success' => false,
-						'title' => 'Error',
-						'message' => 'Push token not valid.',
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Push token not valid or is not assigned to a user yet. Updating notification onboarding status for the user instead.',
 					];
 				}
 			} else {
@@ -4169,7 +4231,7 @@ class UserAPI extends Action {
 				$results = [
 					'success' => true,
 					'id' => $user->id,
-					'patronId' => $user->username,
+					'patronId' => $user->unique_ils_id,
 					'displayName' => $user->displayName,
 				];
 			} else {
@@ -4197,6 +4259,7 @@ class UserAPI extends Action {
 		if (isset($_REQUEST['patronId'])) {
 			$user = new User();
 			$user->username = $_REQUEST['patronId'];
+			$user->unique_ils_id = $_REQUEST['unique_ils_id'];
 			if (!$user->find(true)) {
 				$user = false;
 			}
@@ -4248,12 +4311,12 @@ class UserAPI extends Action {
 				foreach ($linkedAccounts as $linkedAccount) {
 					$account[$linkedAccount->id]['displayName'] = $linkedAccount->displayName;
 					$account[$linkedAccount->id]['homeLocation'] = $linkedAccount->getHomeLocation()->displayName;
-					$account[$linkedAccount->id]['barcode'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['barcode'] = $linkedAccount->getBarcode();
 					$account[$linkedAccount->id]['barcodeStyle'] = $linkedAccount->getHomeLibrary()->libraryCardBarcodeStyle;
 					$account[$linkedAccount->id]['id'] = $linkedAccount->id;
 					$account[$linkedAccount->id]['expired'] = $linkedAccount->_expired;
 					$account[$linkedAccount->id]['expires'] = $linkedAccount->_expires;
-					$account[$linkedAccount->id]['cat_username'] = $linkedAccount->cat_username;
+					$account[$linkedAccount->id]['ils_barcode'] = $linkedAccount->ils_barcode;
 				}
 				return [
 					'success' => true,
@@ -4304,7 +4367,7 @@ class UserAPI extends Action {
 					if (!$linkedUser->isBlockedAccount($user->id)) {
 						$viewers[$linkedUser->id]['displayName'] = $linkedUser->displayName;
 						$viewers[$linkedUser->id]['homeLocation'] = $linkedUser->getHomeLocation()->displayName;
-						$viewers[$linkedUser->id]['barcode'] = $linkedUser->cat_username;
+						$viewers[$linkedUser->id]['barcode'] = $linkedUser->getBarcode();
 						$viewers[$linkedUser->id]['id'] = $linkedUser->id;
 					}
 				}
@@ -4782,9 +4845,12 @@ class UserAPI extends Action {
 	function initMasquerade() {
 		global $library;
 		if (!empty($library) && $library->allowMasqueradeMode) {
-			if (!empty($_REQUEST['cardNumber'])) {
+			if (!empty($_REQUEST['cardNumber']) || !empty($_REQUEST['username'])) {
+				//If both barcode and username are provided, we will only use barcode
+				$loginWithBarcode = !empty($_REQUEST['cardNumber']);
 				//$logger->log("Masquerading as " . $_REQUEST['cardNumber'], Logger::LOG_ERROR);
-				$libraryCard = trim($_REQUEST['cardNumber']);
+				$libraryCard = empty($_REQUEST['cardNumber']) ? '' : trim($_REQUEST['cardNumber']);
+				$username = empty($_REQUEST['username']) ? '' : trim($_REQUEST['username']);
 				global $guidingUser;
 				if (empty($guidingUser)) {
 					$user = UserAccount::getLoggedInUser();
@@ -4792,16 +4858,18 @@ class UserAPI extends Action {
 						//Check to see if the user already exists in the database
 						$foundExistingUser = false;
 						$accountProfile = new AccountProfile();
+						$accountProfile->orderBy('weight');
 						$accountProfile->find();
 						$masqueradedUser = null;
 						while ($accountProfile->fetch()) {
 							$masqueradedUser = new User();
 							$masqueradedUser->source = $accountProfile->name;
-							if ($accountProfile->loginConfiguration == 'barcode_pin') {
-								$masqueradedUser->cat_username = $libraryCard;
-							} else {
-								$masqueradedUser->cat_password = $libraryCard;
+							if ($loginWithBarcode) {
+								$masqueradedUser->ils_barcode = $libraryCard;
+							}else{
+								$masqueradedUser->ils_username = $username;
 							}
+
 							if ($masqueradedUser->find(true)) {
 								if ($masqueradedUser->id == $user->id) {
 									return [
@@ -4821,7 +4889,7 @@ class UserAPI extends Action {
 
 						if (!$foundExistingUser) {
 							// Test for a user that hasn't logged into Aspen Discovery before
-							$masqueradedUser = UserAccount::findNewUser($libraryCard);
+							$masqueradedUser = UserAccount::findNewUser($libraryCard, $username);
 							if (!$masqueradedUser) {
 								return [
 									'success' => false,
@@ -4833,7 +4901,7 @@ class UserAPI extends Action {
 							}
 						} else {
 							//Call find new user just to be sure that all patron information is up to date.
-							$tmpUser = UserAccount::findNewUser($libraryCard);
+							$tmpUser = UserAccount::findNewUser($libraryCard, $username);
 							if (!$tmpUser) {
 								//This user no longer exists? return an error?
 								return [
@@ -5009,13 +5077,24 @@ class UserAPI extends Action {
 					];
 				}
 			} else {
-				return [
-					'success' => false,
-					'error' => translate([
-						'text' => 'Please enter a valid Library Card Number.',
-						'isAdminFacing' => true,
-					]),
-				];
+				$catalog = CatalogFactory::getCatalogConnectionInstance();
+				if ($catalog->supportsLoginWithUsername()) {
+					return [
+						'success' => false,
+						'error' => translate([
+							'text' => 'Please enter a valid Library Card Number or Username.',
+							'isAdminFacing' => true,
+						]),
+					];
+				}else {
+					return [
+						'success' => false,
+						'error' => translate([
+							'text' => 'Please enter a valid Library Card Number.',
+							'isAdminFacing' => true,
+						]),
+					];
+				}
 			}
 		} else {
 			return [
@@ -5039,12 +5118,19 @@ class UserAPI extends Action {
 				if($guidingUser->isLoggedInViaSSO) {
 					$user = UserAccount::loginWithAspen($guidingUser);
 				} else {
-					$_REQUEST['username'] = $guidingUser->getBarcode();
-					$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
+					if ($guidingUser->hasIlsConnection()) {
+						$_REQUEST['username'] = $guidingUser->getBarcode();
+						$_REQUEST['password'] = $guidingUser->getPasswordOrPin();
+					}else{
+						$_REQUEST['username'] = $guidingUser->username;
+						$_REQUEST['password'] = $guidingUser->password;
+						$_POST['username'] = $guidingUser->username;
+						$_POST['password'] = $guidingUser->password;
+					}
 					$user = UserAccount::login();
 				}
 
-				if ($user && !($user instanceof AspenError)) {
+				if (!empty($user) && !($user instanceof AspenError)) {
 					return ['success' => true];
 				} else {
 					UserAccount::softLogout();
@@ -5052,5 +5138,61 @@ class UserAPI extends Action {
 			}
 		}
 		return ['success' => false];
+	}
+
+	function checkoutILSItem(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if (empty($_REQUEST['barcode'] || empty($_REQUEST['locationId']))) {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'Barcode and location id must be provided',
+				];
+			} else {
+				$location = new Location();
+				$location->locationId = $_REQUEST['locationId'];
+				if($location->find(true)) {
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
+					$scoSettings = new AspenLiDASelfCheckSetting();
+					$scoSettings->id = $location->lidaSelfCheckSettingId;
+					if($scoSettings->find(true)) {
+						if($scoSettings->isEnabled) {
+							$result = $user->checkoutItem($_REQUEST['barcode'], $location->code);
+							return [
+								'success' => $result['success'],
+								'title' => $result['api']['title'],
+								'message' => $result['api']['message'],
+								'itemData' => $result['itemData']
+							];
+						} else {
+							return [
+								'success' => false,
+								'title' => 'Error',
+								'message' => 'Self-checkout not enabled for this location',
+							];
+						}
+					} else {
+						return [
+							'success' => false,
+							'title' => 'Error',
+							'message' => 'Self-checkout settings not found for this location',
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'title' => 'Error',
+						'message' => 'Location not found with given id',
+					];
+				}
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
 	}
 }

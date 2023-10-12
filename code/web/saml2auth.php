@@ -150,7 +150,8 @@ if($ssoAuthOnly === false) {
 			exit();
 		}
 	} else {
-		$user = $catalogConnection->findNewUser($uid);
+		//Assume $uid is the barcode
+		$user = $catalogConnection->findNewUser($uid, '');
 	}
 
 	// The user does not exist in Koha, so we should create it
@@ -176,7 +177,8 @@ if($ssoAuthOnly === false) {
 		} elseif ($uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($uid);
 		} else {
-			$user = $catalogConnection->findNewUser($uid);
+			//Assume this is the barcode
+			$user = $catalogConnection->findNewUser($uid, '');
 		}
 	} else {
 		// We need to update the user in the LMS
@@ -187,14 +189,15 @@ if($ssoAuthOnly === false) {
 		} elseif ($uidAsEmail) {
 			$user = $catalogConnection->findNewUserByEmail($uid);
 		} else {
-			$user = $catalogConnection->findNewUser($uid);
+			//Assume this is the barcode
+			$user = $catalogConnection->findNewUser($uid, '');
 		}
 	}
 
 	// If we have an Aspen user, we can set up the session
 	if ($user instanceof User) {
 		if ($uidAsEmail || $ilsUniqueAttribute) {
-			$_REQUEST['username'] = $user->cat_username;
+			$_REQUEST['username'] = $user->ils_barcode;
 		} else {
 			$_REQUEST['username'] = $uid;
 		}
@@ -206,19 +209,12 @@ if($ssoAuthOnly === false) {
 
 		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		session_destroy();
+		session_name('aspen_session'); // must also be set in index.php, in initializeSession()
+		$session = new MySQLSession();
+		$session->init();
 
 		$_SESSION['activeUserId'] = $login->id;
 		$_SESSION['rememberMe'] = false;
@@ -231,6 +227,7 @@ if($ssoAuthOnly === false) {
 	$tmpUser->firstname = $this->getFirstName();
 	$tmpUser->lastname = $this->getLastName() ?? '';
 	$tmpUser->username = $this->getUserId();
+	$tmpUser->unique_ils_id = $this->getUserId();
 	$tmpUser->phone = '';
 	$tmpUser->displayName = '';
 	$tmpUser->patronType = '';
@@ -259,19 +256,12 @@ if($ssoAuthOnly === false) {
 
 		global $configArray;
 		global $timer;
-		$session_type = $configArray['Session']['type'];
-		$session_lifetime = $configArray['Session']['lifetime'];
-		$session_rememberMeLifetime = $configArray['Session']['rememberMeLifetime'];
-		$sessionClass = ROOT_DIR . '/sys/Session/' . $session_type . '.php';
-		require_once $sessionClass;
+		require_once ROOT_DIR . '/sys/Session/MySQLSession.php';
 
-		if (class_exists($session_type)) {
-			session_destroy();
-			session_name('aspen_session'); // must also be set in index.php, in initializeSession()
-			/** @var SessionInterface $session */
-			$session = new $session_type();
-			$session->init($session_lifetime, $session_rememberMeLifetime);
-		}
+		session_destroy();
+		session_name('aspen_session'); // must also be set in index.php, in initializeSession()
+		$session = new MySQLSession();
+		$session->init();
 
 		$_SESSION['activeUserId'] = $login->id;
 		$_SESSION['rememberMe'] = false;

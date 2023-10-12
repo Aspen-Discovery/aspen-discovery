@@ -344,9 +344,9 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$us
 		$userId = $existingUsers[$userBarcode];
 	} else {
 		$user = new User();
-		$user->cat_username = $userBarcode;
+		$user->ils_barcode = $userBarcode;
 		if (!$user->find(true)) {
-			$user = UserAccount::findNewUser($userBarcode);
+			$user = UserAccount::findNewUser($userBarcode, '');
 			if ($user == false) {
 				$missingUsers[$userBarcode] = $userBarcode;
 				echo("Could not find user for $userBarcode\r\n");

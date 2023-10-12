@@ -15,7 +15,7 @@
 			</div>
 		{/if}
 		{if $ssoIsEnabled}
-			{if (!(empty($ssoService)) && $ssoService !== 'ldap')&& !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO}
+			{if (!(empty($ssoService)) && $ssoService !== 'ldap')&& !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO && $canLoginSSO}
 	            {include file='MyAccount/sso-login.tpl'}
 	            {if $ssoLoginOptions == 0}
 		            <div class="hr-label">
@@ -49,6 +49,11 @@
 							{/if}
 						</p>
 					{/if}
+                    {if $enableForgotBarcode}
+                         <p class="text-muted help-block">
+                            <strong>{translate text="Forgot %1%?" 1=$usernameLabel isPublicFacing=true}</strong>&nbsp;&nbsp;<a href="/MyAccount/ForgotBarcode">{translate text="Send My %1% by Text" 1=$usernameLabel isPublicFacing=true}</a>
+                         </p>
+                    {/if}
 					{if $enableSelfRegistration == 1}
 						<p class="help-block">
 							{translate text="Don't have a library card?" isPublicFacing=true} <a href="/MyAccount/SelfReg">{translate text="Register for a new Library Card" isPublicFacing=true}</a>.

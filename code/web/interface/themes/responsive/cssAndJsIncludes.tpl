@@ -7,7 +7,7 @@
 		{css filename="main.min.css"}
 	{/if}
 	{if !empty($additionalCss)}
-		<style type="text/css">
+		<style>
 			{$additionalCss}
 		</style>
 	{/if}
@@ -75,6 +75,7 @@
 			Globals.ssoLoginUrl = '{$bypassLoginUrl}';
 			AspenDiscovery.Browse.browseStyle = '{$browseStyle}';
 			Globals.cookiePolicyHTML = '{$cookieStorageConsentHTML|escape:javascript|regex_replace:"/[\r\n]/" : " "}';
+			Globals.timeUntilSessionExpiration = {$timeUntilSessionExpiration};
 			{literal}
 		});
 		{/literal}
@@ -87,4 +88,16 @@
 			<script type="text/javascript" src="/interface/themes/responsive/js/aspen/autoLogout.min.js?v={$gitBranch|urlencode}.{$cssJsCacheCounter}"></script>
 		{/if}
 	{/if}
+	<script type="text/javascript">
+		{literal}
+		$(document).ready(function(){
+			if (Globals.timeUntilSessionExpiration > 0) {
+				setTimeout(function (){
+					// noinspection SillyAssignmentJS
+					window.location.reload();
+				}, Globals.timeUntilSessionExpiration + 500);
+			}
+		});
+		{/literal}
+	</script>
 {/strip}

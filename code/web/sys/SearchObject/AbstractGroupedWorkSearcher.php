@@ -406,12 +406,16 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 	 */
 	public function getSearchSuggestions($searchTerm, $searchIndex) {
 		$suggestionHandler = 'suggest';
-		if ($searchIndex == 'Title' || $searchIndex == 'StartOfTitle') {
+		if ($searchIndex == 'Title' || $searchIndex == 'StartOfTitle' || $searchIndex == 'Series') {
 			$suggestionHandler = 'title_suggest';
 		} elseif ($searchIndex == 'Author') {
 			$suggestionHandler = 'author_suggest';
 		} elseif ($searchIndex == 'Subject') {
 			$suggestionHandler = 'subject_suggest';
+		} elseif ($searchIndex == 'Keyword') {
+			$suggestionHandler = 'suggest';
+		} else {
+			return [];
 		}
 		return $this->processSearchSuggestions($searchTerm, $suggestionHandler);
 	}

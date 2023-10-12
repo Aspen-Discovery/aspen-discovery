@@ -5,6 +5,10 @@ require_once __DIR__ . '/../bootstrap_aspen.php';
 require_once ROOT_DIR . '/sys/Updates/ScheduledUpdate.php';
 require_once ROOT_DIR . '/sys/Greenhouse/AspenSite.php';
 
+if (file_exists(ROOT_DIR . '/sys/Greenhouse/CompanionSystem.php')) {
+	require_once ROOT_DIR . '/sys/Greenhouse/CompanionSystem.php';
+}
+
 $pendingUpdates = new ScheduledUpdate();
 $pendingUpdates->status = 'pending';
 $pendingUpdates->remoteUpdate = 0;
@@ -24,6 +28,9 @@ if (count($updatesToRun) == 0) {
 		$scheduledUpdate = new ScheduledUpdate();
 		$scheduledUpdate->id = $id;
 		if ($scheduledUpdate->find(true)) {
+			$scheduledUpdate->status = 'started';
+			$scheduledUpdate->update();
+
 			$versionToUpdateTo = $scheduledUpdate->updateToVersion;
 			$currentVersion = getGitBranch();
 
@@ -46,28 +53,72 @@ if (count($updatesToRun) == 0) {
 						}
 					}
 
-					//Check to see if this is a secondary site or a full site
-					$systemVariables = SystemVariables::getSystemVariables();
-					$isSecondarySite = false;
-					if (!empty($systemVariables)) {
-						$isSecondarySite = $systemVariables->doQuickUpdates;
-					}
-					if ($isSecondarySite) {
-						if ($scheduledUpdate->updateType === 'complete') {
-							doFullSecondaryUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, $scheduledUpdate);
-						} elseif ($scheduledUpdate->updateType === 'patch') {
-							doSecondaryUpdate($operatingSystem, $linuxDistribution, $versionToUpdateTo, $scheduledUpdate);
-						}
-					} else {
-						if ($scheduledUpdate->updateType === 'complete') {
-							doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, $scheduledUpdate);
-						} elseif ($scheduledUpdate->updateType === 'patch') {
-							doPatchUpgrade($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
+					//Prepare the system to be updated
+					if ($operatingSystem == 'linux') {
+						if ($linuxDistribution == 'debian') {
+							executeCommand('Stopping cron', 'service cron stop', $scheduledUpdate);
 						} else {
-							// invalid updateType
-							$scheduledUpdate->notes = "FAILED: Invalid update type\n";
+							executeCommand('Stopping cron', 'service crond stop', $scheduledUpdate);
+							executeCommand('Running system updates', 'yum -y update', $scheduledUpdate);
 						}
 					}
+
+					if ($scheduledUpdate->updateType === 'complete') {
+						if ($operatingSystem == 'linux') {
+							executeCommand('Stopping java', 'pkill java', $scheduledUpdate);
+						}
+						doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, $scheduledUpdate);
+					} elseif ($scheduledUpdate->updateType === 'patch') {
+						doPatchUpgrade($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
+					} else {
+						// invalid updateType
+						$scheduledUpdate->notes = "FAILED: Invalid update type\n";
+					}
+
+					//Check to see if any companion systems are configured
+					$companionSystems = [];
+					try {
+						$companionSystem = new CompanionSystem();
+						$companionSystem->find();
+						while($companionSystem->fetch()) {
+							$companionSystems[] = clone $companionSystem;
+						}
+					} catch (Exception $e) {
+						//Table not created yet, ignore
+					}
+
+					if($companionSystems) {
+						foreach($companionSystems as $companion) {
+							/** @var CompanionSystem $companion **/
+							if ($scheduledUpdate->updateType === 'complete') {
+								doFullUpgrade($operatingSystem, $linuxDistribution, $companion->serverName, $versionToUpdateTo, $installDir, $scheduledUpdate, $companion);
+							} elseif ($scheduledUpdate->updateType === 'patch') {
+								doPatchUpgrade($operatingSystem, $versionToUpdateTo, $scheduledUpdate, $companion);
+							} else {
+								// invalid updateType
+								$scheduledUpdate->notes = "FAILED: Invalid update type\n";
+							}
+
+						}
+					}
+
+					//Restart services
+					if ($operatingSystem == 'linux') {
+						//Restart mysql
+						executeCommand('Restarting MySQL', 'service mysqld restart', $scheduledUpdate);
+						//Restart apache
+						executeCommand('Restarting apache', 'apachectl graceful', $scheduledUpdate);
+						//Start cron
+						if ($linuxDistribution == 'debian') {
+							executeCommand('Starting cron', 'service cron start', $scheduledUpdate);
+						} else {
+							executeCommand('Starting cron', 'service crond start', $scheduledUpdate);
+						}
+					}
+
+					//Run git cleanup
+					executeCommand('Cleaning up git', "cd $installDir; git gc", $scheduledUpdate);
+
 				} else {
 					$scheduledUpdate->notes = "FAILED: Must update to a version that is the same or newer than the current version of $currentVersion\n";
 				}
@@ -80,6 +131,8 @@ if (count($updatesToRun) == 0) {
 			}
 			$scheduledUpdate->dateRun = time();
 
+			//Re initialize database since it may have been closed during updates
+			initDatabase();
 			if (!$scheduledUpdate->update()) {
 				echo("Could not update scheduled update " . $scheduledUpdate->getLastError());
 			}
@@ -100,7 +153,7 @@ if (count($updatesToRun) == 0) {
 						'greenhouseId' => $scheduledUpdate->greenhouseId,
 						'notes' => $scheduledUpdate->notes,
 						'dateRun' => $scheduledUpdate->dateRun,
-
+						'greenhouseSiteId' => $scheduledUpdate->siteId
 					];
 					$response = $curl->curlPostPage($greenhouseUrl . '/API/GreenhouseAPI?method=updateScheduledUpdate', $body);
 
@@ -117,10 +170,15 @@ if (count($updatesToRun) == 0) {
  * @param $operatingSystem
  * @param $versionToUpdateTo
  * @param ScheduledUpdate $scheduledUpdate
+ * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate): void{
-	updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
+function doPatchUpgrade($operatingSystem, $versionToUpdateTo, ScheduledUpdate $scheduledUpdate, ?CompanionSystem $companionSystem = null): void{
+	if($companionSystem) {
+		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
+	} else {
+		updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
+	}
 }
 
 /**
@@ -149,7 +207,7 @@ function updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, Sc
 	}
 }
 
-function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate) {
+function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, ?CompanionSystem $companionSystem = null) {
 	// run db maintenance
 	$scheduledUpdate->notes .= "Running database maintenance $versionToUpdateTo\n";
 	require_once ROOT_DIR . '/services/API/SystemAPI.php';
@@ -162,6 +220,23 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate) {
 		$message = $dbMaintenance['message'] ?? '';
 		$scheduledUpdate->notes .= $message . "\n";
 	}
+
+	// run external db maintenance if needed
+	if($companionSystem != null) {
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$curl = new CurlWrapper();
+		console_log('Running Database Maintenance ' . $companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates');
+		$response = json_decode($curl->curlGetPage($companionSystem->serverUrl . '/API/SystemAPI?method=runPendingDatabaseUpdates'));
+		if(!isset($response->success) || $response->success == false) {
+			$scheduledUpdate->status = 'failed';
+			$scheduledUpdate->notes .= 'DB maintenance failed for ' . $companionSystem->serverName;
+		}
+
+		if(isset($response->message)) {
+			$message = $response->message ?? '';
+			$scheduledUpdate->notes .= $message . "\n";
+		}
+	}
 }
 
 /**
@@ -171,23 +246,17 @@ function runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate) {
  * @param $versionToUpdateTo
  * @param $installDir
  * @param ScheduledUpdate $scheduledUpdate
+ * @param CompanionSystem|null $companionSystem
  * @return void
  */
-function doFullSecondaryUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate): void {
-	if ($operatingSystem == 'linux') {
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Stopping cron", "service cron stop", $scheduledUpdate);
-		} else {
-			executeCommand("Stopping cron", "service crond stop", $scheduledUpdate);
-			executeCommand("Running system updates", "yum -y update", $scheduledUpdate);
-		}
+function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate, ?CompanionSystem $companionSystem = null): void {
+	if($companionSystem != null) {
+		//Update the companion system
+		runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate, $companionSystem);
+	} else {
+		//Update the system
+		updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
 	}
-	if ($operatingSystem == 'linux') {
-		executeCommand("Stopping java", "pkill java", $scheduledUpdate);
-	}
-
-	// Run database updates
-	runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate);
 
 	//Run version specific upgrade script
 	if ($operatingSystem == 'linux') {
@@ -212,120 +281,6 @@ function doFullSecondaryUpgrade($operatingSystem, $linuxDistribution, $serverNam
 	} else {
 		executeCommand("Updating Solr files", "cd $installDir/data_dir_setup; ./update_solr_files.bat $serverName", $scheduledUpdate);
 	}
-
-	//Restart services
-	if ($operatingSystem == 'linux') {
-		//Start cron
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Starting cron", "service cron start", $scheduledUpdate);
-		} else {
-			executeCommand("Starting cron", "service crond start", $scheduledUpdate);
-		}
-	}
-}
-
-/**
- * @param $operatingSystem
- * @param $linuxDistribution
- * @param $versionToUpdateTo
- * @param ScheduledUpdate $scheduledUpdate
- * @return void
- */
-function doSecondaryUpdate($operatingSystem, $linuxDistribution, $versionToUpdateTo, ScheduledUpdate &$scheduledUpdate): void {
-	if ($operatingSystem == 'linux') {
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Stopping cron", "service cron stop", $scheduledUpdate);
-		} else {
-			executeCommand("Stopping cron", "service crond stop", $scheduledUpdate);
-			executeCommand("Running system updates", "yum -y update", $scheduledUpdate);
-		}
-	}
-
-	if ($operatingSystem == 'linux') {
-		executeCommand("Stopping java", "pkill java", $scheduledUpdate);
-	}
-
-	// Run database updates
-	runDatabaseMaintenance($versionToUpdateTo, $scheduledUpdate);
-
-	//Restart services
-	if ($operatingSystem == 'linux') {
-		//Start cron
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Starting cron", "service cron start", $scheduledUpdate);
-		} else {
-			executeCommand("Starting cron", "service crond start", $scheduledUpdate);
-		}
-	}
-}
-
-/**
- * @param $operatingSystem
- * @param $linuxDistribution
- * @param $serverName
- * @param $versionToUpdateTo
- * @param $installDir
- * @param ScheduledUpdate $scheduledUpdate
- * @return void
- */
-function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versionToUpdateTo, $installDir, ScheduledUpdate &$scheduledUpdate): void {
-
-	//Prepare the system to be updated
-	if ($operatingSystem == 'linux') {
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Stopping cron", "service cron stop", $scheduledUpdate);
-		} else {
-			executeCommand("Stopping cron", "service crond stop", $scheduledUpdate);
-			executeCommand("Running system updates", "yum -y update", $scheduledUpdate);
-		}
-	}
-	if ($operatingSystem == 'linux') {
-		executeCommand("Stopping java", "pkill java", $scheduledUpdate);
-	}
-
-	//Update the system
-	updateGitAndRunDatabaseUpdates($operatingSystem, $versionToUpdateTo, $scheduledUpdate);
-
-	//Run version specific upgrade script
-	if ($operatingSystem == 'linux') {
-		if ($linuxDistribution == 'debian') {
-			if (file_exists("$installDir/install/upgrade_debian_$versionToUpdateTo.sh")) {
-				executeCommand("Running version upgrade script", "cd $installDir/install; ./upgrade_debian_$versionToUpdateTo.sh $serverName", $scheduledUpdate);
-			}
-		} else {
-			if (file_exists("$installDir/install/upgrade_$versionToUpdateTo.sh")) {
-				executeCommand("Running version upgrade script", "cd $installDir/install; ./upgrade_$versionToUpdateTo.sh $serverName", $scheduledUpdate);
-			}
-		}
-	}
-
-	//Update Solr files
-	if ($operatingSystem == 'linux') {
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Updating Solr files", "cd $installDir/data_dir_setup; ./update_solr_files_debian.sh $serverName", $scheduledUpdate);
-		} else {
-			executeCommand("Updating Solr files", "cd $installDir/data_dir_setup; ./update_solr_files.sh $serverName", $scheduledUpdate);
-		}
-	} else {
-		executeCommand("Updating Solr files", "cd $installDir/data_dir_setup; ./update_solr_files.bat $serverName", $scheduledUpdate);
-	}
-
-	//Restart services
-	if ($operatingSystem == 'linux') {
-		//Restart mysql
-		executeCommand("Restarting MySQL", "service mysqld restart", $scheduledUpdate);
-		//Restart apache
-		executeCommand("Restarting apache", "apachectl graceful", $scheduledUpdate);
-		//Start cron
-		if ($linuxDistribution == 'debian') {
-			executeCommand("Starting cron", "service cron start", $scheduledUpdate);
-		} else {
-			executeCommand("Starting cron", "service crond start", $scheduledUpdate);
-		}
-	}
-
-	//Run git cleanup
-	executeCommand("Cleaning up git", "cd $installDir; git gc", $scheduledUpdate);
 }
 
 function executeCommand(string $commandNote, string $commandToExecute, ScheduledUpdate $scheduledUpdate) {

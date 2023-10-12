@@ -18,6 +18,12 @@ if (file_exists(ROOT_DIR . '/sys/Indexing/LocationSideLoadScope.php')) {
 if (file_exists(ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckSetting.php';
 }
+if (file_exists(ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php')) {
+    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
+}
+if (file_exists(ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php')) {
+    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
+}
 
 require_once ROOT_DIR . '/sys/CloudLibrary/LocationCloudLibraryScope.php';
 require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
@@ -48,7 +54,7 @@ class Location extends DataObject {
 	public $headerText;
 	public $address;
 	public $phone;
-    public $secondaryPhone;
+    public $secondaryPhoneNumber;
 	public $contactEmail;
 	public $latitude;
 	public $longitude;
@@ -125,6 +131,10 @@ class Location extends DataObject {
 	//LiDA Settings
 	public $lidaLocationSettingId;
 	public $lidaSelfCheckSettingId;
+
+    //Facet Settings
+    public $openArchivesFacetSettingId;
+    public $websiteIndexingFacetSettingId;
 
 	function getNumericColumnNames(): array {
 		return [
@@ -464,25 +474,24 @@ class Location extends DataObject {
 				'affectsLiDA' => true,
 			],
 			'phone' => [
-                'property' => 'phone',
-                'type' => 'text',
-                'label' => 'Phone Number',
-                'description' => 'The main phone number for the site .',
-                'maxLength' => '25',
-                'hideInLists' => true,
-                'editPermissions' => ['Location Address and Hours Settings'],
-                'affectsLiDA' => true,
+				'property' => 'phone',
+				'type' => 'text',
+				'label' => 'Phone Number',
+				'description' => 'The main phone number for the site .',
+				'maxLength' => '25',
+				'hideInLists' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
+				'affectsLiDA' => true,
 			],
-            'secondary phone' => [
-                'property' => 'secondary phone',
-                'type' => 'text',
-                'label' => 'Secondary Phone Number',
-                'description' => 'The secondary phone number for the site .',
-                'maxLength' => '25',
-                'hideInLists' => true,
-                'editPermissions' => ['Location Address and Hours Settings'],
-                'affectsLiDA' => true,
-            ],
+			'secondaryPhoneNumber' => [
+				'property' => 'secondaryPhoneNumber',
+				'type' => 'text',
+				'label' => 'Secondary Phone Number',
+				'description' => 'The secondary phone number for the site .',
+				'maxLength' => '25',
+				'hideInLists' => true,
+				'editPermissions' => ['Location Address and Hours Settings'],
+			],
 			'contactEmail' => [
 				'property' => 'contactEmail',
 				'type' => 'text',
@@ -2210,6 +2219,60 @@ class Location extends DataObject {
 		return $this->_groupedWorkDisplaySettings;
 	}
 
+    protected $_openArchivesFacetSettings = null;
+
+    /** @return OpenArchivesFacetGroup */
+    public function getOpenArchivesFacetSettings(): OpenArchivesFacetGroup {
+        require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacetGroup.php';
+        if ($this->_openArchivesFacetSettings == null) {
+            try {
+                $searchLocation = new Location();
+                $searchLocation->locationId = $this->locationId;
+                if ($searchLocation->find(true)){
+                    if ($this->openArchivesFacetSettingId == -1) {
+                        $library = Library::getLibraryForLocation($this->locationId);
+                        $this->openArchivesFacetSettingId = $library->openArchivesFacetSettingId;
+                    }
+                    $openArchivesFacetSettings = new OpenArchivesFacetGroup();
+                    $openArchivesFacetSettings->id = $this->openArchivesFacetSettingId;
+                    $openArchivesFacetSettings->find(true);
+                    $this->_openArchivesFacetSettings = clone $openArchivesFacetSettings;
+                }
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_openArchivesFacetSettings;
+    }
+
+    protected $_websiteFacetSettings = null;
+
+    /** @return WebsiteFacetGroup */
+    public function getWebsiteFacetSettings(): WebsiteFacetGroup {
+        require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacetGroup.php';
+        if ($this->_websiteFacetSettings == null) {
+            try {
+                $searchLocation = new Location();
+                $searchLocation->locationId = $this->locationId;
+                if ($searchLocation->find(true)){
+                    if ($this->websiteIndexingFacetSettingId == -1) {
+                        $library = Library::getLibraryForLocation($this->locationId);
+                        $this->websiteIndexingFacetSettingId = $library->websiteIndexingFacetSettingId;
+                    }
+                    $websiteFacetSetting = new WebsiteFacetGroup();
+                    $websiteFacetSetting->id = $this->websiteIndexingFacetSettingId;
+                    $websiteFacetSetting->find(true);
+                    $this->_websiteFacetSettings = clone $websiteFacetSetting;
+                }
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading grouped work display settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_websiteFacetSettings;
+    }
+
 	function getEditLink($context): string {
 		return '/Admin/Locations?objectAction=edit&id=' . $this->libraryId;
 	}
@@ -2329,7 +2392,37 @@ class Location extends DataObject {
 
 	public function saveThemes() {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
-			$this->saveOneToManyOptions($this->_themes, 'locationId');
+			foreach($this->_themes as $obj) {
+				/** @var DataObject $obj */
+				if($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if($obj->{$obj->__primaryKey} <= 0) {
+							$obj->locationId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLocation = new LocationTheme();
+						$existingThemesForLocation->locationId = $this->locationId;
+						if ($existingThemesForLocation->find()) {
+							while ($existingThemesForLocation->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->locationId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+			}
 			unset($this->_themes);
 		}
 	}
@@ -2361,7 +2454,7 @@ class Location extends DataObject {
 			'latitude' => $this->latitude,
 			'longitude' => $this->longitude,
 			'phone' => $this->phone,
-            'secondaryPhone' => $this->secondaryPhone,
+            'secondaryPhone' => $this->secondaryPhoneNumber,
 			'tty' => $this->tty,
 			'description' => $this->description,
 			'vdxFormId' => $this->vdxFormId,

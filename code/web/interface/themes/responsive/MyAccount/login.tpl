@@ -19,7 +19,7 @@
 			</div>
 		{/if}
 		{if $ssoIsEnabled}
-			{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO}
+			{if (!(empty($ssoService)) && $ssoService !== 'ldap') && !$ssoStaffOnly && !$isPrimaryAccountAuthenticationSSO && $canLoginSSO}
 	            {include file='MyAccount/sso-login.tpl'}
 	            {if $ssoLoginOptions == 0}
 		            <div class="hr-label">
@@ -53,6 +53,11 @@
 		                                <a href="/MyAccount/EmailPin">{translate text="Email my %1%" 1=$passwordLabel isPublicFacing=true}</a>
 		                            {/if}
 		                        </p>
+		                    {/if}
+		                    {if $enableForgotBarcode}
+		                         <p class="text-muted help-block">
+		                            <strong>{translate text="Forgot %1%?" 1=$usernameLabel isPublicFacing=true}</strong>&nbsp;&nbsp;<a href="/MyAccount/ForgotBarcode">{translate text="Send My %1% by Text" 1=$usernameLabel isPublicFacing=true}</a>
+		                         </p>
 		                    {/if}
 
 		                    {if $enableSelfRegistration == 1 && !$isStandalonePage}

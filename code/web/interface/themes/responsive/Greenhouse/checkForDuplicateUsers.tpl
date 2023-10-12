@@ -18,7 +18,7 @@
 		{foreach from=$duplicateUsers item=barcodeInfo}
 			<div class="row">
 				<div class="col-xs-12">
-					{$barcodeInfo.cat_username}
+					{$barcodeInfo.ils_barcode}
 				</div>
 			</div>
 		{/foreach}

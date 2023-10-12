@@ -184,7 +184,7 @@ class OverDriveSetting extends DataObject {
 				'canDelete' => true,
 			],
 		];
-		if (!(UserAccount::getActiveUserObj()->source = 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin')) {
+		if (!(UserAccount::getActiveUserObj()->isAspenAdminUser())) {
 			unset($objectStructure['enableRequestLogging']);
 		}
 		return $objectStructure;

@@ -134,14 +134,15 @@ export const PlaceHold = (props) => {
                                              items: ilsResponse.items ?? [],
                                         });
                                    }
-                                   queryClient.invalidateQueries({ queryKey: ['holds', library.baseUrl, language] });
-                                   await refreshProfile(library.baseUrl).then((result) => {
+                                   queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
+                                   queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                   /*await refreshProfile(library.baseUrl).then((result) => {
                                         updateUser(result);
-                                   });
+                                   });*/
                                    setLoading(false);
                                    if (ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
                                         setHoldConfirmationIsOpen(true);
-                                   } else if (result?.shouldBeItemHold && result.shouldBeItemHold) {
+                                   } else if (ilsResponse?.shouldBeItemHold && ilsResponse.shouldBeItemHold) {
                                         setHoldItemSelectIsOpen(true);
                                    } else {
                                         setResponseIsOpen(true);

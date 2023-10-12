@@ -494,7 +494,7 @@ class Millennium extends AbstractIlsDriver {
 			$scope = $this->getDefaultScope();
 
 			//Now we can get the page
-			$curlUrl = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->username . "/$page";
+			$curlUrl = $this->getVendorOpacUrl() . "/patroninfo~S{$scope}/" . $patron->unique_ils_id . "/$page";
 			$curlResponse = $this->curlWrapper->curlGetPage($curlUrl);
 
 			//Strip HTML comments
@@ -1016,14 +1016,14 @@ class Millennium extends AbstractIlsDriver {
 
 		if ($this->accountProfile->iiiLoginConfiguration == 'name_barcode_pin') {
 			$loginData['name'] = $patron->lastname;
-			$loginData['code'] = $patron->cat_username;
-			$loginData['pin'] = $patron->cat_password;
+			$loginData['code'] = $patron->ils_barcode;
+			$loginData['pin'] = $patron->ils_password;
 		} else if ($this->accountProfile->iiiLoginConfiguration == 'barcode_pin') {
-			$loginData['code'] = $patron->cat_username;
-			$loginData['pin'] = $patron->cat_password;
+			$loginData['code'] = $patron->ils_barcode;
+			$loginData['pin'] = $patron->ils_password;
 		} else {
-			$loginData['name'] = $patron->cat_username;
-			$loginData['code'] = $patron->cat_password;
+			$loginData['name'] = $patron->ils_barcode;
+			$loginData['code'] = $patron->ils_password;
 		}
 
 		return $loginData;
@@ -1461,7 +1461,7 @@ class Millennium extends AbstractIlsDriver {
 		return $summary;
 	}
 
-	public function findNewUser($patronBarcode) {
+	public function findNewUser($patronBarcode, $patronUsername) {
 		$patronDump = $this->_getPatronDump($patronBarcode);
 		if ($patronDump != null) {
 			if (count($patronDump) > 0) {
@@ -1492,6 +1492,7 @@ class Millennium extends AbstractIlsDriver {
 		//Get the unique user id from Millennium
 		$user->source = $this->accountProfile->name;
 		$user->username = $patronDump['RECORD_#'];
+		$user->unique_ils_id = $patronDump['RECORD_#'];
 		if ($user->find(true)) {
 			$userExistsInDB = true;
 		}
@@ -1541,20 +1542,25 @@ class Millennium extends AbstractIlsDriver {
 		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 			if (isset($patronDump['P_BARCODE'])) {
 				$user->cat_username = $patronDump['P_BARCODE']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+				$user->ils_barcode = $patronDump['P_BARCODE'];
 			} else {
 				$user->cat_username = $patronDump['CARD_#']; //Make sure to get the barcode so if we are using usernames we can still get the barcode for use with overdrive, etc.
+				$user->ils_barcode = $patronDump['CARD_#'];
 			}
 			$user->cat_password = $password;
+			$user->ils_password = $password;
 		} else {
 			$user->cat_username = $patronDump['PATRN_NAME'];
+			$user->ils_password = $patronDump['PATRN_NAME'];
 			//When we get the patron dump, we may override the barcode so make sure that we update it here.
 			//For self registered cards, the P_BARCODE is not set so we need to use the RECORD_# field
 			if (strlen($patronDump['P_BARCODE']) > 0) {
 				$user->cat_password = $patronDump['P_BARCODE'];
+				$user->ils_barcode = $patronDump['P_BARCODE'];
 			} else {
 				$user->cat_password = $patronDump['RECORD_#'];
+				$user->ils_barcode = $patronDump['RECORD_#'];
 			}
-
 		}
 
 		$user->phone = isset($patronDump['TELEPHONE']) ? $patronDump['TELEPHONE'] : (isset($patronDump['HOME_PHONE']) ? $patronDump['HOME_PHONE'] : '');

@@ -32,15 +32,14 @@ class BlockPatronAccountLink extends DataObject {
 			$this->_blockedAccountBarCode = null;
 			$this->_primaryAccountBarCode = null;
 
-			$barcode = $this->getBarcode();
 			$user = new User();
 			if ($user->get($this->primaryAccountId)) {
-				$this->_primaryAccountBarCode = $user->$barcode;
+				$this->_primaryAccountBarCode = $user->ils_barcode;
 			}
 			if ($this->blockedLinkAccountId) {
 				$user = new User();
 				if ($user->get($this->blockedLinkAccountId)) {
-					$this->_blockedAccountBarCode = $user->$barcode;
+					$this->_blockedAccountBarCode = $user->ils_barcode;
 				}
 			}
 		}
@@ -85,24 +84,20 @@ class BlockPatronAccountLink extends DataObject {
 
 	private function getAccountIds() {
 		// Get Account Ids for the barcodes
-		$barcode = $this->getBarcode();
 		if ($this->_primaryAccountBarCode) {
 			$user = new User();
-			if ($user->get($barcode, $this->_primaryAccountBarCode)) {
+			$user->ils_barcode = $this->_primaryAccountBarCode;
+			if ($user->find(true)) {
 				$this->primaryAccountId = $user->id;
 			}
 		}
 		if ($this->_blockedAccountBarCode) {
 			$user = new User();
-			if ($user->get($barcode, $this->_blockedAccountBarCode)) {
+			$user->ils_barcode = $this->_blockedAccountBarCode;
+			if ($user->find(true)) {
 				$this->blockedLinkAccountId = $user->id;
 			}
 		}
-	}
-
-	private function getBarcode() {
-		global $configArray;
-		return ($configArray['Catalog']['barcodeProperty'] == 'cat_username') ? 'cat_username' : 'cat_password';
 	}
 
 	static function getObjectStructure($context = ''): array {

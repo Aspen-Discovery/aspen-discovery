@@ -22,7 +22,7 @@ class CheckForDuplicateUsers extends Admin_Admin {
 	function getDuplicateUsers() {
 		//Get a list of all barcodes that have more than one user for them
 		global $aspen_db;
-		$result = $aspen_db->query('select cat_username, count(*) as numUsers from user where cat_username != "" group by cat_username having numUsers > 1;');
+		$result = $aspen_db->query('select ils_barcode, count(*) as numUsers from user where ils_barcode != "" group by ils_barcode having numUsers > 1;');
 		return $result->fetchAll(PDO::FETCH_ASSOC);
 	}
 
@@ -32,7 +32,7 @@ class CheckForDuplicateUsers extends Admin_Admin {
 
 	function canView(): bool {
 		if (UserAccount::isLoggedIn()) {
-			if (UserAccount::getActiveUserObj()->source == 'admin' && UserAccount::getActiveUserObj()->cat_username == 'aspen_admin') {
+			if (UserAccount::getActiveUserObj()->isAspenAdminUser()) {
 				return true;
 			}
 		}

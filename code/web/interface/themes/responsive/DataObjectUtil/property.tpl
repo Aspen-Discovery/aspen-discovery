@@ -23,6 +23,7 @@
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<p style="margin-bottom: .5em">
 						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -37,6 +38,7 @@
 							<i class="fas fa-question-circle" style="vertical-align: top"></i>
 						</a>
 					{/if}
+					{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<span class="label label-danger" style="margin-right: .5em{if empty($property.description)}; margin-left: .5em{/if}">{translate text="Required" isAdminFacing=true}</span>
 					{/if}
@@ -46,6 +48,7 @@
 					{translate text=$property.label isAdminFacing=true}
 				</label>
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 				{/if}
@@ -57,6 +60,7 @@
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<div style="margin-bottom: .5em">
 							<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline; vertical-align: top; margin-right: .25em">{translate text=$property.label isAdminFacing=true}</p>
+							{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 							{if !empty($property.description)}
 								<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 									<i class="fas fa-question-circle" style="vertical-align: top"></i>
@@ -66,11 +70,13 @@
 						</div>
 					{else}
 						<p class="{if !empty($property.headingLevel)}{$property.headingLevel}{else}h2{/if}" style="display: inline;">{translate text=$property.label isAdminFacing=true}</p>
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.description)}
 							<a style="margin-right: .5em; margin-left: .25em; display: inline;" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}">
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
+
 						{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 							<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 						{/if}
@@ -80,6 +86,7 @@
 						{translate text=$property.label isAdminFacing=true}
 					</label>
 					{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+					{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 					{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 						<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 					{/if}
@@ -99,6 +106,7 @@
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						<span class="label label-danger" style="margin-right: .5em; vertical-align: top{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 					</div>
 				{else}
@@ -109,6 +117,7 @@
 								<i class="fas fa-question-circle" style="vertical-align: top"></i>
 							</a>
 						{/if}
+						{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 						{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 							<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 						{/if}
@@ -117,6 +126,7 @@
 			{else}
 				<label for='{$propName}'>{translate text=$property.label isAdminFacing=true}</label>
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
+				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}
 					<span class="label label-danger" style="margin-right: .5em{if empty($property.description)};margin-left: .5em;{/if}">{translate text="Required" isAdminFacing=true}</span>
 				{/if}
@@ -200,13 +210,15 @@
 		{elseif $property.type == 'timestamp'}
 			<div class="row">
 				<div class="col-sm-4">
-					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.max)}max="{$property.max}"{/if} {if !empty($property.min)}min="{$property.min}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if}>
+					<input name='{$propName}' id='{$propName}' value='{if !empty($propValue)}{$propValue|date_format:"%Y-%m-%d %H:%M"}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.max)}max="{$property.max}"{/if} {if !empty($property.min)}min="{$property.min}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly disabled{/if}>
 				</div>
-				<script type="text/javascript">
-					$(document).ready(function(){ldelim}
-						rome({$propName});
-					{rdelim});
-				</script>
+				{if empty($property.readOnly)}
+					<script type="text/javascript">
+						$(document).ready(function(){ldelim}
+							rome({$propName});
+						{rdelim});
+					</script>
+				{/if}
 			</div>
 			{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}
 			{if !empty($property.affectsLiDA)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-info"><i class="fas fa-info-circle"></i> {translate text="Aspen LiDA also uses this setting" isAdminFacing=true}</small></span>{/if}
@@ -224,7 +236,7 @@
 		{elseif  $property.type == 'email_prefill'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->email})}{$user->email}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control email {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'barcode_prefill'}
-			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->getBarcode()})}{$user->cat_username}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->getBarcode()})}{$user->getBarcode()}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'name_prefill'}
 			<input type='text' name='{$propName}' id='{$propName}' value='{if !empty($user)}{if !empty({$user->firstname}) && !empty({$user->lastname})}{$user->firstname} {$user->lastname}{elseif !empty({$user->firstname})}{$user->firstname}{elseif !empty({$user->lastname})}{$user->lastname}{/if}{/if}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxlength='{$property.maxLength}'{/if} {if !empty($property.size)}size='{$property.size}'{/if} class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif  $property.type == 'phone_prefill'}
@@ -232,7 +244,7 @@
 		{elseif $property.type == 'color'}
 			<div class="row">
 				<div class="col-tn-3">
-					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" {if !empty($property.readOnly)}readonly{/if}>
+					<input type='color' name='{$propName}' id='{$propName}' value='{$propValue|escape}'  aria-label='{$property.label} color picker' class='form-control{if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}' size="7" maxlength="7" onchange="$('#{$propName}Hex').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" {if !empty($property.readOnly)}disabled{/if}>
 				</div>
 				<div class="col-tn-3">
 					<input type='text' id='{$propName}Hex' value='{$propValue|escape}' aria-label='{$property.label} hex code' class='form-control' size="7" maxlength="7" onchange="$('#{$propName}').val(this.value);$('#{$propName}-default').prop('checked',false);{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$contrastRatio}');{/if}" pattern="^#([a-fA-F0-9]{ldelim}6{rdelim})$" {if !empty($property.readOnly)}readonly{/if}>
@@ -246,7 +258,7 @@
 					{/if}
 					<div class="checkbox" style="margin: 0">
 						<label for='{$propName}-default'>{translate text="Use Default" isAdminFacing=true}
-							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly{/if}/>
+							<input type="checkbox" name='{$propName}-default' id='{$propName}-default' {if $useDefault == '1'}checked="checked"{/if} {if !empty($property.readOnly)}readonly disabled{/if}/>
 						</label>
 					</div>
 				</div>
@@ -262,28 +274,30 @@
 				</div>
 			</div>
 			{assign var=fetchDefaultColor value='default|cat:$propName'}
-		{literal}
-			<script type="text/javascript">
-				var setDefaultColor = $('#{/literal}{$propName}{literal}-default');
-				$('#{/literal}{$propName}{literal}-default').on("click", function() {
+			{if !empty($property.readOnly)}
+				{literal}
+					<script type="text/javascript">
+						var setDefaultColor = $('#{/literal}{$propName}{literal}-default');
+						$('#{/literal}{$propName}{literal}-default').on("click", function() {
 
-					if($(this).is(":checked")) {
-						$(this).attr("checked", true);
-						AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$parentTheme->$propName}{literal}');
-						{/literal}
-						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
-						{literal}
-					} else {
-						$(this).attr("checked", false);
-						document.getElementById('{/literal}{$propName}{literal}').value = '{/literal}{$propValue}{literal}';
-						document.getElementById('{/literal}{$propName}{literal}Hex').value = '{/literal}{$propValue}{literal}';
-						{/literal}
-						{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
-						{literal}
-					}
-				});
-			</script>
-		{/literal}
+							if($(this).is(":checked")) {
+								$(this).attr("checked", true);
+								AspenDiscovery.Admin.getDefaultColor('{/literal}{$propName}{literal}','{/literal}{$parentTheme->$propName}{literal}');
+								{/literal}
+								{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
+								{literal}
+							} else {
+								$(this).attr("checked", false);
+								document.getElementById('{/literal}{$propName}{literal}').value = '{/literal}{$propValue}{literal}';
+								document.getElementById('{/literal}{$propName}{literal}Hex').value = '{/literal}{$propValue}{literal}';
+								{/literal}
+								{if !empty($property.checkContrastWith)}AspenDiscovery.Admin.checkContrast('{$propName}', '{$property.checkContrastWith}', false, '{$checkContrast}');{/if}
+								{literal}
+							}
+						});
+					</script>
+				{/literal}
+			{/if}
 		{elseif $property.type == 'font'}
 			<div class="row">
 				<div class="col-sm-4">
@@ -358,7 +372,7 @@
 			{* disable html5 features until consistly implemented *
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if !empty($property.maxLength)}maxLength='10'{/if}	class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} date'>*}
 			{*<input type='text' name='{$propName}' id='{$propName}' value='{$propValue}' {if !empty($property.accessibleLabel)}aria-label="{$property.accessibleLabel}"{/if} {if !empty($property.maxLength)}maxLength='10'{/if}	class='form-control {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} dateAspen' {if !empty($property.readOnly)}readonly{/if}>*}
-			<input type="date" name='{$propName}' id='{$propName}' value='{$propValue|date_format:"%Y-%m-%d"}'	class='form-control' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
+			<input type="date" name='{$propName}' id='{$propName}' value='{$propValue|date_format:"%Y-%m-%d"}'	class='form-control' {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if} {if !empty($property.readOnly)}readonly disabled{/if} {if !empty($property.autocomplete)}autocomplete="{$property.autocomplete}"{/if}>
 		{elseif $property.type == 'partialDate'}
 			{include file="DataObjectUtil/partialDate.tpl"}
 
@@ -412,9 +426,9 @@
 				<label class="input-group-btn">
 					<span class="btn btn-primary">
 						{if $property.type == 'image'}
-							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if}>
+							{translate text="Select an image" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
 						{else}
-							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if}>
+							{translate text="Select a file" isAdminFacing=true}&hellip; <input type="file" style="display: none;" name="{$propName}" id="{$propName}" {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required="required"{/if} {if !empty($property.readOnly)}readonly disabled{/if}>
 						{/if}
 					</span>
 				</label>
@@ -424,7 +438,7 @@
 			{if !empty($propValue)}
 				<div class="checkbox" style="margin-top: 0">
 					<label for="remove{$propName}"><small class="text-danger"><i class="fas fa-trash"></i> {translate text="Remove" isAdminFacing=true}</small>
-						<input type='checkbox' name='remove{$propName}' id='remove{$propName}'>
+						<input type='checkbox' name='remove{$propName}' id='remove{$propName}' {if !empty($property.readOnly)}readonly disabled{/if}>
 					</label>
 				</div>
 			{/if}
@@ -441,8 +455,9 @@
 		{elseif $property.type == 'checkbox'}
 			<div class="checkbox" {if !empty($property.forcesReindex) || !empty($property.affectsLiDA) || !empty($property.note)}style="margin-bottom: 0"{/if}>
 				<label for='{$propName}'>
-					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly onclick="return false;"{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}> {translate text=$property.label isAdminFacing=true} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
+					<input type='checkbox' name='{$propName}' id='{$propName}' {if ($propValue == 1)}checked='checked'{/if} {if !empty($property.readOnly)}readonly disabled{/if}{if !empty($property.onchange)} onchange="{$property.onchange}"{/if} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}required{/if}> {translate text=$property.label isAdminFacing=true} {if !empty($property.required) && (empty($objectAction) || $objectAction != 'edit')}<span class="label label-danger" style="margin-right: .5em;">{translate text="Required" isAdminFacing=true}</span>{/if}
 				</label>
+				{include file="DataObjectUtil/fieldLockingInfo.tpl"}
 				{if !empty($property.description)}<a style="margin-right: .5em; margin-left: .25em" class="text-info" role="button" tabindex="0" data-toggle="tooltip" data-placement="right" data-title="{translate text=$property.description isAdminFacing=true inAttribute=true}"><i class="fas fa-question-circle"></i></a>{/if}
 			</div>
 		{if !empty($property.forcesReindex)}<span id="{$propName}HelpBlock" class="help-block" style="margin-top:0"><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> {translate text="Updating this setting causes a nightly reindex" isAdminFacing=true}</small></span>{/if}

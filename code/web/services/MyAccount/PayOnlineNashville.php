@@ -52,7 +52,7 @@ class PayOnlineNashville extends Action {
 
 		//Do the actual processing here
 		$user = UserAccount::getLoggedInUser();
-		$this->librarycard = 'b' . $user->cat_username;
+		$this->librarycard = 'b' . $user->ils_barcode;
 		$search = $this->search();
 
 		// if $search is empty, the record is busy.

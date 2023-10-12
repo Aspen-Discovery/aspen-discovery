@@ -23,7 +23,7 @@ class MergeDuplicateBarcodes extends UserMerger {
 	function getDuplicateUsers() {
 		//Get a list of all barcodes that have more than one user for them
 		global $aspen_db;
-		$result = $aspen_db->query('select cat_username, count(*) as numUsers, GROUP_CONCAT(username) as usernames from user where cat_username != "" group by cat_username having numUsers > 1;');
+		$result = $aspen_db->query('select ils_barcode, count(*) as numUsers, GROUP_CONCAT(username) as usernames from user where ils_barcode != "" group by ils_barcode having numUsers > 1;');
 		return $result->fetchAll(PDO::FETCH_ASSOC);
 	}
 
@@ -40,36 +40,36 @@ class MergeDuplicateBarcodes extends UserMerger {
 		global $aspen_db;
 		global $interface;
 		$mergeResults = $this->getBlankResult();
-		$result = $aspen_db->query("select cat_username, count(*) as numUsers from user where cat_username != '' group by cat_username having numUsers > 1;");
+		$result = $aspen_db->query("select ils_barcode, count(*) as numUsers from user where ils_barcode != '' group by ils_barcode having numUsers > 1;");
 		$allBarcodesWithDuplicates = $result->fetchAll(PDO::FETCH_ASSOC);
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
 		foreach ($allBarcodesWithDuplicates as $index => &$row) {
 			$user = new User();
-			$user->cat_username = $row['cat_username'];
+			$user->ils_barcode = $row['ils_barcode'];
 			/** @var User[] $allUsersForBarcode */
 			$allUsersForBarcode = $user->fetchAll();
 			$oldUser = null;
 			$newUser = null;
 			foreach ($allUsersForBarcode as $tmpUser) {
 				if (isset($row['usernames'])) {
-					$row['usernames'] .= ", $tmpUser->username";
+					$row['usernames'] .= ", $tmpUser->unique_ils_id";
 				} else {
-					$row['usernames'] = $tmpUser->username;
+					$row['usernames'] = $tmpUser->unique_ils_id;
 				}
 
 				$oldUser = clone($tmpUser);
 				$newUser = null;
-				$loginResult = $catalog->patronLogin($tmpUser->cat_username, $tmpUser->cat_password);
+				$loginResult = $catalog->patronLogin($tmpUser->ils_barcode, $tmpUser->cat_password);
 				if ($loginResult instanceof User) {
 					//We got a good user
-					if ($loginResult->username != $tmpUser->username) {
+					if ($loginResult->unique_ils_id != $tmpUser->unique_ils_id) {
 						//The internal ILS ID has changed
 						$newUser = $loginResult;
 					}
 				} else {
-					$loginResult = $catalog->findNewUser($tmpUser->cat_username);
+					$loginResult = $catalog->findNewUser($tmpUser->ils_barcode, '');
 					if ($loginResult instanceof User) {
-						if ($loginResult->username != $tmpUser->username) {
+						if ($loginResult->unique_ils_id != $tmpUser->unique_ils_id) {
 							//The internal ILS ID has changed
 							$newUser = $loginResult;
 						}
@@ -78,9 +78,9 @@ class MergeDuplicateBarcodes extends UserMerger {
 
 				if ($oldUser != null && $newUser != null) {
 					$row['oldUser'] = $oldUser;
-					$row['oldUserId'] = $oldUser->username;
+					$row['oldUserId'] = $oldUser->unique_ils_id;
 					$row['newUser'] = $newUser;
-					$row['newUserId'] = $newUser->username;
+					$row['newUserId'] = $newUser->unique_ils_id;
 
 					//Merge the records
 					$mergeResults['numUsersUpdated']++;

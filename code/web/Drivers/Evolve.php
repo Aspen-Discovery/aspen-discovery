@@ -35,7 +35,7 @@ class Evolve extends AbstractIlsDriver {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
 		$checkedOutTitles = [];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if (is_array($sessionInfo) && $sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnLoan=YES';
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
@@ -118,7 +118,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -205,7 +205,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -368,7 +368,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -455,7 +455,7 @@ class Evolve extends AbstractIlsDriver {
 			'unavailable' => $unavailableHolds,
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if (is_array($sessionInfo) && $sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/Holding/Token=' . $sessionInfo['accessToken'] . '|OnReserve=YES';
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
@@ -542,7 +542,7 @@ class Evolve extends AbstractIlsDriver {
 			],
 		];
 
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$this->apiCurlWrapper->addCustomHeaders([
 				'User-Agent: Aspen Discovery',
@@ -616,7 +616,7 @@ class Evolve extends AbstractIlsDriver {
 		$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 
 		$fines = [];
-		$sessionInfo = $this->loginViaWebService($patron->cat_username, $patron->cat_password);
+		$sessionInfo = $this->loginViaWebService($patron->ils_barcode, $patron->ils_password);
 		if ($sessionInfo['userValid']) {
 			$evolveUrl = $this->accountProfile->patronApiUrl . '/AccountFinancial/Token=' . $sessionInfo['accessToken'];
 			$response = $this->apiCurlWrapper->curlGetPage($evolveUrl);
@@ -682,17 +682,23 @@ class Evolve extends AbstractIlsDriver {
 			$userExistsInDB = false;
 			$user = new User();
 			$user->source = $this->accountProfile->name;
-			if (empty($sessionInfo['patronId'])) {
-				$user->username = $patronBarcode;
-			} else {
-				$user->username = $sessionInfo['patronId'];
-			}
+			$user->unique_ils_id = $sessionInfo['patronId'];
+
 			if ($user->find(true)) {
 				$userExistsInDB = true;
 			}
-			$user->cat_username = $patronBarcode;
+			$user->ils_barcode = $sessionInfo['barcode'];
+			$user->cat_username = $sessionInfo['barcode'];
+			$user->username = $user->unique_ils_id;
+			$user->password = '';
+
+			if ($patronBarcode != $sessionInfo['barcode']) {
+				$user->ils_username = $patronBarcode;
+			}
+
 			if (!empty($password)) {
 				$user->cat_password = $password;
+				$user->ils_password = $password;
 			}
 
 			$forceDisplayNameUpdate = false;
@@ -732,6 +738,9 @@ class Evolve extends AbstractIlsDriver {
 			} else {
 				$user->created = date('Y-m-d');
 				if (!$user->insert()) {
+					global $logger;
+					$logger->log("Could not insert patron", Logger::LOG_ERROR);
+					$logger->log($user->getLastError(), Logger::LOG_ERROR);
 					return null;
 				}
 			}
@@ -771,6 +780,7 @@ class Evolve extends AbstractIlsDriver {
 				'userValid' => false,
 				'accessToken' => false,
 				'patronId' => false,
+				'barcode' => '',
 			];
 
 			//Get the token
@@ -790,7 +800,7 @@ class Evolve extends AbstractIlsDriver {
 			$postParams = json_encode($params);
 
 			$response = $this->apiCurlWrapper->curlPostPage($this->accountProfile->patronApiUrl . '/Authenticate', $postParams);
-			ExternalRequestLogEntry::logRequest('evolve.patronLogin', 'POST', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, []);
+			ExternalRequestLogEntry::logRequest('evolve.patronLogin', 'POST', $this->accountProfile->patronApiUrl . '/Authenticate', $this->apiCurlWrapper->getHeaders(), $postParams, $this->apiCurlWrapper->getResponseCode(), $response, ['password' => $password]);
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
 				$jsonData = json_decode($response);
 				if (is_array($jsonData)) {
@@ -801,6 +811,7 @@ class Evolve extends AbstractIlsDriver {
 						'userValid' => true,
 						'accessToken' => $jsonData->LoginToken,
 						'patronId' => $jsonData->AccountID,
+						'barcode' => $jsonData->AccountBarcode,
 					];
 				} else {
 					return new AspenError($jsonData->Status . ' ' . $jsonData->Message);
@@ -817,8 +828,8 @@ class Evolve extends AbstractIlsDriver {
 		return null;
 	}
 
-	public function findNewUser($patronBarcode) {
-		//For Evolve, this can only be called when initiating masquerade
+	public function findNewUser($patronBarcode, $patronUsername) {
+		//For Evolve, this can only be called when initiating masquerade and there is currently no way to lookup a user without a password
 		return false;
 	}
 

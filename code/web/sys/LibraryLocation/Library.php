@@ -35,6 +35,16 @@ if (file_exists(ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php')) {
 	require_once ROOT_DIR . '/sys/AspenLiDA/GeneralSetting.php';
 }
 
+if (file_exists(ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php')) {
+	require_once ROOT_DIR . '/sys/LibraryLocation/ILLItemType.php';
+}
+if (file_exists(ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php')) {
+    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacet.php';
+}
+if (file_exists(ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php')) {
+    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacet.php';
+}
+
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 
 class Library extends DataObject {
@@ -230,6 +240,7 @@ class Library extends DataObject {
 	public $maxPinLength;
 	public $onlyDigitsAllowedInPin;
 	public $enableForgotPasswordLink;
+	public $enableForgotBarcode;
 	public /** @noinspection PhpUnused */
 		$preventExpiredCardLogin;
 	public /** @noinspection PhpUnused */
@@ -373,9 +384,13 @@ class Library extends DataObject {
 
 	//OAI
 	public $enableOpenArchives;
+    public $openArchivesFacetSettingId;
 
 	//Web Builder
 	public $enableWebBuilder;
+
+    //WebsiteIndexing
+    public $websiteIndexingFacetSettingId;
 
 	//Donations
 	public $donationSettingId;
@@ -406,6 +421,10 @@ class Library extends DataObject {
 
 	public $accountProfileId;
 
+	//cookieConsent
+	public $cookieStorageConsent;
+	public $cookiePolicyHTML;
+
 	private $_cloudLibraryScopes;
 	private $_libraryLinks;
 
@@ -431,6 +450,9 @@ class Library extends DataObject {
 		// we don't want to make the libraryId property editable
 		// because it is associated with this library system only
 		unset($holidaysStructure['libraryId']);
+
+		$ILLItemTypesStructure = ILLItemType::getObjectStructure($context);
+		unset($ILLItemTypesStructure['libraryId']);
 
 		$libraryLinksStructure = LibraryLink::getObjectStructure($context);
 		unset($libraryLinksStructure['weight']);
@@ -1650,6 +1672,7 @@ class Library extends DataObject {
 								'readonly' => false,
 								'permissions' => ['Library ILS Options'],
 							],
+
 							'useAllCapsWhenUpdatingProfile' => [
 								'property' => 'useAllCapsWhenUpdatingProfile',
 								'type' => 'checkbox',
@@ -1675,15 +1698,6 @@ class Library extends DataObject {
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
-							'enableForgotPasswordLink' => [
-								'property' => 'enableForgotPasswordLink',
-								'type' => 'checkbox',
-								'label' => 'Enable "Forgot Password?" Link on Login Screen',
-								'description' => 'Checking this will enable a &quot;Forgot Password?&quot; link on the login screen, which will allow users to reset their PIN/password. The user account must have an email address on file to reset their PIN/password with this link.',
-								'hideInLists' => true,
-								'default' => 1,
-								'permissions' => ['Library ILS Connection'],
-							],
 							'showAlternateLibraryOptionsInProfile' => [
 								'property' => 'showAlternateLibraryOptionsInProfile',
 								'type' => 'checkbox',
@@ -1707,6 +1721,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Notice Type in Profile',
 								'description' => 'Whether or not patrons should be able to change how they receive notices in their profile.',
+								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1830,7 +1845,7 @@ class Library extends DataObject {
 							'allowPickupLocationUpdates' => [
 								'property' => 'allowPickupLocationUpdates',
 								'type' => 'checkbox',
-								'label' => 'Allow Patrons to Update Their Pickup Location',
+								'label' => 'Allow Patrons to Update Their Preferred Pickup Location',
 								'description' => 'Whether or not patrons should be able to update their preferred pickup location in their profile.',
 								'hideInLists' => true,
 								'default' => 0,
@@ -1840,6 +1855,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Allow Patrons to remember their preferred pickup location',
 								'description' => 'Whether or not patrons can remember their preferred pickup location when placing holds',
+								'note' => 'Requires Allow patrons to update their preferred pickup location to be enabled',
 								'hideInLists' => true,
 								'default',
 								'true',
@@ -2055,6 +2071,25 @@ class Library extends DataObject {
 								'label' => 'Login Notes',
 								'description' => 'Additional notes to display under the login fields',
 								'hideInLists' => true,
+							],
+							'enableForgotPasswordLink' => [
+								'property' => 'enableForgotPasswordLink',
+								'type' => 'checkbox',
+								'label' => 'Enable "Forgot Password?" Link on Login Screen',
+								'description' => 'Checking this will enable a &quot;Forgot Password?&quot; link on the login screen, which will allow users to reset their PIN/password. The user account must have an email address on file to reset their PIN/password with this link.',
+								'hideInLists' => true,
+								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
+							],
+							'enableForgotBarcode' => [
+								'property' => 'enableForgotBarcode',
+								'type' => 'checkbox',
+								'label' => 'Enable "Forgot Barcode?" Link on Login Screen',
+								'description' => 'Checking this will enable a &quot;Forgot Barcode?&quot; link on the login screen, which will allow users to receive their barcode by text. The user account must have a text-capable phone number on file to receive their barcode with this link.',
+								'note' => 'Requires Twilio to be configured',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'allowLoginToPatronsOfThisLibraryOnly' => [
 								'property' => 'allowLoginToPatronsOfThisLibraryOnly',
@@ -3101,6 +3136,22 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'size' => '200',
 					],
+					'interLibraryLoanItemTypes' => [
+						'property' => 'interLibraryLoanItemTypes',
+						'type' => 'oneToMany',
+						'label' => 'Interlibrary Loan Item Types',
+						'renderAsHeading' => true,
+						'description' => 'Item type codes that define an item as being interlibrary loan item',
+						'note' => 'Applies to Koha Only',
+						'keyThis' => 'libraryId',
+						'keyOther' => 'libraryId',
+						'subObjectType' => 'ILLItemType',
+						'structure' => $ILLItemTypesStructure,
+						'sortable' => false,
+						'storeDb' => true,
+						'canAddNew' => true,
+						'canDelete' => true,
+					],
 
 					'innReachSection' => [
 						'property' => 'innReachSection',
@@ -3168,6 +3219,30 @@ class Library extends DataObject {
 						],
 					],
 				],
+			],
+			'dataProtectionRegulations' => [
+				'property' => 'dataProtectionRegulations',
+				'type' => 'section',
+				'label' => 'Data Protection Regulations',
+				'hideInLists' => true,
+				'expandByDefault' => false,
+				'properties' => [
+					'cookieStorageConsent' => [
+						'property' => 'cookieStorageConsent',
+						'type' => 'checkbox',
+						'label' => 'Require Cookie Storage Consent',
+						'description' => 'Require users to consent to cookie storage before using the catalog',
+						'default' => false,
+					],
+					'cookiePolicyHTML' => [
+						'property' => 'cookiePolicyHTML',
+						'type' => 'html',
+						'label' => 'Cookie Policy',
+						'description' => 'HTML of cookie policy to display to users',
+						'default' => 'This body has not yet set a cookie storage policy, please check back later.',
+						'hideInLists' => true,
+					],
+				]
 			],
 			'messagingSection' => [
 				'property' => 'messagingSection',
@@ -3632,17 +3707,24 @@ class Library extends DataObject {
 		return false;
 	}
 
-	public static function getMasqueradeStatus(): int {
-		$libLookUp = new Library();
-		$libLookUp->find();
+	public function getMasqueradeStatus(): int {
+		return $this->allowMasqueradeMode;
+	}
 
-		if($libLookUp->getNumResults() == 0){
-			echo("No libraries are configured for the system.  Please configure at least one library before proceeding.");
-			die();
-		} else {
-			$libLookUp->fetch();
-			return $libLookUp->allowMasqueradeMode;
+	public function getSSORestrictionStatus():int {
+		if($this->ssoSettingId > 0) {
+			require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+			$ssoSettings = new SSOSetting();
+			$ssoSettings->id = $this->ssoSettingId;
+			if($ssoSettings->find(true)) {
+				try {
+					return empty($ssoSettings->restrictByIP) ? 0 : 1;
+				}catch (Exception $e) {
+					// not setup yet
+				}
+			}
 		}
+		return 0;
 	}
 
 	static function getSearchLibrary($searchSource = null) {
@@ -3872,6 +3954,18 @@ class Library extends DataObject {
 			return $this->getThemes();
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
+		} elseif ($name == 'interLibraryLoanItemTypes') {
+			if (!isset($this->interLibraryLoanItemTypes) && $this->libraryId) {
+				$this->interLibraryLoanItemTypes = [];
+				$interLibraryLoanItemType = new ILLItemType();
+				$interLibraryLoanItemType->libraryId = $this->libraryId;
+				$interLibraryLoanItemType->orderBy('code');
+				$interLibraryLoanItemType->find();
+				while ($interLibraryLoanItemType->fetch()) {
+					$this->interLibraryLoanItemTypes[$interLibraryLoanItemType->id] = clone($interLibraryLoanItemType);
+				}
+			}
+			return $this->interLibraryLoanItemTypes;
 		} else {
 			return parent::__get($name);
 		}
@@ -3903,6 +3997,8 @@ class Library extends DataObject {
 			$this->_themes = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
 			$this->_cloudLibraryScopes = $value;
+		}  elseif ($name == 'interLibraryLoanItemTypes') {
+			$this->interLibraryLoanItemTypes = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -3959,6 +4055,7 @@ class Library extends DataObject {
 			$this->saveCombinedResultSections();
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
+			$this->saveILLItemTypes();
 		}
 		if ($this->_patronNameDisplayStyleChanged) {
 			$libraryLocations = new Location();
@@ -4015,6 +4112,7 @@ class Library extends DataObject {
 			$this->saveCloudLibraryScopes();
 			$this->saveThemes();
 			$this->processSso();
+			$this->saveILLItemTypes();
 		}
 		return $ret;
 	}
@@ -4129,7 +4227,37 @@ class Library extends DataObject {
 
 	public function saveThemes() {
 		if (isset ($this->_themes) && is_array($this->_themes)) {
-			$this->saveOneToManyOptions($this->_themes, 'libraryId');
+			foreach($this->_themes as $obj) {
+				/** @var DataObject $obj */
+				if($obj->_deleteOnSave) {
+					$obj->delete();
+				} else {
+					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
+						if($obj->{$obj->__primaryKey} <= 0) {
+							$obj->libraryId = $this->{$this->__primaryKey};
+							$obj->insert();
+						} else {
+							if($obj->hasChanges()) {
+								$obj->update();
+							}
+						}
+					} else {
+						// set appropriate weight for new theme
+						$weight = 0;
+						$existingThemesForLibrary = new LibraryTheme();
+						$existingThemesForLibrary->libraryId = $this->libraryId;
+						if ($existingThemesForLibrary->find()) {
+							while ($existingThemesForLibrary->fetch()) {
+								$weight = $weight + 1;
+							}
+						}
+
+						$obj->libraryId = $this->{$this->__primaryKey};
+						$obj->weight = $weight;
+						$obj->insert();
+					}
+				}
+			}
 			unset($this->_themes);
 		}
 	}
@@ -4156,6 +4284,13 @@ class Library extends DataObject {
 		if (isset ($this->holidays) && is_array($this->holidays)) {
 			$this->saveOneToManyOptions($this->holidays, 'libraryId');
 			unset($this->holidays);
+		}
+	}
+
+	public function saveILLItemTypes() {
+		if (isset ($this->interLibraryLoanItemTypes) && is_array($this->interLibraryLoanItemTypes)) {
+			$this->saveOneToManyOptions($this->interLibraryLoanItemTypes, 'libraryId');
+			unset($this->interLibraryLoanItemTypes);
 		}
 	}
 
@@ -4209,6 +4344,77 @@ class Library extends DataObject {
 		}
 		return $this->_groupedWorkDisplaySettings;
 	}
+
+    protected $_eventFacetSettings = null;
+
+    /** @return EventsFacetGroup */
+    public function getEventFacetSettings() {
+        if ($this->_eventFacetSettings == null) {
+            try {
+                require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+                $eventsFacetSetting = new LibraryEventsSetting();
+                $eventsFacetSetting->libraryId = $this->libraryId;
+                if ($eventsFacetSetting->find(true)) {
+                    $this->_eventFacetSettings = $eventsFacetSetting;
+                }
+
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading event facet settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_eventFacetSettings;
+    }
+
+    protected $_openArchivesFacetSettings = null;
+
+    /** @return OpenArchivesFacetGroup */
+    public function getOpenArchivesFacetSettings() {
+        if ($this->_openArchivesFacetSettings == null) {
+            try {
+                $searchLibrary = new Library();
+                $searchLibrary->libraryId = $this->libraryId;
+                if ($searchLibrary->find(true)){
+                    require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesFacetGroup.php';
+                    $openArchivesFacetSetting = new OpenArchivesFacetGroup();
+                    $openArchivesFacetSetting->id = $searchLibrary->openArchivesFacetSettingId;
+                    if ($openArchivesFacetSetting->find(true)) {
+                        $this->_openArchivesFacetSettings = $openArchivesFacetSetting;
+                    }
+                }
+
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading Open Archives facet settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_openArchivesFacetSettings;
+    }
+
+    protected $_websiteFacetSettings = null;
+
+    /** @return WebsiteFacetGroup */
+    public function getWebsiteFacetSettings() {
+        if ($this->_websiteFacetSettings == null) {
+            try {
+                $searchLibrary = new Library();
+                $searchLibrary->libraryId = $this->libraryId;
+                if ($searchLibrary->find(true)){
+                    require_once ROOT_DIR . '/sys/WebsiteIndexing/WebsiteFacetGroup.php';
+                    $websiteFacetSetting = new WebsiteFacetGroup();
+                    $websiteFacetSetting->id = $searchLibrary->websiteIndexingFacetSettingId;
+                    if ($websiteFacetSetting->find(true)) {
+                        $this->_websiteFacetSettings = $websiteFacetSetting;
+                    }
+                }
+
+            } catch (Exception $e) {
+                global $logger;
+                $logger->log('Error loading website facet settings ' . $e, Logger::LOG_ERROR);
+            }
+        }
+        return $this->_websiteFacetSettings;
+    }
 
 	protected $_layoutSettings = null;
 
@@ -4478,6 +4684,8 @@ class Library extends DataObject {
 			'enableSavedSearches' => $this->enableSavedSearches,
 			'allowPinReset' => $this->allowPinReset,
 			'allowProfileUpdates' => $this->allowProfileUpdates,
+			'enableForgotPasswordLink' => $this->enableForgotPasswordLink,
+			'enableForgotBarcode' => $this->enableForgotBarcode,
 			'showShareOnExternalSites' => $this->showShareOnExternalSites,
 			'discoveryVersion' => $interface->getVariable('gitBranchWithCommit'),
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
@@ -4533,9 +4741,29 @@ class Library extends DataObject {
 			];
 		}
 
+		$pinValidationRules = null;
+		$forgotPasswordType = 'none';
+		$ils = 'unknown';
+
 		$catalog = CatalogFactory::getCatalogConnectionInstance();
-		$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		if($catalog != null) {
+			if($this->enableForgotPasswordLink) {
+				$forgotPasswordType = $catalog->getForgotPasswordType();
+			}
+			$pinValidationRules = $catalog->getPasswordPinValidationRules();
+		}
+
+		if($this->accountProfileId) {
+			$accountProfile = new AccountProfile();
+			$accountProfile->id = $this->accountProfileId;
+			if ($accountProfile->find(true)) {
+				$ils = $accountProfile->ils;
+			}
+		}
+
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
+		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
+		$apiInfo['ils'] = $ils;
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;

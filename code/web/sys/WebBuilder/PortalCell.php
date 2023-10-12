@@ -73,6 +73,7 @@ class PortalCell extends DataObject {
 			'youtube_video' => 'YouTube Video',
 			'hours_locations' => 'Library Hours and Locations',
 			'web_resource' => 'Web Resource',
+			'quick_poll' => 'Quick Poll'
 		];
 		$colorOptions = [
 			'default' => 'default',
@@ -425,6 +426,25 @@ class PortalCell extends DataObject {
 				}
 			}
 
+		} elseif ($this->sourceType == 'quick_poll') {
+			require_once ROOT_DIR . '/sys/WebBuilder/QuickPoll.php';
+			$quickPoll = new QuickPoll();
+			$quickPoll->id = $this->sourceId;
+			if($quickPoll->find(true)) {
+				if ($inPageEditor) {
+					require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+					$parsedown = AspenParsedown::instance();
+					$parsedown->setBreaksEnabled(true);
+					$contents .= "<h2>$quickPoll->title</h2>";
+					$contents .= $parsedown->parse($quickPoll->introText);
+					$contents .= "<div>(fields not displayed while editing the page)</div>";
+				} else {
+					$oldId = $interface->getVariable('id');
+					$interface->assign('id', $quickPoll->id);
+					$contents .= $quickPoll->getFormattedPoll();
+					$interface->assign('id', $oldId);
+				}
+			}
 		} elseif ($this->sourceType == 'hours_locations') {
 			global $library;
 			$tmpLocation = new Location();
