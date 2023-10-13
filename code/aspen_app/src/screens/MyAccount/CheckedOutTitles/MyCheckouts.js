@@ -1,23 +1,22 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import moment from 'moment';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
-import { ScrollView, Actionsheet, FormControl, Select, Box, Button, Center, FlatList, Icon, Pressable, Text, HStack, VStack, CheckIcon, Image } from 'native-base';
+import { Actionsheet, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
 import React, { useState } from 'react';
 import { Platform, SafeAreaView } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
-import CachedImage from 'expo-cached-image';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 import { CheckoutsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { getPatronCheckedOutItems, reloadProfile } from '../../../util/api/user';
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
-import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { DisplaySystemMessage } from '../../../components/Notifications';
+import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
+import { getPatronCheckedOutItems } from '../../../util/api/user';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const MyCheckouts = () => {
      const isFetchingCheckouts = useIsFetching({ queryKey: ['checkouts'] });
@@ -72,6 +71,7 @@ export const MyCheckouts = () => {
                } else {
                     navigation.setOptions({ title: checkoutsBy.all });
                }
+               queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, value] });
           }
      };
 
@@ -330,6 +330,7 @@ const Checkout = (props) => {
                     }
                }
           }
+
           preloadTranslations();
      }, [language]);
 
