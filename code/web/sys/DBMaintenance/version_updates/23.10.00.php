@@ -51,6 +51,20 @@ function getUpdates23_10_00(): array {
 				"ALTER TABLE grouped_work_record_items CHANGE COLUMN recordIncludedScopes recordIncludedScopes TEXT DEFAULT ('~')",
 			],
 		],
+		'allowChangingPickupLocationForAvailableHolds' => [
+			'title' => 'Allow Changing Pickup Location For Available Holds',
+			'description' => 'Let patrons change pickup locations for available holds',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN allowChangingPickupLocationForAvailableHolds TINYINT(1) DEFAULT 0",
+			],
+		],
+		'allowCancellingAvailableHolds' => [
+			'title' => 'Allow Cancelling Available Holds',
+			'description' => 'Let patrons cancel available holds ',
+			'sql' => [
+				"ALTER TABLE library ADD COLUMN allowCancellingAvailableHolds TINYINT(1) DEFAULT 1",
+			],
+		],
 
 		//kirstien - ByWater
 		'add_always_display_renew_count' => [
