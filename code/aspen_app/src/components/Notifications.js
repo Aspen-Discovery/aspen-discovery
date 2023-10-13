@@ -356,16 +356,45 @@ export const DisplaySystemMessage = (props) => {
      const updateSystemMessages = props.updateSystemMessages;
      let style = props.style;
      let scheme = props.style;
+
+     // return a custom alert if the system message style is 'none'
      if (props.style === '') {
-          style = 'info';
-          scheme = 'primary';
+          return (
+               <Alert maxW="100%" status="info" backgroundColor="coolGray.200" mb={2} index={props.id}>
+                    <VStack space={2} flexShrink={1} w="100%">
+                         <HStack flexShrink={1} alignItems="flex-start" space={2} justifyContent="space-between">
+                              <HStack space={2} flexShrink={1} pr={3}>
+                                   <Text fontSize="sm" color="coolGray.800" mb={-1}>
+                                        {props.message}
+                                   </Text>
+                              </HStack>
+                              <IconButton
+                                   onPress={async () => {
+                                        await hideSystemMessage(props.all, props.id, props.dismissable, props.url).then((result) => {
+                                             queryClient.setQueryData(['system_messages', props.url], result);
+                                             updateSystemMessages(result);
+                                        });
+                                   }}
+                                   mt={-2}
+                                   variant="unstyled"
+                                   _focus={{
+                                        borderWidth: 0,
+                                   }}
+                                   icon={<CloseIcon size="3" />}
+                                   _icon={{
+                                        color: 'coolGray.600',
+                                   }}
+                              />
+                         </HStack>
+                    </VStack>
+               </Alert>
+          );
      }
      return (
           <Alert maxW="100%" status={style} colorScheme={scheme} mb={2} index={props.id}>
                <VStack space={2} flexShrink={1} w="100%">
                     <HStack flexShrink={1} alignItems="flex-start" space={2} justifyContent="space-between">
                          <HStack space={2} flexShrink={1} pr={3}>
-                              {style !== 'success' ? <Alert.Icon /> : null}
                               <Text fontSize="sm" color="coolGray.800" mb={-1}>
                                    {props.message}
                               </Text>

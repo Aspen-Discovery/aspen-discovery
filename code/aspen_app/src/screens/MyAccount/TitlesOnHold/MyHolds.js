@@ -335,6 +335,7 @@ export const MyHolds = () => {
                     }}
                     borderColor="coolGray.200"
                     flexWrap="nowrap">
+                    {showSystemMessage()}
                     <ScrollView horizontal>
                          <HStack space={2}>
                               <Button
@@ -397,7 +398,7 @@ export const MyHolds = () => {
                if (_.isEmpty(sectionData.data)) {
                     return noHolds(title);
                } else {
-                    return <Box pb={30} />;
+                    return <Box mb="300px"></Box>;
                }
           } else if (title === 'Ready') {
                if (_.isEmpty(sectionData.data)) {
@@ -421,8 +422,7 @@ export const MyHolds = () => {
      return (
           <SafeAreaView>
                {actionButtons('none')}
-               <Box safeArea={2}>{showSystemMessage()}</Box>
-               <Box style={{ paddingBottom: 100 }}>
+               <Box>
                     <Checkbox.Group
                          style={{
                               maxWidth: '100%',
@@ -432,6 +432,7 @@ export const MyHolds = () => {
                               },
                               padding: 0,
                               margin: 0,
+                              paddingBottom: _.size(systemMessages) >= 2 ? 300 : 30,
                          }}
                          name="Holds"
                          value={values}
