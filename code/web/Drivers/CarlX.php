@@ -1526,7 +1526,7 @@ class CarlX extends AbstractIlsDriver {
 			$paymentRequest->SearchType = 'Patron ID';
 			$paymentRequest->SearchID = $patronId;
 			$paymentRequest->FineOrFee = new stdClass();
-			$paymentRequest->FineOrFee->ItemId = ''; // The unique item identifier against which payment for a fine or fee is being applied
+			$paymentRequest->FineOrFee->ItemId = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
 			$paymentRequest->FineOrFee->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
 			$paymentRequest->FineOrFee->WaiveComment = ''; // 16 character limit
 			$paymentRequest->FineOrFee->PayType = 'Pay'; // Pay, Waive, or Cancel
