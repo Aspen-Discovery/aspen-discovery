@@ -985,7 +985,7 @@ class Koha extends AbstractIlsDriver {
 			$userFromDb = $lookupUserResult->fetch_assoc();
 			$lookupUserResult->close();
 
-			if ($userFromDb == null) {
+			if (empty($userFromDb)) {
 				return false;
 			}
 			//Do a sanity check to be sure we have the correct user for the supplied patron id

@@ -434,6 +434,7 @@ class Polaris extends AbstractIlsDriver {
 
 	public function getHolds($patron): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
+		global $library;
 		$availableHolds = [];
 		$unavailableHolds = [];
 		$holds = [
@@ -541,6 +542,13 @@ class Polaris extends AbstractIlsDriver {
 
 				$curHold->available = $isAvailable;
 				if ($curHold->available) {
+					if (!$library->allowChangingPickupLocationForAvailableHolds) {
+						$curHold->locationUpdateable = false;
+					}
+					if (!$library->allowCancellingAvailableHolds) {
+						$curHold->cancelable = false;
+					}
+
 					$holds['available'][] = $curHold;
 				} else {
 					$holds['unavailable'][] = $curHold;
