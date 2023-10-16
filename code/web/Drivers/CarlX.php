@@ -1492,11 +1492,31 @@ class CarlX extends AbstractIlsDriver {
 	public function completeFinePayment(User $patron, UserPayment $payment) {
 		global $logger;
 		global $locationSingleton;
+		global $library;
 
 		$result = [
 			'success' => false,
 			'message' => 'Unknown error completing fine payment',
 		];
+
+		if(empty($library->accountProfileId)) {
+			$logger->log('No Account Profile configured in Library Systems', Logger::LOG_ERROR);
+			$result['message'] = 'No Account Profile configured in Library Systems';
+			return $result;
+		}
+
+		$staffId = '';
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		if ($accountProfile->find(true)) {
+			if(empty($accountProfile->staffUsername)) {
+				$logger->log('No Staff Username configured in Account Profile', Logger::LOG_ERROR);
+				$result['message'] = 'No Staff Username configured in Account Profile';
+				return $result;
+			}
+			$staffId = $accountProfile->staffUsername;
+		}
 
 		if (empty($this->patronWsdl)) {
 			$logger->log('No Default Patron WSDL defined for SOAP calls in CarlX Driver', Logger::LOG_ERROR);
@@ -1533,7 +1553,7 @@ class CarlX extends AbstractIlsDriver {
 			$paymentRequest->FineOrFee->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
 			$paymentRequest->FineOrFee->Amount = $pmtAmount;
 			$paymentRequest->Modifiers = new stdClass();
-			$paymentRequest->Modifiers->StaffId = ''; // The alias of the employee submitting the request. Required.
+			$paymentRequest->Modifiers->StaffId = $staffId; // The alias of the employee submitting the request. Required.
 			$paymentRequest->Modifiers->EnvBranch = $location->code; // Branch Code indicating the Branch being used. Required.
 
 			while (!$connectionPassed && $numTries < 2) {
