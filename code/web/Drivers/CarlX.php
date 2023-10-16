@@ -1563,7 +1563,7 @@ class CarlX extends AbstractIlsDriver {
 						$responseResult->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
 
 						if($responseResult->ReceiptNumber) {
-							$payment->orderId = $responseResult->ReceiptNumber;
+							$payment->transactionId = $responseResult->ReceiptNumber;
 							$payment->update();
 						} else {
 							$allPaymentsSucceed = false;
