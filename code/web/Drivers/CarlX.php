@@ -1562,13 +1562,13 @@ class CarlX extends AbstractIlsDriver {
 						// if ReceiptNumber is present, settlement with Carl.X was successful
 						$responseResult->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
 
-						if($responseResult->ReceiptNumber) {
-							$payment->transactionId = $responseResult->ReceiptNumber;
-							$payment->update();
-						} else {
+						if(!$responseResult->ReceiptNumber) {
 							$allPaymentsSucceed = false;
 							$result['message'] = "Error updating payment, please visit the library with your receipt.";
 							$logger->log("Error updating payment $payment->id: {$responseResult->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
+						} else {
+							$payment->message .= " CarlX Receipt Number $responseResult->ReceiptNumber";
+							$payment->update();
 						}
 					}
 				} catch (SoapFault $e) {
@@ -1586,7 +1586,7 @@ class CarlX extends AbstractIlsDriver {
 				$paymentNote->Note = new stdClass();
 				$paymentNote->Note->PatronID = $patronId;
 				$paymentNote->Note->NoteType = 2;
-				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->transactionId;
+				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
 				$paymentNote->Modifiers = '';
 				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote);
 				if($addPaymentNoteResult) {
