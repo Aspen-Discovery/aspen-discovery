@@ -1,19 +1,16 @@
-import Constants from 'expo-constants';
+import { create } from 'apisauce';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import _ from 'lodash';
+import { Alert, CloseIcon, HStack, IconButton, Text, VStack } from 'native-base';
 import React from 'react';
-import { Platform, View } from 'react-native';
-import { Alert, Button, HStack, Text, Center, VStack, IconButton, CloseIcon } from 'native-base';
-import { create } from 'apisauce';
-import { useQueryClient } from '@tanstack/react-query';
+import { Platform } from 'react-native';
+import { dismissSystemMessage } from '../util/api/library';
 
 // custom components and helper files
 import { createAuthTokens, getHeaders, postData, problemCodeMap, stripHTML } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
 import { popAlert, popToast } from './loadError';
-import { SystemMessagesContext } from '../context/initialContext';
-import _ from 'lodash';
-import { dismissSystemMessage } from '../util/api/library';
 
 export async function registerForPushNotificationsAsync(url) {
      console.log('url: ' + url);
@@ -359,16 +356,45 @@ export const DisplaySystemMessage = (props) => {
      const updateSystemMessages = props.updateSystemMessages;
      let style = props.style;
      let scheme = props.style;
+
+     // return a custom alert if the system message style is 'none'
      if (props.style === '') {
-          style = 'info';
-          scheme = 'primary';
+          return (
+               <Alert maxW="100%" status="info" backgroundColor="coolGray.200" mb={2} index={props.id}>
+                    <VStack space={2} flexShrink={1} w="100%">
+                         <HStack flexShrink={1} alignItems="flex-start" space={2} justifyContent="space-between">
+                              <HStack space={2} flexShrink={1} pr={3}>
+                                   <Text fontSize="sm" color="coolGray.800" mb={-1}>
+                                        {props.message}
+                                   </Text>
+                              </HStack>
+                              <IconButton
+                                   onPress={async () => {
+                                        await hideSystemMessage(props.all, props.id, props.dismissable, props.url).then((result) => {
+                                             queryClient.setQueryData(['system_messages', props.url], result);
+                                             updateSystemMessages(result);
+                                        });
+                                   }}
+                                   mt={-2}
+                                   variant="unstyled"
+                                   _focus={{
+                                        borderWidth: 0,
+                                   }}
+                                   icon={<CloseIcon size="3" />}
+                                   _icon={{
+                                        color: 'coolGray.600',
+                                   }}
+                              />
+                         </HStack>
+                    </VStack>
+               </Alert>
+          );
      }
      return (
           <Alert maxW="100%" status={style} colorScheme={scheme} mb={2} index={props.id}>
                <VStack space={2} flexShrink={1} w="100%">
-                    <HStack flexShrink={1} alignItems="start" space={2} justifyContent="space-between">
+                    <HStack flexShrink={1} alignItems="flex-start" space={2} justifyContent="space-between">
                          <HStack space={2} flexShrink={1} pr={3}>
-                              {style !== 'success' ? <Alert.Icon /> : null}
                               <Text fontSize="sm" color="coolGray.800" mb={-1}>
                                    {props.message}
                               </Text>
