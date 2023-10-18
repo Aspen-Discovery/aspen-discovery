@@ -827,10 +827,10 @@ class Koha extends AbstractIlsDriver {
 					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
 				} else {
 					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
-					$postParams = json_encode([
+					$postParams = [
 						'identifier' => $username,
 						'password' => $password,
-					]);
+					];
 					$this->apiCurlWrapper->addCustomHeaders([
 						'Authorization: Bearer ' . $oauthToken,
 						'User-Agent: Aspen Discovery',
@@ -840,12 +840,12 @@ class Koha extends AbstractIlsDriver {
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					], true);
 				}
-				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', $postParams);
+				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
 				$jsonResponse = json_decode($responseBody);
 				$cardNumber = $jsonResponse->cardnumber;
 				$patronId = $jsonResponse->patron_id;
-				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), $postParams, $responseCode, $responseBody, ['password' => $password]);
+				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
 				if ($responseCode == 201) {
 					$authenticationSuccess = true;
 				} else {

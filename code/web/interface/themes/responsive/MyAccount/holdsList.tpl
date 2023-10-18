@@ -77,8 +77,8 @@
 			<a href="#" onclick="AspenDiscovery.Account.confirmCancelHoldSelected()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel Selected" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.confirmCancelHoldAll()" class="btn btn-sm btn-default btn-warning">{translate text="Cancel All" isPublicFacing=true}</a>
 			{if !empty($allowFreezeAllHolds)}
-			<a href="#" onclick="AspenDiscovery.Account.confirmFreezeHoldSelected()" class="btn btn-sm btn-default">{translate text="Freeze Selected" isPublicFacing=true}</a>
-			<a href="#" onclick="AspenDiscovery.Account.confirmFreezeHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Freeze All" isPublicFacing=true}</a>
+			<a href="#" onclick="AspenDiscovery.Account.confirmFreezeHoldSelected('', '', '', {if !empty($suspendRequiresReactivationDate)}true{else}false{/if})" class="btn btn-sm btn-default">{translate text="Freeze Selected" isPublicFacing=true}</a>
+			<a href="#" onclick="AspenDiscovery.Account.confirmFreezeHoldAll('{$userId}', {if !empty($suspendRequiresReactivationDate)}true{else}false{/if})" class="btn btn-sm btn-default">{translate text="Freeze All" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.confirmThawHoldSelected()" class="btn btn-sm btn-default">{translate text="Thaw Selected" isPublicFacing=true}</a>
 			<a href="#" onclick="AspenDiscovery.Account.confirmThawHoldAll('{$userId}')" class="btn btn-sm btn-default">{translate text="Thaw All" isPublicFacing=true}</a>
 			{/if}
