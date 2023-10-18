@@ -203,8 +203,14 @@ class UserPayment extends DataObject {
 			$userPayment->id = $paymentId;
 			if ($userPayment->find(true)) {
 				if ($userPayment->error || $userPayment->completed || $userPayment->cancelled) {
+					if ($userPayment->error) {
+						$userPayment->message .= "This payment had an error. ";
+					}else if ($userPayment->completed) {
+						$userPayment->message .= "This payment was already marked completed. ";
+					}else if ($userPayment->cancelled) {
+						$userPayment->message .= "This payment was already marked cancelled. ";
+					}
 					$userPayment->error = true;
-					$userPayment->message .= "This payment has already been completed. ";
 				} else {
 					$result = $queryParams['RESULT'];
 					$message = $queryParams['RESPMSG'];
