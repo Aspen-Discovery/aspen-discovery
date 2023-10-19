@@ -828,7 +828,7 @@ class Koha extends AbstractIlsDriver {
 				} else {
 					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
 					$postParams = [
-						'identifier' => $username,
+						'identifier' => $barcode,
 						'password' => $password,
 					];
 					$this->apiCurlWrapper->addCustomHeaders([
@@ -859,7 +859,7 @@ class Koha extends AbstractIlsDriver {
 				$apiURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
 				$postParams = ([
 					'service' => 'AuthenticatePatron',
-					'username' => $username,
+					'username' => $barcode,
 					'password' => $password,
 				]);
 				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams);
