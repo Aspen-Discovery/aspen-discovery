@@ -1,10 +1,11 @@
 <?php
-
+require_once ROOT_DIR . '/Drivers/KohaRESTAPIClient.php';
 require_once ROOT_DIR . '/sys/CurlWrapper.php';
 require_once ROOT_DIR . '/Drivers/AbstractIlsDriver.php';
 
 class Koha extends AbstractIlsDriver {
 	private $dbConnection = null;
+	private KohaRESTAPIClient $kohaRestAPIClient;
 
 	/** @var CurlWrapper */
 	private $curlWrapper;
@@ -826,37 +827,15 @@ class Koha extends AbstractIlsDriver {
 				}
 			} else if ($this->getKohaVersion() >= 22.1110) {
 				//Authenticate the user using KOHA API
-				$oauthToken = $this->getOAuthToken();
-				if (!$oauthToken) {
-					global $logger;
-					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
-					$result['messages'][] = translate([
-						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
-						'isPublicFacing' => true,
-					]);
-					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
-				} else {
-					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
-					$postParams = [
-						'identifier' => $barcode,
-						'password' => $password,
+				$params = [
+					'identifier' => $barcode,
+					'password' => $password,
 					];
-					$this->apiCurlWrapper->addCustomHeaders([
-						'Authorization: Bearer ' . $oauthToken,
-						'User-Agent: Aspen Discovery',
-						'Accept: */*',
-						'Cache-Control: no-cache',
-						'Content-Type: application/json;charset=UTF-8',
-						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
-					], true);
-				}
-				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
-				$responseCode = $this->apiCurlWrapper->getResponseCode();
-				$jsonResponse = json_decode($responseBody);
-				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
+				$postResponse = $this->kohaRestAPIClient->post("/api/v1/auth/password/validation",$params,"koha.patronLogin",['password' => $password]);
+				$cardNumber = $postResponse['body']->cardnumber;
+				$patronId = $postResponse['body']->patron_id;
+				$responseCode = $postResponse['code'];
 				if ($responseCode == 201) {
-					$cardNumber = $jsonResponse->cardnumber;
-					$patronId = $jsonResponse->patron_id;
 					$authenticationSuccess = true;
 				} else {
 					$result['messages'][] = translate([
@@ -1254,6 +1233,7 @@ class Koha extends AbstractIlsDriver {
 		$this->delApiCurlWrapper->setTimeout(30);
 		$this->renewalsCurlWrapper = new CurlWrapper();
 		$this->renewalsCurlWrapper->setTimeout(30);
+		$this->kohaRestAPIClient = new KohaRESTAPIClient($accountProfile);
 	}
 
 	function __destruct() {
