@@ -735,11 +735,11 @@ class Koha extends AbstractIlsDriver {
 		global $logger;
 		if (IPAddress::showDebuggingInformation()) {
 			$logger->log("Koha API POST to: " . $url, Logger::LOG_ERROR);
-			if (is_string($body)) {
-				$logger->log(" body is: " . $body, Logger::LOG_ERROR);
-			}else{
-				$logger->log(" body is: " . http_build_query($body), Logger::LOG_ERROR);
-			}
+//			if (is_string($body)) {
+//				$logger->log(" body is: " . $body, Logger::LOG_ERROR);
+//			}else{
+//				$logger->log(" body is: " . http_build_query($body), Logger::LOG_ERROR);
+//			}
 		}
 		$headers = ['Content-Type: application/x-www-form-urlencoded',];
 		$this->curlWrapper->addCustomHeaders($headers, false);
