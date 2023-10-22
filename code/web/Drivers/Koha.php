@@ -734,7 +734,8 @@ class Koha extends AbstractIlsDriver {
 	public function getPostedXMLWebServiceResponse($url, $body) {
 		global $logger;
 		if (IPAddress::showDebuggingInformation()) {
-			$logger->log("Koha API Call to: " . $url, Logger::LOG_ERROR);
+			$logger->log("Koha API POST to: " . $url, Logger::LOG_ERROR);
+			$logger->log(" body is: " . $body, Logger::LOG_ERROR);
 		}
 		$headers = ['Content-Type: application/x-www-form-urlencoded',];
 		$this->curlWrapper->addCustomHeaders($headers, false);
