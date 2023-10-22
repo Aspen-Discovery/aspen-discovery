@@ -862,18 +862,27 @@ class Koha extends AbstractIlsDriver {
 					'username' => $barcode,
 					'password' => $password,
 				]);
-				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams);
-				$patronId = $responseBody->id->__toString();
-				if (isset($patronId)) {
-					$authenticationSuccess = true;
-					$responseCode = 200;
+				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams)
+				if ($responseBody != null) {
+					$patronId = $responseBody->id->__toString();
+					if (isset($patronId)) {
+						$authenticationSuccess = true;
+						$responseCode = 200;
+					} else {
+						$responseCode = 400;
+						$result['messages'][] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+					}
 				} else {
-					$responseCode = 400;
+					$responseCode = $this->curlWrapper->getResponseCode();
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
 				}
+
 				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 			}
 			if ($authenticationSuccess) {
