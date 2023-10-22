@@ -862,7 +862,7 @@ class Koha extends AbstractIlsDriver {
 					'username' => $barcode,
 					'password' => $password,
 				]);
-				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams)
+				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams);
 				if ($responseBody != null) {
 					$patronId = $responseBody->id->__toString();
 					if (isset($patronId)) {
