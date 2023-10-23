@@ -1489,6 +1489,150 @@ class CarlX extends AbstractIlsDriver {
 		return '';
 	}
 
+	public function completeFinePayment(User $patron, UserPayment $payment) {
+		global $logger;
+		global $locationSingleton;
+		global $library;
+
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error completing fine payment',
+		];
+
+		if(empty($library->accountProfileId)) {
+			$logger->log('No Account Profile configured in Library Systems', Logger::LOG_ERROR);
+			$result['message'] = 'No Account Profile configured in Library Systems';
+			return $result;
+		}
+
+		$staffId = '';
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		if ($accountProfile->find(true)) {
+			if(empty($accountProfile->staffUsername)) {
+				$logger->log('No Staff Username configured in Account Profile', Logger::LOG_ERROR);
+				$result['message'] = 'No Staff Username configured in Account Profile';
+				return $result;
+			}
+			$staffId = $accountProfile->staffUsername;
+		}
+
+		if (empty($this->patronWsdl)) {
+			$logger->log('No Default Patron WSDL defined for SOAP calls in CarlX Driver', Logger::LOG_ERROR);
+			$result['message'] = 'No Default Patron WSDL defined for SOAP calls in CarlX Driver';
+			return $result;
+		}
+
+		// There are exceptions in the Soap Client that need to be caught for smooth functioning
+		$connectionPassed = false;
+		$numTries = 0;
+		$result = false;
+		if (IPAddress::showDebuggingInformation()) {
+			$this->genericResponseSOAPCallOptions['trace'] = true;
+		}
+
+		$location = $locationSingleton->getActiveLocation();
+
+		$patronId = $this->getSearchbyPatronIdRequest($patron);
+
+		$accountLinesPaid = explode(',', $payment->finesPaid);
+		$allPaymentsSucceed = true;
+
+		foreach ($accountLinesPaid as $line) {
+			[$feeId, $pmtAmount] = explode('|', $line);
+			[$feeId, $feeType] = explode('-', $feeId);
+			$paymentRequest = new stdClass();
+			$paymentRequest->SearchType = 'Patron ID';
+			$paymentRequest->SearchID = $patronId;
+			$paymentRequest->FineOrFee = new stdClass();
+			$paymentRequest->FineOrFee->ItemId = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
+			$paymentRequest->FineOrFee->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
+			$paymentRequest->FineOrFee->WaiveComment = ''; // 16 character limit
+			$paymentRequest->FineOrFee->PayType = 'Pay'; // Pay, Waive, or Cancel
+			$paymentRequest->FineOrFee->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
+			$paymentRequest->FineOrFee->Amount = $pmtAmount;
+			$paymentRequest->Modifiers = new stdClass();
+			$paymentRequest->Modifiers->StaffId = $staffId; // The alias of the employee submitting the request. Required.
+			$paymentRequest->Modifiers->EnvBranch = $location->code; // Branch Code indicating the Branch being used. Required.
+
+			while (!$connectionPassed && $numTries < 2) {
+				try {
+					$this->soapClient = new SoapClient($this->patronWsdl, $this->genericResponseSOAPCallOptions);
+					$result = $this->soapClient->settleFinesAndFees($paymentRequest);
+					$connectionPassed = true;
+					if (IPAddress::showDebuggingInformation()) {
+						ExternalRequestLogEntry::logRequest('carlx.settleFinesAndFees', 'GET', $this->patronWsdl, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse());
+					}
+					if (is_null($result)) {
+						$lastResponse = $this->soapClient->__getLastResponse();
+						$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
+						$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
+						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
+						$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/request');
+						$responseResult = new stdClass();
+						$responseResult->ResponseStatuses = new stdClass();
+						$responseResult->ResponseStatuses->ResponseStatus = new stdClass();
+						$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
+						$responseResult->ResponseStatuses->ResponseStatus->ShortMessage = implode('; ', $shortMessages);
+						$longMessages = $lastResponse->xpath('//ns2:LongMessage');
+						$responseResult->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', $longMessages);
+
+						// if ReceiptNumber is present, settlement with Carl.X was successful
+						$responseResult->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
+
+						if(!$responseResult->ReceiptNumber) {
+							$allPaymentsSucceed = false;
+							$result['message'] = "Error updating payment, please visit the library with your receipt.";
+							$logger->log("Error updating payment $payment->id: {$responseResult->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
+						} else {
+							$payment->message .= " CarlX Receipt Number $responseResult->ReceiptNumber";
+							$payment->update();
+						}
+					}
+				} catch (SoapFault $e) {
+					if ($numTries == 2) {
+						$logger->log('Error connecting to SOAP ' . $e, Logger::LOG_WARNING);
+						$result['error'] = 'EXCEPTION: ' . $e->getMessage();
+					}
+				}
+				$numTries++;
+			}
+
+
+			if($allPaymentsSucceed) {
+				$paymentNote = new stdClass();
+				$paymentNote->Note = new stdClass();
+				$paymentNote->Note->PatronID = $patronId;
+				$paymentNote->Note->NoteType = 2;
+				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
+				$paymentNote->Modifiers = '';
+				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote);
+				if($addPaymentNoteResult) {
+					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+					if(!$success) {
+						$logger->log("Failed to add patron note for payment in CarlX for Reference ID $payment->id", Logger::LOG_ERROR);
+					}
+				} else {
+					$logger->log("CarlX gave no response when attempting to add patron note for payment Reference ID $payment->id", Logger::LOG_ERROR);
+				}
+
+				$result['success'] = true;
+				$result['message'] = translate([
+					'text' => 'Your fines have been paid successfully, thank you.',
+					'isPublicFacing' => true,
+				]);
+			}
+
+			if (!$connectionPassed) {
+				return false;
+			}
+		}
+
+		return $result;
+	}
+
 	/**
 	 * Get Patron Transactions
 	 *
