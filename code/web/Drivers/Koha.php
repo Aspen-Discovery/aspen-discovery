@@ -834,7 +834,7 @@ class Koha extends AbstractIlsDriver {
 						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
-					return $result;
+					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
 				} else {
 					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
 					$postParams = [
