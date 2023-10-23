@@ -40,5 +40,13 @@ function getUpdates23_11_00(): array {
 		],
 		//Jacob - PTFS
 		//other
+		'select_ILL_system' => [
+			'title' => 'Dropbox ILL systems',
+			'description' => 'Add a setting to allow users to specify ILL system used.',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE  library ADD COLUMN ILLSystem TINYINT(1) DEFAULT 2',
+			],
+		],
     ];
 }

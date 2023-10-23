@@ -13,7 +13,7 @@
 	</p>
 	<div id='illSearchResultsFooter'>
 		<div id='moreResultsFromIllSystem'>
-			<button class="btn btn-info" onclick="window.open ('{$interLibraryLoanUrl}', 'child'); return false">{translate text="Request through ILL" isPublicFacing=true}</button>
+			<button class="btn btn-info" onclick="window.open ('{$interLibraryLoanURL}', 'child'); return false">{translate text="Request through ILL" isPublicFacing=true}</button>
 		</div>
 		<div class='clearfix'>&nbsp;</div>
 	</div>
