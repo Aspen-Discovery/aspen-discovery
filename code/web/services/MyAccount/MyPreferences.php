@@ -111,6 +111,7 @@ class MyAccount_MyPreferences extends MyAccount {
 				$showEdsPreferences = true;
 			}
 			$interface->assign('showEdsPreferences', $showEdsPreferences);
+			$interface->assign('cookieConsentEnabled', $library->cookieStorageConsent);
 
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.

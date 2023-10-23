@@ -46,6 +46,8 @@ class User extends DataObject {
 	public $oAuthAccessToken;
 	public $oAuthRefreshToken;
 	public $isLoggedInViaSSO;
+	public $userCookiePreferenceEssential;
+	public $userCookiePreferenceAnalytics;
 
 	public $holdInfoLastLoaded;
 	public $checkoutInfoLastLoaded;
@@ -1151,6 +1153,13 @@ class User extends DataObject {
 					$this->__set('myLocation2Id', $_POST['myLocation2']);
 				}
 			}
+		}
+
+		//update DB values with current checkbox status in myPreferences
+		if (isset ($_COOKIE['cookieConsent'])) {
+			setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
+			$this->__set('userCookiePreferenceEssential', 1);
+			$this->__set('userCookiePreferenceAnalytics', (isset($_POST['userCookieAnalytics']) && $_POST['userCookieAnalytics'] == 'on') ? 1 : 0);
 		}
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
