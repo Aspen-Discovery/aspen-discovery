@@ -259,6 +259,19 @@ $interface->assign('cookieStorageConsent', false);
 $interface->assign('cookieStorageConsentHTML', '');
 if (!empty($library) && !empty($library->cookieStorageConsent)) {
 	try {
+		$userObj = UserAccount::getActiveUserObj();
+		//If the user is logged in and has set their cookie preferences (and has no preferences in db yet) prior to logging in, save these preferences in DB
+		if (isset($_COOKIE["cookieConsent"]) && UserAccount::isLoggedIn() && $userObj->userCookiePreferenceEssential != 1) {
+			$cookie = json_decode(urldecode($_COOKIE["cookieConsent"]), true);
+			if (!empty($_COOKIE["cookieConsent"])) {
+			$analyticsPref = $cookie['Analytics'];
+			$userObj->userCookiePreferenceEssential = 1;
+			$userObj->userCookiePreferenceAnalytics = $analyticsPref;
+			$userObj->update();
+			}
+		}
+		//Assign variables to smarty interface
+		$interface->assign('profile', $userObj);
 		$interface->assign('cookieStorageConsent', true);
 		$interface->assign('cookieStorageConsentHTML', $library->cookiePolicyHTML);
 	} catch (Exception $e) {
