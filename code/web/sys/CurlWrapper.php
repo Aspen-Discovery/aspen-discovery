@@ -166,6 +166,8 @@ class CurlWrapper {
 		if (!$return) { // log curl error
 			global $logger;
 			$logger->log("curl post error for $url: " . curl_error($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log("  error code " . curl_errno($this->curl_connection), Logger::LOG_ERROR);
+			$logger->log("  response code " . $this->getResponseCode(), Logger::LOG_ERROR);
 		}
 		return $return;
 	}
