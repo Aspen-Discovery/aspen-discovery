@@ -10931,7 +10931,7 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
   font-family: sans-serif;
 }
 .stripPopup .btnWrap a.button {
-  width: 188px;
+  width: 193px;
   padding: 12px 10px;
   font-size: 12px;
   font-weight: 700;

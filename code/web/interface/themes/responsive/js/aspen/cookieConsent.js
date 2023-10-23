@@ -1,9 +1,17 @@
 AspenDiscovery.CookieConsent = (function() {
     return {
-        cookieAgree: function() {
-            console.log('cookieAgree');
-            var aDate = new Date();
-            aDate.setMonth(aDate.getMonth() + 3);
+        cookieAgree: function(props) {
+            if (props == 'all') {
+                var cookieString = {
+                    Essential:1,
+                    Analytics:1,
+                };
+            } else if (props == 'essential') {
+                var cookieString = {
+                    Essential:1,
+                    Analytics:0,
+                };
+            }
             $('.stripPopup').hide();
             $('.modal').modal('hide');
             //set cookie and update db (if logged in) with AJAX
@@ -32,10 +40,13 @@ AspenDiscovery.CookieConsent = (function() {
 			return false;
         },
         cookieDisagree: function() {
-            console.log('cookieDisagree');  
-            $('.stripPopup').hide();
-            AspenDiscovery.showMessageWithButtons("Cookie Policy", Globals.cookiePolicyHTML,'<button onclick=\"AspenDiscovery.CookieConsent.cookieAgree\(\)\;\" class=\'tool btn btn-primary\' id=\'modalConsentAgree\' >Accept essential cookies</button>', true);
+            AspenDiscovery.showMessage("Cookie Policy", Globals.cookiePolicyHTML);
             return;
-        }
+        },
+        fetchUserCookie: function(Values) {
+            document.cookie = 'cookieConsent' + '=' + encodeURIComponent(Values) + ';  path=/';
+            return;
+        },
     }
 }(AspenDiscovery.CookieConsent));
+
