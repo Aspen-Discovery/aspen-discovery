@@ -830,6 +830,11 @@ class Koha extends AbstractIlsDriver {
 				if (!$oauthToken) {
 					global $logger;
 					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
+					$result['messages'][] = translate([
+						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
 				} else {
 					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
 					$postParams = [
