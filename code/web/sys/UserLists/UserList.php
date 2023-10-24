@@ -12,6 +12,7 @@ class UserList extends DataObject {
 	public $created;
 	public $public;
 	public $searchable;
+	public $displayListAuthor;
 	public $deleted;
 	public $dateUpdated;
 	public $defaultSort;
@@ -50,6 +51,7 @@ class UserList extends DataObject {
 			'public',
 			'deleted',
 			'searchable',
+			'displayListAuthor',
 		];
 	}
 
@@ -124,6 +126,7 @@ class UserList extends DataObject {
 		}
 		if ($this->public == 0) {
 			$this->searchable = 0;
+			$this->displayListAuthor = 0;
 		}
 		global $memCache;
 		$memCache->delete('user_list_data_' . UserAccount::getActiveUserId());
@@ -136,6 +139,7 @@ class UserList extends DataObject {
 		}
 		if ($this->public == 0) {
 			$this->searchable = 0;
+			$this->displayListAuthor = 0;
 		}
 		$this->dateUpdated = time();
 		$result = parent::update();

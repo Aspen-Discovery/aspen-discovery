@@ -5351,6 +5351,11 @@ AspenDiscovery.Account = (function () {
 			if (searchableControl) {
 				isSearchable = searchableControl.prop("checked");
 			}
+			var isDisplayListAuthor = false;
+			var displayListAuthorControl = $("#displayListAuthor");
+			if (displayListAuthorControl) {
+				isDisplayListAuthor = displayListAuthorControl.prop("checked");
+			}
 			var titleInput = form.find("input[name=title]");
 			var title;
 			if (titleInput.length > 0){
@@ -5366,6 +5371,7 @@ AspenDiscovery.Account = (function () {
 				title: title,
 				public: isPublic,
 				searchable: isSearchable,
+				displayListAuthor: isDisplayListAuthor,
 				desc: desc,
 				source: source,
 				sourceId: sourceId

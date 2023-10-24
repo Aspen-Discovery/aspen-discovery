@@ -160,6 +160,7 @@ function getUpdates23_08_00(): array {
 			]
 		],
 
+
 		//Jacob - PTFS
 		'add_cookie_consent_theming' => [
 			'title' => 'Add theming to Cookie Consent banner',
@@ -195,5 +196,6 @@ function getUpdates23_08_00(): array {
 				"UPDATE library set cookiePolicyHTML = 'This body has not yet set a cookie storage policy, please check back later.'",
 			]
 		],
+
 	];
 }
