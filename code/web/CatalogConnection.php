@@ -1451,8 +1451,8 @@ class CatalogConnection {
 				}
 			}
 		} else {
-			$timer->logTime("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile");
-			$logger->log("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile", Logger::LOG_NOTICE);
+			$timer->logTime("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for account profile {$this->driver->accountProfile->name}");
+			$logger->log("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for account profile {$this->driver->accountProfile->name}", Logger::LOG_NOTICE);
 			$user = null;
 		}
 		return $user;
