@@ -239,7 +239,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
@@ -264,7 +264,7 @@ class CarlX extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('carlx.renewAll', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 				//print_r($msg_result);
 
-				if (str_starts_with($msg_result, "66")) {
+				if (strpos($msg_result, "66") === 0) {
 					$result = $mySip->parseRenewAllResponse($msg_result);
 					//$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
 
@@ -1391,7 +1391,7 @@ class CarlX extends AbstractIlsDriver {
 					$fine->FineAmountOutstanding = $fine->FineAmount;
 				}
 
-				if (str_starts_with($fine->Identifier, 'ITEM ID: ')) {
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 					$fine->Identifier = substr($fine->Identifier, 9);
 				}
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
@@ -1437,7 +1437,7 @@ class CarlX extends AbstractIlsDriver {
 						$fine->FeeAmountOutstanding = $fine->FeeAmount;
 					}
 
-					if (str_starts_with($fine->Identifier, 'ITEM ID: ')) {
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 						$fine->Identifier = substr($fine->Identifier, 9);
 					}
 
@@ -1778,7 +1778,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 setings
@@ -1844,7 +1844,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null) {
-		if (str_starts_with($holdId, $this->accountProfile->recordSource . ':')) {
+		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
 		//Place the hold via SIP 2
@@ -1868,7 +1868,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 setings
@@ -1904,13 +1904,13 @@ class CarlX extends AbstractIlsDriver {
 				//place the hold
 				$itemId = '';
 				$recordId = '';
-				if (str_starts_with($holdId, 'ITEM ID: ')) {
+				if (strpos($holdId, 'ITEM ID: ') === 0) {
 					$holdType = 3; // specific copy
 					$itemId = substr($holdId, 9);
-				} elseif (str_starts_with($holdId, 'BID: ')) {
+				} elseif (strpos($holdId, 'BID: ') === 0) {
 					$holdType = 2; // any copy of title
 					$recordId = substr($holdId, 5);
-				} elseif (str_starts_with($holdId, 'CARL')) {
+				} elseif (strpos($holdId, 'CARL') === 0) {
 					$holdType = 2; // any copy of title
 					$recordId = $this->BIDfromFullCarlID($holdId);
 				} else { // assume a short BID
@@ -1946,6 +1946,9 @@ class CarlX extends AbstractIlsDriver {
 				//TODO: Should change cancellation date when updating pick up locations
 				if (!empty($cancelDate)) {
 					$dateObject = date_create_from_format('m/d/Y', $cancelDate);
+					if ($dateObject == false) {
+						$dateObject = date_create_from_format('Y-m-d', $cancelDate);
+					}
 					$expirationTime = $dateObject->getTimestamp();
 				} else {
 					//expire the hold in 2 years by default
@@ -1956,7 +1959,7 @@ class CarlX extends AbstractIlsDriver {
 				$msg_result = $mySip->get_message($in);
 				ExternalRequestLogEntry::logRequest('carlx.placeHold', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 
-				if (str_starts_with($msg_result, "16")) {
+				if (strpos($msg_result, "16") === 0) {
 					$result = $mySip->parseHoldResponse($msg_result);
 					$success = ($result['fixed']['Ok'] == 1);
 					$message = $result['variable']['AF'][0];
@@ -2011,7 +2014,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
@@ -2036,7 +2039,7 @@ class CarlX extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('carlx.renewCheckout', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 				//print_r($msg_result);
 
-				if (str_starts_with($msg_result, "30")) {
+				if (strpos($msg_result, "30") === 0) {
 					$result = $mySip->parseRenewResponse($msg_result);
 
 //					$title = $result['variable']['AJ'][0];
