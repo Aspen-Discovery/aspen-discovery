@@ -2,7 +2,11 @@
 	<div id="page-content" class="col-xs-12">
 		<h1>{translate text='Two-factor Authentication' isPublicFacing=true}</h1>
 		<div id="loginFormWrapper">
-			<p>{translate text="Enter the code sent to your authentication method or provide a backup code." isPublicFacing=true}</p>
+			{if !$codeSent}
+				<div class="alert alert-warning">{translate text="Unable to send your authentication code. Verify your account has a valid email address. To access your account now, you may provide a backup code." isPublicFacing=true}</div>
+			{else}
+				<p>{translate text="Enter the code sent to your authentication method or provide a backup code." isPublicFacing=true}</p>
+			{/if}
 			<p class="alert alert-danger" id="codeVerificationFailedPlaceholder" style="display: none;"></p>
 			<p id="newCodeSentPlaceholder" class="alert alert-info" style="display: none;"></p>
 			<p class="alert alert-info" id="loading" style="display: none">

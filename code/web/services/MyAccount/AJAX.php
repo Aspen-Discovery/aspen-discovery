@@ -7515,11 +7515,24 @@ class MyAccount_AJAX extends JSON_Action {
 			$email = null;
 			$user = new User();
 			$user->id = UserAccount::getActiveUserId();
+			$hasValidEmail = false;
 			if ($user->find(true)) {
-				$email = mask_email($user->email);
+				if (filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
+					$email = mask_email($user->email);
+					$hasValidEmail = true;
+				}
 			}
+			$interface->assign('hasValidEmail', $hasValidEmail);
 			$interface->assign('emailAddress', $email);
 
+			if ($hasValidEmail) {
+				$buttons = "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate([
+						'text' => 'Next',
+						'isPublicFacing' => true,
+					]) . "</button>";
+			}else{
+				$buttons = "";
+			}
 			return [
 				'success' => true,
 				'title' => translate([
@@ -7527,10 +7540,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-register.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate([
-						'text' => 'Next',
-						'isPublicFacing' => true,
-					]) . "</button>",
+				'buttons' => $buttons,
 			];
 		} elseif ($step == "verify") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7727,7 +7737,8 @@ class MyAccount_AJAX extends JSON_Action {
 
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
-		$twoFactorAuth->createCode();
+		$codeSent = $twoFactorAuth->createCode();
+		$interface->assign('codeSent', $codeSent);
 
 		$referer = $_REQUEST['referer'] ?? null;
 		$interface->assign('referer', $referer);
