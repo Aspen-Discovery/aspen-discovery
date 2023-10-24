@@ -135,31 +135,36 @@ $timer->logTime('Loaded display options within interface');
 
 global $active_ip;
 
+
 try {
-	require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
-	$googleSettings = new GoogleApiSetting();
-	if ($googleSettings->find(true)) {
-		$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
-		$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
-		$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
-		$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
-		$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
-		$linkedProperties = '';
-		if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
-			$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
-			foreach ($linkedPropertyArray as $linkedProperty) {
-				if (strlen($linkedProperties) > 0) {
-					$linkedProperties .= ', ';
+	$cookie = json_decode(urldecode($_COOKIE["cookieConsent"]), true);
+	$analyticsPref = $cookie['Analytics'];
+	if (empty($library->cookieStorageConsent) || (!empty($library->cookieStorageConsent) && $analyticsPref == 1)){
+		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
+		$googleSettings = new GoogleApiSetting();
+		if ($googleSettings->find(true)) {
+			$googleAnalyticsId = $googleSettings->googleAnalyticsTrackingId;
+			$googleAnalyticsLinkingId = $googleSettings->googleAnalyticsTrackingId;
+			$interface->assign('googleAnalyticsId', $googleSettings->googleAnalyticsTrackingId);
+			$interface->assign('googleAnalyticsLinkingId', $googleSettings->googleAnalyticsLinkingId);
+			$interface->assign('googleAnalyticsVersion', empty($googleSettings->googleAnalyticsVersion) ? 'v3' : $googleSettings->googleAnalyticsVersion);
+			$linkedProperties = '';
+			if (!empty($googleSettings->googleAnalyticsLinkedProperties)) {
+				$linkedPropertyArray = preg_split('~\\r\\n|\\r|\\n~', $googleSettings->googleAnalyticsLinkedProperties);
+				foreach ($linkedPropertyArray as $linkedProperty) {
+					if (strlen($linkedProperties) > 0) {
+						$linkedProperties .= ', ';
+					}
+					$linkedProperties .= "'$linkedProperty'";
 				}
-				$linkedProperties .= "'$linkedProperty'";
 			}
-		}
-		$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
-		if ($googleAnalyticsId) {
-			$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
-			// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
-			$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
-		}
+			$interface->assign('googleAnalyticsLinkedProperties', $linkedProperties);
+			if ($googleAnalyticsId) {
+				$googleAnalyticsDomainName = !empty($googleSettings->googleAnalyticsDomainName) ? $googleSettings->googleAnalyticsDomainName : strstr($_SERVER['SERVER_NAME'], '.');
+				// check for a config setting, use that if found, otherwise grab domain name  but remove the first subdomain
+				$interface->assign('googleAnalyticsDomainName', $googleAnalyticsDomainName);
+			}
+		}	
 	}
 } catch (Exception $e) {
 	//This happens when Google analytics settings aren't setup yet
