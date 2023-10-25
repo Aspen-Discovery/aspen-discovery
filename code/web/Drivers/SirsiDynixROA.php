@@ -753,7 +753,42 @@ class SirsiDynixROA extends HorizonAPI {
 				$createPatronInfoParameters['fields']['phoneList'][] = $cellPhoneInfo;
 			}
 
-			//TODO: We should be able to create either a random barcode or a barcode starting with a specific prefix and choose the length.
+			$barcodePrefix = new SelfRegistrationForm;
+			$barcodePrefix->id = $library->selfRegistrationFormId;
+			if ($barcodePrefix->find(true)){
+				$barcodePrefix =$barcodePrefix->selfRegistrationBarcodePrefix;
+				$barcodeSuffixLength = $barcodePrefix->selfRegBarcodeSuffixLength;
+
+				if ($barcodeSuffixLength !=null){
+					for ($i = 0; $i<$barcodeSuffixLength; $i++)
+					{
+						$barcodeAppend .= rand(0,9);
+					}
+					$createPatronInfoParameters['fields']['barcode'] = $barcodePrefix . $barcodeAppend;
+
+					$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
+
+					if (isset($createNewPatronResponse->messageList)) {
+						foreach ($createNewPatronResponse->messageList as $message) {
+							$updateErrors[] = $message->message;
+							if ($message->message == 'User already exists') {
+								// This means the barcode has been generated before
+								global $logger;
+								$logger->log('Sirsi Self Registration response was that the user already exists.', Logger::LOG_ERROR);
+							}
+						}
+						global $logger;
+						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
+					} else {
+						$selfRegResult = [
+							'success' => true,
+							'barcode' => $barcodePrefix . $barcodeAppend,
+							'requirePinReset' => true,
+						];
+					}
+				}
+			}
+
 			$barcode = new Variable();
 			$barcode->name = 'self_registration_card_number';
 			if ($barcode->find(true)) {

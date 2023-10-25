@@ -40,5 +40,15 @@ function getUpdates23_10_10(): array {
 			]
 		], //emailTemplates
 
+		//kodi - ByWater
+		'self_reg_barcode_prefix' => [
+			'title' => 'Barcode Prefixes',
+			'description' => 'Set barcode prefixes for symphony self registration',
+			'sql' => [
+				"ALTER TABLE self_registration_form ADD COLUMN selfRegistrationBarcodePrefix VARCHAR(10) default ''",
+				"ALTER TABLE self_registration_form ADD COLUMN selfRegBarcodeSuffixLength INT(2) default 0",
+			],
+		],
+		//self_reg_barcode_prefix
 	];
 }
