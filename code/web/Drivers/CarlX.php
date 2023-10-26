@@ -1577,11 +1577,11 @@ class CarlX extends AbstractIlsDriver {
 				}
 			} else {
 				global $logger;
-				$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
+				$logger->log('CarlX ILS gave no response when attempting to settle payment.', Logger::LOG_ERROR);
 				return [
 					'success' => false,
 					'message' => translate([
-						'text' => 'Failed to update your PIN.',
+						'text' => 'Error updating payment, please visit the library with your receipt.',
 						'isPublicFacing' => true,
 					]),
 				];
