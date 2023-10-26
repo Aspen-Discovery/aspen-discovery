@@ -347,7 +347,12 @@ class CarlX extends AbstractIlsDriver {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
-					$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					if($requestName == 'settleFinesAndFees') {
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
+						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
+					} else {
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					}
 					$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/response');
 					$result = new stdClass();
 					$result->ResponseStatuses = new stdClass();
@@ -357,6 +362,11 @@ class CarlX extends AbstractIlsDriver {
 					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
 					// TODO make empty
 					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', array_filter($longMessages));
+
+					if($requestName == 'settleFinesAndFees') {
+						// if ReceiptNumber is present, settlement with Carl.X was successful
+						$result->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
+					}
 				}
 			} catch (SoapFault $e) {
 				if ($numTries == 2) {
@@ -1564,51 +1574,27 @@ class CarlX extends AbstractIlsDriver {
 			$paymentRequest->Modifiers->StaffId = $staffId; // The alias of the employee submitting the request. Required.
 			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
 
-			while (!$connectionPassed && $numTries < 2) {
-				try {
-					$this->soapClient = new SoapClient($this->patronWsdl, $this->genericResponseSOAPCallOptions);
-					$requestName = 'settleFinesAndFees';
-					$result = $this->soapClient->$requestName($paymentRequest);
-					$connectionPassed = true;
-					if (IPAddress::showDebuggingInformation()) {
-						ExternalRequestLogEntry::logRequest('carlx.settleFinesAndFees', 'GET', $this->patronWsdl, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse(), []);
-					}
-					if (is_null($result)) {
-						$lastResponse = $this->soapClient->__getLastResponse();
-						$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
-						$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
-						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
-						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
-						$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/request');
-						$responseResult = new stdClass();
-						$responseResult->ResponseStatuses = new stdClass();
-						$responseResult->ResponseStatuses->ResponseStatus = new stdClass();
-						$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
-						$responseResult->ResponseStatuses->ResponseStatus->ShortMessage = implode('; ', $shortMessages);
-						$longMessages = $lastResponse->xpath('//ns2:LongMessage');
-						$responseResult->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', $longMessages);
-
-						// if ReceiptNumber is present, settlement with Carl.X was successful
-						$responseResult->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
-
-						if(!$responseResult->ReceiptNumber) {
-							$allPaymentsSucceed = false;
-							$result['message'] = "Error updating payment, please visit the library with your receipt.";
-							$logger->log("Error updating payment $payment->id: {$responseResult->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
-						} else {
-							$payment->message .= " CarlX Receipt Number $responseResult->ReceiptNumber";
-							$payment->update();
-						}
-					}
-				} catch (SoapFault $e) {
-					if ($numTries == 2) {
-						$logger->log('Error connecting to SOAP ' . $e, Logger::LOG_WARNING);
-						$result['error'] = 'EXCEPTION: ' . $e->getMessage();
-					}
+			$result = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
+			if($result) {
+				if (!$result->ReceiptNumber) {
+					$allPaymentsSucceed = false;
+					$result['message'] = 'Error updating payment, please visit the library with your receipt.';
+					$logger->log("Error updating payment $payment->id: {$result->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
+				} else {
+					$payment->message .= " CarlX Receipt Number $result->ReceiptNumber";
+					$payment->update();
 				}
-				$numTries++;
+			} else {
+				global $logger;
+				$logger->log('CarlX ILS gave no response when attempting to update Patron PIN.', Logger::LOG_ERROR);
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'Failed to update your PIN.',
+						'isPublicFacing' => true,
+					]),
+				];
 			}
-
 
 			if($allPaymentsSucceed) {
 				$paymentNote = new stdClass();
