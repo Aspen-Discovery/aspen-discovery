@@ -959,6 +959,24 @@ class CatalogConnection {
 				$userUsage->selfRegistrationCount = 1;
 				$userUsage->insert();
 			}
+
+			if (!$viaSSO) {
+				if (isset($result['sendWelcomeMessage']) && $result['sendWelcomeMessage'] == true) {
+					//See if we need to send a welcome email to the patron
+					require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+					$emailTemplate = EmailTemplate::getActiveTemplate('welcome');
+					if ($emailTemplate != null) {
+						$newUser = $result['newUser'];
+						if ($newUser instanceof User && !empty($newUser->email)) {
+							$parameters = [
+								'user' => $newUser,
+								'library' => $newUser->getHomeLibrary()
+							];
+							$emailTemplate->sendEmail($newUser->email, $parameters);
+						}
+					}
+				}
+			}
 		}
 		return $result;
 	}
