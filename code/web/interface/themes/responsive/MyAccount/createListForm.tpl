@@ -26,7 +26,7 @@
 		<div class="form-group">
 			<label for="public" class="col-sm-3 control-label">{translate text="Access" isPublicFacing=true}</label>
 			<div class="col-sm-9">
-				<input type='checkbox' name='public' id='public' data-on-text="{translate text="Public" isPublicFacing=true}" data-off-text="{translate text="Private" isPublicFacing=true}" {if in_array('Include Lists In Search Results', $userPermissions)}onchange="if($(this).prop('checked') === true){ldelim}$('#searchableRow').show(){rdelim}else{ldelim}$('#searchableRow').hide(){rdelim}"{/if}/>
+				<input type='checkbox' name='public' id='public' data-on-text="{translate text="Public" isPublicFacing=true}" data-off-text="{translate text="Private" isPublicFacing=true}" {if in_array('Include Lists In Search Results', $userPermissions)}onchange="if($(this).prop('checked') === true){ldelim}$('#searchableRow').show();$('#displayListAuthorRow').show(){rdelim}else{ldelim}$('#searchableRow').hide();$('#displayListAuthorRow').hide(){rdelim}"{/if}/>
 				<div class="form-text text-muted">
 					<small>{translate text="Public lists can be shared with other people by copying the URL of the list or using the Email List button when viewing the list." isPublicFacing=true}</small>
 				</div>
@@ -45,14 +45,29 @@
 				</div>
 			{/if}
 		{/if}
-		<input type="hidden" name="source" value="{if !empty($source)}{$source}{/if}">
+		{if !empty($userPermissions)}
+		{if in_array('Include Lists In Search Results', $userPermissions)}
+			<div class="form-group" id="displayListAuthorRow" style="display: none">
+				<label for="displayListAuthor" class="col-sm-3 control-label">{translate text="Show list author in search results" isPublicFacing=true}</label>
+				<div class="col-sm-9">
+					<input type='checkbox' name='displayListAuthor' id='displayListAuthor' data-on-text="{translate text="Yes" isPublicFacing=true}" data-off-text="{translate text="No" isPublicFacing=true}" checked/>
+					<div class="form-text text-muted">
+						<small>{translate text="If enabled, your name will be displayed as the author of this public list." isPublicFacing=true}</small>
+					</div>
+				</div>
+			</div>	
+		{/if}
+		{/if}
+	<input type="hidden" name="source" value="{if !empty($source)}{$source}{/if}">
 		<input type="hidden" name="sourceId" value="{if !empty($sourceId)}{$sourceId}{/if}">
 	</form>
 	<br/>
 {/strip}
-<script type="text/javascript">{literal}
+<script type="text/javascript">
+{literal}
 	$(document).ready(function(){
 		var publicSwitch = $('#public').bootstrapSwitch();
 		var searchableSwitch = $('#searchable').bootstrapSwitch();
+		var displayListAuthorSwitch = $('#displayListAuthor').bootstrapSwitch();
 	});
 {/literal}</script>

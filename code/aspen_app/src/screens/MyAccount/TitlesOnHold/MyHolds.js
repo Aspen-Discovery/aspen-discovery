@@ -1,19 +1,18 @@
-import { ScrollView, Box, Button, Center, Text, HStack, Checkbox, Select, FormControl, CheckIcon, Heading } from 'native-base';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { Platform, SafeAreaView, SectionList } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
+import { Box, Button, Center, Checkbox, CheckIcon, FormControl, Heading, HStack, ScrollView, Select, Text } from 'native-base';
+import React from 'react';
+import { Platform, SafeAreaView, SectionList } from 'react-native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { getPickupLocations } from '../../../util/loadLibrary';
-import { getPatronHolds, refreshProfile, reloadProfile } from '../../../util/api/user';
-import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
 import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
-import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
+import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { getPatronHolds } from '../../../util/api/user';
+import { getPickupLocations } from '../../../util/loadLibrary';
+import { ManageAllHolds, ManageSelectedHolds, MyHold } from './MyHold';
 
 export const MyHolds = () => {
      const isFetchingHolds = useIsFetching({ queryKey: ['holds'] });
@@ -85,6 +84,7 @@ export const MyHolds = () => {
                } else {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
+               queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, value] });
           }
      };
 
@@ -335,6 +335,7 @@ export const MyHolds = () => {
                     }}
                     borderColor="coolGray.200"
                     flexWrap="nowrap">
+                    {showSystemMessage()}
                     <ScrollView horizontal>
                          <HStack space={2}>
                               <Button
@@ -397,7 +398,7 @@ export const MyHolds = () => {
                if (_.isEmpty(sectionData.data)) {
                     return noHolds(title);
                } else {
-                    return <Box pb={30} />;
+                    return <Box mb="300px"></Box>;
                }
           } else if (title === 'Ready') {
                if (_.isEmpty(sectionData.data)) {
@@ -421,8 +422,7 @@ export const MyHolds = () => {
      return (
           <SafeAreaView>
                {actionButtons('none')}
-               <Box safeArea={2}>{showSystemMessage()}</Box>
-               <Box style={{ paddingBottom: 100 }}>
+               <Box>
                     <Checkbox.Group
                          style={{
                               maxWidth: '100%',
@@ -432,6 +432,7 @@ export const MyHolds = () => {
                               },
                               padding: 0,
                               margin: 0,
+                              paddingBottom: _.size(systemMessages) >= 2 ? 300 : 30,
                          }}
                          name="Holds"
                          value={values}
@@ -480,7 +481,7 @@ function sortHolds(holds, pendingSort, readySort) {
                     holdsNotReady = _.orderBy(
                          holdsNotReady,
                          function (obj) {
-                              return new Number(obj.position);
+                              return Number(obj.position);
                          },
                          ['desc']
                     );

@@ -180,7 +180,11 @@
 							<div class="result-label col-sm-12 col-md-5">{translate text='Renewed' isPublicFacing=true}</div>
 							<div class="col-sm-12 col-md-7 result-value">
 								{if empty($record->maxRenewals)}
-									{translate text="%1% times" 1=$record->renewCount isPublicFacing=true}
+									{if $record->renewCount}
+                                        {translate text="%1% times" 1=$record->renewCount isPublicFacing=true}
+									{else}
+                                        {translate text="%1% times" 1="0" isPublicFacing=true}
+									{/if}
 								{else}
                                     {translate text="%1% of %2% times" 1=$record->renewCount 2=$record->maxRenewals isPublicFacing=true}
 								{/if}

@@ -990,6 +990,7 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function confirmFreezeHoldSelected(): array {
+		$user = UserAccount::getLoggedInUser();
 		$patronId = $_REQUEST['patronId'];
 		$recordId = $_REQUEST['recordId'];
 		$holdId = $_REQUEST['holdId'];
@@ -998,20 +999,36 @@ class MyAccount_AJAX extends JSON_Action {
 			'text' => 'Confirm Freeze Holds',
 			'isPublicFacing' => true,
 		]);
+
+		$promptForReactivationDate = $_REQUEST['reactivationDate'] ?? false;
+
+		if($promptForReactivationDate) {
+			global $interface;
+			$reactivateDateNotRequired = $user->reactivateDateNotRequired();
+			$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
+			$interface->assign('patronId', $patronId);
+			$body = $interface->fetch('MyAccount/freezeMultipleReactivationDate.tpl');
+			$button = "<button class='tool btn btn-primary' id='doFreezeHoldAllWithReactivationDate' onclick='AspenDiscovery.Account.doFreezeSelectedWithReactivationDate(\"$patronId\", \"$recordId\", \"$holdId\")'>$freezeButtonLabel</button>";
+		} else {
+			$body = translate([
+				'text' => 'Are you sure you want to freeze selected holds?',
+				'isPublicFacing' => true,
+			]);
+			$button = "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$freezeButtonLabel</span>";
+		}
+
 		return [
 			'title' => translate([
 				'text' => 'Freeze Holds',
 				'isPublicFacing' => true,
 			]),
-			'body' => translate([
-				'text' => 'Are you sure you want to freeze selected holds?',
-				'isPublicFacing' => true,
-			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldSelected(\"$patronId\", \"$recordId\", \"$holdId\")'>$freezeButtonLabel</span>",
+			'body' => $body,
+			'buttons' => $button,
 		];
 	}
 
 	function freezeHoldSelectedItems() {
+		$user = UserAccount::getLoggedInUser();
 		$tmpResult = [ // set default response
 			'success' => false,
 			'message' => translate([
@@ -1030,6 +1047,7 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]);
 		} else {
+			$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : false;
 			$user = UserAccount::getLoggedInUser();
 			$allHolds = $user->getHolds(true, 'sortTitle', 'expire', 'all');
 			$allUnavailableHolds = $allHolds['unavailable'];
@@ -1060,7 +1078,7 @@ class MyAccount_AJAX extends JSON_Action {
 						}
 						if ($frozen != 1 && $canFreeze == 1) {
 							if ($holdType == 'ils') {
-								$tmpResult = $patronOwningHold->freezeHold($recordId, $holdId, false);
+								$tmpResult = $patronOwningHold->freezeHold($recordId, $holdId, $reactivationDate);
 								if ($tmpResult['success']) {
 									$success++;
 								} else {
@@ -1078,7 +1096,7 @@ class MyAccount_AJAX extends JSON_Action {
 							} elseif ($holdType == 'overdrive') {
 								require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 								$driver = new OverDriveDriver();
-								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, null);
+								$tmpResult = $driver->freezeHold($patronOwningHold, $recordId, $reactivationDate);
 								if ($tmpResult['success']) {
 									$success++;
 								} else {
@@ -1130,21 +1148,36 @@ class MyAccount_AJAX extends JSON_Action {
 
 	/** @noinspection PhpUnused */
 	function confirmFreezeHoldAll(): array {
+		$user = UserAccount::getLoggedInUser();
 		$patronId = $_REQUEST['patronId'];
 		$freezeButtonLabel = translate([
 			'text' => 'Confirm Freeze Holds',
 			'isPublicFacing' => true,
 		]);
+
+		$promptForReactivationDate = $_REQUEST['reactivationDate'] ?? false;
+
+		if($promptForReactivationDate) {
+			global $interface;
+			$reactivateDateNotRequired = $user->reactivateDateNotRequired();
+			$interface->assign('reactivateDateNotRequired', $reactivateDateNotRequired);
+			$interface->assign('patronId', $patronId);
+			$body = $interface->fetch('MyAccount/freezeMultipleReactivationDate.tpl');
+			$button = "<button class='tool btn btn-primary' id='doFreezeHoldAllWithReactivationDate' onclick='AspenDiscovery.Account.doFreezeAllWithReactivationDate(\"$patronId\")'>$freezeButtonLabel</button>";
+		} else {
+			$body = translate([
+				'text' => 'Are you sure you want to freeze all holds?',
+				'isPublicFacing' => true,
+			]);
+			$button = "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldAll(\"$patronId\")'>$freezeButtonLabel</span>";
+		}
 		return [
 			'title' => translate([
 				'text' => 'Freeze Holds',
 				'isPublicFacing' => true,
 			]),
-			'body' => translate([
-				'text' => 'Are you sure you want to freeze all holds?',
-				'isPublicFacing' => true,
-			]),
-			'buttons' => "<span class='tool btn btn-primary' onclick='AspenDiscovery.Account.freezeHoldAll(\"$patronId\")'>$freezeButtonLabel</span>",
+			'body' => $body,
+			'buttons' => $button,
 		];
 	}
 
@@ -1164,7 +1197,8 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]);
 		} elseif (!empty($_REQUEST['patronId'])) {
-			$tmpResult = $user->freezeAllHolds();
+			$reactivationDate = isset($_REQUEST['reactivationDate']) ? $_REQUEST['reactivationDate'] : false;
+			$tmpResult = $user->freezeAllHolds($reactivationDate);
 		} else {
 			// We aren't getting all the expected data, so make a log entry & tell user.
 			global $logger;
@@ -1456,6 +1490,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$list->description = strip_tags(urldecode($desc));
 				$list->public = isset($_REQUEST['public']) && $_REQUEST['public'] == 'true';
 				$list->searchable = isset($_REQUEST['searchable']) && $_REQUEST['searchable'] == 'true';
+				$list->displayListAuthor = isset($_REQUEST['displayListAuthor']) && $_REQUEST['displayListAuthor'] == 'true';
 				if ($existingList) {
 					$list->update();
 				} else {
@@ -7481,11 +7516,24 @@ class MyAccount_AJAX extends JSON_Action {
 			$email = null;
 			$user = new User();
 			$user->id = UserAccount::getActiveUserId();
+			$hasValidEmail = false;
 			if ($user->find(true)) {
-				$email = mask_email($user->email);
+				if (filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
+					$email = mask_email($user->email);
+					$hasValidEmail = true;
+				}
 			}
+			$interface->assign('hasValidEmail', $hasValidEmail);
 			$interface->assign('emailAddress', $email);
 
+			if ($hasValidEmail) {
+				$buttons = "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate([
+						'text' => 'Next',
+						'isPublicFacing' => true,
+					]) . "</button>";
+			}else{
+				$buttons = "";
+			}
 			return [
 				'success' => true,
 				'title' => translate([
@@ -7493,10 +7541,7 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-register.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate([
-						'text' => 'Next',
-						'isPublicFacing' => true,
-					]) . "</button>",
+				'buttons' => $buttons,
 			];
 		} elseif ($step == "verify") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7693,7 +7738,8 @@ class MyAccount_AJAX extends JSON_Action {
 
 		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
 		$twoFactorAuth = new TwoFactorAuthCode();
-		$twoFactorAuth->createCode();
+		$codeSent = $twoFactorAuth->createCode();
+		$interface->assign('codeSent', $codeSent);
 
 		$referer = $_REQUEST['referer'] ?? null;
 		$interface->assign('referer', $referer);

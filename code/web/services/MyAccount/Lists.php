@@ -45,6 +45,7 @@ class Lists extends MyAccount {
 			'totalItems' => $listCount,
 			'perPage' => $listsPerPage,
 			'showCovers' => isset($_REQUEST['showCovers']),
+			'displayListAuthor' => isset($_REQUEST['displayListAuthor']),
 		];
 		$pager = new Pager($options);
 

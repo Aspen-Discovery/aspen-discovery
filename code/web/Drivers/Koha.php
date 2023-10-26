@@ -734,7 +734,12 @@ class Koha extends AbstractIlsDriver {
 	public function getPostedXMLWebServiceResponse($url, $body) {
 		global $logger;
 		if (IPAddress::showDebuggingInformation()) {
-			$logger->log("Koha API Call to: " . $url, Logger::LOG_ERROR);
+			$logger->log("Koha API POST to: " . $url, Logger::LOG_ERROR);
+//			if (is_string($body)) {
+//				$logger->log(" body is: " . $body, Logger::LOG_ERROR);
+//			}else{
+//				$logger->log(" body is: " . http_build_query($body), Logger::LOG_ERROR);
+//			}
 		}
 		$headers = ['Content-Type: application/x-www-form-urlencoded',];
 		$this->curlWrapper->addCustomHeaders($headers, false);
@@ -827,10 +832,10 @@ class Koha extends AbstractIlsDriver {
 					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
 				} else {
 					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
-					$postParams = json_encode([
-						'identifier' => $username,
+					$postParams = [
+						'identifier' => $barcode,
 						'password' => $password,
-					]);
+					];
 					$this->apiCurlWrapper->addCustomHeaders([
 						'Authorization: Bearer ' . $oauthToken,
 						'User-Agent: Aspen Discovery',
@@ -840,12 +845,12 @@ class Koha extends AbstractIlsDriver {
 						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					], true);
 				}
-				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', $postParams);
+				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
 				$jsonResponse = json_decode($responseBody);
 				$cardNumber = $jsonResponse->cardnumber;
 				$patronId = $jsonResponse->patron_id;
-				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), $postParams, $responseCode, $responseBody, ['password' => $password]);
+				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
 				if ($responseCode == 201) {
 					$authenticationSuccess = true;
 				} else {
@@ -859,22 +864,31 @@ class Koha extends AbstractIlsDriver {
 				$apiURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
 				$postParams = ([
 					'service' => 'AuthenticatePatron',
-					'username' => $username,
+					'username' => $barcode,
 					'password' => $password,
 				]);
 				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams);
-				$patronId = $responseBody->id->__toString();
-				if (isset($patronId)) {
-					$authenticationSuccess = true;
-					$responseCode = 200;
+				if ($responseBody != null) {
+					$patronId = $responseBody->id->__toString();
+					if (isset($patronId)) {
+						$authenticationSuccess = true;
+						$responseCode = 200;
+					} else {
+						$responseCode = 400;
+						$result['messages'][] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+					}
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 				} else {
-					$responseCode = 400;
+					$responseCode = $this->curlWrapper->getResponseCode();
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, '', ['password' => $password]);
 				}
-				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 			}
 			if ($authenticationSuccess) {
 				if (isset($patronId)) {

@@ -72,7 +72,9 @@ class TwoFactorAuthCode extends DataObject {
 			$twoFactorAuthCode->insert();
 
 			if (!$backup) {
-				$twoFactorAuthCode->sendCode();
+				if (!$twoFactorAuthCode->sendCode()){
+					return false;
+				}
 			}
 		}
 
@@ -140,7 +142,7 @@ class TwoFactorAuthCode extends DataObject {
 		$patron = new User();
 		$patron->id = $this->userId;
 		if ($patron->find(true)) {
-			if ($patron->email) {
+			if (!empty($patron->email)) {
 				$email = $mail->send($patron->email, translate([
 					'text' => "Your one-time login code",
 					'isPublicFacing' => true,
