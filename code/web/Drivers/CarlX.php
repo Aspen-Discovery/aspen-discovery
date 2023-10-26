@@ -1569,7 +1569,10 @@ class CarlX extends AbstractIlsDriver {
 			if($result) {
 				if (!$result->ReceiptNumber) {
 					$allPaymentsSucceed = false;
-					$result['message'] = 'Error updating payment, please visit the library with your receipt.';
+					$result['message'] = translate([
+						'text' => 'Error updating payment, please visit the library with your receipt.',
+						'isPublicFacing' => true,
+					]);
 					$logger->log("Error updating payment $payment->id: {$result->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
 				} else {
 					$payment->message .= " CarlX Receipt Number $result->ReceiptNumber";
@@ -1610,7 +1613,7 @@ class CarlX extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			}
-			
+
 		}
 
 		return $result;
