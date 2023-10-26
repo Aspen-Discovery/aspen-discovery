@@ -959,6 +959,24 @@ class CatalogConnection {
 				$userUsage->selfRegistrationCount = 1;
 				$userUsage->insert();
 			}
+
+			if (!$viaSSO) {
+				if (isset($result['sendWelcomeMessage']) && $result['sendWelcomeMessage'] == true) {
+					//See if we need to send a welcome email to the patron
+					require_once ROOT_DIR . '/sys/Email/EmailTemplate.php';
+					$emailTemplate = EmailTemplate::getActiveTemplate('welcome');
+					if ($emailTemplate != null) {
+						$newUser = $result['newUser'];
+						if ($newUser instanceof User && !empty($newUser->email)) {
+							$parameters = [
+								'user' => $newUser,
+								'library' => $newUser->getHomeLibrary()
+							];
+							$emailTemplate->sendEmail($newUser->email, $parameters);
+						}
+					}
+				}
+			}
 		}
 		return $result;
 	}
@@ -1451,8 +1469,8 @@ class CatalogConnection {
 				}
 			}
 		} else {
-			$timer->logTime("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile");
-			$logger->log("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for this account profile", Logger::LOG_NOTICE);
+			$timer->logTime("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for account profile {$this->driver->accountProfile->name}");
+			$logger->log("Loading patron $barcode from database failed because we haven't seen this user before or it is not valid for account profile {$this->driver->accountProfile->name}", Logger::LOG_NOTICE);
 			$user = null;
 		}
 		return $user;

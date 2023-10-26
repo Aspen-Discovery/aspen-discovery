@@ -3245,7 +3245,7 @@ class User extends DataObject {
 		$sections['ecommerce']->addAction(new AdminAction('Donations Settings', 'Define Settings for Donations.', '/Admin/DonationsSettings'), 'Administer Donations');
 
 		$sections['email'] = new AdminSection('Email');
-		$sections['email']->addAction(new AdminAction('Email templates', 'Templates for various emails sent from Aspen Discovery.', '/Admin/EmailTemplates'), ['Administer All Email Templates', 'Administer Library Email Templates']);
+		$sections['email']->addAction(new AdminAction('Email Templates', 'Templates for various emails sent from Aspen Discovery.', '/Admin/EmailTemplates'), ['Administer All Email Templates', 'Administer Library Email Templates']);
 		$sections['email']->addAction(new AdminAction('Amazon SES Settings', 'Settings to allow Aspen Discovery to send emails via Amazon SES.', '/Admin/AmazonSesSettings'), 'Administer Amazon SES');
 		$sections['email']->addAction(new AdminAction('Send Grid Settings', 'Settings to allow Aspen Discovery to send emails via SendGrid.', '/Admin/SendGridSettings'), 'Administer SendGrid');
 
@@ -3904,7 +3904,11 @@ class User extends DataObject {
 	public function get2FAStatus() {
 		$status = $this->twoFactorStatus;
 		if ($status == '1') {
-			return true;
+			//Make sure that 2-factor authentication has not been disabled by ptype even though the user previously opted in
+			$twoFactorAuthByPType = $this->get2FAStatusForPType();
+			if ($twoFactorAuthByPType) {
+				return true;
+			}
 		}
 		return false;
 	}

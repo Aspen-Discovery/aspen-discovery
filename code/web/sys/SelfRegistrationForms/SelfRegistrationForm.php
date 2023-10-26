@@ -6,10 +6,11 @@ class SelfRegistrationForm extends DataObject {
 	public $__displayNameColumn = 'symphonyName';
 	public $id;
 	public $name;
+	public $selfRegistrationBarcodePrefix;
+	public $selfRegBarcodeSuffixLength;
 
 	private $_fields;
 	private $_libraries;
-//	private $citystate;
 	private $SMSpromts;
 	private $selfRegProfile;
 
@@ -57,18 +58,6 @@ class SelfRegistrationForm extends DataObject {
 				'label' => 'Prompt For SMS Notices',
 				'description' => 'Whether or not SMS Notification information should be requested.',
 			],
-//			'cityStateField' => [
-//				'property' => 'cityStateField',
-//				'type' => 'enum',
-//				'values' => [
-//					0 => 'CITY / STATE field',
-//					1 => 'CITY and STATE fields',
-//				],
-//				'label' => 'City / State Field',
-//				'description' => 'The field from which to load and update city and state.',
-//				'hideInLists' => true,
-//				'default' => 0,
-//			],
 			'selfRegistrationUserProfile' => [
 				'property' => 'selfRegistrationUserProfile',
 				'type' => 'text',
@@ -76,6 +65,22 @@ class SelfRegistrationForm extends DataObject {
 				'description' => 'The Profile to use during self registration.',
 				'hideInLists' => true,
 				'default' => 'SELFREG',
+			],
+			'selfRegistrationBarcodePrefix' => [
+				'property' => 'selfRegistrationBarcodePrefix',
+				'type' => 'text',
+				'maxLength' => 10,
+				'label' => 'Self Registration Barcode Prefix',
+				'description' => 'The barcode prefix to use during self registration.',
+				'default' => '',
+			],
+			'selfRegBarcodeSuffixLength' => [
+				'property' => 'selfRegBarcodeSuffixLength',
+				'type' => 'integer',
+				'maxLength' => 2,
+				'label' => 'Self Registration Barcode Suffix Length',
+				'description' => 'Remaining length of the self registration barcode after the prefix.',
+				'default' => '',
 			],
 			'libraries' => [
 				'property' => 'libraries',
@@ -111,9 +116,6 @@ class SelfRegistrationForm extends DataObject {
 		} if ($name == "libraries") {
 			return $this->getLibraries();
 		}
-//		if ($name == "cityStateField") {
-//			return $this->getCityStateField();
-//		}
 		if ($name == "promptForSMSNoticesInSelfReg") {
 			return $this->getSMSpromptSetting();
 		} if ($name == "selfRegistrationUserProfile") {
@@ -129,9 +131,6 @@ class SelfRegistrationForm extends DataObject {
 		} if ($name == "libraries") {
 			$this->_libraries = $value;
 		}
-//		if ($name == "cityStateField") {
-//			$this->citystate = $value;
-//		}
 		if ($name == "promptForSMSNoticesInSelfReg") {
 			$this->SMSpromts = $value;
 		} if ($name == "selfRegistrationUserProfile") {
@@ -168,19 +167,6 @@ class SelfRegistrationForm extends DataObject {
 			unset($this->fields);
 		}
 	}
-
-//	public function getCityStateField() {
-//		if (!isset($this->citystate) && $this->id) {
-//			$this->citystate = 0;
-//			$library = new Library();
-//			$library->selfRegistrationFormId = $this->id;
-//			if ($library->find(true)){
-//				$library->fetch();
-//				$this->citystate = $library->cityStateField;
-//			}
-//		}
-//		return $this->citystate;
-//	}
 
 	public function getSMSpromptSetting() {
 		if (!isset($this->SMSpromts) && $this->id) {
@@ -231,9 +217,8 @@ class SelfRegistrationForm extends DataObject {
 				$library->find(true);
 				if (in_array($libraryId, $this->_libraries)) {
 					//only update libraries in _libraries - unselected libraries will not have any fields other than selfRegistrationFormId updated
-					if (($library->selfRegistrationFormId != $this->id) /*|| ($library->cityStateField != $this->citystate) */|| ($library->promptForSMSNoticesInSelfReg != $this->SMSpromts) || ($library->selfRegistrationUserProfile != $this->selfRegProfile)) {
+					if (($library->selfRegistrationFormId != $this->id) || ($library->promptForSMSNoticesInSelfReg != $this->SMSpromts) || ($library->selfRegistrationUserProfile != $this->selfRegProfile)) {
 						$library->selfRegistrationFormId = $this->id;
-//						$library->cityStateField = $this->citystate;
 						$library->promptForSMSNoticesInSelfReg = $this->SMSpromts;
 						$library->selfRegistrationUserProfile = $this->selfRegProfile;
 						$library->update();

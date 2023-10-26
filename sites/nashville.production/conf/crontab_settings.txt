@@ -101,3 +101,8 @@
 #########################
 # Nashville does not want ByWater-scheduled updates as of 2023 06 01
 #*/5 * * * * root php /usr/local/aspen-discovery/code/web/cron/runScheduledUpdate.php nashville.production
+
+######################################
+# Run Clam AV Scans                  #
+######################################
+00 3 * * * root truncate -s0 /var/log/aspen-discovery/clam_av.log; /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/nashville.production/solr7/ --exclude-dir=/var/log/aspen-discovery/nashville.production --exclude-dir=/data/aspen-discovery/nashville.production/covers/small --exclude-dir=/data/aspen-discovery/nashville.production/covers/medium --exclude-dir=/data/aspen-discovery/nashville.production/covers/large --log=/var/log/aspen-discovery/clam_av.log

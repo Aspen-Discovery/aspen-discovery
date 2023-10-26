@@ -90,6 +90,8 @@ class Library extends DataObject {
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
 	public $showMessagingSettings;
+	public $allowChangingPickupLocationForAvailableHolds;
+	public $allowCancellingAvailableHolds;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
 	public $showHoldButton;
@@ -1683,7 +1685,34 @@ class Library extends DataObject {
 								'readonly' => false,
 								'permissions' => ['Library ILS Options'],
 							],
-
+							'selfRegRequirePhone' => [
+								'property' => 'selfRegRequirePhone',
+								'type' => 'checkbox',
+								'label' => 'Self Registration requires Phone Number',
+								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'selfRegRequireEmail' => [
+								'property' => 'selfRegRequireEmail',
+								'type' => 'checkbox',
+								'label' => 'Self Registration requires Email',
+								'description' => 'Whether or not email is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'promptForParentInSelfReg' => [
+								'property' => 'promptForParentInSelfReg',
+								'type' => 'checkbox',
+								'label' => 'Prompt For Parent Information',
+								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'promptForSMSNoticesInSelfReg' => [
+								'property' => 'promptForSMSNoticesInSelfReg',
+								'type' => 'checkbox',
+								'label' => 'Prompt For SMS Notices',
+								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
 							'useAllCapsWhenUpdatingProfile' => [
 								'property' => 'useAllCapsWhenUpdatingProfile',
 								'type' => 'checkbox',
@@ -1743,6 +1772,7 @@ class Library extends DataObject {
 								'values' => [
 									0 => 'CITY / STATE field',
 									1 => 'CITY and STATE fields',
+									2 => 'CITY / STATE field - comma separated',
 								],
 								'label' => 'City / State Field (Symphony Only)',
 								'description' => 'The field from which to load and update city and state.',
@@ -1905,6 +1935,26 @@ class Library extends DataObject {
 								'description' => 'When enabled, volumes that have at least one copy owned locally are shown before volumes with no local copies.',
 								'default' => 0,
 							],
+							'allowChangingPickupLocationForAvailableHolds' => [
+								'property' => 'allowChangingPickupLocationForAvailableHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Changing Pickup Location For Available Holds',
+								'description' => 'Whether or not the user can change pickup locations for available holds.',
+								'hideInLists' => true,
+								'default' => 0,
+								'note' => 'Applies to Polaris Only',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'allowCancellingAvailableHolds' => [
+								'property' => 'allowCancellingAvailableHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Cancelling Available Holds',
+								'description' => 'Whether or not the user can cancel available holds.',
+								'hideInLists' => true,
+								'default' => 0,
+								'note' => 'Applies to Polaris Only',
+								'permissions' => ['Library ILS Connection'],
+							],
 							'allowFreezeHolds' => [
 								'property' => 'allowFreezeHolds',
 								'type' => 'checkbox',
@@ -1912,6 +1962,7 @@ class Library extends DataObject {
 								'description' => 'Whether or not the user can freeze their holds.',
 								'hideInLists' => true,
 								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'maxDaysToFreeze' => [
 								'property' => 'maxDaysToFreeze',
@@ -1920,6 +1971,7 @@ class Library extends DataObject {
 								'description' => 'Number of days that a user can suspend a hold for. Use -1 for no limit.',
 								'hideInLists' => true,
 								'default' => 365,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'defaultNotNeededAfterDays' => [
 								'property' => 'defaultNotNeededAfterDays',
@@ -1927,6 +1979,7 @@ class Library extends DataObject {
 								'label' => 'Default Not Needed After Days',
 								'description' => 'Number of days to use for not needed after date by default. Use -1 for no default.',
 								'hideInLists' => true,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'inSystemPickupsOnly' => [
 								'property' => 'inSystemPickupsOnly',
@@ -2247,6 +2300,15 @@ class Library extends DataObject {
 								'description' => 'The ILS template to use during self registration (Sierra and Millennium).',
 								'hideInLists' => true,
 								'default' => 'default',
+							],
+							'selfRegistrationUserProfile' => [
+								'property' => 'selfRegistrationUserProfile',
+								'type' => 'text',
+								'label' => 'Self Registration Profile',
+								'description' => 'The Profile to use during self registration (Symphony Only).',
+								'note' => 'Applies to Symphony Only',
+								'hideInLists' => true,
+								'default' => 'SELFREG',
 							],
 						],
 					],
