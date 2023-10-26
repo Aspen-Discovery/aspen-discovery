@@ -415,7 +415,7 @@ class Koha extends AbstractIlsDriver {
 			$curCheckout->barcode = $curRow['barcode'];
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
-			if ($recordDriver->isValid()) {
+			if ($recordDriver !== null && $recordDriver->isValid()) {
 				$curCheckout->updateFromRecordDriver($recordDriver);
 			} else {
 				$curCheckout->title = $curRow['title'];
@@ -2364,7 +2364,7 @@ class Koha extends AbstractIlsDriver {
 			}
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
-			if ($recordDriver->isValid()) {
+			if ($recordDriver != null && $recordDriver->isValid()) {
 				$curHold->updateFromRecordDriver($recordDriver);
 				//See if we need to override the format based on the item type
 				$itemType = $curRow['itemtype'];
