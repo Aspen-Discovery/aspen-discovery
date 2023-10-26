@@ -699,9 +699,9 @@ class SirsiDynixROA extends HorizonAPI {
 				} else {
 					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
 						if ($library->cityStateField == 2) {
-							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ', ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ', ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 						} else {
-							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 						}
 					}
 				}
