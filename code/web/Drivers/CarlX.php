@@ -1533,15 +1533,6 @@ class CarlX extends AbstractIlsDriver {
 			return $result;
 		}
 
-		// There are exceptions in the Soap Client that need to be caught for smooth functioning
-		$connectionPassed = false;
-		$numTries = 0;
-		$result = false;
-		if (IPAddress::showDebuggingInformation()) {
-			$this->genericResponseSOAPCallOptions['trace'] = true;
-		}
-
-
 		$homeLocation = $patron->getHomeLocationCode();
 		if(!$homeLocation) {
 			global $logger;
