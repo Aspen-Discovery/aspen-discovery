@@ -787,56 +787,56 @@ class SirsiDynixROA extends HorizonAPI {
 						];
 					}
 				}
-			}
+			} else {
+				$barcode = new Variable();
+				$barcode->name = 'self_registration_card_number';
+				if ($barcode->find(true)) {
+					$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
 
-			$barcode = new Variable();
-			$barcode->name = 'self_registration_card_number';
-			if ($barcode->find(true)) {
-				$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
-
-				//global $configArray;
-				//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
-				//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
+					//global $configArray;
+					//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
+					//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
 
 
-				$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
+					$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
 
-				if (isset($createNewPatronResponse->messageList)) {
-					foreach ($createNewPatronResponse->messageList as $message) {
-						$updateErrors[] = $message->message;
-						if ($message->message == 'User already exists') {
-							// This means the barcode counter is off.
-							global $logger;
-							$logger->log('Sirsi Self Registration response was that the user already exists. Advancing the barcode counter by one.', Logger::LOG_ERROR);
-							$barcode->value++;
-							if (!$barcode->update()) {
-								$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
+					if (isset($createNewPatronResponse->messageList)) {
+						foreach ($createNewPatronResponse->messageList as $message) {
+							$updateErrors[] = $message->message;
+							if ($message->message == 'User already exists') {
+								// This means the barcode counter is off.
+								global $logger;
+								$logger->log('Sirsi Self Registration response was that the user already exists. Advancing the barcode counter by one.', Logger::LOG_ERROR);
+								$barcode->value++;
+								if (!$barcode->update()) {
+									$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
+								}
 							}
 						}
-					}
-					global $logger;
-					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
-				} else {
-
-					$selfRegResult = [
-						'success' => true,
-						'barcode' => $barcode->value,
-						'requirePinReset' => true,
-					];
-					// Update the card number counter for the next Self-Reg user
-					$barcode->value++;
-					if (!$barcode->update()) {
-						// Log Error temp barcode number not
 						global $logger;
-						$logger->log('Sirsi Self Registration barcode counter not saving incremented value!', Logger::LOG_ERROR);
+						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
+					} else {
+
+						$selfRegResult = [
+							'success' => true,
+							'barcode' => $barcode->value,
+							'requirePinReset' => true,
+						];
+						// Update the card number counter for the next Self-Reg user
+						$barcode->value++;
+						if (!$barcode->update()) {
+							// Log Error temp barcode number not
+							global $logger;
+							$logger->log('Sirsi Self Registration barcode counter not saving incremented value!', Logger::LOG_ERROR);
+						}
 					}
+				} else {
+					// Error: unable to set barcode number.
+					global $logger;
+					$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
+					$selfRegResult['message'] = 'Barcode starting index was not found.';
 				}
-			} else {
-				// Error: unable to set barcode number.
-				global $logger;
-				$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
-				$selfRegResult['message'] = 'Barcode starting index was not found.';
-			};
+			}
 		} else {
 			// Error: unable to login in staff user
 			global $logger;
