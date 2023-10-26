@@ -1610,10 +1610,7 @@ class CarlX extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 			}
-
-			if (!$connectionPassed) {
-				return false;
-			}
+			
 		}
 
 		return $result;
