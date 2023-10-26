@@ -1597,7 +1597,7 @@ class CarlX extends AbstractIlsDriver {
 				$paymentNote->Note->NoteType = 2;
 				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
 				$paymentNote->Modifiers = '';
-				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote);
+				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
 				if($addPaymentNoteResult) {
 					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 					if(!$success) {
