@@ -100,8 +100,3 @@
 # Update Translations from Community #
 #########################
 15 1 * * * root php /usr/local/aspen-discovery/code/web/cron/updateCommunityTranslations.php model2.production
-
-######################################
-# Run Clam AV Scans                  #
-######################################
-00 3 * * * root truncate -s0 /var/log/aspen-discovery/clam_av.log; /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/model2.production/solr7/ --exclude-dir=/var/log/aspen-discovery/model2.production --exclude-dir=/data/aspen-discovery/model2.production/covers/small --exclude-dir=/data/aspen-discovery/model2.production/covers/medium --exclude-dir=/data/aspen-discovery/model2.production/covers/large --log=/var/log/aspen-discovery/clam_av.log
