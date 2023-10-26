@@ -259,7 +259,7 @@ class EmailTemplate extends DataObject {
 
 		require_once ROOT_DIR . '/sys/Email/Mailer.php';
 		$mail = new Mailer();
-		return $mail->send($toEmail, $updatedSubject, $this->plainTextBody, null);
+		return $mail->send($toEmail, $updatedSubject, $updatedBody, null);
 	}
 
 	private function applyParameters($text, $parameters) {
