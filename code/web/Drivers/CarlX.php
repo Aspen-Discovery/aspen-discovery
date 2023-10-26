@@ -1491,7 +1491,6 @@ class CarlX extends AbstractIlsDriver {
 
 	public function completeFinePayment(User $patron, UserPayment $payment) {
 		global $logger;
-		global $locationSingleton;
 		global $library;
 
 		$result = [
@@ -1532,7 +1531,17 @@ class CarlX extends AbstractIlsDriver {
 			$this->genericResponseSOAPCallOptions['trace'] = true;
 		}
 
-		$location = $locationSingleton->getActiveLocation();
+
+		$homeLocation = $patron->getHomeLocationCode();
+		if(!$homeLocation) {
+			global $logger;
+			$logger->log('Failed to find any location to make the payment from', Logger::LOG_ERROR);
+			$result['messages'][] = translate([
+				'text' => 'Unable to find any location to assign the user for completing the payment',
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
 
 		$patronId = $this->getSearchbyPatronIdRequest($patron);
 
@@ -1541,7 +1550,6 @@ class CarlX extends AbstractIlsDriver {
 
 		foreach ($accountLinesPaid as $line) {
 			[$feeId, $pmtAmount] = explode('|', $line);
-			[$feeId, $feeType] = explode('-', $feeId);
 			$paymentRequest = new stdClass();
 			$paymentRequest->SearchType = 'Patron ID';
 			$paymentRequest->SearchID = $patronId;
@@ -1554,15 +1562,16 @@ class CarlX extends AbstractIlsDriver {
 			$paymentRequest->FineOrFee->Amount = $pmtAmount;
 			$paymentRequest->Modifiers = new stdClass();
 			$paymentRequest->Modifiers->StaffId = $staffId; // The alias of the employee submitting the request. Required.
-			$paymentRequest->Modifiers->EnvBranch = $location->code; // Branch Code indicating the Branch being used. Required.
+			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
 
 			while (!$connectionPassed && $numTries < 2) {
 				try {
 					$this->soapClient = new SoapClient($this->patronWsdl, $this->genericResponseSOAPCallOptions);
-					$result = $this->soapClient->settleFinesAndFees($paymentRequest);
+					$requestName = 'settleFinesAndFees';
+					$result = $this->soapClient->$requestName($paymentRequest);
 					$connectionPassed = true;
 					if (IPAddress::showDebuggingInformation()) {
-						ExternalRequestLogEntry::logRequest('carlx.settleFinesAndFees', 'GET', $this->patronWsdl, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse());
+						ExternalRequestLogEntry::logRequest('carlx.settleFinesAndFees', 'GET', $this->patronWsdl, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse(), []);
 					}
 					if (is_null($result)) {
 						$lastResponse = $this->soapClient->__getLastResponse();
