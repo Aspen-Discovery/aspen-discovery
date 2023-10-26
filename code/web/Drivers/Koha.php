@@ -4581,6 +4581,7 @@ class Koha extends AbstractIlsDriver {
 				$jsonResponse = json_decode($response);
 				$result['username'] = $jsonResponse->userid;
 				$result['success'] = true;
+				$result['sendWelcomeMessage'] = false;
 				if ($verificationRequired != "0") {
 					$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 				} else {
@@ -4592,6 +4593,11 @@ class Koha extends AbstractIlsDriver {
 							if ($tmpResult['success']) {
 								$result['password'] = $_REQUEST['borrower_password'];
 							}
+						}
+						$newUser = $this->findNewUser($jsonResponse->cardnumber, null);
+						if ($newUser != null) {
+							$result['newUser'] = $newUser;
+							$result['sendWelcomeMessage'] = true;
 						}
 					} else {
 						$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
