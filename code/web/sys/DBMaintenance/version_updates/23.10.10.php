@@ -39,6 +39,16 @@ function getUpdates23_10_10(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Email Templates'))",
 			]
 		], //emailTemplates
+		//kodi - ByWater
+		'self_reg_barcode_prefix' => [
+			'title' => 'Barcode Prefixes',
+			'description' => 'Set barcode prefixes for symphony self registration',
+			'sql' => [
+				"ALTER TABLE self_registration_form ADD COLUMN selfRegistrationBarcodePrefix VARCHAR(10) default ''",
+				"ALTER TABLE self_registration_form ADD COLUMN selfRegBarcodeSuffixLength INT(2) default 0",
+			],
+		],
+		//self_reg_barcode_prefix
 		'defaultSelfRegistrationEmailTemplate' => [
 			'title' => 'Default Self Registration Email Template',
 			'description' => 'Create default email template for self registration',

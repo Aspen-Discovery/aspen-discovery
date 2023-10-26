@@ -99,4 +99,3 @@
 # Run Clam AV Scans                  #
 ######################################
 00 3 * * * root truncate -s0 /var/log/aspen-discovery/clam_av.log; /bin/clamscan --recursive=yes --quiet -i --exclude-dir=/var/lib/mysql --exclude-dir=/sys --exclude-dir=/data/aspen-discovery/arlington.production/solr7/ --exclude-dir=/var/log/aspen-discovery/arlington.production --exclude-dir=/data/aspen-discovery/arlington.production/covers/small --exclude-dir=/data/aspen-discovery/arlington.production/covers/medium --exclude-dir=/data/aspen-discovery/arlington.production/covers/large --log=/var/log/aspen-discovery/clam_av.log
-
