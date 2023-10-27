@@ -44,6 +44,7 @@ class CompriseSetting extends DataObject {
 				'type' => 'storedPassword',
 				'label' => 'Password',
 				'description' => 'The Password assigned by Comprise',
+				'hideInLists' => true,
 			],
 
 			'libraries' => [

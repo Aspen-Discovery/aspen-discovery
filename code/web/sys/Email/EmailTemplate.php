@@ -1,4 +1,6 @@
 <?php
+require_once ROOT_DIR . '/sys/LibraryLocation/LibraryEmailTemplate.php';
+
 class EmailTemplate extends DataObject {
 	public $__table = 'email_template';
 	public $id;
@@ -14,12 +16,12 @@ class EmailTemplate extends DataObject {
 	static function getObjectStructure($context = ''): array {
 		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Email Templates'));
 		$availableTemplates = [
-			'self_registration' => 'Self Registration'
+			'welcome' => 'Welcome'
 		];
 		require_once ROOT_DIR . '/sys/Translation/Language.php';
 		$validLanguage = new Language();
 		$validLanguage->orderBy("weight");
-		$validLanguage->find(true);
+		$validLanguage->find();
 		$availableLanguages = [];
 		while ($validLanguage->fetch()) {
 			$availableLanguages[$validLanguage->code] = "$validLanguage->displayName ($validLanguage->displayNameEnglish)";
@@ -47,8 +49,8 @@ class EmailTemplate extends DataObject {
 				'description' => 'The type of email being sent.',
 				'hideInLists' => false,
 			],
-			'language' => [
-				'property' => 'language',
+			'languageCode' => [
+				'property' => 'languageCode',
 				'type' => 'enum',
 				'values' => $availableLanguages,
 				'label' => 'Language',
@@ -89,14 +91,52 @@ class EmailTemplate extends DataObject {
 			],
 		];
 
+		if ($context == 'addNew') {
+			unset($structure['instructions']);
+		}
+
 		return $structure;
 	}
 
+	public function __get($name) {
+		if ($name == 'libraries') {
+			return $this->getLibraries();
+		} elseif ($name == 'instructions') {
+			$optionalUpdatesPath = ROOT_DIR . '/email_template_instructions';
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			$instructionsFilePath = $optionalUpdatesPath . '/' . $this->templateType . '.MD';
+			if (!file_exists($instructionsFilePath)) {
+				return '';
+			}else {
+				return $parsedown->parse(file_get_contents($instructionsFilePath));
+			}
+		} else {
+			return parent::__get($name);
+		}
+	}
 
-	/** @return Library[]
+	public function __set($name, $value) {
+		if ($name == "libraries") {
+			$this->_libraries = $value;
+		} else {
+			parent::__set($name, $value);
+		}
+	}
+
+	/** @return int[]
 	 * @noinspection PhpUnused
 	 */
 	public function getLibraries() {
+		if (!isset($this->_libraries) && !empty($this->id)) {
+			$this->_libraries = [];
+			$obj = new LibraryEmailTemplate();
+			$obj->emailTemplateId = $this->id;
+			$obj->find();
+			while ($obj->fetch()) {
+				$this->_libraries[$obj->libraryId] = $obj->libraryId;
+			}
+		}
 		return $this->_libraries;
 	}
 
@@ -107,7 +147,141 @@ class EmailTemplate extends DataObject {
 
 	/** @noinspection PhpUnused */
 	public function clearLibraries() {
-		$this->clearOneToManyOptions('Library', 'groupedWorkDisplaySettingId');
+		$this->clearOneToManyOptions('LibraryEmailTemplate', 'emailTemplateId');
 		unset($this->_libraries);
+	}
+
+	/**
+	 * Override the update functionality to save related objects
+	 *
+	 * @see DB/DB_DataObject::update()
+	 */
+	public function update($context = '') {
+		//Updates to properly update settings based on the ILS
+		$ret = parent::update();
+		if ($ret !== FALSE) {
+			$this->saveLibraries();
+		}
+
+		return $ret;
+	}
+
+	/**
+	 * Override the insert functionality to save the related objects
+	 *
+	 * @see DB/DB_DataObject::insert()
+	 */
+	public function insert($context = '') {
+		$ret = parent::insert();
+		if ($ret !== FALSE) {
+			$this->saveLibraries();
+		}
+		return $ret;
+	}
+
+	public function delete($useWhere = false) {
+		$ret = parent::delete($useWhere);
+		if ($ret && !empty($this->id)) {
+			$this->clearLibraries();
+		}
+		return $ret;
+	}
+
+	public function saveLibraries() {
+		if (isset ($this->_libraries) && is_array($this->_libraries)) {
+			$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Email Templates'));
+			foreach ($libraryList as $libraryId => $displayName) {
+				$libraryEmailTemplate = new LibraryEmailTemplate();
+				$libraryEmailTemplate->libraryId = $libraryId;
+				$libraryEmailTemplate->emailTemplateId = $this->id;
+				$alreadyLinked = $libraryEmailTemplate->find(true);
+				if (in_array($libraryId, $this->_libraries)) {
+					if (!$alreadyLinked){
+						$libraryEmailTemplate = new LibraryEmailTemplate();
+						$libraryEmailTemplate->libraryId = $libraryId;
+						$libraryEmailTemplate->emailTemplateId = $this->id;
+						$libraryEmailTemplate->insert();
+					}
+				} else {
+					if ($alreadyLinked) {
+						$libraryEmailTemplate->delete();
+					}
+				}
+			}
+			unset($this->_libraries);
+		}
+	}
+
+	public static function getActiveTemplate(string $templateType) : ?EmailTemplate{
+		global $library;
+		global $activeLanguage;
+		$templateFound = false;
+		//First look for a template based on the active language
+		$emailTemplate = new EmailTemplate();
+		$emailTemplate->templateType = $templateType;
+		$emailTemplate->languageCode = $activeLanguage->code;
+		$emailTemplate->find();
+		while ($emailTemplate->fetch()) {
+			$librariesForTemplate = $emailTemplate->getLibraries();
+			if (in_array($library->libraryId, $librariesForTemplate)) {
+				$templateFound = true;
+			}
+		}
+		//If we didn't find a template for the active language, check english
+		if (!$templateFound) {
+			$emailTemplate = new EmailTemplate();
+			$emailTemplate->templateType = $templateType;
+			$emailTemplate->languageCode = 'en';
+			$emailTemplate->find();
+			while ($emailTemplate->fetch()) {
+				$librariesForTemplate = $emailTemplate->getLibraries();
+				if (in_array($library->libraryId, $librariesForTemplate)) {
+					$templateFound = true;
+				}
+			}
+		}
+
+		if ($templateFound) {
+			return $emailTemplate;
+		}else{
+			return null;
+		}
+	}
+
+	public function sendEmail($toEmail, $parameters) {
+		if (empty($toEmail)) {
+			return false;
+		}
+		$plainTextBody = $this->plainTextBody;
+		$updatedBody = $this->applyParameters($this->plainTextBody, $parameters);
+
+		$updatedSubject = $this->applyParameters($this->subject, $parameters);
+
+		require_once ROOT_DIR . '/sys/Email/Mailer.php';
+		$mail = new Mailer();
+		return $mail->send($toEmail, $updatedSubject, $updatedBody, null);
+	}
+
+	private function applyParameters($text, $parameters) {
+		if ($this->templateType == 'welcome') {
+			/* @var User $user */
+			$user = $parameters['user'];
+			/* @var Library $library */
+			$library = $parameters['library'];
+			if (empty($library->baseUrl)) {
+				global $configArray;
+				$baseUrl = $configArray['Site']['url'];
+			} else {
+				$baseUrl = $library->baseUrl;
+			}
+
+			$text = str_replace('%library.displayName%', $library->displayName, $text);
+			$text = str_replace('%library.baseUrl%', $baseUrl, $text);
+			$text = str_replace('%library.email%', $library->contactEmail, $text);
+			$text = str_ireplace('%user.firstname%', $user->firstname, $text);
+			$text = str_ireplace('%user.lastname%', $user->lastname, $text);
+			$text = str_ireplace('%user.ils_barcode%', $user->ils_barcode, $text);
+		}
+		return $text;
 	}
 }

@@ -470,7 +470,6 @@ class SSOSetting extends DataObject {
 						'label' => 'XML metadata file',
 						'description' => 'The XML metadata file if no URL is available',
 						'hideInLists' => true,
-						'readOnly' => true,
 					],
 					'ssoEntityId' => [
 						'property' => 'ssoEntityId',
@@ -1226,8 +1225,8 @@ class SSOSetting extends DataObject {
 			if (strlen($xml) > 0) {
 				// Check it's a valid SAML message
 				try {
-					require_once '/usr/local/simplesamlphp/lib/_autoload.php';
-					\SimpleSAML\Utils\XML::checkSAMLMessage($xml, 'saml-meta');
+					require_once ROOT_DIR . '/services/Authentication/SAML/lib/Saml2/Utils.php';
+					OneLogin_Saml2_Utils::validateXML($xml, 'saml-meta');
 				} catch (Exception $e) {
 					$logger->log($e, Logger::LOG_ERROR);
 					return new AspenError('Unable to use SSO IdP metadata, please check "URL of service metadata XML"');

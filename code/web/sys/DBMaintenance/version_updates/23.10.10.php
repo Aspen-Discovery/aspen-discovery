@@ -39,6 +39,25 @@ function getUpdates23_10_10(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer All Email Templates'))",
 			]
 		], //emailTemplates
-
+		//kodi - ByWater
+		'self_reg_barcode_prefix' => [
+			'title' => 'Barcode Prefixes',
+			'description' => 'Set barcode prefixes for symphony self registration',
+			'sql' => [
+				"ALTER TABLE self_registration_form ADD COLUMN selfRegistrationBarcodePrefix VARCHAR(10) default ''",
+				"ALTER TABLE self_registration_form ADD COLUMN selfRegBarcodeSuffixLength INT(2) default 0",
+			],
+		],
+		//self_reg_barcode_prefix
+		'defaultSelfRegistrationEmailTemplate' => [
+			'title' => 'Default Self Registration Email Template',
+			'description' => 'Create default email template for self registration',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO email_template (name, templateType, languageCode, subject, plainTextBody) VALUES ('Welcome - English', 'welcome', 'en', 
+					'Welcome to %library.displayName%', 
+					'Hello %user.firstname% %user.lastname%,\n\nThank you for joining %library.displayName%.\n\nYou can search our materials and access your account at %library.baseUrl%.\n\nYour library card is %user.ils_barcode%.\n\nIf you have any problems or questions concerning your account, please contact the library.' )"
+			],
+		]
 	];
 }

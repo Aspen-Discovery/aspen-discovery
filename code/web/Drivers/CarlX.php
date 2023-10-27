@@ -347,7 +347,12 @@ class CarlX extends AbstractIlsDriver {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
-					$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					if($requestName == 'settleFinesAndFees') {
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
+						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
+					} else {
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					}
 					$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/response');
 					$result = new stdClass();
 					$result->ResponseStatuses = new stdClass();
@@ -357,6 +362,11 @@ class CarlX extends AbstractIlsDriver {
 					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
 					// TODO make empty
 					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', array_filter($longMessages));
+
+					if($requestName == 'settleFinesAndFees') {
+						// if ReceiptNumber is present, settlement with Carl.X was successful
+						$result->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
+					}
 				}
 			} catch (SoapFault $e) {
 				if ($numTries == 2) {
@@ -1491,7 +1501,6 @@ class CarlX extends AbstractIlsDriver {
 
 	public function completeFinePayment(User $patron, UserPayment $payment) {
 		global $logger;
-		global $locationSingleton;
 		global $library;
 
 		$result = [
@@ -1524,91 +1533,112 @@ class CarlX extends AbstractIlsDriver {
 			return $result;
 		}
 
-		// There are exceptions in the Soap Client that need to be caught for smooth functioning
-		$connectionPassed = false;
-		$numTries = 0;
-		$result = false;
-		if (IPAddress::showDebuggingInformation()) {
-			$this->genericResponseSOAPCallOptions['trace'] = true;
+		$homeLocation = $patron->getHomeLocationCode();
+		if(!$homeLocation) {
+			global $logger;
+			$logger->log('Failed to find any location to make the payment from', Logger::LOG_ERROR);
+			$result['messages'][] = translate([
+				'text' => 'Unable to find any location to assign the user for completing the payment',
+				'isPublicFacing' => true,
+			]);
+			return $result;
 		}
-
-		$location = $locationSingleton->getActiveLocation();
-
-		$patronId = $this->getSearchbyPatronIdRequest($patron);
 
 		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$allPaymentsSucceed = true;
 
 		foreach ($accountLinesPaid as $line) {
 			[$feeId, $pmtAmount] = explode('|', $line);
-			[$feeId, $feeType] = explode('-', $feeId);
 			$paymentRequest = new stdClass();
 			$paymentRequest->SearchType = 'Patron ID';
-			$paymentRequest->SearchID = $patronId;
-			$paymentRequest->FineOrFee = new stdClass();
-			$paymentRequest->FineOrFee->ItemId = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
-			$paymentRequest->FineOrFee->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
-			$paymentRequest->FineOrFee->WaiveComment = ''; // 16 character limit
-			$paymentRequest->FineOrFee->PayType = 'Pay'; // Pay, Waive, or Cancel
-			$paymentRequest->FineOrFee->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
-			$paymentRequest->FineOrFee->Amount = $pmtAmount;
+			$paymentRequest->SearchID = $patron->ils_barcode;
+			$paymentRequest->FineOrFee = [];
+			$paymentRequest->FineOrFee[0] = new stdClass();
+			$paymentRequest->FineOrFee[0]->ItemID = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
+			$paymentRequest->FineOrFee[0]->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
+			$paymentRequest->FineOrFee[0]->WaiveComment = ''; // 16 character limit
+			$paymentRequest->FineOrFee[0]->PayType = 'Pay'; // Pay, Waive, or Cancel
+			$paymentRequest->FineOrFee[0]->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
+			$paymentRequest->FineOrFee[0]->Amount = $pmtAmount;
 			$paymentRequest->Modifiers = new stdClass();
-			$paymentRequest->Modifiers->StaffId = $staffId; // The alias of the employee submitting the request. Required.
-			$paymentRequest->Modifiers->EnvBranch = $location->code; // Branch Code indicating the Branch being used. Required.
+			$paymentRequest->Modifiers->StaffID = $staffId; // The alias of the employee submitting the request. Required.
+			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
 
-			while (!$connectionPassed && $numTries < 2) {
-				try {
-					$this->soapClient = new SoapClient($this->patronWsdl, $this->genericResponseSOAPCallOptions);
-					$result = $this->soapClient->settleFinesAndFees($paymentRequest);
-					$connectionPassed = true;
-					if (IPAddress::showDebuggingInformation()) {
-						ExternalRequestLogEntry::logRequest('carlx.settleFinesAndFees', 'GET', $this->patronWsdl, $this->soapClient->__getLastRequestHeaders(), $this->soapClient->__getLastRequest(), 0, $this->soapClient->__getLastResponse());
-					}
-					if (is_null($result)) {
-						$lastResponse = $this->soapClient->__getLastResponse();
-						$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
-						$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
-						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
-						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
-						$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/request');
-						$responseResult = new stdClass();
-						$responseResult->ResponseStatuses = new stdClass();
-						$responseResult->ResponseStatuses->ResponseStatus = new stdClass();
-						$shortMessages = $lastResponse->xpath('//ns2:ShortMessage');
-						$responseResult->ResponseStatuses->ResponseStatus->ShortMessage = implode('; ', $shortMessages);
-						$longMessages = $lastResponse->xpath('//ns2:LongMessage');
-						$responseResult->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', $longMessages);
+//			$paymentRequest = new stdClass();
+//			$paymentRequest->SearchType = 'Patron ID';
+//			$paymentRequest->SearchID = $patron->ils_barcode;
+//			$paymentRequest->FineOrFee = [];
+//			$paymentRequest->FineOrFee[0] = new stdClass();
+//			$paymentRequest->FineOrFee[0]->ItemID = new SoapVar($feeId, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "ItemID", "tran"); // The unique item identifier against which payment for a fine or fee is being applied
+//			$paymentRequest->FineOrFee[0]->Occur = new SoapVar(1, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "Occur", "tran"); // The unique occurrence associated with the item that references the fine or fee selected for settlement
+//			$paymentRequest->FineOrFee[0]->WaiveComment = new SoapVar('', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "WaiveComment", "tran"); // 16 character limit
+//			$paymentRequest->FineOrFee[0]->PayType = new SoapVar('Pay', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "PayType", "tran"); // Pay, Waive, or Cancel
+//			$paymentRequest->FineOrFee[0]->PayMethod = new SoapVar('Credit Card', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "PayMethod", "tran"); // Cash, Check, or Credit Card
+//			$paymentRequest->FineOrFee[0]->Amount = new SoapVar($pmtAmount, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "Amount", "tran");
+//			$paymentRequest->Modifiers = new stdClass();
+//			$paymentRequest->Modifiers->StaffID = new SoapVar($staffId, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "StaffID", "req"); // The alias of the employee submitting the request. Required.
+//			$paymentRequest->Modifiers->EnvBranch = new SoapVar($homeLocation, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "EnvBranch", "req"); // Branch Code indicating the Branch being used. Required.
 
-						// if ReceiptNumber is present, settlement with Carl.X was successful
-						$responseResult->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
+//			$paymentRequest = <<<EOT
+//<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+// xmlns:sys="http://tlcdelivers.com/cx/schemas/systemAPI"
+// xmlns:tran="http://tlcdelivers.com/cx/schemas/transaction"
+// xmlns:req="http://tlcdelivers.com/cx/schemas/request">
+// 	<soapenv:Header/>
+// 	<soapenv:Body>
+// 		<sys:SettleFinesAndFeesRequest>
+// 			<sys:SearchType>Patron ID</sys:SearchType>
+// 			<sys:SearchID>{$patron->unique_ils_id}</sys:SearchID>
+// 			<sys:FineOrFee>
+// 				<tran:ItemID>{$feeId}</tran:ItemID>
+// 				<tran:Occur>1</tran:Occur>
+// 				<tran:WaiveComment></tran:WaiveComment>
+// 				<tran:PayType>Pay</tran:PayType>
+// 				<tran:PayMethod>Credit Card</tran:PayMethod>
+// 				<tran:Amount>{$pmtAmount}</tran:Amount>
+// 			</sys:FineOrFee>
+// 			<sys:Modifiers>
+// 				<req:StaffID>{$staffId}</req:StaffID>
+// 				<req:EnvBranch>{$homeLocation}</req:EnvBranch>
+// 			</sys:Modifiers>
+// 		</sys:SettleFinesAndFeesRequest>
+// 	</soapenv:Body>
+// </soapenv:Envelope>
+//EOT;
 
-						if(!$responseResult->ReceiptNumber) {
-							$allPaymentsSucceed = false;
-							$result['message'] = "Error updating payment, please visit the library with your receipt.";
-							$logger->log("Error updating payment $payment->id: {$responseResult->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
-						} else {
-							$payment->message .= " CarlX Receipt Number $responseResult->ReceiptNumber";
-							$payment->update();
-						}
-					}
-				} catch (SoapFault $e) {
-					if ($numTries == 2) {
-						$logger->log('Error connecting to SOAP ' . $e, Logger::LOG_WARNING);
-						$result['error'] = 'EXCEPTION: ' . $e->getMessage();
-					}
+			$result = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
+			if($result) {
+				if (!$result->ReceiptNumber) {
+					$allPaymentsSucceed = false;
+					$result['message'] = translate([
+						'text' => 'Error updating payment, please visit the library with your receipt.',
+						'isPublicFacing' => true,
+					]);
+					$logger->log("Error updating payment $payment->id: {$result->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
+				} else {
+					$payment->message .= " CarlX Receipt Number $result->ReceiptNumber";
+					$payment->update();
 				}
-				$numTries++;
+			} else {
+				global $logger;
+				$logger->log('CarlX ILS gave no response when attempting to settle payment.', Logger::LOG_ERROR);
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'Error updating payment, please visit the library with your receipt.',
+						'isPublicFacing' => true,
+					]),
+				];
 			}
-
 
 			if($allPaymentsSucceed) {
 				$paymentNote = new stdClass();
 				$paymentNote->Note = new stdClass();
-				$paymentNote->Note->PatronID = $patronId;
+				$paymentNote->Note->PatronID = $patron->unique_ils_id;
 				$paymentNote->Note->NoteType = 2;
 				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
 				$paymentNote->Modifiers = '';
-				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote);
+				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
 				if($addPaymentNoteResult) {
 					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
 					if(!$success) {
@@ -1625,9 +1655,6 @@ class CarlX extends AbstractIlsDriver {
 				]);
 			}
 
-			if (!$connectionPassed) {
-				return false;
-			}
 		}
 
 		return $result;

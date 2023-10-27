@@ -161,7 +161,7 @@ const app_config = {
                },
           ],
      },
-     plugins: ['sentry-expo', 'expo-localization', ['expo-barcode-scanner', { cameraPermission: 'Allow $(PRODUCT_NAME) to access camera.' }]],
+     plugins: ['sentry-expo', 'expo-localization', ['expo-barcode-scanner', { cameraPermission: 'This app uses your camera to scan barcodes when searching for items in the library catalog or when scanning your library card.' }]],
 };
 
 fs.readFile('app.config.js', 'utf8', function (err, data) {
