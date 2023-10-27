@@ -1,26 +1,26 @@
-import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
+import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import _ from 'lodash';
-import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
+import axios from 'axios';
 import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
 
-import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container, Center, Heading } from 'native-base';
+import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
+import React from 'react';
+import { SafeAreaView, ScrollView } from 'react-native';
+import { loadError } from '../../components/loadError';
+import { loadingSpinner } from '../../components/loadingSpinner';
+import { DisplaySystemMessage } from '../../components/Notifications';
 
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
-import { getAppliedFilters, getAvailableFacets, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
-import AddToList from './AddToList';
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { loadError } from '../../components/loadError';
-import { SafeAreaView, ScrollView } from 'react-native';
-import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
-import { GLOBALS } from '../../util/globals';
-import axios from 'axios';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
-import { DisplaySystemMessage } from '../../components/Notifications';
+import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { GLOBALS } from '../../util/globals';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { getAppliedFilters, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
+import AddToList from './AddToList';
 
 export const SearchResults = () => {
      const navigation = useNavigation();
@@ -358,6 +358,7 @@ const CreateFilterButtonDefaults = () => {
      const defaults = SEARCH.defaultFacets;
      return (
           <Button.Group size="sm" space={1} vertical variant="outline">
+               <CreateDefaultAvailabilityToggle />
                {defaults.map((obj, index) => {
                     return (
                          <Button
@@ -437,6 +438,74 @@ const CreateFilterButton = () => {
      }
 
      return <CreateFilterButtonDefaults />;
+};
+
+const CreateDefaultAvailabilityToggle = () => {
+     const navigation = useNavigation();
+     const { location } = React.useContext(LibraryBranchContext);
+     const { library } = React.useContext(LibrarySystemContext);
+
+     const locationGroupedWorkDisplaySettings = location.groupedWorkDisplaySettings ?? [];
+     const libraryGroupedWorkDisplaySettings = library.groupedWorkDisplaySettings ?? [];
+
+     let defaultAvailabilityToggleLabel = null;
+     let defaultAvailabilityToggleValue = null;
+     if (locationGroupedWorkDisplaySettings.availabilityToggleValue) {
+          defaultAvailabilityToggleValue = locationGroupedWorkDisplaySettings.availabilityToggleValue;
+     } else if (libraryGroupedWorkDisplaySettings.availabilityToggleValue) {
+          defaultAvailabilityToggleValue = libraryGroupedWorkDisplaySettings.availabilityToggleValue;
+     }
+
+     if (defaultAvailabilityToggleValue === 'global') {
+          if (locationGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(locationGroupedWorkDisplaySettings.superScopeLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.superScopeLabel;
+          } else if (libraryGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.superScopeLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.superScopeLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'local') {
+          if (locationGroupedWorkDisplaySettings.localLabel || _.isEmpty(locationGroupedWorkDisplaySettings.localLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.localLabel;
+          } else if (libraryGroupedWorkDisplaySettings.localLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.localLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.localLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'available') {
+          if (locationGroupedWorkDisplaySettings.availableLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableLabel;
+          } else if (libraryGroupedWorkDisplaySettings.availableLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'available_online') {
+          if (locationGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableOnlineLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableOnlineLabel;
+          } else if (libraryGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableOnlineLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableOnlineLabel;
+          }
+     }
+
+     if (!defaultAvailabilityToggleLabel || !defaultAvailabilityToggleValue) {
+          return null;
+     }
+
+     return (
+          <Button
+               key={-1}
+               variant="outline"
+               onPress={() => {
+                    navigation.push('modal', {
+                         screen: 'Facet',
+                         params: {
+                              navigation: navigation,
+                              key: 'availability_toggle',
+                              title: defaultAvailabilityToggleLabel,
+                              facets: SEARCH.availableFacets['availability_toggle'].facets,
+                              pendingUpdates: [],
+                              extra: [],
+                         },
+                    });
+               }}>
+               {defaultAvailabilityToggleLabel}
+          </Button>
+     );
 };
 
 async function fetchSearchResults(term, page, scope, url, type, id, language) {
