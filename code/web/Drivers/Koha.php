@@ -853,10 +853,10 @@ class Koha extends AbstractIlsDriver {
 				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
 				$jsonResponse = json_decode($responseBody);
-				$cardNumber = $jsonResponse->cardnumber;
-				$patronId = $jsonResponse->patron_id;
 				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
 				if ($responseCode == 201) {
+					$cardNumber = $jsonResponse->cardnumber;
+					$patronId = $jsonResponse->patron_id;
 					$authenticationSuccess = true;
 				} else {
 					$result['messages'][] = translate([
