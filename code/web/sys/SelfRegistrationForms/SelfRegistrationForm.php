@@ -51,6 +51,7 @@ class SelfRegistrationForm extends DataObject {
 				'canEdit' => false,
 				'canAddNew' => true,
 				'canDelete' => true,
+				'note' => 'Home Library must be included in the form'
 			],
 			'promptForSMSNoticesInSelfReg' => [
 				'property' => 'promptForSMSNoticesInSelfReg',
