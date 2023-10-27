@@ -1544,55 +1544,52 @@ class CarlX extends AbstractIlsDriver {
 			return $result;
 		}
 
-		$patronId = $this->getSearchbyPatronIdRequest($patron);
-
 		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$allPaymentsSucceed = true;
 
 		foreach ($accountLinesPaid as $line) {
 			[$feeId, $pmtAmount] = explode('|', $line);
-//			$paymentRequest = new stdClass();
-//			$paymentRequest->SearchType = 'Patron ID';
-//			$paymentRequest->SearchID = $patronId;
-//			$paymentRequest->FineOrFee = [];
-//			$paymentRequest->FineOrFee[0] = new stdClass();
-//			$paymentRequest->FineOrFee[0]->ItemId = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
-//			$paymentRequest->FineOrFee[0]->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
-//			$paymentRequest->FineOrFee[0]->WaiveComment = ''; // 16 character limit
-//			$paymentRequest->FineOrFee[0]->PayType = 'Pay'; // Pay, Waive, or Cancel
-//			$paymentRequest->FineOrFee[0]->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
-//			$paymentRequest->FineOrFee[0]->Amount = $pmtAmount;
-//			$paymentRequest->Modifiers = new stdClass();
-//			$paymentRequest->Modifiers->StaffId = $staffId; // The alias of the employee submitting the request. Required.
-//			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
+			$paymentRequest = new stdClass();
+			$paymentRequest->SearchType = 'Patron ID';
+			$paymentRequest->SearchID = $patron->unique_ils_id;
+			$paymentRequest->FineOrFee = [];
+			$paymentRequest->FineOrFee[0] = new stdClass();
+			$paymentRequest->FineOrFee[0]->ItemID = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
+			$paymentRequest->FineOrFee[0]->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
+			$paymentRequest->FineOrFee[0]->WaiveComment = ''; // 16 character limit
+			$paymentRequest->FineOrFee[0]->PayType = 'Pay'; // Pay, Waive, or Cancel
+			$paymentRequest->FineOrFee[0]->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
+			$paymentRequest->FineOrFee[0]->Amount = $pmtAmount;
+			$paymentRequest->Modifiers = new stdClass();
+			$paymentRequest->Modifiers->StaffID = $staffId; // The alias of the employee submitting the request. Required.
+			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
 
-			$paymentRequest = <<<EOT
-<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
- xmlns:sys="http://tlcdelivers.com/cx/schemas/systemAPI"
- xmlns:tran="http://tlcdelivers.com/cx/schemas/transaction"
- xmlns:req="http://tlcdelivers.com/cx/schemas/request">
- 	<soapenv:Header/>
- 	<soapenv:Body>
- 		<sys:SettleFinesAndFeesRequest>
- 			<sys:SearchType>Patron ID</sys:SearchType>
- 			<sys:SearchID>{$patronId}</sys:SearchID>
- 			<sys:FineOrFee>
- 				<tran:ItemID>{$feeId}</tran:ItemID>
- 				<tran:Occur>1</tran:Occur>
- 				<tran:WaiveComment></tran:WaiveComment>
- 				<tran:PayType>Pay</tran:PayType>
- 				<tran:PayMethod>Credit Card</tran:PayMethod>
- 				<tran:Amount>{$pmtAmount}</tran:Amount>
- 			</sys:FineOrFee>
- 			<sys:Modifiers>
- 				<req:StaffID>{$staffId}</req:StaffID>
- 				<req:EnvBranch>{$homeLocation}</req:EnvBranch>
- 			</sys:Modifiers>
- 		</sys:SettleFinesAndFeesRequest>
- 	</soapenv:Body>
- </soapenv:Envelope>
-EOT;
-
+//			$paymentRequest = <<<EOT
+//<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+// xmlns:sys="http://tlcdelivers.com/cx/schemas/systemAPI"
+// xmlns:tran="http://tlcdelivers.com/cx/schemas/transaction"
+// xmlns:req="http://tlcdelivers.com/cx/schemas/request">
+// 	<soapenv:Header/>
+// 	<soapenv:Body>
+// 		<sys:SettleFinesAndFeesRequest>
+// 			<sys:SearchType>Patron ID</sys:SearchType>
+// 			<sys:SearchID>{$patron->unique_ils_id}</sys:SearchID>
+// 			<sys:FineOrFee>
+// 				<tran:ItemID>{$feeId}</tran:ItemID>
+// 				<tran:Occur>1</tran:Occur>
+// 				<tran:WaiveComment></tran:WaiveComment>
+// 				<tran:PayType>Pay</tran:PayType>
+// 				<tran:PayMethod>Credit Card</tran:PayMethod>
+// 				<tran:Amount>{$pmtAmount}</tran:Amount>
+// 			</sys:FineOrFee>
+// 			<sys:Modifiers>
+// 				<req:StaffID>{$staffId}</req:StaffID>
+// 				<req:EnvBranch>{$homeLocation}</req:EnvBranch>
+// 			</sys:Modifiers>
+// 		</sys:SettleFinesAndFeesRequest>
+// 	</soapenv:Body>
+// </soapenv:Envelope>
+//EOT;
 
 			$result = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
 			if($result) {
