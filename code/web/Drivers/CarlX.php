@@ -1551,7 +1551,7 @@ class CarlX extends AbstractIlsDriver {
 			[$feeId, $pmtAmount] = explode('|', $line);
 			$paymentRequest = new stdClass();
 			$paymentRequest->SearchType = 'Patron ID';
-			$paymentRequest->SearchID = $patron->unique_ils_id;
+			$paymentRequest->SearchID = $patron->ils_barcode;
 			$paymentRequest->FineOrFee = [];
 			$paymentRequest->FineOrFee[0] = new stdClass();
 			$paymentRequest->FineOrFee[0]->ItemID = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
@@ -1563,6 +1563,21 @@ class CarlX extends AbstractIlsDriver {
 			$paymentRequest->Modifiers = new stdClass();
 			$paymentRequest->Modifiers->StaffID = $staffId; // The alias of the employee submitting the request. Required.
 			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
+
+//			$paymentRequest = new stdClass();
+//			$paymentRequest->SearchType = 'Patron ID';
+//			$paymentRequest->SearchID = $patron->ils_barcode;
+//			$paymentRequest->FineOrFee = [];
+//			$paymentRequest->FineOrFee[0] = new stdClass();
+//			$paymentRequest->FineOrFee[0]->ItemID = new SoapVar($feeId, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "ItemID", "tran"); // The unique item identifier against which payment for a fine or fee is being applied
+//			$paymentRequest->FineOrFee[0]->Occur = new SoapVar(1, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "Occur", "tran"); // The unique occurrence associated with the item that references the fine or fee selected for settlement
+//			$paymentRequest->FineOrFee[0]->WaiveComment = new SoapVar('', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "WaiveComment", "tran"); // 16 character limit
+//			$paymentRequest->FineOrFee[0]->PayType = new SoapVar('Pay', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "PayType", "tran"); // Pay, Waive, or Cancel
+//			$paymentRequest->FineOrFee[0]->PayMethod = new SoapVar('Credit Card', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "PayMethod", "tran"); // Cash, Check, or Credit Card
+//			$paymentRequest->FineOrFee[0]->Amount = new SoapVar($pmtAmount, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "Amount", "tran");
+//			$paymentRequest->Modifiers = new stdClass();
+//			$paymentRequest->Modifiers->StaffID = new SoapVar($staffId, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "StaffID", "req"); // The alias of the employee submitting the request. Required.
+//			$paymentRequest->Modifiers->EnvBranch = new SoapVar($homeLocation, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "EnvBranch", "req"); // Branch Code indicating the Branch being used. Required.
 
 //			$paymentRequest = <<<EOT
 //<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
