@@ -6,6 +6,8 @@ class SelfRegistrationForm extends DataObject {
 	public $__displayNameColumn = 'symphonyName';
 	public $id;
 	public $name;
+	public $selfRegistrationBarcodePrefix;
+	public $selfRegBarcodeSuffixLength;
 
 	private $_fields;
 	private $_libraries;
@@ -63,6 +65,22 @@ class SelfRegistrationForm extends DataObject {
 				'description' => 'The Profile to use during self registration.',
 				'hideInLists' => true,
 				'default' => 'SELFREG',
+			],
+			'selfRegistrationBarcodePrefix' => [
+				'property' => 'selfRegistrationBarcodePrefix',
+				'type' => 'text',
+				'maxLength' => 10,
+				'label' => 'Self Registration Barcode Prefix',
+				'description' => 'The barcode prefix to use during self registration.',
+				'default' => '',
+			],
+			'selfRegBarcodeSuffixLength' => [
+				'property' => 'selfRegBarcodeSuffixLength',
+				'type' => 'integer',
+				'maxLength' => 2,
+				'label' => 'Self Registration Barcode Suffix Length',
+				'description' => 'Remaining length of the self registration barcode after the prefix.',
+				'default' => '',
 			],
 			'libraries' => [
 				'property' => 'libraries',

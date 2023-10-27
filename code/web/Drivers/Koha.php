@@ -415,7 +415,7 @@ class Koha extends AbstractIlsDriver {
 			$curCheckout->barcode = $curRow['barcode'];
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
-			if ($recordDriver->isValid()) {
+			if ($recordDriver !== null && $recordDriver->isValid()) {
 				$curCheckout->updateFromRecordDriver($recordDriver);
 			} else {
 				$curCheckout->title = $curRow['title'];
@@ -830,6 +830,11 @@ class Koha extends AbstractIlsDriver {
 				if (!$oauthToken) {
 					global $logger;
 					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
+					$result['messages'][] = translate([
+						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
 				} else {
 					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
 					$postParams = [
@@ -848,10 +853,10 @@ class Koha extends AbstractIlsDriver {
 				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
 				$jsonResponse = json_decode($responseBody);
-				$cardNumber = $jsonResponse->cardnumber;
-				$patronId = $jsonResponse->patron_id;
 				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
 				if ($responseCode == 201) {
+					$cardNumber = $jsonResponse->cardnumber;
+					$patronId = $jsonResponse->patron_id;
 					$authenticationSuccess = true;
 				} else {
 					$result['messages'][] = translate([
@@ -2359,7 +2364,7 @@ class Koha extends AbstractIlsDriver {
 			}
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
-			if ($recordDriver->isValid()) {
+			if ($recordDriver != null && $recordDriver->isValid()) {
 				$curHold->updateFromRecordDriver($recordDriver);
 				//See if we need to override the format based on the item type
 				$itemType = $curRow['itemtype'];
@@ -4576,6 +4581,7 @@ class Koha extends AbstractIlsDriver {
 				$jsonResponse = json_decode($response);
 				$result['username'] = $jsonResponse->userid;
 				$result['success'] = true;
+				$result['sendWelcomeMessage'] = false;
 				if ($verificationRequired != "0") {
 					$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 				} else {
@@ -4587,6 +4593,11 @@ class Koha extends AbstractIlsDriver {
 							if ($tmpResult['success']) {
 								$result['password'] = $_REQUEST['borrower_password'];
 							}
+						}
+						$newUser = $this->findNewUser($jsonResponse->cardnumber, null);
+						if ($newUser != null) {
+							$result['newUser'] = $newUser;
+							$result['sendWelcomeMessage'] = true;
 						}
 					} else {
 						$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";
