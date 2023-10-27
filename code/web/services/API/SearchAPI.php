@@ -2986,6 +2986,38 @@ class SearchAPI extends Action {
 
 			$items = [];
 			$index = 0;
+
+			$availabilityToggle = $topFacetSet['availability_toggle'];
+			if($availabilityToggle) {
+				$key = translate([
+					'text' => $availabilityToggle['label'],
+					'isPublicFacing' => true
+				]);
+				$items[$key]['key'] = -1;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = $availabilityToggle['field_name'];
+				$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
+				$items[$key]['multiSelect'] = $availabilityToggle['multiSelect'];
+
+				$i = 0;
+				foreach ($availabilityToggle['list'] as $item) {
+					$items[$key]['facets'][$i]['value'] = $item['value'];
+					$items[$key]['facets'][$i]['display'] = translate([
+						'text' => $item['display'],
+						'isPublicFacing' => true
+					]);
+					$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+					$items[$key]['facets'][$i]['count'] = $item['count'];
+					$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+					if (isset($item['multiSelect'])) {
+						$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+					} else {
+						$items[$key]['facets'][$i]['multiSelect'] = (bool)$items[$key]['multiSelect'];
+					}
+					$i++;
+				}
+			}
+
 			if ($includeSortList) {
 				$sortList = $searchObj->getSortList();
 				$i = 0;
@@ -3014,18 +3046,17 @@ class SearchAPI extends Action {
 			foreach ($facets as $facet) {
 				$index++;
 				$i = 0;
-				if ($facet['field_name'] == 'availability_toggle') {
-					$availabilityToggle = $topFacetSet['availability_toggle'];
-					$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
-					$items[$key]['key'] = $index;
-					$items[$key]['label'] = $key;
-					$items[$key]['field'] = $availabilityToggle['field_name'];
-					$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
-					$items[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
-					foreach ($availabilityToggle['list'] as $item) {
+				$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
+				$items[$key]['key'] = $index;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = $facet['field_name'];
+				$items[$key]['hasApplied'] = $facet['hasApplied'];
+				$items[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+				if (isset($facet['sortedList'])) {
+					foreach ($facet['sortedList'] as $item) {
 						$items[$key]['facets'][$i]['value'] = $item['value'];
-						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
-						$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
+						$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 						$items[$key]['facets'][$i]['count'] = $item['count'];
 						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
 						if (isset($item['multiSelect'])) {
@@ -3036,40 +3067,18 @@ class SearchAPI extends Action {
 						$i++;
 					}
 				} else {
-					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
-					$items[$key]['key'] = $index;
-					$items[$key]['label'] = $key;
-					$items[$key]['field'] = $facet['field_name'];
-					$items[$key]['hasApplied'] = $facet['hasApplied'];
-					$items[$key]['multiSelect'] = (bool)$facet['multiSelect'];
-					if (isset($facet['sortedList'])) {
-						foreach ($facet['sortedList'] as $item) {
-							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
-							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
-							$items[$key]['facets'][$i]['count'] = $item['count'];
-							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-							if (isset($item['multiSelect'])) {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-							} else {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
-							}
-							$i++;
+					foreach ($facet['list'] as $item) {
+						$items[$key]['facets'][$i]['value'] = $item['value'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+						$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+						$items[$key]['facets'][$i]['count'] = $item['count'];
+						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						if (isset($item['multiSelect'])) {
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						} else {
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
 						}
-					} else {
-						foreach ($facet['list'] as $item) {
-							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
-							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
-							$items[$key]['facets'][$i]['count'] = $item['count'];
-							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-							if (isset($item['multiSelect'])) {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-							} else {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
-							}
-							$i++;
-						}
+						$i++;
 					}
 				}
 

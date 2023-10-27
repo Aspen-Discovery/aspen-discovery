@@ -2501,6 +2501,24 @@ class Location extends DataObject {
 				'notes' => $hour->notes,
 			];
 		}
+
+		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+		$localLabel = str_ireplace('{display name}', $this->displayName, $localLabel);
+		$availableLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+		$availableLabel = str_ireplace('{display name}', $this->displayName, $availableLabel);
+		$availableOnlineLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+		$availableOnlineLabel = str_ireplace('{display name}', $this->displayName, $availableOnlineLabel);
+		$availabilityToggleValue = $this->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		$facetCountsToShow = $this->getGroupedWorkDisplaySettings()->facetCountsToShow;
+
+		$apiInfo['groupedWorkDisplaySettings']['superScopeLabel'] = $superScopeLabel;
+		$apiInfo['groupedWorkDisplaySettings']['localLabel'] = $localLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableLabel'] = $availableLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableOnlineLabel'] = $availableOnlineLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
+		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
+
 		return $apiInfo;
 	}
 }
