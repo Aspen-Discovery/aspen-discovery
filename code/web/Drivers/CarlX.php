@@ -1619,7 +1619,7 @@ class CarlX extends AbstractIlsDriver {
 			if($allPaymentsSucceed) {
 				$paymentNote = new stdClass();
 				$paymentNote->Note = new stdClass();
-				$paymentNote->Note->PatronID = $patronId;
+				$paymentNote->Note->PatronID = $patron->unique_ils_id;
 				$paymentNote->Note->NoteType = 2;
 				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
 				$paymentNote->Modifiers = '';
