@@ -4802,6 +4802,23 @@ class Library extends DataObject {
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 		$apiInfo['ils'] = $ils;
 
+		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+		$localLabel = str_ireplace('{display name}', $this->displayName, $localLabel);
+		$availableLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+		$availableLabel = str_ireplace('{display name}', $this->displayName, $availableLabel);
+		$availableOnlineLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+		$availableOnlineLabel = str_ireplace('{display name}', $this->displayName, $availableOnlineLabel);
+		$availabilityToggleValue = $this->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		$facetCountsToShow = $this->getGroupedWorkDisplaySettings()->facetCountsToShow;
+
+		$apiInfo['groupedWorkDisplaySettings']['superScopeLabel'] = $superScopeLabel;
+		$apiInfo['groupedWorkDisplaySettings']['localLabel'] = $localLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableLabel'] = $availableLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableOnlineLabel'] = $availableOnlineLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
+		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
+
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
 

@@ -1,5 +1,6 @@
 import { useIsFocused, useRoute } from '@react-navigation/native';
 import { BarCodeScanner } from 'expo-barcode-scanner';
+import _ from 'lodash';
 import { Button, Center, View } from 'native-base';
 import React from 'react';
 import { StyleSheet } from 'react-native';
@@ -15,10 +16,19 @@ export default function SelfCheckScanner() {
      const isFocused = useIsFocused();
      const [isLoading, setIsLoading] = React.useState(false);
      const { language } = React.useContext(LanguageContext);
-     const { library } = React.useContext(LibrarySystemContext);
+     const { library, selfCheckSettings } = React.useContext(LibrarySystemContext);
      const [hasPermission, setHasPermission] = React.useState(null);
      const [scanned, setScanned] = React.useState(false);
+
      let allowedBarcodes = [BarCodeScanner.Constants.BarCodeType.upc_a, BarCodeScanner.Constants.BarCodeType.upc_e, BarCodeScanner.Constants.BarCodeType.upc_ean, BarCodeScanner.Constants.BarCodeType.ean13, BarCodeScanner.Constants.BarCodeType.ean8, BarCodeScanner.Constants.BarCodeType.codabar];
+     if (selfCheckSettings.barcodeStyles && _.isArray(selfCheckSettings.barcodeStyles)) {
+          const barcodeStyles = selfCheckSettings.barcodeStyles;
+          allowedBarcodes = [];
+          _.map(barcodeStyles, function (item, index, collection) {
+               allowedBarcodes = _.concat(barcodeStyles, 'BarCodeScanner.Constants.BarCodeType.' + item);
+          });
+     }
+
      let activeAccount = useRoute().params?.activeAccount ?? false;
 
      const testBarcodes = ['9031105', '9031106', '9031107'];
