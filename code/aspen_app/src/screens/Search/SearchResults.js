@@ -356,10 +356,73 @@ const FilterBar = () => {
 const CreateFilterButtonDefaults = () => {
      const navigation = useNavigation();
      const defaults = SEARCH.defaultFacets;
+     const { location } = React.useContext(LibraryBranchContext);
+     const { library } = React.useContext(LibrarySystemContext);
+
+     const locationGroupedWorkDisplaySettings = location.groupedWorkDisplaySettings ?? [];
+     const libraryGroupedWorkDisplaySettings = library.groupedWorkDisplaySettings ?? [];
+
+     let defaultAvailabilityToggleLabel = 'Entire Collection';
+     let defaultAvailabilityToggleValue = 'global';
+     if (locationGroupedWorkDisplaySettings.availabilityToggleValue) {
+          defaultAvailabilityToggleValue = locationGroupedWorkDisplaySettings.availabilityToggleValue;
+     } else if (libraryGroupedWorkDisplaySettings.availabilityToggleValue) {
+          defaultAvailabilityToggleValue = libraryGroupedWorkDisplaySettings.availabilityToggleValue;
+     }
+
+     if (defaultAvailabilityToggleValue === 'global') {
+          if (locationGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(locationGroupedWorkDisplaySettings.superScopeLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.superScopeLabel;
+          } else if (libraryGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.superScopeLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.superScopeLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'local') {
+          if (locationGroupedWorkDisplaySettings.localLabel || _.isEmpty(locationGroupedWorkDisplaySettings.localLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.localLabel;
+          } else if (libraryGroupedWorkDisplaySettings.localLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.localLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.localLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'available') {
+          if (locationGroupedWorkDisplaySettings.availableLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableLabel;
+          } else if (libraryGroupedWorkDisplaySettings.availableLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'available_online') {
+          if (locationGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableOnlineLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableOnlineLabel;
+          } else if (libraryGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableOnlineLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableOnlineLabel;
+          }
+     }
+
      return (
           <Button.Group size="sm" space={1} vertical variant="outline">
-               <CreateDefaultAvailabilityToggle />
                {defaults.map((obj, index) => {
+                    if (obj['field'] === 'availability_toggle') {
+                         const label = obj['label'] + ': ' + defaultAvailabilityToggleLabel;
+                         return (
+                              <Button
+                                   key={index}
+                                   variant="outline"
+                                   onPress={() => {
+                                        navigation.push('modal', {
+                                             screen: 'Facet',
+                                             params: {
+                                                  navigation: navigation,
+                                                  key: obj['field'],
+                                                  title: obj['label'],
+                                                  facets: SEARCH.availableFacets[obj['label']].facets,
+                                                  pendingUpdates: [],
+                                                  extra: obj,
+                                             },
+                                        });
+                                   }}>
+                                   {label}
+                              </Button>
+                         );
+                    }
+
                     return (
                          <Button
                               key={index}
@@ -393,7 +456,7 @@ const CreateFilterButton = () => {
           value: 'relevance',
      });
 
-     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 2 && _.size(sort) > 1)) {
+     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 3 && _.size(sort) > 1)) {
           return (
                <Button.Group size="sm" space={1} vertical variant="outline">
                     {_.map(appliedFacets, function (item, index, collection) {
@@ -438,74 +501,6 @@ const CreateFilterButton = () => {
      }
 
      return <CreateFilterButtonDefaults />;
-};
-
-const CreateDefaultAvailabilityToggle = () => {
-     const navigation = useNavigation();
-     const { location } = React.useContext(LibraryBranchContext);
-     const { library } = React.useContext(LibrarySystemContext);
-
-     const locationGroupedWorkDisplaySettings = location.groupedWorkDisplaySettings ?? [];
-     const libraryGroupedWorkDisplaySettings = library.groupedWorkDisplaySettings ?? [];
-
-     let defaultAvailabilityToggleLabel = null;
-     let defaultAvailabilityToggleValue = null;
-     if (locationGroupedWorkDisplaySettings.availabilityToggleValue) {
-          defaultAvailabilityToggleValue = locationGroupedWorkDisplaySettings.availabilityToggleValue;
-     } else if (libraryGroupedWorkDisplaySettings.availabilityToggleValue) {
-          defaultAvailabilityToggleValue = libraryGroupedWorkDisplaySettings.availabilityToggleValue;
-     }
-
-     if (defaultAvailabilityToggleValue === 'global') {
-          if (locationGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(locationGroupedWorkDisplaySettings.superScopeLabel)) {
-               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.superScopeLabel;
-          } else if (libraryGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.superScopeLabel)) {
-               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.superScopeLabel;
-          }
-     } else if (defaultAvailabilityToggleValue === 'local') {
-          if (locationGroupedWorkDisplaySettings.localLabel || _.isEmpty(locationGroupedWorkDisplaySettings.localLabel)) {
-               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.localLabel;
-          } else if (libraryGroupedWorkDisplaySettings.localLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.localLabel)) {
-               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.localLabel;
-          }
-     } else if (defaultAvailabilityToggleValue === 'available') {
-          if (locationGroupedWorkDisplaySettings.availableLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableLabel)) {
-               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableLabel;
-          } else if (libraryGroupedWorkDisplaySettings.availableLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableLabel)) {
-               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableLabel;
-          }
-     } else if (defaultAvailabilityToggleValue === 'available_online') {
-          if (locationGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableOnlineLabel)) {
-               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableOnlineLabel;
-          } else if (libraryGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableOnlineLabel)) {
-               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableOnlineLabel;
-          }
-     }
-
-     if (!defaultAvailabilityToggleLabel || !defaultAvailabilityToggleValue) {
-          return null;
-     }
-
-     return (
-          <Button
-               key={-1}
-               variant="outline"
-               onPress={() => {
-                    navigation.push('modal', {
-                         screen: 'Facet',
-                         params: {
-                              navigation: navigation,
-                              key: 'availability_toggle',
-                              title: defaultAvailabilityToggleLabel,
-                              facets: SEARCH.availableFacets['availability_toggle'].facets,
-                              pendingUpdates: [],
-                              extra: [],
-                         },
-                    });
-               }}>
-               {defaultAvailabilityToggleLabel}
-          </Button>
-     );
 };
 
 async function fetchSearchResults(term, page, scope, url, type, id, language) {
