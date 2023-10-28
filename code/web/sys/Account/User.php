@@ -1279,7 +1279,7 @@ class User extends DataObject {
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
 		//15 minutes ago or if the refresh option is selected
 		$reloadCheckoutInformation = false;
-		if (($this->checkoutInfoLastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts'])) {
+		if (($this->checkoutInfoLastLoaded < (time() - 5 * 60)) || isset($_REQUEST['refreshCheckouts'])) {
 			$reloadCheckoutInformation = true;
 		}
 
@@ -1423,7 +1423,7 @@ class User extends DataObject {
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
 		//15 minutes ago or if the refresh option is selected
 		$reloadHoldInformation = false;
-		if (($this->holdInfoLastLoaded < time() - 15 * 60) || isset($_REQUEST['refreshHolds'])) {
+		if (($this->holdInfoLastLoaded < time() - 5 * 60) || isset($_REQUEST['refreshHolds'])) {
 			$reloadHoldInformation = true;
 		}
 
@@ -3654,7 +3654,7 @@ class User extends DataObject {
 		$existingId = null;
 		if ($summary->find(true)) {
 			$existingId = $summary->id;
-			if (($summary->lastLoaded < (time() - 15 * 60)) || isset($_REQUEST['refreshCheckouts']) || isset($_REQUEST['refreshHolds']) || isset($_REQUEST['refreshSummary'])) {
+			if (($summary->lastLoaded < (time() - 5 * 60)) || isset($_REQUEST['refreshCheckouts']) || isset($_REQUEST['refreshHolds']) || isset($_REQUEST['refreshSummary'])) {
 				$summary = null;
 			}
 		} else {
