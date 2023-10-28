@@ -2618,6 +2618,20 @@ class SearchAPI extends Action {
 		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])) {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
+		
+		if(isset($_REQUEST['availability_toggle'])) {
+			$searchObject->addFilter('availability_toggle:'.$_REQUEST['availability_toggle']);
+		} else {
+			$searchLibrary = Library::getSearchLibrary(null);
+			$searchLocation = Location::getSearchLocation(null);
+			if ($searchLocation) {
+				$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			} else {
+				$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			}
+			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
+		}
+
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
 		$timer->logTime('Setup Search');
 
@@ -2654,6 +2668,12 @@ class SearchAPI extends Action {
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$timer->logTime('no hits processing');
+
+			// try changing availability_toggle if not already global
+			if($_REQUEST['availability_toggle'] != 'global') {
+				$_REQUEST['availability_toggle'] = 'global';
+				$this->searchLite();
+			}
 		} else {
 			$timer->logTime('save search');
 			$summary = $searchObject->getResultSummary();
@@ -2720,8 +2740,8 @@ class SearchAPI extends Action {
 				$options[$key]['key'] = -1;
 				$options[$key]['label'] = $key;
 				$options[$key]['field'] = $availabilityToggle['field_name'];
-				$options[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
-				$options[$key]['multiSelect'] = $availabilityToggle['multiSelect'];
+				$options[$key]['hasApplied'] = true;
+				$options[$key]['multiSelect'] = false;
 
 				$i = 0;
 				foreach ($availabilityToggle['list'] as $item) {
@@ -2733,11 +2753,7 @@ class SearchAPI extends Action {
 					$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
 					$options[$key]['facets'][$i]['count'] = $item['count'];
 					$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-					if (isset($item['multiSelect'])) {
-						$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-					} else {
-						$options[$key]['facets'][$i]['multiSelect'] = (bool)$options[$key]['multiSelect'];
-					}
+					$options[$key]['facets'][$i]['multiSelect'] = false;
 					$i++;
 				}
 			}
@@ -3271,6 +3287,9 @@ class SearchAPI extends Action {
 			if ($includeSort) {
 				$items[] = 'sort_by';
 			}
+
+			$items[] = 'availability_toggle';
+
 			$results = [
 				'success' => true,
 				'id' => $id,
@@ -3329,8 +3348,44 @@ class SearchAPI extends Action {
 			foreach ($filters as $key => $filter) {
 				$i = 0;
 				foreach ($filter as $item) {
+					if($item['field'] == 'availability_toggle') {
+						$searchLibrary = Library::getSearchLibrary(null);
+						$searchLocation = Location::getSearchLocation(null);
+						if ($searchLocation) {
+							$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+							$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+							$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+							$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+							$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+							$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+							$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+							$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+						} else {
+							$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+							$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+							$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
+							$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+							$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
+							$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+							$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+							$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+						}
+
+						if($item['value'] == 'global') {
+							$items[$key][$i]['display'] = translate(['text' => $superScopeLabel, 'isPublicFacing' => true]);
+						} else if ($item['value'] == 'local') {
+							$items[$key][$i]['display'] = translate(['text' => $localLabel, 'isPublicFacing' => true]);
+						} else if ($item['value'] == 'available') {
+							$items[$key][$i]['display'] = translate(['text' => $localLabel, 'isPublicFacing' => true]);
+						} else if ($item['value'] == 'available_online') {
+							$items[$key][$i]['display'] = translate(['text' => $availableOnlineLabel, 'isPublicFacing' => true]);
+						} else {
+							$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+						}
+					} else {
+						$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+					}
 					$items[$key][$i]['value'] = $item['value'];
-					$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 					$items[$key][$i]['field'] = $item['field'];
 					$items[$key][$i]['count'] = 0;
 					$items[$key][$i]['isApplied'] = true;
@@ -3366,6 +3421,29 @@ class SearchAPI extends Action {
 			$facets[$i]['multiSelect'] = (bool)$facet->multiSelect;
 			$i++;
 		}
+
+		$searchLibrary = Library::getSearchLibrary(null);
+		$searchLocation = Location::getSearchLocation(null);
+		if ($searchLocation) {
+			$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+			$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+			$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+			$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+			$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+			$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		} else {
+			$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+			$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+			$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
+			$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
+			$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+			$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		}
+
 		return [
 			'success' => true,
 			'limit' => $limit,
