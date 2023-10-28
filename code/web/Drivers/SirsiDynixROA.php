@@ -803,7 +803,7 @@ class SirsiDynixROA extends HorizonAPI {
 						$barcode++;
 					}
 					//Now that we have a valid barcode increment the variable by one so that next time we get the next number
-					$barcodeVariable->value = $barcode++;
+					$barcodeVariable->value = $barcode + 1;
 					if (!$barcodeVariable->update()) {
 						global $logger;
 						$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
