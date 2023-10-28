@@ -2668,6 +2668,12 @@ class SearchAPI extends Action {
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$timer->logTime('no hits processing');
+
+			// try changing availability_toggle if not already global
+			if($_REQUEST['availability_toggle'] != 'global') {
+				$_REQUEST['availability_toggle'] = 'global';
+				$this->searchLite();
+			}
 		} else {
 			$timer->logTime('save search');
 			$summary = $searchObject->getResultSummary();
