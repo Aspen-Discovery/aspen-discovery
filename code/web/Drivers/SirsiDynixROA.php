@@ -7,6 +7,7 @@ class SirsiDynixROA extends HorizonAPI {
 	//Caching of sessionIds by patron for performance (also stored within memcache)
 	private static $sessionIdsForUsers = [];
 	private static $logAllAPICalls = false;
+	private $lastWebServiceResponseCode;
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
 	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [], $workingLibraryId = null) {
@@ -73,6 +74,8 @@ class SirsiDynixROA extends HorizonAPI {
 			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
+
+		$this->lastWebServiceResponseCode = curl_getinfo($ch)['http_code'];
 
 		$timer->logTime("Finished calling symphony $requestType API");
 		ExternalRequestLogEntry::logRequest('symphony.' . $requestType, $customRequest, $url, $headers, json_encode($params), curl_getinfo($ch)['http_code'], $json, $dataToSanitize);
@@ -507,6 +510,7 @@ class SirsiDynixROA extends HorizonAPI {
 	function selfRegister(): array {
 		$selfRegResult = [
 			'success' => false,
+			'message' => 'Unknown Error while registering your account'
 		];
 
 		$sessionToken = $this->getStaffSessionToken();
@@ -518,6 +522,14 @@ class SirsiDynixROA extends HorizonAPI {
 			// $address1DescribeResponse = $this->getWebServiceResponse('address1Describe', $webServiceURL . '/user/patron/address1/describe');
 			// $addressDescribeResponse  = $this->getWebServiceResponse('addressDescribe', $webServiceURL . '/user/patron/address/describe');
 			// $userProfileDescribeResponse  = $this->getWebServiceResponse('userProfileDescribe', $webServiceURL . '/policy/userProfile/describe');
+
+			$firstName = isset($_REQUEST['firstName']) ? trim($_REQUEST['firstName']) : '';
+			$lastName = isset($_REQUEST['firstName']) ? trim($_REQUEST['lastName']) : '';
+			$birthDate = isset($_REQUEST['firstName']) ? trim($_REQUEST['dob']) : '';
+			if ($this->isDuplicatePatron($firstName, $lastName, $birthDate)) {
+				$selfRegResult['message'] = 'We have found an existing account for you. Please contact the library to access your account.';
+				return $selfRegResult;
+			}
 
 			$createPatronInfoParameters = [
 				'fields' => [],
@@ -533,10 +545,22 @@ class SirsiDynixROA extends HorizonAPI {
 				'key' => $library->selfRegistrationUserProfile,
 			];
 
-			$formFields = (new SelfRegistrationFormValues)->getFormFieldsInOrder($library->selfRegistrationFormId);
+			$selfRegistrationForm = null;
+			$formFields = null;
+			if ($library->selfRegistrationFormId > 0){
+				$selfRegistrationForm = new SelfRegistrationForm();
+				$selfRegistrationForm->id = $library->selfRegistrationFormId;
+				if ($selfRegistrationForm->find(true)) {
+					$formFields = $selfRegistrationForm->getFields();
+				}else {
+					$selfRegistrationForm = null;
+				}
+			}
+			//$formFields = (new SelfRegistrationFormValues)->getFormFieldsInOrder($library->selfRegistrationFormId);
 
 			if ($formFields != null) {
-				foreach ($formFields as $field){
+				foreach ($formFields as $fieldObj){
+					$field = $fieldObj->symphonyName;
 					//General Info
 					if ($field == 'firstName' && (!empty($_REQUEST['firstName'])) ) {
 						$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
@@ -556,7 +580,7 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'title' && (!empty($_REQUEST['title']))) {
 						$createPatronInfoParameters['fields']['title'] = $this->getPatronFieldValue(trim($_REQUEST['title']), $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
-					elseif ($field == 'birthDate' && (!empty($_REQUEST['dob']))) {
+					elseif (($field == 'birthDate' || $field == 'dob') && (!empty($_REQUEST['dob']))) {
 						$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['dob']), $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
 
@@ -568,54 +592,53 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'careof' && (!empty($_REQUEST['careof']))) {
 						$this->setPatronUpdateField('CARE_OF', $this->getPatronFieldValue($_REQUEST['careof'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'PARENTNAME' && (!empty($_REQUEST['parentname']))) {
+					elseif ($field == 'parentname' && (!empty($_REQUEST['parentname']))) {
 						$this->setPatronUpdateField('PARENTNAME', $this->getPatronFieldValue($_REQUEST['parentname'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 
-					elseif ($field == 'EMAIL' && (!empty($_REQUEST['email']))) {
+					elseif ($field == 'email' && (!empty($_REQUEST['email']))) {
 						$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'PHONE' && (!empty($_REQUEST['phone']))) {
+					elseif ($field == 'phone' && (!empty($_REQUEST['phone']))) {
 						$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'HOMEPHONE' && (!empty($_REQUEST['homephone']))) {
+					elseif ($field == 'homephone' && (!empty($_REQUEST['homephone']))) {
 						$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['homephone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'CELLPHONE' && (!empty($_REQUEST['cellphone']))) {
+					elseif ($field == 'cellphone' && (!empty($_REQUEST['cellphone']))) {
 						$this->setPatronUpdateField('CELLPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'DAYPHONE' && (!empty($_REQUEST['cellphone']))) {
+					elseif ($field == 'dayphone' && (!empty($_REQUEST['cellphone']))) {
 						$this->setPatronUpdateField('DAYPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'WORKPHONE' && (!empty($_REQUEST['workphone']))) {
+					elseif ($field == 'workphone' && (!empty($_REQUEST['workphone']))) {
 						$this->setPatronUpdateField('WORKPHONE', $_REQUEST['workphone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'EXT' && (!empty($_REQUEST['ext']))) {
+					elseif ($field == 'ext' && (!empty($_REQUEST['ext']))) {
 						$this->setPatronUpdateField('EXT', $_REQUEST['ext'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'FAX' && (!empty($_REQUEST['fax']))) {
+					elseif ($field == 'fax' && (!empty($_REQUEST['fax']))) {
 						$this->setPatronUpdateField('FAX', $_REQUEST['fax'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'EMPLOYER' && (!empty($_REQUEST['employer']))) {
+					elseif ($field == 'employer' && (!empty($_REQUEST['employer']))) {
 						$this->setPatronUpdateField('EMPLOYER', $_REQUEST['employer'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-
-					elseif ($field == 'PO_BOX' && (!empty($_REQUEST['po_box']))) {
+					elseif ($field == 'po_box' && (!empty($_REQUEST['po_box']))) {
 						$this->setPatronUpdateField('PO_BOX', $this->getPatronFieldValue($_REQUEST['po_box'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'STREET' && (!empty($_REQUEST['street']))) {
+					elseif ($field == 'street' && (!empty($_REQUEST['street']))) {
 						$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'MAILINGADDR' && (!empty($_REQUEST['mailingaddr']))) {
+					elseif ($field == 'mailingaddr' && (!empty($_REQUEST['mailingaddr']))) {
 						$this->setPatronUpdateField('MAILINGADDR', $this->getPatronFieldValue($_REQUEST['mailingaddr'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'apt_suite' && (!empty($_REQUEST['apt_suite']))) {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'CITY' && (!empty($_REQUEST['city']))) {
+					elseif ($field == 'city' && (!empty($_REQUEST['city']))) {
 						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'STATE' && (!empty($_REQUEST['state']))) {
+					elseif ($field == 'state' && (!empty($_REQUEST['state']))) {
 						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'city_state' && (isset($_REQUEST['city']) && isset($_REQUEST['state']))) {
@@ -625,12 +648,12 @@ class SirsiDynixROA extends HorizonAPI {
 							$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
 						}
 					}
-					elseif ($field == 'ZIP' && (!empty($_REQUEST['zip']))) {
+					elseif ($field == 'zip' && (!empty($_REQUEST['zip']))) {
 						$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 
 					//unsure about these
-					elseif ($field == 'LOCATION' && (!empty($_REQUEST['location']))) {
+					elseif ($field == 'location' && (!empty($_REQUEST['location']))) {
 						$this->setPatronUpdateField('LOCATION', $this->getPatronFieldValue($_REQUEST['location'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'type' && (!empty($_REQUEST['type']))) {
@@ -639,13 +662,12 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'not_type' && (!empty($_REQUEST['not_type']))) {
 						$this->setPatronUpdateField('NOT TYPE', $this->getPatronFieldValue($_REQUEST['not_type'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'USEFOR' && (!empty($_REQUEST['usefor']))) {
+					elseif ($field == 'usefor' && (!empty($_REQUEST['usefor']))) {
 						$this->setPatronUpdateField('USEFOR', $this->getPatronFieldValue($_REQUEST['usefor'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'customInformation' && (!empty($_REQUEST['customInformation']))) {
 						$this->setPatronUpdateField('customInformation', $this->getPatronFieldValue($_REQUEST['customInformation'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-
 					elseif ($field == 'primaryAddress' && (!empty($_REQUEST['primaryAddress']))) {
 						$this->setPatronUpdateField('primaryAddress', $this->getPatronFieldValue($_REQUEST['primaryAddress'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
@@ -653,8 +675,7 @@ class SirsiDynixROA extends HorizonAPI {
 						$this->setPatronUpdateField('primaryPhone', $this->getPatronFieldValue($_REQUEST['primaryPhone'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 				}
-			}
-			else {
+			} else {
 				if (!empty($_REQUEST['firstName'])) {
 					$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 				}
@@ -721,6 +742,9 @@ class SirsiDynixROA extends HorizonAPI {
 						'resource' => '/policy/library',
 					];
 				}
+			} else {
+				$selfRegResult['message'] = 'Your preferred library must be provided during registration.';
+				return $selfRegResult;
 			}
 
 			//If the user is opted in to SMS messages, set up their notifications automatically.
@@ -753,89 +777,75 @@ class SirsiDynixROA extends HorizonAPI {
 				$createPatronInfoParameters['fields']['phoneList'][] = $cellPhoneInfo;
 			}
 
-			$barcodePrefix = new SelfRegistrationForm;
-			$barcodePrefix->id = $library->selfRegistrationFormId;
-			if ($barcodePrefix->find(true)){
-				$barcodePrefix =$barcodePrefix->selfRegistrationBarcodePrefix;
-				$barcodeSuffixLength = $barcodePrefix->selfRegBarcodeSuffixLength;
+			$foundValidBarcode = false;
+			if ($selfRegistrationForm != null){
+				$barcodePrefix = $selfRegistrationForm->selfRegistrationBarcodePrefix;
+				$barcodeSuffixLength = $selfRegistrationForm->selfRegBarcodeSuffixLength;
 
-				if ($barcodeSuffixLength !=null){
-					for ($i = 0; $i<$barcodeSuffixLength; $i++)
-					{
-						$barcodeAppend .= rand(0,9);
-					}
-					$createPatronInfoParameters['fields']['barcode'] = $barcodePrefix . $barcodeAppend;
-
-					$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
-
-					if (isset($createNewPatronResponse->messageList)) {
-						foreach ($createNewPatronResponse->messageList as $message) {
-							$updateErrors[] = $message->message;
-							if ($message->message == 'User already exists') {
-								// This means the barcode has been generated before
-								global $logger;
-								$logger->log('Sirsi Self Registration response was that the user already exists.', Logger::LOG_ERROR);
-							}
+				if (!empty($barcodeSuffixLength)){
+					$barcode = null;
+					while ($barcode == null || $this->isBarcodeInUse($barcode)) {
+						$barcode = $barcodePrefix;
+						for ($i = 0; $i < $barcodeSuffixLength; $i++) {
+							$barcode .= rand(0, 9);
 						}
+					}
+					$foundValidBarcode = true;
+				}
+			}
+			if (!$foundValidBarcode) {
+				$barcodeVariable = new Variable();
+				$barcodeVariable->name = 'self_registration_card_number';
+				if ($barcodeVariable->find(true)) {
+					$barcode = $barcodeVariable->value;
+					//If the barcode is in use, increment it by one and try again.
+					while ($this->isBarcodeInUse($barcode)) {
+						$barcode++;
+					}
+					//Now that we have a valid barcode increment the variable by one so that next time we get the next number
+					$barcodeVariable->value = $barcode++;
+					if (!$barcodeVariable->update()) {
 						global $logger;
-						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
-					} else {
-						$selfRegResult = [
-							'success' => true,
-							'barcode' => $barcodePrefix . $barcodeAppend,
-							'requirePinReset' => true,
-						];
+						$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
+					}
+					$foundValidBarcode = true;
+				}
+			}
+
+			if ($foundValidBarcode) {
+				$createPatronInfoParameters['fields']['barcode'] = (string)$barcode;
+
+				//global $configArray;
+				//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
+				//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
+
+				$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
+
+				if (isset($createNewPatronResponse->messageList)) {
+					foreach ($createNewPatronResponse->messageList as $message) {
+						$updateErrors[] = $message->message;
+					}
+					global $logger;
+					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
+					$selfRegResult['message'] = 'There was an error registering your account, please try again later or contact the library to register.';
+				} else {
+
+					$selfRegResult = [
+						'success' => true,
+						'barcode' => $barcode,
+						'requirePinReset' => true,
+					];
+					$newUser = $this->findNewUser($barcode, null);
+					if ($newUser != null) {
+						$selfRegResult['newUser'] = $newUser;
+						$selfRegResult['sendWelcomeMessage'] = true;
 					}
 				}
 			} else {
-				$barcode = new Variable();
-				$barcode->name = 'self_registration_card_number';
-				if ($barcode->find(true)) {
-					$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
-
-					//global $configArray;
-					//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
-					//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
-
-
-					$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
-
-					if (isset($createNewPatronResponse->messageList)) {
-						foreach ($createNewPatronResponse->messageList as $message) {
-							$updateErrors[] = $message->message;
-							if ($message->message == 'User already exists') {
-								// This means the barcode counter is off.
-								global $logger;
-								$logger->log('Sirsi Self Registration response was that the user already exists. Advancing the barcode counter by one.', Logger::LOG_ERROR);
-								$barcode->value++;
-								if (!$barcode->update()) {
-									$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
-								}
-							}
-						}
-						global $logger;
-						$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
-					} else {
-
-						$selfRegResult = [
-							'success' => true,
-							'barcode' => $barcode->value,
-							'requirePinReset' => true,
-						];
-						// Update the card number counter for the next Self-Reg user
-						$barcode->value++;
-						if (!$barcode->update()) {
-							// Log Error temp barcode number not
-							global $logger;
-							$logger->log('Sirsi Self Registration barcode counter not saving incremented value!', Logger::LOG_ERROR);
-						}
-					}
-				} else {
-					// Error: unable to set barcode number.
-					global $logger;
-					$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
-					$selfRegResult['message'] = 'Barcode starting index was not found.';
-				}
+				// Error: unable to set barcode number.
+				global $logger;
+				$logger->log('Could not generate barcode to self register.', Logger::LOG_ERROR);
+				$selfRegResult['message'] = 'Could not generate barcode to self register. Please try again later or contact the library to register.';
 			}
 		} else {
 			// Error: unable to login in staff user
@@ -845,6 +855,41 @@ class SirsiDynixROA extends HorizonAPI {
 		return $selfRegResult;
 	}
 
+	protected function isBarcodeInUse($barcode){
+		$webServiceURL = $this->getWebServiceURL();
+		$lookupBarcodeUrl = $webServiceURL . "/user/patron/barcode/$barcode";
+		$sessionToken = $this->getStaffSessionToken();
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$lookupBarcodeResponse = $this->getWebServiceResponse('lookupBarcode', $lookupBarcodeUrl, null, $sessionToken);
+		if ($this->lastWebServiceResponseCode == 404) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	protected function isDuplicatePatron($firstName, $lastName, $birthDate) : bool {
+		//Get birthday in the form YYYY-MM-dd
+		$webServiceURL = $this->getWebServiceURL();
+		$lastNameSearch = trim($lastName);
+		$firstNameSearch = trim($firstName);
+		$numericalBirthDate = str_replace("-", "", $birthDate);
+		$numericalBirthDate = str_replace("/", "", $numericalBirthDate);
+		$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch,birthDate:$numericalBirthDate";
+		$sessionToken = $this->getStaffSessionToken();
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$lookupBarcodeResponse = $this->getWebServiceResponse('patronSearch', $patronSearchUrl, null, $sessionToken);
+		if (!empty($lookupBarcodeResponse) && is_object($lookupBarcodeResponse)) {
+			if ($lookupBarcodeResponse->totalResults != 0) {
+				foreach ( $lookupBarcodeResponse->result as $patron ) {
+					if ( !strcasecmp($patron->fields->firstName, $firstNameSearch ) ) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	protected function loginViaWebService($username, $password) {
 		global $memCache;
