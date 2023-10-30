@@ -1766,21 +1766,6 @@ class Library extends DataObject {
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
 							],
-							'cityStateField' => [
-								'property' => 'cityStateField',
-								'type' => 'enum',
-								'values' => [
-									0 => 'CITY / STATE field',
-									1 => 'CITY and STATE fields',
-									2 => 'CITY / STATE field - comma separated',
-								],
-								'label' => 'City / State Field (Symphony Only)',
-								'description' => 'The field from which to load and update city and state.',
-								'note' => 'Applies to Symphony Only',
-								'hideInLists' => true,
-								'default' => 0,
-								'permissions' => ['Library ILS Connection'],
-							],
 							'addSMSIndicatorToPhone' => [
 								'property' => 'addSMSIndicatorToPhone',
 								'type' => 'checkbox',
@@ -2263,6 +2248,21 @@ class Library extends DataObject {
 								'description' => 'The states that can be used in self registration (separate multiple states with pipes |)',
 								'hideInLists' => true,
 								'default' => '',
+							],
+							'cityStateField' => [
+								'property' => 'cityStateField',
+								'type' => 'enum',
+								'values' => [
+									0 => 'CITY / STATE field',
+									1 => 'CITY and STATE fields',
+									2 => 'CITY / STATE field - comma separated',
+								],
+								'label' => 'City / State Field (Symphony Only)',
+								'description' => 'The field from which to load and update city and state.',
+								'note' => 'Applies to Symphony Only',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'validSelfRegistrationZipCodes' => [
 								'property' => 'validSelfRegistrationZipCodes',
