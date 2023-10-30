@@ -471,6 +471,20 @@ class Grouping_Record {
 	}
 
 	/**
+	 * @return Grouping_Item
+	 */
+	public function getItemById($itemId = ''): ?Grouping_Item {
+		if ($this->_items != null) {
+			foreach ($this->_items as $item) {
+				if ($item->itemId == $itemId) {
+					return $item;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getItemDetails($variationId = ''): array {
