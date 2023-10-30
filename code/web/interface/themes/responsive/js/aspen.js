@@ -14926,7 +14926,7 @@ AspenDiscovery.IndexingClass = (function () {
 					'propertyRowcallNumberPrestamp', 'propertyRowcallNumberPrestamp2', 'propertyRowcallNumber', 'propertyRowcallNumberCutter', 'propertyRowcallNumberPoststamp',
 					'propertyRowlocation', 'propertyRowincludeLocationNameInDetailedLocation', 'propertyRownonHoldableLocations',
 					'propertyRowlocationsToSuppress', 'propertyRowsubLocation', 'propertyRowshelvingLocation', 'propertyRowcollection',
-					'propertyRowcollectionsToSuppress', 'propertyRowvolume', 'propertyRowbarcode',
+					'propertyRowcollectionsToSuppress', 'propertyRowitemUrl', 'propertyRowitemUrlDescription', 'propertyRowvolume', 'propertyRowbarcode',
 					'propertyRowstatus', 'propertyRownonHoldableStatuses', 'propertyRowstatusesToSuppress',
 					'propertyRowtreatLibraryUseOnlyGroupedStatusesAsAvailable', 'propertyRowtotalCheckouts', 'propertyRowlastYearCheckouts',
 					'propertyRowyearToDateCheckouts', 'propertyRowtotalRenewals', 'propertyRowiType', 'propertyRownonHoldableITypes',
