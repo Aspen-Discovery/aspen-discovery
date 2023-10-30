@@ -548,8 +548,19 @@ class Search_Results extends ResultsAction {
 		$interface->assign('exploreMoreSection', 'catalog');
 		$interface->assign('showExploreMoreBar', $showExploreMoreBar);
 		$interface->assign('exploreMoreSearchTerm', $exploreMoreSearchTerm);
-
 		$interface->assign('sectionLabel', 'Library Catalog');
+
+		$ILLSystem = $library->ILLSystem;
+		if (isset($ILLSystem) && $ILLSystem == 0) {
+			$searchSource = new SearchSources();
+			$interLibraryLoanURL = $searchSource->getExternalLink('innReach',$_REQUEST['searchIndex'],$_REQUEST['lookfor']);
+		} elseif ($ILLSystem == 1) {
+			$searchSource = new SearchSources();
+			$interLibraryLoanURL = $searchSource->getExternalLink('worldcat',$_REQUEST['searchIndex'],$_REQUEST['lookfor']);
+		} else {
+			$interLibraryLoanURL = $library->interLibraryLoanUrl;
+		}
+		$interface->assign('interLibraryLoanURL',$interLibraryLoanURL);
 		// Done, display the page
 		$sidebar = ($searchObject->getResultTotal() > 0 || $hasAppliedFacets) ? 'Search/results-sidebar.tpl' : '';
 		$this->display($searchObject->getResultTotal() ? 'list.tpl' : 'list-none.tpl', $pageTitle, $sidebar, false);

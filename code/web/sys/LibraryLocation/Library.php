@@ -1,4 +1,4 @@
-<?php
+inter<?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';
@@ -322,6 +322,7 @@ class Library extends DataObject {
 	public $materialsRequestSendStaffEmailOnAssign;
 	public $materialsRequestNewEmail;
 	public $showGroupedHoldCopiesCount;
+	public $ILLSystem;
 	public $interLibraryLoanName;
 	public $interLibraryLoanUrl;
 	public $expiredMessage;
@@ -3157,6 +3158,19 @@ class Library extends DataObject {
 				'hideInLists' => true,
 				'permissions' => ['Library ILL Options'],
 				'properties' => [
+					'ILLSystem' => [
+						'property' => 'ILLSystem',
+						'type' => 'enum',
+						'values' => [
+							0 => 'INN-Reach',
+							1 => 'WorldCat',
+							2 => 'Other',
+						],
+						'label' => 'Interlibrary Loan System',
+						'description' => 'Selected ILL service',
+						'hideInLists' => true,
+						'default' => 2,
+					],
 					'interLibraryLoanName' => [
 						'property' => 'interLibraryLoanName',
 						'type' => 'text',
