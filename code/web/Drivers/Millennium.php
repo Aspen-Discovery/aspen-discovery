@@ -1620,12 +1620,16 @@ class Millennium extends AbstractIlsDriver {
 	private function getListTitlesFromWebPAC($patron, $listId, ?array $currentListTitles, UserList $newList, &$results, $title) {
 		//Get a list of all titles within the list to be imported
 		//Increase the timeout for the page to load large lists
-		$this->curlWrapper->setTimeout(120);
+		$this->curlWrapper->setTimeout(240);
 		$listDetailsPage = $this->_fetchPatronInfoPage($patron, 'mylists?listNum=' . $listId);
 		//Get the table for the details
 		$listsDetailsMatches = [];
-		if (preg_match('/<table[^>]*?class="patFunc"[^>]*?>(.*?)<\/table>/si', $listDetailsPage, $listsDetailsMatches)) {
-			$listTitlesTable = $listsDetailsMatches[1];
+		$matchResult = preg_match('/<table[^>]*?class="patFunc"[^>]*?>.*/si', $listDetailsPage, $listsDetailsMatches);
+		if ($matchResult) {
+			$listTitlesTable = $listsDetailsMatches[0];
+			//Trim to the end of the table
+			$endTablePosition = strpos($listTitlesTable, '</table>');
+			$listTitlesTable = substr($listTitlesTable, 0, $endTablePosition);
 			//Get the bib numbers for the title
 			preg_match_all('/<input type="checkbox" name=".*?(b\d{1,7})".*?<span[^>]*class="patFuncTitle(?:Main)?">(.*?)<\/span>/si', $listTitlesTable, $bibNumberMatches, PREG_SET_ORDER);
 			for ($bibCtr = 0; $bibCtr < count($bibNumberMatches); $bibCtr++) {
@@ -1672,6 +1676,14 @@ class Millennium extends AbstractIlsDriver {
 
 				$results['totalTitles']++;
 			}
+//			if ($bibNumberMatches == 0) {
+//				$results['errors'][] = "No titles found for list $title.";
+//			}
+		} else {
+//			if ($matchResult == false) {
+//				$matchError = preg_last_error();
+//			}
+			$results['errors'][] = "Titles table not found for list $title.";
 		}
 	}
 
