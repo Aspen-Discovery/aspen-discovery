@@ -751,6 +751,11 @@ class UserAccount {
 			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
 			unset($_COOKIE['searchPreferenceLanguage]']);
 		}
+		if (isset ($_COOKIE['cookieConsent'])) {
+			setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
+			unset($_COOKIE['cookieConsent]']);
+		}
+
 		session_regenerate_id(true);
 		//$logger->log("New session id is $newId", Logger::LOG_DEBUG);
 	}
@@ -784,6 +789,11 @@ class UserAccount {
 			UserAccount::$primaryUserData = null;
 			UserAccount::$primaryUserObjectFromDB = null;
 			UserAccount::$guidingUserObjectFromDB = null;
+
+			if (isset ($_COOKIE['cookieConsent'])) {
+				setcookie("cookieConsent", "", time() - 3600, "/"); //remove old cookie so new one can be generated on next page load
+				unset($_COOKIE['cookieConsent]']);
+			}
 
 			global $interface;
 			$interface->assign('loggedIn', false);

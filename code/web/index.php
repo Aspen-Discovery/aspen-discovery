@@ -137,8 +137,18 @@ global $active_ip;
 
 
 try {
-	$cookie = json_decode(urldecode($_COOKIE["cookieConsent"]), true);
-	$analyticsPref = $cookie['Analytics'];
+	if (isset($_COOKIE["cookieConsent"])) {
+		$cookie = json_decode(urldecode($_COOKIE["cookieConsent"]), true);
+		if ($cookie != null) {
+			$analyticsPref = $cookie['Analytics'];
+		}else{
+			$analyticsPref = 0;
+		}
+	}else{
+		$cookie = null;
+		$analyticsPref = 0;
+	}
+
 	if (empty($library->cookieStorageConsent) || (!empty($library->cookieStorageConsent) && $analyticsPref == 1)){
 		require_once ROOT_DIR . '/sys/Enrichment/GoogleApiSetting.php';
 		$googleSettings = new GoogleApiSetting();
@@ -268,11 +278,11 @@ if (!empty($library) && !empty($library->cookieStorageConsent)) {
 		//If the user is logged in and has set their cookie preferences (and has no preferences in db yet) prior to logging in, save these preferences in DB
 		if (isset($_COOKIE["cookieConsent"]) && UserAccount::isLoggedIn() && $userObj->userCookiePreferenceEssential != 1) {
 			$cookie = json_decode(urldecode($_COOKIE["cookieConsent"]), true);
-			if (!empty($_COOKIE["cookieConsent"])) {
-			$analyticsPref = $cookie['Analytics'];
-			$userObj->userCookiePreferenceEssential = 1;
-			$userObj->userCookiePreferenceAnalytics = $analyticsPref;
-			$userObj->update();
+			if (!empty($cookie)) {
+				$analyticsPref = $cookie['Analytics'];
+				$userObj->userCookiePreferenceEssential = 1;
+				$userObj->userCookiePreferenceAnalytics = $analyticsPref;
+				$userObj->update();
 			}
 		}
 		//Assign variables to smarty interface

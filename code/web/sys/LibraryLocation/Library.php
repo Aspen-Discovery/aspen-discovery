@@ -1,4 +1,4 @@
-inter<?php
+<?php
 
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
 require_once ROOT_DIR . '/sys/LibraryLocation/Holiday.php';

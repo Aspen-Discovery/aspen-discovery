@@ -1,12 +1,12 @@
 {if $loggedIn && $profile->userCookiePreferenceEssential == 1}
     <script>
         cookieValues = {
-                    Essential: {$profile->userCookiePreferenceEssential},
-                    Analytics: {$profile->userCookiePreferenceAnalytics},
-                };
+            Essential: {$profile->userCookiePreferenceEssential},
+            Analytics: {$profile->userCookiePreferenceAnalytics},
+        };
         AspenDiscovery.CookieConsent.fetchUserCookie(encodeURIComponent(JSON.stringify(cookieValues)));
     </script>
-{elseif empty($smarty.cookies.cookieConsent)}
+{elseif empty($smarty.cookies.cookieConsent) || strpos($smarty.cookies.cookieConsent,'%7B')===false}
     <div class="stripPopup">
         <div class="cookieContainer">
             <div class="contentWrap">
