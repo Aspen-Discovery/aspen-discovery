@@ -40,8 +40,8 @@ public class SymphonyExportMain {
 
 	private static Date reindexStartTime;
 
-	private static final Pattern hideNotePattern = Pattern.compile("^\\.[A-Z0-9_]+\\..*$");
-	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
+//	private static final Pattern hideNotePattern = Pattern.compile("^\\.[A-Z0-9_]+\\..*$");
+//	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
 
 	private static boolean hadErrors = false;
 
@@ -974,7 +974,7 @@ public class SymphonyExportMain {
 									AppendItemsToRecordResult appendItemsToRecordResult = reindexer.appendItemsToExistingRecord(indexingProfile, curBib, recordNumber, marcFactory, Integer.toString(numRecordsRead));
 									marcStatus = appendItemsToRecordResult.getMarcStatus();
 									curBib = appendItemsToRecordResult.getMergedRecord();
-								} else {
+								} /*else {
 									//get notes from specified subfield in indexing profile
 									if (indexingProfile.getNoteSubfield() != ' '){
 										List<DataField> items = curBib.getDataFields(indexingProfile.getItemTagInt());
@@ -990,7 +990,7 @@ public class SymphonyExportMain {
 												}
 											}
 										}
-									}
+									}*/
 
 									marcStatus = reindexer.saveMarcRecordToDatabase(indexingProfile, recordNumber, curBib);
 								}
