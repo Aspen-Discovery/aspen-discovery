@@ -39,6 +39,22 @@ function getUpdates23_11_00(): array {
 			],
 		],
 		//Jacob - PTFS
+		'user_cookie_preference_essential' => [
+			'title' => 'Add user editable cookie preferences for essential cookies',
+			'description' => 'Allow essential cookie preferences to be saved on a per user basis',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE user add column userCookiePreferenceEssential INT(1) DEFAULT 0",
+			],
+		],//user_cookie_preference_essential
+		'user_cookie_preference_analytics' => [
+			'title' => 'Add user editable cookie preferences for analytics cookies',
+			'description' => 'Allow analytics cookie preferences to be saved on a per user basis',
+			'continueOnError' => true,
+			'sql' => [
+				"ALTER TABLE user add column userCookiePreferenceAnalytics INT(1) DEFAULT 0",
+			],
+		],//user_cookie_preference_analytics
 		//other
 		'select_ILL_system' => [
 			'title' => 'Dropbox ILL systems',

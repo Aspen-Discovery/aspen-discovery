@@ -22,6 +22,7 @@ class AJAX_JSON extends Action {
 				'getTranslationForm',
 				'saveTranslation',
 				'saveLanguagePreference',
+				'saveCookiePreference',
 				'deleteTranslationTerm',
 				'getDisplaySettingsForm',
 				'updateDisplaySettings'
@@ -87,6 +88,32 @@ class AJAX_JSON extends Action {
 			return [
 				'success' => true,
 				'message' => '',
+			];
+		}
+	}
+
+	/** @noinspeciton PhpUnused */
+	function saveCookiePreference(){
+		if (UserAccount::isLoggedIn()) {
+			//update user object with cookie preference choice from cookieConsent banner
+			$userObj = UserAccount::getActiveUserObj();
+			$userObj->userCookiePreferenceEssential = $_REQUEST['cookieEssential'];
+			$userObj->userCookiePreferenceAnalytics = $_REQUEST['cookieAnalytics'];
+			$userObj->update(); //update user object to DB
+			return[
+				'success' => true,
+				'message' => 'Your preferences were updated.  You can make changes to these preferences within your account settings.',
+			];
+		} else {
+			//if not logged in, still set the cookieConsent cookie with user's choice
+			$userCookiePost = [
+				'Essential' => 1, //Essential cookies cannot be disabled
+				'Analytics' => $_REQUEST['cookieAnalytics'],
+				];
+			setcookie('cookieConsent', json_encode($userCookiePost), 0, '/');
+			return [
+				'success' => true,
+				'message' => ''//does this require a messge?,
 			];
 		}
 	}
