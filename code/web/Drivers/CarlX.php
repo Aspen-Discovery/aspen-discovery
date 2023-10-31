@@ -1616,7 +1616,8 @@ class CarlX extends AbstractIlsDriver {
 						'text' => 'Error updating payment, please visit the library with your receipt.',
 						'isPublicFacing' => true,
 					]);
-					$logger->log("Error updating payment $payment->id: {$settleFinesAndFeesResult->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
+					$logger->log("Error updating payment $payment->id:", Logger::LOG_ERROR);
+					$logger->log(print_r(json_encode($settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0]->ShortMessage, JSON_PRETTY_PRINT), true), Logger::LOG_ERROR);
 				} else {
 					$payment->message .= " CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber";
 					$payment->update();
