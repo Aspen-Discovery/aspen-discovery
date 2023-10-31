@@ -835,6 +835,8 @@ class Koha extends AbstractIlsDriver {
 				$cardNumber = $postResponse['body']->cardnumber;
 				$patronId = $postResponse['body']->patron_id;
 				$responseCode = $postResponse['code'];
+				$headers = $postResponse['headers'];
+				$apiURL = $postResponse['url'];
 				if ($responseCode == 201) {
 					$authenticationSuccess = true;
 				} else {
@@ -864,14 +866,16 @@ class Koha extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					}
-					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
+					$headers = $this->curlWrapper->getHeaders();
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 				} else {
 					$responseCode = $this->curlWrapper->getResponseCode();
 					$result['messages'][] = translate([
 						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
 						'isPublicFacing' => true,
 					]);
-					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, '', ['password' => $password]);
+					$headers = $this->curlWrapper->getHeaders();
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, '', ['password' => $password]);
 				}
 			}
 			if ($authenticationSuccess) {
@@ -960,7 +964,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			} else {
 				$postParams['password'] = '**password**';
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, "", ['password' => $password]);
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $headers, json_encode($postParams), $responseCode, "", ['password' => $password]);
 			}
 		}
 		if ($userExistsInDB) {

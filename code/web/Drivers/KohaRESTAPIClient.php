@@ -60,6 +60,8 @@ class KohaRESTAPIClient {
 		return [
 			'body' => $jsonResponse,
 			'code' => $responseCode,
+			'url' => $apiURL,
+			'headers' => $this->apiCurlWrapper->getHeaders(),
 		];
 	}
 
@@ -102,8 +104,9 @@ class KohaRESTAPIClient {
 				//Special message case for patronLogin
 				if (stripos($caller,"koha.patronLogin") !== false) {
 					$logger->log("Unable to authenticate with the ILS from koha.patronLogin", Logger::LOG_ERROR);
+				} else {
+					$logger->log("Unable to retrieve OAuth2 token from " . $caller, Logger::LOG_ERROR);
 				}
-				$logger->log("Unable to retrieve OAuth2 token from " . $caller, Logger::LOG_ERROR);
 				return $oAuthToken;
 			}
 		}
