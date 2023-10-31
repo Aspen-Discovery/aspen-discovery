@@ -1605,18 +1605,21 @@ class CarlX extends AbstractIlsDriver {
 // 	</soapenv:Body>
 // </soapenv:Envelope>
 //EOT;
-
-			$result = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
+			$requestOptions = $this->genericResponseSOAPCallOptions;
+			$requestOptions['login'] = $this->accountProfile->oAuthClientId;
+			$requestOptions['password'] = $this->accountProfile->oAuthClientSecret;
+			$settleFinesAndFeesResult = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $requestOptions, []);
 			if($result) {
-				if (!$result->ReceiptNumber) {
+				if (!$settleFinesAndFeesResult->ReceiptNumber) {
 					$allPaymentsSucceed = false;
 					$result['message'] = translate([
 						'text' => 'Error updating payment, please visit the library with your receipt.',
 						'isPublicFacing' => true,
 					]);
-					$logger->log("Error updating payment $payment->id: {$result->ResponseStatuses->ResponseStatus->ShortMessage}", Logger::LOG_ERROR);
+					$logger->log("Error updating payment $payment->id:", Logger::LOG_ERROR);
+					$logger->log(print_r(json_encode($settleFinesAndFeesResult, JSON_PRETTY_PRINT), true), Logger::LOG_ERROR);
 				} else {
-					$payment->message .= " CarlX Receipt Number $result->ReceiptNumber";
+					$payment->message .= " CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber";
 					$payment->update();
 				}
 			} else {
@@ -1634,13 +1637,13 @@ class CarlX extends AbstractIlsDriver {
 			if($allPaymentsSucceed) {
 				$paymentNote = new stdClass();
 				$paymentNote->Note = new stdClass();
-				$paymentNote->Note->PatronID = $patron->unique_ils_id;
+				$paymentNote->Note->PatronID = $patron->ils_barcode;
 				$paymentNote->Note->NoteType = 2;
 				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
 				$paymentNote->Modifiers = '';
 				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
 				if($addPaymentNoteResult) {
-					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus->ShortMessage, 'Success') !== false;
+					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
 					if(!$success) {
 						$logger->log("Failed to add patron note for payment in CarlX for Reference ID $payment->id", Logger::LOG_ERROR);
 					}
