@@ -26,6 +26,14 @@ function getUpdates23_11_00(): array {
 				) ENGINE = InnoDB',
             ]
         ], // add_self_check_barcode_styles
+		'extend_symphonyPaymentType' => [
+			'title' => 'Extend symphonyPaymentType in library',
+			'description' => 'Extend symphonyPaymentType in library',
+			'continueOnError' => true,
+			'sql' => [
+				'ALTER TABLE library MODIFY COLUMN symphonyPaymentType VARCHAR(12)',
+			]
+		], //extend_symphonyPaymentType
 
 		//kodi - ByWater
 		//Alexander - PTFS

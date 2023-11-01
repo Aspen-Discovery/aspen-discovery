@@ -2607,7 +2607,7 @@ class Library extends DataObject {
 						'note' => 'Applies to Symphony Only',
 						'hideInLists' => true,
 						'default' => '',
-						'maxLength' => 8,
+						'maxLength' => 12,
 					],
 					//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				],
