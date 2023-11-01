@@ -560,10 +560,14 @@ public class EvergreenExportMain {
 			long libraryId = 0;
 			try {
 				String shortName = (String) mappedOrgUnitField.get("shortname");
+				String subdomain = shortName.toLowerCase(Locale.ROOT).replaceAll("[^a-z]", "");
+				if (subdomain.length() > 25) {
+					subdomain = subdomain.substring(0, 25);
+				}
 				existingAspenLibraryStmt.setString(1, shortName);
 				ResultSet existingLibraryRS = existingAspenLibraryStmt.executeQuery();
 				if (!existingLibraryRS.next()) {
-					addAspenLibraryStmt.setString(1, shortName);
+					addAspenLibraryStmt.setString(1, subdomain);
 					addAspenLibraryStmt.setString(2, (String)mappedOrgUnitField.get("name"));
 					addAspenLibraryStmt.setString(3, shortName);
 					addAspenLibraryStmt.executeUpdate();
