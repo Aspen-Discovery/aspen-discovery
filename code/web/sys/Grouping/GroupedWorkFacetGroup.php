@@ -58,7 +58,7 @@ class GroupedWorkFacetGroup extends DataObject {
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
-		$facet->setupTopFacet('availability_toggle', 'Available?');
+		$facet->setupTopFacet('availability_toggle', 'Search Within');
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;
 		$defaultFacets[] = $facet;
