@@ -48,7 +48,7 @@ function printInstructions($exportPath) {
 }
 
 function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords) {
-	echo("Starting to import staff lists\n");
+	echo("Starting to import lists\n");
 
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -158,7 +158,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			$elapsedTime = time() - $batchStartTime;
 			$batchStartTime = time();
 			$totalElapsedTime = ceil((time() - $startTime) / 60);
-			echo("Processed $numImports Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+			echo("Processed $numImports Lists entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 		}
 	}
 
@@ -217,6 +217,8 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$us
 				$missingUsers[$userBarcode] = $userBarcode;
 				echo("Could not find user for $userBarcode\r\n");
 				return -1;
+			} else {
+				echo("Found user for barcode $userBarcode\r\n");
 			}
 		}
 		$existingUsers[$userBarcode] = $user->id;
