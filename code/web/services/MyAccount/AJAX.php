@@ -2137,6 +2137,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$user = UserAccount::getLoggedInUser();
 				$patronId = $_REQUEST['patronId'];
 				$recordId = $_REQUEST['recordId'];
+				$renewIndicator = $_REQUEST['renewIndicator'];
 				$patron = $user->getUserReferredTo($patronId);
 				if ($patron) {
 					$renewResults = $patron->renewCheckout($recordId, $itemId, $itemIndex);
@@ -2156,6 +2157,21 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 		global $interface;
 		$interface->assign('renewResults', $renewResults);
+		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
+			return [
+				'title' => translate([
+					'text' => 'Confirm Renew Item Charge',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.confirmRenewalFee('$patronId', '$recordId', '$renewIndicator');\" class=\"modal-buttons btn btn-primary\">" . translate([
+						'text' => 'Renew Item',
+						'isAdminFacing' => true,
+					]) . '</button>',
+				'success' => $renewResults['success'],
+			];
+		}
+
 		return [
 			'title' => translate([
 				'text' => 'Renew Item',

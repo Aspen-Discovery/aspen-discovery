@@ -159,7 +159,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			$totalElapsedTime = ceil((time() - $startTime) / 60);
 			echo("Processed $numImports Lists entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
 			//Take a break!
-			usleep(100);
+//			usleep(100);
 		}
 	}
 
@@ -220,7 +220,7 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$us
 				return -1;
 			} else {
 				echo("Found user for barcode $userBarcode\r\n");
-				usleep(100);
+				//usleep(100);
 			}
 		}
 		$existingUsers[$userBarcode] = $user->id;
