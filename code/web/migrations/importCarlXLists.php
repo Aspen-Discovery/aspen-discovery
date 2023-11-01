@@ -48,7 +48,7 @@ function printInstructions($exportPath) {
 }
 
 function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &$validRecords, &$invalidRecords) {
-	echo("Starting to import staff lists\n");
+	echo("Starting to import lists\n");
 
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	require_once ROOT_DIR . '/sys/UserLists/UserListEntry.php';
@@ -56,6 +56,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 	$numImports = 0;
 	$batchStartTime = time();
+	$listsCreated = 0;
 	$existingLists = [];
 	$removedLists = [];
 	$usersWithSearchPermissions = [];
@@ -123,6 +124,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 				$userList->searchable = false;
 				$userList->insert();
 				$existingLists[$listId] = $userList->id;
+				$listsCreated++;
 			}
 			$userList->__destruct();
 		}
@@ -152,11 +154,12 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		if ($numImports % 2500 == 0) {
 			gc_collect_cycles();
 			ob_flush();
-			usleep(10);
 			$elapsedTime = time() - $batchStartTime;
 			$batchStartTime = time();
 			$totalElapsedTime = ceil((time() - $startTime) / 60);
-			echo("Processed $numImports Lists in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+			echo("Processed $numImports Lists entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+			//Take a break!
+//			usleep(100);
 		}
 	}
 
@@ -164,6 +167,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	$elapsedTime = time() - $batchStartTime;
 	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	echo("Processed $numImports List Titles in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Created $listsCreated lists\n");
 	echo("Removed " . count($removedLists) . " lists because the user is not valid\n");
 }
 
@@ -214,6 +218,9 @@ function getUserIdForBarcode($userBarcode, &$existingUsers, &$missingUsers, &$us
 				$missingUsers[$userBarcode] = $userBarcode;
 				echo("Could not find user for $userBarcode\r\n");
 				return -1;
+			} else {
+				echo("Found user for barcode $userBarcode\r\n");
+				//usleep(100);
 			}
 		}
 		$existingUsers[$userBarcode] = $user->id;

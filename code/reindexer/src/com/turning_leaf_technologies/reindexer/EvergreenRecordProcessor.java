@@ -26,7 +26,7 @@ public class EvergreenRecordProcessor extends IlsRecordProcessor {
 
 	EvergreenRecordProcessor(GroupedWorkIndexer indexer, String curType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
 		super(indexer, curType, dbConn, indexingProfileRS, logger, fullReindex);
-
+		this.suppressRecordsWithNoCollection = false;
 		loadSupplementalFiles();
 	}
 

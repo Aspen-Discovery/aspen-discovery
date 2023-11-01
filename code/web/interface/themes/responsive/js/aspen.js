@@ -6011,11 +6011,34 @@ AspenDiscovery.Account = (function () {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator=" + renewIndicator, function (data) {
-					AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					if(data.modalButtons) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
 				this.ajaxLogin(null, function () {
 					this.renewTitle(renewIndicator);
+				}, false)
+			}
+			return false;
+		},
+
+		confirmRenewalFee: function (patronId, recordId, renewIndicator) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator=" + renewIndicator + "&confirmedRenewal=true", function (data) {
+					if(data.modalButtons) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					}
+				}).fail(AspenDiscovery.ajaxFail)
+			} else {
+				this.ajaxLogin(null, function () {
+					this.confirmRenewTitle(renewIndicator);
 				}, false)
 			}
 			return false;
@@ -15149,3 +15172,5 @@ AspenDiscovery.CookieConsent = (function() {
         },
     }
 }(AspenDiscovery.CookieConsent));
+
+
