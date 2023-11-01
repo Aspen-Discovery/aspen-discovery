@@ -64,10 +64,6 @@ export const FiltersScreen = () => {
           if (!_.isUndefined(pendingFacets[0])) {
                const obj = pendingFacets[0]['facets'];
                _.forEach(obj, function (value, key) {
-                    console.log('value: ' + value);
-                    console.log('key: ' + key);
-                    console.log('cluster: ' + cluster);
-                    console.log('text: ' + text);
                     if (value === 'year desc,title asc') {
                          value = getTermFromDictionary(language, 'year_desc_title_asc');
                     } else if (value === 'relevance') {
