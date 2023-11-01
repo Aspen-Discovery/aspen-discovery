@@ -289,6 +289,7 @@ class HooplaProcessor {
 					}
 					groupedWork.addAuthor2(artistsToAdd);
 					groupedWork.addAuthor2Role(artistsWithRoleToAdd);
+					groupedWork.addKeywords(artistsToAdd);
 				}
 
 				JSONArray genres = rawResponse.getJSONArray("genres");
