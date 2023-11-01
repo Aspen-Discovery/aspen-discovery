@@ -885,6 +885,8 @@ class Koha extends AbstractIlsDriver {
 							'isPublicFacing' => true,
 						]);
 					}
+					//Technically this is not right, we're using an XML response and thinking it's JSON, but for practical purposes its going to work since we have the same format in the XML and json bodies and everything is clases
+					$jsonResponse = $responseBody;
 					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
 				} else {
 					$responseCode = $this->curlWrapper->getResponseCode();
@@ -896,7 +898,7 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 			if ($authenticationSuccess) {
-				if (isset($patronId)) {
+				if (!empty($patronId)) {
 					$result = $this->loadPatronInfoFromDB($patronId, $password, $barcode);
 					if (!$result) {
 						global $logger;
