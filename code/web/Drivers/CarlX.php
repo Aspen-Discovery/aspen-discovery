@@ -75,7 +75,7 @@ class CarlX extends AbstractIlsDriver {
 				} else {
 					$normalizedLastName = preg_replace('/[^0-9a-zA-Z]/', '', trim($result->Patron->LastName));
 					$normalizedPassword = preg_replace('/[^0-9a-zA-Z]/', '', trim($password));
-					if (($result->Patron->PatronID == $barcode) && ((strcasecmp($normalizedLastName, $normalizedPassword) === 0) || $validatedViaSSO)) {
+					if ((strcasecmp($result->Patron->PatronID, $barcode) === 0) && ((strcasecmp($normalizedLastName, $normalizedPassword) === 0) || $validatedViaSSO)) {
 						$loginValid = true;
 					}
 				}
