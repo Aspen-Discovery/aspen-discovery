@@ -154,11 +154,12 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		if ($numImports % 2500 == 0) {
 			gc_collect_cycles();
 			ob_flush();
-			usleep(10);
 			$elapsedTime = time() - $batchStartTime;
 			$batchStartTime = time();
 			$totalElapsedTime = ceil((time() - $startTime) / 60);
 			echo("Processed $numImports Lists entries in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+			//Take a break!
+			sleep(5);
 		}
 	}
 
