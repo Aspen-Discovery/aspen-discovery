@@ -56,6 +56,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 
 	$numImports = 0;
 	$batchStartTime = time();
+	$listsCreated = 0;
 	$existingLists = [];
 	$removedLists = [];
 	$usersWithSearchPermissions = [];
@@ -123,6 +124,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 				$userList->searchable = false;
 				$userList->insert();
 				$existingLists[$listId] = $userList->id;
+				$listsCreated++;
 			}
 			$userList->__destruct();
 		}
@@ -164,6 +166,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	$elapsedTime = time() - $batchStartTime;
 	$totalElapsedTime = ceil((time() - $startTime) / 60);
 	echo("Processed $numImports List Titles in $elapsedTime seconds ($totalElapsedTime minutes total).\n");
+	echo("Created $listsCreated lists\n");
 	echo("Removed " . count($removedLists) . " lists because the user is not valid\n");
 }
 
