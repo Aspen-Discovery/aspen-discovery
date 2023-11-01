@@ -2618,9 +2618,21 @@ class SearchAPI extends Action {
 		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])) {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
-		
-		if(isset($_REQUEST['availability_toggle'])) {
-			$searchObject->addFilter('availability_toggle:'.$_REQUEST['availability_toggle']);
+
+		if (isset($_REQUEST['filter'])) {
+			if (is_array($_REQUEST['filter'])) {
+				$givenFilters = $_REQUEST['filter'];
+				foreach ($givenFilters as $filter) {
+					$filterSplit = explode(':', $filter);
+					if($filterSplit[0] == 'availability_toggle') {
+						$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+						$searchObject->addFilter('availability_toggle:'.$filterSplit[1]);
+					}
+				}
+			}
+		} elseif (isset($_REQUEST['availability_toggle'])) {
+			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+			$searchObject->addFilter('availability_toggle:' . $_REQUEST['availability_toggle']);
 		} else {
 			$searchLibrary = Library::getSearchLibrary(null);
 			$searchLocation = Location::getSearchLocation(null);
@@ -2629,6 +2641,7 @@ class SearchAPI extends Action {
 			} else {
 				$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
 			}
+			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
 			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
 

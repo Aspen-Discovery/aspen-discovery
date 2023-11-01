@@ -34,6 +34,14 @@ function getUpdates23_11_00(): array {
 				'ALTER TABLE library MODIFY COLUMN symphonyPaymentType VARCHAR(12)',
 			]
 		], //extend_symphonyPaymentType
+		'rename_availability_facet' => [
+			'title' => 'Rename Available? grouped work facet',
+			'description' => 'Rename Available? availability_toggle grouped work facet to Search Within',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE grouped_work_facet SET displayName = 'Search Within' WHERE facetName = 'availability_toggle' AND displayName = 'Available?'",
+			]
+		], //rename_availability_facet
 
 		//kodi - ByWater
 		//Alexander - PTFS
