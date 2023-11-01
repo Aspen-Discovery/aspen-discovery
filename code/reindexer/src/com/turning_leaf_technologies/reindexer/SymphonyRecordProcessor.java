@@ -7,7 +7,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
 	SymphonyRecordProcessor(GroupedWorkIndexer indexer, String profileType, Connection dbConn, ResultSet indexingProfileRS, Logger logger, boolean fullReindex) {
@@ -65,6 +67,29 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 			}
 		}
 		return available;
+	}
+
+	private static final Pattern hideNotePattern = Pattern.compile("^\\.[A-Z0-9_]+\\..*$");
+	private static final Pattern publicNotePattern = Pattern.compile("^.*?(\\.PUBLIC\\.).*$");
+
+	@Override
+	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+		if (settings.getNoteSubfield() != ' ') {
+			List<DataField> items = record.getDataFields(settings.getItemTagInt());
+			for (DataField item : items) {
+				List<Subfield> notes = item.getSubfields(settings.getNoteSubfield());
+				for (Subfield note : notes) {
+					String noteString = note.getData();
+					if (publicNotePattern.matcher(noteString).matches()) { //strip out ".PUBLIC." for public notes
+						String newNote = noteString.replaceAll("(\\.PUBLIC\\.)", "").trim();
+						note.setData(newNote);
+					} else if (hideNotePattern.matcher(noteString).matches()) { //hide notes if private or staff
+						item.removeSubfield(note);
+					}
+				}
+			}
+		}
+		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 	}
 
 	protected String getDetailedLocationForItem(ItemInfo itemInfo, DataField itemField, String identifier) {

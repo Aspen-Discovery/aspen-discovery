@@ -243,6 +243,7 @@ abstract class ObjectEditor extends Admin_Admin {
 				$interface->assign('pageLinks', $pager->getLinks());
 			}
 			if (isset($_REQUEST['objectAction']) && $_REQUEST['objectAction'] == 'exportSelectedToCSV') {
+				$allObjects = $this->getAllObjects('1', min(1000, $numObjects));
 				$exportObjects = [];
 				if (isset($_REQUEST['selectedObject'])) {
 					foreach ($_REQUEST['selectedObject'] as $k => $v) {
