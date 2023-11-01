@@ -5,10 +5,7 @@ import org.marc4j.marc.*;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.regex.Pattern;
 
 class SymphonyRecordProcessor extends IlsRecordProcessor {
@@ -74,6 +71,7 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 
 	@Override
 	protected void updateGroupedWorkSolrDataBasedOnMarc(AbstractGroupedWorkSolr groupedWork, Record record, String identifier) {
+		boolean changesMade = false;
 		if (settings.getNoteSubfield() != ' ') {
 			List<DataField> items = record.getDataFields(settings.getItemTagInt());
 			for (DataField item : items) {
@@ -83,11 +81,16 @@ class SymphonyRecordProcessor extends IlsRecordProcessor {
 					if (publicNotePattern.matcher(noteString).matches()) { //strip out ".PUBLIC." for public notes
 						String newNote = noteString.replaceAll("(\\.PUBLIC\\.)", "").trim();
 						note.setData(newNote);
+						changesMade = true;
 					} else if (hideNotePattern.matcher(noteString).matches()) { //hide notes if private or staff
 						item.removeSubfield(note);
+						changesMade = true;
 					}
 				}
 			}
+		}
+		if (changesMade) {
+			this.indexer.saveMarcRecordToDatabase(this.settings, identifier, record);
 		}
 		super.updateGroupedWorkSolrDataBasedOnMarc(groupedWork, record, identifier);
 	}
