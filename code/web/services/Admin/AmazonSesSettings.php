@@ -66,7 +66,7 @@ class Admin_AmazonSesSettings extends ObjectEditor {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'system_admin';
+		return 'email';
 	}
 
 	function canView(): bool {

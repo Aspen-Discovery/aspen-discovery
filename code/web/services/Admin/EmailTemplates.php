@@ -65,7 +65,7 @@ class Admin_EmailTemplates extends ObjectEditor {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'ecommerce';
+		return 'email';
 	}
 
 	function canView(): bool {
