@@ -1437,7 +1437,9 @@ class CarlX extends AbstractIlsDriver {
 				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 					$fine->Identifier = substr($fine->Identifier, 9);
 				}
+				/* Need to include the # symbol if the item included it to have it properly settle the fine later on
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
+				*/
 				$fineType = $fine->TransactionCode;
 				$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
