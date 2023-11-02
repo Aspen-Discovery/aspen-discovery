@@ -58,6 +58,16 @@ function getUpdates23_10_10(): array {
 					'Welcome to %library.displayName%', 
 					'Hello %user.firstname% %user.lastname%,\n\nThank you for joining %library.displayName%.\n\nYou can search our materials and access your account at %library.baseUrl%.\n\nYour library card is %user.ils_barcode%.\n\nIf you have any problems or questions concerning your account, please contact the library.' )"
 			],
-		]
+		],
+		//defaultSelfRegistrationEmailTemplate
+		'self_reg_form_permission' => [
+			'title' => 'Update Administer Self Registration Forms Permission',
+			'description' => 'Update Administer Self Registration Forms Permission to remove required module',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE permissions SET requiredModule='' WHERE name='Administer Self Registration Forms'",
+			],
+		],
+		//self_reg_form_permission
 	];
 }
