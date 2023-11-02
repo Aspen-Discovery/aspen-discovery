@@ -1420,6 +1420,7 @@ class CarlX extends AbstractIlsDriver {
 					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date' => date('M j, Y', strtotime($fine->FineAssessedDate)),
+					'occurrence' => $fine->QueuePosition,
 				];
 			}
 		}
@@ -1466,6 +1467,7 @@ class CarlX extends AbstractIlsDriver {
 						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
 						'message' => $fine->Title,
 						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+						'occurrence' => $fine->QueuePosition,
 					];
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
@@ -1549,15 +1551,25 @@ class CarlX extends AbstractIlsDriver {
 		$accountLinesPaid = explode(',', $payment->finesPaid);
 		$allPaymentsSucceed = true;
 
+		$allFines = $this->getFines($patron);
+
 		foreach ($accountLinesPaid as $line) {
 			[$feeId, $pmtAmount] = explode('|', $line);
+
+			$occurrence = 0;
+			foreach ($allFines as $fine) {
+				if($fine['fineId'] == $feeId) {
+					$occurrence = $fine['occurrence'];
+				}
+			}
+
 			$paymentRequest = new stdClass();
 			$paymentRequest->SearchType = 'Patron ID';
 			$paymentRequest->SearchID = $patron->ils_barcode;
 			$paymentRequest->FineOrFee = [];
 			$paymentRequest->FineOrFee[0] = new stdClass();
 			$paymentRequest->FineOrFee[0]->ItemID = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
-			$paymentRequest->FineOrFee[0]->Occur = 1; // The unique occurrence associated with the item that references the fine or fee selected for settlement
+			$paymentRequest->FineOrFee[0]->Occur = $occurrence; // The unique occurrence associated with the item that references the fine or fee selected for settlement
 			$paymentRequest->FineOrFee[0]->WaiveComment = ''; // 16 character limit
 			$paymentRequest->FineOrFee[0]->PayType = 'Pay'; // Pay, Waive, or Cancel
 			$paymentRequest->FineOrFee[0]->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
