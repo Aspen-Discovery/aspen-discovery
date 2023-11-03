@@ -275,7 +275,7 @@ class Polaris extends AbstractIlsDriver {
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->RenewData = new stdClass();
-		$body->RenewData->IgnoreOverrideErrors = false;
+		$body->RenewData->IgnoreOverrideErrors = $_REQUEST['confirmedRenewal'] ?? false;
 
 		$accountSummary = $this->getAccountSummary($patron);
 
@@ -311,6 +311,39 @@ class Polaris extends AbstractIlsDriver {
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfCheckouts();
 				$renewResult['success'] = true;
+			} else if ($jsonResponse->PAPIErrorCode == -2) {
+				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				$message = '';
+				foreach ($itemRenewResult->BlockRows as $blockRow) {
+					$message .= $blockRow->ErrorDesc;
+
+					$confirmRenewalFee = false;
+					// Item renewal block
+					if($blockRow->PAPIErrorType == 2) {
+						// Confirm charge for renewing item
+						if (strpos($blockRow->ErrorDesc, 'Your account will be charged') !== false) {
+							$confirmRenewalFee = true;
+						}
+					}
+
+					$renewResult['success'] = false;
+					$renewResult['message'] = $message;
+					$renewResult['confirmRenewalFee'] = $confirmRenewalFee;
+
+					// Result for API or app use
+					$renewResult['api']['title'] = translate([
+						'text' => 'Unable to renew title',
+						'isPublicFacing' => true,
+					]);
+					$renewResult['api']['message'] = translate([
+						'text' => $message,
+						'isPublicFacing' => true,
+					]);
+					$renewResult['api']['confirmRenewalFee'] = translate([
+						'text' => $confirmRenewalFee,
+						'isPublicFacing' => true,
+					]);
+				}
 			} else {
 				$message = "All items could not be renewed.";
 				$renewResult['message'][] = $message;
