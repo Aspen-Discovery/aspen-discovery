@@ -2159,7 +2159,7 @@ class MyAccount_AJAX extends JSON_Action {
 		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
 			return [
 				'title' => translate([
-					'text' => 'Confirm Renew Item Charge',
+					'text' => 'Confirm Renewal',
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
@@ -2282,7 +2282,7 @@ class MyAccount_AJAX extends JSON_Action {
 		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
 			return [
 				'title' => translate([
-					'text' => 'Confirm Renew Item Charges',
+					'text' => 'Confirm Renewal',
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch('Record/renew-results.tpl'),

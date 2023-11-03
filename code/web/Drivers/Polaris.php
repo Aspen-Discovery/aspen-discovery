@@ -303,47 +303,59 @@ class Polaris extends AbstractIlsDriver {
 						foreach ($checkouts as $checkout) {
 							if ($checkout->itemId == $itemId) {
 								$title = $checkout->title;
+								break;
 							}
 						}
 						$renewResult['message'][] = $title . ':' . $blockRow->ErrorDesc;
 					}
+				}else{
+					$renewResult['success'] = true;
+					$renewResult['message'] = translate([
+						'text' => 'All titles renewed successfully',
+						'isPublicFacing' => true,
+					]);
+					$renewResult['api']['message'] = translate([
+						'text' => 'All titles renewed successfully',
+						'isPublicFacing' => true,
+					]);
 				}
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfCheckouts();
 				$renewResult['success'] = true;
 			} else if ($jsonResponse->PAPIErrorCode == -2) {
 				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				$confirmRenewalFee = false;
 				$message = '';
+				$apiMessage = '';
 				foreach ($itemRenewResult->BlockRows as $blockRow) {
+					if (strlen($message) > 0) {
+						$message .= "</br>";
+						$apiMessage .= "\n";
+					}
 					$message .= $blockRow->ErrorDesc;
+					$apiMessage .= $blockRow->ErrorDesc;
 
-					$confirmRenewalFee = false;
 					// Item renewal block
 					if($blockRow->PAPIErrorType == 2) {
 						// Confirm charge for renewing item
-						if (strpos($blockRow->ErrorDesc, 'Your account will be charged') !== false) {
+						if ($blockRow->ErrorAllowOverride) {
 							$confirmRenewalFee = true;
 						}
 					}
-
-					$renewResult['success'] = false;
-					$renewResult['message'] = $message;
-					$renewResult['confirmRenewalFee'] = $confirmRenewalFee;
-
-					// Result for API or app use
-					$renewResult['api']['title'] = translate([
-						'text' => 'Unable to renew title',
-						'isPublicFacing' => true,
-					]);
-					$renewResult['api']['message'] = translate([
-						'text' => $message,
-						'isPublicFacing' => true,
-					]);
-					$renewResult['api']['confirmRenewalFee'] = translate([
-						'text' => $confirmRenewalFee,
-						'isPublicFacing' => true,
-					]);
 				}
+				$renewResult['success'] = false;
+				$renewResult['message'] = $message;
+				$renewResult['confirmRenewalFee'] = $confirmRenewalFee;
+
+				// Result for API or app use
+				$renewResult['api']['title'] = translate([
+					'text' => 'Unable to renew title',
+					'isPublicFacing' => true,
+				]);
+				$renewResult['api']['message'] = translate([
+					'text' => $message,
+					'isPublicFacing' => true,
+				]);
 			} else {
 				$message = "All items could not be renewed.";
 				$renewResult['message'][] = $message;
@@ -431,13 +443,11 @@ class Polaris extends AbstractIlsDriver {
 				foreach ($itemRenewResult->BlockRows as $blockRow) {
 					$message .= $blockRow->ErrorDesc;
 
-					$confirmRenewalFee = false;
+					$userCanOverride = false;
 					// Item renewal block
 					if($blockRow->PAPIErrorType == 2) {
 						// Confirm charge for renewing item
-						if (strpos($blockRow->ErrorDesc, 'Your account will be charged') !== false) {
-							$confirmRenewalFee = true;
-						}
+						$userCanOverride = $blockRow->ErrorAllowOverride;
 					}
 
 					if (strlen($message) == 0) {
@@ -447,7 +457,7 @@ class Polaris extends AbstractIlsDriver {
 					$result['itemId'] = $itemId;
 					$result['success'] = false;
 					$result['message'] = $message;
-					$result['confirmRenewalFee'] = $confirmRenewalFee;
+					$result['confirmRenewalFee'] = $userCanOverride;
 
 					// Result for API or app use
 					$result['api']['title'] = translate([
@@ -459,7 +469,7 @@ class Polaris extends AbstractIlsDriver {
 						'isPublicFacing' => true,
 					]);
 					$result['api']['confirmRenewalFee'] = translate([
-						'text' => $confirmRenewalFee,
+						'text' => $userCanOverride,
 						'isPublicFacing' => true,
 					]);
 
