@@ -49,7 +49,7 @@
 				{translate text="Sign in With %1%" 1=$samlBtnLabel isPublicFacing=true}
 			</a>
 		{else}
-			<a href="/saml2auth.php?samlLogin=y&idp={$samlEntityId}" class="btn btn-default btn-lg" style="background-color: {$samlBtnBgColor}; color: {$samlBtnTextColor}">
+			<a href="/Authentication/SAML2?init" class="btn btn-default btn-lg" style="background-color: {$samlBtnBgColor}; color: {$samlBtnTextColor}">
 				{translate text="Sign in with %1%" 1=$samlBtnLabel isPublicFacing=true}
 			</a>
 		{/if}

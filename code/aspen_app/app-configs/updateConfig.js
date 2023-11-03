@@ -110,6 +110,7 @@ const app_config = {
           supportsTablet: true,
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
           infoPlist: {
+               NSLocationAlwaysAndWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
                NSLocationWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
                LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
                CFBundleAllowMixedLocalizations: true,
@@ -161,7 +162,22 @@ const app_config = {
                },
           ],
      },
-     plugins: ['sentry-expo', 'expo-localization', ['expo-barcode-scanner', { cameraPermission: 'Allow $(PRODUCT_NAME) to access camera.' }]],
+     plugins: [
+          'sentry-expo',
+          'expo-localization',
+          [
+               'expo-barcode-scanner',
+               {
+                    cameraPermission: 'This app uses your camera to scan barcodes when searching for items in the library catalog or when scanning your library card.',
+               },
+          ],
+          [
+               'expo-location',
+               {
+                    locationAlwaysAndWhenInUsePermission: 'This app uses your location to find nearby libraries to make logging in easier',
+               },
+          ],
+     ],
 };
 
 fs.readFile('app.config.js', 'utf8', function (err, data) {

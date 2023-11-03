@@ -415,7 +415,7 @@ class Koha extends AbstractIlsDriver {
 			$curCheckout->barcode = $curRow['barcode'];
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curCheckout->recordId);
-			if ($recordDriver->isValid()) {
+			if ($recordDriver !== null && $recordDriver->isValid()) {
 				$curCheckout->updateFromRecordDriver($recordDriver);
 			} else {
 				$curCheckout->title = $curRow['title'];
@@ -734,7 +734,12 @@ class Koha extends AbstractIlsDriver {
 	public function getPostedXMLWebServiceResponse($url, $body) {
 		global $logger;
 		if (IPAddress::showDebuggingInformation()) {
-			$logger->log("Koha API Call to: " . $url, Logger::LOG_ERROR);
+			$logger->log("Koha API POST to: " . $url, Logger::LOG_ERROR);
+//			if (is_string($body)) {
+//				$logger->log(" body is: " . $body, Logger::LOG_ERROR);
+//			}else{
+//				$logger->log(" body is: " . http_build_query($body), Logger::LOG_ERROR);
+//			}
 		}
 		$headers = ['Content-Type: application/x-www-form-urlencoded',];
 		$this->curlWrapper->addCustomHeaders($headers, false);
@@ -799,13 +804,14 @@ class Koha extends AbstractIlsDriver {
 				}
 			}
 		}
-
 		$barcodesToTest = array_unique($barcodesToTest);
-
 		$userExistsInDB = false;
+		$authenticationSuccess = false;
+		$patronId = '';
+		$responseText = '';
 		foreach ($barcodesToTest as $i => $barcode) {
 			//Authenticate the user using KOHA DB for single sign-on
-			if($validatedViaSSO) {
+			if ($validatedViaSSO) {
 				/** @noinspection SqlResolve */
 				$sql = "SELECT borrowernumber, cardnumber, userId, login_attempts from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $barcode) . "' OR userId = '" . mysqli_escape_string($this->dbConnection, $barcode) . "'";
 				$lookupUserResult = mysqli_query($this->dbConnection, $sql);
@@ -818,24 +824,83 @@ class Koha extends AbstractIlsDriver {
 						return $newUser;
 					}
 				}
+			} else if ($this->getKohaVersion() >= 22.1110) {
+				//Authenticate the user using KOHA API
+				$oauthToken = $this->getOAuthToken();
+				if (!$oauthToken) {
+					global $logger;
+					$logger->log("Unable to authenticate with the ILS from patronLogin", Logger::LOG_ERROR);
+					$result['messages'][] = translate([
+						'text' => 'Unable to load authentication token from the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+					return new AspenError('Unable to load authentication token from the ILS.  Please try again later or contact the library.');
+				} else {
+					$apiURL = $this->getWebServiceURL() . "/api/v1/auth/password/validation";
+					$postParams = [
+						'identifier' => $barcode,
+						'password' => $password,
+					];
+					$this->apiCurlWrapper->addCustomHeaders([
+						'Authorization: Bearer ' . $oauthToken,
+						'User-Agent: Aspen Discovery',
+						'Accept: */*',
+						'Cache-Control: no-cache',
+						'Content-Type: application/json;charset=UTF-8',
+						'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
+					], true);
+				}
+				$responseBody = $this->apiCurlWrapper->curlSendPage($apiURL, 'POST', json_encode($postParams));
+				$responseCode = $this->apiCurlWrapper->getResponseCode();
+				$jsonResponse = json_decode($responseBody);
+				ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody, ['password' => $password]);
+				if ($responseCode == 201) {
+					$cardNumber = $jsonResponse->cardnumber;
+					$patronId = $jsonResponse->patron_id;
+					$authenticationSuccess = true;
+				} else {
+					$result['messages'][] = translate([
+						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+				}
+			} else {
+				//Authenticate the user using KOHA ILSDI
+				$apiURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
+				$postParams = ([
+					'service' => 'AuthenticatePatron',
+					'username' => $barcode,
+					'password' => $password,
+				]);
+				$responseBody = $this->getPostedXMLWebServiceResponse($apiURL, $postParams);
+				if ($responseBody != null) {
+					$patronId = $responseBody->id->__toString();
+					if (isset($patronId)) {
+						$authenticationSuccess = true;
+						$responseCode = 200;
+					} else {
+						$responseCode = 400;
+						$result['messages'][] = translate([
+							'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+							'isPublicFacing' => true,
+						]);
+					}
+					//Technically this is not right, we're using an XML response and thinking it's JSON, but for practical purposes its going to work since we have the same format in the XML and json bodies and everything is clases
+					$jsonResponse = $responseBody;
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, $responseBody->asXML(), ['password' => $password]);
+				} else {
+					$responseCode = $this->curlWrapper->getResponseCode();
+					$result['messages'][] = translate([
+						'text' => 'Unable to authenticate with the ILS.  Please try again later or contact the library.',
+						'isPublicFacing' => true,
+					]);
+					ExternalRequestLogEntry::logRequest('koha.patronLogin', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, '', ['password' => $password]);
+				}
 			}
-
-			//Authenticate the user using KOHA ILSDI
-			$authenticationURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl';
-			$params = [
-				'service' => 'AuthenticatePatron',
-				'username' => $barcode,
-				'password' => $password,
-			];
-			$authenticationResponse = $this->getPostedXMLWebServiceResponse($authenticationURL, $params);
-			$responseText = '';
-			if ($authenticationResponse != false) {
-				$responseText = $authenticationResponse->asXML();
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), $responseText, ['password' => $password]);
-				if (isset($authenticationResponse->id)) {
-					$patronId = $authenticationResponse->id;
+			if ($authenticationSuccess) {
+				if (!empty($patronId)) {
 					$result = $this->loadPatronInfoFromDB($patronId, $password, $barcode);
-					if ($result == false) {
+					if (!$result) {
 						global $logger;
 						$logger->log("MySQL did not return a result for getUserInfoStmt", Logger::LOG_ERROR);
 						if ($i == count($barcodesToTest) - 1) {
@@ -845,9 +910,13 @@ class Koha extends AbstractIlsDriver {
 						return $result;
 					}
 				} else {
-					if (isset($authenticationResponse->message) && preg_match('/ILS-DI is disabled/', $authenticationResponse->message)) {
+
+					if (isset($jsonResponse->message) && str_ends_with($apiURL, '/cgi-bin/koha/ilsdi.pl')) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
+					} else if (isset($jsonResponse->message) && str_ends_with($apiURL, "/api/v1/auth/password/validation")) {
+						global $logger;
+						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}
 					//User is not valid, check to see if they have a valid account in Koha so we can return a different error
 					/** @noinspection SqlResolve */
@@ -865,7 +934,7 @@ class Koha extends AbstractIlsDriver {
 							}
 						} else {
 							//Check to see if the patron password has expired, this is not available on all systems.
-							if (isset($authenticationResponse->code) && $authenticationResponse->code == 'PasswordExpired') {
+							if (isset($jsonResponse->code) && $jsonResponse->code == 'PasswordExpired') {
 								try {
 									$patronId = $lookupUserRow['borrowernumber'];
 
@@ -913,8 +982,8 @@ class Koha extends AbstractIlsDriver {
 					}
 				}
 			} else {
-				$params['password'] = '**password**';
-				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $authenticationURL, $this->curlWrapper->getHeaders(), json_encode($params), $this->curlWrapper->getResponseCode(), "", ['password' => $password]);
+				$postParams['password'] = '**password**';
+				ExternalRequestLogEntry::logRequest('koha.authenticatePatron', 'POST', $apiURL, $this->curlWrapper->getHeaders(), json_encode($postParams), $responseCode, "", ['password' => $password]);
 			}
 		}
 		if ($userExistsInDB) {
@@ -937,6 +1006,9 @@ class Koha extends AbstractIlsDriver {
 			$userFromDb = $lookupUserResult->fetch_assoc();
 			$lookupUserResult->close();
 
+			if (empty($userFromDb)) {
+				return false;
+			}
 			//Do a sanity check to be sure we have the correct user for the supplied patron id
 			if (is_null($userFromDb['cardnumber']) || is_null($userFromDb['userid']) || is_null($userFromDb['borrowernumber'])) {
 				//We received an invalid patron back
@@ -2294,7 +2366,7 @@ class Koha extends AbstractIlsDriver {
 			}
 
 			$recordDriver = RecordDriverFactory::initRecordDriverById($this->getIndexingProfile()->name . ':' . $curHold->recordId);
-			if ($recordDriver->isValid()) {
+			if ($recordDriver != null && $recordDriver->isValid()) {
 				$curHold->updateFromRecordDriver($recordDriver);
 				//See if we need to override the format based on the item type
 				$itemType = $curRow['itemtype'];
@@ -4511,6 +4583,7 @@ class Koha extends AbstractIlsDriver {
 				$jsonResponse = json_decode($response);
 				$result['username'] = $jsonResponse->userid;
 				$result['success'] = true;
+				$result['sendWelcomeMessage'] = false;
 				if ($verificationRequired != "0") {
 					$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 				} else {
@@ -4522,6 +4595,11 @@ class Koha extends AbstractIlsDriver {
 							if ($tmpResult['success']) {
 								$result['password'] = $_REQUEST['borrower_password'];
 							}
+						}
+						$newUser = $this->findNewUser($jsonResponse->cardnumber, null);
+						if ($newUser != null) {
+							$result['newUser'] = $newUser;
+							$result['sendWelcomeMessage'] = true;
 						}
 					} else {
 						$result['message'] = "Your account was registered, but a barcode was not provided, please contact your library for barcode and password to use when logging in.";

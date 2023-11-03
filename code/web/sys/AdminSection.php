@@ -28,4 +28,12 @@ class AdminSection {
 	public function hasActions() {
 		return count($this->actions) > 0;
 	}
+
+	private $_translatedLabel = null;
+	public function getTranslatedLabel() {
+		if ($this->_translatedLabel == null) {
+			$this->_translatedLabel = translate(['text' => $this->label, 'isAdminFacing' => true]);
+		}
+		return $this->_translatedLabel;
+	}
 }

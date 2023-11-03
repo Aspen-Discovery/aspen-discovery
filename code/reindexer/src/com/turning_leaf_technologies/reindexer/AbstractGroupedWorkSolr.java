@@ -1172,6 +1172,10 @@ public abstract class AbstractGroupedWorkSolr {
 		this.keywords.add(keywords);
 	}
 
+	void addKeywords(HashSet<String> keywords) {
+		this.keywords.addAll(keywords);
+	}
+
 	void addDescription(String description, @NotNull String recordFormat, String formatCategory) {
 		if (description == null || description.length() == 0) {
 			return;

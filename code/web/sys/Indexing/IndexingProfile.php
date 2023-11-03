@@ -52,8 +52,6 @@ class IndexingProfile extends DataObject {
 		$recordNumberPrefix;
 	public /** @noinspection PhpUnused */
 		$customMarcFieldsToIndexAsKeyword;
-	public /** @noinspection PhpUnused */
-		$suppressItemlessBibs;
 	public $itemTag;
 	public /** @noinspection PhpUnused */
 		$itemRecordNumber;
@@ -61,6 +59,8 @@ class IndexingProfile extends DataObject {
 		$useItemBasedCallNumbers;
 	public /** @noinspection PhpUnused */
 		$callNumberPrestamp;
+	public /** @noinspection PhpUnused */
+		$callNumberPrestamp2;
 	public $callNumber;
 	public /** @noinspection PhpUnused */
 		$callNumberCutter;
@@ -82,6 +82,7 @@ class IndexingProfile extends DataObject {
 	public $volume;
 	public /** @noinspection PhpUnused */
 		$itemUrl;
+	public $itemUrlDescription;
 	public $barcode;
 	public $status;
 	public /** @noinspection PhpUnused */
@@ -208,7 +209,6 @@ class IndexingProfile extends DataObject {
 			'hideUnknownLiteraryForm',
 			'hideNotCodedLiteraryForm',
 			'includePersonalAndCorporateNamesInTopics',
-			'suppressItemlessBibs',
 			'useItemBasedCallNumbers',
 			'includeLocationNameInDetailedLocation',
 			'treatLibraryUseOnlyGroupedStatusesAsAvailable',
@@ -593,13 +593,6 @@ class IndexingProfile extends DataObject {
 				'label' => 'Item Information',
 				'hideInLists' => true,
 				'properties' => [
-					'suppressItemlessBibs' => [
-						'property' => 'suppressItemlessBibs',
-						'type' => 'checkbox',
-						'label' => 'Suppress Itemless Bibs',
-						'description' => 'Whether or not Itemless Bibs can be suppressed',
-						'forcesReindex' => true,
-					],
 					'itemTag' => [
 						'property' => 'itemTag',
 						'type' => 'text',
@@ -629,6 +622,14 @@ class IndexingProfile extends DataObject {
 						'label' => 'Call Number Prestamp',
 						'maxLength' => 1,
 						'description' => 'Subfield for call number pre-stamp',
+						'forcesReindex' => true,
+					],
+					'callNumberPrestamp2' => [
+						'property' => 'callNumberPrestamp2',
+						'type' => 'text',
+						'label' => 'Call Number Prestamp 2',
+						'maxLength' => 1,
+						'description' => 'Subfield for secondary call number pre-stamp',
 						'forcesReindex' => true,
 					],
 					'callNumber' => [
@@ -733,6 +734,14 @@ class IndexingProfile extends DataObject {
 						'label' => 'Item URL',
 						'maxLength' => 1,
 						'description' => 'Subfield for a URL specific to the item',
+						'forcesReindex' => true,
+					],
+					'itemUrlDescription' => [
+						'property' => 'itemUrlDescription',
+						'type' => 'text',
+						'label' => 'Item URL Description',
+						'maxLength' => 1,
+						'description' => 'Subfield for a URL description specific to the item',
 						'forcesReindex' => true,
 					],
 					'barcode' => [

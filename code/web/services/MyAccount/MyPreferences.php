@@ -66,19 +66,31 @@ class MyAccount_MyPreferences extends MyAccount {
 			// Save/Update Actions
 			global $offlineMode;
 			if (isset($_POST['updateScope']) && !$offlineMode) {
-				$result = $patron->updateUserPreferences();
-				if (isset($result['message'])) {
-					$user->updateMessage = $result['message'];
+				$samePatron = true;
+				if ($_REQUEST['patronId'] != $user->id){
+					$samePatron = false;
 				}
-				$user->updateMessageIsError = !$result['success'];
-
-				if ($canUpdateContactInfo && $allowHomeLibraryUpdates) {
-					$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
-					if (!empty($user->updateMessage)) {
-						$user->updateMessage .= '<br/>';
+				if ($samePatron){
+					$result = $patron->updateUserPreferences();
+					if (isset($result['message'])) {
+						$user->updateMessage = $result['message'];
 					}
-					$user->updateMessage .= implode('<br/>', $result2['messages']);
-					$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+					$user->updateMessageIsError = !$result['success'];
+
+					if ($canUpdateContactInfo && $allowHomeLibraryUpdates) {
+						$result2 = $user->updateHomeLibrary($_REQUEST['homeLocation']);
+						if (!empty($user->updateMessage)) {
+							$user->updateMessage .= '<br/>';
+						}
+						$user->updateMessage .= implode('<br/>', $result2['messages']);
+						$user->updateMessageIsError = $user->updateMessageIsError && !$result2['success'];
+					}
+				}else{
+					$user->updateMessage = translate([
+						'text' => 'Wrong account credentials, please try again.',
+						'isPublicFacing' => true,
+					]);
+					$user->updateMessageIsError = true;
 				}
 				$user->update();
 
@@ -99,6 +111,7 @@ class MyAccount_MyPreferences extends MyAccount {
 				$showEdsPreferences = true;
 			}
 			$interface->assign('showEdsPreferences', $showEdsPreferences);
+			$interface->assign('cookieConsentEnabled', $library->cookieStorageConsent);
 
 			if ($showAlternateLibraryOptionsInProfile) {
 				//Get the list of locations for display in the user interface.

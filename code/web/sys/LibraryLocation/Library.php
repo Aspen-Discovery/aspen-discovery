@@ -90,6 +90,8 @@ class Library extends DataObject {
 	public $allowHomeLibraryUpdates;
 	public $allowUsernameUpdates;
 	public $showMessagingSettings;
+	public $allowChangingPickupLocationForAvailableHolds;
+	public $allowCancellingAvailableHolds;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
 	public $showHoldButton;
@@ -164,6 +166,8 @@ class Library extends DataObject {
 	public $showLogMeOutAfterPlacingHolds;
 	public $displayItemBarcode;
 	public $displayHoldsOnCheckout;
+
+	public $alwaysDisplayRenewalCount;
 	public $enableSelfRegistration;
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
@@ -286,6 +290,7 @@ class Library extends DataObject {
 	public /** @noinspection PhpUnused */
 		$selfRegistrationTemplate;
 	public $selfRegistrationUserProfile;
+	public $selfRegistrationFormId;
 	public $addSMSIndicatorToPhone;
 
 	public $allowLinkedAccounts;
@@ -317,6 +322,7 @@ class Library extends DataObject {
 	public $materialsRequestSendStaffEmailOnAssign;
 	public $materialsRequestNewEmail;
 	public $showGroupedHoldCopiesCount;
+	public $ILLSystem;
 	public $interLibraryLoanName;
 	public $interLibraryLoanUrl;
 	public $expiredMessage;
@@ -1414,6 +1420,14 @@ class Library extends DataObject {
 						'hideInLists' => true,
 						'permissions' => ['Library ILS Connection'],
 					],
+					'alwaysDisplayRenewalCount' => [
+						'property' => 'alwaysDisplayRenewalCount',
+						'type' => 'checkbox',
+						'label' => 'Always display the number of renewals on a checkout',
+						'description' => 'Whether or not patrons always see the number of renewals on a checkout.',
+						'hideInLists' => true,
+						'permissions' => ['Library ILS Connection'],
+					],
 					'enableReadingHistory' => [
 						'property' => 'enableReadingHistory',
 						'type' => 'checkbox',
@@ -1672,7 +1686,34 @@ class Library extends DataObject {
 								'readonly' => false,
 								'permissions' => ['Library ILS Options'],
 							],
-
+							'selfRegRequirePhone' => [
+								'property' => 'selfRegRequirePhone',
+								'type' => 'checkbox',
+								'label' => 'Self Registration requires Phone Number',
+								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'selfRegRequireEmail' => [
+								'property' => 'selfRegRequireEmail',
+								'type' => 'checkbox',
+								'label' => 'Self Registration requires Email',
+								'description' => 'Whether or not email is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'promptForParentInSelfReg' => [
+								'property' => 'promptForParentInSelfReg',
+								'type' => 'checkbox',
+								'label' => 'Prompt For Parent Information',
+								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'promptForSMSNoticesInSelfReg' => [
+								'property' => 'promptForSMSNoticesInSelfReg',
+								'type' => 'checkbox',
+								'label' => 'Prompt For SMS Notices',
+								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
 							'useAllCapsWhenUpdatingProfile' => [
 								'property' => 'useAllCapsWhenUpdatingProfile',
 								'type' => 'checkbox',
@@ -1722,20 +1763,6 @@ class Library extends DataObject {
 								'label' => 'Show Notice Type in Profile',
 								'description' => 'Whether or not patrons should be able to change how they receive notices in their profile.',
 								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
-								'hideInLists' => true,
-								'default' => 0,
-								'permissions' => ['Library ILS Connection'],
-							],
-							'cityStateField' => [
-								'property' => 'cityStateField',
-								'type' => 'enum',
-								'values' => [
-									0 => 'CITY / STATE field',
-									1 => 'CITY and STATE fields',
-								],
-								'label' => 'City / State Field (Symphony Only)',
-								'description' => 'The field from which to load and update city and state.',
-								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -1894,6 +1921,26 @@ class Library extends DataObject {
 								'description' => 'When enabled, volumes that have at least one copy owned locally are shown before volumes with no local copies.',
 								'default' => 0,
 							],
+							'allowChangingPickupLocationForAvailableHolds' => [
+								'property' => 'allowChangingPickupLocationForAvailableHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Changing Pickup Location For Available Holds',
+								'description' => 'Whether or not the user can change pickup locations for available holds.',
+								'hideInLists' => true,
+								'default' => 0,
+								'note' => 'Applies to Polaris Only',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'allowCancellingAvailableHolds' => [
+								'property' => 'allowCancellingAvailableHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Cancelling Available Holds',
+								'description' => 'Whether or not the user can cancel available holds.',
+								'hideInLists' => true,
+								'default' => 0,
+								'note' => 'Applies to Polaris Only',
+								'permissions' => ['Library ILS Connection'],
+							],
 							'allowFreezeHolds' => [
 								'property' => 'allowFreezeHolds',
 								'type' => 'checkbox',
@@ -1901,6 +1948,7 @@ class Library extends DataObject {
 								'description' => 'Whether or not the user can freeze their holds.',
 								'hideInLists' => true,
 								'default' => 1,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'maxDaysToFreeze' => [
 								'property' => 'maxDaysToFreeze',
@@ -1909,6 +1957,7 @@ class Library extends DataObject {
 								'description' => 'Number of days that a user can suspend a hold for. Use -1 for no limit.',
 								'hideInLists' => true,
 								'default' => 365,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'defaultNotNeededAfterDays' => [
 								'property' => 'defaultNotNeededAfterDays',
@@ -1916,6 +1965,7 @@ class Library extends DataObject {
 								'label' => 'Default Not Needed After Days',
 								'description' => 'Number of days to use for not needed after date by default. Use -1 for no default.',
 								'hideInLists' => true,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'inSystemPickupsOnly' => [
 								'property' => 'inSystemPickupsOnly',
@@ -2086,7 +2136,7 @@ class Library extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Enable "Forgot Barcode?" Link on Login Screen',
 								'description' => 'Checking this will enable a &quot;Forgot Barcode?&quot; link on the login screen, which will allow users to receive their barcode by text. The user account must have a text-capable phone number on file to receive their barcode with this link.',
-								'note' => 'Requires Twilio to be configured',
+								'note' => 'Currently limited to Koha. Requires Twilio to be configured.',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -2186,34 +2236,6 @@ class Library extends DataObject {
 								'label' => 'Prompt For Birth Date',
 								'description' => 'Whether or not to prompt for birth date when self registering',
 							],
-							'selfRegRequirePhone' => [
-								'property' => 'selfRegRequirePhone',
-								'type' => 'checkbox',
-								'label' => 'Self Registration requires Phone Number',
-								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
-							'selfRegRequireEmail' => [
-								'property' => 'selfRegRequireEmail',
-								'type' => 'checkbox',
-								'label' => 'Self Registration requires Email',
-								'description' => 'Whether or not email is required when self registering. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
-							'promptForParentInSelfReg' => [
-								'property' => 'promptForParentInSelfReg',
-								'type' => 'checkbox',
-								'label' => 'Prompt For Parent Information',
-								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
-							'promptForSMSNoticesInSelfReg' => [
-								'property' => 'promptForSMSNoticesInSelfReg',
-								'type' => 'checkbox',
-								'label' => 'Prompt For SMS Notices',
-								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
-								'note' => 'Applies to Symphony Only',
-							],
 							'useAllCapsWhenSubmittingSelfRegistration' => [
 								'property' => 'useAllCapsWhenSubmittingSelfRegistration',
 								'type' => 'checkbox',
@@ -2227,6 +2249,21 @@ class Library extends DataObject {
 								'description' => 'The states that can be used in self registration (separate multiple states with pipes |)',
 								'hideInLists' => true,
 								'default' => '',
+							],
+							'cityStateField' => [
+								'property' => 'cityStateField',
+								'type' => 'enum',
+								'values' => [
+									0 => 'CITY / STATE field',
+									1 => 'CITY and STATE fields',
+									2 => 'CITY / STATE field - comma separated',
+								],
+								'label' => 'City / State Field (Symphony Only)',
+								'description' => 'The field from which to load and update city and state.',
+								'note' => 'Applies to Symphony Only',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
 							],
 							'validSelfRegistrationZipCodes' => [
 								'property' => 'validSelfRegistrationZipCodes',
@@ -2570,7 +2607,7 @@ class Library extends DataObject {
 						'note' => 'Applies to Symphony Only',
 						'hideInLists' => true,
 						'default' => '',
-						'maxLength' => 8,
+						'maxLength' => 12,
 					],
 					//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				],
@@ -3082,6 +3119,7 @@ class Library extends DataObject {
 				'property' => 'courseReservesSection',
 				'type' => 'section',
 				'label' => 'Course Reserves',
+				'instructions' => '<i class="fas fa-info-circle"></i> Applies to Symphony only',
 				'hideInLists' => true,
 				'permissions' => [
 					'Administer Course Reserves',
@@ -3120,6 +3158,19 @@ class Library extends DataObject {
 				'hideInLists' => true,
 				'permissions' => ['Library ILL Options'],
 				'properties' => [
+					'ILLSystem' => [
+						'property' => 'ILLSystem',
+						'type' => 'enum',
+						'values' => [
+							0 => 'INN-Reach',
+							1 => 'WorldCat',
+							2 => 'Other',
+						],
+						'label' => 'Interlibrary Loan System',
+						'description' => 'Selected ILL service',
+						'hideInLists' => true,
+						'default' => 2,
+					],
 					'interLibraryLoanName' => [
 						'property' => 'interLibraryLoanName',
 						'type' => 'text',
@@ -4764,6 +4815,23 @@ class Library extends DataObject {
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 		$apiInfo['ils'] = $ils;
+
+		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+		$localLabel = str_ireplace('{display name}', $this->displayName, $localLabel);
+		$availableLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+		$availableLabel = str_ireplace('{display name}', $this->displayName, $availableLabel);
+		$availableOnlineLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+		$availableOnlineLabel = str_ireplace('{display name}', $this->displayName, $availableOnlineLabel);
+		$availabilityToggleValue = $this->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		$facetCountsToShow = $this->getGroupedWorkDisplaySettings()->facetCountsToShow;
+
+		$apiInfo['groupedWorkDisplaySettings']['superScopeLabel'] = $superScopeLabel;
+		$apiInfo['groupedWorkDisplaySettings']['localLabel'] = $localLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableLabel'] = $availableLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableOnlineLabel'] = $availableOnlineLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
+		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;

@@ -467,6 +467,16 @@ class Sierra extends Millennium {
 					$recordDriver = new MarcRecordDriver((string)$curHold->recordId);
 					if ($recordDriver->isValid()) {
 						$curHold->updateFromRecordDriver($recordDriver);
+
+						if($recordType == 'i') {
+							// Get volume for Item holds
+							$relatedRecord = $recordDriver->getRelatedRecord();
+							$groupingItem = $relatedRecord->getItemById($itemId);
+							if ($groupingItem != null) {
+								$curHold->volume = $groupingItem->volume;
+								$curHold->callNumber = $groupingItem->callNumber;
+							}
+						}
 					}
 				} else {
 					$curHold->sourceId = '';
@@ -557,6 +567,7 @@ class Sierra extends Millennium {
 								$curTitle['author'] = 'Unknown';
 								$curTitle['format'] = 'Unknown';
 							}
+							$getBibResponse = null;
 						}
 						$recordDriver->__destruct();
 						$recordDriver = null;
@@ -1105,7 +1116,8 @@ class Sierra extends Millennium {
 	}
 
 	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
-		return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
+		//return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
+		return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 		//return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 
@@ -1901,5 +1913,54 @@ class Sierra extends Millennium {
 
 	public function supportsLoginWithUsername() : bool {
 		return true;
+	}
+
+	/**
+	 * Returns true if reset username is a separate page independent of the patron information page
+	 *
+	 * @return bool
+	 */
+	public function showResetUsernameLink(): bool {
+		return true;
+	}
+
+	public function getUsernameValidationRules(): array {
+		return [
+			'minLength' => 4,
+			'maxLength' => 75,
+			'additionalRequirements' => translate([
+				'text' => 'The username may only contain letters and numbers.',
+				'isPublicFacing' => true,
+			]),
+		];
+	}
+
+	public function updateEditableUsername(User $patron, string $username): array {
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error updating username',
+		];
+
+		$params = [];
+		$params['varFields'] = [];
+		$usernameField = new stdClass();
+		$usernameField->fieldTag = 'w';
+		$usernameField->content = $username;
+		$params['varFields'][] = $usernameField;
+
+		$sierraUrl = $this->accountProfile->vendorOpacUrl;
+		$sierraUrl = $sierraUrl . "/iii/sierra-api/v{$this->accountProfile->apiVersion}/patrons/" . $patron->unique_ils_id;
+		$updatePatronResponse = $this->_sendPage('sierra.updateEditableUsername', 'PUT', $sierraUrl, json_encode($params));
+
+		if ($this->lastResponseCode == 204) {
+			$result['success'] = true;
+			$result['message'] = 'Your account was updated successfully.';
+			$patron->ils_username = $username;
+			$patron->update();
+		} else {
+			$result['message'] = 'Unable to update patron. ' . $this->lastErrorMessage;
+		}
+
+		return $result;
 	}
 }

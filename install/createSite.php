@@ -40,8 +40,8 @@ if (count($_SERVER['argv']) > 1){
 			'solrHost' => $configArray['Site']['solrHost'],
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
-			'aspenDBHost' => $configArray['Aspen']['DBHost'],
-			'aspenDBPort' => $configArray['Aspen']['DBPort'],
+			'aspenDBHost' => $configArray['Aspen']['DBHost'] ?? 'localhost',
+			'aspenDBPort' => $configArray['Aspen']['DBPort'] ?? 3306,
 			'aspenDBName' => $configArray['Aspen']['DBName'],
 			'aspenDBUser' => $configArray['Aspen']['DBUser'],
 			'aspenDBPwd' => $configArray['Aspen']['DBPwd'],
@@ -304,7 +304,7 @@ exec("$mysqlConnectionCommand {$variables['aspenDBName']} < $installDir/install/
 
 
 //Connect to the database
-$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host=localhost",$variables['aspenDBUser'],$variables['aspenDBPwd']);
+$aspen_db = new PDO("mysql:dbname={$variables['aspenDBName']};host={$variables['aspenDBHost']}",$variables['aspenDBUser'],$variables['aspenDBPwd']);
 $updateUserStmt = $aspen_db->prepare("UPDATE user set cat_password=" . $aspen_db->quote($variables['aspenAdminPwd']) . ", password=" . $aspen_db->quote($variables['aspenAdminPwd']) . " where username = 'aspen_admin'");
 $updateUserStmt->execute();
 

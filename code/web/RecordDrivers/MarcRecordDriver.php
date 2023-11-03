@@ -1631,6 +1631,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		}
 		$interface->assign('showLastCheckIn', $showLastCheckIn);
 		$interface->assign('showFormatInHoldings', count($this->getFormats()) > 1);
+		$interface->assign('holdingsHaveUrls', $this->holdingsHaveUrls);
 		$moreDetailsOptions['copies'] = [
 			'label' => 'Copies',
 			'body' => $interface->fetch('Record/view-holdings.tpl'),
@@ -1711,6 +1712,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		//Check to see if the record has marc holdings (in 852, 853, 856, 866)
 		$marcHoldings = $this->getMarcHoldings();
 		if (count($marcHoldings) > 0) {
+			//Check to see if the copies are empty and if so remove copies section
+			if (empty($this->holdingSections) && (!$isPeriodical || empty($interface->getVariable('periodicalIssues')))){
+				unset($moreDetailsOptions['copies']);
+			}
+
 			$interface->assign('marcHoldings', $marcHoldings);
 			$moreDetailsOptions['marcHoldings'] = [
 				'label' => 'Library Holdings',
@@ -2145,6 +2151,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	private $copiesInfoLoaded = false;
 	private $holdingSections;
 	private $statusSummary;
+	private $holdingsHaveUrls = false;
 
 	private function loadCopies() {
 		if (!$this->copiesInfoLoaded) {
@@ -2190,7 +2197,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					//Divide the items into sections and create the status summary
 					$this->holdingSections = [];
 					$itemsFromMarc = [];
-					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate)) {
+					if (!empty($indexingProfile->noteSubfield) || !empty($indexingProfile->dueDate) || !empty($indexingProfile->itemUrl)) {
 						//Get items from the marc record
 						$itemFields = $this->getMarcRecord()->getFields($indexingProfile->itemTag);
 						/** @var File_MARC_Data_Field $field */
@@ -2201,6 +2208,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							}
 						}
 					}
+
 					foreach ($this->holdings as &$copyInfo) {
 						$sectionName = $copyInfo['sectionId'];
 						if (!array_key_exists($sectionName, $this->holdingSections)) {
@@ -2242,7 +2250,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 							}
 						}
 						if (!empty($indexingProfile->dueDate)) {
-							//Get the item for the
+							//Get the item for the holding
 							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
 								$itemField = $itemsFromMarc[$copyInfo['itemId']];
 								$copyInfo['dueDate'] = '';
@@ -2254,6 +2262,27 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 											$copyInfo['dueDate'] = $dueDateTime->getTimestamp();
 										} else {
 											$copyInfo['dueDate'] = strtotime($dueDateSubfield->getData());
+										}
+									}
+								}
+							}
+						}
+						if (!empty($indexingProfile->itemUrl)) {
+							//Get the item for the holding
+							if (array_key_exists($copyInfo['itemId'], $itemsFromMarc)) {
+								$itemField = $itemsFromMarc[$copyInfo['itemId']];
+								$copyInfo['itemUrl'] = '';
+								$copyInfo['itemUrlDescription'] = '';
+								if (!empty($itemField)) {
+									$itemUrlSubfield = $itemField->getSubfield($indexingProfile->itemUrl);
+									if ($itemUrlSubfield != null && !empty($itemUrlSubfield->getData())) {
+										$this->holdingsHaveUrls = true;
+										$copyInfo['itemUrl'] = $itemUrlSubfield->getData();
+										if (!empty($indexingProfile->itemUrlDescription)) {
+											$itemUrlDescriptionSubfield = $itemField->getSubfield($indexingProfile->itemUrlDescription);
+											if ($itemUrlDescriptionSubfield != null && !empty($itemUrlDescriptionSubfield->getData())) {
+												$copyInfo['itemUrlDescription'] = $itemUrlDescriptionSubfield->getData();
+											}
 										}
 									}
 								}
@@ -2521,7 +2550,11 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @return Grouping_Record|null
 	 */
 	public function getRelatedRecord() {
-		return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		if ($this->getGroupedWorkDriver()->isValid()) {
+			return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		}else{
+			return null;
+		}
 	}
 
 	public function getContinuesRecords() {
@@ -2641,7 +2674,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 				global $library;
 				$location = new Location();
-				$location->libraryId = $library->libraryId;
+				//$location->libraryId = $library->libraryId;
 				$localLocationCodes = $location->fetchAll('code', 'displayName', true);
 
 				$indexingProfile = $this->getIndexingProfile();
@@ -2668,11 +2701,20 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						$marcHolding = [];
 						$marcSubfieldB = $marc852Field->getSubfield('b');
 						if ($marcSubfieldB != false) {
-							$owningLibraryCode = strtolower($marcSubfieldB->getData());
-							if (array_key_exists($owningLibraryCode, $libraryCodeToDisplayName)) {
-								$owningLibrary = $libraryCodeToDisplayName[$owningLibraryCode];
-							} else {
-								$owningLibrary = $owningLibraryCode;
+							//handle sierra quirks of location codes where the library can be indicated with the first part of a location code
+							$owningLibraryCode = trim(strtolower($marcSubfieldB->getData()));
+							for ($i = strlen($owningLibraryCode); $i >= 2; $i--) {
+								$tmpOwningLibraryCode = substr($owningLibraryCode, 0, $i);
+								if (array_key_exists($tmpOwningLibraryCode, $libraryCodeToDisplayName)) {
+									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode];
+									break;
+								//Handle sierra quirks where the actual location code is specified with a z at the end
+								} elseif (array_key_exists($tmpOwningLibraryCode . 'z', $libraryCodeToDisplayName)) {
+									$owningLibrary = $libraryCodeToDisplayName[$tmpOwningLibraryCode . 'z'];
+									break;
+								} else if ($i == strlen($owningLibraryCode)){
+									$owningLibrary = $tmpOwningLibraryCode;
+								}
 							}
 							$marcHolding['library'] = $owningLibrary;
 						} else {
@@ -2680,7 +2722,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 						}
 						$marcSubfieldC = $marc852Field->getSubfield('c');
 						if ($marcSubfieldC != false) {
-							$shelfLocation = strtolower($marcSubfieldC->getData());
+							$shelfLocation = trim(strtolower($marcSubfieldC->getData()));
 							if (array_key_exists($shelfLocation, $shelfLocationTranslationMapValues)) {
 								$shelfLocation = $shelfLocationTranslationMapValues[$shelfLocation];
 							}

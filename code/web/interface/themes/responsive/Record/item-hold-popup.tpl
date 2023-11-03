@@ -21,10 +21,10 @@
 					{foreach from=$items item=item_data}
 						<option class="hold_item" value="{$item_data.itemNumber}">
 							{$item_data.location}
-							{if $item_data.itemType} - {$item_data.itemType} {/if}
-							{if $item_data.callNumber} - {$item_data.callNumber} {/if}
-							{if $item_data.volInfo} - {$item_data.volInfo} {/if}
-							{if $item_data.status} - {$item_data.status}{/if}
+							{if !empty($item_data.itemType)} - {$item_data.itemType} {/if}
+							{if !empty($item_data.callNumber)} - {$item_data.callNumber} {/if}
+							{if !empty($item_data.volInfo)} - {$item_data.volInfo} {/if}
+							{if !empty($item_data.status)} - {$item_data.status}{/if}
 						</option>
 					{/foreach}
 				</select>

@@ -11,11 +11,11 @@ import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import AddToList from '../Search/AddToList';
 import { navigate, navigateStack, startSearch } from '../../helpers/RootNavigator';
-import { GroupedWorkContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { GroupedWorkContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import loading from '../Auth/Loading';
 import { getGroupedWork } from '../../util/api/work';
-import { useQuery, useQueries } from '@tanstack/react-query';
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
 import Variations from './Variations';
 import { getLinkedAccounts } from '../../util/api/user';
 import { getPickupLocations } from '../../util/loadLibrary';
@@ -28,9 +28,11 @@ import Manifestation from './Manifestation';
 import { decodeHTML } from '../../util/apiAuth';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getFirstRecord, getRecords, getVariations } from '../../util/api/item';
+import { DisplaySystemMessage } from '../../components/Notifications';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
+     const queryClient = useQueryClient();
      const navigation = useNavigation();
      const id = route.params.id;
      const prevRoute = route.params.prevRoute ?? null;
@@ -38,6 +40,7 @@ export const GroupedWorkScreen = () => {
      const { groupedWork, format, language, updateGroupedWork, updateFormat } = React.useContext(GroupedWorkContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language: userLanguage } = React.useContext(LanguageContext);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
      const [isLoading, setLoading] = React.useState(false);
 
      const { status, data, error, isFetching } = useQuery(['groupedWork', id, userLanguage, library.baseUrl], () => getGroupedWork(route.params.id, userLanguage, library.baseUrl));
@@ -70,6 +73,15 @@ export const GroupedWorkScreen = () => {
           }
      }, [data]);
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+               });
+          }
+          return null;
+     };
+
      return (
           <ScrollView>
                {status === 'loading' || isFetching ? (
@@ -79,6 +91,7 @@ export const GroupedWorkScreen = () => {
                ) : (
                     <>
                          <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} />
+                         {systemMessages ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                          <DisplayGroupedWork data={data.results} initialFormat={data.format} updateFormat={data.format} />
                     </>
                )}

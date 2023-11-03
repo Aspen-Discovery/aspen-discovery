@@ -41,6 +41,12 @@
 				<strong><u>{translate text="Last Check-In" isPublicFacing=true}</u></strong>
 			</th>
 		{/if}
+
+		{if $holdingsHaveUrls}
+			<th>
+				<strong><u>{translate text="Link" isPublicFacing=true}</u></strong>
+			</th>
+		{/if}
 	</tr>
 </thead>
 {/strip}

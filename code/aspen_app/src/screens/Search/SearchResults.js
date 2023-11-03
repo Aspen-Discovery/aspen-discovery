@@ -1,25 +1,26 @@
-import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useQuery } from '@tanstack/react-query';
-import _ from 'lodash';
-import { useNavigation, useRoute, CommonActions } from '@react-navigation/native';
-import CachedImage from 'expo-cached-image';
-
-import { Badge, Box, Button, HStack, Icon, Image, Pressable, Stack, Text, VStack, FlatList, Container, Center, Heading } from 'native-base';
-
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { getAppliedFilters, getAvailableFacets, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
-import AddToList from './AddToList';
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { loadError } from '../../components/loadError';
-import { SafeAreaView, ScrollView } from 'react-native';
-import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
-import { GLOBALS } from '../../util/globals';
+import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
+
+import { Badge, Box, Button, Center, Container, FlatList, Heading, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
+import React from 'react';
+import { SafeAreaView, ScrollView } from 'react-native';
+import { loadError } from '../../components/loadError';
+import { loadingSpinner } from '../../components/loadingSpinner';
+import { DisplaySystemMessage } from '../../components/Notifications';
+
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
+import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { GLOBALS } from '../../util/globals';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { getAppliedFilters, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
+import AddToList from './AddToList';
 
 export const SearchResults = () => {
      const navigation = useNavigation();
@@ -30,6 +31,9 @@ export const SearchResults = () => {
      const { language } = React.useContext(LanguageContext);
      const { scope } = React.useContext(LibraryBranchContext);
      const url = library.baseUrl;
+
+     const queryClient = useQueryClient();
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      let term = useRoute().params.term ?? '%';
      term = term.replace(/" "/g, '%20');
@@ -150,22 +154,37 @@ export const SearchResults = () => {
           return null;
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      const NoResults = () => {
           return (
-               <Center flex={1}>
-                    <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
-                    <Text bold w="75%" textAlign="center">
-                         {route.params?.term}
-                    </Text>
-                    <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
-                         {getTermFromDictionary(language, 'new_search_button')}
-                    </Button>
-               </Center>
+               <>
+                    <Box safeArea={2}>{showSystemMessage()}</Box>
+                    <Center flex={1}>
+                         <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
+                         <Text bold w="75%" textAlign="center">
+                              {route.params?.term}
+                         </Text>
+                         <Button mt={3} onPress={() => navigation.dispatch(CommonActions.goBack())}>
+                              {getTermFromDictionary(language, 'new_search_button')}
+                         </Button>
+                    </Center>
+               </>
           );
      };
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
+               <Box safeArea={2}>{showSystemMessage()}</Box>
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
@@ -337,9 +356,73 @@ const FilterBar = () => {
 const CreateFilterButtonDefaults = () => {
      const navigation = useNavigation();
      const defaults = SEARCH.defaultFacets;
+     const { location } = React.useContext(LibraryBranchContext);
+     const { library } = React.useContext(LibrarySystemContext);
+
+     const locationGroupedWorkDisplaySettings = location.groupedWorkDisplaySettings ?? [];
+     const libraryGroupedWorkDisplaySettings = library.groupedWorkDisplaySettings ?? [];
+
+     let defaultAvailabilityToggleLabel = 'Entire Collection';
+     let defaultAvailabilityToggleValue = 'global';
+     if (locationGroupedWorkDisplaySettings.availabilityToggleValue) {
+          defaultAvailabilityToggleValue = locationGroupedWorkDisplaySettings.availabilityToggleValue;
+     } else if (libraryGroupedWorkDisplaySettings.availabilityToggleValue) {
+          defaultAvailabilityToggleValue = libraryGroupedWorkDisplaySettings.availabilityToggleValue;
+     }
+
+     if (defaultAvailabilityToggleValue === 'global') {
+          if (locationGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(locationGroupedWorkDisplaySettings.superScopeLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.superScopeLabel;
+          } else if (libraryGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.superScopeLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.superScopeLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'local') {
+          if (locationGroupedWorkDisplaySettings.localLabel || _.isEmpty(locationGroupedWorkDisplaySettings.localLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.localLabel;
+          } else if (libraryGroupedWorkDisplaySettings.localLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.localLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.localLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'available') {
+          if (locationGroupedWorkDisplaySettings.availableLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableLabel;
+          } else if (libraryGroupedWorkDisplaySettings.availableLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableLabel;
+          }
+     } else if (defaultAvailabilityToggleValue === 'available_online') {
+          if (locationGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableOnlineLabel)) {
+               defaultAvailabilityToggleLabel = locationGroupedWorkDisplaySettings.availableOnlineLabel;
+          } else if (libraryGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableOnlineLabel)) {
+               defaultAvailabilityToggleLabel = libraryGroupedWorkDisplaySettings.availableOnlineLabel;
+          }
+     }
+
      return (
           <Button.Group size="sm" space={1} vertical variant="outline">
                {defaults.map((obj, index) => {
+                    if (obj['field'] === 'availability_toggle') {
+                         const label = obj['label'] + ': ' + defaultAvailabilityToggleLabel;
+                         return (
+                              <Button
+                                   key={index}
+                                   variant="outline"
+                                   onPress={() => {
+                                        navigation.push('modal', {
+                                             screen: 'Facet',
+                                             params: {
+                                                  navigation: navigation,
+                                                  key: obj['field'],
+                                                  title: obj['label'],
+                                                  facets: SEARCH.availableFacets[obj['label']].facets,
+                                                  pendingUpdates: [],
+                                                  extra: obj,
+                                             },
+                                        });
+                                   }}>
+                                   {label}
+                              </Button>
+                         );
+                    }
+
                     return (
                          <Button
                               key={index}
@@ -373,7 +456,7 @@ const CreateFilterButton = () => {
           value: 'relevance',
      });
 
-     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 2 && _.size(sort) > 1)) {
+     if ((_.size(appliedFacets) > 0 && _.size(sort) === 0) || (_.size(appliedFacets) >= 3 && _.size(sort) > 1)) {
           return (
                <Button.Group size="sm" space={1} vertical variant="outline">
                     {_.map(appliedFacets, function (item, index, collection) {

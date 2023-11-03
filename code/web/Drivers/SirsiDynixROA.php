@@ -7,6 +7,7 @@ class SirsiDynixROA extends HorizonAPI {
 	//Caching of sessionIds by patron for performance (also stored within memcache)
 	private static $sessionIdsForUsers = [];
 	private static $logAllAPICalls = false;
+	private $lastWebServiceResponseCode;
 
 	// $customRequest is for curl, can be 'PUT', 'DELETE', 'POST'
 	public function getWebServiceResponse($requestType, $url, $params = null, $sessionToken = null, $customRequest = null, $additionalHeaders = null, $dataToSanitize = [], $workingLibraryId = null) {
@@ -73,6 +74,8 @@ class SirsiDynixROA extends HorizonAPI {
 			$logger->log(print_r($headers, true), Logger::LOG_ERROR);
 			$logger->log(print_r($json, true), Logger::LOG_ERROR);
 		}
+
+		$this->lastWebServiceResponseCode = curl_getinfo($ch)['http_code'];
 
 		$timer->logTime("Finished calling symphony $requestType API");
 		ExternalRequestLogEntry::logRequest('symphony.' . $requestType, $customRequest, $url, $headers, json_encode($params), curl_getinfo($ch)['http_code'], $json, $dataToSanitize);
@@ -507,6 +510,7 @@ class SirsiDynixROA extends HorizonAPI {
 	function selfRegister(): array {
 		$selfRegResult = [
 			'success' => false,
+			'message' => 'Unknown Error while registering your account'
 		];
 
 		$sessionToken = $this->getStaffSessionToken();
@@ -518,6 +522,14 @@ class SirsiDynixROA extends HorizonAPI {
 			// $address1DescribeResponse = $this->getWebServiceResponse('address1Describe', $webServiceURL . '/user/patron/address1/describe');
 			// $addressDescribeResponse  = $this->getWebServiceResponse('addressDescribe', $webServiceURL . '/user/patron/address/describe');
 			// $userProfileDescribeResponse  = $this->getWebServiceResponse('userProfileDescribe', $webServiceURL . '/policy/userProfile/describe');
+
+			$firstName = isset($_REQUEST['firstName']) ? trim($_REQUEST['firstName']) : '';
+			$lastName = isset($_REQUEST['firstName']) ? trim($_REQUEST['lastName']) : '';
+			$birthDate = isset($_REQUEST['firstName']) ? trim($_REQUEST['dob']) : '';
+			if ($this->isDuplicatePatron($firstName, $lastName, $birthDate)) {
+				$selfRegResult['message'] = 'We have found an existing account for you. Please contact the library to access your account.';
+				return $selfRegResult;
+			}
 
 			$createPatronInfoParameters = [
 				'fields' => [],
@@ -533,55 +545,191 @@ class SirsiDynixROA extends HorizonAPI {
 				'key' => $library->selfRegistrationUserProfile,
 			];
 
-			if (!empty($_REQUEST['firstName'])) {
-				$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['middleName'])) {
-				$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['lastName'])) {
-				$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['suffix'])) {
-				$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-			if (!empty($_REQUEST['birthDate'])) {
-				$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
-			}
-
-			// Update Address Field with new data supplied by the user
-			if (isset($_REQUEST['parentName'])) {
-				$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['parentName'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
-
-			if (isset($_REQUEST['email'])) {
-				$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
-
-			if (isset($_REQUEST['phone'])) {
-				$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
-			}
-
-			if (isset($_REQUEST['address'])) {
-				$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-			}
-
-			if ($library->cityStateField == 1) {
-				if (isset($_REQUEST['city'])) {
-					$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+			$selfRegistrationForm = null;
+			$formFields = null;
+			if ($library->selfRegistrationFormId > 0){
+				$selfRegistrationForm = new SelfRegistrationForm();
+				$selfRegistrationForm->id = $library->selfRegistrationFormId;
+				if ($selfRegistrationForm->find(true)) {
+					$formFields = $selfRegistrationForm->getFields();
+				}else {
+					$selfRegistrationForm = null;
 				}
+			}
+			//$formFields = (new SelfRegistrationFormValues)->getFormFieldsInOrder($library->selfRegistrationFormId);
 
-				if (isset($_REQUEST['state'])) {
-					$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+			if ($formFields != null) {
+				foreach ($formFields as $fieldObj){
+					$field = $fieldObj->symphonyName;
+					//General Info
+					if ($field == 'firstName' && (!empty($_REQUEST['firstName'])) ) {
+						$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'middleName' && (!empty($_REQUEST['middleName']))) {
+						$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'lastName' && (!empty($_REQUEST['lastName']))) {
+						$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'preferredName' && (!empty($_REQUEST['preferredName']))) {
+						$createPatronInfoParameters['fields']['preferredName'] = $this->getPatronFieldValue(trim($_REQUEST['preferredName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'suffix' && (!empty($_REQUEST['suffix']))) {
+						$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif ($field == 'title' && (!empty($_REQUEST['title']))) {
+						$createPatronInfoParameters['fields']['title'] = $this->getPatronFieldValue(trim($_REQUEST['title']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+					elseif (($field == 'birthDate' || $field == 'dob') && (!empty($_REQUEST['dob']))) {
+						$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['dob']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
+
+					// Update Address Field with new data supplied by the user
+
+					elseif ($field == 'care_of' && (!empty($_REQUEST['care_of']))) {
+						$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['care_of'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'careof' && (!empty($_REQUEST['careof']))) {
+						$this->setPatronUpdateField('CARE_OF', $this->getPatronFieldValue($_REQUEST['careof'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'parentname' && (!empty($_REQUEST['parentname']))) {
+						$this->setPatronUpdateField('PARENTNAME', $this->getPatronFieldValue($_REQUEST['parentname'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+
+					elseif ($field == 'email' && (!empty($_REQUEST['email']))) {
+						$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'phone' && (!empty($_REQUEST['phone']))) {
+						$this->setPatronUpdateField('PHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'homephone' && (!empty($_REQUEST['homephone']))) {
+						$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['homephone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'cellphone' && (!empty($_REQUEST['cellphone']))) {
+						$this->setPatronUpdateField('CELLPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'dayphone' && (!empty($_REQUEST['cellphone']))) {
+						$this->setPatronUpdateField('DAYPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'workphone' && (!empty($_REQUEST['workphone']))) {
+						$this->setPatronUpdateField('WORKPHONE', $_REQUEST['workphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'ext' && (!empty($_REQUEST['ext']))) {
+						$this->setPatronUpdateField('EXT', $_REQUEST['ext'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'fax' && (!empty($_REQUEST['fax']))) {
+						$this->setPatronUpdateField('FAX', $_REQUEST['fax'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'employer' && (!empty($_REQUEST['employer']))) {
+						$this->setPatronUpdateField('EMPLOYER', $_REQUEST['employer'], $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'po_box' && (!empty($_REQUEST['po_box']))) {
+						$this->setPatronUpdateField('PO_BOX', $this->getPatronFieldValue($_REQUEST['po_box'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'street' && (!empty($_REQUEST['street']))) {
+						$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['street'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'mailingaddr' && (!empty($_REQUEST['mailingaddr']))) {
+						$this->setPatronUpdateField('MAILNGADDR', $this->getPatronFieldValue($_REQUEST['mailingaddr'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'apt_suite' && (!empty($_REQUEST['apt_suite']))) {
+						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'city' && (!empty($_REQUEST['city']))) {
+						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'state' && (!empty($_REQUEST['state']))) {
+						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'city_state' && (isset($_REQUEST['city']) && isset($_REQUEST['state']))) {
+						if ($library->cityStateField == 2) {
+							$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ', ' . $_REQUEST['state'], $createPatronInfoParameters, $preferredAddress, $index);
+						} else {
+							$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $createPatronInfoParameters, $preferredAddress, $index);
+						}
+					}
+					elseif ($field == 'zip' && (!empty($_REQUEST['zip']))) {
+						$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+
+					//unsure about these
+					elseif ($field == 'location' && (!empty($_REQUEST['location']))) {
+						$this->setPatronUpdateField('LOCATION', $this->getPatronFieldValue($_REQUEST['location'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'type' && (!empty($_REQUEST['type']))) {
+						$this->setPatronUpdateField('TYPE', $this->getPatronFieldValue($_REQUEST['type'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'not_type' && (!empty($_REQUEST['not_type']))) {
+						$this->setPatronUpdateField('NOT TYPE', $this->getPatronFieldValue($_REQUEST['not_type'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'usefor' && (!empty($_REQUEST['usefor']))) {
+						$this->setPatronUpdateField('USEFOR', $this->getPatronFieldValue($_REQUEST['usefor'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'customInformation' && (!empty($_REQUEST['customInformation']))) {
+						$this->setPatronUpdateField('customInformation', $this->getPatronFieldValue($_REQUEST['customInformation'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'primaryAddress' && (!empty($_REQUEST['primaryAddress']))) {
+						$this->setPatronUpdateField('primaryAddress', $this->getPatronFieldValue($_REQUEST['primaryAddress'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'primaryPhone' && (!empty($_REQUEST['primaryPhone']))) {
+						$this->setPatronUpdateField('primaryPhone', $this->getPatronFieldValue($_REQUEST['primaryPhone'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
 				}
 			} else {
-				if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-					$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				if (!empty($_REQUEST['firstName'])) {
+					$createPatronInfoParameters['fields']['firstName'] = $this->getPatronFieldValue(trim($_REQUEST['firstName']), $library->useAllCapsWhenSubmittingSelfRegistration);
 				}
-			}
+				if (!empty($_REQUEST['middleName'])) {
+					$createPatronInfoParameters['fields']['middleName'] = $this->getPatronFieldValue(trim($_REQUEST['middleName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['lastName'])) {
+					$createPatronInfoParameters['fields']['lastName'] = $this->getPatronFieldValue(trim($_REQUEST['lastName']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['suffix'])) {
+					$createPatronInfoParameters['fields']['suffix'] = $this->getPatronFieldValue(trim($_REQUEST['suffix']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
+				if (!empty($_REQUEST['birthDate'])) {
+					$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['birthDate']), $library->useAllCapsWhenSubmittingSelfRegistration);
+				}
 
-			if (isset($_REQUEST['zip'])) {
-				$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				// Update Address Field with new data supplied by the user
+				if (isset($_REQUEST['parentName'])) {
+					$this->setPatronUpdateField('CARE/OF', $this->getPatronFieldValue($_REQUEST['parentName'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if (isset($_REQUEST['email'])) {
+					$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if (isset($_REQUEST['phone'])) {
+					$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['phone'], $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if (isset($_REQUEST['address'])) {
+					$this->setPatronUpdateField('STREET', $this->getPatronFieldValue($_REQUEST['address'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
+
+				if ($library->cityStateField == 1) {
+					if (isset($_REQUEST['city'])) {
+						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+
+					if (isset($_REQUEST['state'])) {
+						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+				} else {
+					if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
+						if ($library->cityStateField == 2) {
+							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ', ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+						} else {
+							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+						}
+					}
+				}
+
+				if (isset($_REQUEST['zip'])) {
+					$this->setPatronUpdateField('ZIP', $this->getPatronFieldValue($_REQUEST['zip'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+				}
 			}
 
 			// Update Home Location
@@ -594,6 +742,9 @@ class SirsiDynixROA extends HorizonAPI {
 						'resource' => '/policy/library',
 					];
 				}
+			} else {
+				$selfRegResult['message'] = 'Your preferred library must be provided during registration.';
+				return $selfRegResult;
 			}
 
 			//If the user is opted in to SMS messages, set up their notifications automatically.
@@ -626,55 +777,76 @@ class SirsiDynixROA extends HorizonAPI {
 				$createPatronInfoParameters['fields']['phoneList'][] = $cellPhoneInfo;
 			}
 
-			//TODO: We should be able to create either a random barcode or a barcode starting with a specific prefix and choose the length.
-			$barcode = new Variable();
-			$barcode->name = 'self_registration_card_number';
-			if ($barcode->find(true)) {
-				$createPatronInfoParameters['fields']['barcode'] = $barcode->value;
+			$foundValidBarcode = false;
+			if ($selfRegistrationForm != null){
+				$barcodePrefix = $selfRegistrationForm->selfRegistrationBarcodePrefix;
+				$barcodeSuffixLength = $selfRegistrationForm->selfRegBarcodeSuffixLength;
+
+				if (!empty($barcodeSuffixLength)){
+					$barcode = null;
+					while ($barcode == null || $this->isBarcodeInUse($barcode)) {
+						$barcode = $barcodePrefix;
+						for ($i = 0; $i < $barcodeSuffixLength; $i++) {
+							$barcode .= rand(0, 9);
+						}
+					}
+					$foundValidBarcode = true;
+				}
+			}
+			if (!$foundValidBarcode) {
+				$barcodeVariable = new Variable();
+				$barcodeVariable->name = 'self_registration_card_number';
+				if ($barcodeVariable->find(true)) {
+					$barcode = $barcodeVariable->value;
+					//If the barcode is in use, increment it by one and try again.
+					while ($this->isBarcodeInUse($barcode)) {
+						$barcode++;
+					}
+					//Now that we have a valid barcode increment the variable by one so that next time we get the next number
+					$barcodeVariable->value = $barcode + 1;
+					if (!$barcodeVariable->update()) {
+						global $logger;
+						$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
+					}
+					$foundValidBarcode = true;
+				}
+			}
+
+			if ($foundValidBarcode) {
+				$createPatronInfoParameters['fields']['barcode'] = (string)$barcode;
 
 				//global $configArray;
 				//$overrideCode = $configArray['Catalog']['selfRegOverrideCode'];
 				//$overrideHeaders = array('SD-Prompt-Return:USER_PRIVILEGE_OVRCD/' . $overrideCode);
-
 
 				$createNewPatronResponse = $this->getWebServiceResponse('selfRegister', $webServiceURL . '/user/patron/', $createPatronInfoParameters, $sessionToken, 'POST');
 
 				if (isset($createNewPatronResponse->messageList)) {
 					foreach ($createNewPatronResponse->messageList as $message) {
 						$updateErrors[] = $message->message;
-						if ($message->message == 'User already exists') {
-							// This means the barcode counter is off.
-							global $logger;
-							$logger->log('Sirsi Self Registration response was that the user already exists. Advancing the barcode counter by one.', Logger::LOG_ERROR);
-							$barcode->value++;
-							if (!$barcode->update()) {
-								$logger->log('Sirsi Self Registration barcode counter did not increment when a user already exists!', Logger::LOG_ERROR);
-							}
-						}
 					}
 					global $logger;
 					$logger->log('Symphony Driver - Patron Info Update Error - Error from ILS : ' . implode(';', $updateErrors), Logger::LOG_ERROR);
+					$selfRegResult['message'] = 'There was an error registering your account, please try again later or contact the library to register.';
 				} else {
 
 					$selfRegResult = [
 						'success' => true,
-						'barcode' => $barcode->value,
+						'barcode' => $barcode,
 						'requirePinReset' => true,
 					];
-					// Update the card number counter for the next Self-Reg user
-					$barcode->value++;
-					if (!$barcode->update()) {
-						// Log Error temp barcode number not
-						global $logger;
-						$logger->log('Sirsi Self Registration barcode counter not saving incremented value!', Logger::LOG_ERROR);
+					$newUser = $this->findNewUser($barcode, null);
+					if ($newUser != null) {
+						$selfRegResult['newUser'] = $newUser;
+						$selfRegResult['sendWelcomeMessage'] = true;
 					}
 				}
 			} else {
 				// Error: unable to set barcode number.
 				global $logger;
-				$logger->log('Sirsi Self Registration barcode counter was not found!', Logger::LOG_ERROR);
-				$selfRegResult['message'] = 'Barcode starting index was not found.';
-			};
+				$logger->log('Could not generate barcode to self register.', Logger::LOG_ERROR);
+				$selfRegResult['message'] = 'Could not generate barcode to self register. Please try again later or contact the library to register.';
+			}
 		} else {
 			// Error: unable to login in staff user
 			global $logger;
@@ -683,6 +855,41 @@ class SirsiDynixROA extends HorizonAPI {
 		return $selfRegResult;
 	}
 
+	protected function isBarcodeInUse($barcode){
+		$webServiceURL = $this->getWebServiceURL();
+		$lookupBarcodeUrl = $webServiceURL . "/user/patron/barcode/$barcode";
+		$sessionToken = $this->getStaffSessionToken();
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$lookupBarcodeResponse = $this->getWebServiceResponse('lookupBarcode', $lookupBarcodeUrl, null, $sessionToken);
+		if ($this->lastWebServiceResponseCode == 404) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
+	protected function isDuplicatePatron($firstName, $lastName, $birthDate) : bool {
+		//Get birthday in the form YYYY-MM-dd
+		$webServiceURL = $this->getWebServiceURL();
+		$lastNameSearch = trim($lastName);
+		$firstNameSearch = trim($firstName);
+		$numericalBirthDate = str_replace("-", "", $birthDate);
+		$numericalBirthDate = str_replace("/", "", $numericalBirthDate);
+		$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch,birthDate:$numericalBirthDate";
+		$sessionToken = $this->getStaffSessionToken();
+		/** @noinspection PhpUnusedLocalVariableInspection */
+		$lookupBarcodeResponse = $this->getWebServiceResponse('patronSearch', $patronSearchUrl, null, $sessionToken);
+		if (!empty($lookupBarcodeResponse) && is_object($lookupBarcodeResponse)) {
+			if ($lookupBarcodeResponse->totalResults != 0) {
+				foreach ( $lookupBarcodeResponse->result as $patron ) {
+					if ( !strcasecmp($patron->fields->firstName, $firstNameSearch ) ) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	protected function loginViaWebService($username, $password) {
 		global $memCache;
@@ -1888,7 +2095,7 @@ class SirsiDynixROA extends HorizonAPI {
 
 		if (!empty($this->accountProfile->overrideCode)) {
 			$additionalHeaders = [
-				'SD-Prompt-Return: USER_PRIVILEGE_OVRCD/' . $this->accountProfile->overrideCode
+				'SD-Prompt-Return: USER_PRIVILEGE_OVRCD/' . $this->accountProfile->overrideCode,
 			];
 		} else {
 			$additionalHeaders = [];
@@ -2135,7 +2342,11 @@ class SirsiDynixROA extends HorizonAPI {
 								}
 							} else {
 								if (isset($_REQUEST['city']) && isset($_REQUEST['state'])) {
-									$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+									if ($homeLibrary->cityStateField == 2) {
+										$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ', ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+									} else {
+										$this->setPatronUpdateFieldBySearch('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $updatePatronInfoParameters, $preferredAddress);
+									}
 									$patron->_city = $_REQUEST['city'];
 									$patron->_state = $_REQUEST['state'];
 								}
@@ -2914,13 +3125,24 @@ class SirsiDynixROA extends HorizonAPI {
 		}
 
 		global $library;
-		$fields = [];
+		$hasCustomSelfRegistrationFrom = false;
+		if (!empty($library->selfRegistrationFormId)) {
+			require_once ROOT_DIR . '/sys/SelfRegistrationForms/SelfRegistrationForm.php';
+			$selfRegistrationForm = new SelfRegistrationForm();
+			$selfRegistrationForm->id = $library->selfRegistrationFormId;
+			if ($selfRegistrationForm->find(true)) {
+				$customFields = $selfRegistrationForm->getFields();
+				if ($customFields != null && count($customFields) > 0) {
+					$hasCustomSelfRegistrationFrom = true;
+				}
+			}
+		}
 		if (count($pickupLocations) == 1) {
 			$selectedPickupLocation = '';
 			foreach ($pickupLocations as $code => $name) {
 				$selectedPickupLocation = $code;
 			}
-			$fields['pickupLocation'] = [
+			$pickupLocationField = [
 				'property' => 'pickupLocation',
 				'type' => 'hidden',
 				'label' => 'Home Library',
@@ -2929,206 +3151,307 @@ class SirsiDynixROA extends HorizonAPI {
 				'required' => true,
 			];
 		} else {
-			$fields['librarySection'] = [
-				'property' => 'librarySection',
-				'type' => 'section',
-				'label' => 'Library',
-				'hideInLists' => true,
-				'expandByDefault' => true,
-				'properties' => [
-					'pickupLocation' => [
-						'property' => 'pickupLocation',
-						'type' => 'enum',
-						'label' => 'Home Library',
-						'description' => 'Please choose the Library location you would prefer to use',
-						'values' => $pickupLocations,
-						'required' => true,
-					],
-				],
+			$pickupLocationField = [
+				'property' => 'pickupLocation',
+				'type' => 'enum',
+				'label' => 'Home Library',
+				'description' => 'Please choose the Library location you would prefer to use',
+				'values' => $pickupLocations,
+				'required' => true,
 			];
 		}
 
-		$fields['identitySection'] = [
-			'property' => 'identitySection',
-			'type' => 'section',
-			'label' => 'Identity',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [],
-		];
-		if ($library->promptForParentInSelfReg) {
-			$fields['identitySection']['properties'][] = [
-				'property' => 'cardType',
-				'type' => 'enum',
-				'values' => [
-					'adult' => 'Adult (18 and Over)',
-					'minor' => 'Minor (Under 18)',
-				],
-				'label' => 'Type of Card',
-				'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+		$fields = [];
+		if (!$hasCustomSelfRegistrationFrom) {
+			if (count($pickupLocations) == 1) {
+				$fields['pickupLocation'] = $pickupLocationField;
+			} else {
+				$fields['librarySection'] = [
+					'property' => 'librarySection',
+					'type' => 'section',
+					'label' => 'Library',
+					'hideInLists' => true,
+					'expandByDefault' => true,
+					'properties' => [
+						'pickupLocation' => $pickupLocationField,
+					],
+				];
+			}
+
+			$fields['identitySection'] = [
+				'property' => 'identitySection',
+				'type' => 'section',
+				'label' => 'Identity',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
 			];
-		}
-		$fields['identitySection']['properties'][] = [
-			'property' => 'firstName',
-			'type' => 'text',
-			'label' => 'First Name',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		$fields['identitySection']['properties'][] = [
-			'property' => 'middleName',
-			'type' => 'text',
-			'label' => 'Middle Name',
-			'maxLength' => 255,
-			'required' => false,
-			'autocomplete' => false,
-		];
-		$fields['identitySection']['properties'][] = [
-			'property' => 'lastName',
-			'type' => 'text',
-			'label' => 'Last Name',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		if ($library->promptForParentInSelfReg) {
+			if ($library->promptForParentInSelfReg) {
+				$fields['identitySection']['properties'][] = [
+					'property' => 'cardType',
+					'type' => 'enum',
+					'values' => [
+						'adult' => 'Adult (18 and Over)',
+						'minor' => 'Minor (Under 18)',
+					],
+					'label' => 'Type of Card',
+					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+				];
+			}
 			$fields['identitySection']['properties'][] = [
-				'property' => 'parentName',
+				'property' => 'firstName',
 				'type' => 'text',
-				'label' => 'Parent/Guardian Name',
+				'label' => 'First Name',
 				'maxLength' => 255,
-				'required' => false,
-				'hiddenByDefault' => true,
+				'required' => true,
 				'autocomplete' => false,
 			];
-		}
-		if ($library && $library->promptForBirthDateInSelfReg) {
-			$birthDateMin = date('Y-m-d', strtotime('-113 years'));
-			$birthDateMax = date('Y-m-d', strtotime('-13 years'));
 			$fields['identitySection']['properties'][] = [
-				'property' => 'birthDate',
-				'type' => 'date',
-				'label' => 'Date of Birth (MM/DD/YYYY)',
-				'min' => $birthDateMin,
-				'max' => $birthDateMax,
+				'property' => 'middleName',
+				'type' => 'text',
+				'label' => 'Middle Name',
+				'maxLength' => 255,
+				'required' => false,
+				'autocomplete' => false,
+			];
+			$fields['identitySection']['properties'][] = [
+				'property' => 'lastName',
+				'type' => 'text',
+				'label' => 'Last Name',
+				'maxLength' => 255,
+				'required' => true,
+				'autocomplete' => false,
+			];
+			if ($library->promptForParentInSelfReg) {
+				$fields['identitySection']['properties'][] = [
+					'property' => 'parentName',
+					'type' => 'text',
+					'label' => 'Parent/Guardian Name',
+					'maxLength' => 255,
+					'required' => false,
+					'hiddenByDefault' => true,
+					'autocomplete' => false,
+				];
+			}
+			if ($library && $library->promptForBirthDateInSelfReg) {
+				$birthDateMin = date('Y-m-d', strtotime('-113 years'));
+				$birthDateMax = date('Y-m-d', strtotime('-13 years'));
+				$fields['identitySection']['properties'][] = [
+					'property' => 'birthDate',
+					'type' => 'date',
+					'label' => 'Date of Birth (MM/DD/YYYY)',
+					'min' => $birthDateMin,
+					'max' => $birthDateMax,
+					'maxLength' => 10,
+					'required' => true,
+					'autocomplete' => false,
+				];
+			}
+
+			$fields['mainAddressSection'] = [
+				'property' => 'mainAddressSection',
+				'type' => 'section',
+				'label' => 'Main Address',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['mainAddressSection']['properties'][] = [
+				'property' => 'address',
+				'type' => 'text',
+				'label' => 'Mailing Address',
+				'maxLength' => 255,
+				'required' => true,
+				'autocomplete' => false,
+			];
+			$fields['mainAddressSection']['properties'][] = [
+				'property' => 'city',
+				'type' => 'text',
+				'label' => 'City',
+				'maxLength' => 255,
+				'required' => true,
+				'autocomplete' => false,
+			];
+			if (empty($library->validSelfRegistrationStates)) {
+				$fields['mainAddressSection']['properties'][] = [
+					'property' => 'state',
+					'type' => 'text',
+					'label' => 'State',
+					'maxLength' => 2,
+					'required' => true,
+					'autocomplete' => false,
+				];
+			} else {
+				$validStates = explode('|', $library->validSelfRegistrationStates);
+				$validStates = array_combine($validStates, $validStates);
+				$fields['mainAddressSection']['properties'][] = [
+					'property' => 'state',
+					'type' => 'enum',
+					'values' => $validStates,
+					'label' => 'State',
+					'description' => 'State',
+					'maxLength' => 32,
+					'required' => true,
+				];
+			}
+			$fields['mainAddressSection']['properties']['zip'] = [
+				'property' => 'zip',
+				'type' => 'text',
+				'label' => 'Zip Code',
 				'maxLength' => 10,
 				'required' => true,
 				'autocomplete' => false,
 			];
-		}
+			if (!empty($library->validSelfRegistrationZipCodes)) {
+				$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
+				$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate([
+					'text' => 'Please enter a valid zip code',
+					'isPublicFacing' => true,
+				]);
+			}
 
-		$fields['mainAddressSection'] = [
-			'property' => 'mainAddressSection',
-			'type' => 'section',
-			'label' => 'Main Address',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [],
-		];
-		$fields['mainAddressSection']['properties'][] = [
-			'property' => 'address',
-			'type' => 'text',
-			'label' => 'Mailing Address',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		$fields['mainAddressSection']['properties'][] = [
-			'property' => 'city',
-			'type' => 'text',
-			'label' => 'City',
-			'maxLength' => 255,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		if (empty($library->validSelfRegistrationStates)) {
-			$fields['mainAddressSection']['properties'][] = [
-				'property' => 'state',
+			$fields['contactInformationSection'] = [
+				'property' => 'contactInformationSection',
+				'type' => 'section',
+				'label' => 'Contact Information',
+				'hideInLists' => true,
+				'expandByDefault' => true,
+				'properties' => [],
+			];
+			$fields['contactInformationSection']['properties'][] = [
+				'property' => 'phone',
 				'type' => 'text',
-				'label' => 'State',
-				'maxLength' => 2,
-				'required' => true,
+				'label' => 'Primary Phone',
+				'maxLength' => 15,
+				'required' => $library->selfRegRequirePhone,
+				'autocomplete' => false,
+			];
+			if ($library->promptForSMSNoticesInSelfReg) {
+				$fields['contactInformationSection']['properties'][] = [
+					'property' => 'smsNotices',
+					'type' => 'checkbox',
+					'label' => 'Receive notices via text',
+					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+				];
+				$fields['contactInformationSection']['properties'][] = [
+					'property' => 'cellPhone',
+					'type' => 'text',
+					'label' => 'Cell Phone',
+					'maxLength' => 15,
+					'required' => false,
+					'hiddenByDefault' => true,
+					'autocomplete' => false,
+				];
+			}
+			$fields['contactInformationSection']['properties'][] = [
+				'property' => 'email',
+				'type' => 'email',
+				'label' => 'Email',
+				'maxLength' => 128,
+				'required' => $library->selfRegRequireEmail,
+				'autocomplete' => false,
+			];
+			$fields['contactInformationSection']['properties'][] = [
+				'property' => 'email2',
+				'type' => 'email',
+				'label' => 'Confirm Email',
+				'maxLength' => 128,
+				'required' => $library->selfRegRequireEmail,
 				'autocomplete' => false,
 			];
 		} else {
-			$validStates = explode('|', $library->validSelfRegistrationStates);
-			$validStates = array_combine($validStates, $validStates);
-			$fields['mainAddressSection']['properties'][] = [
-				'property' => 'state',
-				'type' => 'enum',
-				'values' => $validStates,
-				'label' => 'State',
-				'description' => 'State',
-				'maxLength' => 32,
-				'required' => true,
-			];
+			//Use self registration fields
+			/** @var SelfRegistrationFormValues $customField */
+			foreach ($customFields as $customField) {
+				if ($customField->symphonyName == 'library') {
+					$fields[$customField->symphonyName] = $pickupLocationField;
+				} elseif ($customField->symphonyName == 'cellphone' && $library->promptForSMSNoticesInSelfReg) {
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+					$fields['SMS Notices'] = [
+						'property' => 'smsNotices',
+						'type' => 'checkbox',
+						'label' => 'Receive notices via text',
+					];
+				} elseif ($customField->symphonyName == 'city_state') {
+					$fields['City'] = [
+						'property' => 'city',
+						'type' => $customField->fieldType,
+						'label' => 'City',
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+					if (!empty($library->validSelfRegistrationStates)){
+						$validStates = explode('|', $library->validSelfRegistrationStates);
+						$validStates = array_combine($validStates, $validStates);
+						$fields['State'] = [
+							'property' => 'state',
+							'type' => 'enum',
+							'values' => $validStates,
+							'label' => 'State',
+							'required' => $customField->required,
+							'note' => $customField->note,
+						];
+					} else {
+						$fields['State'] = [
+							'property' => 'state',
+							'type' => $customField->fieldType,
+							'label' => 'State',
+							'required' => $customField->required,
+							'note' => $customField->note
+						];
+					}
+				} elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note,
+						'validationPattern' => $library->validSelfRegistrationZipCodes,
+						'validationMessage' => translate([
+							'text' => 'Please enter a valid zip code',
+							'isPublicFacing' => true,
+						]),
+					];
+				} elseif ($customField->symphonyName == 'state') {
+					if (!empty($library->validSelfRegistrationStates)){
+						$validStates = explode('|', $library->validSelfRegistrationStates);
+						$validStates = array_combine($validStates, $validStates);
+						$fields[$customField->symphonyName] = [
+							'property' => $customField->symphonyName,
+							'type' => 'enum',
+							'values' => $validStates,
+							'label' => $customField->displayName,
+							'required' => $customField->required,
+							'note' => $customField->note,
+						];
+					} else {
+						$fields[$customField->symphonyName] = [
+							'property' => $customField->symphonyName,
+							'type' => $customField->fieldType,
+							'label' => $customField->displayName,
+							'required' => $customField->required,
+							'note' => $customField->note,
+							'maxLength' => 2,
+						];
+					}
+				} else {
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note
+					];
+				}
+			}
 		}
-		$fields['mainAddressSection']['properties']['zip'] = [
-			'property' => 'zip',
-			'type' => 'text',
-			'label' => 'Zip Code',
-			'maxLength' => 10,
-			'required' => true,
-			'autocomplete' => false,
-		];
-		if (!empty($library->validSelfRegistrationZipCodes)) {
-			$fields['mainAddressSection']['properties']['zip']['validationPattern'] = $library->validSelfRegistrationZipCodes;
-			$fields['mainAddressSection']['properties']['zip']['validationMessage'] = translate([
-				'text' => 'Please enter a valid zip code',
-				'isPublicFacing' => true,
-			]);
-		}
-
-		$fields['contactInformationSection'] = [
-			'property' => 'contactInformationSection',
-			'type' => 'section',
-			'label' => 'Contact Information',
-			'hideInLists' => true,
-			'expandByDefault' => true,
-			'properties' => [],
-		];
-		$fields['contactInformationSection']['properties'][] = [
-			'property' => 'phone',
-			'type' => 'text',
-			'label' => 'Primary Phone',
-			'maxLength' => 15,
-			'required' => $library->selfRegRequirePhone,
-			'autocomplete' => false,
-		];
-		if ($library->promptForSMSNoticesInSelfReg) {
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'smsNotices',
-				'type' => 'checkbox',
-				'label' => 'Receive notices via text',
-				'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
-			];
-			$fields['contactInformationSection']['properties'][] = [
-				'property' => 'cellPhone',
-				'type' => 'text',
-				'label' => 'Cell Phone',
-				'maxLength' => 15,
-				'required' => false,
-				'hiddenByDefault' => true,
-				'autocomplete' => false,
-			];
-		}
-		$fields['contactInformationSection']['properties'][] = [
-			'property' => 'email',
-			'type' => 'email',
-			'label' => 'Email',
-			'maxLength' => 128,
-			'required' => $library->selfRegRequireEmail,
-			'autocomplete' => false,
-		];
-		$fields['contactInformationSection']['properties'][] = [
-			'property' => 'email2',
-			'type' => 'email',
-			'label' => 'Confirm Email',
-			'maxLength' => 128,
-			'required' => $library->selfRegRequireEmail,
-			'autocomplete' => false,
-		];
 		return $fields;
 	}
 

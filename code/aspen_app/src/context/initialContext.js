@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import _ from 'lodash';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
 import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
 import { getTermFromDictionary } from '../translations/TranslationService';
@@ -95,6 +94,11 @@ export const LanguageContext = React.createContext({
      updateLanguages: () => {},
      updateDictionary: () => {},
      resetLanguage: () => {},
+});
+export const SystemMessagesContext = React.createContext({
+     updateSystemMessages: () => {},
+     systemMessages: [],
+     resetSystemMessages: () => {},
 });
 
 export const ThemeProvider = ({ children }) => {
@@ -621,5 +625,30 @@ export const LanguageProvider = ({ children }) => {
                }}>
                {children}
           </LanguageContext.Provider>
+     );
+};
+
+export const SystemMessagesProvider = ({ children }) => {
+     const [systemMessages, setSystemMessages] = useState();
+
+     const updateSystemMessages = (data) => {
+          setSystemMessages(data);
+          console.log('updated SystemMessagesContext');
+     };
+
+     const resetSystemMessages = () => {
+          setSystemMessages({});
+          console.log('reset SystemMessagesContext');
+     };
+
+     return (
+          <SystemMessagesContext.Provider
+               value={{
+                    systemMessages,
+                    updateSystemMessages,
+                    resetSystemMessages,
+               }}>
+               {children}
+          </SystemMessagesContext.Provider>
      );
 };

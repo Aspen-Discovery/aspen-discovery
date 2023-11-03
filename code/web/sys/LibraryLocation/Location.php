@@ -2054,6 +2054,9 @@ class Location extends DataObject {
 
 	public static function getOpenHoursMessage($hours): string {
 		$formattedMessage = '';
+		if (empty($hours)) {
+			return $formattedMessage;
+		}
 		for ($i = 0; $i < sizeof($hours); $i++) {
 			if (strlen($formattedMessage) != 0 && (sizeof($hours) > 2)) {
 				$formattedMessage .= ', ';
@@ -2280,7 +2283,7 @@ class Location extends DataObject {
 	protected $_parentLibrary = null;
 
 	/** @return Library */
-	public function getParentLibrary(): Library {
+	public function getParentLibrary(): ?Library {
 		if ($this->_parentLibrary == null) {
 			$this->_parentLibrary = new Library();
 			$this->_parentLibrary->libraryId = $this->libraryId;
@@ -2498,6 +2501,24 @@ class Location extends DataObject {
 				'notes' => $hour->notes,
 			];
 		}
+
+		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+		$localLabel = str_ireplace('{display name}', $this->displayName, $localLabel);
+		$availableLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+		$availableLabel = str_ireplace('{display name}', $this->displayName, $availableLabel);
+		$availableOnlineLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+		$availableOnlineLabel = str_ireplace('{display name}', $this->displayName, $availableOnlineLabel);
+		$availabilityToggleValue = $this->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		$facetCountsToShow = $this->getGroupedWorkDisplaySettings()->facetCountsToShow;
+
+		$apiInfo['groupedWorkDisplaySettings']['superScopeLabel'] = $superScopeLabel;
+		$apiInfo['groupedWorkDisplaySettings']['localLabel'] = $localLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableLabel'] = $availableLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableOnlineLabel'] = $availableOnlineLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
+		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
+
 		return $apiInfo;
 	}
 }

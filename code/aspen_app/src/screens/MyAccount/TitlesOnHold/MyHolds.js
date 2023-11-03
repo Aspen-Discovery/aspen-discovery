@@ -1,19 +1,18 @@
-import { ScrollView, Box, Button, Center, Text, HStack, Checkbox, Select, FormControl, CheckIcon, Heading } from 'native-base';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { Platform, SafeAreaView, SectionList } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
+import { Box, Button, Center, Checkbox, CheckIcon, FormControl, Heading, HStack, ScrollView, Select, Text } from 'native-base';
+import React from 'react';
+import { Platform, SafeAreaView, SectionList } from 'react-native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
+import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { getPatronHolds } from '../../../util/api/user';
 import { getPickupLocations } from '../../../util/loadLibrary';
-import { getPatronHolds, refreshProfile, reloadProfile } from '../../../util/api/user';
-import { MyHold, ManageAllHolds, ManageSelectedHolds } from './MyHold';
-import { DisplayMessage } from '../../../components/Notifications';
-import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
+import { ManageAllHolds, ManageSelectedHolds, MyHold } from './MyHold';
 
 export const MyHolds = () => {
      const isFetchingHolds = useIsFetching({ queryKey: ['holds'] });
@@ -28,6 +27,7 @@ export const MyHolds = () => {
      const [values, setGroupValues] = React.useState([]);
      const [date, setNewDate] = React.useState();
      const [pickupLocations, setPickupLocations] = React.useState([]);
+     const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
 
      const [sortBy, setSortBy] = React.useState({
           title: 'Sort by Title',
@@ -64,7 +64,7 @@ export const MyHolds = () => {
      const togglePendingSort = async (value) => {
           updatePendingSortMethod(value);
           const sortedHolds = sortHolds(holds, value, readySortMethod);
-          console.log(sortedHolds[1]);
+          //console.log(sortedHolds[1]);
           queryClient.setQueryData(['holds', library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], sortedHolds);
           updateHolds(sortedHolds);
      };
@@ -84,6 +84,7 @@ export const MyHolds = () => {
                } else {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
+               queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, value] });
           }
      };
 
@@ -334,6 +335,7 @@ export const MyHolds = () => {
                     }}
                     borderColor="coolGray.200"
                     flexWrap="nowrap">
+                    {showSystemMessage()}
                     <ScrollView horizontal>
                          <HStack space={2}>
                               <Button
@@ -396,7 +398,7 @@ export const MyHolds = () => {
                if (_.isEmpty(sectionData.data)) {
                     return noHolds(title);
                } else {
-                    return <Box pb={30} />;
+                    return <Box mb="300px"></Box>;
                }
           } else if (title === 'Ready') {
                if (_.isEmpty(sectionData.data)) {
@@ -406,10 +408,21 @@ export const MyHolds = () => {
           return null;
      };
 
+     const showSystemMessage = () => {
+          if (_.isArray(systemMessages)) {
+               return systemMessages.map((obj, index, collection) => {
+                    if (obj.showOn === '0' || obj.showOn === '1' || obj.showOn === '3') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
+               });
+          }
+          return null;
+     };
+
      return (
           <SafeAreaView>
                {actionButtons('none')}
-               <Box style={{ paddingBottom: 100 }}>
+               <Box>
                     <Checkbox.Group
                          style={{
                               maxWidth: '100%',
@@ -419,6 +432,7 @@ export const MyHolds = () => {
                               },
                               padding: 0,
                               margin: 0,
+                              paddingBottom: _.size(systemMessages) >= 2 ? 300 : 30,
                          }}
                          name="Holds"
                          value={values}
@@ -467,7 +481,7 @@ function sortHolds(holds, pendingSort, readySort) {
                     holdsNotReady = _.orderBy(
                          holdsNotReady,
                          function (obj) {
-                              return new Number(obj.position);
+                              return Number(obj.position);
                          },
                          ['desc']
                     );

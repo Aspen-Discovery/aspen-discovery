@@ -334,7 +334,7 @@ class Polaris extends AbstractIlsDriver {
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->RenewData = new stdClass();
-		$body->RenewData->IgnoreOverrideErrors = false;
+		$body->RenewData->IgnoreOverrideErrors = $_REQUEST['confirmedRenewal'] ?? false;
 
 		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		ExternalRequestLogEntry::logRequest('polaris.renewCheckout', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
@@ -392,6 +392,47 @@ class Polaris extends AbstractIlsDriver {
 
 					return $result;
 				}
+			} else if ($jsonResponse->PAPIErrorCode == -2) {
+				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				$message = '';
+				foreach ($itemRenewResult->BlockRows as $blockRow) {
+					$message .= $blockRow->ErrorDesc;
+
+					$confirmRenewalFee = false;
+					// Item renewal block
+					if($blockRow->PAPIErrorType == 2) {
+						// Confirm charge for renewing item
+						if (strpos($blockRow->ErrorDesc, 'Your account will be charged') !== false) {
+							$confirmRenewalFee = true;
+						}
+					}
+
+					if (strlen($message) == 0) {
+						$message .= 'This item could not be renewed.';
+					}
+
+					$result['itemId'] = $itemId;
+					$result['success'] = false;
+					$result['message'] = $message;
+					$result['confirmRenewalFee'] = $confirmRenewalFee;
+
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Unable to renew title',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => $message,
+						'isPublicFacing' => true,
+					]);
+					$result['api']['confirmRenewalFee'] = translate([
+						'text' => $confirmRenewalFee,
+						'isPublicFacing' => true,
+					]);
+
+					return $result;
+
+				}
 			} else {
 				$message = "The item could not be renewed. {$jsonResponse->ErrorMessage}";
 
@@ -434,6 +475,7 @@ class Polaris extends AbstractIlsDriver {
 
 	public function getHolds($patron): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
+		global $library;
 		$availableHolds = [];
 		$unavailableHolds = [];
 		$holds = [
@@ -541,6 +583,13 @@ class Polaris extends AbstractIlsDriver {
 
 				$curHold->available = $isAvailable;
 				if ($curHold->available) {
+					if (!$library->allowChangingPickupLocationForAvailableHolds) {
+						$curHold->locationUpdateable = false;
+					}
+					if (!$library->allowCancellingAvailableHolds) {
+						$curHold->cancelable = false;
+					}
+
 					$holds['available'][] = $curHold;
 				} else {
 					$holds['unavailable'][] = $curHold;

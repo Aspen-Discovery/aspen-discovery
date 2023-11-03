@@ -33,6 +33,7 @@
 					{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 					<form action="" method="post" class="form-horizontal" id="contactUpdateForm">
 						<input type="hidden" name="updateScope" value="contact">
+						<input type="hidden" name="patronId" value={$profile->id|escape}>
 						<div class="form-group">
 							<div class="col-xs-4"><strong>{translate text='Full Name' isPublicFacing=true}</strong></div>
 							<div class="col-xs-8">{$profile->_fullname|escape}</div>

@@ -17,7 +17,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"owning_library" => "Library System",
 			"owning_location" => "Branch",
 			"available_at" => "Available At",
-			"availability_toggle" => "Available?",
+			"availability_toggle" => "Search Within",
 			"collection_group" => "Collection",
 			"rating_facet" => "Rating",
 			"publishDate" => "Publication Year",

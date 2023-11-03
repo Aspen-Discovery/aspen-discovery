@@ -29,6 +29,11 @@ AspenDiscovery.Account = (function () {
 			if (searchableControl) {
 				isSearchable = searchableControl.prop("checked");
 			}
+			var isDisplayListAuthor = false;
+			var displayListAuthorControl = $("#displayListAuthor");
+			if (displayListAuthorControl) {
+				isDisplayListAuthor = displayListAuthorControl.prop("checked");
+			}
 			var titleInput = form.find("input[name=title]");
 			var title;
 			if (titleInput.length > 0){
@@ -44,6 +49,7 @@ AspenDiscovery.Account = (function () {
 				title: title,
 				public: isPublic,
 				searchable: isSearchable,
+				displayListAuthor: isDisplayListAuthor,
 				desc: desc,
 				source: source,
 				sourceId: sourceId
@@ -683,11 +689,34 @@ AspenDiscovery.Account = (function () {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator=" + renewIndicator, function (data) {
-					AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					if(data.modalButtons) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					}
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
 				this.ajaxLogin(null, function () {
 					this.renewTitle(renewIndicator);
+				}, false)
+			}
+			return false;
+		},
+
+		confirmRenewalFee: function (patronId, recordId, renewIndicator) {
+			if (Globals.loggedIn) {
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewCheckout&patronId=" + patronId + "&recordId=" + recordId + "&renewIndicator=" + renewIndicator + "&confirmedRenewal=true", function (data) {
+					if(data.modalButtons) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					}
+				}).fail(AspenDiscovery.ajaxFail)
+			} else {
+				this.ajaxLogin(null, function () {
+					this.confirmRenewTitle(renewIndicator);
 				}, false)
 			}
 			return false;
@@ -1000,11 +1029,11 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		confirmFreezeHoldSelected: function (patronId, recordId, holdId) {
+		confirmFreezeHoldSelected: function (patronId, recordId, holdId, promptForReactivationDate) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldSelected&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldSelected&patronId=" + patronId + "&recordId=" + recordId + "&holdId=" + holdId + "&reactivationDate=" + promptForReactivationDate, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
@@ -1036,11 +1065,28 @@ AspenDiscovery.Account = (function () {
 			return false
 		},
 
-		confirmFreezeHoldAll: function (userId) {
+		doFreezeSelectedWithReactivationDate: function (patronId, recordId, holdId) {
+			var reactivationDate = $("#reactivationDate").val();
+			var selectedTitles = AspenDiscovery.getSelectedTitles();
+			if (selectedTitles) {
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldSelectedItems&" + selectedTitles + "&reactivationDate=" + reactivationDate, function (data) {
+					if (data.success) {
+						AspenDiscovery.Account.reloadHolds();
+						AspenDiscovery.showMessage(data.title, data.message, true, false);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.message);
+					}
+				}).fail(AspenDiscovery.ajaxFail);
+			}
+		},
+
+		confirmFreezeHoldAll: function (userId, promptForReactivationDate) {
 			if (Globals.loggedIn) {
 				AspenDiscovery.loadingMessage();
 				// noinspection JSUnresolvedFunction
-				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldAll&patronId=" + userId, function (data) {
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=confirmFreezeHoldAll&patronId=" + userId + "&reactivationDate=" + promptForReactivationDate, function (data) {
 					AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons); // automatically close when successful
 				}).fail(AspenDiscovery.ajaxFail);
 			} else {
@@ -1067,6 +1113,20 @@ AspenDiscovery.Account = (function () {
 				//auto close so that if user opts out of freezing, the login window closes; if the users continues, follow-up operations will reopen modal
 			}
 			return false;
+		},
+
+		doFreezeAllWithReactivationDate: function (userId) {
+			var reactivationDate = $("#reactivationDate").val();
+			AspenDiscovery.loadingMessage();
+			// noinspection JSUnresolvedFunction
+			$.getJSON(Globals.path + "/MyAccount/AJAX?method=freezeHoldAll&patronId=" + userId + "&reactivationDate=" + reactivationDate, function (data) {
+				if (data.success) {
+					AspenDiscovery.Account.reloadHolds();
+					AspenDiscovery.showMessage(data.title, data.message, true, false);
+				} else {
+					AspenDiscovery.showMessage(data.title, data.message);
+				}
+			}).fail(AspenDiscovery.ajaxFail);
 		},
 
 		confirmThawHoldSelected: function (patronId, recordId, holdId) {
@@ -1526,7 +1586,7 @@ AspenDiscovery.Account = (function () {
 			return this.createGenericOrder(finesFormId, 'ACI', transactionType, token)
 		},
 
-		completeACIOrder: function (fundingToken, patronId, transactionType, paymentId, accessToken) {
+		completeACIOrder: function (fundingToken, patronId, transactionType, paymentId, accessToken, billerAccountId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completeACIOrder",
@@ -1534,7 +1594,8 @@ AspenDiscovery.Account = (function () {
 				paymentId: paymentId,
 				accessToken: accessToken,
 				fundingToken: fundingToken,
-				type: transactionType
+				type: transactionType,
+				billerAccountId: billerAccountId
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {

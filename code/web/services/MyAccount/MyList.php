@@ -90,8 +90,10 @@ class MyAccount_MyList extends MyAccount {
 					$list->public = isset($_REQUEST['public']) && ($_REQUEST['public'] == 'true' || $_REQUEST['public'] == 'on');
 					if (!$list->public) {
 						$list->searchable = false;
+						$list->displayListAuthor = false;
 					} else {
 						$list->searchable = isset($_REQUEST['searchable']) && ($_REQUEST['searchable'] == 'true' || $_REQUEST['searchable'] == 'on');
+						$list->displayListAuthor = isset($_REQUEST['displayListAuthor']) && ($_REQUEST['displayListAuthor'] == 'true' || $_REQUEST['displayListAuthor'] == 'on');
 					}
 					$this->reloadCover();
 					$list->update();

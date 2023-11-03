@@ -172,7 +172,9 @@ class Grouping_Record {
 			if ($item->isOrderItem) {
 				$this->addOnOrderCopies($item->numCopies);
 			} else {
-				$this->addCopies($item->numCopies);
+				if (!$item->isVirtual) {
+					$this->addCopies($item->numCopies);
+				}
 			}
 
 			$searchLocation = Location::getSearchLocation();
@@ -466,6 +468,20 @@ class Grouping_Record {
 
 	public function sortItemSummary($variationId): void {
 		ksort($this->_itemSummary[$variationId]);
+	}
+
+	/**
+	 * @return Grouping_Item
+	 */
+	public function getItemById($itemId = ''): ?Grouping_Item {
+		if ($this->_items != null) {
+			foreach ($this->_items as $item) {
+				if ($item->itemId == $itemId) {
+					return $item;
+				}
+			}
+		}
+		return null;
 	}
 
 	/**

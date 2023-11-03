@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
 import _ from 'lodash';
 import React from 'react';
-import { createAuthTokens, getHeaders } from '../apiAuth';
+import { createAuthTokens, getHeaders, postData } from '../apiAuth';
 import { GLOBALS } from '../globals';
 import { LIBRARY } from '../loadLibrary';
 
@@ -90,6 +90,73 @@ export async function getLibraryLanguages(url = null) {
                return _.sortBy(response.data.result.languages, 'id');
           }
           return languages;
+     } else {
+          console.log(response);
+     }
+     return [];
+}
+
+/**
+ * Return array of pre-validated system messages
+ * @param {int|null} libraryId
+ * @param {int|null} locationId
+ * @param {string} url
+ **/
+export async function getSystemMessages(libraryId = null, locationId = null, url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               libraryId,
+               locationId,
+          },
+     });
+     const response = await api.post('/SystemAPI?method=getSystemMessages', postBody);
+     if (response.ok) {
+          let messages = [];
+          if (response?.data?.result) {
+               /*
+                0 => 'All Pages',
+                1 => 'All Account Pages',
+                2 => 'Checkouts Page',
+                3 => 'Holds Page',
+                4 => 'Fines Page',
+                5 => 'Contact Information Page'
+               */
+               console.log('System messages fetched and stored');
+               return _.castArray(response.data.result.systemMessages);
+          }
+          return messages;
+     } else {
+          console.log(response);
+     }
+     return [];
+}
+
+/**
+ * Dismiss given system message from displaying again
+ * @param {int} systemMessageId
+ * @param {string} url
+ **/
+export async function dismissSystemMessage(systemMessageId, url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               systemMessageId,
+          },
+     });
+     const response = await api.post('/SystemAPI?method=dismissSystemMessage', postBody);
+     if (response.ok) {
+          if (response?.data?.result) {
+               return response.data.result;
+          }
      } else {
           console.log(response);
      }

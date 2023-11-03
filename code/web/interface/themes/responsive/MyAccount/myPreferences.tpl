@@ -30,6 +30,7 @@
 				{* Empty action attribute uses the page loaded. this keeps the selected user patronId in the parameters passed back to server *}
 				<form action="" method="post" role="form">
 					<input type="hidden" name="updateScope" value="userPreference">
+					<input type="hidden" name="patronId" value={$profile->id|escape}>
 					{if !empty($showUsernameField)}
 						<div class="form-group propertyRow">
 							<label for="username">{translate text="Username" isPublicFacing=true}</label>
@@ -191,6 +192,23 @@
 							{else}
 								{if $profile->autoRenewalEnabled==0}{translate text="No" isPublicFacing=true}{else}{translate text="Yes" isPublicFacing=true}{/if}
 							{/if}
+						</div>
+					{/if}
+
+					{if !empty($loggedIn) && $profile->userCookiePreferenceEssential == 1 && !empty($cookieConsentEnabled)}
+						<div class="form-group #propertyRow">
+						<strong class="control-label">{translate text="Cookies to allow" isPublicFacing=true}:</strong>&nbsp;
+						<div style='padding:0.5em 1em;'>
+							<div class="form-group propertyRow">
+								<label for='userCookieEssential' class="control-label">{translate text="Essential" isPublicFacing=true}</label>&nbsp;
+								<input disabled="disabled" type="checkbox" class="form-control" name="userCookieEssential" id="userCookieEssential" {if $profile->userCookiePreferenceEssential==1}checked='checked'{/if} data-switch="">
+
+							</div>
+							<div class="form-group propertyRow">
+								<label for='userCookieAnalytics' class="control-label">{translate text="Analytics" isPublicFacing=true}</label>&nbsp;
+								<input type="checkbox" class="form-control" name="userCookieAnalytics" id="userCookieAnalytics" {if $profile->userCookiePreferenceAnalytics==1}checked='checked'{/if} data-switch="">
+
+							</div>
 						</div>
 					{/if}
 

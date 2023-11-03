@@ -1,24 +1,24 @@
-import { Center, HStack, VStack, Badge, Icon, Button, Box, Text, AlertDialog, FlatList, CheckIcon, Select } from 'native-base';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
-import React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import _ from 'lodash';
-import { MaterialIcons } from '@expo/vector-icons';
+import { AlertDialog, Badge, Box, Button, Center, CheckIcon, FlatList, HStack, Icon, Select, Text, VStack } from 'native-base';
+import React from 'react';
+import { Platform } from 'react-native';
+import { ActionButton } from '../../components/Action/ActionButton';
+import { loadError } from '../../components/loadError';
+import { loadingSpinner } from '../../components/loadingSpinner';
 
 // custom components and helper files
 import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { getFirstRecord, getRecords, getVariations } from '../../util/api/item';
-import { loadingSpinner } from '../../components/loadingSpinner';
-import { loadError } from '../../components/loadError';
 import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { getStatusIndicator } from './StatusIndicator';
-import { ActionButton } from '../../components/Action/ActionButton';
-import { decodeHTML, stripHTML } from '../../util/apiAuth';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { confirmHold } from '../../util/api/circulation';
-import { getPatronCheckedOutItems, getPatronHolds, refreshProfile } from '../../util/api/user';
-import { Platform } from 'react-native';
+import { getFirstRecord, getRecords, getVariations } from '../../util/api/item';
+import { refreshProfile } from '../../util/api/user';
+import { stripHTML } from '../../util/apiAuth';
 import { placeHold } from '../../util/recordActions';
+import { getStatusIndicator } from './StatusIndicator';
 
 export const Variations = (props) => {
      const queryClient = useQueryClient();
@@ -208,11 +208,11 @@ export const Variations = (props) => {
                                                             setPlacingItemHold(true);
                                                             await placeHold(library.baseUrl, selectedItem, 'ils', holdSelectItemResponse.patronId, holdSelectItemResponse.pickupLocation, '', 'item', null, null, null, holdSelectItemResponse.bibId).then(async (result) => {
                                                                  setResponse(result);
-                                                                 queryClient.invalidateQueries({ queryKey: ['holds', holdSelectItemResponse.patronId, holdlibrary.baseUrl, language] });
+                                                                 queryClient.invalidateQueries({ queryKey: ['holds', holdSelectItemResponse.patronId, library.baseUrl, language] });
                                                                  queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                                                  /*await refreshProfile(library.baseUrl).then((result) => {
-                                                                      updateUser(result);
-                                                                 });*/
+													 updateUser(result);
+													 });*/
 
                                                                  setHoldItemSelectIsOpen(false);
                                                                  setPlacingItemHold(false);

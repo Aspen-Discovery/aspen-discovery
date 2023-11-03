@@ -37,7 +37,9 @@ class SystemAPI extends Action {
 					'getBulkTranslations',
 					'getLanguages',
 					'getVdxForm',
-					'getSelfCheckSettings'
+					'getSelfCheckSettings',
+					'getSystemMessages',
+					'dismissSystemMessage'
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -965,10 +967,23 @@ class SystemAPI extends Action {
 				$scoSettings = new AspenLiDASelfCheckSetting();
 				$scoSettings->id = $location->lidaSelfCheckSettingId;
 				if ($scoSettings->find(true)) {
+					$validBarcodeStyles = [];
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckBarcode.php';
+					$barcodeStyle = new AspenLiDASelfCheckBarcode();
+					$barcodeStyle->selfCheckSettingsId = $scoSettings->id;
+					if($barcodeStyle->find()) {
+						while($barcodeStyle->fetch()) {
+							$validBarcodeStyles[] = $barcodeStyle->barcodeStyle;
+						}
+					} else {
+						// load defaults
+						$validBarcodeStyles = ['codabar', 'upc_a', 'upc_e', 'upc_ean', 'ean13', 'ean8'];
+					}
 					return [
 						'success' => true,
 						'settings' => [
 							'isEnabled' => $scoSettings->isEnabled,
+							'barcodeStyles' => $validBarcodeStyles,
 						],
 					];
 				} else {
@@ -987,6 +1002,86 @@ class SystemAPI extends Action {
 			return [
 				'success' => false,
 				'message' => 'Must provide a location id',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function getSystemMessages(): array {
+		$user = UserAccount::validateAccount($_POST['username'], $_POST['password']);
+		if ($user && !($user instanceof AspenError)) {
+			$locationId = $_REQUEST['locationId'] ?? null;
+			$libraryId = $_REQUEST['libraryId'] ?? null;
+
+			require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+			$systemMessages = [];
+			$message = new SystemMessage();
+			$message->find();
+			while ($message->fetch()) {
+				if ($message->isValidForDisplayInApp($user, $locationId, $libraryId)) {
+					$systemMessages[] = [
+						'id' => (int)$message->id,
+						'style' => $message->messageStyle,
+						'dismissable' => (int)$message->dismissable,
+						'message' => $message->appMessage,
+						'showOn' => $message->showOn,
+					];
+				}
+			}
+			return [
+				'success' => true,
+				'systemMessages' => $systemMessages,
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function dismissSystemMessage(): array {
+		$user = UserAccount::validateAccount($_POST['username'], $_POST['password']);
+		if ($user && !($user instanceof AspenError)) {
+			if($_REQUEST['systemMessageId']) {
+				$id = $_REQUEST['systemMessageId'];
+				require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessage.php';
+				$message = new SystemMessage();
+				$message->id = $id;
+				if ($message->find(true)) {
+					require_once ROOT_DIR . '/sys/LocalEnrichment/SystemMessageDismissal.php';
+					$systemMessageDismissal = new SystemMessageDismissal();
+					$systemMessageDismissal->userId = $user->id;
+					$systemMessageDismissal->systemMessageId = $message->id;
+					if($systemMessageDismissal->find(true)) {
+						return [
+							'success' => true,
+							'message' => 'Message was already dismissed',
+						];
+					} else {
+						$systemMessageDismissal->insert();
+						return [
+							'success' => true,
+							'message' => 'Message was dismissed',
+						];
+					}
+				} else {
+					return [
+						'success' => false,
+						'message' => 'Could not find the message to dismiss',
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'message' => 'Message ID not provided',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
 			];
 		}
 	}

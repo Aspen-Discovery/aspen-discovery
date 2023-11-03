@@ -1,28 +1,27 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import Constants from 'expo-constants';
-import _ from 'lodash';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Box, Button, Center, HStack, Icon, Image, Input, KeyboardAvoidingView, Pressable, Text, VStack, Modal, FlatList } from 'native-base';
-import React from 'react';
-import { Platform } from 'react-native';
 import * as Location from 'expo-location';
 import * as SecureStore from 'expo-secure-store';
+import _ from 'lodash';
+import { Box, Button, Center, FlatList, HStack, Icon, Image, Input, KeyboardAvoidingView, Modal, Pressable, Text, VStack } from 'native-base';
+import React from 'react';
+import { Platform } from 'react-native';
+import { PermissionsPrompt } from '../../components/PermissionsPrompt';
+import { LibrarySystemContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getLibraryInfo } from '../../util/api/library';
 
 // custom components and helper files
 import { GLOBALS } from '../../util/globals';
-import { GetLoginForm } from './LoginForm';
-import { LIBRARY } from '../../util/loadLibrary';
-import { getLibraryInfo, getLibraryLoginLabels } from '../../util/api/library';
-import { getTermFromDictionary, getTranslation } from '../../translations/TranslationService';
-import { PATRON } from '../../util/loadPatron';
-import { PermissionsPrompt } from '../../components/PermissionsPrompt';
 import { fetchAllLibrariesFromGreenhouse, fetchNearbyLibrariesFromGreenhouse } from '../../util/greenhouse';
-import { SplashScreen } from './Splash';
-import { ResetPassword } from './ResetPassword';
-import { ForgotBarcode } from './ForgotBarcode';
-import { LibrarySystemContext } from '../../context/initialContext';
+import { LIBRARY } from '../../util/loadLibrary';
+import { PATRON } from '../../util/loadPatron';
 import { useKeyboard } from '../../util/useKeyboard';
+import { ForgotBarcode } from './ForgotBarcode';
+import { GetLoginForm } from './LoginForm';
+import { ResetPassword } from './ResetPassword';
+import { SplashScreen } from './Splash';
 
 export const LoginScreen = () => {
      const [isLoading, setIsLoading] = React.useState(true);
@@ -55,8 +54,8 @@ export const LoginScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const bootstrapAsync = async () => {
-                    await getPermissions().then((result) => {
-                         if (result.success === false && result.status === 'undetermined' && GLOBALS.releaseChannel !== 'DEV') {
+                    await getPermissions('statusCheck').then((result) => {
+                         if (result.success === false && result.status === 'undetermined' && GLOBALS.releaseChannel !== 'DEV' && Platform.OS === 'android') {
                               setShouldRequestPermissions(true);
                          }
                          setPermissionRequested(true);
@@ -129,19 +128,19 @@ export const LoginScreen = () => {
                }
           });
           /*await getLibraryLoginLabels(data.libraryId, data.baseUrl).then(async (labels) => {
-               try {
-                    const username = await getTranslation('Your Name', 'en', data.baseUrl);
-                    const password = await getTranslation('Library Card Number', 'en', data.baseUrl);
-                    if (username !== 'Your Name') {
-                         setUsernameLabel(username);
-                    }
-                    if (password !== 'Library Card Number') {
-                         setPasswordLabel(password);
-                    }
-               } catch (e) {
-                    // couldn't fetch translated login terms for some reason, just use the default as backup
-               }
-          });*/
+		 try {
+		 const username = await getTranslation('Your Name', 'en', data.baseUrl);
+		 const password = await getTranslation('Library Card Number', 'en', data.baseUrl);
+		 if (username !== 'Your Name') {
+		 setUsernameLabel(username);
+		 }
+		 if (password !== 'Library Card Number') {
+		 setPasswordLabel(password);
+		 }
+		 } catch (e) {
+		 // couldn't fetch translated login terms for some reason, just use the default as backup
+		 }
+		 });*/
           setShowModal(false);
      };
 
@@ -202,6 +201,17 @@ const SelectYourLibraryModal = (payload) => {
 
      if (shouldRequestPermissions && showModal) {
           return <PermissionsPrompt promptTitle="permissions_location_title" promptBody="permissions_location_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
+     }
+
+     if (Platform.OS === 'ios') {
+          React.useCallback(() => {
+               const getPermissionsAsync = async () => {
+                    await getPermissions('request');
+               };
+               getPermissionsAsync().then(() => {
+                    return () => getPermissionsAsync();
+               });
+          }, []);
      }
 
      return (
@@ -283,20 +293,34 @@ const Item = (data) => {
      );
 };
 
-async function getPermissions() {
-     const { status } = await Location.getForegroundPermissionsAsync();
-     if (status !== 'granted') {
-          await SecureStore.setItemAsync('latitude', '0');
-          await SecureStore.setItemAsync('longitude', '0');
-          PATRON.coords.lat = 0;
-          PATRON.coords.long = 0;
-          return {
-               success: false,
-               status: status,
-          };
+async function getPermissions(kind = 'statusCheck') {
+     if (kind === 'statusCheck') {
+          const { status } = await Location.getForegroundPermissionsAsync();
+          if (status !== 'granted') {
+               await SecureStore.setItemAsync('latitude', '0');
+               await SecureStore.setItemAsync('longitude', '0');
+               PATRON.coords.lat = 0;
+               PATRON.coords.long = 0;
+               return {
+                    success: false,
+                    status: status,
+               };
+          }
+     } else {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+               await SecureStore.setItemAsync('latitude', '0');
+               await SecureStore.setItemAsync('longitude', '0');
+               PATRON.coords.lat = 0;
+               PATRON.coords.long = 0;
+               return {
+                    success: false,
+                    status: status,
+               };
+          }
      }
 
-     const location = await Location.getLastKnownPositionAsync({});
+     let location = await Location.getLastKnownPositionAsync({});
 
      if (location != null) {
           const latitude = JSON.stringify(location.coords.latitude);

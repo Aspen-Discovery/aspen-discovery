@@ -5027,7 +5027,13 @@ class UserAPI extends Action {
 									$user->validateUniqueId();
 								}
 
-								@session_start(); // (suppress notice if the session is already started)
+								session_destroy();
+								session_name('aspen_session');
+								$newSessionId = session_create_id('');
+								session_id($newSessionId);
+								$session = new MySQLSession();
+								$session->init();
+
 								$_SESSION['guidingUserId'] = $guidingUser->id;
 								$_SESSION['activeUserId'] = $user->id;
 								@session_write_close();
@@ -5131,6 +5137,14 @@ class UserAPI extends Action {
 				}
 
 				if (!empty($user) && !($user instanceof AspenError)) {
+					session_destroy();
+					session_name('aspen_session');
+					$newSessionId = session_create_id('');
+					session_id($newSessionId);
+					$session = new MySQLSession();
+					$session->init();
+					$_SESSION['activeUserId'] = $user->id;
+
 					return ['success' => true];
 				} else {
 					UserAccount::softLogout();

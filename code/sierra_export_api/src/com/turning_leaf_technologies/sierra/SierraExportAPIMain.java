@@ -31,6 +31,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.marc4j.marc.DataField;
 import org.marc4j.marc.MarcFactory;
 import org.marc4j.marc.Record;
+import org.marc4j.marc.VariableField;
 
 public class SierraExportAPIMain {
 	private static Logger logger;
@@ -891,15 +892,22 @@ public class SierraExportAPIMain {
 		Thread itemUpdateThread = new Thread(() -> {
 			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false, true);
 		});
+		final JSONObject[] holdingIds = {null};
+		//noinspection CodeBlock2Expr
+		Thread holdingsUpdateThread = new Thread(() -> {
+			holdingIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/holdings?limit=1000&deleted=false&suppressed=false&fields=id,fixedFields,varFields&bibIds=" + id, true, false);
+		});
 		getMarcResultsThread.start();
 		fixedFieldThread.start();
 		itemUpdateThread.start();
+		holdingsUpdateThread.start();
 		try {
 			getMarcResultsThread.join();
 			fixedFieldThread.join();
 			itemUpdateThread.join();
+			holdingsUpdateThread.join();
 		}catch (InterruptedException e){
-			logEntry.incErrors("Loading data form Sierra was interrupted", e);
+			logEntry.incErrors("Loading data from Sierra was interrupted", e);
 		}
 		try {
 			if (marcResults[0] != null){
@@ -990,6 +998,45 @@ public class SierraExportAPIMain {
 					}
 				}
 
+				//Get Holdings for the bib record
+				if (holdingIds[0] != null) {
+					JSONObject holdingsData = holdingIds[0];
+					if (holdingsData.getInt("total") > 0) {
+						JSONArray holdings = holdingsData.getJSONArray("entries");
+						for (int i = 0; i < holdings.length(); i++) {
+							JSONObject curHolding = holdings.getJSONObject(i);
+							int holdingId = curHolding.getInt("id");
+							//We need the label to show as well as the location
+							//Label is in the varFields
+							JSONArray varFields = curHolding.getJSONArray("varFields");
+							for (int j = 0; j < varFields.length(); j++) {
+								JSONObject curVarField = varFields.getJSONObject(j);
+								if (curVarField.has("marcTag")) {
+									DataField holdingField = marcFactory.newDataField(curVarField.getString("marcTag"), curVarField.getString("ind1").charAt(0), curVarField.getString("ind2").charAt(0));
+									marcRecord.addVariableField(holdingField);
+									JSONArray subfields = curVarField.getJSONArray("subfields");
+									for (int k = 0; k < subfields.length(); k++) {
+										JSONObject subfield = subfields.getJSONObject(k);
+										holdingField.addSubfield(marcFactory.newSubfield(subfield.getString("tag").charAt(0), subfield.getString("content")));
+									}
+									holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
+								}
+							}
+							//Location is in the fixed fields
+							JSONObject fixedFields = curHolding.getJSONObject("fixedFields");
+							if (fixedFields.has("40")) {
+								DataField holdingField = marcFactory.newDataField("852", ' ', ' ');
+								marcRecord.addVariableField(holdingField);
+								holdingField.addSubfield(marcFactory.newSubfield('b', fixedFields.getJSONObject("40").getString("value")));
+								holdingField.addSubfield(marcFactory.newSubfield('c', fixedFields.getJSONObject("40").getString("value")));
+								holdingField.addSubfield(marcFactory.newSubfield('6', Integer.toString(holdingId)));
+							}
+
+						}
+					}
+					//getItemsForBib(id, marcRecord, itemIds[0]);
+					logger.debug("Processed holdings for Bib");
+				}
 
 				//Get Items for the bib record
 				if (itemIds[0] != null) {
@@ -1122,54 +1169,64 @@ public class SierraExportAPIMain {
 						if (curVarField.has("marcTag")) {
 							marcTag = curVarField.getString("marcTag");
 						}
-						if (curVarField.has("subfields")){
-							subfields = curVarField.getJSONArray("subfields");
-							for (int k = 0; k < subfields.length(); k++) {
-								JSONObject subfield = subfields.getJSONObject(k);
-								if (marcTag.equals("856")) {
-									if (subfield.getString("tag").equals("u")) {
-										allFieldContent.append(subfield.getString("content"));
-									}
-								} else {
-									allFieldContent.append(subfield.getString("content"));
-								}
-							}
-						}else{
-							allFieldContent.append(curVarField.getString("content"));
-						}
-
-						if (fieldTag.equals(sierraExportFieldMapping.getCallNumberExportFieldTag())){
-							if (subfields != null){
-								for (int k = 0; k < subfields.length(); k++){
+						if (marcTag.equals("856")) {
+							if (curVarField.has("subfields")) {
+								subfields = curVarField.getJSONArray("subfields");
+								for (int k = 0; k < subfields.length(); k++) {
 									JSONObject subfield = subfields.getJSONObject(k);
 									char tag = AspenStringUtils.convertStringToChar(subfield.getString("tag"));
 									String content = subfield.getString("content");
-									if (tag == sierraExportFieldMapping.getCallNumberPrestampExportSubfield()){
-										itemField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getCallNumberPrestampExportSubfield(), content));
-									}else if (tag == sierraExportFieldMapping.getCallNumberExportSubfield()){
-										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), content));
-									}else if (tag == sierraExportFieldMapping.getCallNumberCutterExportSubfield()){
-										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberCutterSubfield(), content));
-									}else if (tag == sierraExportFieldMapping.getCallNumberPoststampExportSubfield()){
-										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberPoststampSubfield(), content));
-										//}else{
-										//logger.debug("Unhandled call number subfield " + tag);
+									if (tag == 'u') {
+										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemUrl(), content));
+									} else if (tag == 'z') {
+										itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemUrlDescription(), content));
 									}
 								}
-							}else{
-								String content = curVarField.getString("content");
-								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), content));
 							}
-						}else if (fieldTag.equals(sierraExportFieldMapping.getVolumeExportFieldTag())){
-							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getVolume(), allFieldContent.toString()));
-						}else if (fieldTag.equals(sierraExportFieldMapping.getUrlExportFieldTag())){
-							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getItemUrl(), allFieldContent.toString()));
-						}else if (fieldTag.equals(sierraExportFieldMapping.getEContentExportFieldTag())) {
-							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getEContentDescriptor(), allFieldContent.toString()));
-						}else if (fieldTag.equals(sierraExportFieldMapping.getItemPublicNoteExportSubfield())){
-							itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), allFieldContent.toString()));
-						//}else{
-							//logger.debug("Unhandled item variable field " + fieldTag);
+						} else {
+							if (curVarField.has("subfields")) {
+								subfields = curVarField.getJSONArray("subfields");
+								for (int k = 0; k < subfields.length(); k++) {
+									JSONObject subfield = subfields.getJSONObject(k);
+									allFieldContent.append(subfield.getString("content"));
+								}
+							} else {
+								allFieldContent.append(curVarField.getString("content"));
+							}
+
+							if (fieldTag.equals(sierraExportFieldMapping.getCallNumberExportFieldTag())) {
+								if (subfields != null) {
+									for (int k = 0; k < subfields.length(); k++) {
+										JSONObject subfield = subfields.getJSONObject(k);
+										char tag = AspenStringUtils.convertStringToChar(subfield.getString("tag"));
+										String content = subfield.getString("content");
+										if (tag == sierraExportFieldMapping.getCallNumberPrestampExportSubfield()) {
+											itemField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getCallNumberPrestampExportSubfield(), content));
+										} else if (tag == sierraExportFieldMapping.getCallNumberPrestamp2ExportSubfield()) {
+											itemField.addSubfield(marcFactory.newSubfield(sierraExportFieldMapping.getCallNumberPrestamp2ExportSubfield(), content));
+										} else if (tag == sierraExportFieldMapping.getCallNumberExportSubfield()) {
+											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), content));
+										} else if (tag == sierraExportFieldMapping.getCallNumberCutterExportSubfield()) {
+											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberCutterSubfield(), content));
+										} else if (tag == sierraExportFieldMapping.getCallNumberPoststampExportSubfield()) {
+											itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberPoststampSubfield(), content));
+											//}else{
+											//logger.debug("Unhandled call number subfield " + tag);
+										}
+									}
+								} else {
+									String content = curVarField.getString("content");
+									itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getCallNumberSubfield(), content));
+								}
+							} else if (fieldTag.equals(sierraExportFieldMapping.getVolumeExportFieldTag())) {
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getVolume(), allFieldContent.toString()));
+							} else if (fieldTag.equals(sierraExportFieldMapping.getEContentExportFieldTag())) {
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getEContentDescriptor(), allFieldContent.toString()));
+							} else if (fieldTag.equals(sierraExportFieldMapping.getItemPublicNoteExportSubfield())) {
+								itemField.addSubfield(marcFactory.newSubfield(indexingProfile.getNoteSubfield(), allFieldContent.toString()));
+								//}else{
+								//logger.debug("Unhandled item variable field " + fieldTag);
+							}
 						}
 					}
 					marcRecord.addVariableField(itemField);

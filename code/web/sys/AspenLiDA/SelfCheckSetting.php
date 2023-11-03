@@ -1,5 +1,6 @@
 <?php
 require_once ROOT_DIR . '/sys/DB/DataObject.php';
+require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckBarcode.php';
 
 class AspenLiDASelfCheckSetting extends DataObject {
 	public $__table = 'aspen_lida_self_check_settings';
@@ -8,6 +9,7 @@ class AspenLiDASelfCheckSetting extends DataObject {
 	public $isEnabled;
 
 	private $_locations;
+	private $_barcodeStyles;
 
 	static function getObjectStructure($context = ''): array {
 		$locationsList = [];
@@ -21,6 +23,8 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		while ($location->fetch()) {
 			$locationsList[$location->locationId] = $location->displayName;
 		}
+
+		$allBarcodeStyles = AspenLiDASelfCheckBarcode::getObjectStructure($context);
 
 		$structure = [
 			'id' => [
@@ -43,6 +47,23 @@ class AspenLiDASelfCheckSetting extends DataObject {
 				'label' => 'Enable Self-Check',
 				'description' => 'Whether or not patrons can self-check using Aspen LiDA',
 				'required' => false,
+			],
+			'barcodeStyles' => [
+				'property' => 'barcodeStyles',
+				'type' => 'oneToMany',
+				'label' => 'Valid Barcode Styles',
+				'description' => 'Define valid barcode styles for the location',
+				'keyThis' => 'selfCheckSettingsId',
+				'subObjectType' => 'AspenLiDASelfCheckBarcode',
+				'structure' => $allBarcodeStyles,
+				'sortable' => false,
+				'storeDb' => true,
+				'allowEdit' => false,
+				'canEdit' => false,
+				'hideInLists' => true,
+				'canAddNew' => true,
+				'canDelete' => true,
+				'note' => 'Only allow the necessary styles. Too many styles have a negative impact on device battery consumption.'
 			],
 			'locations' => [
 				'property' => 'locations',
@@ -108,6 +129,8 @@ class AspenLiDASelfCheckSetting extends DataObject {
 				}
 			}
 			return $this->_locations;
+		} elseif ($name == 'barcodeStyles') {
+			return $this->getBarcodeStyles();
 		} else {
 			return parent::__get($name);
 		}
@@ -116,6 +139,8 @@ class AspenLiDASelfCheckSetting extends DataObject {
 	public function __set($name, $value) {
 		if ($name == 'locations') {
 			$this->_locations = $value;
+		} elseif ($name == 'barcodeStyles') {
+			$this->_barcodeStyles = $value;
 		} else {
 			parent::__set($name, $value);
 		}
@@ -125,6 +150,7 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		$ret = parent::update();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
+			$this->saveBarcodeStyles();
 		}
 		return true;
 	}
@@ -133,8 +159,32 @@ class AspenLiDASelfCheckSetting extends DataObject {
 		$ret = parent::insert();
 		if ($ret !== FALSE) {
 			$this->saveLocations();
+			$this->saveBarcodeStyles();
 		}
 		return $ret;
+	}
+
+	public function getBarcodeStyles() {
+		if (!isset($this->_barcodeStyles) && $this->id) {
+			$this->_barcodeStyles = [];
+
+			$barcodeStyle = new AspenLiDASelfCheckBarcode();
+			$barcodeStyle->selfCheckSettingsId = $this->id;
+			if ($barcodeStyle->find()) {
+				while ($barcodeStyle->fetch()) {
+					$this->_barcodeStyles[$barcodeStyle->id] = clone $barcodeStyle;
+				}
+			}
+
+		}
+		return $this->_barcodeStyles;
+	}
+
+	public function saveBarcodeStyles() {
+		if (isset ($this->_barcodeStyles) && is_array($this->_barcodeStyles)) {
+			$this->saveOneToManyOptions($this->_barcodeStyles, 'selfCheckSettingsId');
+			unset($this->_barcodeStyles);
+		}
 	}
 
 	function getEditLink($context): string {
