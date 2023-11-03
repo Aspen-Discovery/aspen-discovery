@@ -1638,6 +1638,7 @@ class CarlX extends AbstractIlsDriver {
 			foreach ($allFines as $fine) {
 				if($fine['fineId'] == $feeId) {
 					$occurrence = $fine['occurrence'];
+					break;
 				}
 			}
 
@@ -1656,47 +1657,6 @@ class CarlX extends AbstractIlsDriver {
 			$paymentRequest->Modifiers->StaffID = $staffId; // The alias of the employee submitting the request. Required.
 			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
 
-//			$paymentRequest = new stdClass();
-//			$paymentRequest->SearchType = 'Patron ID';
-//			$paymentRequest->SearchID = $patron->ils_barcode;
-//			$paymentRequest->FineOrFee = [];
-//			$paymentRequest->FineOrFee[0] = new stdClass();
-//			$paymentRequest->FineOrFee[0]->ItemID = new SoapVar($feeId, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "ItemID", "tran"); // The unique item identifier against which payment for a fine or fee is being applied
-//			$paymentRequest->FineOrFee[0]->Occur = new SoapVar(1, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "Occur", "tran"); // The unique occurrence associated with the item that references the fine or fee selected for settlement
-//			$paymentRequest->FineOrFee[0]->WaiveComment = new SoapVar('', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "WaiveComment", "tran"); // 16 character limit
-//			$paymentRequest->FineOrFee[0]->PayType = new SoapVar('Pay', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "PayType", "tran"); // Pay, Waive, or Cancel
-//			$paymentRequest->FineOrFee[0]->PayMethod = new SoapVar('Credit Card', XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "PayMethod", "tran"); // Cash, Check, or Credit Card
-//			$paymentRequest->FineOrFee[0]->Amount = new SoapVar($pmtAmount, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "Amount", "tran");
-//			$paymentRequest->Modifiers = new stdClass();
-//			$paymentRequest->Modifiers->StaffID = new SoapVar($staffId, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "StaffID", "req"); // The alias of the employee submitting the request. Required.
-//			$paymentRequest->Modifiers->EnvBranch = new SoapVar($homeLocation, XSD_STRING, "string", "http://www.w3.org/2001/XMLSchema", "EnvBranch", "req"); // Branch Code indicating the Branch being used. Required.
-
-//			$paymentRequest = <<<EOT
-//<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-// xmlns:sys="http://tlcdelivers.com/cx/schemas/systemAPI"
-// xmlns:tran="http://tlcdelivers.com/cx/schemas/transaction"
-// xmlns:req="http://tlcdelivers.com/cx/schemas/request">
-// 	<soapenv:Header/>
-// 	<soapenv:Body>
-// 		<sys:SettleFinesAndFeesRequest>
-// 			<sys:SearchType>Patron ID</sys:SearchType>
-// 			<sys:SearchID>{$patron->unique_ils_id}</sys:SearchID>
-// 			<sys:FineOrFee>
-// 				<tran:ItemID>{$feeId}</tran:ItemID>
-// 				<tran:Occur>1</tran:Occur>
-// 				<tran:WaiveComment></tran:WaiveComment>
-// 				<tran:PayType>Pay</tran:PayType>
-// 				<tran:PayMethod>Credit Card</tran:PayMethod>
-// 				<tran:Amount>{$pmtAmount}</tran:Amount>
-// 			</sys:FineOrFee>
-// 			<sys:Modifiers>
-// 				<req:StaffID>{$staffId}</req:StaffID>
-// 				<req:EnvBranch>{$homeLocation}</req:EnvBranch>
-// 			</sys:Modifiers>
-// 		</sys:SettleFinesAndFeesRequest>
-// 	</soapenv:Body>
-// </soapenv:Envelope>
-//EOT;
 			$requestOptions = $this->genericResponseSOAPCallOptions;
 			$requestOptions['login'] = $this->accountProfile->oAuthClientId;
 			$requestOptions['password'] = $this->accountProfile->oAuthClientSecret;
@@ -1711,8 +1671,23 @@ class CarlX extends AbstractIlsDriver {
 					$logger->log("Error updating payment $payment->id:", Logger::LOG_ERROR);
 					$logger->log(print_r(json_encode($settleFinesAndFeesResult, JSON_PRETTY_PRINT), true), Logger::LOG_ERROR);
 				} else {
-					$payment->message .= " CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber";
-					$payment->update();
+					if (empty($settleFinesAndFeesResult->ResponseStatuses) || empty($settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0])) {
+						$allPaymentsSucceed = false;
+						$result['message'] = translate([
+							'text' => 'Error updating payment, please visit the library with your receipt.  Did not get a valid response from the backend server.',
+							'isPublicFacing' => true,
+						]);
+					} elseif ($settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0]->Code != 0) {
+						$allPaymentsSucceed = false;
+						$result['message'] = translate([
+							'text' => "Error updating payment, please visit the library with your receipt. {$settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0]->ShortMessage}",
+							'isPublicFacing' => true,
+						]);
+					} else {
+
+						$payment->message .= " CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber";
+						$payment->update();
+					}
 				}
 			} else {
 				global $logger;
