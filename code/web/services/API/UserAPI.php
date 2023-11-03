@@ -4405,8 +4405,7 @@ class UserAPI extends Action {
 		$patron = UserAccount::validateAccount($username, $password);
 
 		require_once ROOT_DIR . '/sys/Account/PType.php';
-		$user = UserAccount::getLoggedInUser();
-		$userPtype = $user->getPType();
+		$userPtype = $patron->getPType();
 		$linkeePtype = $accountToLink->getPType();
 		$linkingSettingUser = PType::getAccountLinkingSetting($userPtype);
 		$linkingSettingLinkee = PType::getAccountLinkingSetting($linkeePtype);
@@ -4415,7 +4414,7 @@ class UserAPI extends Action {
 			if ($accountToLink) {
 				if ($accountToLink->id != $patron->id) {
 					if (($accountToLink->disableAccountLinking == 0) && ($linkingSettingUser != '1' && $linkingSettingUser != '3') && ($linkingSettingLinkee != '2' && $linkingSettingLinkee != '3')) {
-						$addResult = $user->addLinkedUser($accountToLink);
+						$addResult = $patron->addLinkedUser($accountToLink);
 						if ($addResult === true) {
 							$result = [
 								'success' => true,
