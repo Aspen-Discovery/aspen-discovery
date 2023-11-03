@@ -729,6 +729,9 @@ class Person extends SolrDataObject {
 	function update($context = '') {
 		$this->modifiedBy = UserAccount::getActiveUserId();
 		$this->lastModified = time();
+		if (empty($this->dateAdded)) {
+			$this->dateAdded = $this->lastModified;
+		}
 		$ret = parent::update();
 		if ($ret) {
 			$this->saveMarriages();

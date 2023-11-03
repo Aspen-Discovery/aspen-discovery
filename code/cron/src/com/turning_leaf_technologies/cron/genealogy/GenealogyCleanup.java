@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.PreparedStatement;
+import java.util.Date;
 
 
 import com.turning_leaf_technologies.cron.CronLogEntry;
@@ -183,7 +184,7 @@ public class GenealogyCleanup implements IProcessHandler {
 				+ " ageAtDeath = ?, comments = ? WHERE personId = ?;";
 			updatePersonStatement = dbConn.prepareStatement(updatePersonQuery);
 			String insertPersonQuery = "INSERT INTO person (firstName, lastName, maidenName, " + " birthDateDay, birthDateMonth, birthDateYear, "
-				+ " deathDateDay, deathDateMonth, deathDateYear, " + " ageAtDeath, comments) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+				+ " deathDateDay, deathDateMonth, deathDateYear, " + " ageAtDeath, comments, dateAdded) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 			insertPersonStatement = dbConn.prepareStatement(insertPersonQuery, Statement.RETURN_GENERATED_KEYS);
 			
 			// delete existing marriages and enter new
@@ -203,7 +204,10 @@ public class GenealogyCleanup implements IProcessHandler {
 		} catch (SQLException e1) {
 			processLog.incErrors("Could not prepare statements for importing people ");
 			return;
-		}	
+		}
+
+		Date currentTime = new Date();
+		long currentTimestamp = currentTime.getTime() / 1000;
 
 		try {
 			// Open the file and parse it as CSV
@@ -290,6 +294,7 @@ public class GenealogyCleanup implements IProcessHandler {
 								insertPersonStatement.setInt(9, deathDate.getYear());
 								insertPersonStatement.setString(10, ageAtDeath);
 								insertPersonStatement.setString(11, comments);
+								insertPersonStatement.setLong(12, currentTimestamp);
 								insertPersonStatement.execute();
 								ResultSet generatedKeys = insertPersonStatement.getGeneratedKeys();
 								if (generatedKeys.next()) {
@@ -331,38 +336,35 @@ public class GenealogyCleanup implements IProcessHandler {
 								deleteObitsStatement.setInt(1, personId);
 								deleteObitsStatement.executeUpdate();
 								if (obit1Source.length() > 0 || !obit1Date.isNotSet() || obit1Page.length() > 0) {
-									String obituarySource = getObitSource(obit1Source);
 									insertObitStmt.setInt(1, personId);
-									insertObitStmt.setString(2, obituarySource);
+									insertObitStmt.setString(2, obit1Source);
 									insertObitStmt.setInt(3, obit1Date.getDay());
 									insertObitStmt.setInt(4, obit1Date.getMonth());
 									insertObitStmt.setInt(5, obit1Date.getYear());
 									insertObitStmt.setString(6, obit1Page);
-									insertObitStmt.setString(7, obituarySource.equals("Other") ? obit1Source : "");
+									insertObitStmt.setString(7, "");
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added first obit");
 								}
 								if (obit2Source.length() > 0 || !obit2Date.isNotSet() || obit2Page.length() > 0) {
-									String obituarySource = getObitSource(obit2Source);
 									insertObitStmt.setInt(1, personId);
-									insertObitStmt.setString(2, obituarySource);
+									insertObitStmt.setString(2, obit2Source);
 									insertObitStmt.setInt(3, obit2Date.getDay());
 									insertObitStmt.setInt(4, obit2Date.getMonth());
 									insertObitStmt.setInt(5, obit2Date.getYear());
 									insertObitStmt.setString(6, obit2Page);
-									insertObitStmt.setString(7, obituarySource.equals("Other") ? obit2Source : "");
+									insertObitStmt.setString(7, "");
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added second obit");
 								}
 								if (obit3Source.length() > 0 || !obit3Date.isNotSet() || obit3Page.length() > 0) {
-									String obituarySource = getObitSource(obit3Source);
 									insertObitStmt.setInt(1, personId);
-									insertObitStmt.setString(2, obituarySource);
+									insertObitStmt.setString(2, obit3Source);
 									insertObitStmt.setInt(3, obit3Date.getDay());
 									insertObitStmt.setInt(4, obit3Date.getMonth());
 									insertObitStmt.setInt(5, obit3Date.getYear());
 									insertObitStmt.setString(6, obit3Page);
-									insertObitStmt.setString(7, obituarySource.equals("Other") ? obit1Source : "");
+									insertObitStmt.setString(7,  "");
 									insertObitStmt.executeUpdate();
 									// System.out.println("  Added third obit");
 								}
@@ -544,16 +546,6 @@ public class GenealogyCleanup implements IProcessHandler {
 		} catch (SQLException e) {
 			System.out.println("Could not find field " + fieldName + " " + e.toString());
 			return "";
-		}
-	}
-
-	private String getObitSource(String source) {
-		if (source.matches("(?i)[`\\d]?DS.*")) {
-			return "Grand Junction Daily Sentinel";
-		} else if (source.matches("(?i)EVE.*")) {
-			return "Eagle Valley Enterprise";
-		} else {
-			return "Other";
 		}
 	}
 
