@@ -2160,7 +2160,7 @@ class MyAccount_AJAX extends JSON_Action {
 		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
 			return [
 				'title' => translate([
-					'text' => 'Confirm Renew Item Charge',
+					'text' => 'Confirm Renewal',
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
@@ -2195,6 +2195,7 @@ class MyAccount_AJAX extends JSON_Action {
 				if (method_exists($user, 'renewCheckout')) {
 					$failure_messages = [];
 					$renewResults = [];
+					$failedRenewals = 0;
 					if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
 						foreach ($_REQUEST['selected'] as $selected => $ignore) {
 							//Suppress errors because sometimes we don't get an item index
@@ -2210,12 +2211,20 @@ class MyAccount_AJAX extends JSON_Action {
 							}
 
 							if (!$tmpResult['success']) {
-								$failure_messages[] = $tmpResult['message'];
+								$failedRenewals++;
+								if(isset($tmpResult['confirmRenewalFee']) && $tmpResult['confirmRenewalFee']) {
+									$failure_messages = translate([
+										'text' => 'Renewing some overdue items will result in a charge to your account. Please renew overdue items individually.',
+										'isPublicFacing' => true,
+									]);
+								} else {
+									$failure_messages[] = $tmpResult['message'];
+								}
 							}
 						}
 						$renewResults['Total'] = count($_REQUEST['selected']);
-						$renewResults['NotRenewed'] = count($failure_messages);
-						$renewResults['Renewed'] = $renewResults['Total'] - $renewResults['NotRenewed'];
+						$renewResults['NotRenewed'] = $failedRenewals;
+						$renewResults['Renewed'] = $renewResults['Total'] - $failedRenewals;
 					} else {
 						$failure_messages[] = 'No items were selected to renew';
 						$renewResults['Total'] = 0;
@@ -2271,6 +2280,21 @@ class MyAccount_AJAX extends JSON_Action {
 
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
+		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
+			return [
+				'title' => translate([
+					'text' => 'Confirm Renewal',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('Record/renew-results.tpl'),
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.confirmRenewalFeeAll();\" class=\"modal-buttons btn btn-primary\">" . translate([
+						'text' => 'Renew Items',
+						'isPublicFacing' => true,
+					]) . '</button>',
+				'success' => $renewResults['success'],
+			];
+		}
+
 		return [
 			'title' => translate([
 				'text' => 'Renew All',
