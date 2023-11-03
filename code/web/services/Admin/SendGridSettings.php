@@ -70,7 +70,7 @@ class Admin_SendGridSettings extends ObjectEditor {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'system_admin';
+		return 'email';
 	}
 
 	function canView(): bool {
