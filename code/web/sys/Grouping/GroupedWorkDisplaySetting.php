@@ -81,7 +81,6 @@ class GroupedWorkDisplaySetting extends DataObject {
 		'showSeries' => 'Show Series',
 		'showPublisher' => 'Publisher',
 		'showPublicationDate' => 'Publisher Date',
-		'showPlacesOfPublication' => 'Place of Publication',
 		'showEditions' => 'Editions',
 		'showPhysicalDescriptions' => 'Physical Descriptions',
 		'showLanguages' => 'Show Language',

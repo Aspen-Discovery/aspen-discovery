@@ -954,16 +954,6 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
-		//load places of publication
-		Set<String> placeOfPublication = this.getPlaceOfPublication(record);
-		groupedWork.addPlaceOfPublication(placeOfPublication);
-		if (placeOfPublication.size() > 0){
-			String placesOfPublication = placeOfPublication.iterator().next();
-			for(RecordInfo ilsRecord : ilsRecords) {
-				ilsRecord.setPlacesOfPublication(placesOfPublication);
-			}
-		}
-
 	}
 
 	private Set<String> getPublicationDates(Record record) {
@@ -992,32 +982,6 @@ abstract class MarcRecordProcessor {
 		}
 
 		return publicationDates;
-	}
-
-	private Set<String> getPlaceOfPublication(Record record) {
-		List<DataField> rdaFields = record.getDataFields(264);
-		HashSet<String> placeOfPublication = new HashSet<>();
-		String places;
-		if(rdaFields.size() > 0) {
-			for(DataField dataField : rdaFields){
-				if (dataField.getIndicator2() == '1') {
-					Subfield subFieldA = dataField.getSubfield('a');
-					if (subFieldA != null) {
-						places = subFieldA.getData();
-						placeOfPublication.add(places);
-					}
-				}
-			}
-		}
-		//Try field 260
-		if (placeOfPublication.size() ==0) {
-			placeOfPublication.addAll(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260a")));
-		}
-		//Try 008
-		if(placeOfPublication.size() ==0) {
-			placeOfPublication.add(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[15-17]")));
-		}
-		return placeOfPublication;
 	}
 
 	private Set<String> getPublishers(Record record){

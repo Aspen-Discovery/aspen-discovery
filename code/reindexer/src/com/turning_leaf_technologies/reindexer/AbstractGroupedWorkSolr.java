@@ -75,7 +75,6 @@ public abstract class AbstractGroupedWorkSolr {
 
 	protected HashSet<String> publishers = new HashSet<>();
 	protected HashSet<String> publicationDates = new HashSet<>();
-	protected HashSet<String> placeOfPublication = new HashSet<>();
 	protected float rating = -1f;
 	protected HashMap<String, String> series = new HashMap<>();
 	protected HashMap<String, String> series2 = new HashMap<>();
@@ -189,8 +188,6 @@ public abstract class AbstractGroupedWorkSolr {
 		clonedWork.publishers = (HashSet<String>) publishers.clone();
 		// noinspection unchecked
 		clonedWork.publicationDates = (HashSet<String>) publicationDates.clone();
-		//noinspection unchecked
-		clonedWork.placeOfPublication = (HashSet<String>) placeOfPublication.clone();
 		// noinspection unchecked
 		clonedWork.series = (HashMap<String, String>) series.clone();
 		// noinspection unchecked
@@ -940,22 +937,6 @@ public abstract class AbstractGroupedWorkSolr {
 			if (earliestPublicationDate == null || pubDateLong < earliestPublicationDate) {
 				earliestPublicationDate = pubDateLong;
 			}
-		}
-	}
-
-	void addPlaceOfPublication(Set<String> placeOfPublication) {
-		for (String placesOfPublication: placeOfPublication) {
-			addPlacesOfPublication(placesOfPublication);
-		}
-	}
-
-	void addPlacesOfPublication(String placesOfPublication) {
-		placesOfPublication	= placesOfPublication.trim();
-		if (placesOfPublication.endsWith(",") || placesOfPublication.endsWith(";")){
-			placesOfPublication = placesOfPublication.substring(0, placesOfPublication.length() -1).trim();
-		}
-		if (placesOfPublication.length() > 0) {
-			this.placeOfPublication.add(placesOfPublication);
 		}
 	}
 

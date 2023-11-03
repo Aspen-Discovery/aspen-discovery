@@ -119,8 +119,6 @@ public class GroupedWorkIndexer {
 	private PreparedStatement addPublisherStmt;
 	private PreparedStatement getPublicationDateStmt;
 	private PreparedStatement addPublicationDateStmt;
-	private PreparedStatement getPlacesOfPublicationStmt;
-	private PreparedStatement addPlacesOfPublicationStmt;
 	private PreparedStatement getPhysicalDescriptionStmt;
 	private PreparedStatement addPhysicalDescriptionStmt;
 	private PreparedStatement getEContentSourceStmt;
@@ -226,10 +224,10 @@ public class GroupedWorkIndexer {
 			addScopeStmt = dbConn.prepareStatement("INSERT INTO scope (name, isLibraryScope, isLocationScope) VALUES (?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 			updateScopeStmt = dbConn.prepareStatement("UPDATE scope set isLibraryScope = ?, isLocationScope = ? WHERE id = ?");
 			removeScopeStmt = dbConn.prepareStatement("DELETE FROM scope where id = ?");
-			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, placesOfPublicationId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, hasChildRecord from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
-			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, placesOfPublicationId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, hasChildRecord) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), placesOfPublicationId = VALUES(placesOfPublicationId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId), isClosedCaptioned = VALUES(isClosedCaptioned), hasParentRecord = VALUES(hasParentRecord), hasChildRecord = VALUES(hasChildRecord)", PreparedStatement.RETURN_GENERATED_KEYS);
-			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, placesOfPublicationId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ?, isClosedCaptioned = ?, hasParentRecord = ?, hasChildRecord = ? where id = ?");
+			getExistingRecordsForWorkStmt = dbConn.prepareStatement("SELECT id, sourceId, recordIdentifier, groupedWorkId, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, hasChildRecord from grouped_work_records where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			addRecordForWorkStmt = dbConn.prepareStatement("INSERT INTO grouped_work_records (groupedWorkId, sourceId, recordIdentifier, editionId, publisherId, publicationDateId, physicalDescriptionId, formatId, formatCategoryId, languageId, isClosedCaptioned, hasParentRecord, hasChildRecord) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+					"ON DUPLICATE KEY UPDATE groupedWorkId = VALUES(groupedWorkId), editionId = VALUES(editionId), publisherId = VALUES(publisherId), publicationDateId = VALUES(publicationDateId), physicalDescriptionId = VALUES(physicalDescriptionId), formatId = VALUES(formatId), formatCategoryId = VALUES(formatCategoryId), languageId = VALUES(languageId), isClosedCaptioned = VALUES(isClosedCaptioned), hasParentRecord = VALUES(hasParentRecord), hasChildRecord = VALUES(hasChildRecord)", PreparedStatement.RETURN_GENERATED_KEYS);
+			updateRecordForWorkStmt = dbConn.prepareStatement("UPDATE grouped_work_records SET groupedWorkId = ?, editionId = ?, publisherId = ?, publicationDateId = ?, physicalDescriptionId = ?, formatId = ?, formatCategoryId = ?, languageId = ?, isClosedCaptioned = ?, hasParentRecord = ?, hasChildRecord = ? where id = ?");
 			removeRecordForWorkStmt = dbConn.prepareStatement("DELETE FROM grouped_work_records where id = ?");
 			getIdForRecordStmt = dbConn.prepareStatement("SELECT id from grouped_work_records where sourceId = ? and recordIdentifier = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			getExistingVariationsForWorkStmt = dbConn.prepareStatement("SELECT * from grouped_work_variation where groupedWorkId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -256,8 +254,6 @@ public class GroupedWorkIndexer {
 			addPublisherStmt = dbConn.prepareStatement("INSERT INTO indexed_publisher (publisher) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getPublicationDateStmt = dbConn.prepareStatement("SELECT id from indexed_publication_date where publicationDate = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addPublicationDateStmt = dbConn.prepareStatement("INSERT INTO indexed_publication_date (publicationDate) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-			getPlacesOfPublicationStmt = dbConn.prepareStatement("SELECT id from indexed_places_of_publication where placesOfPublication = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			addPlacesOfPublicationStmt = dbConn.prepareStatement("INSERT INTO indexed_places_of_publication (placesOfPublication) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getPhysicalDescriptionStmt = dbConn.prepareStatement("SELECT id from indexed_physical_description where physicalDescription = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 			addPhysicalDescriptionStmt = dbConn.prepareStatement("INSERT INTO indexed_physical_description (physicalDescription) VALUES (?)", Statement.RETURN_GENERATED_KEYS);
 			getEContentSourceStmt = dbConn.prepareStatement("SELECT id from indexed_econtent_source where eContentSource = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -1461,11 +1457,9 @@ public class GroupedWorkIndexer {
 				addRecordForWorkStmt.setLong(8, getFormatId(recordInfo.getPrimaryFormat()));
 				addRecordForWorkStmt.setLong(9, getFormatCategoryId(recordInfo.getPrimaryFormatCategory()));
 				addRecordForWorkStmt.setLong(10, getLanguageId(recordInfo.getPrimaryLanguage()));
-				addRecordForWorkStmt.setLong(11, getPlacesOfPublicationId(recordInfo.getPlacesOfPublication()));
-				addRecordForWorkStmt.setBoolean(12, recordInfo.isClosedCaptioned());
-				addRecordForWorkStmt.setBoolean(13, recordInfo.hasParentRecord());
-				addRecordForWorkStmt.setBoolean(14, recordInfo.hasChildRecord());
-
+				addRecordForWorkStmt.setBoolean(11, recordInfo.isClosedCaptioned());
+				addRecordForWorkStmt.setBoolean(12, recordInfo.hasParentRecord());
+				addRecordForWorkStmt.setBoolean(13, recordInfo.hasChildRecord());
 				addRecordForWorkStmt.executeUpdate();
 				ResultSet addRecordForWorkRS = addRecordForWorkStmt.getGeneratedKeys();
 				if (addRecordForWorkRS.next()) {
@@ -1485,7 +1479,6 @@ public class GroupedWorkIndexer {
 				long editionId = getEditionId(recordInfo.getEdition());
 				long publisherId = getPublisherId(recordInfo.getPublisher(), recordInfo.getRecordIdentifier());
 				long publicationDateId = getPublicationDateId(recordInfo.getPublicationDate());
-				long placesOfPublicationId = getPlacesOfPublicationId(recordInfo.getPlacesOfPublication());
 				long physicalDescriptionId = getPhysicalDescriptionId(recordInfo.getPhysicalDescription());
 				long formatId = getFormatId(recordInfo.getPrimaryFormat());
 				long formatCategoryId = getFormatCategoryId(recordInfo.getPrimaryFormatCategory());
@@ -1497,7 +1490,6 @@ public class GroupedWorkIndexer {
 				if (editionId != existingRecord.editionId) { hasChanges = true; }
 				if (publisherId != existingRecord.publisherId) { hasChanges = true; }
 				if (publicationDateId != existingRecord.publicationDateId) { hasChanges = true; }
-				if(placesOfPublicationId != existingRecord.placesOfPublicationId) {hasChanges = true; }
 				if (physicalDescriptionId != existingRecord.physicalDescriptionId) { hasChanges = true; }
 				if (formatId != existingRecord.formatId) { hasChanges = true; }
 				if (formatCategoryId != existingRecord.formatCategoryId) { hasChanges = true; }
@@ -1514,12 +1506,10 @@ public class GroupedWorkIndexer {
 					updateRecordForWorkStmt.setLong(6, formatId);
 					updateRecordForWorkStmt.setLong(7, formatCategoryId);
 					updateRecordForWorkStmt.setLong(8, languageId);
-					updateRecordForWorkStmt.setLong(9, placesOfPublicationId);
-
-					updateRecordForWorkStmt.setBoolean(10, isClosedCaptioned);
-					updateRecordForWorkStmt.setBoolean(11, hasParentRecord);
-					updateRecordForWorkStmt.setBoolean(12, hasChildRecord);
-					updateRecordForWorkStmt.setLong(13, existingRecord.id);
+					updateRecordForWorkStmt.setBoolean(9, isClosedCaptioned);
+					updateRecordForWorkStmt.setBoolean(10, hasParentRecord);
+					updateRecordForWorkStmt.setBoolean(11, hasChildRecord);
+					updateRecordForWorkStmt.setLong(12, existingRecord.id);
 					updateRecordForWorkStmt.executeUpdate();
 				}
 			}
@@ -1763,41 +1753,6 @@ public class GroupedWorkIndexer {
 				id = -1L;
 			}
 			publicationDateIds.put(publicationDate, id);
-		}
-		return id;
-	}
-	private final MaxSizeHashMap<String, Long>placesOfPublicationIds = new MaxSizeHashMap<>(1000);
-	private long getPlacesOfPublicationId(String placesOfPublication) {
-		if(placesOfPublication == null) {
-			return -1;
-		}
-		if(placesOfPublication.length() > 500) {
-			placesOfPublication = placesOfPublication.substring(0, 500);
-		}
-		Long id = placesOfPublicationIds.get(placesOfPublication);
-		if(id == null) {
-			try {
-				getPlacesOfPublicationStmt.setString(1, placesOfPublication);
-				ResultSet getPlacesOfPublicationRS = getPlacesOfPublicationStmt.executeQuery();
-				if(getPlacesOfPublicationRS.next()) {
-					id = getPlacesOfPublicationRS.getLong("id");
-				} else {
-					addPlacesOfPublicationStmt.setString(1, placesOfPublication);
-					addPlacesOfPublicationStmt.executeUpdate();
-					ResultSet addPlacesOfPublicationRS = addPlacesOfPublicationStmt.getGeneratedKeys();
-					if(addPlacesOfPublicationRS.next()) {
-						id = addPlacesOfPublicationRS.getLong(1);
-					} else {
-						logEntry.incErrors("Could not add placesOfPublication");
-						id = -1L;
-					}
-				}
-			} catch (SQLException e) {
-					logEntry.incErrors("Error getting place of publication (" + placesOfPublication.length() + ") " + placesOfPublication, e);
-
-				id = -1L;
-			}
-			placesOfPublicationIds.put(placesOfPublication, id);
 		}
 		return id;
 	}

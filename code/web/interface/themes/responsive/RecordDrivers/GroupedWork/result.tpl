@@ -119,19 +119,6 @@
 					{/if}
 				{/if}
 
-				{if !empty($showPlacesOfPublication) && $showPlacesOfPublication}
-					{if $alwaysShowSearchResultsMainDetails || $summPubPlace}
-						<div class="result-label col-sm-4 col-xs-12">{translate text="Pub. Places" isPublicFacing=true} </div>
-							<div class="result-value col-sm-8 col-xs-12">
-								{if !empty($summPubPlaces)}
-									{$summPubPlaces|escape}
-								{elseif $alwaysShowSearchResultsMainDetails}
-									{translate text="Not Supplied" isPublicFacing=true}
-								{/if}
-							</div>
-					{/if}
-				{/if}
-
 				{if !empty($showEditions)}
 					{if $alwaysShowSearchResultsMainDetails || $summEdition}
 

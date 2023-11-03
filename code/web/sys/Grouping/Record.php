@@ -13,7 +13,6 @@ class Grouping_Record {
 	public $language;
 	public $publisher;
 	public $publicationDate;
-	public $placesOfPublication;
 	public $physical;
 	public $closedCaptioned;
 	public $variationFormat;
@@ -76,7 +75,6 @@ class Grouping_Record {
 			$this->edition = $recordDetails['edition'];
 			$this->publisher = $recordDetails['publisher'];
 			$this->publicationDate = $recordDetails['publicationDate'];
-			$this->placesOfPublication = $recordDetails['placesOfPublication'];
 			$this->physical = $recordDetails['physicalDescription'];
 			$this->language = $recordDetails['language'];
 			if (isset($recordDetails['isClosedCaptioned'])) {
@@ -100,7 +98,6 @@ class Grouping_Record {
 			$this->publisher = $recordDetails[5];
 			$this->publicationDate = $recordDetails[6];
 			$this->physical = $recordDetails[7];
-			$this->placesOfPublication = $recordDetails[8];
 		}
 
 		if (empty($this->language)) {
