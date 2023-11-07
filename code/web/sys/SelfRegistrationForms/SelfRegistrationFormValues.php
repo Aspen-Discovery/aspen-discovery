@@ -40,7 +40,7 @@ class SelfRegistrationFormValues extends DataObject {
 			"apt_suite" => "APT/SUITE",
 			"city" => "CITY",
 			"state" => "STATE",
-			"city_state" => "CITY/STATE",
+//			"city_state" => "CITY/STATE",
 			"zip" => "ZIP",
 			"email" => "EMAIL",
 			"phone" => "PHONE",
@@ -103,6 +103,7 @@ class SelfRegistrationFormValues extends DataObject {
 				'type' => 'text',
 				'label' => 'Display Name',
 				'description' => 'The name of the field in Aspen',
+				'required' => true,
 			],
 			'fieldType' => [
 				'property' => 'fieldType',

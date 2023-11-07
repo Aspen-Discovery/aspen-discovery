@@ -7225,8 +7225,14 @@ AspenDiscovery.Account = (function () {
 				var selectedValue = $('#cardTypeSelect option:selected').val();
 				if (selectedValue === 'adult') {
 					$('#propertyRowparentName').hide();
+					$('#propertyRowparentname').hide();
+					$('#propertyRowcareof').hide();
+					$('#propertyRowcare_of').hide();
 				} else {
 					$('#propertyRowparentName').show();
+					$('#propertyRowparentname').show();
+					$('#propertyRowcareof').hide();
+					$('#propertyRowcare_of').hide();
 				}
 			}
 			var smsNotices = $("#smsNotices");

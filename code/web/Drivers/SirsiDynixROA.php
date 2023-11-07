@@ -595,7 +595,6 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'parentname' && (!empty($_REQUEST['parentname']))) {
 						$this->setPatronUpdateField('PARENTNAME', $this->getPatronFieldValue($_REQUEST['parentname'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-
 					elseif ($field == 'email' && (!empty($_REQUEST['email']))) {
 						$this->setPatronUpdateField('EMAIL', $this->getPatronFieldValue($_REQUEST['email'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
@@ -635,17 +634,14 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'apt_suite' && (!empty($_REQUEST['apt_suite']))) {
 						$this->setPatronUpdateField('APT/SUITE', $this->getPatronFieldValue($_REQUEST['apt_suite'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'city' && (!empty($_REQUEST['city']))) {
-						$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-					}
-					elseif ($field == 'state' && (!empty($_REQUEST['state']))) {
-						$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
-					}
-					elseif ($field == 'city_state' && (isset($_REQUEST['city']) && isset($_REQUEST['state']))) {
-						if ($library->cityStateField == 2) {
-							$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ', ' . $_REQUEST['state'], $createPatronInfoParameters, $preferredAddress, $index);
+					elseif ($field == 'city' && (!empty($_REQUEST['city']) && (!empty($_REQUEST['state'])))) {
+						if ($library->cityStateField == 1) {
+							$this->setPatronUpdateField('CITY', $this->getPatronFieldValue($_REQUEST['city'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+							$this->setPatronUpdateField('STATE', $this->getPatronFieldValue($_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+						} elseif ($library->cityStateField == 2) {
+							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ', ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 						} else {
-							$this->setPatronUpdateField('CITY/STATE', $_REQUEST['city'] . ' ' . $_REQUEST['state'], $createPatronInfoParameters, $preferredAddress, $index);
+							$this->setPatronUpdateField('CITY/STATE', $this->getPatronFieldValue($_REQUEST['city'] . ' ' . $_REQUEST['state'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 						}
 					}
 					elseif ($field == 'zip' && (!empty($_REQUEST['zip']))) {
@@ -3365,6 +3361,25 @@ class SirsiDynixROA extends HorizonAPI {
 			foreach ($customFields as $customField) {
 				if ($customField->symphonyName == 'library') {
 					$fields[$customField->symphonyName] = $pickupLocationField;
+				} elseif(($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof') && $library->promptForParentInSelfReg) {
+					$fields[] = [
+						'property' => 'cardType',
+						'type' => 'enum',
+						'values' => [
+							'adult' => 'Adult (18 and Over)',
+							'minor' => 'Minor (Under 18)',
+						],
+						'label' => 'Type of Card',
+						'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+					];
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
+						'type' => $customField->fieldType,
+						'label' => $customField->displayName,
+						'required' => $customField->required,
+						'note' => $customField->note,
+						'hiddenByDefault' => true,
+					];
 				} elseif ($customField->symphonyName == 'cellphone' && $library->promptForSMSNoticesInSelfReg) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
@@ -3378,7 +3393,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'type' => 'checkbox',
 						'label' => 'Receive notices via text',
 					];
-				} elseif ($customField->symphonyName == 'city_state') {
+				} /*elseif ($customField->symphonyName == 'city_state') {
 					$fields['City'] = [
 						'property' => 'city',
 						'type' => $customField->fieldType,
@@ -3406,7 +3421,7 @@ class SirsiDynixROA extends HorizonAPI {
 							'note' => $customField->note
 						];
 					}
-				} elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
+				}*/ elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
