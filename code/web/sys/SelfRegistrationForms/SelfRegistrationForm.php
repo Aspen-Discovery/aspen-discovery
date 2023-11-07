@@ -190,18 +190,6 @@ class SelfRegistrationForm extends DataObject {
 		$this->fields = [];
 	}
 
-	public function validateFields(){
-		$this->getFields();
-		if (isset ($this->_fields) && is_array($this->_fields)) {
-			foreach ($this->_fields as $fieldValue){
-				if ($fieldValue->displayName == ''){
-					return false;
-				}
-			}
-			return true;
-		}
-	}
-
 	public function saveFields() {
 		if (isset ($this->_fields) && is_array($this->_fields)) {
 			$this->saveOneToManyOptions($this->_fields, 'selfRegistrationFormId');
