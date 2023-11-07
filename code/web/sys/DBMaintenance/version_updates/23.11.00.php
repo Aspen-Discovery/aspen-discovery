@@ -44,6 +44,13 @@ function getUpdates23_11_00(): array {
 		], //rename_availability_facet
 
 		//kodi - ByWater
+		'symphony_city_state' => [
+			'title'=> 'Remove CITY/STATE for Symphony Custom Self Registration',
+			'description' => 'Remove CITY/STATE for custom self registration values to use updated logic for separate city & state fields',
+			'sql' => [
+				'DELETE FROM self_reg_form_values WHERE symphonyName="city_state"',
+			]
+		], //symphony_city_state
 		//Alexander - PTFS
 		'display_list_author_control' => [
 			'title' => 'User List Author Control',
