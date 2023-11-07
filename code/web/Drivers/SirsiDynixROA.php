@@ -3358,22 +3358,22 @@ class SirsiDynixROA extends HorizonAPI {
 		} else {
 			//Use self registration fields
 			/** @var SelfRegistrationFormValues $customField */
+			if ($library->promptForParentInSelfReg){
+				$fields[] = [
+					'property' => 'cardType',
+					'type' => 'enum',
+					'values' => [
+						'adult' => 'Adult (18 and Over)',
+						'minor' => 'Minor (Under 18)',
+					],
+					'label' => 'Type of Card',
+					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
+				];
+			}
 			foreach ($customFields as $customField) {
 				if ($customField->symphonyName == 'library') {
 					$fields[$customField->symphonyName] = $pickupLocationField;
 				} elseif(($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
-					if ($library->promptForParentInSelfReg){
-						$fields[] = [
-							'property' => 'cardType',
-							'type' => 'enum',
-							'values' => [
-								'adult' => 'Adult (18 and Over)',
-								'minor' => 'Minor (Under 18)',
-							],
-							'label' => 'Type of Card',
-							'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
-						];
-					}
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
