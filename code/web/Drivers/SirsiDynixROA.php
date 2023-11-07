@@ -3356,8 +3356,6 @@ class SirsiDynixROA extends HorizonAPI {
 				'autocomplete' => false,
 			];
 		} else {
-			//Use self registration fields
-			/** @var SelfRegistrationFormValues $customField */
 			if ($library->promptForParentInSelfReg){
 				$fields[] = [
 					'property' => 'cardType',
@@ -3370,10 +3368,12 @@ class SirsiDynixROA extends HorizonAPI {
 					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
 				];
 			}
+			//Use self registration fields
+			/** @var SelfRegistrationFormValues $customField */
 			foreach ($customFields as $customField) {
 				if ($customField->symphonyName == 'library') {
 					$fields[$customField->symphonyName] = $pickupLocationField;
-				} elseif(($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
+				} elseif (($customField->symphonyName == 'parentname' || $customField->symphonyName == 'care_of' || $customField->symphonyName == 'careof')) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
