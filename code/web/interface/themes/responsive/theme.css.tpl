@@ -342,13 +342,17 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	left: -6px !important;
 {rdelim}
 
-#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail {ldelim}
+#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail,
+#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating{ldelim}
     align-items: flex-start !important;
 {rdelim}
 
-.results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating,
-#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating{ldelim}
+.results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating {ldelim}
 	align-self: flex-end;
+{rdelim}
+
+#home-page-browse-results.home-page-browse-results-grid {ldelim}
+    padding-top: 1em;
 {rdelim}
 
 {* Alerts *}
