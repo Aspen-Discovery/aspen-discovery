@@ -3380,8 +3380,12 @@ class SirsiDynixROA extends HorizonAPI {
 						'label' => $customField->displayName,
 						'required' => $customField->required,
 						'note' => $customField->note,
-						'hiddenByDefault' => true,
 					];
+					if ($library->promptForParentInSelfReg){
+						$fields[$customField->symphonyName] = [
+							'hiddenByDefault' => true,
+						];
+					}
 				} elseif ($customField->symphonyName == 'cellphone' && $library->promptForSMSNoticesInSelfReg) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
