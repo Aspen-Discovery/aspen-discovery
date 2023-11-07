@@ -541,6 +541,7 @@ public class OaiIndexerMain {
 											textContent = textContent.trim();
 											textContent = textContent.replaceAll("ca.\\s+", "");
 											textContent = textContent.replaceAll("/", "-");
+											//TODO: If the textContent contains a space or a T, only use the portion of the date before the space or T
 											if (textContent.matches("\\d{2,4}(-\\d{1,2})?(-\\d{1,2})?")) {
 												dateRange = new String[]{textContent};
 											}else{

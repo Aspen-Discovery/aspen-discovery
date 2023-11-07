@@ -9357,7 +9357,6 @@ a.placard-link {
   display: inline-block;
   text-align: center;
   position: relative;
-  min-height: 200px;
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {
@@ -9382,7 +9381,6 @@ a.browse-thumbnail.active {
 }
 .browse-thumbnail img.floating {
   box-shadow: 0 2.8px 2.2px rgba(0, 0, 0, 0.034), 0 6.7px 5.3px rgba(0, 0, 0, 0.048), 0 12.5px 10px rgba(0, 0, 0, 0.06), 0 15px 22px rgba(0, 0, 0, 0.072), 0 20px 33px 0 rgba(0, 0, 0, 0.086);
-  min-height: 200px;
   background: transparent;
   border-width: 0;
   padding: 0;
@@ -10931,7 +10929,7 @@ input[type="radio"][name="colorScheme"]:checked + label::after {
   font-family: sans-serif;
 }
 .stripPopup .btnWrap a.button {
-  width: 188px;
+  width: 193px;
   padding: 12px 10px;
   font-size: 12px;
   font-weight: 700;

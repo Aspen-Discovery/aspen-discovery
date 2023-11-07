@@ -967,10 +967,23 @@ class SystemAPI extends Action {
 				$scoSettings = new AspenLiDASelfCheckSetting();
 				$scoSettings->id = $location->lidaSelfCheckSettingId;
 				if ($scoSettings->find(true)) {
+					$validBarcodeStyles = [];
+					require_once ROOT_DIR . '/sys/AspenLiDA/SelfCheckBarcode.php';
+					$barcodeStyle = new AspenLiDASelfCheckBarcode();
+					$barcodeStyle->selfCheckSettingsId = $scoSettings->id;
+					if($barcodeStyle->find()) {
+						while($barcodeStyle->fetch()) {
+							$validBarcodeStyles[] = $barcodeStyle->barcodeStyle;
+						}
+					} else {
+						// load defaults
+						$validBarcodeStyles = ['codabar', 'upc_a', 'upc_e', 'upc_ean', 'ean13', 'ean8'];
+					}
 					return [
 						'success' => true,
 						'settings' => [
 							'isEnabled' => $scoSettings->isEnabled,
+							'barcodeStyles' => $validBarcodeStyles,
 						],
 					];
 				} else {

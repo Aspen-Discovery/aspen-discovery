@@ -5,7 +5,11 @@
 	<form id="twoFactorAuthForm" onsubmit="AspenDiscovery.Account.verify2FALogin(); return false;">
 		<div class="row">
 			<div class="col-md-10 col-md-offset-1">
-				<p>{translate text="Enter the code sent to your authentication method or provide a backup code." isPublicFacing=true}</p>
+				{if !$codeSent}
+					<div class="alert alert-warning">{translate text="Unable to send your authentication code. Verify your account has a valid email address. To access your account now, you may provide a backup code." isPublicFacing=true}</div>
+				{else}
+					<p>{translate text="Enter the code sent to your authentication method or provide a backup code." isPublicFacing=true}</p>
+				{/if}
 				<div class="form-group">
 					<label for="code">{translate text="6-digit code" isPublicFacing=true}</label>
 					<input type="text" class="form-control" id="code" name="code" maxlength="6" spellcheck="false" autocomplete="false">

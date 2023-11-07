@@ -467,6 +467,16 @@ class Sierra extends Millennium {
 					$recordDriver = new MarcRecordDriver((string)$curHold->recordId);
 					if ($recordDriver->isValid()) {
 						$curHold->updateFromRecordDriver($recordDriver);
+
+						if($recordType == 'i') {
+							// Get volume for Item holds
+							$relatedRecord = $recordDriver->getRelatedRecord();
+							$groupingItem = $relatedRecord->getItemById($itemId);
+							if ($groupingItem != null) {
+								$curHold->volume = $groupingItem->volume;
+								$curHold->callNumber = $groupingItem->callNumber;
+							}
+						}
 					}
 				} else {
 					$curHold->sourceId = '';
@@ -1106,7 +1116,8 @@ class Sierra extends Millennium {
 	}
 
 	public function placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate = null) {
-		return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
+		//return parent::placeItemHold($patron, $recordId, $itemId, $pickupBranch, $cancelDate);
+		return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 		//return $this->placeHold($patron, $itemId, $pickupBranch, $cancelDate);
 	}
 

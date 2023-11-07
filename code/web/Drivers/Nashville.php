@@ -370,50 +370,6 @@ class Nashville extends CarlX {
 		}
 	}
 
-	protected function getLostViaSIP(string $patronId): array {
-		$mySip = $this->initSIPConnection();
-		$mySip->patron = $patronId;
-		if (!is_null($mySip)) {
-			$in = $mySip->msgPatronInformation('none');
-			$msg_result = $mySip->get_message($in);
-			ExternalRequestLogEntry::logRequest('carlx.getLost', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
-			if (preg_match("/^64/", $msg_result)) {
-				$result = $mySip->parsePatronInfoResponse($msg_result);
-				$fineCount = $result['fixed']['FineCount'];
-				$in = $mySip->msgPatronInformation('fine', 1, $fineCount);
-				$msg_result = $mySip->get_message($in);
-				ExternalRequestLogEntry::logRequest('carlx.fine', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
-				if (preg_match("/^64/", $msg_result)) {
-					$myLostFees = [];
-					$result = $mySip->parsePatronInfoResponse($msg_result);
-					foreach ($result['variable']['AV'] as $feeItem) {
-						$feeItemFields = explode('^', $feeItem);
-						$feeItemParsed = [];
-						foreach ($feeItemFields as $feeItemField) {
-							$fieldName = substr($feeItemField, 0, 1);
-							$fieldValue = substr($feeItemField, 1);
-							$feeItemParsed[$fieldName] = $fieldValue;
-						}
-						if ($feeItemParsed['S'] == 'Lost - fee charged') {
-							$myLostFees[] = [
-								'fineId' => $feeItemParsed['I'],
-								//'type' => 'L',
-								//'reason' => $feeItem['T'],
-								//'amount' => $feeItem[], // not in CarlX SIP2 Patron Information > Fees
-								//'amountVal' => $feeItem[], // not in CarlX SIP2 Patron Information > Fees
-								'amountOutstanding' => $feeItemParsed['F'],
-								'amountOutstandingVal' => $feeItemParsed['F'],
-								//'message' => $feeItem['T'],
-								//'date' => date('M j, Y', strtotime($feeItem['1']))
-							];
-						}
-					}
-					return $myLostFees;
-				}
-			}
-		}
-	}
-
 	function getSelfRegTemplate($reason): string {
 		global $activeLanguage;
 		if ($reason == 'duplicate_email') {
@@ -439,38 +395,7 @@ class Nashville extends CarlX {
 		}
 	}
 
-	protected function initSIPConnection() {
-		$mySip = new sip2();
-		$mySip->hostname = $this->accountProfile->sipHost;
-		$mySip->port = $this->accountProfile->sipPort;
 
-		if ($mySip->connect()) {
-			//send selfcheck status message
-			$in = $mySip->msgSCStatus();
-			$msg_result = $mySip->get_message($in);
-			// Make sure the response is 98 as expected
-			if (preg_match("/^98/", $msg_result)) {
-				$result = $mySip->parseACSStatusResponse($msg_result);
-				ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
-
-				//  Use result to populate SIP2 setings
-				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
-				if (isset($result['variable']['AO'][0])) {
-					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
-				} else {
-					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded for Nashville
-				}
-				if (isset($result['variable']['AN'][0])) {
-					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
-				} else {
-					$mySip->AN = '';
-				}
-			}
-			return $mySip;
-		} else {
-			return null;
-		}
-	}
 
 	public function getCollectionReportData($location, $date): array {
 		$this->initDatabaseConnection();

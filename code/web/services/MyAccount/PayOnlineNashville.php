@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * 2023-10-12 - This is a defunct class, as it's for Nashville when they were on Millennium (2017) and no longer being used. Confirmed with James. - KK
+ */
+
 require_once ROOT_DIR . '/services/MyAccount/MyAccount.php';
 
 class PayOnlineNashville extends Action {

@@ -275,7 +275,7 @@ class Polaris extends AbstractIlsDriver {
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->RenewData = new stdClass();
-		$body->RenewData->IgnoreOverrideErrors = false;
+		$body->RenewData->IgnoreOverrideErrors = $_REQUEST['confirmedRenewal'] ?? false;
 
 		$accountSummary = $this->getAccountSummary($patron);
 
@@ -303,14 +303,59 @@ class Polaris extends AbstractIlsDriver {
 						foreach ($checkouts as $checkout) {
 							if ($checkout->itemId == $itemId) {
 								$title = $checkout->title;
+								break;
 							}
 						}
 						$renewResult['message'][] = $title . ':' . $blockRow->ErrorDesc;
 					}
+				}else{
+					$renewResult['success'] = true;
+					$renewResult['message'] = translate([
+						'text' => 'All titles renewed successfully',
+						'isPublicFacing' => true,
+					]);
+					$renewResult['api']['message'] = translate([
+						'text' => 'All titles renewed successfully',
+						'isPublicFacing' => true,
+					]);
 				}
 				$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 				$patron->forceReloadOfCheckouts();
 				$renewResult['success'] = true;
+			} else if ($jsonResponse->PAPIErrorCode == -2) {
+				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				$confirmRenewalFee = false;
+				$message = '';
+				$apiMessage = '';
+				foreach ($itemRenewResult->BlockRows as $blockRow) {
+					if (strlen($message) > 0) {
+						$message .= "</br>";
+						$apiMessage .= "\n";
+					}
+					$message .= $blockRow->ErrorDesc;
+					$apiMessage .= $blockRow->ErrorDesc;
+
+					// Item renewal block
+					if($blockRow->PAPIErrorType == 2) {
+						// Confirm charge for renewing item
+						if ($blockRow->ErrorAllowOverride) {
+							$confirmRenewalFee = true;
+						}
+					}
+				}
+				$renewResult['success'] = false;
+				$renewResult['message'] = $message;
+				$renewResult['confirmRenewalFee'] = $confirmRenewalFee;
+
+				// Result for API or app use
+				$renewResult['api']['title'] = translate([
+					'text' => 'Unable to renew title',
+					'isPublicFacing' => true,
+				]);
+				$renewResult['api']['message'] = translate([
+					'text' => $message,
+					'isPublicFacing' => true,
+				]);
 			} else {
 				$message = "All items could not be renewed.";
 				$renewResult['message'][] = $message;
@@ -334,7 +379,7 @@ class Polaris extends AbstractIlsDriver {
 		$body->LogonUserID = (string)$staffInfo['polarisId'];
 		$body->LogonWorkstationID = $this->getWorkstationID($patron);
 		$body->RenewData = new stdClass();
-		$body->RenewData->IgnoreOverrideErrors = false;
+		$body->RenewData->IgnoreOverrideErrors = $_REQUEST['confirmedRenewal'] ?? false;
 
 		$response = $this->getWebServiceResponse($polarisUrl, 'PUT', $this->getAccessToken($patron->getBarcode(), $patron->getPasswordOrPin()), json_encode($body), UserAccount::isUserMasquerading());
 		ExternalRequestLogEntry::logRequest('polaris.renewCheckout', 'PUT', $this->getWebServiceURL() . $polarisUrl, $this->apiCurlWrapper->getHeaders(), false, $this->lastResponseCode, $response, []);
@@ -391,6 +436,45 @@ class Polaris extends AbstractIlsDriver {
 					]);
 
 					return $result;
+				}
+			} else if ($jsonResponse->PAPIErrorCode == -2) {
+				$itemRenewResult = $jsonResponse->ItemRenewResult;
+				$message = '';
+				foreach ($itemRenewResult->BlockRows as $blockRow) {
+					$message .= $blockRow->ErrorDesc;
+
+					$userCanOverride = false;
+					// Item renewal block
+					if($blockRow->PAPIErrorType == 2) {
+						// Confirm charge for renewing item
+						$userCanOverride = $blockRow->ErrorAllowOverride;
+					}
+
+					if (strlen($message) == 0) {
+						$message .= 'This item could not be renewed.';
+					}
+
+					$result['itemId'] = $itemId;
+					$result['success'] = false;
+					$result['message'] = $message;
+					$result['confirmRenewalFee'] = $userCanOverride;
+
+					// Result for API or app use
+					$result['api']['title'] = translate([
+						'text' => 'Unable to renew title',
+						'isPublicFacing' => true,
+					]);
+					$result['api']['message'] = translate([
+						'text' => $message,
+						'isPublicFacing' => true,
+					]);
+					$result['api']['confirmRenewalFee'] = translate([
+						'text' => $userCanOverride,
+						'isPublicFacing' => true,
+					]);
+
+					return $result;
+
 				}
 			} else {
 				$message = "The item could not be renewed. {$jsonResponse->ErrorMessage}";

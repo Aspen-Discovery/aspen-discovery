@@ -77,6 +77,17 @@
 										</div>
 									</div>
 								{/if}
+								{if in_array('Include Lists In Search Results', $userPermissions)}
+								<div class="form-group" id="displayListAuthorRow" {if $userList->public == 0}style="display: none"{/if}>
+									<label for="displayListAuthor" class="col-sm-3 control-label">{translate text="Show list author in search results" isPublicFacing=true}</label>
+									<div class="col-sm-9">
+										<input type='checkbox' name='displayListAuthor' id='displayListAuthor' data-on-text="Yes" data-off-text="No" {if $userList->displayListAuthor == 1}checked{/if}/>
+										<div class="form-text text-muted">
+											<small>{translate text="If enabled, your name will be displayed as the author of this public list." isPublicFacing=true}</small>
+										</div>
+									</div>
+								</div>
+							{/if}
 								{if in_array('Upload List Covers', $userPermissions)}
 									<div class="form-group" id="searchableRow" {if $userList->public == 0}style="display: none"{/if}>
 										<label for="searchable" class="col-sm-3 control-label">{translate text="Upload custom list cover" isPublicFacing=true}</label>
@@ -87,10 +98,12 @@
 									</div>
 								{/if}
 							</div>
-							<script type="text/javascript">{literal}
+							<script type="text/javascript">
+							{literal}
 								$(document).ready(function(){
 									$('#public').bootstrapSwitch();
 									$('#searchable').bootstrapSwitch();
+									$('#displayListAuthor').bootstrapSwitch();
 								});
 							{/literal}</script>
 						{/if}

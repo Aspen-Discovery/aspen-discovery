@@ -342,7 +342,12 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	left: -6px !important;
 {rdelim}
 
-.results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating {ldelim}
+#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail {ldelim}
+    align-items: flex-start !important;
+{rdelim}
+
+.results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating,
+#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating{ldelim}
 	align-self: flex-end;
 {rdelim}
 

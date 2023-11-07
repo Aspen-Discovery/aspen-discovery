@@ -705,8 +705,9 @@ public class PolarisExportMain {
 				if (!indexingProfile.isRunFullUpdate()) {
 					lastExtractTime = indexingProfile.getLastUpdateOfChangedRecords();
 					if (lastExtractTime == 0 || (indexingProfile.getLastUpdateOfAllRecords() > indexingProfile.getLastUpdateOfChangedRecords())) {
-						//Give a small buffer (1 minute to account for server time differences)
-						lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 60 * 1000 ;
+						//Give a buffer of 15 minutes to account for server time differences and allow Polaris to record changes
+						//With one minute all changes were not captured.
+						lastExtractTime = indexingProfile.getLastUpdateOfAllRecords() - 15 * 60 * 1000 ;
 					}
 				} else {
 					getRecordGroupingProcessor().loadExistingTitles(logEntry);
@@ -843,7 +844,7 @@ public class PolarisExportMain {
 		}
 		String formattedLastExtractTime = "";
 		if (!indexingProfile.isRunFullUpdate() && lastExtractTime != 0){
-			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime - (15 * 60)));
+			formattedLastExtractTime = dateFormatter.format(Instant.ofEpochSecond(lastExtractTime));
 			logEntry.addNote("Looking for changed records since " + formattedLastExtractTime);
 		}
 		if (indexingProfile.isRunFullUpdate() && indexingProfile.getLastChangeProcessed() > 0){

@@ -237,49 +237,54 @@ public class KohaExportMain {
 			long curTime = new Date().getTime() / 1000;
 			Timestamp lastUpdateOfAuthorities = new Timestamp(indexingProfile.getLastUpdateOfAuthorities() * 1000);
 			//noinspection SpellCheckingInspection
-			PreparedStatement getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT modification_time, authtypecode, marc from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			PreparedStatement getAuthorAuthoritiesStmt = kohaConn.prepareStatement("SELECT authid, modification_time, authtypecode, marc from auth_header where authtypecode IN('PERSO_NAME', 'CORPO_NAME') AND modification_time >= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getAuthorAuthoritiesStmt.setTimestamp(1, lastUpdateOfAuthorities);
 			PreparedStatement addAuthorStmt = dbConn.prepareStatement("INSERT INTO author_authority (id, dateAdded, author) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
 			PreparedStatement getAuthorIdStmt = dbConn.prepareStatement("SELECT id from author_authority where author = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			PreparedStatement addAlternativeNameStmt = dbConn.prepareStatement("INSERT INTO author_authority_alternative (id, authorId, alternativeAuthor) VALUES (NULL, ?, ?) ON DUPLICATE KEY UPDATE id=id", Statement.RETURN_GENERATED_KEYS);
 			ResultSet getAuthorAuthoritiesRS = getAuthorAuthoritiesStmt.executeQuery();
 			while (getAuthorAuthoritiesRS.next()){
+				String authId = getAuthorAuthoritiesRS.getString("authid");
 				String authTypeCode = getAuthorAuthoritiesRS.getString("authtypecode");
 				//noinspection SpellCheckingInspection
 				if (authTypeCode.equals("PERSO_NAME") || authTypeCode.equals("CORPO_NAME")) {
 					MarcReader catalogReader = new MarcStreamReader(getAuthorAuthoritiesRS.getBinaryStream("marc"), "UTF8");
 					if (catalogReader.hasNext()) {
-						Record marcRecord = catalogReader.next();
-						String author = MarcUtil.getFirstFieldVal(marcRecord, "100abcdq:110ab");
-						if (author != null) {
-							Set<String> alternativeNames = MarcUtil.getFieldList(marcRecord, "400abcdq:410ab");
-							if (alternativeNames.size() > 0) {
-								numAuthoritiesExported++;
-								getAuthorIdStmt.setString(1, author);
-								ResultSet getAuthorIdRS = getAuthorIdStmt.executeQuery();
-								long authorAuthorityId = 0;
-								if (getAuthorIdRS.next()){
-									authorAuthorityId = getAuthorIdRS.getLong("id");
-								}else {
-									addAuthorStmt.setLong(1, curTime);
-									addAuthorStmt.setString(2, AspenStringUtils.trimTo(512, author));
-									addAuthorStmt.executeUpdate();
-									ResultSet generatedIds = addAuthorStmt.getGeneratedKeys();
-									if (generatedIds.next()) {
-										authorAuthorityId = generatedIds.getLong(1);
+						try {
+							Record marcRecord = catalogReader.next();
+							String author = MarcUtil.getFirstFieldVal(marcRecord, "100abcdq:110ab");
+							if (author != null) {
+								Set<String> alternativeNames = MarcUtil.getFieldList(marcRecord, "400abcdq:410ab");
+								if (alternativeNames.size() > 0) {
+									numAuthoritiesExported++;
+									getAuthorIdStmt.setString(1, author);
+									ResultSet getAuthorIdRS = getAuthorIdStmt.executeQuery();
+									long authorAuthorityId = 0;
+									if (getAuthorIdRS.next()) {
+										authorAuthorityId = getAuthorIdRS.getLong("id");
+									} else {
+										addAuthorStmt.setLong(1, curTime);
+										addAuthorStmt.setString(2, AspenStringUtils.trimTo(512, author));
+										addAuthorStmt.executeUpdate();
+										ResultSet generatedIds = addAuthorStmt.getGeneratedKeys();
+										if (generatedIds.next()) {
+											authorAuthorityId = generatedIds.getLong(1);
+										}
 									}
-								}
-								getAuthorIdRS.close();
-								if (authorAuthorityId != 0) {
-									for (String alternativeName : alternativeNames) {
-										addAlternativeNameStmt.setLong(1, authorAuthorityId);
-										addAlternativeNameStmt.setString(2, AspenStringUtils.trimTo(512, alternativeName));
-										addAlternativeNameStmt.executeUpdate();
+									getAuthorIdRS.close();
+									if (authorAuthorityId != 0) {
+										for (String alternativeName : alternativeNames) {
+											addAlternativeNameStmt.setLong(1, authorAuthorityId);
+											addAlternativeNameStmt.setString(2, AspenStringUtils.trimTo(512, alternativeName));
+											addAlternativeNameStmt.executeUpdate();
+										}
+									} else {
+										logEntry.incErrors("Did not get an author id in the author_authority table for " + author);
 									}
-								}else{
-									logEntry.incErrors("Did not get an author id in the author_authority table for " + author);
 								}
 							}
+						}catch (Exception e) {
+							logEntry.addNote("Could not read MARC record for authority " + authId + ", skipping to next record");
 						}
 					}
 				}

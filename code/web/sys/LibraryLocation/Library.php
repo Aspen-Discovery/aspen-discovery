@@ -322,6 +322,7 @@ class Library extends DataObject {
 	public $materialsRequestSendStaffEmailOnAssign;
 	public $materialsRequestNewEmail;
 	public $showGroupedHoldCopiesCount;
+	public $ILLSystem;
 	public $interLibraryLoanName;
 	public $interLibraryLoanUrl;
 	public $expiredMessage;
@@ -1685,7 +1686,34 @@ class Library extends DataObject {
 								'readonly' => false,
 								'permissions' => ['Library ILS Options'],
 							],
-
+							'selfRegRequirePhone' => [
+								'property' => 'selfRegRequirePhone',
+								'type' => 'checkbox',
+								'label' => 'Self Registration requires Phone Number',
+								'description' => 'Whether or not phone number is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'selfRegRequireEmail' => [
+								'property' => 'selfRegRequireEmail',
+								'type' => 'checkbox',
+								'label' => 'Self Registration requires Email',
+								'description' => 'Whether or not email is required when self registering. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'promptForParentInSelfReg' => [
+								'property' => 'promptForParentInSelfReg',
+								'type' => 'checkbox',
+								'label' => 'Prompt For Parent Information',
+								'description' => 'Whether or not parent information should be requested if the person registering is a juvenile. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
+							'promptForSMSNoticesInSelfReg' => [
+								'property' => 'promptForSMSNoticesInSelfReg',
+								'type' => 'checkbox',
+								'label' => 'Prompt For SMS Notices',
+								'description' => 'Whether or not SMS Notification information should be requested. Symphony Only.',
+								'note' => 'Applies to Symphony Only',
+							],
 							'useAllCapsWhenUpdatingProfile' => [
 								'property' => 'useAllCapsWhenUpdatingProfile',
 								'type' => 'checkbox',
@@ -1735,20 +1763,6 @@ class Library extends DataObject {
 								'label' => 'Show Notice Type in Profile',
 								'description' => 'Whether or not patrons should be able to change how they receive notices in their profile.',
 								'note' => 'For Polaris, prevents setting E-Receipt Option and Deliver Option, for CARL.X shows E-Mail Receipt Options, for Sierra allows the user to choose between Mail, Phone, and Email notices',
-								'hideInLists' => true,
-								'default' => 0,
-								'permissions' => ['Library ILS Connection'],
-							],
-							'cityStateField' => [
-								'property' => 'cityStateField',
-								'type' => 'enum',
-								'values' => [
-									0 => 'CITY / STATE field',
-									1 => 'CITY and STATE fields',
-								],
-								'label' => 'City / State Field (Symphony Only)',
-								'description' => 'The field from which to load and update city and state.',
-								'note' => 'Applies to Symphony Only',
 								'hideInLists' => true,
 								'default' => 0,
 								'permissions' => ['Library ILS Connection'],
@@ -2236,6 +2250,21 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => '',
 							],
+							'cityStateField' => [
+								'property' => 'cityStateField',
+								'type' => 'enum',
+								'values' => [
+									0 => 'CITY / STATE field',
+									1 => 'CITY and STATE fields',
+									2 => 'CITY / STATE field - comma separated',
+								],
+								'label' => 'City / State Field (Symphony Only)',
+								'description' => 'The field from which to load and update city and state.',
+								'note' => 'Applies to Symphony Only',
+								'hideInLists' => true,
+								'default' => 0,
+								'permissions' => ['Library ILS Connection'],
+							],
 							'validSelfRegistrationZipCodes' => [
 								'property' => 'validSelfRegistrationZipCodes',
 								'type' => 'regularExpression',
@@ -2272,6 +2301,15 @@ class Library extends DataObject {
 								'description' => 'The ILS template to use during self registration (Sierra and Millennium).',
 								'hideInLists' => true,
 								'default' => 'default',
+							],
+							'selfRegistrationUserProfile' => [
+								'property' => 'selfRegistrationUserProfile',
+								'type' => 'text',
+								'label' => 'Self Registration Profile',
+								'description' => 'The Profile to use during self registration (Symphony Only).',
+								'note' => 'Applies to Symphony Only',
+								'hideInLists' => true,
+								'default' => 'SELFREG',
 							],
 						],
 					],
@@ -2569,7 +2607,7 @@ class Library extends DataObject {
 						'note' => 'Applies to Symphony Only',
 						'hideInLists' => true,
 						'default' => '',
-						'maxLength' => 8,
+						'maxLength' => 12,
 					],
 					//'symphonyPaymentPolicy' => array('property'=>'symphonyPaymentPolicy', 'type'=>'text', 'label'=>'Symphony Payment Policy', 'description'=>'Payment policy to use when adding transactions to Symphony.', 'hideInLists' => true, 'default' => '', 'maxLength' => 8),
 				],
@@ -3120,6 +3158,19 @@ class Library extends DataObject {
 				'hideInLists' => true,
 				'permissions' => ['Library ILL Options'],
 				'properties' => [
+					'ILLSystem' => [
+						'property' => 'ILLSystem',
+						'type' => 'enum',
+						'values' => [
+							0 => 'INN-Reach',
+							1 => 'WorldCat',
+							2 => 'Other',
+						],
+						'label' => 'Interlibrary Loan System',
+						'description' => 'Selected ILL service',
+						'hideInLists' => true,
+						'default' => 2,
+					],
 					'interLibraryLoanName' => [
 						'property' => 'interLibraryLoanName',
 						'type' => 'text',
@@ -3230,8 +3281,8 @@ class Library extends DataObject {
 					'cookieStorageConsent' => [
 						'property' => 'cookieStorageConsent',
 						'type' => 'checkbox',
-						'label' => 'Require Cookie Storage Consent (FUNCTIONALITY CURRENTLY DISABLED)',
-						'description' => 'Require users to consent to cookie storage before using the catalog (THIS IS CURRENTLY DISABLED FUNCTIONALITY AND ENABLING THIS OPTION WILL NOT ENABLE COOKIE CONSENT REQUIREMENTS)',
+						'label' => 'Require Cookie Storage Consent',
+						'description' => 'Require users to consent to cookie storage before using the catalog',
 						'default' => false,
 					],
 					'cookiePolicyHTML' => [
@@ -4764,6 +4815,23 @@ class Library extends DataObject {
 		$apiInfo['pinValidationRules'] = $pinValidationRules;
 		$apiInfo['forgotPasswordType'] = $forgotPasswordType;
 		$apiInfo['ils'] = $ils;
+
+		$superScopeLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+		$localLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+		$localLabel = str_ireplace('{display name}', $this->displayName, $localLabel);
+		$availableLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+		$availableLabel = str_ireplace('{display name}', $this->displayName, $availableLabel);
+		$availableOnlineLabel = $this->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+		$availableOnlineLabel = str_ireplace('{display name}', $this->displayName, $availableOnlineLabel);
+		$availabilityToggleValue = $this->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		$facetCountsToShow = $this->getGroupedWorkDisplaySettings()->facetCountsToShow;
+
+		$apiInfo['groupedWorkDisplaySettings']['superScopeLabel'] = $superScopeLabel;
+		$apiInfo['groupedWorkDisplaySettings']['localLabel'] = $localLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableLabel'] = $availableLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availableOnlineLabel'] = $availableOnlineLabel;
+		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
+		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
 
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;

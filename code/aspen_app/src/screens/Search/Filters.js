@@ -1,13 +1,13 @@
+import { useNavigation, useNavigationState } from '@react-navigation/native';
 import _ from 'lodash';
 import { Box, Button, Center, ChevronRightIcon, HStack, Pressable, ScrollView, Text, View, VStack } from 'native-base';
-import React, { Component } from 'react';
-import { useNavigation, useNavigationState } from '@react-navigation/native';
+import React from 'react';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
 
 // custom components and helper files
 import { buildParamsForUrl, SEARCH } from '../../util/search';
 import { UnsavedChangesExit } from './UnsavedChanges';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { getTermFromDictionary } from '../../translations/TranslationService';
 
 export const FiltersScreen = () => {
      const navigation = useNavigation();
@@ -26,6 +26,9 @@ export const FiltersScreen = () => {
                headerRight: () => <UnsavedChangesExit language={language} updateSearch={updateSearch} discardChanges={discardChanges} prevRoute="SearchScreen" />,
           });
      }
+
+     const locationGroupedWorkDisplaySettings = location.groupedWorkDisplaySettings ?? [];
+     const libraryGroupedWorkDisplaySettings = library.groupedWorkDisplaySettings ?? [];
 
      const renderFilter = (label, index) => {
           return (
@@ -79,6 +82,30 @@ export const FiltersScreen = () => {
                          value = getTermFromDictionary(language, 'rating_desc');
                     } else if (value === 'total_holds desc') {
                          value = getTermFromDictionary(language, 'total_holds_desc');
+                    } else if (value === 'global') {
+                         if (locationGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(locationGroupedWorkDisplaySettings.superScopeLabel)) {
+                              value = locationGroupedWorkDisplaySettings.superScopeLabel;
+                         } else if (libraryGroupedWorkDisplaySettings.superScopeLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.superScopeLabel)) {
+                              value = libraryGroupedWorkDisplaySettings.superScopeLabel;
+                         }
+                    } else if (value === 'local') {
+                         if (locationGroupedWorkDisplaySettings.localLabel || _.isEmpty(locationGroupedWorkDisplaySettings.localLabel)) {
+                              value = locationGroupedWorkDisplaySettings.localLabel;
+                         } else if (libraryGroupedWorkDisplaySettings.localLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.localLabel)) {
+                              value = libraryGroupedWorkDisplaySettings.localLabel;
+                         }
+                    } else if (value === 'available') {
+                         if (locationGroupedWorkDisplaySettings.availableLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableLabel)) {
+                              value = locationGroupedWorkDisplaySettings.availableLabel;
+                         } else if (libraryGroupedWorkDisplaySettings.availableLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableLabel)) {
+                              value = libraryGroupedWorkDisplaySettings.availableLabel;
+                         }
+                    } else if (value === 'available_online') {
+                         if (locationGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(locationGroupedWorkDisplaySettings.availableOnlineLabel)) {
+                              value = locationGroupedWorkDisplaySettings.availableOnlineLabel;
+                         } else if (libraryGroupedWorkDisplaySettings.availableOnlineLabel || _.isEmpty(libraryGroupedWorkDisplaySettings.availableOnlineLabel)) {
+                              value = libraryGroupedWorkDisplaySettings.availableOnlineLabel;
+                         }
                     } else {
                          // do nothing
                     }

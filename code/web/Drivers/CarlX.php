@@ -75,7 +75,7 @@ class CarlX extends AbstractIlsDriver {
 				} else {
 					$normalizedLastName = preg_replace('/[^0-9a-zA-Z]/', '', trim($result->Patron->LastName));
 					$normalizedPassword = preg_replace('/[^0-9a-zA-Z]/', '', trim($password));
-					if (($result->Patron->PatronID == $barcode) && ((strcasecmp($normalizedLastName, $normalizedPassword) === 0) || $validatedViaSSO)) {
+					if ((strcasecmp($result->Patron->PatronID, $barcode) === 0) && ((strcasecmp($normalizedLastName, $normalizedPassword) === 0) || $validatedViaSSO)) {
 						$loginValid = true;
 					}
 				}
@@ -239,7 +239,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
@@ -264,7 +264,7 @@ class CarlX extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('carlx.renewAll', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 				//print_r($msg_result);
 
-				if (str_starts_with($msg_result, "66")) {
+				if (strpos($msg_result, "66") === 0) {
 					$result = $mySip->parseRenewAllResponse($msg_result);
 					//$logger->log("Renew all response\r\n" . print_r($msg_result, true), Logger::LOG_ERROR);
 
@@ -347,7 +347,12 @@ class CarlX extends AbstractIlsDriver {
 					$lastResponse = $this->soapClient->__getLastResponse();
 					$lastResponse = simplexml_load_string($lastResponse, NULL, NULL, 'http://schemas.xmlsoap.org/soap/envelope/');
 					$lastResponse->registerXPathNamespace('soap-env', 'http://schemas.xmlsoap.org/soap/envelope/');
-					$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					if($requestName == 'settleFinesAndFees') {
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/systemAPI');
+						$lastResponse->registerXPathNamespace('ns4', 'http://tlcdelivers.com/cx/schemas/transaction');
+					} else {
+						$lastResponse->registerXPathNamespace('ns3', 'http://tlcdelivers.com/cx/schemas/patronAPI');
+					}
 					$lastResponse->registerXPathNamespace('ns2', 'http://tlcdelivers.com/cx/schemas/response');
 					$result = new stdClass();
 					$result->ResponseStatuses = new stdClass();
@@ -357,6 +362,11 @@ class CarlX extends AbstractIlsDriver {
 					$longMessages = $lastResponse->xpath('//ns2:LongMessage');
 					// TODO make empty
 					$result->ResponseStatuses->ResponseStatus->LongMessage = implode('; ', array_filter($longMessages));
+
+					if($requestName == 'settleFinesAndFees') {
+						// if ReceiptNumber is present, settlement with Carl.X was successful
+						$result->ReceiptNumber = $lastResponse->xpath('//ns3:ReceiptNumber') ?? false;
+					}
 				}
 			} catch (SoapFault $e) {
 				if ($numTries == 2) {
@@ -371,6 +381,39 @@ class CarlX extends AbstractIlsDriver {
 			return false;
 		}
 		return $result;
+	}
+
+	protected function initSIPConnection() {
+		$mySip = new sip2();
+		$mySip->hostname = $this->accountProfile->sipHost;
+		$mySip->port = $this->accountProfile->sipPort;
+
+		if ($mySip->connect()) {
+			//send selfcheck status message
+			$in = $mySip->msgSCStatus();
+			$msg_result = $mySip->get_message($in);
+			// Make sure the response is 98 as expected
+			if (preg_match("/^98/", $msg_result)) {
+				$result = $mySip->parseACSStatusResponse($msg_result);
+				ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+
+				//  Use result to populate SIP2 setings
+				// These settings don't seem to apply to the CarlX Sandbox. pascal 7-12-2016
+				if (isset($result['variable']['AO'][0])) {
+					$mySip->AO = $result['variable']['AO'][0]; /* set AO to value returned */
+				} else {
+					$mySip->AO = 'NASH'; /* set AO to value returned */ // hardcoded for Nashville
+				}
+				if (isset($result['variable']['AN'][0])) {
+					$mySip->AN = $result['variable']['AN'][0]; /* set AN to value returned */
+				} else {
+					$mySip->AN = '';
+				}
+			}
+			return $mySip;
+		} else {
+			return null;
+		}
 	}
 
 	/**
@@ -1391,10 +1434,12 @@ class CarlX extends AbstractIlsDriver {
 					$fine->FineAmountOutstanding = $fine->FineAmount;
 				}
 
-				if (str_starts_with($fine->Identifier, 'ITEM ID: ')) {
+				if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 					$fine->Identifier = substr($fine->Identifier, 9);
 				}
+				/* Need to include the # symbol if the item included it to have it properly settle the fine later on
 				$fine->Identifier = str_replace('#', '', $fine->Identifier);
+				*/
 				$fineType = $fine->TransactionCode;
 				$fine->FeeNotes = $fine->TransactionCode . ' (' . CarlX::$fineTypeTranslations[$fine->TransactionCode] . ') ' . $fine->FeeNotes;
 
@@ -1408,6 +1453,7 @@ class CarlX extends AbstractIlsDriver {
 					'amountOutstandingVal' => $fine->FineAmountOutstanding,
 					'message' => $fine->Title,
 					'date' => date('M j, Y', strtotime($fine->FineAssessedDate)),
+					'occurrence' => $fine->QueuePosition,
 				];
 			}
 		}
@@ -1437,7 +1483,7 @@ class CarlX extends AbstractIlsDriver {
 						$fine->FeeAmountOutstanding = $fine->FeeAmount;
 					}
 
-					if (str_starts_with($fine->Identifier, 'ITEM ID: ')) {
+					if (strpos($fine->Identifier, 'ITEM ID: ') === 0) {
 						$fine->Identifier = substr($fine->Identifier, 9);
 					}
 
@@ -1454,6 +1500,7 @@ class CarlX extends AbstractIlsDriver {
 						'amountOutstandingVal' => $fine->FeeAmountOutstanding,
 						'message' => $fine->Title,
 						'date' => date('M j, Y', strtotime($fine->TransactionDate)),
+						'occurrence' => $fine->QueuePosition,
 					];
 				}
 				// The following epicycle is required because CarlX PatronAPI GetPatronTransactions Lost does not report FeeAmountOutstanding. See TLC ticket https://ww2.tlcdelivers.com/helpdesk/Default.asp?TicketID=515720
@@ -1481,12 +1528,206 @@ class CarlX extends AbstractIlsDriver {
 		return $myFines;
 	}
 
+	protected function getLostViaSIP(string $patronId): array {
+		$mySip = $this->initSIPConnection();
+		$mySip->patron = $patronId;
+		if (!is_null($mySip)) {
+			$in = $mySip->msgPatronInformation('none');
+			$msg_result = $mySip->get_message($in);
+			ExternalRequestLogEntry::logRequest('carlx.getLost', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+			if (preg_match("/^64/", $msg_result)) {
+				$result = $mySip->parsePatronInfoResponse($msg_result);
+				$fineCount = $result['fixed']['FineCount'];
+				$in = $mySip->msgPatronInformation('fine', 1, $fineCount);
+				$msg_result = $mySip->get_message($in);
+				ExternalRequestLogEntry::logRequest('carlx.fine', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
+				if (preg_match("/^64/", $msg_result)) {
+					$myLostFees = [];
+					$result = $mySip->parsePatronInfoResponse($msg_result);
+					foreach ($result['variable']['AV'] as $feeItem) {
+						$feeItemFields = explode('^', $feeItem);
+						$feeItemParsed = [];
+						foreach ($feeItemFields as $feeItemField) {
+							$fieldName = substr($feeItemField, 0, 1);
+							$fieldValue = substr($feeItemField, 1);
+							$feeItemParsed[$fieldName] = $fieldValue;
+						}
+						if ($feeItemParsed['S'] == 'Lost - fee charged') {
+							$myLostFees[] = [
+								'fineId' => $feeItemParsed['I'],
+								//'type' => 'L',
+								//'reason' => $feeItem['T'],
+								//'amount' => $feeItem[], // not in CarlX SIP2 Patron Information > Fees
+								//'amountVal' => $feeItem[], // not in CarlX SIP2 Patron Information > Fees
+								'amountOutstanding' => $feeItemParsed['F'],
+								'amountOutstandingVal' => $feeItemParsed['F'],
+								//'message' => $feeItem['T'],
+								//'date' => date('M j, Y', strtotime($feeItem['1']))
+							];
+						}
+					}
+					return $myLostFees;
+				}
+			}
+		}
+		return [];
+	}
+
 	public function canPayFine($system) {
 		return true;
 	}
 
 	public function getFineSystem($branchId) {
 		return '';
+	}
+
+	public function completeFinePayment(User $patron, UserPayment $payment) {
+		global $logger;
+		global $library;
+
+		$result = [
+			'success' => false,
+			'message' => 'Unknown error completing fine payment',
+		];
+
+		if(empty($library->accountProfileId)) {
+			$logger->log('No Account Profile configured in Library Systems', Logger::LOG_ERROR);
+			$result['message'] = 'No Account Profile configured in Library Systems';
+			return $result;
+		}
+
+		$staffId = '';
+		require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+		$accountProfile = new AccountProfile();
+		$accountProfile->id = $library->accountProfileId;
+		if ($accountProfile->find(true)) {
+			if(empty($accountProfile->staffUsername)) {
+				$logger->log('No Staff Username configured in Account Profile', Logger::LOG_ERROR);
+				$result['message'] = 'No Staff Username configured in Account Profile';
+				return $result;
+			}
+			$staffId = $accountProfile->staffUsername;
+		}
+
+		if (empty($this->patronWsdl)) {
+			$logger->log('No Default Patron WSDL defined for SOAP calls in CarlX Driver', Logger::LOG_ERROR);
+			$result['message'] = 'No Default Patron WSDL defined for SOAP calls in CarlX Driver';
+			return $result;
+		}
+
+		$homeLocation = $patron->getHomeLocationCode();
+		if(!$homeLocation) {
+			global $logger;
+			$logger->log('Failed to find any location to make the payment from', Logger::LOG_ERROR);
+			$result['messages'][] = translate([
+				'text' => 'Unable to find any location to assign the user for completing the payment',
+				'isPublicFacing' => true,
+			]);
+			return $result;
+		}
+
+		$accountLinesPaid = explode(',', $payment->finesPaid);
+		$allPaymentsSucceed = true;
+
+		$allFines = $this->getFines($patron);
+
+		foreach ($accountLinesPaid as $line) {
+			[$feeId, $pmtAmount] = explode('|', $line);
+
+			$occurrence = 0;
+			foreach ($allFines as $fine) {
+				if($fine['fineId'] == $feeId) {
+					$occurrence = $fine['occurrence'];
+					break;
+				}
+			}
+
+			$paymentRequest = new stdClass();
+			$paymentRequest->SearchType = 'Patron ID';
+			$paymentRequest->SearchID = $patron->ils_barcode;
+			$paymentRequest->FineOrFee = [];
+			$paymentRequest->FineOrFee[0] = new stdClass();
+			$paymentRequest->FineOrFee[0]->ItemID = $feeId; // The unique item identifier against which payment for a fine or fee is being applied
+			$paymentRequest->FineOrFee[0]->Occur = $occurrence; // The unique occurrence associated with the item that references the fine or fee selected for settlement
+			$paymentRequest->FineOrFee[0]->WaiveComment = ''; // 16 character limit
+			$paymentRequest->FineOrFee[0]->PayType = 'Pay'; // Pay, Waive, or Cancel
+			$paymentRequest->FineOrFee[0]->PayMethod = 'Credit Card'; // Cash, Check, or Credit Card
+			$paymentRequest->FineOrFee[0]->Amount = $pmtAmount;
+			$paymentRequest->Modifiers = new stdClass();
+			$paymentRequest->Modifiers->StaffID = $staffId; // The alias of the employee submitting the request. Required.
+			$paymentRequest->Modifiers->EnvBranch = $homeLocation; // Branch Code indicating the Branch being used. Required.
+
+			$requestOptions = $this->genericResponseSOAPCallOptions;
+			$requestOptions['login'] = $this->accountProfile->oAuthClientId;
+			$requestOptions['password'] = $this->accountProfile->oAuthClientSecret;
+			$settleFinesAndFeesResult = $this->doSoapRequest('settleFinesAndFees', $paymentRequest, $this->patronWsdl, $requestOptions, []);
+			if($result) {
+				if (!$settleFinesAndFeesResult->ReceiptNumber) {
+					$allPaymentsSucceed = false;
+					$result['message'] = translate([
+						'text' => 'Error updating payment, please visit the library with your receipt.',
+						'isPublicFacing' => true,
+					]);
+					$logger->log("Error updating payment $payment->id:", Logger::LOG_ERROR);
+					$logger->log(print_r(json_encode($settleFinesAndFeesResult, JSON_PRETTY_PRINT), true), Logger::LOG_ERROR);
+				} else {
+					if (empty($settleFinesAndFeesResult->ResponseStatuses) || empty($settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0])) {
+						$allPaymentsSucceed = false;
+						$result['message'] = translate([
+							'text' => 'Error updating payment, please visit the library with your receipt.  Did not get a valid response from the backend server.',
+							'isPublicFacing' => true,
+						]);
+					} elseif ($settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0]->Code != 0) {
+						$allPaymentsSucceed = false;
+						$result['message'] = translate([
+							'text' => "Error updating payment, please visit the library with your receipt. {$settleFinesAndFeesResult->ResponseStatuses->ResponseStatus[0]->ShortMessage}",
+							'isPublicFacing' => true,
+						]);
+					} else {
+
+						$payment->message .= " CarlX Receipt Number $settleFinesAndFeesResult->ReceiptNumber";
+						$payment->update();
+					}
+				}
+			} else {
+				global $logger;
+				$logger->log('CarlX ILS gave no response when attempting to settle payment.', Logger::LOG_ERROR);
+				return [
+					'success' => false,
+					'message' => translate([
+						'text' => 'Error updating payment, please visit the library with your receipt.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+
+			if($allPaymentsSucceed) {
+				$paymentNote = new stdClass();
+				$paymentNote->Note = new stdClass();
+				$paymentNote->Note->PatronID = $patron->ils_barcode;
+				$paymentNote->Note->NoteType = 2;
+				$paymentNote->Note->NoteText = $payment->paymentType . ' Transaction Reference: ' . $payment->id;
+				$paymentNote->Modifiers = '';
+				$addPaymentNoteResult = $this->doSoapRequest('addPatronNote', $paymentNote, $this->patronWsdl, $this->genericResponseSOAPCallOptions, []);
+				if($addPaymentNoteResult) {
+					$success = stripos($addPaymentNoteResult->ResponseStatuses->ResponseStatus[0]->ShortMessage, 'Success') !== false;
+					if(!$success) {
+						$logger->log("Failed to add patron note for payment in CarlX for Reference ID $payment->id", Logger::LOG_ERROR);
+					}
+				} else {
+					$logger->log("CarlX gave no response when attempting to add patron note for payment Reference ID $payment->id", Logger::LOG_ERROR);
+				}
+
+				$result['success'] = true;
+				$result['message'] = translate([
+					'text' => 'Your fines have been paid successfully, thank you.',
+					'isPublicFacing' => true,
+				]);
+			}
+
+		}
+
+		return $result;
 	}
 
 	/**
@@ -1634,7 +1875,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 setings
@@ -1700,7 +1941,7 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function placeHoldViaSIP(User $patron, $holdId, $pickupBranch = null, $cancelDate = null, $type = null, $queuePosition = null, $freeze = null, $freezeReactivationDate = null) {
-		if (str_starts_with($holdId, $this->accountProfile->recordSource . ':')) {
+		if (strpos($holdId, $this->accountProfile->recordSource . ':') === 0) {
 			$holdId = str_replace($this->accountProfile->recordSource . ':', '', $holdId);
 		}
 		//Place the hold via SIP 2
@@ -1724,7 +1965,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 setings
@@ -1760,13 +2001,13 @@ class CarlX extends AbstractIlsDriver {
 				//place the hold
 				$itemId = '';
 				$recordId = '';
-				if (str_starts_with($holdId, 'ITEM ID: ')) {
+				if (strpos($holdId, 'ITEM ID: ') === 0) {
 					$holdType = 3; // specific copy
 					$itemId = substr($holdId, 9);
-				} elseif (str_starts_with($holdId, 'BID: ')) {
+				} elseif (strpos($holdId, 'BID: ') === 0) {
 					$holdType = 2; // any copy of title
 					$recordId = substr($holdId, 5);
-				} elseif (str_starts_with($holdId, 'CARL')) {
+				} elseif (strpos($holdId, 'CARL') === 0) {
 					$holdType = 2; // any copy of title
 					$recordId = $this->BIDfromFullCarlID($holdId);
 				} else { // assume a short BID
@@ -1802,6 +2043,9 @@ class CarlX extends AbstractIlsDriver {
 				//TODO: Should change cancellation date when updating pick up locations
 				if (!empty($cancelDate)) {
 					$dateObject = date_create_from_format('m/d/Y', $cancelDate);
+					if ($dateObject == false) {
+						$dateObject = date_create_from_format('Y-m-d', $cancelDate);
+					}
 					$expirationTime = $dateObject->getTimestamp();
 				} else {
 					//expire the hold in 2 years by default
@@ -1812,7 +2056,7 @@ class CarlX extends AbstractIlsDriver {
 				$msg_result = $mySip->get_message($in);
 				ExternalRequestLogEntry::logRequest('carlx.placeHold', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 
-				if (str_starts_with($msg_result, "16")) {
+				if (strpos($msg_result, "16") === 0) {
 					$result = $mySip->parseHoldResponse($msg_result);
 					$success = ($result['fixed']['Ok'] == 1);
 					$message = $result['variable']['AF'][0];
@@ -1867,7 +2111,7 @@ class CarlX extends AbstractIlsDriver {
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.selfCheckStatus', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			// Make sure the response is 98 as expected
-			if (str_starts_with($msg_result, "98")) {
+			if (strpos($msg_result, "98") === 0) {
 				$result = $mySip->parseACSStatusResponse($msg_result);
 
 				//  Use result to populate SIP2 settings
@@ -1892,7 +2136,7 @@ class CarlX extends AbstractIlsDriver {
 				ExternalRequestLogEntry::logRequest('carlx.renewCheckout', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, ['patronPwd' => $patron->cat_password]);
 				//print_r($msg_result);
 
-				if (str_starts_with($msg_result, "30")) {
+				if (strpos($msg_result, "30") === 0) {
 					$result = $mySip->parseRenewResponse($msg_result);
 
 //					$title = $result['variable']['AJ'][0];

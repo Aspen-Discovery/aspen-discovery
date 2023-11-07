@@ -2618,6 +2618,33 @@ class SearchAPI extends Action {
 		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])) {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
+
+		if (isset($_REQUEST['filter'])) {
+			if (is_array($_REQUEST['filter'])) {
+				$givenFilters = $_REQUEST['filter'];
+				foreach ($givenFilters as $filter) {
+					$filterSplit = explode(':', $filter);
+					if($filterSplit[0] == 'availability_toggle') {
+						$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+						$searchObject->addFilter('availability_toggle:'.$filterSplit[1]);
+					}
+				}
+			}
+		} elseif (isset($_REQUEST['availability_toggle'])) {
+			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+			$searchObject->addFilter('availability_toggle:' . $_REQUEST['availability_toggle']);
+		} else {
+			$searchLibrary = Library::getSearchLibrary(null);
+			$searchLocation = Location::getSearchLocation(null);
+			if ($searchLocation) {
+				$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			} else {
+				$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			}
+			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
+		}
+
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
 		$timer->logTime('Setup Search');
 
@@ -2654,6 +2681,12 @@ class SearchAPI extends Action {
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$timer->logTime('no hits processing');
+
+			// try changing availability_toggle if not already global
+			if($_REQUEST['availability_toggle'] != 'global') {
+				$_REQUEST['availability_toggle'] = 'global';
+				$this->searchLite();
+			}
 		} else {
 			$timer->logTime('save search');
 			$summary = $searchObject->getResultSummary();
@@ -2710,6 +2743,34 @@ class SearchAPI extends Action {
 			$facets = $interface->getVariable('sideFacetSet');
 			$options = [];
 			$index = 0;
+
+			$availabilityToggle = $topFacetSet['availability_toggle'];
+			if($availabilityToggle) {
+				$key = translate([
+					'text' => $availabilityToggle['label'],
+					'isPublicFacing' => true
+				]);
+				$options[$key]['key'] = -1;
+				$options[$key]['label'] = $key;
+				$options[$key]['field'] = $availabilityToggle['field_name'];
+				$options[$key]['hasApplied'] = true;
+				$options[$key]['multiSelect'] = false;
+
+				$i = 0;
+				foreach ($availabilityToggle['list'] as $item) {
+					$options[$key]['facets'][$i]['value'] = $item['value'];
+					$options[$key]['facets'][$i]['display'] = translate([
+						'text' => $item['display'],
+						'isPublicFacing' => true
+					]);
+					$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+					$options[$key]['facets'][$i]['count'] = $item['count'];
+					$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+					$options[$key]['facets'][$i]['multiSelect'] = false;
+					$i++;
+				}
+			}
+
 			if ($includeSortList) {
 				$i = 0;
 				$key = translate([
@@ -2735,18 +2796,20 @@ class SearchAPI extends Action {
 			foreach ($facets as $facet) {
 				$index++;
 				$i = 0;
-				if ($facet['field_name'] == 'availability_toggle') {
-					$availabilityToggle = $topFacetSet['availability_toggle'];
-					$key = $availabilityToggle['label'];
-					$options[$key]['key'] = $index;
-					$options[$key]['label'] = $key;
-					$options[$key]['field'] = $availabilityToggle['field_name'];
-					$options[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
-					$options[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
-					foreach ($availabilityToggle['list'] as $item) {
+				$key = translate([
+					'text' => $facet['label'],
+					'isPublicFacing' => true
+				]);
+				$options[$key]['key'] = $index;
+				$options[$key]['label'] = $key;
+				$options[$key]['field'] = $facet['field_name'];
+				$options[$key]['hasApplied'] = $facet['hasApplied'];
+				$options[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+				if (isset($facet['sortedList'])) {
+					foreach ($facet['sortedList'] as $item) {
 						$options[$key]['facets'][$i]['value'] = $item['value'];
 						$options[$key]['facets'][$i]['display'] = $item['display'];
-						$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$options[$key]['facets'][$i]['field'] = $facet['field_name'];
 						$options[$key]['facets'][$i]['count'] = $item['count'];
 						$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
 						if (isset($item['multiSelect'])) {
@@ -2757,43 +2820,18 @@ class SearchAPI extends Action {
 						$i++;
 					}
 				} else {
-					$key = translate([
-						'text' => $facet['label'],
-						'isPublicFacing' => true
-					]);
-					$options[$key]['key'] = $index;
-					$options[$key]['label'] = $key;
-					$options[$key]['field'] = $facet['field_name'];
-					$options[$key]['hasApplied'] = $facet['hasApplied'];
-					$options[$key]['multiSelect'] = (bool)$facet['multiSelect'];
-					if (isset($facet['sortedList'])) {
-						foreach ($facet['sortedList'] as $item) {
-							$options[$key]['facets'][$i]['value'] = $item['value'];
-							$options[$key]['facets'][$i]['display'] = $item['display'];
-							$options[$key]['facets'][$i]['field'] = $facet['field_name'];
-							$options[$key]['facets'][$i]['count'] = $item['count'];
-							$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-							if (isset($item['multiSelect'])) {
-								$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-							} else {
-								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
-							}
-							$i++;
+					foreach ($facet['list'] as $item) {
+						$options[$key]['facets'][$i]['value'] = $item['value'];
+						$options[$key]['facets'][$i]['display'] = $item['display'];
+						$options[$key]['facets'][$i]['field'] = $facet['field_name'];
+						$options[$key]['facets'][$i]['count'] = $item['count'];
+						$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						if (isset($item['multiSelect'])) {
+							$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						} else {
+							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
 						}
-					} else {
-						foreach ($facet['list'] as $item) {
-							$options[$key]['facets'][$i]['value'] = $item['value'];
-							$options[$key]['facets'][$i]['display'] = $item['display'];
-							$options[$key]['facets'][$i]['field'] = $facet['field_name'];
-							$options[$key]['facets'][$i]['count'] = $item['count'];
-							$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-							if (isset($item['multiSelect'])) {
-								$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-							} else {
-								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
-							}
-							$i++;
-						}
+						$i++;
 					}
 				}
 
@@ -2986,6 +3024,38 @@ class SearchAPI extends Action {
 
 			$items = [];
 			$index = 0;
+
+			$availabilityToggle = $topFacetSet['availability_toggle'];
+			if($availabilityToggle) {
+				$key = translate([
+					'text' => $availabilityToggle['label'],
+					'isPublicFacing' => true
+				]);
+				$items[$key]['key'] = -1;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = $availabilityToggle['field_name'];
+				$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
+				$items[$key]['multiSelect'] = $availabilityToggle['multiSelect'];
+
+				$i = 0;
+				foreach ($availabilityToggle['list'] as $item) {
+					$items[$key]['facets'][$i]['value'] = $item['value'];
+					$items[$key]['facets'][$i]['display'] = translate([
+						'text' => $item['display'],
+						'isPublicFacing' => true
+					]);
+					$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+					$items[$key]['facets'][$i]['count'] = $item['count'];
+					$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+					if (isset($item['multiSelect'])) {
+						$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+					} else {
+						$items[$key]['facets'][$i]['multiSelect'] = (bool)$items[$key]['multiSelect'];
+					}
+					$i++;
+				}
+			}
+
 			if ($includeSortList) {
 				$sortList = $searchObj->getSortList();
 				$i = 0;
@@ -3014,18 +3084,17 @@ class SearchAPI extends Action {
 			foreach ($facets as $facet) {
 				$index++;
 				$i = 0;
-				if ($facet['field_name'] == 'availability_toggle') {
-					$availabilityToggle = $topFacetSet['availability_toggle'];
-					$key = translate(['text' => $availabilityToggle['label'], 'isPublicFacing' => true]);
-					$items[$key]['key'] = $index;
-					$items[$key]['label'] = $key;
-					$items[$key]['field'] = $availabilityToggle['field_name'];
-					$items[$key]['hasApplied'] = $availabilityToggle['hasApplied'];
-					$items[$key]['multiSelect'] = (bool)$availabilityToggle['multiSelect'];
-					foreach ($availabilityToggle['list'] as $item) {
+				$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
+				$items[$key]['key'] = $index;
+				$items[$key]['label'] = $key;
+				$items[$key]['field'] = $facet['field_name'];
+				$items[$key]['hasApplied'] = $facet['hasApplied'];
+				$items[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+				if (isset($facet['sortedList'])) {
+					foreach ($facet['sortedList'] as $item) {
 						$items[$key]['facets'][$i]['value'] = $item['value'];
-						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
-						$items[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
+						$items[$key]['facets'][$i]['field'] = $facet['field_name'];
 						$items[$key]['facets'][$i]['count'] = $item['count'];
 						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
 						if (isset($item['multiSelect'])) {
@@ -3036,40 +3105,18 @@ class SearchAPI extends Action {
 						$i++;
 					}
 				} else {
-					$key = translate(['text' => $facet['label'], 'isPublicFacing' => true]);
-					$items[$key]['key'] = $index;
-					$items[$key]['label'] = $key;
-					$items[$key]['field'] = $facet['field_name'];
-					$items[$key]['hasApplied'] = $facet['hasApplied'];
-					$items[$key]['multiSelect'] = (bool)$facet['multiSelect'];
-					if (isset($facet['sortedList'])) {
-						foreach ($facet['sortedList'] as $item) {
-							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
-							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
-							$items[$key]['facets'][$i]['count'] = $item['count'];
-							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-							if (isset($item['multiSelect'])) {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-							} else {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
-							}
-							$i++;
+					foreach ($facet['list'] as $item) {
+						$items[$key]['facets'][$i]['value'] = $item['value'];
+						$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+						$items[$key]['facets'][$i]['field'] = $facet['field_name'];
+						$items[$key]['facets'][$i]['count'] = $item['count'];
+						$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						if (isset($item['multiSelect'])) {
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
+						} else {
+							$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
 						}
-					} else {
-						foreach ($facet['list'] as $item) {
-							$items[$key]['facets'][$i]['value'] = $item['value'];
-							$items[$key]['facets'][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
-							$items[$key]['facets'][$i]['field'] = $facet['field_name'];
-							$items[$key]['facets'][$i]['count'] = $item['count'];
-							$items[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-							if (isset($item['multiSelect'])) {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
-							} else {
-								$items[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
-							}
-							$i++;
-						}
+						$i++;
 					}
 				}
 
@@ -3253,6 +3300,9 @@ class SearchAPI extends Action {
 			if ($includeSort) {
 				$items[] = 'sort_by';
 			}
+
+			$items[] = 'availability_toggle';
+
 			$results = [
 				'success' => true,
 				'id' => $id,
@@ -3311,8 +3361,44 @@ class SearchAPI extends Action {
 			foreach ($filters as $key => $filter) {
 				$i = 0;
 				foreach ($filter as $item) {
+					if($item['field'] == 'availability_toggle') {
+						$searchLibrary = Library::getSearchLibrary(null);
+						$searchLocation = Location::getSearchLocation(null);
+						if ($searchLocation) {
+							$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+							$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+							$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+							$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+							$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+							$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+							$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+							$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+						} else {
+							$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+							$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+							$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
+							$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+							$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
+							$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+							$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+							$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+						}
+
+						if($item['value'] == 'global') {
+							$items[$key][$i]['display'] = translate(['text' => $superScopeLabel, 'isPublicFacing' => true]);
+						} else if ($item['value'] == 'local') {
+							$items[$key][$i]['display'] = translate(['text' => $localLabel, 'isPublicFacing' => true]);
+						} else if ($item['value'] == 'available') {
+							$items[$key][$i]['display'] = translate(['text' => $localLabel, 'isPublicFacing' => true]);
+						} else if ($item['value'] == 'available_online') {
+							$items[$key][$i]['display'] = translate(['text' => $availableOnlineLabel, 'isPublicFacing' => true]);
+						} else {
+							$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+						}
+					} else {
+						$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);
+					}
 					$items[$key][$i]['value'] = $item['value'];
-					$items[$key][$i]['display'] = translate(['text' => $item['display'], 'isPublicFacing' => true]);;
 					$items[$key][$i]['field'] = $item['field'];
 					$items[$key][$i]['count'] = 0;
 					$items[$key][$i]['isApplied'] = true;
@@ -3348,6 +3434,29 @@ class SearchAPI extends Action {
 			$facets[$i]['multiSelect'] = (bool)$facet->multiSelect;
 			$i++;
 		}
+
+		$searchLibrary = Library::getSearchLibrary(null);
+		$searchLocation = Location::getSearchLocation(null);
+		if ($searchLocation) {
+			$superScopeLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+			$localLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+			$localLabel = str_ireplace('{display name}', $searchLocation->displayName, $localLabel);
+			$availableLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableLabel);
+			$availableOnlineLabel = $searchLocation->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLocation->displayName, $availableOnlineLabel);
+			$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		} else {
+			$superScopeLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelSuperScope;
+			$localLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelLocal;
+			$localLabel = str_ireplace('{display name}', $searchLibrary->displayName, $localLabel);
+			$availableLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailable;
+			$availableLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableLabel);
+			$availableOnlineLabel = $searchLibrary->getGroupedWorkDisplaySettings()->availabilityToggleLabelAvailableOnline;
+			$availableOnlineLabel = str_ireplace('{display name}', $searchLibrary->displayName, $availableOnlineLabel);
+			$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+		}
+
 		return [
 			'success' => true,
 			'limit' => $limit,
