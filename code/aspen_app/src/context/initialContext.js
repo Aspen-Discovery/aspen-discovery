@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import _ from 'lodash';
 import * as Device from 'expo-device';
+import _ from 'lodash';
+import React, { useState } from 'react';
+import { getTermFromDictionary } from '../translations/TranslationService';
 import { BRANCH, formatDiscoveryVersion } from '../util/loadLibrary';
 import { PATRON } from '../util/loadPatron';
-import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const ThemeContext = React.createContext({
      theme: [],
@@ -362,8 +362,10 @@ export const UserProvider = ({ children }) => {
                          setExpoToken(deviceSettings[0]?.token ?? false);
                          setAspenToken(true);
 
-                         if (deviceSettings[0].onboardStatus) {
-                              setNotificationOnboard(deviceSettings[0].onboardStatus);
+                         if (deviceSettings && _.isObject(deviceSettings)) {
+                              if (deviceSettings[0].onboardStatus) {
+                                   setNotificationOnboard(deviceSettings[0].onboardStatus);
+                              }
                          } else {
                               // probably connecting to a Discovery version earlier than 23.07.00
                               setNotificationOnboard(0);
@@ -377,7 +379,7 @@ export const UserProvider = ({ children }) => {
                          setNotificationOnboard(0);
 
                          const deviceSettings = _.filter(data, { device: 'Unknown' });
-                         if (deviceSettings) {
+                         if (deviceSettings && _.isObject(deviceSettings)) {
                               if (deviceSettings[0].onboardStatus) {
                                    setNotificationOnboard(deviceSettings[0].onboardStatus);
                               }
