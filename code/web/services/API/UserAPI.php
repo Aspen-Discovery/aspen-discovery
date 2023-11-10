@@ -630,9 +630,9 @@ class UserAPI extends Action {
 			$numOverdue = 0;
 			$numHolds = 0;
 			$numHoldsAvailable = 0;
-			if(!$reload) {
+			if($reload === 'false' || !$reload) {
 				// set reload parameter to get ILS account summary if it's not already set
-				$_REQUEST['reload'] = true;
+				unset($_REQUEST['reload']);
 			}
 
 			$accountSummary = $user->getAccountSummary();
@@ -692,9 +692,9 @@ class UserAPI extends Action {
 			$currencyFormatter = new NumberFormatter($activeLanguage->locale . '@currency=' . $currencyCode, NumberFormatter::CURRENCY);
 			$userData->fines = $currencyFormatter->formatCurrency($userData->finesVal, $currencyCode);
 
-			if(!$reload) {
+			if($reload === 'false' || !$reload) {
 				// clear forced reload parameter
-				$_REQUEST['reload'] = false;
+				unset($_REQUEST['reload']);
 			}
 
 			//Add overdrive data
