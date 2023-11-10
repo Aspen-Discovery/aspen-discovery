@@ -1,13 +1,13 @@
-import React from 'react';
 import { MaterialIcons } from '@expo/vector-icons';
 import { create } from 'apisauce';
 import _ from 'lodash';
 import { Box, Button, Icon, Menu, Pressable } from 'native-base';
+import React from 'react';
+import { LanguageContext, LibrarySystemContext } from '../context/initialContext';
+import { saveLanguage } from '../util/api/user';
 
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
-import { LanguageContext, LibrarySystemContext } from '../context/initialContext';
-import { saveLanguage } from '../util/api/user';
 
 /** *******************************************************************
  * General
@@ -22,6 +22,9 @@ export const LanguageSwitcher = () => {
                if (result) {
                     updateLanguage(val);
                     setLabel(getLanguageDisplayName(val, languages));
+                    await getTranslatedTermsForUserPreferredLanguage(val, library.baseUrl).then(() => {
+                         updateDictionary(translationsLibrary);
+                    });
                } else {
                     console.log('there was an error updating the language...');
                }
@@ -220,6 +223,141 @@ async function getTranslatedTermWithValues(terms, language, url) {
      _.map(terms, async function (term) {
           await getTranslationsWithValues(term.key, term.value, language, url, true);
      });
+}
+
+/**
+ * Updates dictionary for translations used in Aspen LiDA for the given language
+ * @param {string} language // the language code used in Aspen Discovery
+ * @param {string} url
+ **/
+export async function getTranslatedTermsForUserPreferredLanguage(language, url) {
+     console.log('Getting translations for ' + language + '...');
+
+     await getTranslatedTerm(language, url);
+
+     const titlesOnHold = [
+          {
+               key: 'titles_on_hold_for_ils',
+               value: getTermFromDictionary(language, 'physical_materials'),
+          },
+          {
+               key: 'titles_on_hold_for_overdrive',
+               value: getTermFromDictionary(language, 'overdrive'),
+          },
+          {
+               key: 'titles_on_hold_for_cloud_library',
+               value: getTermFromDictionary(language, 'cloud_library'),
+          },
+          {
+               key: 'titles_on_hold_for_axis_360',
+               value: getTermFromDictionary(language, 'axis_360'),
+          },
+     ];
+     const checkouts = [
+          {
+               key: 'checkouts_for_ils',
+               value: getTermFromDictionary(language, 'physical_materials'),
+          },
+          {
+               key: 'checkouts_for_overdrive',
+               value: getTermFromDictionary(language, 'overdrive'),
+          },
+          {
+               key: 'checkouts_for_hoopla',
+               value: getTermFromDictionary(language, 'hoopla'),
+          },
+          {
+               key: 'checkouts_for_cloud_library',
+               value: getTermFromDictionary(language, 'cloud_library'),
+          },
+          {
+               key: 'checkouts_for_axis_360',
+               value: getTermFromDictionary(language, 'axis_360'),
+          },
+     ];
+     const filterBy = [
+          {
+               key: 'filter_by_ils',
+               value: getTermFromDictionary(language, 'physical_materials'),
+          },
+          {
+               key: 'filter_by_overdrive',
+               value: getTermFromDictionary(language, 'overdrive'),
+          },
+          {
+               key: 'filter_by_hoopla',
+               value: getTermFromDictionary(language, 'hoopla'),
+          },
+          {
+               key: 'filter_by_cloud_library',
+               value: getTermFromDictionary(language, 'cloud_library'),
+          },
+          {
+               key: 'filter_by_axis_360',
+               value: getTermFromDictionary(language, 'axis_360'),
+          },
+          {
+               key: 'filter_by_all',
+               value: getTermFromDictionary(language, 'all'),
+          },
+     ];
+     const sortBy = [
+          {
+               key: 'sort_by_title',
+               value: getTermFromDictionary(language, 'title'),
+          },
+          {
+               key: 'sort_by_author',
+               value: getTermFromDictionary(language, 'author'),
+          },
+          {
+               key: 'sort_by_format',
+               value: getTermFromDictionary(language, 'format'),
+          },
+          {
+               key: 'sort_by_status',
+               value: getTermFromDictionary(language, 'status'),
+          },
+          {
+               key: 'sort_by_date_placed',
+               value: getTermFromDictionary(language, 'date_placed'),
+          },
+          {
+               key: 'sort_by_position',
+               value: getTermFromDictionary(language, 'position'),
+          },
+          {
+               key: 'sort_by_pickup_location',
+               value: getTermFromDictionary(language, 'pickup_location'),
+          },
+          {
+               key: 'sort_by_library_account',
+               value: getTermFromDictionary(language, 'library_account'),
+          },
+          {
+               key: 'sort_by_expiration',
+               value: getTermFromDictionary(language, 'expiration'),
+          },
+          {
+               key: 'sort_by_date_added',
+               value: getTermFromDictionary(language, 'date_added'),
+          },
+          {
+               key: 'sort_by_recently_added',
+               value: getTermFromDictionary(language, 'recently_added'),
+          },
+          {
+               key: 'sort_by_user_defined',
+               value: getTermFromDictionary(language, 'user_defined'),
+          },
+     ];
+
+     await getTranslatedTermWithValues(titlesOnHold, language, url);
+     await getTranslatedTermWithValues(checkouts, language, url);
+     await getTranslatedTermWithValues(filterBy, language, url);
+     await getTranslatedTermWithValues(sortBy, language, url);
+
+     return true;
 }
 
 export async function getTranslatedTermsForAllLanguages(languages, url) {
