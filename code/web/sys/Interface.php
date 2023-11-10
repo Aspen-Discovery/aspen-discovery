@@ -501,6 +501,7 @@ class UInterface extends Smarty {
 		}
 		$this->assign('useHomeLink', $useHomeLink);
 		$this->assign('showBookIcon', $library->getLayoutSettings()->showBookIcon);
+		$this->assign('languageAndDisplayInHeader', $library->getLayoutSettings()->languageAndDisplayInHeader);
 
 		// set minimum theme contrast ratio
 		$this->assign('contrastRatio', $library->getLayoutSettings()->contrastRatio);
@@ -702,9 +703,11 @@ class UInterface extends Smarty {
 		}
 		$this->assign('showDisplayNameInHeader', $library->showDisplayNameInHeader);
 		$this->assign('externalMaterialsRequestUrl', $library->externalMaterialsRequestUrl);
+		$this->assign('languageAndDisplayInHeader', $library->languageAndDisplayInHeader);
 
 		if ($location != null) {
 			$this->assign('showDisplayNameInHeader', $location->showDisplayNameInHeader);
+			$this->assign('languageAndDisplayInHeader', $location->languageAndDisplayInHeader);
 			$this->assign('librarySystemName', $location->displayName);
 		}
 

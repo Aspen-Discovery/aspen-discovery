@@ -51,6 +51,7 @@ class Location extends DataObject {
 	public $useLibraryThemes;
 	public $_themes;
 	public $showDisplayNameInHeader;
+	public $languageAndDisplayInHeader;
 	public $headerText;
 	public $address;
 	public $phone;
@@ -433,6 +434,15 @@ class Location extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Show Display Name in Header',
 				'description' => 'Whether or not the display name should be shown in the header next to the logo',
+				'hideInLists' => true,
+				'default' => false,
+				'permissions' => ['Location Theme Configuration'],
+			],
+			'languageAndDisplayInHeader' => [
+				'property' => 'languageAndDisplayInHeader',
+				'type' =>'checkbox',
+				'label' => 'Show language and display settings in page header',
+				'description' => 'Whether or not to display the language and display settings in the page header',
 				'hideInLists' => true,
 				'default' => false,
 				'permissions' => ['Location Theme Configuration'],

@@ -95,6 +95,25 @@
 			{/if}
 		{/foreach}
 	{/if}
+	{if !empty($allActiveThemes)}
+		{if count($allActiveThemes) > 1}
+			<div class="header-menu-option">
+				<i class="fas fa-cog fa-fw"></i>
+				<span>
+					<a onclick="AspenDiscovery.showDisplaySettings()">
+					 	{translate text="Display Options" isPublicFacing=true}
+					</a>
+				</span>
+			</div>
+		{else}
+			<div class="header-menu-option">
+				<i class="fas fa-cog fa-fw"></i> 
+				<a onclick="AspenDiscovery.showDisplaySettings()">
+					{translate text="Display" isPublicFacing=true}
+				</a>
+			</div>
+		{/if}
+	{/if}
 
 	{if !empty($validLanguages)}
 		{if count($validLanguages) > 1}
@@ -122,7 +141,8 @@
 		{/foreach}
 	{/if}
 
-	{if !empty($allActiveThemes)}
+
+	{* {if !empty($allActiveThemes)}
 		{if count($allActiveThemes) > 1}
 			<div class="header-menu-section" id="aspenDisplayMenuSection">
 				<i class="fas fa-cog fa-fw"></i> {translate text="Display Options" isPublicFacing=true}
@@ -134,7 +154,7 @@
 		{/if}
 		{foreach from=$allActiveThemes key=themeId item=themeName}
 			{if $themeId != $activeThemeId}
-				<a onclick="return AspenDiscovery.setTheme('{$themeId}')">
+				<a onclick="AspenDiscovery.showDisplaySettings()">
 			{/if}
 		<div class="header-menu-option themeSelect{if $themeId == $activeThemeId}ed{/if}">
 			{if $themeId == $activeThemeId}
@@ -146,7 +166,7 @@
 			</a>
 			{/if}
 		{/foreach}
-	{/if}
+	{/if} *}
 	{if !empty($masqueradeMode)}
 		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade" isAdminFacing=true}</a>
 	{/if}
