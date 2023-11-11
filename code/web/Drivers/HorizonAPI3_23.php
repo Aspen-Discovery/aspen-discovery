@@ -25,7 +25,7 @@ abstract class HorizonAPI3_23 extends HorizonAPI {
 	 * @param string $newPin
 	 * @return string[] a message to the user letting them know what happened
 	 */
-	function updatePin(User $patron, string $oldPin, string $newPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		//Log the user in
 		[
 			$userValid,
