@@ -595,14 +595,14 @@ class UserAccount {
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			if (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			if (!$validatedViaSSO && UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to enroll in two-factor authentication", Logger::LOG_DEBUG);
 				$_SESSION['enroll2FA'] = true;
 				$_SESSION['has2FA'] = false;
 				$_SESSION['codeSent'] = false;
 				return new TwoFactorAuthenticationError(UserAccount::getActiveUserId(), TwoFactorAuthenticationError:: MUST_ENROLL, "User needs to enroll in two-factor authentication");
-			} elseif (UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			} elseif (!$validatedViaSSO && UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to two-factor authenticate", Logger::LOG_DEBUG);
 				require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -955,7 +955,7 @@ class UserAccount {
 	 *
 	 * @return false|User
 	 */
-	public static function findNewAspenUser(string $key, string $value): mixed {
+	public static function findNewAspenUser(string $key, string $value) {
 		$newUser = new User();
 		$newUser->$key = $value;
 		if($newUser->find(true)) {
