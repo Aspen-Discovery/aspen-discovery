@@ -32,7 +32,10 @@
 						{if !empty($cardNumber)}<input type="hidden" name="cardNumber" value="{$cardNumber|escape:"html"}">{/if}
 						<input type="hidden" id="myAccountAuth" value="true">
 						<input type="submit" name="submit" value="{translate text="Verify" isPublicFacing=true}" id="loginFormVerify" class="btn btn-primary" onclick="return AspenDiscovery.Account.verify2FALogin();">
-						<a class="btn btn-xs btn-link" style="display: block; margin-top: 2em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</a>
+						&nbsp;<a id="loginFormCancelLogin" class="btn btn-warning" href="/MyAccount/Logout">{translate text="Cancel Sign In" isPublicFacing=true}</a>
+					</div>
+					<div class="col-xs-12 col-sm-offset-4 col-sm-8">
+						<a class="btn btn-xs btn-link" style="display: inline-block; margin-top: 1em" onclick="return AspenDiscovery.Account.new2FACode();">{translate text="Code expired? Send another" isPublicFacing=true}</a>
 
 					</div>
 				</div>

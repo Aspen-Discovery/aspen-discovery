@@ -639,6 +639,22 @@ class SearchAPI extends Action {
 			$this->addCheck($checks, "OMDB");
 		}
 
+		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+		$twoFactorSetting = new TwoFactorAuthSetting();
+		if ($twoFactorSetting->find(true)) {
+			//If we have settings, make sure at least one is applied to a library and a location
+			$library = new Library();
+			$library->whereAdd('twoFactorAuthSettingId > 0');
+			if ($library->find(true)){
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$ptype = new PType();
+				$ptype->whereAdd('twoFactorAuthSettingId > 0');
+				if ($ptype->find(true)) {
+					$this->addCheck($checks, "Two Factor Authentication");
+				}
+			}
+		}
+
 		$hasCriticalErrors = false;
 		$hasWarnings = false;
 		foreach ($checks as $check) {

@@ -223,6 +223,10 @@ class AJAX_JSON extends Action {
 		//Login the user.  Must be called via Post parameters.
 		global $interface;
 		global $logger;
+		$_SESSION['enroll2FA'] = false;
+		$_SESSION['has2FA'] = false;
+		$_SESSION['codeSent'] = false;
+		$_SESSION['passwordExpired'] = false;
 		$logger->log("Starting JSON/loginUser session: " . session_id(), Logger::LOG_DEBUG);
 		$isLoggedIn = UserAccount::isLoggedIn();
 		if (!$isLoggedIn) {
@@ -242,6 +246,10 @@ class AJAX_JSON extends Action {
 						$pinValidationRules = $catalog->getPasswordPinValidationRules();
 						$interface->assign('pinValidationRules', $pinValidationRules);
 
+						$_SESSION['enroll2FA'] = false;
+						$_SESSION['has2FA'] = false;
+						$_SESSION['passwordExpired'] = true;
+
 						return [
 							'success' => false,
 							'title' => translate([
@@ -260,10 +268,49 @@ class AJAX_JSON extends Action {
 							'passwordExpired' => true,
 							'enroll2FA' => false,
 						];
-					}
+					} else if ($user instanceof TwoFactorAuthenticationError) {
+						if ($user->twoFactorAuthStatus == TwoFactorAuthenticationError::MUST_ENROLL) {
+							// User needs to enroll into 2FA
+							$_SESSION['enroll2FA'] = true;
+							$_SESSION['twoFactorStart'] = time();
+							$_SESSION['has2FA'] = false;
+							$_SESSION['passwordExpired'] = false;
 
-					// Expired Card Notice
-					if ($user && $user->getMessage() == 'Your library card has expired. Please contact your local library to have your library card renewed.') {
+							return [
+								'success' => false,
+								'enroll2FA' => true,
+								'has2FA' => false,
+								'passwordExpired' => false,
+							];
+						} else {
+							// User needs to authenticate with 2FA
+							$_SESSION['enroll2FA'] = false;
+							$_SESSION['has2FA'] = true;
+							$_SESSION['twoFactorStart'] = time();
+							$_SESSION['passwordExpired'] = false;
+							$referer = $_REQUEST['referer'] ?? null;
+							$interface->assign('referer', $referer);
+							$name = $_REQUEST['name'] ?? null;
+							$interface->assign('name', $name);
+							$interface->assign('codeSent', !empty($_SESSION['codeSent']));
+							return [
+								'success' => false,
+								'enroll2FA' => false,
+								'has2FA' => true,
+								'passwordExpired' => false,
+								'title' => translate([
+									'text' => 'Two-Factor Authentication',
+									'isPublicFacing' => true,
+								]),
+								'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
+								'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate([
+										'text' => 'Verify',
+										'isPublicFacing' => true,
+									]) . "</button>",
+							];
+						}
+					} else if ($user instanceof AspenError && $user->getMessage() == 'Your library card has expired. Please contact your local library to have your library card renewed.') {
+						// Expired Card Notice
 						return [
 							'success' => false,
 							'message' => translate([
@@ -272,26 +319,6 @@ class AJAX_JSON extends Action {
 							]),
 							'enroll2FA' => false,
 							'has2FA' => false,
-							'passwordExpired' => false,
-						];
-					}
-
-					// User needs to enroll into 2FA
-					if ($user && $user->getMessage() == 'You must enroll into two-factor authentication before logging in.') {
-						return [
-							'success' => false,
-							'enroll2FA' => true,
-							'has2FA' => false,
-							'passwordExpired' => false,
-						];
-					}
-
-					// User needs to authenticate with 2FA
-					if ($user && $user->getMessage() == 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
-						return [
-							'success' => false,
-							'enroll2FA' => false,
-							'has2FA' => true,
 							'passwordExpired' => false,
 						];
 					}

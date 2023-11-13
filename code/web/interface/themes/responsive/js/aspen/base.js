@@ -385,13 +385,24 @@ var AspenDiscovery = (function(){
 			}
 		},
 
-		showMessageWithButtons: function(title, body, buttons, refreshAfterClose){
+		showMessageWithButtons: function(title, body, buttons, refreshAfterClose, closeDestination){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
 			$("#myModalLabel").html(title);
 			$(".modal-body").html(body);
 			$('.modal-buttons').html(buttons);
+			if (closeDestination !== undefined) {
+				Globals.modalCloseDestination = closeDestination;
+				$(".modalClose").click(function () {
+					if (Globals.modalCloseDestination.length > 0) {
+						document.location.href = Globals.modalCloseDestination
+						return false;
+					}
+				});
+			}else{
+				Globals.modalCloseDestination = '';
+			}
 			$("#modalDialog").modal('show');
 			if (refreshAfterClose) {
 				$("#modalDialog").on('hide.bs.modal', function(){

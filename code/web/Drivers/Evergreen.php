@@ -2061,7 +2061,7 @@ class Evergreen extends AbstractIlsDriver {
 		return null;
 	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
