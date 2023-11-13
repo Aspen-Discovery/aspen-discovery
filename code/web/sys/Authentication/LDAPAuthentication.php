@@ -9,12 +9,12 @@ require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
 
 class LDAPAuthentication extends Action {
 
-	static bool $clientInitialized = false;
-	protected mixed $ldap_client = null;
-	protected array $ldap_config = [];
-	protected int $timeout = 0;
-	protected bool $ssoAuthOnly = false;
-	protected string $message = "";
+	static $clientInitialized = false;
+	protected $ldap_client = null;
+	protected $ldap_config = [];
+	protected $timeout = 0;
+	protected $ssoAuthOnly = false;
+	protected $message = "";
 	protected $matchpoints = [];
 
 	public function __construct() {
@@ -70,6 +70,12 @@ class LDAPAuthentication extends Action {
 				if($this->ldap_client) {
 					if(@ldap_bind($this->ldap_client, $this->ldap_config['client'], $this->ldap_config['secret'])) {
 						return true;
+					} else {
+						//pause and try again
+						sleep(1);
+						if(@ldap_bind($this->ldap_client, $this->ldap_config['client'], $this->ldap_config['secret'])) {
+							return true;
+						}
 					}
 
 				}
@@ -78,7 +84,7 @@ class LDAPAuthentication extends Action {
 		return false;
 	}
 
-	public function validateAccount($username, $password): mixed {
+	public function validateAccount($username, $password) {
 		if(LDAPAuthentication::$clientInitialized) {
 			$user = $this->findUser($username);
 			$isAuthenticated = $this->validateWithLDAP($user, $password);
@@ -101,7 +107,7 @@ class LDAPAuthentication extends Action {
 						} else {
 							AspenError::raiseError(new AspenError('Unable to create account with Aspen for new LDAP user.'));
 						}
-					} return $this->login($aspenUser);
+					} return $this->login($aspenUser, $username);
 				}
 			}
 			AspenError::raiseError(new AspenError('Unable to find user with that username in LDAP. ' . ldap_error($this->ldap_client)));
@@ -110,7 +116,7 @@ class LDAPAuthentication extends Action {
 		return false;
 	}
 
-	private function findUser($username): mixed {
+	private function findUser($username) {
 		if($this->ldap_config['ou']) {
 			$result = @ldap_search($this->ldap_client, $this->ldap_config['baseDir'], '(&(' . $this->ldap_config['idAttr'] . '=*' . $username . ')(ou=' . $this->ldap_config['ou'] . '))');
 		} else {
@@ -161,11 +167,15 @@ class LDAPAuthentication extends Action {
 
 		$user->update();
 		$user->updatePatronInfo(true);
-		$user = $catalogConnection->findNewUser($username, '');
+		$user = $catalogConnection->findNewUser($user, $username);
 		return $this->login($user, $username);
 	}
 
-	private function validateWithAspen($username): User|bool {
+	/**
+	 * @param $username
+	 * @return User|bool
+	 */
+	private function validateWithAspen($username) {
 		$user = UserAccount::findNewAspenUser('username', $username);
 
 		if(!$user instanceof User){

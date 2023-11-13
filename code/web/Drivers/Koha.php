@@ -4621,7 +4621,7 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,

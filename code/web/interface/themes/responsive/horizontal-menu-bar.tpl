@@ -2,7 +2,7 @@
 	<h2 class="hiddenTitle" id="mobileNav">{translate text="Navigation" isPublicFacing=true}</h2>
 	<div class="menu-section menu-section-left">
 		{if $useHomeLink == '1' || $useHomeLink == '3'}
-			<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to $homeLinkText" inAttribute=true isPublicFacing=true}" aria-label="{translate text="Return to $homeLinkText" inAttribute=true isPublicFacing=true}" role="link">
+			<a href="{$homeLink}" id="homeLink" class="menu-icon menu-bar-option" title="{translate text="Return to %1%" 1=$homeLinkText inAttribute=true isPublicFacing=true}" aria-label="{translate text="Return to %1%" 1=$homeLinkText inAttribute=true isPublicFacing=true}" role="link">
 				<i class="fas fa-home fa-lg"></i><span class="menu-bar-label hidden-inline-block-xs"></span>
 			</a>
 		{/if}
