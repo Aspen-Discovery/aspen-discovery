@@ -136,9 +136,7 @@ class MyAccount_StaffLogin extends Action {
 		$interface->assign('isLoginPage', true);
 
 		if ($msg === 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
-			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-			$twoFactorAuthCode = new TwoFactorAuthCode();
-			$twoFactorAuthCode->createCode();
+			$interface->assign('codeSent', !empty($_SESSION['codeSent']));
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
 		} elseif ($msg === 'You must enroll into two-factor authentication before logging in.') {
 			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');

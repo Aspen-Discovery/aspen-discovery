@@ -13,14 +13,7 @@ class MyAccount_AJAX extends JSON_Action {
 				break;
 		}
 		if (method_exists($this, $method)) {
-			if (in_array($method, ['getLoginForm'])) {
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else {
-				parent::launch($method);
-			}
+			parent::launch($method);
 		} else {
 			echo json_encode(['error' => 'invalid_method']);
 		}
@@ -1669,6 +1662,11 @@ class MyAccount_AJAX extends JSON_Action {
 		global $locationSingleton;
 		global $configArray;
 
+		$result = [
+			'success' => false,
+			'message' => 'Unable to load login form',
+		];
+
 		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
 		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
 
@@ -1742,6 +1740,43 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 
+		$twoFactorStart = empty($_SESSION['twoFactorStart']) ? 0 : $_SESSION['twoFactorStart'];
+		//Expire 2 factor after 5 minutes
+		$twoFactorExpired = $twoFactorStart < time() - (5 * 60);
+
+		if (!empty($_SESSION['enroll2FA'])) {
+			if ($twoFactorExpired) {
+				//We have an abandoned 2-factor authentication enrollment
+				UserAccount::softLogout();
+			}else {
+				return $this->get2FAEnrollment();
+			}
+		}elseif (!empty($_SESSION['has2FA'])) {
+			if ($twoFactorExpired) {
+				//We have an abandoned 2-factor authentication enrollment
+				UserAccount::softLogout();
+			}else {
+				$interface->assign('codeSent', !empty($_SESSION['codeSent']));
+				$referer = $_REQUEST['referer'] ?? null;
+				$interface->assign('referer', $referer);
+				$name = $_REQUEST['name'] ?? null;
+				$interface->assign('name', $name);
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Two-Factor Authentication',
+						'isPublicFacing' => true,
+					]),
+					'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
+					'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate([
+							'text' => 'Verify',
+							'isPublicFacing' => true,
+						]) . "</button>",
+					'closeDestination' => '/MyAccount/Logout'
+				];
+			}
+		}
+
 		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
@@ -1770,9 +1805,57 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		if (isset($_REQUEST['multiStep'])) {
+			$multiStep = true;
 			$interface->assign('multiStep', true);
+		}else{
+			$multiStep = false;
 		}
-		return $interface->fetch('MyAccount/ajax-login.tpl');
+
+		//return $interface->fetch('MyAccount/ajax-login.tpl');
+		$loginButtons = '';
+		if ($interface->getVariable('ssoIsEnabled') && !$interface->getVariable('$ssoStaffOnly') && $interface->getVariable('ssoService') == 'ldap') {
+			$loginButtons .= '<input type="hidden" id="ldapLogin" value="true">';
+		}
+
+		$loginButtons .= '<input type="hidden" id="multiStep" name="multiStep" value="';
+		if (!empty($multiStep)) {
+			$loginButtons .= 'true';
+		} else {
+			$loginButtons .= 'false';
+		}
+		$loginButtons .= '"/>';
+		if ($interface->getVariable('ssoIsEnabled') && !$interface->getVariable('ssoStaffOnly') && $interface->getVariable('ssoService') == 'ldap' && !empty($interface->getVariable('ldapLabel'))) {
+			$loginButtons .= '<input type="submit" name="submit" value="' . translate([
+					'text' => "Sign in with %1%",
+					'1' => $interface->getVariable('ldapLabel'),
+					'isPublicFacing' => true
+				]) . ' id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin();">';
+		} else {
+			$loginButtons .= '<input type="submit" name="submit" value="';
+			if (!empty($multiStep)) {
+				$loginButtons .= translate([
+					'text' => "Continue",
+					'isPublicFacing' => true,
+					'inAttribute' => true
+				]);
+			} else {
+				$loginButtons .= translate([
+					'text' => "Sign In",
+					'isPublicFacing' => true,
+					'inAttribute' => true
+				]);
+			}
+			$loginButtons .= '" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin();">';
+		}
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Sign In',
+				'isPublicFacing' => true,
+			]),
+			'body' => $interface->fetch('MyAccount/ajax-login.tpl'),
+			'buttons' => $loginButtons,
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -7531,7 +7614,7 @@ class MyAccount_AJAX extends JSON_Action {
 		// if there were multiple verification methods available, you'd want to fetch them here for display
 
 		$step = $_REQUEST['step'] ?? "register";
-		$mandatoryEnrollment = $_REQUEST['mandatoryEnrollment'] ?? false;
+		$mandatoryEnrollment = $_REQUEST['mandatoryEnrollment'] ?? 'false';
 
 		if ($step == "register") {
 
@@ -7567,10 +7650,11 @@ class MyAccount_AJAX extends JSON_Action {
 					'isPublicFacing' => true,
 				]),
 				'body' => $interface->fetch('MyAccount/2fa/enroll-register.tpl'),
-				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"{$mandatoryEnrollment}\"); return false;'>" . translate([
+				'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.show2FAEnrollmentVerify(\"" . $mandatoryEnrollment . "\"); return false;'>" . translate([
 						'text' => 'Next',
 						'isPublicFacing' => true,
 					]) . "</button>",
+				'closeDestination' => '/MyAccount/Logout'
 			];
 		} elseif ($step == "verify") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7594,6 +7678,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'text' => 'Next',
 						'isPublicFacing' => true,
 					]) . "</button>",
+				'closeDestination' => '/MyAccount/Logout'
 			];
 		} elseif ($step == "validate") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7611,6 +7696,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'text' => 'Next',
 						'isPublicFacing' => true,
 					]) . "</button>",
+				'closeDestination' => '/MyAccount/Logout'
 			];
 		} elseif ($step == "backup") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7756,37 +7842,6 @@ class MyAccount_AJAX extends JSON_Action {
 				'isPublicFacing' => true,
 			]),
 		];
-	}
-
-	/** @noinspection PhpUnused */
-	function auth2FALogin() {
-		global $interface;
-		global $logger;
-		$logger->log("Creating AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
-
-
-		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-		$twoFactorAuth = new TwoFactorAuthCode();
-		$twoFactorAuth->createCode();
-
-		$referer = $_REQUEST['referer'] ?? null;
-		$interface->assign('referer', $referer);
-		$name = $_REQUEST['name'] ?? null;
-		$interface->assign('name', $name);
-
-		return [
-			'success' => true,
-			'title' => translate([
-				'text' => 'Two-Factor Authentication',
-				'isPublicFacing' => true,
-			]),
-			'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
-			'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate([
-					'text' => 'Verify',
-					'isPublicFacing' => true,
-				]) . "</button>",
-		];
-
 	}
 
 	function exportUserList() {

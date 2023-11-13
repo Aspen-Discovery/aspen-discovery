@@ -1,6 +1,7 @@
 <?php
 
 require_once ROOT_DIR . '/sys/Authentication/AuthenticationFactory.php';
+require_once ROOT_DIR . '/sys/Account/TwoFactorAuthenticationError.php';
 
 class UserAccount {
 	public static $isLoggedIn = null;
@@ -470,7 +471,7 @@ class UserAccount {
 	 * Try to log in the user using current query parameters
 	 * return User object on success, AspenError on failure.
 	 *
-	 * @return AspenError|User
+	 * @return AspenError|2FA|User
 	 * @throws UnknownAuthenticationMethodException
 	 */
 	public static function login($validatedViaSSO = false) {
@@ -594,17 +595,27 @@ class UserAccount {
 
 		// Send back the user object (which may be an AspenError):
 		if ($primaryUser) {
-			if (UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+			if (!$validatedViaSSO && UserAccount::isRequired2FA() && !UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to enroll in two-factor authentication", Logger::LOG_DEBUG);
-				$needsToAuthenticate = new AspenError('You must enroll into two-factor authentication before logging in.');
-				return $needsToAuthenticate;
-			} elseif (UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
+				$_SESSION['enroll2FA'] = true;
+				$_SESSION['has2FA'] = false;
+				$_SESSION['codeSent'] = false;
+				return new TwoFactorAuthenticationError(UserAccount::getActiveUserId(), TwoFactorAuthenticationError:: MUST_ENROLL, "User needs to enroll in two-factor authentication");
+			} elseif (!$validatedViaSSO && UserAccount::has2FAEnabled() && UserAccount::$isAuthenticated === false) {
 				UserAccount::$isLoggedIn = false;
 				$logger->log("User needs to two-factor authenticate", Logger::LOG_DEBUG);
-				$needsToAuthenticate = new AspenError('You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.');
-				return $needsToAuthenticate;
+				require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
+				$twoFactorAuth = new TwoFactorAuthCode();
+				$codeSent = $twoFactorAuth->createCode();
+				$_SESSION['enroll2FA'] = false;
+				$_SESSION['codeSent'] = $codeSent;
+				$_SESSION['has2FA'] = $codeSent;
+				return new TwoFactorAuthenticationError(UserAccount::getActiveUserId(), TwoFactorAuthenticationError::MUST_COMPLETE_AUTHENTICATION, 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.');
 			} else {
+				$_SESSION['enroll2FA'] = false;
+				$_SESSION['has2FA'] = false;
+				$_SESSION['codeSent'] = false;
 				UserAccount::$isLoggedIn = true;
 				UserAccount::$primaryUserData = $primaryUser;
 				if (isset($_COOKIE['searchPreferenceLanguage']) && $primaryUser->searchPreferenceLanguage == -1) {
@@ -744,9 +755,8 @@ class UserAccount {
 		//global $logger;
 		//$logger->log("Logging user out", Logger::LOG_DEBUG);
 		UserAccount::softLogout();
-		if (isset($_SESSION['language'])) {
-			unset($_SESSION['language']);
-		}
+		$_SESSION = [];
+
 		if (isset($_COOKIE['searchPreferenceLanguage'])) {
 			setcookie('searchPreferenceLanguage', $_COOKIE['searchPreferenceLanguage'], time() - 1000, '/');
 			unset($_COOKIE['searchPreferenceLanguage]']);
@@ -780,6 +790,10 @@ class UserAccount {
 			if (isset($_SESSION['lastCASCheck'])) {
 				unset($_SESSION['lastCASCheck']);
 			}
+			unset($_SESSION['has2FA]']);
+			unset($_SESSION['enroll2FA]']);
+			unset($_SESSION['codeSent]']);
+
 			UserAccount::$isLoggedIn = false;
 			UserAccount::$primaryUserData = null;
 			UserAccount::$primaryUserObjectFromDB = null;
@@ -941,7 +955,7 @@ class UserAccount {
 	 *
 	 * @return false|User
 	 */
-	public static function findNewAspenUser(string $key, string $value): mixed {
+	public static function findNewAspenUser(string $key, string $value) {
 		$newUser = new User();
 		$newUser->$key = $value;
 		if($newUser->find(true)) {
