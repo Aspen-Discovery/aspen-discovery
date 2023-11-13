@@ -1169,7 +1169,8 @@ class Sierra extends Millennium {
 
 
 		} else { // $loginMethod == 'name_barcode'
-
+			//TODO: Do validation using name_barcode login
+			return false;
 		}
 
 		//We've passed validation, get information for the patron
