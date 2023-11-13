@@ -19,7 +19,7 @@
             {/if}
         {/if}
     {/if}
-    {if $ssoLoginOptions == 0 || ($ssoIsEnabled && $isPrimaryAccountAuthenticationSSO && $ssoService == 'ldap')}
+    {if $ssoLoginOptions == 0 || ($ssoIsEnabled && $ssoService == 'ldap')}
 	<form method="post" action="/MyAccount/Home" id="loginForm" class="form-horizontal" role="form" onsubmit="return AspenDiscovery.Account.processAjaxLogin()">
 		<div id="missingLoginPrompt" style="display: none">{translate text="Please enter both %1% and %2%." 1=$usernameLabel 2=$passwordLabel isPublicFacing=true translateParameters=true}</div>
 		<div id="loginUsernameRow" class="form-group">
