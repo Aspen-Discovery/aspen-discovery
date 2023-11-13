@@ -441,6 +441,11 @@ if ($isLoggedIn) {
 		$launchAction->launch();
 
 		exit();
+	} elseif ($user instanceof TwoFactorAuthenticationError) {
+		require_once ROOT_DIR . '/services/MyAccount/Login.php';
+		$launchAction = new MyAccount_Login();
+		$launchAction->launch();
+		exit();
 	} elseif ($user instanceof AspenError) {
 		require_once ROOT_DIR . '/services/MyAccount/Login.php';
 		$launchAction = new MyAccount_Login();
@@ -704,8 +709,16 @@ if ($action == "AJAX" || $action == "JSON" || $module == 'API') {
 		}
 	}
 
-	$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
-	$interface->assign('browseLinkText', $library->getLayoutSettings()->browseLinkText);
+	if (!empty($library->getLayoutSettings()->homeLinkText)) {
+		$interface->assign('homeLinkText', $library->getLayoutSettings()->homeLinkText);
+	} else {
+		$interface->assign('homeLinkText', 'Home');
+	}
+	if (!empty($library->getLayoutSettings()->browseLinkText)) {
+		$interface->assign('browseLinkText', $library->getLayoutSettings()->browseLinkText);
+	} else {
+		$interface->assign('browseLinkText', 'Browse');
+	}
 }
 
 //Load page level system messages
