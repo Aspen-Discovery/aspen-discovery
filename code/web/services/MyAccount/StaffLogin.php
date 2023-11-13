@@ -18,6 +18,9 @@ class MyAccount_StaffLogin extends Action {
 		$followupAction = 'Home';
 		$followupModule = isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module;
 
+		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
+
 		// We should never access this module directly -- this is called by other
 		// actions as a support function.  If accessed directly, just redirect to
 		// the MyAccount home page.
