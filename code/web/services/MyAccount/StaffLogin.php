@@ -66,6 +66,7 @@ class MyAccount_StaffLogin extends Action {
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 		//SSO
+		$ssoService = null;
 		$loginOptions = 0;
 		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
@@ -88,34 +89,32 @@ class MyAccount_StaffLogin extends Action {
 					$sso = new \SSOSetting();
 					$sso->id = $ssoSettingId;
 					if ($sso->find(true)) {
-						if (!$sso->staffOnly) {
-							$loginOptions = $sso->loginOptions;
-							$ssoService = $sso->service;
-							$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-							if ($sso->service == "oauth") {
-								$interface->assign('oAuthGateway', $sso->oAuthGateway);
-								if ($sso->oAuthGateway == "custom") {
-									$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
-									$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
-									$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
-									if ($sso->oAuthGatewayIcon) {
-										$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
-									}
-								}
-							}
-							if ($sso->service == 'saml') {
-								$interface->assign('samlEntityId', $sso->ssoEntityId);
-								$interface->assign('samlBtnLabel', $sso->ssoName);
-								$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
-								$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
+						$loginOptions = $sso->loginOptions;
+						$ssoService = $sso->service;
+						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
+						if ($sso->service == "oauth") {
+							$interface->assign('oAuthGateway', $sso->oAuthGateway);
+							if ($sso->oAuthGateway == "custom") {
+								$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
+								$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
+								$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
 								if ($sso->oAuthGatewayIcon) {
-									$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+									$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
 								}
 							}
-							if ($sso->service == 'ldap') {
-								if ($sso->ldapLabel) {
-									$interface->assign('ldapLabel', $sso->ldapLabel);
-								}
+						}
+						if ($sso->service == 'saml') {
+							$interface->assign('samlEntityId', $sso->ssoEntityId);
+							$interface->assign('samlBtnLabel', $sso->ssoName);
+							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
+							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
+							if ($sso->oAuthGatewayIcon) {
+								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+							}
+						}
+						if ($sso->service == 'ldap') {
+							if ($sso->ldapLabel) {
+								$interface->assign('ldapLabel', $sso->ldapLabel);
 							}
 						}
 					}
