@@ -1077,7 +1077,7 @@ function loadBibNumberMap($exportPath, &$bibNumberMap){
 	if (file_exists($exportPath . "bibNumMap.csv")) {
 		$bibNumberMapHnd = fopen($exportPath . 'bibNumMap.csv', 'r');
 		while ($bibNumberMapRow = fgetcsv($bibNumberMapHnd)) {
-			if (is_numeric($bibNumberMapRow[1])) {
+			if ($bibNumberMapRow[1]) {
 				$bibNumberMap[$bibNumberMapRow[0]] = $bibNumberMapRow[1];
 			}
 		}
