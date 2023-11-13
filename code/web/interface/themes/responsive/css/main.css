@@ -8045,13 +8045,10 @@ hr.menu {
   margin-top: 1em;
 }
  .header-menu-option.languageSelect {
- margin-left: 3em;
+ margin-left: 1.5em;
 } 
 .header-menu-option.languageSelected {
-  margin-left: 1em;
-} 
-.header-menu-option.languageSelected {
-  margin-left: 0.5em;
+  margin-left: 1.5em;
 } 
 #library-name-header {
   font-size: 26px;

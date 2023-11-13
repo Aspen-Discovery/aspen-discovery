@@ -108,9 +108,11 @@
 		{else}
 			<div class="header-menu-option">
 				<i class="fas fa-cog fa-fw"></i> 
+				{* <span> *}
 				<a onclick="AspenDiscovery.showDisplaySettings()">
 					{translate text="Display" isPublicFacing=true}
 				</a>
+				{* </span> *}
 			</div>
 		{/if}
 	{/if}
