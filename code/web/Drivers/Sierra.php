@@ -1213,7 +1213,6 @@ class Sierra extends Millennium {
 		}
 
 		$forceDisplayNameUpdate = false;
-		if ()
 		$primaryName = reset($patronInfo->names);
 		if (strpos($primaryName, ',') !== false) {
 			[
