@@ -20,7 +20,7 @@
 <div class="row">
 	<div class="col-md-10 col-md-offset-1 text-center">
 	<h2 class="text-success">{translate text="You're Verified!" isPublicFacing=true}</h2>
-	<p>{translate text="From now on you'll use your email to sign into the catalog." isPublicFacing=true}</p>
+	<p>{translate text="From now on you'll use a code sent to your email when signing into the catalog." isPublicFacing=true}</p>
 	</div>
 </div>
 </div>
