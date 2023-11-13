@@ -67,39 +67,55 @@ class MyAccount_StaffLogin extends Action {
 
 		//SSO
 		$loginOptions = 0;
-		if ($library->ssoSettingId != -1) {
+		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
-				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-				$sso = new \SSOSetting();
-				$sso->id = $library->ssoSettingId;
-				if ($sso->find(true)) {
-					if ($sso->staffOnly) {
-						$loginOptions = $sso->loginOptions;
-						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-						$interface->assign('ssoService', $sso->service);
-						if ($sso->service == 'oauth') {
-							$interface->assign('oAuthGateway', $sso->oAuthGateway);
-							if ($sso->oAuthGateway == 'custom') {
-								$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
-								$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
-								$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
-								if ($sso->oAuthGatewayIcon) {
-									$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+				$ssoSettingId = null;
+				if($isPrimaryAccountAuthenticationSSO) {
+					require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+					$accountProfile = new AccountProfile();
+					$accountProfile->id = $library->accountProfileId;
+					if($accountProfile->find(true)) {
+						$ssoSettingId = $accountProfile->ssoSettingId;
+					}
+				} else {
+					$ssoSettingId = $library->ssoSettingId;
+				}
+
+				// only try to find SSO settings if the module is enabled
+				global $enabledModules;
+				if (array_key_exists('Single sign-on', $enabledModules) && $ssoSettingId > 0) {
+					require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+					$sso = new \SSOSetting();
+					$sso->id = $ssoSettingId;
+					if ($sso->find(true)) {
+						if (!$sso->staffOnly) {
+							$loginOptions = $sso->loginOptions;
+							$ssoService = $sso->service;
+							$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
+							if ($sso->service == "oauth") {
+								$interface->assign('oAuthGateway', $sso->oAuthGateway);
+								if ($sso->oAuthGateway == "custom") {
+									$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
+									$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
+									$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
+									if ($sso->oAuthGatewayIcon) {
+										$interface->assign('oAuthCustomGatewayIcon', $configArray['Site']['url'] . '/files/original/' . $sso->oAuthGatewayIcon);
+									}
 								}
 							}
-						}
-						if ($sso->service == 'saml') {
-							$interface->assign('samlEntityId', $sso->ssoEntityId);
-							$interface->assign('samlBtnLabel', $sso->ssoName);
-							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
-							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
-							if ($sso->samlBtnIcon) {
-								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+							if ($sso->service == 'saml') {
+								$interface->assign('samlEntityId', $sso->ssoEntityId);
+								$interface->assign('samlBtnLabel', $sso->ssoName);
+								$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
+								$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
+								if ($sso->oAuthGatewayIcon) {
+									$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
+								}
 							}
-						}
-						if($sso->service == 'ldap') {
-							if($sso->ldapLabel) {
-								$interface->assign('ldapLabel', $sso->ldapLabel);
+							if ($sso->service == 'ldap') {
+								if ($sso->ldapLabel) {
+									$interface->assign('ldapLabel', $sso->ldapLabel);
+								}
 							}
 						}
 					}
@@ -111,6 +127,7 @@ class MyAccount_StaffLogin extends Action {
 
 		$loginOptions = isset($_REQUEST['showBoth']) ? 0 : $loginOptions;
 
+		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML
