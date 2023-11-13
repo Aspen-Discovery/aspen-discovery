@@ -1761,7 +1761,7 @@ class Sierra extends Millennium {
 //		];
 //	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin): array {
+	function updatePin(User $patron, ?string $oldPin, string $newPin): array {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
