@@ -254,15 +254,15 @@ services:
         - $COMPOSE_ClientSrvPath/home:/home
         - $COMPOSE_ClientSrvPath/files:/usr/local/aspen-discovery/code/web/files
     environment:
-      - BACKUP_Folder=$BACKUP_Folder daily
-      - BACKUP_AccountId=$BACKUP_AccountId 002afbbf0a5586f000000002e
-      - BACKUP_ApplicationKey=$BACKUP_ApplicationKey K002OKpLTz0LeJJ4i4WH6vi7YKm4m1o
-      - BACKUP_Bucket=$BACKUP_Bucket b2://theke-backup-2/ALADI.ASPEN.THEKE.IO
-      - BACKUP_UserDB=$BACKUP_UserDB root
-      - BACKUP_PassDB=$BACKUP_PassDB root
-      - BACKUP_DB=$BACKUP_DB aspen_aladi
-      - BACKUP_Sitename=$BACKUP_Sitename aladi.aspen.theke.io
-      - BACKUP_HostDB=$BACKUP_HostDB testaspen
+      - BACKUP_Folder=$BACKUP_Folder 
+      - BACKUP_AccountId=$BACKUP_AccountId
+      - BACKUP_ApplicationKey=$BACKUP_ApplicationKey 
+      - BACKUP_Bucket=$BACKUP_Bucket 
+      - BACKUP_UserDB=$BACKUP_UserDB 
+      - BACKUP_PassDB=$BACKUP_PassDB 
+      - BACKUP_DB=$BACKUP_DB 
+      - BACKUP_Sitename=$BACKUP_Sitename 
+      - BACKUP_HostDB=$BACKUP_HostDB 
     entrypoint: ["crond", "-d", "8", "-f"]
 ```
 
@@ -275,11 +275,11 @@ NOTE : These variables need to be setted with all data corresponded to your inst
 * Site :
 
 ```
-SITE_sitename=aladi-demo.aspen.theke.io   <-- Example
+SITE_sitename=dev.aspen.theke.io   <-- Example
 SITE_operatingSystem=debian
-SITE_library=Biblioteca de la ALADI
-SITE_title=Biblioteca de la ALADI
-SITE_url=https://aladi-demo.aspen.theke.io
+SITE_library=Test Library
+SITE_title=Test Library
+SITE_url=https://dev.aspen.theke.io
 SITE_siteOnWindows=n
 SITE_solrHost=solr
 SITE_solrPort=8080
@@ -294,25 +294,25 @@ ASPEN_DBHost=db           <-- Example
 ASPEN_DBPort=3306
 ASPEN_DBName=aspen
 ASPEN_DBUser=aspen
-ASPEN_DBPwd=aspenpwd
-ASPEN_aspenAdminPwd=supersecreta
+ASPEN_DBPwd=password
+ASPEN_aspenAdminPwd=password
 ```
 
 * Ils :
 
 ```
 ILS_ilsDriver=Koha              <-- Example
-ILS_ilsUrl=aladi.koha.theke.io
-ILS_staffUrl=aladi-admin.koha.theke.io
+ILS_ilsUrl=dev.koha.theke.io
+ILS_staffUrl=dev-admin.koha.theke.io
 ```
 
 * Koha :
 
 ```
 KOHA_DBHost=tunnel              <-- Example
-KOHA_DBName=koha_aladi
-KOHA_DBUser=koha_aladi
-KOHA_DBPwd=pass
+KOHA_DBName=koha_dbname
+KOHA_DBUser=koha_dbuser
+KOHA_DBPwd=password
 KOHA_DBPort=3306
 KOHA_timezone=America/Argentina/Cordoba
 KOHA_ClientId=
@@ -324,14 +324,14 @@ KOHA_ClientSecret=
 ```
 COMPOSE_ImagePath=registry.gitlab.com/thekesolutions/aspen/base <-- Expl
 COMPOSE_ImageVersion=23.09.00.03
-COMPOSE_ClientSrvPath=/srv/aladidemoaspen
+COMPOSE_ClientSrvPath=/srv/devaspen
 COMPOSE_ClientDockerPath=/mnt
 COMPOSE_DBRoot=root
 COMPOSE_RootPwd=root
 COMPOSE_Apache=on
 COMPOSE_Cron=on
 COMPOSE_Solr=on
-COMPOSE_Dirs=/etc/apache2/sites-enabled /etc/apache2/sites-available /etc/cron.d /etc/php/8.0/apache2 /usr/local/aspen-discovery/sites/aladi-demo.aspen.theke.io /usr/local/aspen-discovery/code/web/files /usr/local/aspen-discovery/code/web/images /data /home /var/log/aspen-discovery /var/lib/mysql /etc/mysql /etc/mysql/mariadb.conf.d
+COMPOSE_Dirs=/etc/apache2/sites-enabled /etc/apache2/sites-available /etc/cron.d /etc/php/8.0/apache2 /usr/local/aspen-discovery/sites/dev.aspen.theke.io /usr/local/aspen-discovery/code/web/files /usr/local/aspen-discovery/code/web/images /data /home /var/log/aspen-discovery /var/lib/mysql /etc/mysql /etc/mysql/mariadb.conf.d
 ```
 
 Observation: COMPOSE_Dirs variable saves all DIRECTORIES ( it doesn't support path files) inside Aspen that users want to be persistant on host server, like images, footers, covers, php settings and all data that shouldn't lost if you want to reset your containers.
@@ -376,5 +376,5 @@ docker-compose up
 On the browser :
 
 ```
-INSTANCE_NAME:8080
+INSTANCE_NAME:USED_PORT
 ```
