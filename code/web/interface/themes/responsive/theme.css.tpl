@@ -300,7 +300,7 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 #home-page-browse-results.HideBorder .browse-thumbnail{ldelim}
     {* some minor adjustments if ratings are disabled *}
     border: none;
-    & img {ldelim}
+    & img.border {ldelim}
         padding: 4px;
         margin-bottom: 20px;
         line-height: 1.42857143;
