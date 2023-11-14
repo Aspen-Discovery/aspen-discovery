@@ -31,7 +31,7 @@ if (!file_exists($exportPath)) {
 	validateFileExists($exportPath, "patronListEntries.csv");
 	validateFileExists($exportPath, "patronRatingsAndReviews.csv");
 	validateFileExists($exportPath, "patronNotInterested.csv");
-	//validateFileExists($exportPath, "patronReadingHistory.csv");
+	validateFileExists($exportPath, "patronReadingHistory.csv");
 
 	$existingUsers = [];
 	$missingUsers = [];
@@ -57,7 +57,7 @@ if (!file_exists($exportPath)) {
 	//importListWidgets($startTime, $exportPath, $existingUsers, $missingUsers, $serverName);
 	importNotInterested($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $bibNumberMap);
 	importRatingsAndReviews($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $bibNumberMap);
-	//importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks);
+	importReadingHistory($startTime, $exportPath, $existingUsers, $missingUsers, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $bibNumberMap);
 
 	//Materials Request
 	//Linked Users
@@ -1024,7 +1024,7 @@ function validateGroupedWork($groupedWorkId, $title, $author, &$validGroupedWork
 				continue;
 			}
 			if (strpos($identifier, ':') === false) {
-				echo("Identifier $identifier did not have a source list of resources = $groupedWorkResources");
+				echo("Identifier $identifier did not have a source list of resources = $groupedWorkResources\n");
 				continue;
 			}
 			[

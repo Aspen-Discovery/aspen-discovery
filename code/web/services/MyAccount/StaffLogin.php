@@ -18,6 +18,9 @@ class MyAccount_StaffLogin extends Action {
 		$followupAction = 'Home';
 		$followupModule = isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module;
 
+		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
+
 		// We should never access this module directly -- this is called by other
 		// actions as a support function.  If accessed directly, just redirect to
 		// the MyAccount home page.
@@ -136,10 +139,6 @@ class MyAccount_StaffLogin extends Action {
 		$interface->assign('isLoginPage', true);
 
 		if ($msg === 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
-			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-			$twoFactorAuthCode = new TwoFactorAuthCode();
-			$codeSent = $twoFactorAuthCode->createCode();
-			$interface->assign('codeSent', $codeSent);
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
 		} elseif ($msg === 'You must enroll into two-factor authentication before logging in.') {
 			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');

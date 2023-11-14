@@ -1169,7 +1169,8 @@ class Sierra extends Millennium {
 
 
 		} else { // $loginMethod == 'name_barcode'
-
+			//TODO: Do validation using name_barcode login
+			return false;
 		}
 
 		//We've passed validation, get information for the patron
@@ -1761,7 +1762,7 @@ class Sierra extends Millennium {
 //		];
 //	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin): array {
+	function updatePin(User $patron, ?string $oldPin, string $newPin): array {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
