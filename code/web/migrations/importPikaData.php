@@ -535,6 +535,9 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	global $memoryWatcher;
 	$memoryWatcher->logMemory("Start of list import");
 
+	//Create a map of the old pika list id to the new list id in aspen to make sure nothing gets overwritten if this isn't a clean install.
+	$pikaToAspenListIds = [];
+
 	set_time_limit(600);
 	require_once ROOT_DIR . '/sys/UserLists/UserList.php';
 	$patronsListHnd = fopen($exportPath . "patronLists.csv", 'r');
@@ -553,21 +556,20 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			continue;
 		}
 
-		$existingLists[$listId] = $listId;
 		$listName = cleancsv($patronListRow[2]);
 		$listDescription = cleancsv($patronListRow[3]);
 		$dateCreated = $patronListRow[4]; //Not sure this is correct, but seems likely
 		$public = $patronListRow[5];
 		$sort = cleancsv($patronListRow[6]);
 		$userList = new UserList();
-		$userList->id = $listId;
+		$userList->user_id = $userId;
+		$userList->title = $listName;
 		$listExists = false;
 		if ($userList->find(true)) {
 			$listExists = true;
+		} else {
+			$userList->created = $dateCreated;
 		}
-		$userList->user_id = $userId;
-		$userList->created = $dateCreated;
-		$userList->title = $listName;
 		$userList->description = $listDescription;
 		$userList->public = $public;
 		if (empty($sort)) {
@@ -584,6 +586,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		} else {
 			$userList->insert();
 		}
+		$pikaToAspenListIds[$listId] = $userList->id;
 
 		$userList->__destruct();
 		$userList = null;
@@ -615,7 +618,9 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 	$numSkipped = 0;
 	while ($patronListEntryRow = fgetcsv($patronListEntriesHnd)) {
 		$numImports++;
+		//This needs
 		$listId = $patronListEntryRow[1];
+
 		$notes = cleancsv($patronListEntryRow[2]);
 		$dateAdded = $patronListEntryRow[3];
 		$title = cleancsv($patronListEntryRow[4]);
@@ -626,8 +631,11 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		if (array_key_exists($listId, $removedLists)) {
 			//Skip this list entry since the list wasn't imported (because the user no longer exists)
 			continue;
-		} elseif (!array_key_exists($listId, $existingLists)) {
+		} elseif (!array_key_exists($listId, $pikaToAspenListIds)) {
 			echo("List $listId has not been imported yet\r\n");
+			continue;
+		} else {
+			$listId = $pikaToAspenListIds[$listId];
 		}
 
 		if (!validateGroupedWork($groupedWorkId, $title, $author, $validGroupedWorks, $invalidGroupedWorks, $movedGroupedWorks, $groupedWorkResources, $bibNumberMap)) {
@@ -647,6 +655,7 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 			}
 			$listEntry->dateAdded = $dateAdded;
 			$listEntry->notes = $notes;
+			$listEntry->importedFrom = 'Pika';
 			if ($entryExists) {
 				$listEntry->update(false);
 			} else {
