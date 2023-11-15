@@ -533,7 +533,7 @@ public class Axis360Extractor {
 			}
 			numTries++;
 		}
-		if (numTries == 3 && !availabilityResponse.callSucceeded) {
+		if (numTries == 3 && !availabilityResponse.callSucceeded && !availabilityResponse.titleIsUnavailable) {
 			logEntry.incErrors("Did not get a successful API response after 3 tries for " + availabilityUrl);
 		}
 		return availabilityResponse;
