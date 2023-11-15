@@ -103,7 +103,7 @@ if (count($updatesToRun) == 0) {
 					}
 
 					//Restart services
-					if ($operatingSystem == 'linux') {
+					if ($operatingSystem == 'linux' && $scheduledUpdate->updateType === 'complete') {
 						//Restart mysql
 						executeCommand('Restarting MySQL', 'service mysqld restart', $scheduledUpdate);
 						//Restart apache
