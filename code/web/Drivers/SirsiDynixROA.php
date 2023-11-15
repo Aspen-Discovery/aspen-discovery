@@ -524,8 +524,11 @@ class SirsiDynixROA extends HorizonAPI {
 			// $userProfileDescribeResponse  = $this->getWebServiceResponse('userProfileDescribe', $webServiceURL . '/policy/userProfile/describe');
 
 			$firstName = isset($_REQUEST['firstName']) ? trim($_REQUEST['firstName']) : '';
-			$lastName = isset($_REQUEST['firstName']) ? trim($_REQUEST['lastName']) : '';
-			$birthDate = isset($_REQUEST['firstName']) ? trim($_REQUEST['dob']) : '';
+			$lastName = isset($_REQUEST['lastName']) ? trim($_REQUEST['lastName']) : '';
+			$birthDate = isset($_REQUEST['dob']) ? trim($_REQUEST['dob']) : '';
+			if (empty($birthDate)) {
+				$birthDate = isset($_REQUEST['birthDate']) ? trim($_REQUEST['birthDate']) : '';
+			}
 			if ($this->isDuplicatePatron($firstName, $lastName, $birthDate)) {
 				$selfRegResult['message'] = 'We have found an existing account for you. Please contact the library to access your account.';
 				return $selfRegResult;
