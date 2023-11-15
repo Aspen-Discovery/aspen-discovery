@@ -510,6 +510,7 @@ abstract class MarcRecordProcessor {
 						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
 					}
 					if (AspenStringUtils.isNumeric(lexileValue)) {
+						AspenStringUtils.trimTrailingPunctuation(lexileValue);
 						groupedWork.setLexileScore(lexileValue);
 					}else{
 						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);

@@ -123,19 +123,19 @@ class SelfRegistrationFormValues extends DataObject {
 				'description' => 'Whether or not the field is required',
 				'default' => '0',
 			],
-			'patronUpdate' => [
-				'property' => 'patronUpdate',
-				'type' => 'enum',
-				'label' => 'Patron Update Actions',
-				'values' => [
-					'read_only' => 'Read Only',
-					'hidden' => 'Hidden',
-					'editable' => 'Editable',
-					'editable_required' => 'Editable & Required',
-				],
-				'description' => 'How the field appears in patron update form',
-				'default' => '0',
-			],
+//			'patronUpdate' => [
+//				'property' => 'patronUpdate',
+//				'type' => 'enum',
+//				'label' => 'Patron Update Actions',
+//				'values' => [
+//					'read_only' => 'Read Only',
+//					'hidden' => 'Hidden',
+//					'editable' => 'Editable',
+//					'editable_required' => 'Editable & Required',
+//				],
+//				'description' => 'How the field appears in patron update form',
+//				'default' => '0',
+//			],
 			'note' => [
 				'property' => 'note',
 				'type' => 'text',
