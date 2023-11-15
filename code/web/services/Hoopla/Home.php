@@ -18,7 +18,8 @@ class Hoopla_Home extends GroupedWorkSubRecordHomeAction {
 		$_SESSION['returnToAction'] = $id;
 		$this->recordDriver = new HooplaRecordDriver($id);
 
-		if (!$this->recordDriver->isValid()) {
+		global $enabledModules;
+		if (!array_key_exists('Hoopla', $enabledModules) || !$this->recordDriver->isValid()) {
 			$this->display('../Record/invalidRecord.tpl', 'Invalid Record', '');
 			die();
 		}
