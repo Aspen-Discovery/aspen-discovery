@@ -71,7 +71,11 @@ class UserAccount {
 	public static function isLoggedIn() {
 		if (UserAccount::$isLoggedIn == null) {
 			if (isset($_SESSION['activeUserId'])) {
-				UserAccount::$isLoggedIn = !UserAccount::needsToComplete2FA();
+				if(isset($_SESSION['loggedInViaSSO'])) {
+					UserAccount::$isLoggedIn = true;
+				} else {
+					UserAccount::$isLoggedIn = !UserAccount::needsToComplete2FA();
+				}
 			} else {
 				UserAccount::$isLoggedIn = false;
 				//Need to check cas just in case the user logged in from another site
