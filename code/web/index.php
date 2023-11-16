@@ -49,7 +49,7 @@ if ($activeSessionObject != null) {
 global $locationSingleton;
 getGitBranch();
 //Set a counter for CSS and JavaScript so we can have browsers clear their cache automatically
-$interface->assign('cssJsCacheCounter', 45);
+$interface->assign('cssJsCacheCounter', 46);
 
 // Setup Translator
 global $language;
