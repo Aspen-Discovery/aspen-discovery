@@ -655,6 +655,11 @@ class UserAPI extends Action {
 			$accountSummary->setReadingHistory($user->getReadingHistorySize());
 			$userData->numReadingHistory = $accountSummary->getReadingHistory();
 
+			require_once ROOT_DIR . '/sys/Account/PType.php';
+			$ptype = $user->getPType();
+			$userData->addLinkedAccountRule = (int)PType::getAccountLinkingSetting($ptype);
+			$userData->removeLinkedAccountRule = (int)PType::getAccountLinkRemoveSetting($ptype);
+
 			$userData->numLinkedAccounts = 0;
 			$userData->numLinkedUsers = 0;
 			$userData->numLinkedViewers = 0;
