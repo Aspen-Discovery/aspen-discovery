@@ -1,0 +1,8 @@
+HashKnownHosts no
+ForwardAgent yes
+StrictHostKeyChecking no
+user root
+HostKeyAlgorithms +ssh-rsa
+ServerAliveInterval 15
+GatewayPorts yes
+AddKeysToAgent yes

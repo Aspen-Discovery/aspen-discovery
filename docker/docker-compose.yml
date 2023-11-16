@@ -1,0 +1,187 @@
+version: '3.7'
+networks:
+  net-aspen:
+  #traefik-public:
+  #  external: true
+services:
+
+  backend:
+    image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
+    ports:
+      - target: 80
+        published: 80
+        mode: host
+    networks:
+      - net-aspen
+      #- traefik-public
+#    deploy:
+#      labels:
+#        - "traefik.enable=true"
+#        - "traefik.constraint-label=traefik-public"
+#        - "traefik.http.routers.aladi-demo-aspen-http.rule=Host(`$SITE_sitename`)"
+#        - "traefik.http.routers.aladi-demo-aspen-http.entrypoints=http"
+#        - "traefik.http.routers.aladi-demo-aspen-http.middlewares=https-redirect"
+#        - "traefik.http.routers.aladi-demo-aspen.rule=Host(`$SITE_sitename`)"
+#        - "traefik.http.routers.aladi-demo-aspen.entrypoints=https"
+#        - "traefik.http.routers.aladi-demo-aspen.tls.certresolver=le"
+#        - "traefik.http.services.aladi-demo-aspen.loadbalancer.server.port=80"
+#        - "traefik.http.middlewares.aladi-demo-aspen.headers.accesscontrolalloworiginlist=*"
+#        - "traefik.http.middlewares.aladi-demo-aspen_compress.compress=true"
+#        - "traefik.http.routers.aladi-demo-aspen.middlewares=aladi-demo-aspen_compress"
+    tty: true
+    volumes:
+      - $COMPOSE_ClientSrvPath:/mnt   
+    environment:
+      - SITE_sitename=$SITE_sitename
+      - SITE_operatingSystem=$SITE_operatingSystem
+      - SITE_library=$SITE_library
+      - SITE_title=$SITE_title
+      - SITE_url=$SITE_url
+      - SITE_siteOnWindows=$SITE_siteOnWindows
+      - SITE_solrHost=$SITE_solrHost
+      - SITE_solrPort=$SITE_solrPort
+      - SITE_ils=$SITE_ils
+      - SITE_timezone=$SITE_timezone
+      - ASPEN_DBHost=$ASPEN_DBHost
+      - ASPEN_DBPort=$ASPEN_DBPort
+      - ASPEN_DBName=$ASPEN_DBName
+      - ASPEN_DBUser=$ASPEN_DBUser
+      - ASPEN_DBPwd=$ASPEN_DBPwd
+      - ASPEN_aspenAdminPwd=$ASPEN_aspenAdminPwd
+      - ILS_ilsDriver=$ILS_ilsDriver
+      - ILS_ilsUrl=$ILS_ilsUrl
+      - ILS_staffUrl=$ILS_staffUrl
+      - KOHA_DBHost=$KOHA_DBHost
+      - KOHA_DBName=$KOHA_DBName
+      - KOHA_DBUser=$KOHA_DBUser
+      - KOHA_DBPwd=$KOHA_DBPwd
+      - KOHA_DBPort=$KOHA_DBPort
+      - KOHA_timezone=$KOHA_timezone
+      - KOHA_ClientId=$KOHA_ClientId
+      - KOHA_ClientSecret=$KOHA_ClientSecret
+      - COMPOSE_ImagePath=$COMPOSE_ImagePath
+      - COMPOSE_ImageVersion=$COMPOSE_ImageVersion
+      - COMPOSE_ClientSrvPath=$COMPOSE_ClientSrvPath
+      - COMPOSE_DBRoot=$COMPOSE_DBRoot
+      - COMPOSE_Cron=$COMPOSE_Cron
+      - COMPOSE_Apache=$COMPOSE_Apache
+      - COMPOSE_Solr=off
+      - COMPOSE_Dirs=$COMPOSE_Dirs
+      - COMPOSE_RootPwd=$COMPOSE_RootPwd
+    #entrypoint: ["/usr/bin/tail","-f","/dev/null"]
+  db:
+    image: mariadb:10.3
+    environment:
+      - MARIADB_ROOT_PASSWORD=$COMPOSE_RootPwd
+    deploy:
+      endpoint_mode: dnsrr
+    volumes:
+      - $COMPOSE_ClientSrvPath/mariadb_data:/var/lib/mysql
+    networks:
+      - net-aspen
+
+  solr:
+    image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
+    environment:
+      - SITE_sitename=$SITE_sitename
+      - SITE_operatingSystem=$SITE_operatingSystem
+      - SITE_library=$SITE_library
+      - SITE_title=$SITE_title
+      - SITE_url=$SITE_url
+      - SITE_siteOnWindows=$SITE_siteOnWindows
+      - SITE_solrHost=$SITE_solrHost
+      - SITE_solrPort=$SITE_solrPort
+      - SITE_ils=$SITE_ils
+      - SITE_timezone=$SITE_timezone
+      - ASPEN_DBHost=$ASPEN_DBHost
+      - ASPEN_DBPort=$ASPEN_DBPort
+      - ASPEN_DBName=$ASPEN_DBName
+      - ASPEN_DBUser=$ASPEN_DBUser
+      - ASPEN_DBPwd=$ASPEN_DBPwd
+      - ASPEN_aspenAdminPwd=$ASPEN_aspenAdminPwd
+      - ILS_ilsDriver=$ILS_ilsDriver
+      - ILS_ilsUrl=$ILS_ilsUrl
+      - ILS_staffUrl=$ILS_staffUrl
+      - KOHA_DBHost=$KOHA_DBHost
+      - KOHA_DBName=$KOHA_DBName
+      - KOHA_DBUser=$KOHA_DBUser
+      - KOHA_DBPwd=$KOHA_DBPwd
+      - KOHA_DBPort=$KOHA_DBPort
+      - KOHA_timezone=$KOHA_timezone
+      - KOHA_ClientId=$KOHA_ClientId
+      - KOHA_ClientSecret=$KOHA_ClientSecret
+      - COMPOSE_ImagePath=$COMPOSE_ImagePath
+      - COMPOSE_ImageVersion=$COMPOSE_ImageVersion
+      - COMPOSE_ClientSrvPath=$COMPOSE_ClientSrvPath
+      - COMPOSE_DBRoot=$COMPOSE_DBRoot
+      - COMPOSE_Cron=off
+      - COMPOSE_Apache=off
+      - COMPOSE_Solr=on
+      - COMPOSE_Dirs=$COMPOSE_Dirs
+      - COMPOSE_RootPwd=$COMPOSE_RootPwd
+    deploy:
+      endpoint_mode: dnsrr
+    volumes:
+      - $COMPOSE_ClientSrvPath:/mnt
+    networks:
+      - net-aspen
+    depends_on:
+      - backend
+      
+  tunnel:
+    image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion 
+    environment:
+      - TUNNEL_LocalPort=$TUNNEL_LocalPort
+      - TUNNEL_RemotePort=$TUNNEL_RemotePort
+      - TUNNEL_RemoteHost=$TUNNEL_RemoteHost
+      - TUNNEL_JumpServer=$TUNNEL_JumpServer
+      - COMPOSE_Cron=off
+      - COMPOSE_Apache=off
+      - COMPOSE_Solr=off
+    deploy:
+      endpoint_mode: dnsrr
+    volumes:
+      - $COMPOSE_ClientSrvPath:/mnt
+    networks:
+      - net-aspen
+    entrypoint: ["/root/.ssh/tunnel.sh"]
+    #entrypoint: ["/usr/bin/tail","-f","/dev/null"]
+
+      #  traefik:
+      #    image: traefik:v2.10
+      #    ports:
+      #      - target: 80
+      #        published: 80
+      #        mode: host
+      #      - target: 443
+      #        published: 443
+      #        mode: host
+   
+      #  backup:
+      #    image: registry.gitlab.com/thekesolutions/tools/aspen-backup:23.6.15.0
+      #     networks:
+      #       - net-aspen
+      #     depends_on:
+      #       - backend
+      #     volumes: 
+      #         - $COMPOSE_ClientSrvPath/start.sh:/start.sh
+      #         - $COMPOSE_ClientSrvPath/sites-enabled:/etc/apache2/sites-enabled
+      #         - $COMPOSE_ClientSrvPath/sites-available:/etc/apache2/sites-available
+      #         - $COMPOSE_ClientSrvPath/cron.d_bk/backup:/etc/crontabs/root
+      #         - $COMPOSE_ClientSrvPath/log:/var/log/aspen-discovery/$SITE_sitename
+      #         - $COMPOSE_ClientSrvPath/aladi.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
+      #         - $COMPOSE_ClientSrvPath/data:/data/aspen-discovery
+      #         - $COMPOSE_ClientSrvPath/home:/home
+      #         - $COMPOSE_ClientSrvPath/files:/usr/local/aspen-discovery/code/web/files
+      #     environment:
+      #       - BACKUP_Folder=$BACKUP_Folder daily
+      #       - BACKUP_AccountId=$BACKUP_AccountId 002afbbf0a5586f000000002e
+      #       - BACKUP_ApplicationKey=$BACKUP_ApplicationKey K002OKpLTz0LeJJ4i4WH6vi7YKm4m1o
+      #       - BACKUP_Bucket=$BACKUP_Bucket b2://theke-backup-2/ALADI.ASPEN.THEKE.IO
+      #       - BACKUP_UserDB=$BACKUP_UserDB root
+      #       - BACKUP_PassDB=$BACKUP_PassDB root
+      #       - BACKUP_DB=$BACKUP_DB aspen_aladi
+      #       - BACKUP_Sitename=$BACKUP_Sitename aladi.aspen.theke.io
+      #       - BACKUP_HostDB=$BACKUP_HostDB testaspen
+      #     entrypoint: ["crond", "-d", "8", "-f"]
+   
