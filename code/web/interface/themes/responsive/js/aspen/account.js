@@ -1907,8 +1907,8 @@ AspenDiscovery.Account = (function () {
 				} else {
 					$('#propertyRowparentName').show();
 					$('#propertyRowparentname').show();
-					$('#propertyRowcareof').hide();
-					$('#propertyRowcare_of').hide();
+					$('#propertyRowcareof').show();
+					$('#propertyRowcare_of').show();
 				}
 			}
 			var smsNotices = $("#smsNotices");
