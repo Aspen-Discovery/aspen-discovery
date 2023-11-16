@@ -19,5 +19,12 @@ function getUpdates23_11_01(): array {
 				'ALTER TABLE user ADD INDEX user_barcode(source, ils_barcode)',
 			]
 		], //user_barcode_index
+		'failed_login_index' => [
+			'title'=> 'Add index to failed_logins_by_ip_address',
+			'description' => 'Add index to failed_logins_by_ip_address',
+			'sql' => [
+				'alter table failed_logins_by_ip_address add index ipAddress(ipAddress);',
+			]
+		], //failed_login_index
     ];
 }
