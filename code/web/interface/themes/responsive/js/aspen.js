@@ -5445,12 +5445,6 @@ AspenDiscovery.Account = (function () {
 							AspenDiscovery.showMessage(data.title, data.message);
 						}
 					});
-					// var modalDialog = $("#modalDialog");
-					// $('.modal-body').html("Loading...");
-					// $(".modal-content").load(getLoginFormUrl);
-					// $(".modal-title").text(dialogTitle);
-					// modalDialog.removeClass('image-popup');
-					// modalDialog.modal("show");
 				}
 			}
 			return false;
@@ -7247,8 +7241,8 @@ AspenDiscovery.Account = (function () {
 				} else {
 					$('#propertyRowparentName').show();
 					$('#propertyRowparentname').show();
-					$('#propertyRowcareof').hide();
-					$('#propertyRowcare_of').hide();
+					$('#propertyRowcareof').show();
+					$('#propertyRowcare_of').show();
 				}
 			}
 			var smsNotices = $("#smsNotices");
@@ -15244,3 +15238,5 @@ AspenDiscovery.CookieConsent = (function() {
         },
     }
 }(AspenDiscovery.CookieConsent));
+
+

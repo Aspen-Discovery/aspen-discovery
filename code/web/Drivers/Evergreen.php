@@ -1396,26 +1396,28 @@ class Evergreen extends AbstractIlsDriver {
 	 */
 	public function findNewUser($patronBarcode, $patronUsername) {
 		$staffSessionInfo = $this->getStaffUserInfo();
-		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
-		$headers = [
-			'Content-Type: application/x-www-form-urlencoded',
-		];
-		$this->apiCurlWrapper->addCustomHeaders($headers, false);
-		$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
-		$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
-		$request .= '&param=' . $patronBarcode;
+		if ($staffSessionInfo !== false) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
+			$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
+			$request .= '&param=' . json_encode($patronBarcode);
 
-		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
-		if ($this->apiCurlWrapper->getResponseCode() == 200) {
-			$apiResponse = json_decode($apiResponse);
-			if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
-				if ($apiResponse->payload[0]->__c == 'au') { //class
-					$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
+					if ($apiResponse->payload[0]->__c == 'au') { //class
+						$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
 
-					/** @noinspection PhpUnnecessaryLocalVariableInspection */
-					$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, null);
-					return $user;
+						/** @noinspection PhpUnnecessaryLocalVariableInspection */
+						$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, null);
+						return $user;
+					}
 				}
 			}
 		}

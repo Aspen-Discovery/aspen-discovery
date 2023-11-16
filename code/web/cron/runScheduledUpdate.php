@@ -54,7 +54,7 @@ if (count($updatesToRun) == 0) {
 					}
 
 					//Prepare the system to be updated
-					if ($operatingSystem == 'linux') {
+					if ($operatingSystem == 'linux' && $scheduledUpdate->updateType === 'complete') {
 						if ($linuxDistribution == 'debian') {
 							executeCommand('Stopping cron', 'service cron stop', $scheduledUpdate);
 						} else {

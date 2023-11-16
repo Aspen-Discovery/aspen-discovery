@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 public class OverDriveRecordGrouper extends RecordGroupingProcessor {
@@ -84,14 +85,22 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 
 	private String processOverDriveRecord(String overdriveId, String title, String subtitle, String series, String author, String mediaType, String primaryLanguage) {
 		RecordIdentifier primaryIdentifier = new RecordIdentifier("overdrive", overdriveId);
-		//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
-		if (subtitle != null && series != null && series.length() > 0 && subtitle.toLowerCase().contains(series.toLowerCase())) {
-			subtitle = "";
+		//Remove invalid data from subtitles.
+		if (subtitle != null && subtitle.length() > 0) {
+			String subtitleLower = subtitle.toLowerCase(Locale.ROOT);
+			//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
+			if (series != null && series.length() > 0 && subtitleLower.contains(series.toLowerCase())){
+				subtitle = "";
+			//Remove book club notices and award winners
+			}else if (subtitleLower.contains("book club") || subtitleLower.contains("award winner")) {
+				subtitle = "";
+			}
 		}
 		//Overdrive typically makes the subtitle the series and volume which we don't want for grouping
 		if (title != null && series != null && title.toLowerCase().endsWith("--" + series.toLowerCase())) {
 			title = title.substring(0, title.length() - (series.length() + 2));
 		}
+
 		return processRecord(primaryIdentifier, title, subtitle, author, mediaType, primaryLanguage, true);
 	}
 }
