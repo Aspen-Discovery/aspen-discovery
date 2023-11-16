@@ -1,12 +1,10 @@
-import React from 'react';
+import { create } from 'apisauce';
+import i18n from 'i18n-js';
+import _ from 'lodash';
+import { popAlert } from '../../components/loadError';
 import { createAuthTokens, ENDPOINT, getHeaders, postData } from '../apiAuth';
 import { GLOBALS } from '../globals';
-import _ from 'lodash';
-import i18n from 'i18n-js';
-
-import { create } from 'apisauce';
 import { PATRON } from '../loadPatron';
-import { popAlert } from '../../components/loadError';
 
 const endpoint = ENDPOINT.user;
 
@@ -26,7 +24,6 @@ export async function refreshProfile(url) {
           auth: createAuthTokens(),
           params: {
                linkedUsers: true,
-               reload: false,
                checkIfValid: false,
           },
      });

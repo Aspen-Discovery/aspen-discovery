@@ -1,6 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import { create } from 'apisauce';
 import _ from 'lodash';
+import moment from 'moment';
 import { Box, Button, Icon, Menu, Pressable } from 'native-base';
 import React from 'react';
 import { LanguageContext, LibrarySystemContext } from '../context/initialContext';
@@ -147,6 +148,11 @@ export async function getTranslationsWithValues(key, values, language, url, addT
      if (response.ok) {
           if (response.data?.result?.translation) {
                if (Object.values(response.data?.result?.translation) && addToDictionary) {
+                    const lastUpdated = {
+                         lastUpdated: moment(),
+                    };
+                    translationsLibrary = _.merge(translationsLibrary, lastUpdated);
+
                     const translation = Object.values(response.data?.result?.translation);
                     const obj = {
                          [language]: {
@@ -176,7 +182,9 @@ export function getLanguageDisplayName(code, languages) {
 /**
  * Local storage for translated terms
  */
-export let translationsLibrary = {};
+export let translationsLibrary = {
+     lastUpdated: moment(),
+};
 
 /**
  * Returns translation of terms used in Aspen LiDA for the given language
@@ -198,6 +206,10 @@ export async function getTranslatedTerm(language, url) {
      const response = await api.post('/SystemAPI?method=getBulkTranslations', { terms: defaults }, { headers: { 'Content-Type': 'application/json' } });
      if (response.ok) {
           const translation = response?.data?.result[language] ?? defaults;
+          const lastUpdated = {
+               lastUpdated: moment(),
+          };
+          translationsLibrary = _.merge(translationsLibrary, lastUpdated);
           if (_.isObject(translation)) {
                const obj = {
                     [language]: translation,
@@ -234,6 +246,8 @@ export async function getTranslatedTermsForUserPreferredLanguage(language, url) 
      console.log('Getting translations for ' + language + '...');
 
      await getTranslatedTerm(language, url);
+
+     console.log('getTranslatedTermsForUserPreferredLanguage:' + translationsLibrary.lastUpdated);
 
      const titlesOnHold = [
           {

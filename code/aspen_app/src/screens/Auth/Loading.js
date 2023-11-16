@@ -1,24 +1,20 @@
-import React from 'react';
-import { useQueryClient, useQuery, useQueries } from '@tanstack/react-query';
-import { create } from 'apisauce';
+import { StackActions, useIsFocused, useLinkTo, useNavigation } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
-import { useNavigation, useNavigationState, useLinkTo, useIsFocused, StackActions } from '@react-navigation/native';
-import { Center, Heading, Box, Spinner, VStack, Progress } from 'native-base';
 import _ from 'lodash';
+import { Box, Center, Heading, Progress, VStack } from 'native-base';
+import React from 'react';
 import { checkVersion } from 'react-native-check-version';
 import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
-import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
-import { ForceLogout } from './ForceLogout';
-import { UpdateAvailable } from './UpdateAvailable';
-import { getTermFromDictionary, getTranslatedTerm, getTranslatedTermsForAllLanguages, translationsLibrary } from '../../translations/TranslationService';
-import { getLinkedAccounts, reloadProfile } from '../../util/api/user';
+import { getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
 import { getLibraryInfo, getLibraryLanguages, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
+import { getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
-import { navigateStack } from '../../helpers/RootNavigator';
+import { LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
+import { getBrowseCategoryListForUser, PATRON } from '../../util/loadPatron';
+import { ForceLogout } from './ForceLogout';
 
 const prefix = Linking.createURL('/');
 
@@ -72,16 +68,17 @@ export const LoadingScreen = () => {
           onSuccess: (data) => {
                setProgress(10);
                updateLanguages(data);
-          },
-     });
-
-     const { status: translationsQueryStatus, data: translationsQuery } = useQuery(['translations', LIBRARY.url], () => getTranslatedTermsForAllLanguages(languagesQuery, LIBRARY.url), {
-          enabled: !!languagesQuery,
-          onSuccess: (data) => {
-               updateDictionary(translationsLibrary);
                setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_1'));
           },
      });
+
+     /*const { status: translationsQueryStatus, data: translationsQuery } = useQuery(['translations', LIBRARY.url], () => getTranslatedTermsForAllLanguages(languagesQuery, LIBRARY.url), {
+	 enabled: !!languagesQuery,
+	 onSuccess: (data) => {
+	 updateDictionary(translationsLibrary);
+	 setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_1'));
+	 },
+	 });*/
 
      React.useEffect(() => {
           const responseListener = Notifications.addNotificationResponseReceivedListener((response) => {
@@ -104,12 +101,12 @@ export const LoadingScreen = () => {
 
      const { status: librarySystemQueryStatus, data: librarySystemQuery } = useQuery(['library_system', LIBRARY.url], () => getLibraryInfo(LIBRARY.url), {
           onSuccess: (data) => {
-               setProgress(30);
+               setProgress(20);
                updateLibrary(data);
           },
      });
 
-     const { status: userQueryStatus, data: userQuery } = useQuery(['user', LIBRARY.url, 'en'], () => reloadProfile(LIBRARY.url), {
+     const { status: userQueryStatus, data: userQuery } = useQuery(['user', LIBRARY.url, 'en'], () => refreshProfile(LIBRARY.url), {
           enabled: !!librarySystemQuery,
           onSuccess: (data) => {
                if (_.isUndefined(data) || _.isEmpty(data)) {
@@ -123,8 +120,15 @@ export const LoadingScreen = () => {
                }
           },
      });
-     const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
+     const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
           enabled: !!userQuery,
+          onSuccess: (data) => {
+               setProgress(50);
+               updateDictionary(translationsLibrary);
+          },
+     });
+     const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
+          enabled: !!translationQuery,
           onSuccess: (data) => {
                setProgress(60);
                updateBrowseCategories(data);
@@ -183,7 +187,7 @@ export const LoadingScreen = () => {
           return <ForceLogout />;
      }
 
-     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || translationsQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
+     if ((isReloading && librarySystemQueryStatus === 'loading') || userQueryStatus === 'loading' || browseCategoryQueryStatus === 'loading' || browseCategoryListQueryStatus === 'loading' || languagesQueryStatus === 'loading' || libraryBranchQueryStatus === 'loading' || linkedAccountQueryStatus === 'loading' || systemMessagesQueryStatus === 'loading') {
           return (
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
@@ -198,7 +202,7 @@ export const LoadingScreen = () => {
           );
      }
 
-     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || translationsQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
+     if ((!isReloading && librarySystemQueryStatus === 'success') || userQueryStatus === 'success' || browseCategoryQueryStatus === 'success' || browseCategoryListQueryStatus === 'success' || languagesQueryStatus === 'success' || libraryBranchQueryStatus === 'success' || linkedAccountQueryStatus === 'success' || systemMessagesQueryStatus === 'success') {
           if (hasIncomingUrlChanged) {
                let url = decodeURIComponent(incomingUrl).replace(/\+/g, ' ');
                url = url.replace('aspen-lida://', prefix);
