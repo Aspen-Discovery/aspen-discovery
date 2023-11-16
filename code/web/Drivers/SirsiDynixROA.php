@@ -3370,6 +3370,7 @@ class SirsiDynixROA extends HorizonAPI {
 					'label' => 'Type of Card',
 					'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
 				];
+				$hiddenDefault = true;
 			}
 			//Use self registration fields
 			/** @var SelfRegistrationFormValues $customField */
@@ -3383,12 +3384,8 @@ class SirsiDynixROA extends HorizonAPI {
 						'label' => $customField->displayName,
 						'required' => $customField->required,
 						'note' => $customField->note,
+						'hiddenByDefault' => $hiddenDefault,
 					];
-					if ($library->promptForParentInSelfReg){
-						$fields[$customField->symphonyName] = [
-							'hiddenByDefault' => true,
-						];
-					}
 				} elseif ($customField->symphonyName == 'cellphone' && $library->promptForSMSNoticesInSelfReg) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
