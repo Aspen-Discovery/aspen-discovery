@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Center, Modal } from 'native-base';
+import { Button, Center, Modal, Text } from 'native-base';
 import React, { useState } from 'react';
 
 import { LanguageContext, LibrarySystemContext } from '../../../../context/initialContext';
@@ -28,7 +28,7 @@ const EnableAccountLinking = () => {
      return (
           <Center>
                <Button onPress={toggle}>{getTermFromDictionary(language, 'enable_linked_accounts')}</Button>
-               <Modal isOpen={showModal} onClose={toggle} size="full" avoidKeyboard>
+               <Modal isOpen={showModal} onClose={toggle} size="lg">
                     <Modal.Content maxWidth="95%">
                          <Modal.CloseButton />
                          <Modal.Header>{getTermFromDictionary(language, 'enable_linked_accounts_title')}</Modal.Header>
@@ -45,7 +45,7 @@ const EnableAccountLinking = () => {
                                         isLoadingText={getTermFromDictionary(language, 'updating', true)}
                                         onPress={async () => {
                                              setLoading(true);
-                                             await enableAccountLinking(library.baseUrl).then(async (r) => {
+                                             await enableAccountLinking(language, library.baseUrl).then(async (r) => {
                                                   await refreshLinkedAccounts();
                                                   toggle();
                                              });
