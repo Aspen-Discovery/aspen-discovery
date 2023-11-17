@@ -82,7 +82,9 @@ class UserAPI extends Action {
 					'getReadingHistorySortOptions',
 					'confirmHold',
 					'updateNotificationOnboardingStatus',
-					'resetPassword'
+					'resetPassword',
+					'disableAccountLinking',
+					'enableAccountLinking'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -4576,6 +4578,175 @@ class UserAPI extends Action {
 					]),
 					'message' => translate([
 						'text' => 'Successfully removed linked account.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function disableAccountLinking() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if($user->disableAccountLinking == 0) {
+				$user->disableAccountLinking = 1;
+				if($user->update()) {
+					require_once ROOT_DIR . '/sys/Account/UserLink.php';
+
+					// Remove Managing Accounts
+					$userLink = new UserLink();
+					$userLink->linkedAccountId = $user->id;
+					$userLink->find();
+					while($userLink->fetch()) {
+						if($userLink->delete()) {
+							/* Send all the things to the managing account that the user removed the link from */
+							$user->removeManagingAccountMessage($userLink->primaryAccountId);
+							$user->sendRemoveManagingLinkNotification($userLink->primaryAccountId);
+						}
+					}
+
+					// Cleanup previous alerts
+					$userMessage = new UserMessage();
+					$userMessage->messageType = 'confirm_linked_accts';
+					$userMessage->userId = $user->id;
+					$userMessage->isDismissed = '0';
+					$userMessage->find();
+					while ($userMessage->fetch()) {
+						$userMessage->isDismissed = 1;
+						$userMessage->update();
+					}
+
+					// Remove Linked Accounts
+					$userLink = new UserLink();
+					$userLink->primaryAccountId = $user->id;
+					$userLink->delete(true);
+
+					// Force a reload of data
+					$user->linkedUsers = null;
+					$user->getLinkedUsers();
+
+					return [
+						'success' => true,
+						'title' => 'Linking Disabled',
+						'message' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+					];
+				} else {
+					// failed to update
+					return [
+						'success' => false,
+						'title' => translate([
+							'text' => translate([
+								'text' => 'Error',
+								'isPublicFacing' => true,
+							]),
+							'isPublicFacing' => true,
+						]),
+						'message' => translate([
+							'text' => 'Sorry, something went wrong and we were unable to process this request',
+							'isPublicFacing' => true,
+						]),
+					];
+				}
+			} else {
+				// already disabled
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]),
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Account linking was already disabled',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function enableAccountLinking() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if($user->disableAccountLinking == 1) {
+			$user->disableAccountLinking = 0;
+			if($user->update()) {
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => translate([
+							'text' => 'Linking Enabled',
+							'isPublicFacing' => true,
+						]),
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Account linking has been enabled',
+						'isPublicFacing' => true,
+					]),
+				];
+			} else {
+				// failed to update
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]),
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Sorry, something went wrong and we were unable to process this request.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+				// already enabled
+				return [
+					'success' => false,
+					'title' => translate([
+						'text' => translate([
+							'text' => 'Error',
+							'isPublicFacing' => true,
+						]),
+						'isPublicFacing' => true,
+					]),
+					'message' => translate([
+						'text' => 'Account linking was already enabled',
 						'isPublicFacing' => true,
 					]),
 				];
