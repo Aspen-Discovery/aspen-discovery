@@ -2788,30 +2788,34 @@ class User extends DataObject {
 	/**
 	 * Sends an Aspen LiDA notification to the managing account when a user removes the link.
 	 **/
-	function sendRemoveManagingLinkNotification(User $managingUser): void {
-		if ($managingUser->canReceiveNotifications($managingUser, 'notifyAccount')) {
-			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
-			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
-			$appScheme = 'aspen-lida';
-			require_once ROOT_DIR . '/sys/SystemVariables.php';
-			$systemVariables = SystemVariables::getSystemVariables();
-			if ($systemVariables && !empty($systemVariables->appScheme)) {
-				$appScheme = $systemVariables->appScheme;
-			}
-			$notificationToken = new UserNotificationToken();
-			$notificationToken->userId = $managingUser->id;
-			$notificationToken->find();
-			while ($notificationToken->fetch()) {
-				$body = [
-					'to' => $notificationToken->pushToken,
-					'title' => 'Account link removed',
-					'body' => 'An account you were previously linked to, ' . $this->displayName . ', has removed the link to your account ' . $managingUser->displayName . '. Learn more about account linking at your library.',
-					'categoryId' => 'accountAlert',
-					'channelId' => 'accountAlert',
-					'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
-				];
-				$expoNotification = new ExpoNotification();
-				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+	function sendRemoveManagingLinkNotification($managingUserId): void {
+		$managingUser = new User();
+		$managingUser->id = $managingUserId;
+		if($managingUser->find(true)) {
+			if ($managingUser->canReceiveNotifications($managingUser, 'notifyAccount')) {
+				require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+				$appScheme = 'aspen-lida';
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->appScheme)) {
+					$appScheme = $systemVariables->appScheme;
+				}
+				$notificationToken = new UserNotificationToken();
+				$notificationToken->userId = $managingUser->id;
+				$notificationToken->find();
+				while ($notificationToken->fetch()) {
+					$body = [
+						'to' => $notificationToken->pushToken,
+						'title' => 'Account link removed',
+						'body' => 'An account you were previously linked to, ' . $this->displayName . ', has removed the link to your account ' . $managingUser->displayName . '. Learn more about account linking at your library.',
+						'categoryId' => 'accountAlert',
+						'channelId' => 'accountAlert',
+						'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
+					];
+					$expoNotification = new ExpoNotification();
+					$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+				}
 			}
 		}
 	}
