@@ -104,7 +104,6 @@ class MyAccount_AJAX extends JSON_Action {
 									'isPublicFacing' => true,
 								]),
 							];
-							$accountToLink->newLinkMessage();
 						} else { // insert failure or user is blocked from linking account or account & account to link are the same account
 							$result = [
 								'success' => false,
