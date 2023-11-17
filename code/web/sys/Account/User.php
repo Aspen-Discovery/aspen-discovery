@@ -2765,7 +2765,7 @@ class User extends DataObject {
 	/**
 	 * Displays an alert in Aspen Discovery to the managing account when a user removes the link.
 	 **/
-	function removeManagingAccountMessage(User $managingAccount) {
+	function removeManagingAccountMessage($managingAccount) {
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		$userMessage = new UserMessage();
 		$userMessage->messageType = 'confirm_linked_accts';
