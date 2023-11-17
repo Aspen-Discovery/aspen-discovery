@@ -4406,22 +4406,22 @@ class UserAPI extends Action {
 		$accountToLinkUsername = $_POST['accountToLinkUsername'] ?? '';
 		$accountToLinkPassword = $_POST['accountToLinkPassword'] ?? '';
 
-		$accountToLink = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
-		$patron = UserAccount::validateAccount($username, $password);
+		$primaryUser = UserAccount::validateAccount($username, $password);
 
-		require_once ROOT_DIR . '/sys/Account/PType.php';
-		$userPtype = $patron->getPType();
-		$linkeePtype = $accountToLink->getPType();
-		$linkingSettingUser = PType::getAccountLinkingSetting($userPtype);
-		$linkingSettingLinkee = PType::getAccountLinkingSetting($linkeePtype);
-
-		if ($patron && !($patron instanceof AspenError)) {
-			if ($accountToLink) {
-				if ($accountToLink->id != $patron->id) {
-					if (($accountToLink->disableAccountLinking == 0) && ($linkingSettingUser != '1' && $linkingSettingUser != '3') && ($linkingSettingLinkee != '2' && $linkingSettingLinkee != '3')) {
-						$addResult = $patron->addLinkedUser($accountToLink);
+		if ($primaryUser && !($primaryUser instanceof AspenError)) {
+			$linkedUser = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
+			if($linkedUser && !($linkedUser instanceof AspenError)) {
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				if ($linkedUser->id != $primaryUser->id) {
+					$primaryUserPtype = $primaryUser->getPType();
+					$linkedUserPtype = $linkedUser->getPType();
+					$primaryUserLinkingSetting = PType::getAccountLinkingSetting($primaryUserPtype);
+					$linkedUserLinkingSetting = PType::getAccountLinkingSetting($linkedUserPtype);
+					if (($linkedUser->disableAccountLinking == 0) && ($primaryUserLinkingSetting != '1' && $primaryUserLinkingSetting != '3') && ($linkedUserLinkingSetting != '2' && $linkedUserLinkingSetting != '3')) {
+						$addResult = $primaryUser->addLinkedUser($linkedUser);
 						if ($addResult === true) {
-							$result = [
+							$linkedUser->newLinkMessage();
+							return [
 								'success' => true,
 								'title' => translate([
 									'text' => 'Success',
@@ -4432,9 +4432,8 @@ class UserAPI extends Action {
 									'isPublicFacing' => true,
 								]),
 							];
-							$accountToLink->newLinkMessage();
 						} else { // insert failure or user is blocked from linking account or account & account to link are the same account
-							$result = [
+							return [
 								'success' => false,
 								'title' => translate([
 									'text' => 'Unable to link accounts',
@@ -4447,8 +4446,8 @@ class UserAPI extends Action {
 							];
 						}
 					} else {
-						if ($linkingSettingUser == '1' || $linkingSettingUser == '3') {
-							$result = [
+						if ($primaryUserLinkingSetting == '1' || $primaryUserLinkingSetting == '3') {
+							return [
 								'success' => false,
 								'title' => translate([
 									'text' => 'Unable to link accounts',
@@ -4459,8 +4458,8 @@ class UserAPI extends Action {
 									'isPublicFacing' => true,
 								]),
 							];
-						} else if ($linkingSettingLinkee == '2' || $linkingSettingLinkee == '3') {
-							$result = [
+						} else if ($linkedUserLinkingSetting == '2' || $linkedUserLinkingSetting == '3') {
+							return [
 								'success' => false,
 								'title' => translate([
 									'text' => 'Unable to link accounts',
@@ -4472,7 +4471,7 @@ class UserAPI extends Action {
 								]),
 							];
 						} else {
-							$result = [
+							return [
 								'success' => false,
 								'title' => translate([
 									'text' => 'Unable to link accounts',
@@ -4485,21 +4484,9 @@ class UserAPI extends Action {
 							];
 						}
 					}
-				} else {
-					$result = [
-						'success' => false,
-						'title' => translate([
-							'text' => 'Unable to link accounts',
-							'isPublicFacing' => true,
-						]),
-						'message' => translate([
-							'text' => 'You cannot link to yourself.',
-							'isPublicFacing' => true,
-						]),
-					];
 				}
 			} else {
-				$result = [
+				return [
 					'success' => false,
 					'title' => translate([
 						'text' => 'Unable to link accounts',
@@ -4511,8 +4498,23 @@ class UserAPI extends Action {
 					]),
 				];
 			}
+
+		} else {
+			return [
+				'success' => false,
+				'title' => translate([
+					'text' => translate([
+						'text' => 'Error',
+						'isPublicFacing' => true,
+					]),
+					'isPublicFacing' => true,
+				]),
+				'message' => translate([
+					'text' => 'Unable to validate user',
+					'isPublicFacing' => true,
+				]),
+			];
 		}
-		return $result;
 	}
 
 	function removeAccountLink() {
