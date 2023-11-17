@@ -4406,21 +4406,20 @@ class UserAPI extends Action {
 		$accountToLinkUsername = $_POST['accountToLinkUsername'] ?? '';
 		$accountToLinkPassword = $_POST['accountToLinkPassword'] ?? '';
 
-		$primaryUser = UserAccount::validateAccount($username, $password);
+		$initiatingUser = UserAccount::validateAccount($username, $password);
 
-		if ($primaryUser && !($primaryUser instanceof AspenError)) {
-			$linkedUser = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
-			if($linkedUser && !($linkedUser instanceof AspenError)) {
+		if ($initiatingUser && !($initiatingUser instanceof AspenError)) {
+			$accountToLinkUser = UserAccount::validateAccount($accountToLinkUsername, $accountToLinkPassword);
+			if($accountToLinkUser && !($accountToLinkUser instanceof AspenError)) {
 				require_once ROOT_DIR . '/sys/Account/PType.php';
-				if ($linkedUser->id != $primaryUser->id) {
-					$primaryUserPtype = $primaryUser->getPType();
-					$linkedUserPtype = $linkedUser->getPType();
-					$primaryUserLinkingSetting = PType::getAccountLinkingSetting($primaryUserPtype);
-					$linkedUserLinkingSetting = PType::getAccountLinkingSetting($linkedUserPtype);
-					if (($linkedUser->disableAccountLinking == 0) && ($primaryUserLinkingSetting != '1' && $primaryUserLinkingSetting != '3') && ($linkedUserLinkingSetting != '2' && $linkedUserLinkingSetting != '3')) {
-						$addResult = $primaryUser->addLinkedUser($linkedUser);
+				if ($accountToLinkUser->id != $initiatingUser->id) {
+					$initiatingUserPtype = $initiatingUser->getPType();
+					$accountToLinkUserPType = $accountToLinkUser->getPType();
+					$initiatingUserLinkingSetting = PType::getAccountLinkingSetting($initiatingUserPtype);
+					$accountToLinkUserLinkingSetting = PType::getAccountLinkingSetting($accountToLinkUserPType);
+					if (($accountToLinkUser->disableAccountLinking == 0) && ($initiatingUserLinkingSetting != '1' && $initiatingUserLinkingSetting != '3') && ($accountToLinkUserLinkingSetting != '2' && $accountToLinkUserLinkingSetting != '3')) {
+						$addResult = $initiatingUser->addLinkedUser($accountToLinkUser);
 						if ($addResult === true) {
-							$linkedUser->newLinkMessage();
 							return [
 								'success' => true,
 								'title' => translate([
@@ -4446,7 +4445,7 @@ class UserAPI extends Action {
 							];
 						}
 					} else {
-						if ($primaryUserLinkingSetting == '1' || $primaryUserLinkingSetting == '3') {
+						if ($initiatingUserLinkingSetting == '1' || $initiatingUserLinkingSetting == '3') {
 							return [
 								'success' => false,
 								'title' => translate([
@@ -4458,7 +4457,7 @@ class UserAPI extends Action {
 									'isPublicFacing' => true,
 								]),
 							];
-						} else if ($linkedUserLinkingSetting == '2' || $linkedUserLinkingSetting == '3') {
+						} else if ($accountToLinkUserLinkingSetting == '2' || $accountToLinkUserLinkingSetting == '3') {
 							return [
 								'success' => false,
 								'title' => translate([
