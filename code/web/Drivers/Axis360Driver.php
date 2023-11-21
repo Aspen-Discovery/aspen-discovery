@@ -171,7 +171,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000') {
 				$result['message'] = translate([
-					'text' => "Could not return Axis 360 title, %1%",
+					'text' => "Could not return Boundless title, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -182,7 +182,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => "Could not return Axis 360 title, %1%",
+					'text' => "Could not return Boundless title, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -191,7 +191,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate([
-					'text' => 'Your Axis 360 title was returned successfully',
+					'text' => 'Your Boundless title was returned successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -201,7 +201,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => 'Your Axis 360 title was returned successfully',
+					'text' => 'Your Boundless title was returned successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -211,7 +211,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			}
 		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 
@@ -221,7 +221,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 		}
@@ -321,7 +321,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				return $this->checkOutTitle($patron, $recordId, false);
 			} elseif ($status->code != '0000') {
 				$result['message'] = translate([
-					'text' => "Could not place Axis 360 hold, %1%",
+					'text' => "Could not place Boundless hold, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -332,7 +332,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => "Could not place Axis 360 hold, %1%",
+					'text' => "Could not place Boundless hold, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -341,7 +341,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate([
-					'text' => 'Your Axis 360 hold was placed successfully',
+					'text' => 'Your Boundless hold was placed successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -351,7 +351,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => 'Your Axis 360 hold was placed successfully',
+					'text' => 'Your Boundless hold was placed successfully',
 					'isPublicFacing' => true,
 				]);
 				$result['api']['action'] = translate([
@@ -368,7 +368,7 @@ class Axis360Driver extends AbstractEContentDriver {
 
 		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 
@@ -378,7 +378,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 		}
@@ -417,7 +417,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$status = $removeHoldResult->status;
 			if ($status->code != '0000') {
 				$result['message'] = translate([
-					'text' => "Could not cancel Axis 360 hold, " . (string)$status->statusMessage,
+					'text' => "Could not cancel Boundless hold, " . (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
 
@@ -427,7 +427,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => 'Could not cancel Axis 360 hold, ' . (string)$status->statusMessage,
+					'text' => 'Could not cancel Boundless hold, ' . (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
 
@@ -435,7 +435,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate([
-					'text' => 'Your Axis 360 hold was cancelled successfully',
+					'text' => 'Your Boundless hold was cancelled successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -445,7 +445,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => 'Your Axis 360 hold was cancelled successfully',
+					'text' => 'Your Boundless hold was cancelled successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -455,7 +455,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			}
 		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 
@@ -465,7 +465,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 		}
@@ -571,7 +571,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$status = $checkoutResult->status;
 			if ($status->code != '0000') {
 				$result['message'] = translate([
-					'text' => 'Sorry, we could not checkout this Axis 360 title to you.',
+					'text' => 'Sorry, we could not checkout this Boundless title to you.',
 					'isPublicFacing' => true,
 				]);
 
@@ -581,7 +581,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => 'Sorry, we could not checkout this Axis 360 title to you.',
+					'text' => 'Sorry, we could not checkout this Boundless title to you.',
 					'isPublicFacing' => true,
 				]);
 
@@ -604,7 +604,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate([
-					'text' => 'Your Axis 360 title was checked out successfully. You may now download the title from your Account.',
+					'text' => 'Your Boundless title was checked out successfully. You may now download the title from your Account.',
 					'isPublicFacing' => true,
 				]);
 
@@ -615,7 +615,7 @@ class Axis360Driver extends AbstractEContentDriver {
 						'isPublicFacing' => true,
 					]);
 					$result['api']['message'] = translate([
-						'text' => 'Your Axis 360 title was renewed successfully.',
+						'text' => 'Your Boundless title was renewed successfully.',
 						'isPublicFacing' => true,
 					]);
 
@@ -627,7 +627,7 @@ class Axis360Driver extends AbstractEContentDriver {
 						'isPublicFacing' => true,
 					]);
 					$result['api']['message'] = translate([
-						'text' => 'Your Axis 360 title was checked out successfully. You may now download the title from your Account.',
+						'text' => 'Your Boundless title was checked out successfully. You may now download the title from your Account.',
 						'isPublicFacing' => true,
 					]);
 					$result['api']['action'] = translate([
@@ -646,7 +646,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			}
 		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 
@@ -656,7 +656,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 		}
@@ -814,7 +814,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		$checkout->sourceId = (string)$title->titleId;
 		$checkout->recordId = (string)$title->titleId;
 
-		//After a title is returned, Axis 360 will still return it for a bit, but mark it as not checked out.
+		//After a title is returned, Boundless will still return it for a bit, but mark it as not checked out.
 		if ((string)$title->availability->isCheckedout == 'N') {
 			return;
 		}
@@ -860,7 +860,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$status = $freezeHoldResult->status;
 			if ($status->code != '0000') {
 				$result['message'] = translate([
-					'text' => "Could not freeze Axis 360 hold, %1%",
+					'text' => "Could not freeze Boundless hold, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -871,7 +871,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => "Could not freeze Axis 360 hold, %1%",
+					'text' => "Could not freeze Boundless hold, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -899,7 +899,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			}
 		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 
@@ -909,7 +909,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 		}
@@ -941,7 +941,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			$status = $thawHoldResult->status;
 			if ($status->code != '0000') {
 				$result['message'] = translate([
-					'text' => "Could not thaw Axis 360 hold, %1%",
+					'text' => "Could not thaw Boundless hold, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -952,7 +952,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => "Could not thaw Axis 360 hold, %1%",
+					'text' => "Could not thaw Boundless hold, %1%",
 					1 => (string)$status->statusMessage,
 					'isPublicFacing' => true,
 				]);
@@ -961,7 +961,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			} else {
 				$result['success'] = true;
 				$result['message'] = translate([
-					'text' => 'Your Axis 360 hold was thawed successfully',
+					'text' => 'Your Boundless hold was thawed successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -971,7 +971,7 @@ class Axis360Driver extends AbstractEContentDriver {
 					'isPublicFacing' => true,
 				]);
 				$result['api']['message'] = translate([
-					'text' => 'Your Axis 360 hold was thawed successfully',
+					'text' => 'Your Boundless hold was thawed successfully',
 					'isPublicFacing' => true,
 				]);
 
@@ -980,7 +980,7 @@ class Axis360Driver extends AbstractEContentDriver {
 			}
 		} else {
 			$result['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 
@@ -990,7 +990,7 @@ class Axis360Driver extends AbstractEContentDriver {
 				'isPublicFacing' => true,
 			]);
 			$result['api']['message'] = translate([
-				'text' => 'Unable to connect to Axis 360',
+				'text' => 'Unable to connect to Boundless',
 				'isPublicFacing' => true,
 			]);
 		}

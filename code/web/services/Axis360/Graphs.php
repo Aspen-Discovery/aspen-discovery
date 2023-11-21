@@ -8,7 +8,7 @@ require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 class Axis360_Graphs extends Admin_Admin {
 	function launch() {
 		global $interface;
-		$title = 'Axis 360 Usage Graph';
+		$title = 'Boundless Usage Graph';
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
@@ -114,7 +114,7 @@ class Axis360_Graphs extends Admin_Admin {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Boundless');
 		$breadcrumbs[] = new Breadcrumb('/Axis360/Dashboard', 'Usage Dashboard');
 		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
 		return $breadcrumbs;

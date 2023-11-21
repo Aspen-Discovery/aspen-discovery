@@ -65,7 +65,7 @@
 					<div class="row">
 						<div class="result-label col-tn-4">{translate text='Source' isPublicFacing=true}</div>
 						<div class="col-tn-8 result-value">
-							{translate text="Axis 360" isPublicFacing=true}
+							{translate text="Boundless" isPublicFacing=true}
 						</div>
 					</div>
 

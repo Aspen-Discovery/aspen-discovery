@@ -2556,7 +2556,7 @@ class MyAccount_AJAX extends JSON_Action {
 						$axis360Summary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
-				$timer->logTime("Loaded Axis 360 Summary for User and linked users");
+				$timer->logTime("Loaded Boundless Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $axis360Summary->toArray(),

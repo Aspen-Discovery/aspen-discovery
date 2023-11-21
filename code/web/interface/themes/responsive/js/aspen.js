@@ -5538,7 +5538,7 @@ AspenDiscovery.Account = (function () {
 				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
-					label = 'Axis 360 Checkouts';
+					label = 'Boundless Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -5608,7 +5608,7 @@ AspenDiscovery.Account = (function () {
 				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
-					label = 'Axis 360 Holds';
+					label = 'Boundless Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -9929,7 +9929,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Cancelling Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -9977,7 +9977,7 @@ AspenDiscovery.Axis360 = (function () {
 					dataType: 'json',
 					async: false,
 					error: function () {
-						alert("An error occurred processing your request in Axis 360.  Please try again in a few minutes.");
+						alert("An error occurred processing your request in Boundless.  Please try again in a few minutes.");
 						//alert("ajaxUrl = " + ajaxUrl);
 						AspenDiscovery.closeLightbox();
 					}
@@ -10009,7 +10009,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Placing Hold", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
 				}
 			});
 			return true;
@@ -10056,7 +10056,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					alert("An error occurred processing your request in Axis 360.  Please try again in a few minutes.");
+					alert("An error occurred processing your request in Boundless.  Please try again in a few minutes.");
 					AspenDiscovery.closeLightbox();
 				}
 			});
@@ -10124,7 +10124,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Renewing Checkout", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
 				}
 			});
 		},
@@ -10147,7 +10147,7 @@ AspenDiscovery.Axis360 = (function () {
 				dataType: 'json',
 				async: false,
 				error: function () {
-					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Axis 360.  Please try again in a few minutes.", false);
+					AspenDiscovery.showMessage("Error Returning Checkout", "An error occurred processing your request in Boundless.  Please try again in a few minutes.", false);
 				}
 			});
 		},

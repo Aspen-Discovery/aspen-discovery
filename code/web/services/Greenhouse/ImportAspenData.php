@@ -135,12 +135,12 @@ class Greenhouse_ImportAspenData extends Admin_Admin {
 			'axis_360_record_usage' => [
 				'classFile' => ROOT_DIR . '/sys/Axis360/Axis360RecordUsage.php',
 				'className' => 'Axis360RecordUsage',
-				'name' => 'Axis 360 Record Usage',
+				'name' => 'Boundless Record Usage',
 			],
 			'user_axis_360_usage' => [
 				'classFile' => ROOT_DIR . '/sys/Axis360/UserAxis360Usage.php',
 				'className' => 'UserAxis360Usage',
-				'name' => 'User Axis 360 Usage',
+				'name' => 'User Boundless Usage',
 			],
 			'cloud_library_record_usage' => [
 				'classFile' => ROOT_DIR . '/sys/CloudLibrary/CloudLibraryRecordUsage.php',

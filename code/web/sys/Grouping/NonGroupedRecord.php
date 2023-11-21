@@ -17,7 +17,7 @@ class NonGroupedRecord extends DataObject {
 		foreach ($sideLoadSettings as $profile) {
 			$availableSources[$profile->name] = $profile->name;
 		}
-		$availableSources['axis360'] = 'Axis 360';
+		$availableSources['axis360'] = 'Boundless';
 		$availableSources['cloud_library'] = 'cloudLibrary';
 		$availableSources['hoopla'] = 'Hoopla';
 		$availableSources['overdrive'] = 'Overdrive';

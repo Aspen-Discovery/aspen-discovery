@@ -32,7 +32,7 @@ class Axis360Processor {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getAvailabilityStmt = dbConn.prepareStatement("SELECT * from axis360_title_availability where titleId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
-			logger.error("Error setting up Axis 360 processor", e);
+			logger.error("Error setting up Boundless processor", e);
 		}
 	}
 
@@ -43,7 +43,7 @@ class Axis360Processor {
 			if (productRS.next()) {
 				//Make sure the record isn't deleted
 				if (productRS.getBoolean("deleted")) {
-					logger.debug("Axis 360 product " + identifier + " was deleted, skipping");
+					logger.debug("Boundless product " + identifier + " was deleted, skipping");
 					return;
 				}
 
@@ -63,7 +63,7 @@ class Axis360Processor {
 					axis360Record.addFormatCategory("eBook");
 					primaryFormat = "eAudiobook";
 				} else {
-					logEntry.addNote("Unhandled Axis 360 mediaType " + formatType);
+					logEntry.addNote("Unhandled Boundless mediaType " + formatType);
 					formatCategory = formatType;
 					primaryFormat = formatType;
 				}
@@ -125,18 +125,18 @@ class Axis360Processor {
 					groupedWork.addAuthor2(authorsToAdd);
 				}
 
-				//Axis 360 does not include publisher information or descriptions
+				//Boundless does not include publisher information or descriptions
 
 				String isbn = getFieldValue(rawResponse, "isbn");
 				groupedWork.addIsbn(isbn, primaryFormat);
 
 				ItemInfo itemInfo = new ItemInfo();
-				itemInfo.seteContentSource("Axis 360");
+				itemInfo.seteContentSource("Boundless");
 				itemInfo.setIsEContent(true);
-				itemInfo.setShelfLocation("Online Axis 360 Collection");
-				itemInfo.setDetailedLocation("Online Axis 360 Collection");
-				itemInfo.setCallNumber("Online Axis 360");
-				itemInfo.setSortableCallNumber("Online Axis 360");
+				itemInfo.setShelfLocation("Online Boundless Collection");
+				itemInfo.setDetailedLocation("Online Boundless Collection");
+				itemInfo.setCallNumber("Online Boundless");
+				itemInfo.setSortableCallNumber("Online Boundless");
 				itemInfo.setFormat(primaryFormat);
 				itemInfo.setFormatCategory(formatCategory);
 
@@ -183,11 +183,11 @@ class Axis360Processor {
 			}
 			productRS.close();
 		} catch (NullPointerException e) {
-			logEntry.incErrors("Null pointer exception processing Axis 360 record ", e);
+			logEntry.incErrors("Null pointer exception processing Boundless record ", e);
 		} catch (JSONException e) {
-			logEntry.incErrors("Error parsing raw data for Axis 360", e);
+			logEntry.incErrors("Error parsing raw data for Boundless", e);
 		} catch (SQLException e) {
-			logEntry.incErrors("Error loading information from Database for Axis 360 title", e);
+			logEntry.incErrors("Error loading information from Database for Boundless title", e);
 		}
 	}
 

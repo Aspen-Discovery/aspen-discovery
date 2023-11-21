@@ -945,7 +945,7 @@ public class RecordGroupingProcessor {
 			}
 			getItemDetailsForRecordRS.close();
 		}catch (SQLException e){
-			logEntry.incErrors("Error Grouping Axis 360 Record", e);
+			logEntry.incErrors("Error Grouping Boundless Record", e);
 		}
 		return null;
 	}

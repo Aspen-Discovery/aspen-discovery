@@ -204,7 +204,7 @@ AspenDiscovery.Account = (function () {
 				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
-					label = 'Axis 360 Checkouts';
+					label = 'Boundless Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -274,7 +274,7 @@ AspenDiscovery.Account = (function () {
 				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
-					label = 'Axis 360 Holds';
+					label = 'Boundless Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}

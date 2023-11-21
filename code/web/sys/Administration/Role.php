@@ -133,7 +133,7 @@ class Role extends DataObject {
 					'Administer All Locations',
 					'Administer All Placards',
 					'Administer All Themes',
-					'Administer Axis 360',
+					'Administer Boundless',
 					'Administer Cloud Library',
 					'Administer EBSCO EDS',
 					'Administer Genealogy',
