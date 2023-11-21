@@ -45,7 +45,7 @@ class SelfRegistrationFormValues extends DataObject {
 			"email" => "EMAIL",
 			"phone" => "PHONE",
 			"dayphone" => "DAYPHONE",
-			"cellphone" => "CELLPHONE",
+			"cellPhone" => "CELLPHONE",
 			"workphone" => "WORKPHONE",
 			"homephone" => "HOMEPHONE",
 			"ext" => "EXT",
