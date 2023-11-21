@@ -72,6 +72,9 @@ class Greenhouse_SiteStatus extends Admin_Admin {
 					$sitesWithErrors[$sites->name] = $sites->name;
 				}
 			}
+			if ($sites->isOnline){
+				$sitesWithErrors[$sites->name] = $sites->name;
+			}
 		}
 		asort($allChecks);
 		if ($showErrorsOnly) {
