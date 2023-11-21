@@ -237,7 +237,7 @@ class GreenhouseAPI extends Action {
 					$curlWrapper->addCustomHeaders($headers, false);
 					$body = new stdClass();
 					$body->text = $alertText;
-					//$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
+					$curlWrapper->curlPostPage($greenhouseAlertSlackHook, json_encode($body));
 				}
 				$sites->lastNotificationTime = $start;
 				$sites->update();
