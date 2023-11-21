@@ -4059,7 +4059,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
 			$preference['notifyAccount'] = $obj->notifyAccount;
-			$preference['onboardStatus'] = $obj->onboardAppNotifications;
+			$preference['onboardStatus'] = $obj->onboardAppNotifications ?? 1;
 
 			$preferences[] = $preference;
 		}
@@ -4070,7 +4070,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = '0';
 			$preference['notifyCustom'] = '0';
 			$preference['notifyAccount'] = '0';
-			$preference['onboardStatus'] = $this->onboardAppNotifications;
+			$preference['onboardStatus'] = 1;
 
 			$preferences[] = $preference;
 		}
