@@ -874,14 +874,19 @@ class SirsiDynixROA extends HorizonAPI {
 		$firstNameSearch = trim($firstName);
 		$numericalBirthDate = str_replace("-", "", $birthDate);
 		$numericalBirthDate = str_replace("/", "", $numericalBirthDate);
-		$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch,birthDate:$numericalBirthDate";
+		if (empty($birthDate)) {
+			$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch";
+		}else {
+			$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch,birthDate:$numericalBirthDate";
+		}
+
 		$sessionToken = $this->getStaffSessionToken();
 		/** @noinspection PhpUnusedLocalVariableInspection */
 		$lookupBarcodeResponse = $this->getWebServiceResponse('patronSearch', $patronSearchUrl, null, $sessionToken);
 		if (!empty($lookupBarcodeResponse) && is_object($lookupBarcodeResponse)) {
 			if ($lookupBarcodeResponse->totalResults != 0) {
 				foreach ( $lookupBarcodeResponse->result as $patron ) {
-					if ( !strcasecmp($patron->fields->firstName, $firstNameSearch ) ) {
+					if ( strcasecmp($patron->fields->firstName, $firstNameSearch ) === 0 && strcasecmp($patron->fields->lastName, $lastNameSearch ) === 0 ) {
 						return true;
 					}
 				}
