@@ -1,27 +1,24 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { useNavigation, useRoute, useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
-import { Ionicons } from '@expo/vector-icons';
-import { Box, Button, Icon, Pressable, ScrollView, Container, HStack, Text, Badge, Center, Input, FormControl, Alert } from 'native-base';
-import React from 'react';
 import _ from 'lodash';
-import * as Device from 'expo-device';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
+import { Badge, Box, Button, Container, FormControl, HStack, Icon, Input, Pressable, ScrollView, Text } from 'native-base';
+import React from 'react';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { formatDiscoveryVersion, getPickupLocations, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
-import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
-import DisplayBrowseCategory from './Category';
-import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
-import { getLists } from '../../util/api/list';
-import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, updateNotificationOnboardingStatus } from '../../util/api/user';
-import { getTermFromDictionary } from '../../translations/TranslationService';
+import { DisplaySystemMessage } from '../../components/Notifications';
 import { NotificationsOnboard } from '../../components/NotificationsOnboard';
-import { addAppliedFilter, getDefaultFacets } from '../../util/search';
-import { DisplaySystemMessage, showILSMessage } from '../../components/Notifications';
-import { getSystemMessages } from '../../util/api/library';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { navigateStack } from '../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getLists } from '../../util/api/list';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
+import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
+import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
+import { getDefaultFacets } from '../../util/search';
+import DisplayBrowseCategory from './Category';
 
 let maxCategories = 5;
 
@@ -100,7 +97,7 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['linked_accounts', user, cards, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
+     useQuery(['linked_accounts', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
           notifyOnChangeProps: ['data'],
@@ -393,7 +390,9 @@ export const DiscoverHomeScreen = () => {
      const showSystemMessage = () => {
           if (_.isArray(systemMessages)) {
                return systemMessages.map((obj, index, collection) => {
-                    if (obj.showOn === '0') return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
                });
           }
           return null;

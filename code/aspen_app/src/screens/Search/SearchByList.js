@@ -1,27 +1,25 @@
-import { Badge, Box, FlatList, HStack, Image, Pressable, Stack, Text, VStack, ChevronLeftIcon, Icon, Button } from 'native-base';
-import React from 'react';
-import axios from 'axios';
-import { SafeAreaView } from 'react-native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { MaterialIcons } from '@expo/vector-icons';
 
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import CachedImage from 'expo-cached-image';
+import { Badge, Box, Button, FlatList, HStack, Icon, Pressable, Stack, Text, VStack } from 'native-base';
+import React from 'react';
+import { SafeAreaView } from 'react-native';
+import { loadError } from '../../components/loadError';
 
 // custom components and helper files
 import { loadingSpinner } from '../../components/loadingSpinner';
-import AddToList from './AddToList';
-import _ from 'lodash';
-import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { getCleanTitle } from '../../helpers/item';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders, postData } from '../../util/apiAuth';
-import { loadError } from '../../components/loadError';
+import { getCleanTitle } from '../../helpers/item';
+import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
-import { SEARCH } from '../../util/search';
 import { removeTitlesFromList } from '../../util/api/list';
-import { MaterialIcons } from '@expo/vector-icons';
+import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { GLOBALS } from '../../util/globals';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import AddToList from './AddToList';
 
 export const SearchResultsForList = () => {
      const id = useRoute().params?.id;
@@ -216,8 +214,7 @@ async function fetchSearchResults(id, page, url, language) {
           listId = myArray[myArray.length - 1];
      }
 
-     const postBody = await postData();
-     const instance = axios.create({
+     const { data } = await axios.get('/SearchAPI?method=getListResults', {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
           headers: getHeaders(true),
@@ -229,9 +226,6 @@ async function fetchSearchResults(id, page, url, language) {
                language,
           },
      });
-
-     const { data } = await instance.post('/SearchAPI?method=getListResults', postBody);
-     console.log(data);
 
      return {
           id: data.result?.id ?? listId,

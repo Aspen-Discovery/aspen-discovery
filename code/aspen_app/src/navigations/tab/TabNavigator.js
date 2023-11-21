@@ -128,8 +128,13 @@ export const TabItem = ({ state, descriptors, navigation }) => {
           }, 1500);
      }, [language]);
 
+     let bottomPadding = 7;
+     if (Platform.OS === 'android') {
+          bottomPadding = 3;
+     }
+
      return (
-          <HStack safeAreaLeft={7} safeAreaRight={7} safeAreaTop={2} safeAreaBottom={7} space={4} alignItems="center" justifyContent="space-between" bgColor={tabBarBackgroundColor} borderTopWidth="1" _dark={{ borderColor: 'coolGray.200' }} borderColor="gray.200">
+          <HStack safeAreaLeft={7} safeAreaRight={7} safeAreaTop={2} safeAreaBottom={bottomPadding} space={4} alignItems="center" justifyContent="space-between" bgColor={tabBarBackgroundColor} borderTopWidth="1" _dark={{ borderColor: 'coolGray.200' }} borderColor="gray.200">
                {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
                     //let label = options.tabBarLabel !== undefined ? options.tabBarLabel : options.title !== undefined ? options.title : route.name;

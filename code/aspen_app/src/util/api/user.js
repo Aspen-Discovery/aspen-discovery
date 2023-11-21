@@ -495,9 +495,9 @@ export async function removeLinkedAccount(patronToRemove, url) {
           if (!_.isUndefined(response.data.result.success)) {
                status = response.data.result.success;
                if (status !== true) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               } else {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'true');
                }
           }
           return status;
@@ -531,9 +531,77 @@ export async function removeViewerAccount(patronToRemove, url, language = 'en') 
           if (!_.isUndefined(response.data.result.success)) {
                status = response.data.result.success;
                if (status !== true) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               } else {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
+               }
+          }
+          return status;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
+
+/**
+ * Disables a users ability to use linked accounts
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function disableAccountLinking(language, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=disableAccountLinking', postBody);
+     if (response.ok) {
+          let status = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               status = response.data.result.success;
+               if (status !== true) {
+                    popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
+               }
+          }
+          return status;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
+
+/**
+ * Re-enables a users ability to use linked accounts
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function enableAccountLinking(language, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=enableAccountLinking', postBody);
+     if (response.ok) {
+          let status = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               status = response.data.result.success;
+               if (status !== true) {
+                    popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
                }
           }
           return status;
