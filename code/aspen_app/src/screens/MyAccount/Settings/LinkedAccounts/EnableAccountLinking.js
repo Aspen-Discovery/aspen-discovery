@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 
 import { LanguageContext, LibrarySystemContext } from '../../../../context/initialContext';
 import { getTermFromDictionary } from '../../../../translations/TranslationService';
+import { enableAccountLinking } from '../../../../util/api/user';
 
 // custom components and helper files
 
