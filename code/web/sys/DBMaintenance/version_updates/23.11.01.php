@@ -26,5 +26,13 @@ function getUpdates23_11_01(): array {
 				'alter table failed_logins_by_ip_address add index ipAddress(ipAddress);',
 			]
 		], //failed_login_index
+		'update_cellphone_symphony' => [
+			'title' => 'Fix case sensitive issue for cellphone vs cellPhone',
+			'description' => 'Fix case sensitive issue for cellphone vs cellPhone in self registration',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE self_reg_form_values SET symphonyName = 'cellPhone' WHERE symphonyName = 'cellphone'",
+			]
+		], //update_cellphone_symphony
     ];
 }

@@ -1347,7 +1347,7 @@ class Library extends DataObject {
 					],
 					'expirationNearMessage' => [
 						'property' => 'expirationNearMessage',
-						'type' => 'text',
+						'type' => 'html',
 						'label' => 'Expiration Near Message',
 						'description' => 'A message to show in the menu when the user account will expire soon',
 						'hideInLists' => true,
@@ -1357,7 +1357,7 @@ class Library extends DataObject {
 					],
 					'expiredMessage' => [
 						'property' => 'expiredMessage',
-						'type' => 'text',
+						'type' => 'html',
 						'label' => 'Expired Message',
 						'description' => 'A message to show in the menu when the user account has expired',
 						'hideInLists' => true,

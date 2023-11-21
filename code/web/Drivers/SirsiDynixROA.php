@@ -607,11 +607,11 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif ($field == 'homephone' && (!empty($_REQUEST['homephone']))) {
 						$this->setPatronUpdateField('HOMEPHONE', $_REQUEST['homephone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'cellphone' && (!empty($_REQUEST['cellphone']))) {
-						$this->setPatronUpdateField('CELLPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					elseif ($field == 'cellPhone' && (!empty($_REQUEST['cellPhone']))) {
+						$this->setPatronUpdateField('CELLPHONE', $_REQUEST['cellPhone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
-					elseif ($field == 'dayphone' && (!empty($_REQUEST['cellphone']))) {
-						$this->setPatronUpdateField('DAYPHONE', $_REQUEST['cellphone'], $createPatronInfoParameters, $preferredAddress, $index);
+					elseif ($field == 'dayphone' && (!empty($_REQUEST['dayphone']))) {
+						$this->setPatronUpdateField('DAYPHONE', $_REQUEST['dayphone'], $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'workphone' && (!empty($_REQUEST['workphone']))) {
 						$this->setPatronUpdateField('WORKPHONE', $_REQUEST['workphone'], $createPatronInfoParameters, $preferredAddress, $index);
@@ -874,14 +874,19 @@ class SirsiDynixROA extends HorizonAPI {
 		$firstNameSearch = trim($firstName);
 		$numericalBirthDate = str_replace("-", "", $birthDate);
 		$numericalBirthDate = str_replace("/", "", $numericalBirthDate);
-		$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch,birthDate:$numericalBirthDate";
+		if (empty($birthDate)) {
+			$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch";
+		}else {
+			$patronSearchUrl = $webServiceURL . "/user/patron/search?includeFields=firstName,lastName,birthDate&rw=1&ct=200&q=name:$lastNameSearch,birthDate:$numericalBirthDate";
+		}
+
 		$sessionToken = $this->getStaffSessionToken();
 		/** @noinspection PhpUnusedLocalVariableInspection */
 		$lookupBarcodeResponse = $this->getWebServiceResponse('patronSearch', $patronSearchUrl, null, $sessionToken);
 		if (!empty($lookupBarcodeResponse) && is_object($lookupBarcodeResponse)) {
 			if ($lookupBarcodeResponse->totalResults != 0) {
 				foreach ( $lookupBarcodeResponse->result as $patron ) {
-					if ( !strcasecmp($patron->fields->firstName, $firstNameSearch ) ) {
+					if ( strcasecmp($patron->fields->firstName, $firstNameSearch ) === 0 && strcasecmp($patron->fields->lastName, $lastNameSearch ) === 0 ) {
 						return true;
 					}
 				}
@@ -3386,7 +3391,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'note' => $customField->note,
 						'hiddenByDefault' => $hiddenDefault,
 					];
-				} elseif ($customField->symphonyName == 'cellphone' && $library->promptForSMSNoticesInSelfReg) {
+				} elseif ($customField->symphonyName == 'cellPhone' && $library->promptForSMSNoticesInSelfReg) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
