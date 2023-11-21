@@ -1763,7 +1763,7 @@ class Sierra extends Millennium {
 //	}
 
 	function updatePin(User $patron, ?string $oldPin, string $newPin): array {
-		if ($patron->cat_password != $oldPin) {
+		if ($patron->getPasswordOrPin() != $oldPin) {
 			return [
 				'success' => false,
 				'message' => "The old PIN provided is incorrect.",
