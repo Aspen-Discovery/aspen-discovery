@@ -45,7 +45,7 @@ export const MyLinkedAccounts = () => {
           });
      }, [navigation]);
 
-     useQuery(['linked_accounts', user.id, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.baseUrl, language), {
+     useQuery(['linked_accounts', user.id, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
           onSuccess: (data) => {
                updateLinkedAccounts(data.accounts);
                updateLibraryCards(data.cards);
@@ -108,7 +108,7 @@ export const MyLinkedAccounts = () => {
      }
 
      return (
-          <ScrollView p={5} flex={1}>
+          <ScrollView p={2} flex={1}>
                {showSystemMessage()}
                <DisplayMessage type="info" message={getTermFromDictionary(language, 'linked_info_message')} />
                {user.addLinkedAccountRule !== 1 ? (
@@ -134,7 +134,7 @@ export const MyLinkedAccounts = () => {
                ) : null}
 
                {user.addLinkedAccountRule !== 2 && user.removeLinkedAccountRule !== 0 ? (
-                    <Box>
+                    <Box pb={5}>
                          <Divider my={4} />
                          <DisableAccountLinking />
                     </Box>
@@ -176,9 +176,9 @@ const Account = (data) => {
 
      if (account) {
           return (
-               <HStack justifyContent="space-between" pt={2} pb={2} alignItems="center" alignContent="flex-start">
-                    <Text bold isTruncated w="75%" maxW="75%">
-                         {account.displayName} - {account.homeLocation}
+               <HStack justifyContent="space-around" pt={2} pb={2} alignItems="center" alignContent="flex-start">
+                    <Text bold isTruncated w="60%" maxW="60%">
+                         {account.displayName ? account.displayName : account.ils_barcode} - {account.homeLocation}
                     </Text>
                     {type === 'viewer' && user.removeLinkedAccountRule === 0 ? null : (
                          <Button isLoading={isRemoving} isLoadingText={getTermFromDictionary(language, 'removing', true)} colorScheme="warning" size="sm" onPress={() => removeAccount()}>
