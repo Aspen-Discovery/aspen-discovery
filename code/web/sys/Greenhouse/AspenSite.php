@@ -367,8 +367,8 @@ class AspenSite extends DataObject {
 							}
 						}
 					} else {
-						$statusJson = json_decode($statusRaw, true);
-						if (empty($statusJson)) {
+
+						if (empty($statusRaw)) {
 							$retry = ($numTries <= 2);
 							if (!$retry) {
 								$status['alive'] = false;
@@ -382,6 +382,8 @@ class AspenSite extends DataObject {
 								$this->lastOfflineNote = "JSON data is not available";
 							}
 						} else {
+							$statusJson = json_decode($statusRaw, true);
+
 							$status['alive'] = true;
 							$status = array_merge($status, $statusJson['result']);
 
