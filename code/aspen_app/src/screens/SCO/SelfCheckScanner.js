@@ -7,7 +7,7 @@ import { StyleSheet } from 'react-native';
 import BarcodeMask from 'react-native-barcode-mask';
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import { LanguageContext, LibrarySystemContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
@@ -16,7 +16,8 @@ export default function SelfCheckScanner() {
      const isFocused = useIsFocused();
      const [isLoading, setIsLoading] = React.useState(false);
      const { language } = React.useContext(LanguageContext);
-     const { library, selfCheckSettings } = React.useContext(LibrarySystemContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { selfCheckSettings } = React.useContext(LibraryBranchContext);
      const [hasPermission, setHasPermission] = React.useState(null);
      const [scanned, setScanned] = React.useState(false);
 

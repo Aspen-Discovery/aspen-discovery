@@ -1,34 +1,32 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import _ from 'lodash';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { HStack, Box, Button, Center, Icon, Image, ScrollView, Text, FlatList, AlertDialog, Pressable, ChevronLeftIcon } from 'native-base';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
+import { AlertDialog, Box, Button, Center, HStack, Icon, Image, ScrollView, Text, useToken } from 'native-base';
 import React, { Component, useEffect } from 'react';
-import { useToken } from 'native-base';
+import { SafeAreaView } from 'react-native';
 import { Rating } from 'react-native-elements';
 
 // custom components and helper files
 import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
-import AddToList from '../Search/AddToList';
-import { navigate, navigateStack, startSearch } from '../../helpers/RootNavigator';
-import { GroupedWorkContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import loading from '../Auth/Loading';
-import { getGroupedWork } from '../../util/api/work';
-import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
-import Variations from './Variations';
-import { getLinkedAccounts } from '../../util/api/user';
-import { getPickupLocations } from '../../util/loadLibrary';
-import { userContext } from '../../context/user';
-import { getGroupedWork221200, getItemDetails } from '../../util/recordActions';
-import { SafeAreaView } from 'react-native';
-import { GetOverDriveSettings } from './OverDriveSettings';
-import { getProfile, PATRON } from '../../util/loadPatron';
-import Manifestation from './Manifestation';
-import { decodeHTML } from '../../util/apiAuth';
-import { getTermFromDictionary } from '../../translations/TranslationService';
-import { getFirstRecord, getRecords, getVariations } from '../../util/api/item';
 import { DisplaySystemMessage } from '../../components/Notifications';
+import { GroupedWorkContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { userContext } from '../../context/user';
+import { navigateStack, startSearch } from '../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getFirstRecord, getVariations } from '../../util/api/item';
+import { getLinkedAccounts } from '../../util/api/user';
+import { getGroupedWork } from '../../util/api/work';
+import { decodeHTML } from '../../util/apiAuth';
+import { getPickupLocations } from '../../util/loadLibrary';
+import { PATRON } from '../../util/loadPatron';
+import { getGroupedWork221200, getItemDetails } from '../../util/recordActions';
+import AddToList from '../Search/AddToList';
+import Manifestation from './Manifestation';
+import { GetOverDriveSettings } from './OverDriveSettings';
+import Variations from './Variations';
 
 export const GroupedWorkScreen = () => {
      const route = useRoute();
@@ -52,7 +50,7 @@ export const GroupedWorkScreen = () => {
                     if (isSubscribed) {
                          updateGroupedWork(data);
                          updateFormat(data.format);
-                         await getLinkedAccounts(user, cards, library).then((result) => {
+                         await getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language).then((result) => {
                               if (accounts !== result.accounts) {
                                    updateLinkedAccounts(result.accounts);
                               }
@@ -76,7 +74,9 @@ export const GroupedWorkScreen = () => {
      const showSystemMessage = () => {
           if (_.isArray(systemMessages)) {
                return systemMessages.map((obj, index, collection) => {
-                    if (obj.showOn === '0') return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    if (obj.showOn === '0') {
+                         return <DisplaySystemMessage style={obj.style} message={obj.message} dismissable={obj.dismissable} id={obj.id} all={systemMessages} url={library.baseUrl} updateSystemMessages={updateSystemMessages} queryClient={queryClient} />;
+                    }
                });
           }
           return null;
@@ -499,8 +499,8 @@ export class GroupedWork221200 extends Component {
      updateProfile = async () => {
           console.log('Getting new profile data from item details...');
           /*await getProfile().then((response) => {
- this.context.user = response;
- }); */
+		 this.context.user = response;
+		 }); */
      };
 
      cancelRef = () => {

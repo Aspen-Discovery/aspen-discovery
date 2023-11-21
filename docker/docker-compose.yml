@@ -18,16 +18,16 @@ services:
 #      labels:
 #        - "traefik.enable=true"
 #        - "traefik.constraint-label=traefik-public"
-#        - "traefik.http.routers.aladi-demo-aspen-http.rule=Host(`$SITE_sitename`)"
-#        - "traefik.http.routers.aladi-demo-aspen-http.entrypoints=http"
-#        - "traefik.http.routers.aladi-demo-aspen-http.middlewares=https-redirect"
-#        - "traefik.http.routers.aladi-demo-aspen.rule=Host(`$SITE_sitename`)"
-#        - "traefik.http.routers.aladi-demo-aspen.entrypoints=https"
-#        - "traefik.http.routers.aladi-demo-aspen.tls.certresolver=le"
-#        - "traefik.http.services.aladi-demo-aspen.loadbalancer.server.port=80"
-#        - "traefik.http.middlewares.aladi-demo-aspen.headers.accesscontrolalloworiginlist=*"
-#        - "traefik.http.middlewares.aladi-demo-aspen_compress.compress=true"
-#        - "traefik.http.routers.aladi-demo-aspen.middlewares=aladi-demo-aspen_compress"
+#        - "traefik.http.routers.demo-http.rule=Host(`$SITE_sitename`)"
+#        - "traefik.http.routers.demo-http.entrypoints=http"
+#        - "traefik.http.routers.demo-http.middlewares=https-redirect"
+#        - "traefik.http.routers.demo.rule=Host(`$SITE_sitename`)"
+#        - "traefik.http.routers.demo.entrypoints=https"
+#        - "traefik.http.routers.demo.tls.certresolver=le"
+#        - "traefik.http.services.demo.loadbalancer.server.port=80"
+#        - "traefik.http.middlewares.demo.headers.accesscontrolalloworiginlist=*"
+#        - "traefik.http.middlewares.demo_compress.compress=true"
+#        - "traefik.http.routers.demo.middlewares=aladi-demo-aspen_compress"
     tty: true
     volumes:
       - $COMPOSE_ClientSrvPath:/mnt   
@@ -169,19 +169,19 @@ services:
       #         - $COMPOSE_ClientSrvPath/sites-available:/etc/apache2/sites-available
       #         - $COMPOSE_ClientSrvPath/cron.d_bk/backup:/etc/crontabs/root
       #         - $COMPOSE_ClientSrvPath/log:/var/log/aspen-discovery/$SITE_sitename
-      #         - $COMPOSE_ClientSrvPath/aladi.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
+      #         - $COMPOSE_ClientSrvPath/test.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
       #         - $COMPOSE_ClientSrvPath/data:/data/aspen-discovery
       #         - $COMPOSE_ClientSrvPath/home:/home
       #         - $COMPOSE_ClientSrvPath/files:/usr/local/aspen-discovery/code/web/files
       #     environment:
-      #       - BACKUP_Folder=$BACKUP_Folder daily
-      #       - BACKUP_AccountId=$BACKUP_AccountId 002afbbf0a5586f000000002e
-      #       - BACKUP_ApplicationKey=$BACKUP_ApplicationKey K002OKpLTz0LeJJ4i4WH6vi7YKm4m1o
-      #       - BACKUP_Bucket=$BACKUP_Bucket b2://theke-backup-2/ALADI.ASPEN.THEKE.IO
-      #       - BACKUP_UserDB=$BACKUP_UserDB root
-      #       - BACKUP_PassDB=$BACKUP_PassDB root
-      #       - BACKUP_DB=$BACKUP_DB aspen_aladi
-      #       - BACKUP_Sitename=$BACKUP_Sitename aladi.aspen.theke.io
-      #       - BACKUP_HostDB=$BACKUP_HostDB testaspen
+      #       - BACKUP_Folder=$BACKUP_Folder
+      #       - BACKUP_AccountId=$BACKUP_AccountId
+      #       - BACKUP_ApplicationKey=$BACKUP_ApplicationKey
+      #       - BACKUP_Bucket=$BACKUP_Bucket
+      #       - BACKUP_UserDB=$BACKUP_UserDB
+      #       - BACKUP_PassDB=$BACKUP_PassDB
+      #       - BACKUP_DB=$BACKUP_DB
+      #       - BACKUP_Sitename=$BACKUP_Sitename
+      #       - BACKUP_HostDB=$BACKUP_HostDB 
       #     entrypoint: ["crond", "-d", "8", "-f"]
    
