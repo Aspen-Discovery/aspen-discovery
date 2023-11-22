@@ -217,10 +217,14 @@ class Sierra extends Millennium {
 	 * @return string
 	 */
 	function getForgotPasswordType() {
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
-			return 'emailAspenResetLink';
-		} else {
+		if ($this->accountProfile == null) {
 			return 'none';
+		} else {
+			if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+				return 'emailAspenResetLink';
+			} else {
+				return 'none';
+			}
 		}
 	}
 
@@ -1138,7 +1142,11 @@ class Sierra extends Millennium {
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		$username = trim($username);
 		$password = trim($password);
-		$loginMethod = $this->accountProfile->loginConfiguration;
+		if ($this->accountProfile == null) {
+			return false;
+		}else {
+			$loginMethod = $this->accountProfile->loginConfiguration;
+		}
 		if ($loginMethod == 'barcode_pin') {
 			//If we use user names, we may need to lookup the barcode by the user name.
 //			$params = [
