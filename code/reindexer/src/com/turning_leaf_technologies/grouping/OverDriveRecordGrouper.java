@@ -92,7 +92,7 @@ public class OverDriveRecordGrouper extends RecordGroupingProcessor {
 			if (series != null && series.length() > 0 && subtitleLower.contains(series.toLowerCase())){
 				subtitle = "";
 			//Remove book club notices and award winners
-			}else if (subtitleLower.contains("book club") || subtitleLower.contains("award winner")) {
+			}else if (subtitleLower.contains("book club") || subtitleLower.contains("award winner") || subtitleLower.contains("read with jenna")) {
 				subtitle = "";
 			}
 		}
