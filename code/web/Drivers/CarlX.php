@@ -107,8 +107,9 @@ class CarlX extends AbstractIlsDriver {
 					if ($forceDisplayNameUpdate) {
 						$user->displayName = '';
 					}
-					$user->cat_username = $barcode;
-					$user->ils_barcode = $barcode;
+					//Use the information from the API request to account for case sensitivity
+					$user->cat_username = $result->Patron->PatronID;
+					$user->ils_barcode = $result->Patron->PatronID;
 					if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
 						$user->cat_password = $result->Patron->PatronPIN;
 						$user->ils_password = $result->Patron->PatronPIN;
@@ -2249,19 +2250,19 @@ class CarlX extends AbstractIlsDriver {
 		return false;
 	}
 
-    public function getHoldsReportData($location): bool|array {
+    public function getHoldsReportData($location) {
         return false;
     }
 
-    public function getStudentBarcodeData($location, $homeroom): bool|array {
+    public function getStudentBarcodeData($location, $homeroom) {
         return false;
     }
 
-    public function getStudentBarcodeDataHomerooms($location): bool|array {
+    public function getStudentBarcodeDataHomerooms($location) {
         return false;
     }
 
-    public function getStudentReportData($location, $showOverdueOnly, $date): bool|array {
+    public function getStudentReportData($location, $showOverdueOnly, $date) {
         return false;
     }
 
@@ -2393,6 +2394,7 @@ class CarlX extends AbstractIlsDriver {
 	public function getPatronIDChanges($searchPatronID): ?array {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
+		/** @noinspection SqlDialectInspection */
 		$sql = <<<EOT
 			select
 				newpatronid

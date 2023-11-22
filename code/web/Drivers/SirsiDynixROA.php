@@ -525,7 +525,12 @@ class SirsiDynixROA extends HorizonAPI {
 
 			$firstName = isset($_REQUEST['firstName']) ? trim($_REQUEST['firstName']) : '';
 			$lastName = isset($_REQUEST['lastName']) ? trim($_REQUEST['lastName']) : '';
-			$birthDate = isset($_REQUEST['dob']) ? trim($_REQUEST['dob']) : '';
+			if (isset($_REQUEST['dob'])){
+				$birthDate = isset($_REQUEST['dob']) ? trim($_REQUEST['dob']) : '';
+			} elseif (isset($_REQUEST['birthdate'])){
+				$birthDate = isset($_REQUEST['birthdate']) ? trim($_REQUEST['birthdate']) : '';
+			}
+			//birthDate field is only used in old forms, new forms are either dob or birthdate
 			if (empty($birthDate)) {
 				$birthDate = isset($_REQUEST['birthDate']) ? trim($_REQUEST['birthDate']) : '';
 			}
@@ -586,6 +591,9 @@ class SirsiDynixROA extends HorizonAPI {
 					elseif (($field == 'birthDate' || $field == 'dob') && (!empty($_REQUEST['dob']))) {
 						$createPatronInfoParameters['fields']['birthDate'] = $this->getPatronFieldValue(trim($_REQUEST['dob']), $library->useAllCapsWhenSubmittingSelfRegistration);
 					}
+					elseif ($field == 'birthdate' && (!empty($_REQUEST['birthdate']))) {
+						$createPatronInfoParameters['fields']['BIRTHDATE'] = $this->getPatronFieldValue(trim($_REQUEST['birthdate']), $library->useAllCapsWhenSubmittingSelfRegistration);
+					}
 
 					// Update Address Field with new data supplied by the user
 
@@ -594,6 +602,9 @@ class SirsiDynixROA extends HorizonAPI {
 					}
 					elseif ($field == 'careof' && (!empty($_REQUEST['careof']))) {
 						$this->setPatronUpdateField('CARE_OF', $this->getPatronFieldValue($_REQUEST['careof'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
+					}
+					elseif ($field == 'guardian' && (!empty($_REQUEST['guardian']))) {
+						$this->setPatronUpdateField('GUARDIAN', $this->getPatronFieldValue($_REQUEST['guardian'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
 					}
 					elseif ($field == 'parentname' && (!empty($_REQUEST['parentname']))) {
 						$this->setPatronUpdateField('PARENTNAME', $this->getPatronFieldValue($_REQUEST['parentname'], $library->useAllCapsWhenSubmittingSelfRegistration), $createPatronInfoParameters, $preferredAddress, $index);
@@ -3397,12 +3408,14 @@ class SirsiDynixROA extends HorizonAPI {
 						'type' => $customField->fieldType,
 						'label' => $customField->displayName,
 						'required' => $customField->required,
-						'note' => $customField->note
+						'note' => $customField->note,
+						'hiddenByDefault' => true,
 					];
 					$fields['SMS Notices'] = [
 						'property' => 'smsNotices',
 						'type' => 'checkbox',
 						'label' => 'Receive notices via text',
+						'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
 					];
 				} /*elseif ($customField->symphonyName == 'city_state') {
 					$fields['City'] = [
