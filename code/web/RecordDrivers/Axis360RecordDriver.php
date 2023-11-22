@@ -201,7 +201,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 				if ($isAvailable) {
 					$this->_actions[] = [
 						'title' => translate([
-							'text' => 'Check Out Axis 360',
+							'text' => 'Check Out Boundless',
 							'isPublicFacing' => true,
 						]),
 						'onclick' => "return AspenDiscovery.Axis360.checkOutTitle('{$this->id}');",
@@ -211,7 +211,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 				} else {
 					$this->_actions[] = [
 						'title' => translate([
-							'text' => 'Place Hold Axis 360',
+							'text' => 'Place Hold Boundless',
 							'isPublicFacing' => true,
 						]),
 						'onclick' => "return AspenDiscovery.Axis360.placeHold('{$this->id}');",
@@ -261,7 +261,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 	 * @return  array
 	 */
 	function getEditions() {
-		// No specific information provided by Axis 360
+		// No specific information provided by Boundless
 		return [];
 	}
 
@@ -436,7 +436,7 @@ class Axis360RecordDriver extends GroupedWorkSubDriver {
 			$statusSummary['showCheckout'] = false;
 		} else {
 			if ($relatedRecord->getAvailableCopies() > 0) {
-				$statusSummary['status'] = "Available from Axis 360";
+				$statusSummary['status'] = "Available from Boundless";
 				$statusSummary['available'] = true;
 				$statusSummary['class'] = 'available';
 				$statusSummary['showPlaceHold'] = false;

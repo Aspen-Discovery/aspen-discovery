@@ -62,7 +62,7 @@
 
 					<div class="row">
 						<div class="result-label col-sm-12 col-md-5">{translate text='Format' isPublicFacing=true}</div>
-						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - {translate text="Axis 360" isPublicFacing=true}</div>
+						<div class="col-sm-12 col-md-7 result-value">{implode subject=$record->getFormats() translate=true isPublicFacing=true} - {translate text="Boundless" isPublicFacing=true}</div>
 					</div>
 
 					{if !empty($showRatings) && $record->getGroupedWorkId() && $record->getRatingData()}
@@ -93,7 +93,7 @@
 				<div class="col-sm-12 col-md-4 col-lg-3">
 					<div class="btn-group btn-group-vertical btn-block">
 						{if !empty($record->accessOnlineUrl)}
-							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Axis 360' isPublicFacing=true}</a>
+							<a href="{$record->accessOnlineUrl}" target="_blank" class="btn btn-sm btn-action btn-wrap"><i class="fas fa-external-link-alt"></i> {translate text='Open in Boundless' isPublicFacing=true}</a>
 						{/if}
 						{if $record->canRenew}
 							<a href="#" onclick="return AspenDiscovery.Axis360.renewCheckout('{$record->userId}', '{$record->recordId}');" class="btn btn-sm btn-info">{translate text='Renew Checkout' isPublicFacing=true}</a>

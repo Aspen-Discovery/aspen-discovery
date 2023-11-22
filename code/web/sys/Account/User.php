@@ -587,7 +587,7 @@ class User extends DataObject {
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
-					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+					return array_key_exists('Boundless', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
@@ -1317,7 +1317,7 @@ class User extends DataObject {
 				$axis360Driver = new Axis360Driver();
 				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
-				$timer->logTime("Loaded transactions from axis 360. {$this->id}");
+				$timer->logTime("Loaded transactions from Boundless. {$this->id}");
 				if ($source == 'all' || $source == 'axis360') {
 					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
 				}
@@ -1446,7 +1446,7 @@ class User extends DataObject {
 				}
 			}
 
-			//Get holds from Axis 360
+			//Get holds from Boundless
 			if ($source == 'all' || $source == 'axis360') {
 				if ($this->isValidForEContentSource('axis360')) {
 					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -3377,20 +3377,20 @@ class User extends DataObject {
 			'View All Collection Reports',
 		]);
 
-		if (array_key_exists('Axis 360', $enabledModules)) {
-			$sections['axis360'] = new AdminSection('Axis 360');
-			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Axis 360 and Aspen Discovery.', '/Axis360/Settings');
+		if (array_key_exists('Boundless', $enabledModules)) {
+			$sections['boundless'] = new AdminSection('Boundless');
+			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Boundless and Aspen Discovery.', '/Axis360/Settings');
 			$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
-			if ($sections['axis360']->addAction($axis360SettingsAction, 'Administer Axis 360')) {
-				$axis360SettingsAction->addSubAction($axis360ScopesAction, 'Administer Axis 360');
+			if ($sections['boundless']->addAction($axis360SettingsAction, 'Administer Boundless')) {
+				$axis360SettingsAction->addSubAction($axis360ScopesAction, 'Administer Boundless');
 			} else {
-				$sections['axis360']->addAction($axis360ScopesAction, 'Administer Axis 360');
+				$sections['boundless']->addAction($axis360ScopesAction, 'Administer Boundless');
 			}
-			$sections['axis360']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Axis 360.', '/Axis360/IndexingLog'), [
+			$sections['boundless']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Boundless.', '/Axis360/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
-			$sections['axis360']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Axis 360 integration.', '/Axis360/Dashboard'), [
+			$sections['boundless']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Boundless integration.', '/Axis360/Dashboard'), [
 				'View Dashboards',
 				'View System Reports',
 			]);

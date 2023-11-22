@@ -119,7 +119,7 @@ public class IndexingUtils {
 			}
 
 		} catch (SQLException e) {
-			logger.error("Error loading Axis 360 scopes", e);
+			logger.error("Error loading Boundless scopes", e);
 		}
 		return axis360Scopes;
 	}

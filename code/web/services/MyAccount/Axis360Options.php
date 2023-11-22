@@ -42,7 +42,7 @@ class MyAccount_Axis360Options extends MyAccount {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/MyAccount/Home', 'Your Account');
-		$breadcrumbs[] = new Breadcrumb('', 'Axis 360 Options');
+		$breadcrumbs[] = new Breadcrumb('', 'Boundless Options');
 		return $breadcrumbs;
 	}
 }

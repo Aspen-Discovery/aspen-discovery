@@ -90,7 +90,7 @@ public class Axis360Extractor {
 			markRecordToReloadAsProcessedStmt = aspenConn.prepareStatement("UPDATE record_identifiers_to_reload SET processed = 1 where id = ?");
 			getItemDetailsForRecordStmt = aspenConn.prepareStatement("SELECT title, subtitle, primaryAuthor, formatType, rawResponse from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		}catch (SQLException sqe){
-			logEntry.incErrors("Could not create statements for Axis 360 extract", sqe);
+			logEntry.incErrors("Could not create statements for Boundless extract", sqe);
 		}
 
 		int numChanges = 0;

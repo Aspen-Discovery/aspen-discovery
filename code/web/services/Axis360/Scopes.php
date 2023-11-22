@@ -14,11 +14,11 @@ class Axis360_Scopes extends ObjectEditor {
 	}
 
 	function getModule(): string {
-		return 'Axis360';
+		return 'Boundless';
 	}
 
 	function getPageTitle(): string {
-		return 'Axis 360 Scopes';
+		return 'Boundless Scopes';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -61,7 +61,7 @@ class Axis360_Scopes extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#boundless', 'Boundless');
 		if (!empty($this->activeObject) && $this->activeObject instanceof Axis360Scope) {
 			$breadcrumbs[] = new Breadcrumb('/Axis360/Settings?objectAction=edit&id=' . $this->activeObject->settingId, 'Settings');
 		}
@@ -70,10 +70,10 @@ class Axis360_Scopes extends ObjectEditor {
 	}
 
 	function getActiveAdminSection(): string {
-		return 'axis360';
+		return 'boundless';
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Axis 360');
+		return UserAccount::userHasPermission('Administer Boundless');
 	}
 }
