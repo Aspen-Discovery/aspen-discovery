@@ -911,10 +911,10 @@ class Koha extends AbstractIlsDriver {
 					}
 				} else {
 
-					if (isset($jsonResponse->message) && str_ends_with($apiURL, '/cgi-bin/koha/ilsdi.pl')) {
+					if (isset($jsonResponse->message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
-					} else if (isset($jsonResponse->message) && str_ends_with($apiURL, "/api/v1/auth/password/validation")) {
+					} else if (isset($jsonResponse->message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
 						global $logger;
 						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}
