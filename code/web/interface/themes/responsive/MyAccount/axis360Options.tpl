@@ -10,7 +10,7 @@
 				{include file='systemMessages.tpl' messages=$accountMessages}
 			{/if}
 
-			<h1>{translate text='Axis 360 Options' isPublicFacing=true}</h1>
+			<h1>{translate text='Boundless Options' isPublicFacing=true}</h1>
 			{if !empty($offline)}
 				<div class="alert alert-warning"><strong>{translate text=$offlineMessage isPublicFacing=true}</strong></div>
 			{else}
@@ -21,11 +21,11 @@
 				<form action="" method="post">
 					<input type="hidden" name="updateScope" value="overdrive">
 					<div class="form-group propertyRow">
-						<label for="axis360Email" class="control-label">{translate text='Axis 360 Hold email' isPublicFacing=true}</label>
+						<label for="axis360Email" class="control-label">{translate text='Boundless Hold email' isPublicFacing=true}</label>
 						{if $edit == true}<input name="axis360Email" id="axis360Email" class="form-control" value='{$profile->axis360Email|escape}' size='50' maxlength='75'>{else}{$profile->axis360Email|escape}{/if}
 					</div>
 					<div class="form-group propertyRow">
-						<label for="promptForAxis360Email" class="control-label">{translate text='Prompt for Axis 360 email' isPublicFacing=true}</label>&nbsp;
+						<label for="promptForAxis360Email" class="control-label">{translate text='Prompt for Boundless email' isPublicFacing=true}</label>&nbsp;
                         {if $edit == true}
 							<input type="checkbox" name="promptForAxis360Email" id="promptForAxis360Email" {if $profile->promptForAxis360Email==1}checked='checked'{/if} data-switch="">
                         {else}

@@ -133,7 +133,7 @@ class Axis360_AJAX extends JSON_Action {
 		}
 
 		if (count($usersWithAxis360Access) == 0) {
-			// No Axis 360 Account Found, let the user create one if they want
+			// No Boundless Account Found, let the user create one if they want
 			return [
 				'success' => false,
 				'promptNeeded' => true,
@@ -149,7 +149,7 @@ class Axis360_AJAX extends JSON_Action {
 			];
 		} elseif ($promptForEmail && count($usersWithAxis360Access) > 1) {
 			$promptTitle = translate([
-				'text' => 'Axis 360 Hold Options',
+				'text' => 'Boundless Hold Options',
 				'isPublicFacing' => true,
 			]);
 			return [
@@ -167,7 +167,7 @@ class Axis360_AJAX extends JSON_Action {
 			];
 		} elseif ($promptForEmail && count($usersWithAxis360Access) == 1) {
 			$promptTitle = translate([
-				'text' => 'Axis 360 Hold Options',
+				'text' => 'Boundless Hold Options',
 				'isPublicFacing' => true,
 			]);
 			return [
@@ -207,7 +207,7 @@ class Axis360_AJAX extends JSON_Action {
 
 		if (count($usersWithAxis360Access) > 1) {
 			$promptTitle = translate([
-				'text' => 'Axis 360 Checkout Options',
+				'text' => 'Boundless Checkout Options',
 				'isPublicFacing' => true,
 			]);
 			return [
@@ -226,7 +226,7 @@ class Axis360_AJAX extends JSON_Action {
 				'promptNeeded' => false,
 			];
 		} else {
-			// No Axis 360 Account Found, let the user create one if they want
+			// No Boundless Account Found, let the user create one if they want
 			return [
 				'promptNeeded' => true,
 				'promptTitle' => translate([

@@ -457,11 +457,12 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 
 					if (curItem.isEContent()) {
 						eContentSourcesForScope.add(curItem.getTrimmedEContentSource());
-					}
-					if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
-						localCallNumbersForScope.add(curItem.getCallNumber());
-						if (sortableCallNumberForScope == null) {
-							sortableCallNumberForScope = curItem.getSortableCallNumber();
+					} else {
+						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
+							localCallNumbersForScope.add(curItem.getCallNumber());
+							if (sortableCallNumberForScope == null) {
+								sortableCallNumberForScope = curItem.getSortableCallNumber();
+							}
 						}
 					}
 				}

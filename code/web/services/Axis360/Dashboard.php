@@ -77,7 +77,7 @@ class Axis360_Dashboard extends Admin_Dashboard {
 		$interface->assign('loansAllTime', $loansAllTime);
 		$interface->assign('holdsAllTime', $holdsAllTime);
 
-		$this->display('dashboard.tpl', 'Axis 360 Dashboard');
+		$this->display('dashboard.tpl', 'Boundless Dashboard');
 	}
 
 	/**
@@ -169,7 +169,7 @@ class Axis360_Dashboard extends Admin_Dashboard {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Boundless');
 		$breadcrumbs[] = new Breadcrumb('/Axis360/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}

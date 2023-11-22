@@ -107,7 +107,7 @@ class Axis360ExtractLogEntry implements BaseIndexingLogEntry {
 	}
 	public void setFinished() {
 		this.endTime = new Date();
-		this.addNote("Finished Axis 360 extraction");
+		this.addNote("Finished Boundless extraction");
 		this.saveResults();
 	}
 	public void incErrors(String note){

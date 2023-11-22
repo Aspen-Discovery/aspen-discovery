@@ -66,8 +66,8 @@
 									{if $user->isValidForEContentSource('axis360')}
 										<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/CheckedOut?tab=axis360" id="checkedOutAxis360" title="View checkouts from Axis 360">
-												{translate text="Axis 360" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-checkouts-placeholder">??</span></span>{/if}
+											<a href="/MyAccount/CheckedOut?tab=axis360" id="checkedOutAxis360" title="View checkouts from Boundless">
+												{translate text="Boundless" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-checkouts-placeholder">??</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -114,8 +114,8 @@
 									{if $user->isValidForEContentSource('axis360')}
 										<li class="myAccountLink">
 											&nbsp;&nbsp;&raquo;&nbsp;
-											<a href="/MyAccount/Holds?tab=axis360" id="holdsAxis360" title="View holds from Axis 360">
-												{translate text="Axis 360" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-holds-placeholder">??</span></span> <span class="axis360-available-holds" style="display: none"> <span class="label label-success"><span class="axis360-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+											<a href="/MyAccount/Holds?tab=axis360" id="holdsAxis360" title="View holds from Boundless">
+												{translate text="Boundless" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="axis360-holds-placeholder">??</span></span> <span class="axis360-available-holds" style="display: none"> <span class="label label-success"><span class="axis360-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}
@@ -235,7 +235,7 @@
 									<div class="myAccountLink"><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>
 								{/if}
 								{if $user->isValidForEContentSource('axis360') && $showUserCirculationModules}
-									<div class="myAccountLink"><a href="/MyAccount/Axis360Options">{translate text='Axis 360 Options' isPublicFacing=true}</a></div>
+									<div class="myAccountLink"><a href="/MyAccount/Axis360Options">{translate text='Boundless Options' isPublicFacing=true}</a></div>
 								{/if}
 								{if !empty($userIsStaff)}
 									<div class="myAccountLink"><a href="/MyAccount/StaffSettings">{translate text='Staff Settings' isPublicFacing=true}</a></div>
