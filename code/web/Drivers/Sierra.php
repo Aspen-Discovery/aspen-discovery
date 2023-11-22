@@ -509,6 +509,7 @@ class Sierra extends Millennium {
 		//Sierra does not report reading history enabled properly so we should always get it.
 		if (true || $readingHistoryEnabled) {
 			ini_set('memory_limit', '2G');
+			set_time_limit(60);
 
 			$numProcessed = 0;
 			$totalToProcess = 1000;
