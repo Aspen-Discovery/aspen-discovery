@@ -83,14 +83,6 @@ export const MyLinkedAccounts = () => {
           return null;
      };
 
-     const disableAccountLinking = () => {
-          return false;
-     };
-
-     const enableAccountLinking = () => {
-          return false;
-     };
-
      if (!canUserLinkAccounts) {
           return (
                <ScrollView p={5} flex={1}>
