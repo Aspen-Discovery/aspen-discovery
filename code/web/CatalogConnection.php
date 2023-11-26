@@ -480,6 +480,10 @@ class CatalogConnection {
 		return $result;
 	}
 
+	public function isBlockedFromIllRequests(User $user) {
+		return $this->driver->isBlockedFromIllRequests($user);
+	}
+
 	/**
 	 * @param $nameFromUser  string
 	 * @param $nameFromIls   string

@@ -1100,6 +1100,24 @@ class SirsiDynixROA extends HorizonAPI {
 		return $checkedOutTitles;
 	}
 
+	public function isBlockedFromIllRequests(User $user) {
+		$sessionToken = $this->getSessionToken($user);
+		if ($sessionToken) {
+
+			//create the hold using the web service
+			$webServiceURL = $this->getWebServiceURL();
+
+			$patronStatusInfo = $this->getWebServiceResponse('patronStatusInfo', $webServiceURL . '/user/patronStatusInfo/key/' . $user->unique_ils_id, null, $sessionToken);
+			if (!empty($patronStatusInfo)) {
+				$patronStanding = $patronStatusInfo->fields->standing->key;
+				if ($patronStanding == 'BLOCKED' || $patronStanding == 'BARRED' || $patronStanding == 'COLLECTION' || $patronStanding == 'REVIEW') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Get Patron Holds
 	 *

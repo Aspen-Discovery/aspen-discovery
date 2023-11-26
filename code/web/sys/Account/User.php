@@ -99,6 +99,7 @@ class User extends DataObject {
 	public $_expires;
 	public $_expired;
 	public $_expireClose;
+	public $_isBlockedFromIllRequests;
 	public $_fines;
 	public $_finesVal;
 	public $_homeLibrary;
@@ -1396,6 +1397,17 @@ class User extends DataObject {
 		} else {
 			return false;
 		}
+	}
+
+	public function isBlockedFromIllRequests() {
+		if ($this->_isBlockedFromIllRequests === null) {
+			if ($this->hasIlsConnection()){
+				$this->_isBlockedFromIllRequests = $this->getCatalogDriver()->isBlockedFromIllRequests($this);
+			}else{
+				return true;
+			}
+		}
+		return $this->_isBlockedFromIllRequests;
 	}
 
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all'): array {
