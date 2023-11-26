@@ -14,6 +14,15 @@ function getUpdates23_12_00(): array {
 
 		//mark - ByWater
 
+		'disable_circulation_actions' => [
+			'title' => 'Disable Circulation Actions',
+			'description' => 'Add an option to disable circulation actions for a user.',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN disableCirculationActions TINYINT(1) DEFAULT 0'
+			]
+		], //name
+
 		//kirstien - ByWater
 
 		//kodi - ByWater

@@ -43,6 +43,7 @@ class User extends DataObject {
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
 	public $disableAccountLinking;
+	public $disableCirculationActions;
 	public $oAuthAccessToken;
 	public $oAuthRefreshToken;
 	public $isLoggedInViaSSO;
@@ -1132,6 +1133,8 @@ class User extends DataObject {
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
 		$this->__set('rememberHoldPickupLocation', (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on') ? 1 : 0);
+		$this->__set('disableCirculationActions', (isset($_POST['disableCirculationActions']) && $_POST['disableCirculationActions'] == 'on') ? 0 : 1);
+
 		global $enabledModules;
 		global $library;
 		if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)) {
@@ -1668,8 +1671,25 @@ class User extends DataObject {
 		}
 	}
 
+	public function areCirculationActionsDisabled(){
+		if (!$this->hasIlsConnection()){
+			return true;
+		} else {
+			if ($this->disableCirculationActions) {
+				return true;
+			} else {
+				//TODO: Should we automatically disable the circulation actions if there are a large number of things checked out and/or on hold?
+				//$accountSummary = $this->getAccountSummary();
+				return false;
+			}
+		}
+	}
+
 	public function getCirculatedRecordActions($source, $recordId, $loadingLinkedUser = false) {
 		$actions = [];
+		if ($this->areCirculationActionsDisabled() == true) {
+			return $actions;
+		}
 		$showUserName = $loadingLinkedUser;
 //		if (!$loadingLinkedUser){
 //			$linkedUsers = $this->getLinkedUsers();
