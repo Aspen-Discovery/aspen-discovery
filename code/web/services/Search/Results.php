@@ -47,6 +47,9 @@ class Search_Results extends ResultsAction {
 
 			$oldSearchUrl = $_SERVER['REQUEST_URI'];
 			$oldSearchUrl = preg_replace('/searchIndex=Keyword/', 'searchIndex=' . $replacedIndex, $oldSearchUrl);
+			$_REQUEST['searchIndex'] = 'Keyword';
+			$oldSearchUrl = preg_replace('/sort=.+?(&|$)/', '', $oldSearchUrl);
+			unset($_REQUEST['sort']);
 			$oldSearchUrl = preg_replace("/[?&]replacedIndex=$replacedIndex/", '', $oldSearchUrl);
 			$interface->assign('oldSearchUrl', $oldSearchUrl);
 		}
