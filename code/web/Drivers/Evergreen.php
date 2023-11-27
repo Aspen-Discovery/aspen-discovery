@@ -205,11 +205,7 @@ class Evergreen extends AbstractIlsDriver {
 			$namedParams = [
 				'patron_id' => (int)$patron->unique_ils_id,
 				"copy_id" => $itemId,
-//				'id' => $itemId,
-//				'circ' => [
-//					'copy_id' => $itemId
-//				]
-				//"opac_renewal" => 1,
+				"opac_renewal" => 1,
 			];
 			$request .= '&param=' . json_encode($namedParams);
 
