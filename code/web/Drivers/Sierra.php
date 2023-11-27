@@ -1147,7 +1147,7 @@ class Sierra extends Millennium {
 		}else {
 			$loginMethod = $this->accountProfile->loginConfiguration;
 		}
-		if ($loginMethod == 'barcode_pin') {
+		if ($loginMethod == 'barcode_pin' || $loginMethod == 'name_barcode') {
 			//If we use user names, we may need to lookup the barcode by the user name.
 //			$params = [
 //				'varFieldTag' => 'i',
@@ -1417,12 +1417,18 @@ class Sierra extends Millennium {
 
 			$summary->totalFines = $patronInfo->moneyOwed;
 
-			[
-				$yearExp,
-				$monthExp,
-				$dayExp,
-			] = explode("-", $patronInfo->expirationDate);
-			$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			if (!empty($patronInfo->expirationDate)) {
+				[
+					$yearExp,
+					$monthExp,
+					$dayExp,
+				] = explode("-", $patronInfo->expirationDate);
+				$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			}else{
+				//No expiration date set, just set something 20 years in the future
+				$now = time();
+				$summary->expirationDate = $now + 20 * 365 * 24 * 60 * 60;
+			}
 		}
 
 		return $summary;
@@ -1722,7 +1728,7 @@ class Sierra extends Millennium {
 			$user->_homeLocation = $location->displayName;
 		}
 
-		if ($patronInfo->expirationDate) {
+		if (!empty($patronInfo->expirationDate)) {
 			$user->_expires = $patronInfo->expirationDate;
 			[
 				$yearExp,
