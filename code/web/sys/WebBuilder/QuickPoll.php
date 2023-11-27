@@ -393,10 +393,15 @@ class QuickPoll extends DB_LibraryLinkedObject {
 	public function userCanViewResults(): bool {
 		$canViewResults = false;
 		if (UserAccount::isStaff()){
-			$activeUserLibraryId = UserAccount::getActiveUserObj()->getHomeLibrary()->libraryId;
-			$isQuickPollInLibrary = array_key_exists($activeUserLibraryId, $this->getLibraries());
 			$administerAllQP = UserAccount::userHasPermission('Administer All Quick Polls');
-			$administerLibraryQP = UserAccount::userHasPermission('Administer Library Quick Polls');
+			if (UserAccount::getActiveUserObj()->getHomeLibrary() != null) {
+				$activeUserLibraryId = UserAccount::getActiveUserObj()->getHomeLibrary()->libraryId;
+				$isQuickPollInLibrary = array_key_exists($activeUserLibraryId, $this->getLibraries());
+				$administerLibraryQP = UserAccount::userHasPermission('Administer Library Quick Polls');
+			} else {
+				$administerLibraryQP = false;
+				$isQuickPollInLibrary = false;
+			}
 			if ($administerAllQP || ($administerLibraryQP && $isQuickPollInLibrary)) {
 				$canViewResults = true;
 			}
