@@ -1100,7 +1100,7 @@ class SirsiDynixROA extends HorizonAPI {
 		return $checkedOutTitles;
 	}
 
-	public function isBlockedFromIllRequests(User $user) {
+	public function isBlockedFromHolds(User $user) {
 		$sessionToken = $this->getSessionToken($user);
 		if ($sessionToken) {
 
