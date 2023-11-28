@@ -1405,7 +1405,7 @@ public class EvergreenExportMain {
 	private static int updateBibFromEvergreen(String bibNumber, MarcFactory marcFactory, boolean reindexNow) {
 		//Get the bib record
 		//noinspection SpellCheckingInspection
-		String getBibUrl = baseUrl + "/opac/extras/supercat/retrieve/marcxml-full/record/" + bibNumber;
+		String getBibUrl = baseUrl + "/opac/extras/unapi?id=tag::U2@bre/" + bibNumber + "{holdings_xml,acp}&format=marcxml";
 		ProcessBibRequestResponse response = processGetBibsRequest(getBibUrl, marcFactory, reindexNow);
 		return response.numChanges;
 	}
@@ -1428,9 +1428,8 @@ public class EvergreenExportMain {
 					successfulResponse = true;
 
 					Document getBibsDocument = createXMLDocumentForWebServiceResponse(getBibsResponse);
-					Element collectionsResult = (Element) getBibsDocument.getFirstChild();
 
-					NodeList recordNodes = collectionsResult.getElementsByTagName("record");
+					NodeList recordNodes = getBibsDocument.getElementsByTagName("record");
 					for (int i = 0; i < recordNodes.getLength(); i++){
 						boolean hasInvalidData = false;
 
