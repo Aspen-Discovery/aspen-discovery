@@ -681,57 +681,61 @@ class Koha extends AbstractIlsDriver {
 
 		//Check to see if any checkouts are Claims Returned
 		$allIssueIdsAsString = implode(',', $allIssueIds);
-		/** @noinspection SqlResolve */
-		/** @noinspection SqlDialectInspection */
-		$claimsReturnedSql = "SELECT issue_id, created_on from return_claims where issue_id in ($allIssueIdsAsString)";
-		$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
-		if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
-			while ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
-				try {
-					$issueId = $claimsReturnedResult['issue_id'];
-					$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-					foreach ($checkouts as $curCheckout) {
-						if ($curCheckout->sourceId == $issueId) {
-							$curCheckout->returnClaim = translate([
-								'text' => 'Title marked as returned on %1%, but the library is still processing',
-								1 => date_format($claimsReturnedDate, 'M j, Y'),
-								'isPublicFacing' => true,
-							]);
-							break;
+		if (!empty($allIssueIdsAsString)) {
+			/** @noinspection SqlResolve */
+			/** @noinspection SqlDialectInspection */
+			$claimsReturnedSql = "SELECT issue_id, created_on from return_claims where issue_id in ($allIssueIdsAsString)";
+			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
+			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
+				while ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
+					try {
+						$issueId = $claimsReturnedResult['issue_id'];
+						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
+						foreach ($checkouts as $curCheckout) {
+							if ($curCheckout->sourceId == $issueId) {
+								$curCheckout->returnClaim = translate([
+									'text' => 'Title marked as returned on %1%, but the library is still processing',
+									1 => date_format($claimsReturnedDate, 'M j, Y'),
+									'isPublicFacing' => true,
+								]);
+								break;
+							}
 						}
+					} catch (Exception $e) {
+						global $logger;
+						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
 					}
-				} catch (Exception $e) {
-					global $logger;
-					$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
 				}
+				$claimsReturnedResults->close();
 			}
-			$claimsReturnedResults->close();
+			$timer->logTime("Load return claims");
 		}
-		$timer->logTime("Load return claims");
 
 		//Check to see if there is a volume for the checkout
 		$allItemNumbersAsString = implode(',', $allItemNumbers);
-		if ($this->getKohaVersion() >= 22.11) {
-			/** @noinspection SqlResolve */
-			$volumeSql = "SELECT item_id, description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id IN ($allItemNumbersAsString)";
-		} else {
-			/** @noinspection SqlResolve */
-			$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
-		}
-		$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
-		if ($volumeResults !== false) { //This is false if Koha does not support volumes
-			while ($volumeRow = $volumeResults->fetch_assoc()) {
-				$itemId = $volumeRow['item_id'];
-				foreach ($checkouts as $curCheckout) {
-					if ($curCheckout->itemId == $itemId) {
-						$curCheckout->volume = $volumeRow['description'];
-						break;
+		if (!empty($allItemNumbersAsString)) {
+			if ($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
+				$volumeSql = "SELECT item_id, description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id IN ($allItemNumbersAsString)";
+			} else {
+				/** @noinspection SqlResolve */
+				$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
+			}
+			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+			if ($volumeResults !== false) { //This is false if Koha does not support volumes
+				while ($volumeRow = $volumeResults->fetch_assoc()) {
+					$itemId = $volumeRow['item_id'];
+					foreach ($checkouts as $curCheckout) {
+						if ($curCheckout->itemId == $itemId) {
+							$curCheckout->volume = $volumeRow['description'];
+							break;
+						}
 					}
 				}
+				$volumeResults->close();
 			}
-			$volumeResults->close();
+			$timer->logTime("Load volume info");
 		}
-		$timer->logTime("Load volume info");
 
 		return $checkouts;
 	}
