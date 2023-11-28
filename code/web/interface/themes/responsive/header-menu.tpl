@@ -142,33 +142,6 @@
 			{/if}
 		{/foreach}
 	{/if}
-
-
-	{* {if !empty($allActiveThemes)}
-		{if count($allActiveThemes) > 1}
-			<div class="header-menu-section" id="aspenDisplayMenuSection">
-				<i class="fas fa-cog fa-fw"></i> {translate text="Display Options" isPublicFacing=true}
-			</div>
-		{else}
-			<div class="header-menu-section" id="aspenDisplayMenuSection">
-				<i class="fas fa-cog fa-fw"></i> {translate text="Display" isPublicFacing=true}
-			</div>
-		{/if}
-		{foreach from=$allActiveThemes key=themeId item=themeName}
-			{if $themeId != $activeThemeId}
-				<a onclick="AspenDiscovery.showDisplaySettings()">
-			{/if}
-		<div class="header-menu-option themeSelect{if $themeId == $activeThemeId}ed{/if}">
-			{if $themeId == $activeThemeId}
-				<i class="fas fa-check fa-fw"></i>&nbsp;
-			{/if}
-			{$themeName}
-		</div>
-			{if $themeId != $activeTheme}
-			</a>
-			{/if}
-		{/foreach}
-	{/if} *}
 	{if !empty($masqueradeMode)}
 		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade" isAdminFacing=true}</a>
 	{/if}
