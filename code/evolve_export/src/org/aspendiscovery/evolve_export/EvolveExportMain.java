@@ -3,7 +3,6 @@ package org.aspendiscovery.evolve_export;
 import com.turning_leaf_technologies.config.ConfigUtil;
 import com.turning_leaf_technologies.file.JarUtil;
 import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
-import com.turning_leaf_technologies.grouping.RecordGroupingProcessor;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
@@ -24,7 +23,6 @@ import org.marc4j.MarcPermissiveStreamReader;
 import org.marc4j.MarcReader;
 import org.marc4j.marc.*;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
@@ -55,7 +53,6 @@ public class EvolveExportMain {
 		String singleWorkId = null;
 
 		if (args.length == 0)
-		//noinspection CommentedOutCode
 		{
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
 			if (serverName.length() == 0) {
@@ -298,12 +295,6 @@ public class EvolveExportMain {
 			//Give a small buffer (5 minute to account for server time differences)
 			lastExtractTime = (indexingProfile.getLastUpdateOfAllRecords() - (5 * 60)) * 1000 ;
 		}
-		//allow updating more than 90 days of records from Evolve.
-//		long ninetyDaysAgo = new Date().getTime() - (90 * 24 * 60 * 60 * 1000L);
-//		if (lastExtractTime < ninetyDaysAgo){
-//			logEntry.addNote("Last Extract Time is more than 90 days ago, resetting to only load the next 90 days. ");
-//			lastExtractTime = ninetyDaysAgo;
-//		}
 
 		int numProcessed = 0;
 		long now = new Date().getTime();
@@ -522,6 +513,16 @@ public class EvolveExportMain {
 					MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), "", marcFactory);
 				}else {
 					MarcUtil.setSubFieldData(newItemField, indexingProfile.getLocationSubfield(), curItem.getString("Location"), marcFactory);
+				}
+				if (curItem.isNull("Collection")) {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCollectionSubfield(), "", marcFactory);
+				}else {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getCollectionSubfield(), curItem.getString("Collection"), marcFactory);
+				}
+				if (curItem.isNull("CreatedDate")) {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDateCreatedSubfield(), "", marcFactory);
+				}else {
+					MarcUtil.setSubFieldData(newItemField, indexingProfile.getDateCreatedSubfield(), curItem.getString("CreatedDate"), marcFactory);
 				}
 
 				marcRecord.addVariableField(newItemField);
