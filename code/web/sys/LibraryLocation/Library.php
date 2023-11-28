@@ -63,6 +63,7 @@ class Library extends DataObject {
 	public $createSearchInterface;
 	public $showInSelectInterface;
 	public $showDisplayNameInHeader;
+	public $languageAndDisplayInHeader;
 	public $headerText;
 	public $footerText;
 	public $systemMessage;
@@ -849,6 +850,15 @@ class Library extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Show Display Name in Header',
 				'description' => 'Whether or not the display name should be shown in the header next to the logo',
+				'hideInLists' => true,
+				'default' => false,
+				'permissions' => ['Library Theme Configuration'],
+			],
+			'languageAndDisplayInHeader'=> [
+				'property' => 'languageAndDisplayInHeader',
+				'type' => 'checkbox',
+				'label' => 'Show Language and Display Settings in Page Header',
+				'description' => 'Whether to display the language and display settings in the page header',
 				'hideInLists' => true,
 				'default' => false,
 				'permissions' => ['Library Theme Configuration'],
@@ -4714,6 +4724,7 @@ class Library extends DataObject {
 			'baseUrl' => $this->baseUrl,
 			'displayName' => $this->displayName,
 			'homeLink' => $this->homeLink,
+			'languageAndDisplayInHeader' => $this->languageAndDisplayInHeader,
 			'twitterLink' => $this->twitterLink,
 			'facebookLink' => $this->facebookLink,
 			'youtubeLink' => $this->youtubeLink,
