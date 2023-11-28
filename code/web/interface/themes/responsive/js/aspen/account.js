@@ -76,6 +76,7 @@ AspenDiscovery.Account = (function () {
 		 * @returns {boolean}
 		 */
 		ajaxLogin: function (trigger, ajaxCallback, closeModalOnAjaxSuccess) {
+
 			if (Globals.loggedIn) {
 				if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
 					ajaxCallback();
@@ -99,16 +100,17 @@ AspenDiscovery.Account = (function () {
 						dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 						loginLink = trigger.data('login');
 					}
-					var dialogDestination = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
+					var getLoginFormUrl = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
 					if (multiStep && !loginLink) {
-						dialogDestination += "&multiStep=true";
+						getLoginFormUrl += "&multiStep=true";
 					}
-					var modalDialog = $("#modalDialog");
-					$('.modal-body').html("Loading...");
-					$(".modal-content").load(dialogDestination);
-					$(".modal-title").text(dialogTitle);
-					modalDialog.removeClass('image-popup');
-					modalDialog.modal("show");
+					$.getJSON(getLoginFormUrl, function (data) {
+						if (data.success === true) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, data.closeDestination === undefined, data.closeDestination);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
+					});
 				}
 			}
 			return false;
@@ -567,11 +569,7 @@ AspenDiscovery.Account = (function () {
 					} else if (response.result.success === false && response.result.enroll2FA === true) {
 						AspenDiscovery.showMessageWithButtons('Error', 'Your patron type requires that you enroll into two-factor authentication before logging in.', '<button class=\'tool btn btn-primary\' onclick=\'AspenDiscovery.Account.show2FAEnrollment(true); return false;\'>Continue</button>');
 					} else if (response.result.success === false && response.result.has2FA === true) {
-						$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
-							if (data.success) {
-								AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
-							}
-						});
+						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 					} else {
 						loginErrorElem.html(response.result.message).show();
 					}
@@ -2303,7 +2301,7 @@ AspenDiscovery.Account = (function () {
 				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false, '/MyAccount/Logout')
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}
@@ -2319,7 +2317,7 @@ AspenDiscovery.Account = (function () {
 			if (Globals.loggedIn || mandatoryEnroll) {
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false, '/MyAccount/Logout')
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}
@@ -2503,6 +2501,9 @@ AspenDiscovery.Account = (function () {
 				});
 			}
 			return false;
+		},
+		logout: function () {
+			window.location = Globals.path + '/MyAccount/Logout';
 		}
 	};
 }(AspenDiscovery.Account || {}));

@@ -5,43 +5,26 @@ require_once ROOT_DIR . '/sys/Session/Session.php';
 
 class MySQLSession extends SessionInterface {
 	public function open($sess_path, $sess_name) {
-		$rand = rand(0, 1000);
-		if ($rand == 53) {
-			//global $logger;
-			//$logger->log("Opening session ({$_SERVER['REQUEST_URI']})", Logger::LOG_DEBUG);
-			//Delete any sessions where remember me was false
-			$s = new Session();
-			$earliestValidSession = time() - self::$lifetime;
-			$s->remember_me = '0';
-			$s->whereAdd('last_used < ' . $earliestValidSession);
-			$s->delete(true);
-			//Delete any sessions where remember me was true
-			$s2 = new Session();
-			$earliestValidRememberMeSession = time() - self::$rememberMeLifetime;
-			$s2->remember_me = '1';
-			$s2->whereAdd('last_used < ' . $earliestValidRememberMeSession);
-			$numRememberMeDeleted = $s2->delete(true);
-		}
 		return true;
 	}
 
 	public function read($sess_id) {
 		$s = new Session();
-		$s->session_id = $sess_id;
+		$s->setSessionId($sess_id);
 
 		if ($s->find(true)) {
 			//global $logger;
 			//$logger->log("Reading existing session $sess_id", Logger::LOG_DEBUG);
-			if ($s->remember_me == '1') {
+			if ($s->getRememberMe() == '1') {
 				$earliestValidSession = time() - self::$rememberMeLifetime;
 			} else {
 				$earliestValidSession = time() - self::$lifetime;
 			}
-			if ($s->last_used < $earliestValidSession) {
+			if ($s->getLastUsed() < $earliestValidSession) {
 				return "";
 			}
 			SessionInterface::$activeSessionObject = $s;
-			return $s->data;
+			return $s->getData();
 		} else {
 			return "";
 		}
@@ -52,7 +35,7 @@ class MySQLSession extends SessionInterface {
 	 * @param $data
 	 * @return bool
 	 */
-	public function write($sess_id, $data) {
+	public function write($sess_id, $data) : bool{
 		//global $logger;
 		global $module;
 		global $action;
@@ -71,30 +54,31 @@ class MySQLSession extends SessionInterface {
 		}
 
 		$s = new Session();
-		$s->session_id = $sess_id;
+		$s->setSessionId($sess_id);
 		if ($s->find(true)) {
 			//$logger->log("Updating session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
-			$s->data = $data;
-			$s->last_used = time();
-			if (empty($s->remember_me)) {
+			$s->setData($data);
+			$s->setLastUsed(time());
+			if (empty($s->getRememberMe())) {
 				if (isset($_REQUEST['rememberMe']) && ($_REQUEST['rememberMe'] === true || $_REQUEST['rememberMe'] === "true")) {
-					$s->remember_me = 1;
+					$s->setRememberMe(1);
 				} else {
 					$activeUser = UserAccount::getActiveUserObj();
 					if (!empty($activeUser)) {
 						if ($activeUser->bypassAutoLogout) {
-							$s->remember_me = 1;
+							$s->setRememberMe(1);
 						}
 					}
 				}
 			}
-			$result = $s->update();
+			$s->update();
+			$result = true;
 		} else {
 			//$logger->log("Inserting new session $sess_id", Logger::LOG_DEBUG);
-			$s->data = $data;
-			$s->created = date('Y-m-d h:i:s');
-			$s->last_used = time();
-			$s->remember_me = 0;
+			$s->setData($data);
+			$s->setCreated(date('Y-m-d h:i:s'));
+			$s->setLastUsed(time());
+			$s->setRememberMe(0);
 			$result = $s->insert();
 			//Don't bother to count sessions that are from bots.
 			global $isAJAX;
@@ -109,13 +93,13 @@ class MySQLSession extends SessionInterface {
 			}
 		}
 		//$logger->log(" Result = $result", Logger::LOG_DEBUG);
-		return true;
+		return $result;
 	}
 
 	public function destroy($sess_id) {
 		// Now do database-specific destruction:
 		$s = new Session();
-		$s->session_id = $sess_id;
+		$s->setSessionId($sess_id);
 		if ($s->find(true)) {
 			//global $logger;
 			//$logger->log("Destroying session $sess_id {$_SERVER['REQUEST_URI']}", Logger::LOG_DEBUG);
@@ -134,7 +118,18 @@ class MySQLSession extends SessionInterface {
 	}
 
 	public function gc($sess_maxlifetime) {
-		//Do nothing here, delete old sessions in Java Cron
+		$s = new Session();
+		$earliestValidSession = time() - self::$lifetime;
+		$s->setRememberMe('0');
+		$s->whereAdd('last_used < ' . $earliestValidSession);
+		$s->delete(true);
+		//Delete any sessions where remember me was true
+		$s2 = new Session();
+		$earliestValidRememberMeSession = time() - self::$rememberMeLifetime;
+		$s2->setRememberMe ('1');
+		$s2->whereAdd('last_used < ' . $earliestValidRememberMeSession);
+		$numRememberMeDeleted = $s2->delete(true);
+
 		return true;
 	}
 }
