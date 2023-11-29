@@ -331,6 +331,8 @@ class HooplaProcessor {
 				String releaseYear = yearObj.toString();
 
 				groupedWork.addPublicationDate(releaseYear);
+				String placeOfPublication = rawResponse.getString("placeOfPublication");
+				groupedWork.addPlaceOfPublication(placeOfPublication);
 				//physical description
 				if (rawResponse.has("duration")){
 					groupedWork.addPhysical(rawResponse.getString("duration"));

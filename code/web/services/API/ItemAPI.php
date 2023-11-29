@@ -307,6 +307,7 @@ class ItemAPI extends Action {
 		$itemData['title'] = $record['title_display'];
 		$itemData['author'] = $record['author_display'];
 		$itemData['publisher'] = $record['publisher'];
+		$itemData['placeOfPublication'] = $record['placeOfPublication'];
 		$itemData['allIsbn'] = $record['isbn'];
 		$itemData['allUpc'] = isset($record['upc']) ? $record['upc'] : null;
 		$itemData['allIssn'] = isset($record['issn']) ? $record['issn'] : null;
@@ -389,6 +390,7 @@ class ItemAPI extends Action {
 				'title' => 'Unknown Record',
 				'author' => '',
 				'publisher' => '',
+				'placeOfPublication' => '',
 				'format' => 'Unknown',
 				'formatCategory' => 'Unknown',
 				'description' => '',
@@ -437,6 +439,7 @@ class ItemAPI extends Action {
 			$itemData['title'] = $record['title_display'];
 			$itemData['author'] = isset($record['author_display']) ? $record['author_display'] : (isset($record['author2']) ? $record['author2'][0] : '');
 			$itemData['publisher'] = $record['publisher'];
+			$itemData['placeOfPublication'] = $record['placeOfPublication'];
 			if(isset($record['isbn'])) {
 				$itemData['allIsbn'] = $record['isbn'];
 			}
@@ -804,6 +807,12 @@ class ItemAPI extends Action {
 								} elseif (count($publisher) == 0) {
 									$publisher = $relatedRecord->publisher;
 								}
+								$placeOfPublication = $hooplaDriver->getPlacesOfPublication();
+								if (is_array($placeOfPublication) && $placesOfPublication != null) {
+									$placeOfPublication = $placeOfPublication[0];
+								} elseif (count($placeOfPublication) == 0){
+									$placeOfPublication = $relatedRecord->placeOfPublication;
+								}
 								$edition = $hooplaDriver->getEditions();
 								if (is_array($edition) && $edition != null) {
 									$edition = $edition[0];
@@ -821,12 +830,14 @@ class ItemAPI extends Action {
 								$overdriveDriver = new OverDriveRecordDriver($item->itemId);
 								$publicationDate = $relatedRecord->publicationDate;
 								$publisher = $relatedRecord->publisher;
+								$placeOfPublication = $relatedRecord->placeOfPublication;
 								$edition = $relatedRecord->edition;
 								$physical = $relatedRecord->physical;
 							} elseif ($item->eContentSource == "CloudLibrary") {
 								require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 								$cloudLibraryDriver = new CloudLibraryRecordDriver($item->itemId);
 								$publicationDate = $cloudLibraryDriver->getPublicationDates();
+								$placeOfPublication = $cloudLibraryDriver->getPlacesOfPublication();
 								$publisher = $cloudLibraryDriver->getPublishers();
 								$edition = $cloudLibraryDriver->getEditions();
 								$physical = $relatedRecord->physical;
@@ -835,11 +846,13 @@ class ItemAPI extends Action {
 								$axis360Driver = new Axis360RecordDriver($item->itemId);
 								$publicationDate = $axis360Driver->getPublicationDates();
 								$publisher = $axis360Driver->getPublishers();
+								$placeOfPublication = $axis360Driver->getPlacesOfPublication();
 								$edition = $axis360Driver->getEditions();
 								$physical = $relatedRecord->physical;
 							} else {
 								$publicationDate = $relatedRecord->publicationDate;
 								$publisher = $relatedRecord->publisher;
+								$placeOfPublication = $relatedRecord->placeOfPublication;
 								$edition = $relatedRecord->edition;
 								$physical = $relatedRecord->physical;
 							}
@@ -866,6 +879,7 @@ class ItemAPI extends Action {
 							'edition' => $edition,
 							'publisher' => $publisher,
 							'publicationDate' => $publicationDate,
+							'placeOfPublication' => $placeOfPublication,
 							'physical' => $physical,
 							'action' => $actions,
 							'hasItemsWithoutVolumes' => $hasItemsWithoutVolumes,
@@ -1178,6 +1192,7 @@ class ItemAPI extends Action {
 			$variations[$relatedVariation->label]['title'] = $relatedRecordDriver->getTitle() ?? '';
 			$variations[$relatedVariation->label]['author'] = $relatedRecordDriver->getAuthor() ?? '';
 			$variations[$relatedVariation->label]['publisher'] = $relatedRecord->publisher ?? '';
+			$variations[$relatedVariation->label]['placeOfPublication'] = $relatedRecord->placeOfPublication ?? '';
 			$variations[$relatedVariation->label]['isbn'] = $relatedRecordDriver->getCleanISBN() ?? '';
 			$variations[$relatedVariation->label]['oclcNumber'] = $oclcNumber;
 		}
@@ -1237,6 +1252,7 @@ class ItemAPI extends Action {
 						$records[$relatedRecord->id]['edition'] = $relatedRecord->edition;
 						$records[$relatedRecord->id]['publisher'] = $relatedRecord->publisher;
 						$records[$relatedRecord->id]['publicationDate'] = $relatedRecord->publicationDate;
+						$records[$relatedRecord->id]['placeOfPublication'] = $relatedRecord->placeOfPublication;
 						$records[$relatedRecord->id]['physical'] = $relatedRecord->physical;
 						$records[$relatedRecord->id]['closedCaptioned'] = $relatedRecord->closedCaptioned;
 						$records[$relatedRecord->id]['statusIndicator'] = [
@@ -1276,6 +1292,13 @@ class ItemAPI extends Action {
 								$publisher = $relatedRecord->publisher;
 							}
 							$records[$relatedRecord->id]['publisher'] = $publisher;
+							$placeOfPublication = $hooplaDriver->getPlacesOfPublication();
+							if (is_array($placeOfPublication) && $placeOfPublication != null) {
+								$placeOfPublication = $placeOfPublication[0];
+							} elseif (count($placeOfPublication) == 0) {
+								$placeOfPublication = $relatedRecord->placeOfPublication;
+							}
+							$records[$relatedRecord->id]['placeOfPublication'] = $placeOfPublication;
 							$edition = $hooplaDriver->getEditions();
 							if (is_array($edition) && $edition != null) {
 								$edition = $edition[0];
@@ -1294,12 +1317,14 @@ class ItemAPI extends Action {
 							require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 							$cloudLibraryDriver = new CloudLibraryRecordDriver($recordId);
 							$records[$relatedRecord->id]['publicationDate'] = $cloudLibraryDriver->getPublicationDates();
+							$records[$relatedRecord->id]['placeOfPublication'] = $cloudLibraryDriver->getPlacesOfPublication();
 							$records[$relatedRecord->id]['publisher'] = $cloudLibraryDriver->getPublishers();
 							$records[$relatedRecord->id]['edition'] = $cloudLibraryDriver->getEditions();
 						} elseif ($source == 'axis360') {
 							require_once ROOT_DIR . '/RecordDrivers/Axis360RecordDriver.php';
 							$axis360Driver = new Axis360RecordDriver($recordId);
 							$records[$relatedRecord->id]['publicationDate'] = $axis360Driver->getPublicationDates();
+							$records[$relatedRecord->id]['placeOfPublication'] = $axis360Driver->getPlacesOfPublication();
 							$records[$relatedRecord->id]['publisher'] = $axis360Driver->getPublishers();
 							$records[$relatedRecord->id]['edition'] = $axis360Driver->getEditions();
 						}

@@ -37,7 +37,7 @@ if (count($_SERVER['argv']) > 1){
 			'library' => $configArray['Site']['sitename'],
 			'title' => $configArray['Site']['title'],
 			'url' => $configArray['Site']['url'],
-			'solrHost' => $configArray['Site']['solrHost'],
+			'solrHost' => $configArray['Site']['solrHost'] ?? 'localhost',
 			'solrPort' => $configArray['Site']['solrPort'],
 			'timezone' => $configArray['Site']['timezone'],
 			'aspenDBHost' => $configArray['Aspen']['DBHost'] ?? 'localhost',

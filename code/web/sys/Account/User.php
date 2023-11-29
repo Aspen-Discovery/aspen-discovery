@@ -43,6 +43,7 @@ class User extends DataObject {
 	public $alternateLibraryCardPassword;
 	public $hideResearchStarters;
 	public $disableAccountLinking;
+	public $disableCirculationActions;
 	public $oAuthAccessToken;
 	public $oAuthRefreshToken;
 	public $isLoggedInViaSSO;
@@ -98,6 +99,7 @@ class User extends DataObject {
 	public $_expires;
 	public $_expired;
 	public $_expireClose;
+	public $_isBlockedFromIllRequests;
 	public $_fines;
 	public $_finesVal;
 	public $_homeLibrary;
@@ -587,7 +589,7 @@ class User extends DataObject {
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
-					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+					return array_key_exists('Boundless', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
@@ -644,28 +646,28 @@ class User extends DataObject {
 	}
 
 	/**
-	 * @param User $user
+	 * @param User $linkedUser
 	 *
 	 * @return boolean
 	 */
-	function addLinkedUser($user) {
+	function addLinkedUser(User $linkedUser) {
 		/* var Library $library */ global $library;
-		if ($library->allowLinkedAccounts && $user->id != $this->id) { // library allows linked accounts and the account to link is not itself
+		if ($library->allowLinkedAccounts && $linkedUser->id != $this->id) { // library allows linked accounts and the account to link is not itself
 			$linkedUsers = $this->getLinkedUsers();
 			foreach ($linkedUsers as $existingUser) {
-				if ($existingUser->id == $user->id) {
+				if ($existingUser->id == $linkedUser->id) {
 					//We already have a link to this user
 					return true;
 				}
 			}
 
 			// Check for Account Blocks
-			if ($this->isBlockedAccount($user->id)) {
+			if ($this->isBlockedAccount($linkedUser->id)) {
 				return false;
 			}
 
 			//Check to make sure the account we are linking to allows linking
-			$linkLibrary = $user->getHomeLibrary();
+			$linkLibrary = $linkedUser->getHomeLibrary();
 			if (!$linkLibrary->allowLinkedAccounts) {
 				return false;
 			}
@@ -674,36 +676,13 @@ class User extends DataObject {
 			require_once ROOT_DIR . '/sys/Account/UserLink.php';
 			$userLink = new UserLink();
 			$userLink->primaryAccountId = $this->id;
-			$userLink->linkedAccountId = $user->id;
-			$result = $userLink->insert();
-			if (true == $result) {
-				$this->linkedUsers[] = clone($user);
+			$userLink->linkedAccountId = $linkedUser->id;
+			if ($userLink->insert()) {
+				$this->linkedUsers[] = clone($linkedUser);
 
-				if ($user->canReceiveNotifications($user, 'notifyAccount')) {
-					require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
-					require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
-					$appScheme = 'aspen-lida';
-					require_once ROOT_DIR . '/sys/SystemVariables.php';
-					$systemVariables = SystemVariables::getSystemVariables();
-					if ($systemVariables && !empty($systemVariables->appScheme)) {
-						$appScheme = $systemVariables->appScheme;
-					}
-					$notificationToken = new UserNotificationToken();
-					$notificationToken->userId = $user->id;
-					$notificationToken->find();
-					while ($notificationToken->fetch()) {
-						$body = [
-							'to' => $notificationToken->pushToken,
-							'title' => 'New account link',
-							'body' => 'Your account at ' . $user->getHomeLocation()->displayName . ' was just linked to by ' . $this->displayName . ' - ' . $this->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
-							'categoryId' => 'accountAlert',
-							'channelId' => 'accountAlert',
-							'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
-						];
-						$expoNotification = new ExpoNotification();
-						$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $user->id, 'linked_account');
-					}
-				}
+				/* Send all the things to the user who was linked to */
+				$this->newLinkMessage(); // Display alert in Aspen Discovery
+				$this->sendNewLinkNotification($linkedUser); // Send Aspen LiDA notification
 
 				return true;
 			}
@@ -729,38 +708,29 @@ class User extends DataObject {
 		return false;
 	}
 
-	//Individually remove accounts that have linked to user
-	function removeManagingAccount($userId) {
+	/**
+	 * Remove managing account by the linked user
+	 **/
+	function removeManagingAccount($managingAccount) {
 		require_once ROOT_DIR . '/sys/Account/UserLink.php';
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 
 		$userLink = new UserLink();
-		$userLink->primaryAccountId = $userId;
+		$userLink->primaryAccountId = $managingAccount;
 		$userLink->linkedAccountId = $this->id;
-		$ret = $userLink->delete(true);
+		if($userLink->delete(true)) {
+			/* Send all the things to the managing account that the user removed the link from */
+			$this->removeManagingAccountMessage($managingAccount); // Display alert in Aspen Discovery
+			$this->sendRemoveManagingLinkNotification($managingAccount); // Send Aspen LiDA notification
 
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $this->id;
-		$userMessage->isDismissed = "0";
-		$userMessage->find();
-		while ($userMessage->fetch()) {
-			$userMessage->isDismissed = 1;
-			$userMessage->update();
+			// Force a reload of data
+			$this->linkedUsers = null;
+			$this->getLinkedUsers();
+
+			return true;
 		}
 
-		$userMessage = new UserMessage();
-		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
-		$userMessage->userId = $userId;
-		$userMessage->isDismissed = "0";
-		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
-		$userMessage->update();
-
-		//Force a reload of data
-		$this->linkedUsers = null;
-		$this->getLinkedUsers();
-
-		return $ret == 1;
+		return false;
 	}
 
 	//THIS GETS USED BY TOGGLEACCOUNTLINKING AJAX
@@ -1164,6 +1134,8 @@ class User extends DataObject {
 
 		$this->__set('noPromptForUserReviews', (isset($_POST['noPromptForUserReviews']) && $_POST['noPromptForUserReviews'] == 'on') ? 1 : 0);
 		$this->__set('rememberHoldPickupLocation', (isset($_POST['rememberHoldPickupLocation']) && $_POST['rememberHoldPickupLocation'] == 'on') ? 1 : 0);
+		$this->__set('disableCirculationActions', (isset($_POST['disableCirculationActions']) && $_POST['disableCirculationActions'] == 'on') ? 0 : 1);
+
 		global $enabledModules;
 		global $library;
 		if (array_key_exists('EBSCO EDS', $enabledModules) && !empty($library->edsSettingsId)) {
@@ -1349,7 +1321,7 @@ class User extends DataObject {
 				$axis360Driver = new Axis360Driver();
 				$axis360CheckedOutItems = $axis360Driver->getCheckouts($this);
 				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
-				$timer->logTime("Loaded transactions from axis 360. {$this->id}");
+				$timer->logTime("Loaded transactions from Boundless. {$this->id}");
 				if ($source == 'all' || $source == 'axis360') {
 					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
 				}
@@ -1427,6 +1399,17 @@ class User extends DataObject {
 		}
 	}
 
+	public function isBlockedFromIllRequests() {
+		if ($this->_isBlockedFromIllRequests === null) {
+			if ($this->hasIlsConnection()){
+				$this->_isBlockedFromIllRequests = $this->getCatalogDriver()->isBlockedFromIllRequests($this);
+			}else{
+				return true;
+			}
+		}
+		return $this->_isBlockedFromIllRequests;
+	}
+
 	public function getHolds($includeLinkedUsers = true, $unavailableSort = 'sortTitle', $availableSort = 'expire', $source = 'all'): array {
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		//Check to see if we should return cached information, we will reload it if we last fetched it more than
@@ -1478,7 +1461,7 @@ class User extends DataObject {
 				}
 			}
 
-			//Get holds from Axis 360
+			//Get holds from Boundless
 			if ($source == 'all' || $source == 'axis360') {
 				if ($this->isValidForEContentSource('axis360')) {
 					require_once ROOT_DIR . '/Drivers/Axis360Driver.php';
@@ -1700,8 +1683,25 @@ class User extends DataObject {
 		}
 	}
 
+	public function areCirculationActionsDisabled(){
+		if (!$this->hasIlsConnection()){
+			return true;
+		} else {
+			if ($this->disableCirculationActions) {
+				return true;
+			} else {
+				//TODO: Should we automatically disable the circulation actions if there are a large number of things checked out and/or on hold?
+				//$accountSummary = $this->getAccountSummary();
+				return false;
+			}
+		}
+	}
+
 	public function getCirculatedRecordActions($source, $recordId, $loadingLinkedUser = false) {
 		$actions = [];
+		if ($this->areCirculationActionsDisabled() == true) {
+			return $actions;
+		}
 		$showUserName = $loadingLinkedUser;
 //		if (!$loadingLinkedUser){
 //			$linkedUsers = $this->getLinkedUsers();
@@ -2719,6 +2719,9 @@ class User extends DataObject {
 		}
 	}
 
+	/**
+	 * Displays an alert in Aspen Discovery when a user has been linked to.
+	 **/
 	function newLinkMessage() {
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		require_once ROOT_DIR . '/sys/Account/UserLink.php';
@@ -2756,6 +2759,95 @@ class User extends DataObject {
 					'isPublicFacing' => true,
 				]);
 				$userMessage->insert();
+			}
+		}
+	}
+
+	/**
+	 * Sends an Aspen LiDA notification when a user has been linked to.
+	 **/
+	function sendNewLinkNotification(User $initiatingUser): void {
+		if ($initiatingUser->canReceiveNotifications($initiatingUser, 'notifyAccount')) {
+			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+			$appScheme = 'aspen-lida';
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && !empty($systemVariables->appScheme)) {
+				$appScheme = $systemVariables->appScheme;
+			}
+			$notificationToken = new UserNotificationToken();
+			$notificationToken->userId = $initiatingUser->id;
+			$notificationToken->find();
+			while ($notificationToken->fetch()) {
+				$body = [
+					'to' => $notificationToken->pushToken,
+					'title' => 'New account link',
+					'body' => 'Your account at ' . $this->getHomeLocation()->displayName . ' was just linked to by ' . $initiatingUser->displayName . ' - ' . $initiatingUser->getHomeLocation()->displayName . '. Review all linked accounts and learn more about account linking at your library.',
+					'categoryId' => 'accountAlert',
+					'channelId' => 'accountAlert',
+					'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
+				];
+				$expoNotification = new ExpoNotification();
+				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+			}
+		}
+	}
+
+	/**
+	 * Displays an alert in Aspen Discovery to the managing account when a user removes the link.
+	 **/
+	function removeManagingAccountMessage($managingAccount) {
+		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'confirm_linked_accts';
+		$userMessage->userId = $this->id;
+		$userMessage->isDismissed = '0';
+		$userMessage->find();
+		while ($userMessage->fetch()) {
+			$userMessage->isDismissed = 1;
+			$userMessage->update();
+		}
+
+		$userMessage = new UserMessage();
+		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
+		$userMessage->userId = $managingAccount;
+		$userMessage->isDismissed = '0';
+		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
+		$userMessage->update();
+	}
+
+	/**
+	 * Sends an Aspen LiDA notification to the managing account when a user removes the link.
+	 **/
+	function sendRemoveManagingLinkNotification($managingUserId): void {
+		$managingUser = new User();
+		$managingUser->id = $managingUserId;
+		if($managingUser->find(true)) {
+			if ($managingUser->canReceiveNotifications($managingUser, 'notifyAccount')) {
+				require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+				$appScheme = 'aspen-lida';
+				require_once ROOT_DIR . '/sys/SystemVariables.php';
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables && !empty($systemVariables->appScheme)) {
+					$appScheme = $systemVariables->appScheme;
+				}
+				$notificationToken = new UserNotificationToken();
+				$notificationToken->userId = $managingUser->id;
+				$notificationToken->find();
+				while ($notificationToken->fetch()) {
+					$body = [
+						'to' => $notificationToken->pushToken,
+						'title' => 'Account link removed',
+						'body' => 'An account you were previously linked to, ' . $this->displayName . ', has removed the link to your account ' . $managingUser->displayName . '. Learn more about account linking at your library.',
+						'categoryId' => 'accountAlert',
+						'channelId' => 'accountAlert',
+						'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
+					];
+					$expoNotification = new ExpoNotification();
+					$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
+				}
 			}
 		}
 	}
@@ -3317,20 +3409,20 @@ class User extends DataObject {
 			'View All Collection Reports',
 		]);
 
-		if (array_key_exists('Axis 360', $enabledModules)) {
-			$sections['axis360'] = new AdminSection('Axis 360');
-			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Axis 360 and Aspen Discovery.', '/Axis360/Settings');
+		if (array_key_exists('Boundless', $enabledModules)) {
+			$sections['boundless'] = new AdminSection('Boundless');
+			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Boundless and Aspen Discovery.', '/Axis360/Settings');
 			$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
-			if ($sections['axis360']->addAction($axis360SettingsAction, 'Administer Axis 360')) {
-				$axis360SettingsAction->addSubAction($axis360ScopesAction, 'Administer Axis 360');
+			if ($sections['boundless']->addAction($axis360SettingsAction, 'Administer Boundless')) {
+				$axis360SettingsAction->addSubAction($axis360ScopesAction, 'Administer Boundless');
 			} else {
-				$sections['axis360']->addAction($axis360ScopesAction, 'Administer Axis 360');
+				$sections['boundless']->addAction($axis360ScopesAction, 'Administer Boundless');
 			}
-			$sections['axis360']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Axis 360.', '/Axis360/IndexingLog'), [
+			$sections['boundless']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Boundless.', '/Axis360/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
-			$sections['axis360']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Axis 360 integration.', '/Axis360/Dashboard'), [
+			$sections['boundless']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Boundless integration.', '/Axis360/Dashboard'), [
 				'View Dashboards',
 				'View System Reports',
 			]);
@@ -3999,7 +4091,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = $obj->notifySavedSearch;
 			$preference['notifyCustom'] = $obj->notifyCustom;
 			$preference['notifyAccount'] = $obj->notifyAccount;
-			$preference['onboardStatus'] = $obj->onboardAppNotifications;
+			$preference['onboardStatus'] = $obj->onboardAppNotifications ?? 1;
 
 			$preferences[] = $preference;
 		}
@@ -4010,7 +4102,7 @@ class User extends DataObject {
 			$preference['notifySavedSearch'] = '0';
 			$preference['notifyCustom'] = '0';
 			$preference['notifyAccount'] = '0';
-			$preference['onboardStatus'] = $this->onboardAppNotifications;
+			$preference['onboardStatus'] = 1;
 
 			$preferences[] = $preference;
 		}

@@ -298,15 +298,30 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 {rdelim}
 
 #home-page-browse-results.HideBorder .browse-thumbnail{ldelim}
+    {* some minor adjustments if ratings are disabled *}
     border: none;
-    align-items: center;
+    & img.border {ldelim}
+        padding: 4px;
+        margin-bottom: 20px;
+        line-height: 1.42857143;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        -webkit-transition: all 0.2s ease-in-out;
+        transition: all 0.2s ease-in-out;
+        break-inside: avoid-column;
+        -webkit-column-break-inside: avoid;
+        display: inline-block;
+        text-align: center;
+        position: relative;
+    {rdelim}
 {rdelim}
 
 #home-page-browse-results .browse-thumbnail{ldelim}
     display: inline-flex;
     flex-wrap:wrap;
     justify-content: center;
-    align-items: flex-end;
+    align-items: flex-start;
     {if !empty($browseCategoryImageSize)}
     max-height: 350px;
     {else}
@@ -342,8 +357,17 @@ div.striped > div:nth-child(odd), div.striped > div:nth-child(odd){ldelim}
 	left: -6px !important;
 {rdelim}
 
+#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-thumbnail,
+#home-page-browse-results.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating{ldelim}
+    align-items: flex-start !important;
+{rdelim}
+
 .results-covers-view.home-page-browse-results-grid.home-page-browse-results-grid-grid .browse-rating {ldelim}
 	align-self: flex-end;
+{rdelim}
+
+#home-page-browse-results.home-page-browse-results-grid {ldelim}
+    padding-top: 1em;
 {rdelim}
 
 {* Alerts *}

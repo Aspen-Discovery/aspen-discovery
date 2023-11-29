@@ -1972,7 +1972,7 @@ function getLibraryLocationUpdates() {
 				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId) VALUES 
 					(1, 'public', 1)",
 				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, applyNumberOfHoldingsBoost, showSearchTools, showInSearchResultsMainDetails, alwaysShowSearchResultsMainDetails) VALUES 
-					(2, 'academic', 2, 0, 0, 'a:4:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:3;s:13:\"showLanguages\";}', 1)",
+					(2, 'academic', 2, 0, 0, 'a:4:{i:0;s:10:\"showSeries\";i:1;s:13:\"showPublisher\";i:2;s:19:\"showPublicationDate\";i:4;s:13:\"showPlaceOfPublication\";i:3;s:13:\"showLanguages\";}', 1)",
 				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES 
 					(3, 'school_elem', 3, 0)",
 				"INSERT INTO grouped_work_display_settings(id, name, facetGroupId, showSearchTools) VALUES 

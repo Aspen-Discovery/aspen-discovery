@@ -14,11 +14,11 @@ class Axis360_Settings extends ObjectEditor {
 	}
 
 	function getModule(): string {
-		return 'Axis360';
+		return 'Boundless';
 	}
 
 	function getPageTitle(): string {
-		return 'Axis 360 Settings';
+		return 'Boundless Settings';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -61,16 +61,16 @@ class Axis360_Settings extends ObjectEditor {
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#axis360', 'Axis 360');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#boundless', 'Boundless');
 		$breadcrumbs[] = new Breadcrumb('/Axis360/Settings', 'Settings');
 		return $breadcrumbs;
 	}
 
 	function getActiveAdminSection(): string {
-		return 'axis360';
+		return 'boundless';
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Axis 360');
+		return UserAccount::userHasPermission('Administer Boundless');
 	}
 }

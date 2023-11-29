@@ -141,11 +141,11 @@
                 </a>
                 <div id="staffPanelBody" class="panel-collapse collapse">
                     <div class="panel-body">
-                        <h3>{translate text="Communico Event API response" isPublicFacing=true}</h3>
+                        <h2>{translate text="Communico Event API response" isPublicFacing=true}</h2>
                         <pre>{$recordDriver->getStaffView()|print_r}</pre>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-{/if}
+{/if},

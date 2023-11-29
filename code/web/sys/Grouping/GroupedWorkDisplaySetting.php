@@ -81,6 +81,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 		'showSeries' => 'Show Series',
 		'showPublisher' => 'Publisher',
 		'showPublicationDate' => 'Publisher Date',
+		'showPlaceOfPublication' => 'Place of Publication',
 		'showEditions' => 'Editions',
 		'showPhysicalDescriptions' => 'Physical Descriptions',
 		'showLanguages' => 'Show Language',
@@ -95,6 +96,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 	static $showInMainDetailsOptions = [
 		'showSeries' => 'Series',
 		'showPublicationDetails' => 'Published',
+		'showPlaceOfPublication' => 'Place of Publication',
 		'showFormats' => 'Formats',
 		'showEditions' => 'Editions',
 		'showPhysicalDescriptions' => 'Physical Descriptions',

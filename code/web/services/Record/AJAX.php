@@ -70,25 +70,55 @@ class Record_AJAX extends Action {
 					$vdxForm = new VdxForm();
 					$vdxForm->id = $homeLocation->vdxFormId;
 					if ($vdxForm->find(true)) {
-						$marcRecord = new MarcRecordDriver($id);
-
-						$interface->assign('vdxForm', $vdxForm);
-						$vdxFormFields = $vdxForm->getFormFields($marcRecord);
-						$interface->assign('structure', $vdxFormFields);
-						$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
-
-						$results = [
-							'title' => translate([
-								'text' => 'Request Title',
-								'isPublicFacing' => true,
-							]),
-							'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
-							'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate([
-									'text' => 'Place Request',
+						//Check to see if the patron is eligible to place holds
+						$accountSummary = $user->getAccountSummary();
+						if ($accountSummary->isExpired()) {
+							$results = [
+								'title' => translate([
+									'text' => 'Request Title',
 									'isPublicFacing' => true,
-								]) . '</a>',
-							'success' => true,
-						];
+								]),
+								'modalBody' => translate([
+									'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to renew your account.',
+									'isPublicFacing' => true,
+								]),
+								'modalButtons' => '',
+								'success' => true,
+							];
+						} elseif ($user->isBlockedFromIllRequests()) {
+							$results = [
+								'title' => translate([
+									'text' => 'Request Title',
+									'isPublicFacing' => true,
+								]),
+								'modalBody' => translate([
+									'text' => 'Your account is not eligible to request titles from other libraries.  Please visit the library to update your account.',
+									'isPublicFacing' => true,
+								]),
+								'modalButtons' => '',
+								'success' => true,
+							];
+						} else {
+							$marcRecord = new MarcRecordDriver($id);
+
+							$interface->assign('vdxForm', $vdxForm);
+							$vdxFormFields = $vdxForm->getFormFields($marcRecord);
+							$interface->assign('structure', $vdxFormFields);
+							$interface->assign('vdxFormFields', $interface->fetch('DataObjectUtil/ajaxForm.tpl'));
+
+							$results = [
+								'title' => translate([
+									'text' => 'Request Title',
+									'isPublicFacing' => true,
+								]),
+								'modalBody' => $interface->fetch("Record/vdx-request-popup.tpl"),
+								'modalButtons' => '<a href="#" class="btn btn-primary" onclick="return AspenDiscovery.Record.submitVdxRequest(\'Record\', \'' . $id . '\')">' . translate([
+										'text' => 'Place Request',
+										'isPublicFacing' => true,
+									]) . '</a>',
+								'success' => true,
+							];
+						}
 					} else {
 						$results = [
 							'title' => translate([

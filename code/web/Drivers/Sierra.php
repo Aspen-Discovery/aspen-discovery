@@ -217,10 +217,14 @@ class Sierra extends Millennium {
 	 * @return string
 	 */
 	function getForgotPasswordType() {
-		if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
-			return 'emailAspenResetLink';
-		} else {
+		if ($this->accountProfile == null) {
 			return 'none';
+		} else {
+			if ($this->accountProfile->loginConfiguration == 'barcode_pin') {
+				return 'emailAspenResetLink';
+			} else {
+				return 'none';
+			}
 		}
 	}
 
@@ -509,6 +513,7 @@ class Sierra extends Millennium {
 		//Sierra does not report reading history enabled properly so we should always get it.
 		if (true || $readingHistoryEnabled) {
 			ini_set('memory_limit', '2G');
+			set_time_limit(60);
 
 			$numProcessed = 0;
 			$totalToProcess = 1000;
@@ -1137,8 +1142,12 @@ class Sierra extends Millennium {
 	public function patronLogin($username, $password, $validatedViaSSO) {
 		$username = trim($username);
 		$password = trim($password);
-		$loginMethod = $this->accountProfile->loginConfiguration;
-		if ($loginMethod == 'barcode_pin') {
+		if ($this->accountProfile == null) {
+			return false;
+		}else {
+			$loginMethod = $this->accountProfile->loginConfiguration;
+		}
+		if ($loginMethod == 'barcode_pin' || $loginMethod == 'name_barcode') {
 			//If we use user names, we may need to lookup the barcode by the user name.
 //			$params = [
 //				'varFieldTag' => 'i',
@@ -1169,7 +1178,8 @@ class Sierra extends Millennium {
 
 
 		} else { // $loginMethod == 'name_barcode'
-
+			//TODO: Do validation using name_barcode login
+			return false;
 		}
 
 		//We've passed validation, get information for the patron
@@ -1407,12 +1417,18 @@ class Sierra extends Millennium {
 
 			$summary->totalFines = $patronInfo->moneyOwed;
 
-			[
-				$yearExp,
-				$monthExp,
-				$dayExp,
-			] = explode("-", $patronInfo->expirationDate);
-			$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			if (!empty($patronInfo->expirationDate)) {
+				[
+					$yearExp,
+					$monthExp,
+					$dayExp,
+				] = explode("-", $patronInfo->expirationDate);
+				$summary->expirationDate = strtotime($monthExp . "/" . $dayExp . "/" . $yearExp);
+			}else{
+				//No expiration date set, just set something 20 years in the future
+				$now = time();
+				$summary->expirationDate = $now + 20 * 365 * 24 * 60 * 60;
+			}
 		}
 
 		return $summary;
@@ -1712,7 +1728,7 @@ class Sierra extends Millennium {
 			$user->_homeLocation = $location->displayName;
 		}
 
-		if ($patronInfo->expirationDate) {
+		if (!empty($patronInfo->expirationDate)) {
 			$user->_expires = $patronInfo->expirationDate;
 			[
 				$yearExp,
@@ -1761,8 +1777,8 @@ class Sierra extends Millennium {
 //		];
 //	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin): array {
-		if ($patron->cat_password != $oldPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin): array {
+		if ($patron->getPasswordOrPin() != $oldPin) {
 			return [
 				'success' => false,
 				'message' => "The old PIN provided is incorrect.",

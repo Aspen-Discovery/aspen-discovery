@@ -56,6 +56,7 @@ class GroupedWorkFacet extends FacetSetting {
 			"fountas_pinnell" => "Fountas &amp; Pinnell",
 			"series_facet" => "Series",
 			"publisherStr" => "Publisher",
+			"placeOfPublication" => "Place of Publication",
 			"custom_facet_1" => "Custom Facet 1",
 			"custom_facet_2" => "Custom Facet 2",
 			"custom_facet_3" => "Custom Facet 3"

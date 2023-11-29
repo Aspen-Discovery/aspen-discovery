@@ -1,12 +1,10 @@
-import React from 'react';
+import { create } from 'apisauce';
+import i18n from 'i18n-js';
+import _ from 'lodash';
+import { popAlert } from '../../components/loadError';
 import { createAuthTokens, ENDPOINT, getHeaders, postData } from '../apiAuth';
 import { GLOBALS } from '../globals';
-import _ from 'lodash';
-import i18n from 'i18n-js';
-
-import { create } from 'apisauce';
 import { PATRON } from '../loadPatron';
-import { popAlert } from '../../components/loadError';
 
 const endpoint = ENDPOINT.user;
 
@@ -26,7 +24,6 @@ export async function refreshProfile(url) {
           auth: createAuthTokens(),
           params: {
                linkedUsers: true,
-               reload: false,
                checkIfValid: false,
           },
      });
@@ -498,9 +495,9 @@ export async function removeLinkedAccount(patronToRemove, url) {
           if (!_.isUndefined(response.data.result.success)) {
                status = response.data.result.success;
                if (status !== true) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               } else {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'true');
                }
           }
           return status;
@@ -534,9 +531,77 @@ export async function removeViewerAccount(patronToRemove, url, language = 'en') 
           if (!_.isUndefined(response.data.result.success)) {
                status = response.data.result.success;
                if (status !== true) {
-                    popAlert(response.data.result.title, response.data.result.message, 'success');
-               } else {
                     popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
+               }
+          }
+          return status;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
+
+/**
+ * Disables a users ability to use linked accounts
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function disableAccountLinking(language, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=disableAccountLinking', postBody);
+     if (response.ok) {
+          let status = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               status = response.data.result.success;
+               if (status !== true) {
+                    popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
+               }
+          }
+          return status;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
+
+/**
+ * Re-enables a users ability to use linked accounts
+ * @param {string} language
+ * @param {string} url
+ **/
+export async function enableAccountLinking(language, url) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=enableAccountLinking', postBody);
+     if (response.ok) {
+          let status = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               status = response.data.result.success;
+               if (status !== true) {
+                    popAlert(response.data.result.title, response.data.result.message, 'error');
+               } else {
+                    popAlert(response.data.result.title, response.data.result.message, 'success');
                }
           }
           return status;

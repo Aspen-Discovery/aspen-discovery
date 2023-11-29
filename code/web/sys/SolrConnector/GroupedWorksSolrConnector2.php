@@ -320,6 +320,9 @@ class GroupedWorksSolrConnector2 extends Solr {
 				$sortField = 'publishDateSort';
 				$defaultSortDirection = 'desc';
 				break;
+			case 'placeOfPublication':
+				$sortField = 'placeOfPublication';
+				break;
 			case 'author':
 				$sortField = 'authorStr asc, title_sort';
 				break;

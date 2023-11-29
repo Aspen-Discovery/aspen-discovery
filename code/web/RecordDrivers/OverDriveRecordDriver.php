@@ -719,7 +719,11 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	}
 
 	function getPlacesOfPublication() {
-		return [];
+		$placesOfPublication = [];
+		if (isset($this->getOverDriveMetaData()->getDecodedRawData()->placesOfPublicationText)) {
+			$placesOfPublication = $this->getOverDriveMetaData()->getDecodedRawData()->placesOfPublicationText;
+		}
+		return $placesOfPublication;
 	}
 
 	/**
@@ -731,15 +735,18 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	 */
 	function getPublicationDetails() {
 		$places = $this->getPlacesOfPublication();
+		$placesOfPublication = $this->getPlacesOfPublication();
 		$names = $this->getPublishers();
 		$dates = $this->getPublicationDates();
 
 		$i = 0;
 		$returnVal = [];
-		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		while (isset($places[$i]) || isset($placesOfPublication[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		// while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
-			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? $dates[$i] : '');
+			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($placesOfPublication[$i]) ? $placesOfPublication[$i] . ' ': '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+			// $publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? $dates[$i] : '');
 			$returnVal[] = trim(str_replace('  ', ' ', $publicationInfo));
 			$i++;
 		}

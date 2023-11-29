@@ -10,6 +10,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 	public $title;
 	public $urlAlias;
 	public $requireLogin;
+	public $showResultsToPatrons;
 	public $requireName;
 	public $requireEmail;
 	public $introText;
@@ -36,7 +37,7 @@ class QuickPoll extends DB_LibraryLinkedObject {
 	static function getObjectStructure($context = ''): array {
 		$quickPollOptionStructure = QuickPollOption::getObjectStructure($context);
 		unset ($quickPollOptionStructure['weight']);
-		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Custom Forms'));
+		$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Quick Polls'));
 		return [
 			'id' => [
 				'property' => 'id',
@@ -108,6 +109,20 @@ class QuickPoll extends DB_LibraryLinkedObject {
 				'label' => 'Require Email',
 				'description' => 'Whether or not the user must provide their email as part of submission',
 				'default' => 1,
+			],
+			'showResultsToPatrons' => [
+				'property' => 'showResultsToPatrons',
+				'type' => 'enum',
+				'label' => 'Show Results To Patrons',
+				'values' => [
+					0 => 'Do not show results',
+					1 => 'Show graphic results',
+					2 => 'Show table results',
+					3 => 'Show graphic and table results',
+				],
+				'required' => true,
+				'description' => 'Whether or not the user can see the results of the quick poll',
+				'default' => 0,
 			],
 			'pollOptions' => [
 				'property' => 'pollOptions',
@@ -373,6 +388,25 @@ class QuickPoll extends DB_LibraryLinkedObject {
 
 		}
 		return $results;
+	}
+
+	public function userCanViewResults(): bool {
+		$canViewResults = false;
+		if (UserAccount::isStaff()){
+			$administerAllQP = UserAccount::userHasPermission('Administer All Quick Polls');
+			if (UserAccount::getActiveUserObj()->getHomeLibrary() != null) {
+				$activeUserLibraryId = UserAccount::getActiveUserObj()->getHomeLibrary()->libraryId;
+				$isQuickPollInLibrary = array_key_exists($activeUserLibraryId, $this->getLibraries());
+				$administerLibraryQP = UserAccount::userHasPermission('Administer Library Quick Polls');
+			} else {
+				$administerLibraryQP = false;
+				$isQuickPollInLibrary = false;
+			}
+			if ($administerAllQP || ($administerLibraryQP && $isQuickPollInLibrary)) {
+				$canViewResults = true;
+			}
+		}
+		return $canViewResults;
 	}
 
 	public function userCanAccess(): bool {

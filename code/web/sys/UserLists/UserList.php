@@ -55,6 +55,7 @@ class UserList extends DataObject {
 		];
 	}
 
+
 	// Used by FavoriteHandler as well//
 	private static $__userListSortOptions = [
 		// URL_value => SQL code for Order BY clause
@@ -679,6 +680,7 @@ class UserList extends DataObject {
 							$browseRecords[$key]['author_display'] = $groupedWorkDriver->getPrimaryAuthor();
 							$browseRecords[$key]['format'] = $groupedWorkDriver->getFormatsArray();
 							$browseRecords[$key]['language'] = $groupedWorkDriver->getLanguage();
+							// $browseRecords[$key]['placesOfPublication'] = $groupedWorkDriver->getPlacesOfPublication();
 						} else {
 							$browseRecords[$key] = $record;
 						}
@@ -1003,6 +1005,10 @@ class UserList extends DataObject {
 							$publishers = implode(', ', $publishers);
 						}
 
+						// $placesOfPublication = $curDoc->getPlacesOfPublication();
+						// if (is_array($placesOfPublication)){
+						// 	$placesOfPublication = implode(', ', $placesOfPublication);
+						// }
 						// Publication dates: min - max
 						if (!is_array($curDoc->getPublicationDates())) {
 							$publishDates = [$curDoc->getPublicationDates()];
@@ -1158,6 +1164,292 @@ class UserList extends DataObject {
 		} catch (Exception $e) {
 			global $logger;
 			$logger->log("Unable to create csv file " . $e, Logger::LOG_ERROR);
+		}
+	}
+
+		function getISBNs($text) {
+		$pattern = '/\b(?:ISBN(?:-10)?:?\s*|ISBN-13:?\s*|)(?=[0-9X]{10,13})(?=(?:[0-9]+[-\s]?){4})(?!00000)[0-9-]{10,13}\b/i';
+
+		preg_match_all($pattern, $text, $matches);
+		return $matches[0];
+		}
+	
+
+	public function buildRIS() {
+		// require_once ROOT_DIR . '/RecordDrivers/MarcRecordDriver.php';
+		
+		try {
+			$titleDetails = $this->getListRecords(0, 1000, false, 'recordDrivers'); // get all titles for export, not just a page's worth
+
+			$risCitations = array();
+
+			foreach ($titleDetails as $curDoc) {
+				//check document type
+				if ($curDoc instanceof GroupedWorkDriver && $curDoc->isValid()) {
+					$risCitation = $this->formatGroupedWorkCitation($curDoc);
+				} else {
+					continue;
+				}
+				// Add formated entry to citation array
+				if (!empty($risCitation)) {
+					$risCitations[] = $risCitation;
+				}
+			}
+
+			// Output to the browser
+			header("Last-Modified: " . gmdate("D, d M Y H:i:s") . " GMT");
+			header("Cache-Control: no-store, no-cache, must-revalidate");
+			header("Cache-Control: post-check=0, pre-check=0", false);
+			header("Pragma: no-cache");
+			header('Content-Type: text/plain; charset=utf-8');
+			header('Content-Disposition: attachment; filename="UserList.ris"');
+
+
+			echo implode("\n", $risCitations);
+			exit();
+		} catch (Exception $e) {
+			global $logger;
+			$logger->log("Unable to create RIS file " . $e, Logger::LOG_ERROR);
+		}
+	}
+
+	//Helper Functions
+	private function formatGroupedWorkCitation($curDoc) {
+		require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+		require_once ROOT_DIR . '/sys/CitationBuilder.php';
+			
+		if ($curDoc->isValid()) {
+			// Initialize an array to store the RIS-formatted citation fields
+			$risFields = array();
+
+			// RIS TY - Format
+			$format = $curDoc->getFormat() ;
+			if(is_array($format) && count($format) > 0) {
+				$format = implode(', ', $format);
+
+			switch ($format) {
+				case 'book': 
+					$format = 'BOOK';
+					break;
+				case 'BOOK':
+					$format = 'BOOK';
+					break;
+				case 'BOOKS':
+					$format = 'BOOK';
+					break;
+				case 'Book':
+					$format = 'BOOK';
+					break;
+				case 'books':
+					$format = 'BOOK';
+					break;
+				case 'BK':
+					$format = 'BOOK';
+					break;
+				case 'Books':
+					$format = 'BOOK';
+					break;
+				case 'JOURNAL':
+					$format = 'BOOK';
+					break;
+				case 'Journal Article':
+					$format = 'JOUR';
+					break;
+				case 'JOURNAL ARTICLE':
+					$format = 'JOUR';
+					break;
+				case 'Journal':
+					$format = 'BOOK';
+					break;
+				case 'Audio-Visual':
+					$format = 'SOUND';
+					break;
+				case 'AudioBook':
+					$format = 'SOUND';
+					break;
+				case 'Catalog':
+					$format = 'CTLG';
+					break;
+				case 'Dictionary':
+					$format = 'DICT';
+					break;
+				case 'Electronic Article':
+					$format = 'EJOUR';
+					break;
+				case 'Electronic Book':
+					$format = 'EBOOK';
+					break;
+				case 'E-Book':
+					$format = 'EBOOK';
+					break;
+				case 'Magazine':
+					$format = 'MGZN';
+					break;
+				case 'Magazine Article':
+					$format = 'MGZN';
+					break;
+				case 'Music':
+					$format = 'MUSIC';
+					break;
+				case 'MUSIC':
+					$format = 'MUSIC';
+					break;
+				case 'Newspaper':
+					$format = 'NEWS';
+					break;
+				case 'Newspaper Article':
+					$format = 'NEWS';
+					break;
+				case 'Web Page':
+					$format = 'ELEC';
+					break;
+				case 'Visual Materials':
+					$format = 'VIDEO';
+					break;
+				case 'Movie':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- DVD':
+					$format = 'VIDEO';
+					break;
+				case 'Movie -- VHS':
+					$format = 'VIDEO';
+					break;
+				case 'Electronic Database':
+					$format = 'EBOOK';
+						break;
+				case 'Reference':
+					$format = 'BOOK';
+					break;
+			}
+
+		 $risFields[] = "TY  - ".$format;
+		}	
+			//RIS Tag: AU - Author
+
+			$authors = array();
+			$primaryAuthor = $curDoc->getPrimaryAuthor();
+			if (!empty($primaryAuthor)) {
+				$authors[] = $primaryAuthor;
+			}
+
+			$contributors = $curDoc->getContributors();
+			if(is_array($contributors) && count($contributors) > 0) {
+				$authors = array_merge($authors, $contributors);
+			}
+
+			if (!empty($authors)) {
+				foreach ($authors as $author){
+				$risFields[] = "AU - " . $author;
+				}
+		}
+
+			// RIS Tag: TI - Title
+			$title = $curDoc->getTitle();
+			if (!empty($title)) {
+				$risFields[] = "TI  - " . $title;
+			}
+
+			// RIS Tag: PB - Publisher
+			$publishers = $curDoc->getPublishers();
+			if (is_array($publishers) && count($publishers) > 0) {
+				$publishers = implode(', ', $publishers);
+				$risFields[] = "PB  - " . $publishers;
+			}
+
+			// RIS Tag: PY - Publication Year(s)
+			$publishDates = $curDoc->getPublicationDates();
+			if (!is_array($publishDates)) {
+				$publishDates = [$publishDates];
+			}
+			foreach ($publishDates as $publishDate) {
+				if (!empty($publishDate)) {
+					$risFields[] = "PY  - " . $publishDate;
+				}
+			}
+
+			$placesOfPublication = $curDoc->getPlaceOfPublication();
+			if(is_array($placesOfPublication) && count($placesOfPublication) > 0) {
+				$placesOfPublicationClean = implode(', ', $placesOfPublication);
+				$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
+				$risFields[] = "CY  - ".$placesOfPublicationClean;
+			} else {
+				if(!empty($placesOfPublication)) {
+					$placesOfPublicationClean = str_replace([':', '; '], ' ', $placesOfPublication);
+					$risFields[] = "CY  - ".$placesOfPublicationClean;
+					// $risFields[] = "CY  - ".$placesOfPublication;
+				}
+			}
+
+
+		// //RIS Tag: ET - Editions
+				$editions = $curDoc->getEdition();
+				if(is_array($editions) && count($editions) > 0) {
+					$editions = implode(', ', $editions);
+					$risFields[] = "ET  - ".$editions;
+				} else {
+					if(!empty($editions)) {
+						$risFields[] = "ET  - ".$editions;
+					}
+				}
+
+				//RIS UR - URL
+				$url = $curDoc->getRecordUrl();
+				if(is_array($url) && count($url) > 0) {
+					$url = implode(', ', $url);
+					$risFields[] = "UR  - ".$url;
+				}
+
+			//RIS Tag: N1 - Info
+			$notes = $curDoc->getTableOfContentsNotes();
+			if(is_array($notes) && count($notes) > 0) {
+				$notes = implode(', ', $notes);
+				$risFields[] = "N1  - ".$notes;
+			}else{
+			if(!empty($notes)) {
+				$risFields[] = "N1  - ".$notes;
+				}
+			}
+
+
+			//RIS Tag: N2 - Notes
+			$description = $curDoc->getDescription();
+			if(!empty($description)) {
+				$risFields[] = "N2  - ".$description;
+			}
+
+			//RIS T2 - Series
+			$series = $curDoc->getSeries();
+			if(is_array($series) && count($series) >0){
+				$series = implode(', ', $series);
+				$risFields[] = "T2  - ".$series;
+			}
+
+			//RIS ST - Short Title
+			$shortTilte = $curDoc->getShortTitle();
+			if(!empty($shortTilte)) {
+				$risFields[] = "ST  - ".$shortTilte;
+			}
+
+			// RIS Tag: SN - ISBN 
+			$ISBN = $curDoc->getPrimaryIsbn();
+			if(!empty($ISBN)){
+				$risFields[] = "SN  - ".$ISBN;
+			} else {
+				$ISBN = $curDoc->getISBNs();
+				if(!empty($ISBN)) {
+					$risFields[] = "SN  - ".$ISBN;
+				}
+			}
+
+			//RIS Tag: AV
+			
+
+			$risFields[] = "ER  -";
+
+			return implode("\n", $risFields);
+		} else {
+			return '';
 		}
 	}
 }

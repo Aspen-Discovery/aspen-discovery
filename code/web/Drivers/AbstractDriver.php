@@ -60,6 +60,10 @@ abstract class AbstractDriver {
 	 */
 	abstract function renewCheckout(User $patron, $recordId, $itemId = null, $itemIndex = null);
 
+	public function isBlockedFromIllRequests(User $user) {
+		return false;
+	}
+
 	public function hasHolds() {
 		return true;
 	}

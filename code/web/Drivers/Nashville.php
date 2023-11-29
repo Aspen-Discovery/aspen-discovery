@@ -187,10 +187,10 @@ class Nashville extends CarlX {
 		];
 	}
 
-	protected function feePaidViaSIP($feeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array {
+	protected function feePaidViaSIP($SIP2FeeType = '01', $pmtType = '02', $pmtAmount, $curType = 'USD', $feeId = '', $transId = '', $patronId = ''): array {
 		$mySip = $this->initSIPConnection();
 		if (!is_null($mySip)) {
-			$in = $mySip->msgFeePaid($feeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
+			$in = $mySip->msgFeePaid($SIP2FeeType, $pmtType, $pmtAmount, $curType, $feeId, $transId, $patronId);
 			$msg_result = $mySip->get_message($in);
 			ExternalRequestLogEntry::logRequest('carlx.feePaid', 'SIP2', $mySip->hostname . ':' . $mySip->port, [], $in, 0, $msg_result, []);
 			if (preg_match("/^38/", $msg_result)) {
@@ -463,4 +463,328 @@ EOT;
 		oci_free_statement($stid);
 		return $data;
 	}
+
+    public function getHoldsReportData($location): array {
+        $this->initDatabaseConnection();
+        $sql = <<<EOT
+			with holds_vs_items as (
+				select
+					t.bid
+					, t.occur
+					, p.name as PATRON_NAME
+					, p.sponsor as HOME_ROOM
+					, bb.btyname as GRD_LVL
+					, p.patronid as P_BARCODE
+					, l.locname as SHELF_LOCATION
+					, b.title as TITLE
+					, i.cn as CALL_NUMBER
+					, i.item as ITEM_ID
+					, dense_rank() over (partition by t.bid order by t.occur asc) as occur_dense_rank
+					, dense_rank() over (partition by t.bid order by i.item asc) as nth_item_on_shelf
+				from transbid_v t
+				left join patron_v p on t.patronid = p.patronid
+				left join bbibmap_v b on t.bid = b.bid
+				left join bty_v bb on p.bty = bb.btynumber
+				left join branch_v ob on t.holdingbranch = ob.branchnumber -- Origin Branch
+				left join item_v i on ( t.bid = i.bid and t.holdingbranch = i.branch)
+				left join location_v l on i.location = l.locnumber
+				where ob.branchcode = '$location'
+				-- and t.pickupbranch = ob.branchnumber -- commented out in 23.08.01 to include MNPS Exploratorium holds; originally meant to ensure a lock between school collection and pickup branch ; pickup branch field changed from t.renew to t.pickupbranch in CarlX 9.6.8.0
+				and t.transcode = 'R*'
+				and i.status = 'S'
+				order by 
+					t.bid
+					, t.occur
+			), 
+			fillable as (
+				select 
+					h.*
+				from holds_vs_items h
+				where h.occur_dense_rank = h.nth_item_on_shelf
+				order by 
+					h.SHELF_LOCATION
+					, h.CALL_NUMBER
+					, h.TITLE
+					, h.occur_dense_rank
+			)
+			select
+				PATRON_NAME
+				, HOME_ROOM
+				, GRD_LVL
+				, P_BARCODE
+				, SHELF_LOCATION
+				, TITLE
+				, CALL_NUMBER
+				, ITEM_ID
+			from fillable
+EOT;
+        $stid = oci_parse($this->dbConnection, $sql);
+        // consider using oci_set_prefetch to improve performance
+        // oci_set_prefetch($stid, 1000);
+        oci_execute($stid);
+        $data = [];
+        while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+            $data[] = $row;
+        }
+        oci_free_statement($stid);
+        return $data;
+    }
+
+    public function getStudentBarcodeData($location, $homeroom): array  {
+        $this->initDatabaseConnection();
+        // query students by school and homeroom
+        /** @noinspection SqlResolve */
+        $sql = <<<EOT
+			select
+				patronbranch.branchcode
+				, patronbranch.branchname
+				, bty_v.btynumber AS bty
+				, bty_v.btyname as grade
+				, case 
+						when bty = 13 
+						then patron_v.name
+						else patron_v.sponsor
+					end as homeroom
+				, case 
+						when bty = 13 
+						then patron_v.patronid
+						else patron_v.street2
+					end as homeroomid
+				, patron_v.name AS patronname
+				, patron_v.patronid
+				, patron_v.lastname
+				, patron_v.firstname
+				, patron_v.middlename
+				, patron_v.suffixname
+			from
+				branch_v patronbranch
+				, bty_v
+				, patron_v
+			where
+				patron_v.bty = bty_v.btynumber
+				and patronbranch.branchnumber = patron_v.defaultbranch
+				and (
+					(
+						patron_v.bty in ('21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','46','47')
+						and patronbranch.branchcode = '$location'
+						and patron_v.street2 = '$homeroom'
+					) or (
+						patron_v.bty = 13
+						and patron_v.patronid = '$homeroom'
+					)
+				)
+			order by
+				patronbranch.branchcode
+				, case
+					when patron_v.bty = 13 then 0
+					else 1
+				end
+				, patron_v.sponsor
+				, patron_v.name
+EOT;
+        $stid = oci_parse($this->dbConnection, $sql);
+        // consider using oci_set_prefetch to improve performance
+        // oci_set_prefetch($stid, 1000);
+        oci_execute($stid);
+        $data = [];
+        while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+            $data[] = $row;
+        }
+        oci_free_statement($stid);
+        return $data;
+    }
+
+    public function getStudentBarcodeDataHomerooms($location) : array {
+        $this->initDatabaseConnection();
+        // query school branch codes and homerooms
+        /** @noinspection SqlResolve */
+        /** @noinspection SqlConstantExpression */
+        $sql = <<<EOT
+			select 
+			  branchcode
+			  , homeroomid
+			  , min(homeroomname) as homeroomname
+			  , case
+				when min(grade) < max(grade)
+				  then replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '-' || replace(replace(trim(to_char(max(grade),'00')),'-01','PK'),'00','KI')
+				  else replace(replace(trim(to_char(min(grade),'00')),'-01','PK'),'00','KI') || '___'
+			  end as grade
+			from (
+			  select distinct
+				b.branchcode
+				, s.street2 as homeroomid
+				, nvl(regexp_replace(upper(h.name),'[^A-Z]','_'),'_NULL_') as homeroomname
+				, case
+                  when s.bty > 36
+                    then null
+                    else s.bty-22 
+                end as grade
+			  from
+				branch_v b
+				  left join patron_v s on b.branchnumber = s.defaultbranch
+				  left join patron_v h on s.street2 = h.patronid
+			  where
+				b.branchcode = '$location'
+				and s.street2 is not null
+				and s.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+			  order by
+				b.branchcode
+				, homeroomname
+			) a
+			group by branchcode, homeroomid
+			order by branchcode, homeroomname
+EOT;
+        $stid = oci_parse($this->dbConnection, $sql);
+        // consider using oci_set_prefetch to improve performance
+        // oci_set_prefetch($stid, 1000);
+        oci_execute($stid);
+        $data = [];
+        while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+            $data[] = $row;
+        }
+        oci_free_statement($stid);
+        return $data;
+    }
+
+    public function getStudentReportData($location, $showOverdueOnly, $date) : array {
+        $this->initDatabaseConnection();
+        if ($showOverdueOnly == 'checkedOut') {
+            $statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')";
+        } elseif ($showOverdueOnly == 'overdue') {
+            $statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L')";
+        }
+        if ($showOverdueOnly == 'checkedOut' || $showOverdueOnly == 'overdue') {
+            /** @noinspection SqlResolve */
+            $sql = <<<EOT
+                    select
+                      patronbranch.branchcode AS Home_Lib_Code
+                      , patronbranch.branchname AS Home_Lib
+                      , bty_v.btynumber AS P_Type
+                      , bty_v.btyname AS Grd_Lvl
+                      , patron_v.sponsor AS Home_Room
+                      , patron_v.name AS Patron_Name
+                      , patron_v.patronid AS P_Barcode
+                      , itembranch.branchgroup AS SYSTEM
+                      , item_v.cn AS Call_Number
+                      , bbibmap_v.title AS Title
+                      , to_char(transitem_v.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date
+                      , item_v.price AS Owed
+                      , to_char(transitem_v.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date_Dup
+                      , item_v.item AS Item
+                    from 
+                      bbibmap_v
+                      , branch_v patronbranch
+                      , branch_v itembranch
+                      , branchgroup_v patronbranchgroup
+                      , branchgroup_v itembranchgroup
+                      , bty_v
+                      , item_v
+                      , location_v
+                      , patron_v
+                      , transitem_v
+                    where
+                      patron_v.patronid = transitem_v.patronid
+                      and patron_v.bty = bty_v.btynumber
+                      and transitem_v.item = item_v.item
+                      and bbibmap_v.bid = item_v.bid
+                      and patronbranch.branchnumber = patron_v.defaultbranch
+                      and location_v.locnumber = item_v.location
+                      and itembranch.branchnumber = transitem_v.holdingbranch
+                      and itembranchgroup.branchgroup = itembranch.branchgroup
+                      and $statuses
+                      and patronbranch.branchgroup = '2'
+                      and patronbranchgroup.branchgroup = patronbranch.branchgroup
+                      and bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+                      and patronbranch.branchcode = '$location'
+                    order by 
+                      patronbranch.branchcode
+                      , patron_v.bty
+                      , patron_v.sponsor
+                      , patron_v.name
+                      , itembranch.branchgroup
+                      , item_v.cn
+                      , bbibmap_v.title
+EOT;
+        } elseif ($showOverdueOnly == 'fees') {
+            /** @noinspection SqlResolve */
+            $sql = <<<EOT
+               -- school fees report CarlX sql
+                with p as ( -- first gather patrons of the requested branch
+                    select
+                        b.branchcode
+                        , b.branchname
+                        , p.bty
+                        , t.btyname
+                        , p.sponsor
+                        , p.name
+                        , p.patronid
+                    from patron_v p
+                    left join branch_v b on p.defaultbranch = b.branchnumber
+                    left join bty_v t on p.bty = t.btynumber
+                    where p.bty in ('13','21','22','23','24','25','26','27','28','29','30','31','32','33','34','35','36','37','40','42','46','47')
+                    and b.branchcode = '$location'
+                ), r as (
+                select
+                     p.branchcode
+                    , p.branchname
+                    , p.bty
+                    , p.btyname
+                    , p.sponsor
+                    , p.name
+                    , p.patronid
+                    , r.callnumber
+                    , r.title
+                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') as due
+                    , to_char(r.amountowed / 100, 'fm999D00') as owed
+                    , r.item
+                from p 
+                left join report3fines_v r on p.patronid = r.patronid
+                where r.patronid is not null
+                and r.amountowed > 0
+                order by 
+                    p.branchcode
+                    , p.bty
+                    , p.sponsor
+                    , p.name
+                    , r.callnumber
+                    , r.title
+            ) 
+            select
+                     r.branchcode AS Home_Lib_Code
+                    , r.branchname AS Home_Lib
+                    , r.bty AS P_Type
+                    , r.btyname AS Grd_Lvl
+                    , r.sponsor AS Home_Room
+                    , r.name AS Patron_Name
+                    , r.patronid AS P_Barcode
+                    , itembranch.branchgroup AS SYSTEM
+                    , r.callnumber AS Call_Number
+                    , r.title AS Title
+                    , r.due AS Due_Date
+                    , r.owed as Owed
+                    , r.due AS Due_Date_Dup
+                    , r.item AS Item
+            from r
+            left join item_v i on r.item = i.item
+            left join branch_v itembranch on i.owningbranch = itembranch.branchnumber
+            order by 
+                r.branchcode
+                , r.bty
+                , r.sponsor
+                , r.name
+                , itembranch.branchgroup
+                , r.callnumber
+                , r.title
+EOT;
+        }
+        $stid = oci_parse($this->dbConnection, $sql);
+        // consider using oci_set_prefetch to improve performance
+        // oci_set_prefetch($stid, 1000);
+        oci_execute($stid);
+        while (($row = oci_fetch_array($stid, OCI_ASSOC + OCI_RETURN_NULLS)) != false) {
+            $data[] = $row;
+        }
+        oci_free_statement($stid);
+        return $data;
+    }
 }

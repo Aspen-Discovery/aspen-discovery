@@ -27,7 +27,7 @@
 	{include file="RecordDrivers/GroupedWork/grouping-information.tpl"}
 
 	{if !empty($axis360Extract)}
-		<h3>{translate text="Axis 360 Extract Information" isPublicFacing=true}</h3>
+		<h3>{translate text="Boundless Extract Information" isPublicFacing=true}</h3>
 		<pre>
 		{$axis360Extract|print_r}
 	</pre>

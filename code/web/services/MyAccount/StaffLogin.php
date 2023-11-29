@@ -18,6 +18,9 @@ class MyAccount_StaffLogin extends Action {
 		$followupAction = 'Home';
 		$followupModule = isset($_REQUEST['followupModule']) ? strip_tags($_REQUEST['followupModule']) : $module;
 
+		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
+		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
+
 		// We should never access this module directly -- this is called by other
 		// actions as a support function.  If accessed directly, just redirect to
 		// the MyAccount home page.
@@ -63,20 +66,35 @@ class MyAccount_StaffLogin extends Action {
 		$interface->assign('passwordLabel', $library->loginFormPasswordLabel ? $library->loginFormPasswordLabel : 'Library Card Number');
 
 		//SSO
+		$ssoService = null;
 		$loginOptions = 0;
-		if ($library->ssoSettingId != -1) {
+		if ($isPrimaryAccountAuthenticationSSO || $library->ssoSettingId != -1) {
 			try {
-				require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
-				$sso = new \SSOSetting();
-				$sso->id = $library->ssoSettingId;
-				if ($sso->find(true)) {
-					if ($sso->staffOnly) {
+				$ssoSettingId = null;
+				if($isPrimaryAccountAuthenticationSSO) {
+					require_once ROOT_DIR . '/sys/Account/AccountProfile.php';
+					$accountProfile = new AccountProfile();
+					$accountProfile->id = $library->accountProfileId;
+					if($accountProfile->find(true)) {
+						$ssoSettingId = $accountProfile->ssoSettingId;
+					}
+				} else {
+					$ssoSettingId = $library->ssoSettingId;
+				}
+
+				// only try to find SSO settings if the module is enabled
+				global $enabledModules;
+				if (array_key_exists('Single sign-on', $enabledModules) && $ssoSettingId > 0) {
+					require_once ROOT_DIR . '/sys/Authentication/SSOSetting.php';
+					$sso = new \SSOSetting();
+					$sso->id = $ssoSettingId;
+					if ($sso->find(true)) {
 						$loginOptions = $sso->loginOptions;
+						$ssoService = $sso->service;
 						$interface->assign('ssoLoginHelpText', $sso->loginHelpText);
-						$interface->assign('ssoService', $sso->service);
-						if ($sso->service == 'oauth') {
+						if ($sso->service == "oauth") {
 							$interface->assign('oAuthGateway', $sso->oAuthGateway);
-							if ($sso->oAuthGateway == 'custom') {
+							if ($sso->oAuthGateway == "custom") {
 								$interface->assign('oAuthCustomGatewayLabel', $sso->oAuthGatewayLabel);
 								$interface->assign('oAuthButtonBackgroundColor', $sso->oAuthButtonBackgroundColor);
 								$interface->assign('oAuthButtonTextColor', $sso->oAuthButtonTextColor);
@@ -90,12 +108,12 @@ class MyAccount_StaffLogin extends Action {
 							$interface->assign('samlBtnLabel', $sso->ssoName);
 							$interface->assign('samlBtnBgColor', $sso->samlBtnBgColor);
 							$interface->assign('samlBtnTextColor', $sso->samlBtnTextColor);
-							if ($sso->samlBtnIcon) {
+							if ($sso->oAuthGatewayIcon) {
 								$interface->assign('samlBtnIcon', $configArray['Site']['url'] . '/files/original/' . $sso->samlBtnIcon);
 							}
 						}
-						if($sso->service == 'ldap') {
-							if($sso->ldapLabel) {
+						if ($sso->service == 'ldap') {
+							if ($sso->ldapLabel) {
 								$interface->assign('ldapLabel', $sso->ldapLabel);
 							}
 						}
@@ -108,6 +126,7 @@ class MyAccount_StaffLogin extends Action {
 
 		$loginOptions = isset($_REQUEST['showBoth']) ? 0 : $loginOptions;
 
+		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
 		//SAML
@@ -136,10 +155,6 @@ class MyAccount_StaffLogin extends Action {
 		$interface->assign('isLoginPage', true);
 
 		if ($msg === 'You must authenticate before logging in. Please provide the 6-digit code that was emailed to you.') {
-			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-			$twoFactorAuthCode = new TwoFactorAuthCode();
-			$codeSent = $twoFactorAuthCode->createCode();
-			$interface->assign('codeSent', $codeSent);
 			$this->display('../MyAccount/login-2fa.tpl', 'Login', '');
 		} elseif ($msg === 'You must enroll into two-factor authentication before logging in.') {
 			$this->display('../MyAccount/login-2fa-enroll.tpl', 'Login', '');

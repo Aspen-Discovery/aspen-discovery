@@ -511,8 +511,8 @@ class ExtractOverDriveInfo {
 		isProductAvailableInOtherSettingsStmt = dbConn.prepareStatement("SELECT count(*) as availabilityCount from overdrive_api_product_availability where productId = ? and settingId <> ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		updateProductMetadataStmt = dbConn.prepareStatement("UPDATE overdrive_api_products SET lastMetadataCheck = ?, lastMetadataChange = ? where id = ?");
 		getExistingMetadataIdStmt = dbConn.prepareStatement("SELECT id, UNCOMPRESSED_LENGTH(rawData) as rawDataLength from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		addMetadataStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_metadata (productId, checksum, sortTitle, publisher, publishDate, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, thumbnail, cover, isOwnedByCollections, rawData) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,COMPRESS(?))");
-		updateMetaDataStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_metadata SET checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity = ?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=COMPRESS(?) WHERE id = ?");
+		addMetadataStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_metadata (productId, checksum, sortTitle, publisher, publishDate, placeOfPublication, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, thumbnail, cover, isOwnedByCollections, rawData) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,COMPRESS(?))");
+		updateMetaDataStmt = dbConn.prepareStatement("UPDATE overdrive_api_product_metadata SET checksum = ?, sortTitle = ?, publisher = ?, publishDate = ?, placeOfPublication = ?, isPublicDomain = ?, isPublicPerformanceAllowed = ?, shortDescription = ?, fullDescription = ?, starRating = ?, popularity = ?, thumbnail=?, cover=?, isOwnedByCollections=?, rawData=COMPRESS(?) WHERE id = ?");
 		clearFormatsStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_formats where productId = ?");
 		addFormatStmt = dbConn.prepareStatement("INSERT INTO overdrive_api_product_formats set id = NULL, productId = ?, textId = ?, numericId = ?, name = ?, fileName = ?, fileSize = ?, partCount = ?, sampleSource_1 = ?, sampleUrl_1 = ?, sampleSource_2 = ?, sampleUrl_2 = ? ON DUPLICATE KEY update id = id", PreparedStatement.RETURN_GENERATED_KEYS);
 		clearIdentifiersStmt = dbConn.prepareStatement("DELETE FROM overdrive_api_product_identifiers where productId = ?");
@@ -1178,6 +1178,7 @@ class ExtractOverDriveInfo {
 				updateMetaDataStmt.setLong(++curCol, metadataChecksum);
 				updateMetaDataStmt.setString(++curCol, metaData.has("sortTitle") ? metaData.getString("sortTitle") : "");
 				updateMetaDataStmt.setString(++curCol, metaData.has("publisher") ? metaData.getString("publisher") : "");
+				updateMetaDataStmt.setString(++curCol, metaData.has("placeOfPublication") ? metaData.getString("placeOfPublication") : "");
 				//Grab the textual version of publish date rather than the actual date
 				if (metaData.has("publishDateText")){
 					String publishDateText = metaData.getString("publishDateText");
@@ -1220,6 +1221,7 @@ class ExtractOverDriveInfo {
 				addMetadataStmt.setLong(++curCol, metadataChecksum);
 				addMetadataStmt.setString(++curCol, metaData.has("sortTitle") ? metaData.getString("sortTitle") : "");
 				addMetadataStmt.setString(++curCol, metaData.has("publisher") ? metaData.getString("publisher") : "");
+				addMetadataStmt.setString(++curCol, metaData.has("placeOfPublication") ? metaData.getString("placeOfPublication") : "");
 				//Grab the textual version of publish date rather than the actual date
 				if (metaData.has("publishDateText")){
 					String publishDateText = metaData.getString("publishDateText");

@@ -20,6 +20,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	/** @var  IndexingProfile $indexingProfile */
 	protected $indexingProfile;
 	protected $valid = null;
+	private $placesOfPublication = [];
 
 	/**
 	 * Constructor.  We build the object using all the data retrieved
@@ -33,6 +34,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @access  public
 	 */
 	public function __construct($recordData, $groupedWork = null) {
+
 		// Call the parent's constructor...
 		global $timer;
 		if ($recordData instanceof File_MARC_Record) {
@@ -390,9 +392,24 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	 * @return  string[]
 	 */
 	public function getEditions() {
-		return $this->getFieldArray('250');
+		$editions = $this->getFieldArray('250');
+		// echo '<script>';
+		// echo 'console.log(' . json_encode('From Marc Record Driver') . ');' ;
+		// echo 'console.log(' . json_encode($editions).');';
+		// echo '</script>';
+		return $editions;
 	}
 
+	public function getPlacesOfPublication() {
+		$placesOfPublication =  $this->getFieldArray('260', ['a']);
+
+		// echo '<script>';
+		// echo 'console.log(' . json_encode('From Marc Record Driver') . ');' ;
+		// echo 'console.log(' . json_encode($placesOfPublication).');' ;
+		// echo '</script>';
+		return $placesOfPublication;
+
+	}
 	/**
 	 * Get the first value matching the specified MARC field and subfields.
 	 * If multiple subfields are specified, they will be concatenated together.
@@ -407,17 +424,75 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return (is_array($matches) && count($matches) > 0) ? $matches[0] : null;
 	}
 
+	// /**
+	//  * Get the item's places of publication.
+	//  *
+	//  * @access  protected
+	//  * @return  array
+	//  */
+	// function getPlacesOfPublication() {
+	// 	$placesOfPublication = $this->getFieldArray('260', ['a']);
+	// 	$placesOfPublication2 = $this->getFieldArray('264', ['a']);
+	// 	return array_merge($placesOfPublication, $placesOfPublication2);
+	// }
+
 	/**
-	 * Get the item's places of publication.
+	 * Get the publication dates of the record.
 	 *
-	 * @access  protected
+	 * @access  public
 	 * @return  array
 	 */
-	function getPlacesOfPublication() {
-		$placesOfPublication = $this->getFieldArray('260', ['a']);
-		$placesOfPublication2 = $this->getFieldArray('264', ['a']);
-		return array_merge($placesOfPublication, $placesOfPublication2);
-	}
+	// public function getPlacesOfPublication() {
+	// 	$placesOfPublication = [];
+	// 	if ($this->isValid()) {
+	// 		$placesOfPublication = $this->getFieldArray('260', ['a']);
+	// 		$marcRecord = $this->getMarcRecord();
+	// 		if ($marcRecord != false) {
+	// 			/** @var File_MARC_Data_Field[] $rdaPublisherFields */
+	// 			$rdaPublisherFields = $marcRecord->getFields('264');
+	// 			foreach ($rdaPublisherFields as $rdaPublisherField) {
+	// 				if (($rdaPublisherField->getIndicator(2) == 1 || $rdaPublisherField->getIndicator(2) == ' ') && $rdaPublisherField->getSubfield('a') != null) {
+	// 					$placesOfPublication[] = $rdaPublisherField->getSubfield('a')->getData();
+	// 				}
+	// 			}
+	// 			foreach ($placesOfPublication as $key => $placeOfPublication) {
+	// 				$placesOfPublication[$key] = preg_replace('/[.,]$/', '', $placeOfPublication);
+	// 			}
+	// 		}
+	// 	}
+
+	// 	return $placesOfPublication;
+	// }
+
+	// /**
+	//  * Get place of publication.
+	//  * 
+	//  * @return array
+	//  */
+	// public function getPlacesOfPublication() {
+	// 	$marcRecord = $this->getMarcRecord();
+	// 	if ($marcRecord != null) {
+	// 		$placesOfPublication = $this->getFieldArray('260', ['a']);
+	// 		/** @var File_MARC_Data_Field[] $rdaPublisherFields */
+	// 		$rdaPublisherFields = $marcRecord->getFields('264');
+	// 		foreach ($rdaPublisherFields as $rdaPublisherField) {
+	// 			if (($rdaPublisherField->getIndicator(2) == 1 || $rdaPublisherField->getIndicator(2) == ' ') && $rdaPublisherField->getSubfield('a') != null) {
+	// 				$placesOfPublication[] = $rdaPublisherField->getSubfield('a')->getData();
+	// 			}
+	// 		}
+	// 		foreach ($placesOfPublication as $key => $placeOfPublication) {
+	// 			$placesOfPublication[$key] = preg_replace('/[.,]$/', '', $placeOfPublication);
+	// 		}
+	// 	} else {
+	// 		$placesOfPublication = [];
+	// 	}
+	// 	echo '<script>';
+	// 	echo 'console.log(' . json_encode('From Marc Record Driver') . ');' ;
+	// 	echo 'console.log(' . json_encode($placesOfPublication).');' ;
+	// 	echo '</script>';
+	// 	return $placesOfPublication;
+	// }
+	
 
 
 	/**

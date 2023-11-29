@@ -147,7 +147,7 @@ abstract class AbstractIlsDriver extends AbstractDriver {
 		return [];
 	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		return [
 			'success' => false,
 			'message' => 'Can not update PINs, this ILS does not support updating PINs',

@@ -205,11 +205,7 @@ class Evergreen extends AbstractIlsDriver {
 			$namedParams = [
 				'patron_id' => (int)$patron->unique_ils_id,
 				"copy_id" => $itemId,
-//				'id' => $itemId,
-//				'circ' => [
-//					'copy_id' => $itemId
-//				]
-				//"opac_renewal" => 1,
+				"opac_renewal" => 1,
 			];
 			$request .= '&param=' . json_encode($namedParams);
 
@@ -1396,26 +1392,28 @@ class Evergreen extends AbstractIlsDriver {
 	 */
 	public function findNewUser($patronBarcode, $patronUsername) {
 		$staffSessionInfo = $this->getStaffUserInfo();
-		$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
-		$headers = [
-			'Content-Type: application/x-www-form-urlencoded',
-		];
-		$this->apiCurlWrapper->addCustomHeaders($headers, false);
-		$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
-		$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
-		$request .= '&param=' . $patronBarcode;
+		if ($staffSessionInfo !== false) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
+			$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
+			$request .= '&param=' . json_encode($patronBarcode);
 
-		$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
 
-		if ($this->apiCurlWrapper->getResponseCode() == 200) {
-			$apiResponse = json_decode($apiResponse);
-			if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
-				if ($apiResponse->payload[0]->__c == 'au') { //class
-					$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
+					if ($apiResponse->payload[0]->__c == 'au') { //class
+						$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
 
-					/** @noinspection PhpUnnecessaryLocalVariableInspection */
-					$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, null);
-					return $user;
+						/** @noinspection PhpUnnecessaryLocalVariableInspection */
+						$user = $this->loadPatronInformation($mappedPatronData, $patronBarcode, null);
+						return $user;
+					}
 				}
 			}
 		}
@@ -2061,7 +2059,7 @@ class Evergreen extends AbstractIlsDriver {
 		return null;
 	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,

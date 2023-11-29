@@ -367,10 +367,19 @@ public class EvergreenExportMain {
 						}
 						//Remove any leftover volumes
 						long numVolumesDeleted = 0;
-						for (Long existingVolume : existingVolumes.values()) {
-							deleteVolumeStmt.setLong(1, existingVolume);
-							deleteVolumeStmt.executeUpdate();
-							numVolumesDeleted++;
+						boolean loggedDeleteErrors = false;
+						for (String existingVolume : existingVolumes.keySet()) {
+							long existingVolumeId = existingVolumes.get(existingVolume);
+							deleteVolumeStmt.setLong(1, existingVolumeId);
+							int numDeleted = deleteVolumeStmt.executeUpdate();
+							if (numDeleted == 1) {
+								numVolumesDeleted++;
+							}else{
+								if (!loggedDeleteErrors) {
+									logEntry.addNote("Could not delete one or more volumes");
+									loggedDeleteErrors = true;
+								}
+							}
 						}
 
 						logEntry.addNote("Added " + numAdded + ", updated " + numUpdated + ", and deleted " + numVolumesDeleted + " volumes");

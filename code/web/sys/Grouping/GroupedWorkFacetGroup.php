@@ -234,6 +234,12 @@ class GroupedWorkFacetGroup extends DataObject {
 		$defaultFacets[] = $facet;
 
 		$facet = new GroupedWorkFacet();
+		$facet->setupSideFacet('placeOfPublication', 'Place of Publication', true);
+		$facet->facetGroupId = $this->id;
+		$facet->weight = count($defaultFacets) + 1;
+		$defaultFacets[] = $facet;
+
+		$facet = new GroupedWorkFacet();
 		$facet->setupSideFacet('rating_facet', 'User Rating', true);
 		$facet->facetGroupId = $this->id;
 		$facet->weight = count($defaultFacets) + 1;

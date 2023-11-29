@@ -21,6 +21,7 @@ class UserListSolr {
 	private long owningLibrary;
 	private String owningLocation;
 	private boolean ownerCanShareListsInSearchResults = false;
+	private String placeOfPublication;
 
 	UserListSolr(UserListIndexer userListIndexer) {
 		this.userListIndexer = userListIndexer;
@@ -35,6 +36,7 @@ class UserListSolr {
 
 		doc.addField("title", title);
 		doc.addField("title_display", title);
+		doc.addField("place_of_publication", placeOfPublication);
 		
 		doc.addField("title_sort", AspenStringUtils.makeValueSortable(title));
 
@@ -78,6 +80,7 @@ class UserListSolr {
 				doc.addField("local_days_since_added_" + scope.getScopeName(), DateUtils.getDaysSinceAddedForDate(dateAdded));
 				//doc.addField("format_" + scope.getScopeName(), "list");
 				//doc.addField("format_category_" + scope.getScopeName(), "list");
+				// doc.addField("place_of_publication" + scope.getScopeName(), "list");
 				relevantScopes.add(scope.getScopeName());
 			}
 		}
@@ -130,5 +133,9 @@ class UserListSolr {
 
 	long getNumTitles(){
 		return numTitles;
+	}
+
+	void setPlaceOfPublication(String placeOfPublication) {
+		this.placeOfPublication = placeOfPublication;
 	}
 }

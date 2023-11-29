@@ -44,6 +44,13 @@ function getUpdates23_11_00(): array {
 		], //rename_availability_facet
 
 		//kodi - ByWater
+		'symphony_city_state' => [
+			'title'=> 'Remove CITY/STATE for Symphony Custom Self Registration',
+			'description' => 'Remove CITY/STATE for custom self registration values to use updated logic for separate city & state fields',
+			'sql' => [
+				'DELETE FROM self_reg_form_values WHERE symphonyName="city_state"',
+			]
+		], //symphony_city_state
 		//Alexander - PTFS
 		'display_list_author_control' => [
 			'title' => 'User List Author Control',
@@ -54,6 +61,24 @@ function getUpdates23_11_00(): array {
 				'ALTER TABLE user ADD COLUMN displayListAuthor TINYINT(1) DEFAULT 1',
 			],
 		],
+		'store_place_of_publication' => [
+            'title' => 'Place of Publication',
+            'description' => 'Store information about the place of publication',
+            'sql' => [
+                "CREATE TABLE  indexed_place_of_publication (
+                    id int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					placeOfPublication VARCHAR(500) collate utf8_bin UNIQUE
+				) ENGINE INNODB",   
+            ],
+        ],
+        //indexed_information_places_of_publication
+        'add_place_of_publication_to_grouped_work' => [
+            'title' => 'Add Place of Publication to Grouped Work',
+            'description' => 'Add Place of Publication to Grouped Work',
+            'sql' => [
+                "ALTER TABLE grouped_work_records ADD COLUMN placeOfPublicationId INT(11) DEFAULT 1",
+			],
+		], //Add places of publication to grouped work
 		//Jacob - PTFS
 		'user_cookie_preference_essential' => [
 			'title' => 'Add user editable cookie preferences for essential cookies',
@@ -71,7 +96,7 @@ function getUpdates23_11_00(): array {
 				"ALTER TABLE user add column userCookiePreferenceAnalytics INT(1) DEFAULT 0",
 			],
 		],//user_cookie_preference_analytics
-		//other
+		//Lucas - Theke
 		'select_ILL_system' => [
 			'title' => 'Dropbox ILL systems',
 			'description' => 'Add a setting to allow users to specify ILL system used.',
@@ -79,6 +104,20 @@ function getUpdates23_11_00(): array {
 			'sql' => [
 				'ALTER TABLE  library ADD COLUMN ILLSystem TINYINT(1) DEFAULT 2',
 			],
-		],
+		], // select_ILL_system
+
+		//other
     ];
+}
+
+/** @noinspection PhpUnused */
+function updateShowPlaceOfPublicationInMainDetails() {
+	$groupedWorkDisplaySettings = new GroupedWorkDisplaySetting();
+	$groupedWorkDisplaySettings->find();
+	while ($groupedWorkDisplaySettings->fetch()) {
+		if (!count($groupedWorkDisplaySettings->showInMainDetails) == 0) {
+			$groupedWorkDisplaySettings->showInMainDetails[] = 'showPlaceOfPublication';
+			$groupedWorkDisplaySettings->update();
+		}
+	}
 }

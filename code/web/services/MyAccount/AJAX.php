@@ -13,14 +13,7 @@ class MyAccount_AJAX extends JSON_Action {
 				break;
 		}
 		if (method_exists($this, $method)) {
-			if (in_array($method, ['getLoginForm'])) {
-				header('Content-type: text/html');
-				header('Cache-Control: no-cache, must-revalidate'); // HTTP/1.1
-				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); // Date in the past
-				echo $this->$method();
-			} else {
-				parent::launch($method);
-			}
+			parent::launch($method);
 		} else {
 			echo json_encode(['error' => 'invalid_method']);
 		}
@@ -111,7 +104,6 @@ class MyAccount_AJAX extends JSON_Action {
 									'isPublicFacing' => true,
 								]),
 							];
-							$accountToLink->newLinkMessage();
 						} else { // insert failure or user is blocked from linking account or account & account to link are the same account
 							$result = [
 								'success' => false,
@@ -1670,6 +1662,11 @@ class MyAccount_AJAX extends JSON_Action {
 		global $locationSingleton;
 		global $configArray;
 
+		$result = [
+			'success' => false,
+			'message' => 'Unable to load login form',
+		];
+
 		$isPrimaryAccountAuthenticationSSO = UserAccount::isPrimaryAccountAuthenticationSSO();
 		$interface->assign('isPrimaryAccountAuthenticationSSO', $isPrimaryAccountAuthenticationSSO);
 
@@ -1743,6 +1740,43 @@ class MyAccount_AJAX extends JSON_Action {
 			}
 		}
 
+		$twoFactorStart = empty($_SESSION['twoFactorStart']) ? 0 : $_SESSION['twoFactorStart'];
+		//Expire 2 factor after 5 minutes
+		$twoFactorExpired = $twoFactorStart < time() - (5 * 60);
+
+		if (!empty($_SESSION['enroll2FA'])) {
+			if ($twoFactorExpired) {
+				//We have an abandoned 2-factor authentication enrollment
+				UserAccount::softLogout();
+			}else {
+				return $this->get2FAEnrollment();
+			}
+		}elseif (!empty($_SESSION['has2FA'])) {
+			if ($twoFactorExpired) {
+				//We have an abandoned 2-factor authentication enrollment
+				UserAccount::softLogout();
+			}else {
+				$interface->assign('codeSent', !empty($_SESSION['codeSent']));
+				$referer = $_REQUEST['referer'] ?? null;
+				$interface->assign('referer', $referer);
+				$name = $_REQUEST['name'] ?? null;
+				$interface->assign('name', $name);
+				return [
+					'success' => true,
+					'title' => translate([
+						'text' => 'Two-Factor Authentication',
+						'isPublicFacing' => true,
+					]),
+					'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
+					'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate([
+							'text' => 'Verify',
+							'isPublicFacing' => true,
+						]) . "</button>",
+					'closeDestination' => '/MyAccount/Logout'
+				];
+			}
+		}
+
 		$interface->assign('ssoService', $ssoService);
 		$interface->assign('ssoLoginOptions', $loginOptions);
 
@@ -1771,9 +1805,57 @@ class MyAccount_AJAX extends JSON_Action {
 		}
 
 		if (isset($_REQUEST['multiStep'])) {
+			$multiStep = true;
 			$interface->assign('multiStep', true);
+		}else{
+			$multiStep = false;
 		}
-		return $interface->fetch('MyAccount/ajax-login.tpl');
+
+		//return $interface->fetch('MyAccount/ajax-login.tpl');
+		$loginButtons = '';
+		if ($interface->getVariable('ssoIsEnabled') && !$interface->getVariable('$ssoStaffOnly') && $interface->getVariable('ssoService') == 'ldap') {
+			$loginButtons .= '<input type="hidden" id="ldapLogin" value="true">';
+		}
+
+		$loginButtons .= '<input type="hidden" id="multiStep" name="multiStep" value="';
+		if (!empty($multiStep)) {
+			$loginButtons .= 'true';
+		} else {
+			$loginButtons .= 'false';
+		}
+		$loginButtons .= '"/>';
+		if ($interface->getVariable('ssoIsEnabled') && !$interface->getVariable('ssoStaffOnly') && $interface->getVariable('ssoService') == 'ldap' && !empty($interface->getVariable('ldapLabel'))) {
+			$loginButtons .= '<input type="submit" name="submit" value="' . translate([
+					'text' => "Sign in with %1%",
+					'1' => $interface->getVariable('ldapLabel'),
+					'isPublicFacing' => true
+				]) . ' id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin();">';
+		} else {
+			$loginButtons .= '<input type="submit" name="submit" value="';
+			if (!empty($multiStep)) {
+				$loginButtons .= translate([
+					'text' => "Continue",
+					'isPublicFacing' => true,
+					'inAttribute' => true
+				]);
+			} else {
+				$loginButtons .= translate([
+					'text' => "Sign In",
+					'isPublicFacing' => true,
+					'inAttribute' => true
+				]);
+			}
+			$loginButtons .= '" id="loginFormSubmit" class="btn btn-primary extraModalButton" onclick="return AspenDiscovery.Account.processAjaxLogin();">';
+		}
+		return [
+			'success' => true,
+			'title' => translate([
+				'text' => 'Sign In',
+				'isPublicFacing' => true,
+			]),
+			'body' => $interface->fetch('MyAccount/ajax-login.tpl'),
+			'buttons' => $loginButtons,
+		];
 	}
 
 	/** @noinspection PhpUnused */
@@ -2160,7 +2242,7 @@ class MyAccount_AJAX extends JSON_Action {
 		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
 			return [
 				'title' => translate([
-					'text' => 'Confirm Renew Item Charge',
+					'text' => 'Confirm Renewal',
 					'isPublicFacing' => true,
 				]),
 				'modalBody' => $interface->fetch('MyAccount/renew-item-results.tpl'),
@@ -2195,6 +2277,7 @@ class MyAccount_AJAX extends JSON_Action {
 				if (method_exists($user, 'renewCheckout')) {
 					$failure_messages = [];
 					$renewResults = [];
+					$failedRenewals = 0;
 					if (isset($_REQUEST['selected']) && is_array($_REQUEST['selected'])) {
 						foreach ($_REQUEST['selected'] as $selected => $ignore) {
 							//Suppress errors because sometimes we don't get an item index
@@ -2210,12 +2293,20 @@ class MyAccount_AJAX extends JSON_Action {
 							}
 
 							if (!$tmpResult['success']) {
-								$failure_messages[] = $tmpResult['message'];
+								$failedRenewals++;
+								if(isset($tmpResult['confirmRenewalFee']) && $tmpResult['confirmRenewalFee']) {
+									$failure_messages = translate([
+										'text' => 'Renewing some overdue items will result in a charge to your account. Please renew overdue items individually.',
+										'isPublicFacing' => true,
+									]);
+								} else {
+									$failure_messages[] = $tmpResult['message'];
+								}
 							}
 						}
 						$renewResults['Total'] = count($_REQUEST['selected']);
-						$renewResults['NotRenewed'] = count($failure_messages);
-						$renewResults['Renewed'] = $renewResults['Total'] - $renewResults['NotRenewed'];
+						$renewResults['NotRenewed'] = $failedRenewals;
+						$renewResults['Renewed'] = $renewResults['Total'] - $failedRenewals;
 					} else {
 						$failure_messages[] = 'No items were selected to renew';
 						$renewResults['Total'] = 0;
@@ -2271,6 +2362,21 @@ class MyAccount_AJAX extends JSON_Action {
 
 		global $interface;
 		$interface->assign('renew_message_data', $renewResults);
+		if(isset($renewResults['confirmRenewalFee']) && $renewResults['confirmRenewalFee']) {
+			return [
+				'title' => translate([
+					'text' => 'Confirm Renewal',
+					'isPublicFacing' => true,
+				]),
+				'modalBody' => $interface->fetch('Record/renew-results.tpl'),
+				'modalButtons' => "<button onclick=\"return AspenDiscovery.Account.confirmRenewalFeeAll();\" class=\"modal-buttons btn btn-primary\">" . translate([
+						'text' => 'Renew Items',
+						'isPublicFacing' => true,
+					]) . '</button>',
+				'success' => $renewResults['success'],
+			];
+		}
+
 		return [
 			'title' => translate([
 				'text' => 'Renew All',
@@ -2450,7 +2556,7 @@ class MyAccount_AJAX extends JSON_Action {
 						$axis360Summary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
 					}
 				}
-				$timer->logTime("Loaded Axis 360 Summary for User and linked users");
+				$timer->logTime("Loaded Boundless Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $axis360Summary->toArray(),
@@ -7508,7 +7614,7 @@ class MyAccount_AJAX extends JSON_Action {
 		// if there were multiple verification methods available, you'd want to fetch them here for display
 
 		$step = $_REQUEST['step'] ?? "register";
-		$mandatoryEnrollment = $_REQUEST['mandatoryEnrollment'] ?? false;
+		$mandatoryEnrollment = $_REQUEST['mandatoryEnrollment'] ?? 'false';
 
 		if ($step == "register") {
 
@@ -7581,6 +7687,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'text' => 'Next',
 						'isPublicFacing' => true,
 					]) . "</button>",
+				'closeDestination' => '/MyAccount/Logout'
 			];
 		} elseif ($step == "validate") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7598,6 +7705,7 @@ class MyAccount_AJAX extends JSON_Action {
 						'text' => 'Next',
 						'isPublicFacing' => true,
 					]) . "</button>",
+				'closeDestination' => '/MyAccount/Logout'
 			];
 		} elseif ($step == "backup") {
 			require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
@@ -7745,38 +7853,6 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 	}
 
-	/** @noinspection PhpUnused */
-	function auth2FALogin() {
-		global $interface;
-		global $logger;
-		$logger->log("Creating AJAX/2faLogin session: " . session_id(), Logger::LOG_DEBUG);
-
-
-		require_once ROOT_DIR . '/sys/TwoFactorAuthCode.php';
-		$twoFactorAuth = new TwoFactorAuthCode();
-		$codeSent = $twoFactorAuth->createCode();
-		$interface->assign('codeSent', $codeSent);
-
-		$referer = $_REQUEST['referer'] ?? null;
-		$interface->assign('referer', $referer);
-		$name = $_REQUEST['name'] ?? null;
-		$interface->assign('name', $name);
-
-		return [
-			'success' => true,
-			'title' => translate([
-				'text' => 'Two-Factor Authentication',
-				'isPublicFacing' => true,
-			]),
-			'body' => $interface->fetch('MyAccount/2fa/login.tpl'),
-			'buttons' => "<button class='tool btn btn-primary' onclick='AspenDiscovery.Account.verify2FALogin(); return false;'>" . translate([
-					'text' => 'Verify',
-					'isPublicFacing' => true,
-				]) . "</button>",
-		];
-
-	}
-
 	function exportUserList() {
 		$result = [
 			'success' => false,
@@ -7818,6 +7894,52 @@ class MyAccount_AJAX extends JSON_Action {
 				'result' => false,
 				'message' => translate([
 					'text' => 'Export User List to CSV: Invalid list id.',
+					'isPublicFacing' => true,
+				]),
+			];
+		}
+	}
+
+	function exportUserListRIS() {
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Export User List to RIS: something went wrong.',
+				'isPublicFacing' => true,
+			]),
+		];
+		global $interface;
+		if(isset($_REQUEST['listId']) && ctype_digit($_REQUEST['listId'])) {
+			$userListId = $_REQUEST['listId'];
+			require_once ROOT_DIR .'/sys/UserLists/UserList.php';
+			$list = new UserList();
+			$list->id = $userListId;
+			if($list->find(true)) {
+				if ($list->public == true || (UserAccount::isLoggedIn() && UserAccount::getActiveUserId() == $list->user_id)) {
+					$list->buildRIS();
+				} else {
+					$result = [
+						'result' => false,
+							'message' => translate([
+								'text' => 'Export User List to RIS: You do not have access to this list.',
+								'isPublicFacing' => true,
+							]),
+						];
+				}
+			} else {
+				$result = [
+					'result' => false,
+					'message' => translate([
+						'text' => 'Export User List to RIS: Unable to read list.',
+						'isPublicFacing' => true,
+					]),
+				];
+			}
+		} else {
+			$result = [
+				'result' => false,
+				'message' => translate([
+					'text' => 'Export User List to RIS: Invalid list id.',
 					'isPublicFacing' => true,
 				]),
 			];

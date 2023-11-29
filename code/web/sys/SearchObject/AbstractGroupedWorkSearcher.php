@@ -619,7 +619,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 			header('Content-Disposition: attachment;filename="SearchResults.csv"');
 			$fp = fopen('php://output', 'w');
 
-			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Format', 'Location & Call Number');
+			$fields = array('Link', 'Title', 'Author', 'Publisher', 'Publish Date', 'Place of Publication', 'Format', 'Location & Call Number');
 			fputcsv($fp, $fields);
 
 			$docs = $result['response']['docs'];
@@ -643,6 +643,11 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					$publisher = '';
 					if (isset($curDoc['publisherStr'])) {
 						$publisher = implode('; ', $curDoc['publisherStr']);
+					}
+
+					$placeOfPublication = '';
+					if (isset($curDoc['placeOfPublication'])) {
+						$placeOfPublication = implode('; ', $curDoc['placeOfPublication']);
 					}
 
 					// Publish Dates: Min-Max
@@ -721,7 +726,7 @@ abstract class SearchObject_AbstractGroupedWorkSearcher extends SearchObject_Sol
 					}
 					$groupedWorkDriver = null;
 					$output = implode(',', $output);
-					$row = array ($link, $title, $author, $publisher, $publishDate, $uniqueFormats, $output);
+					$row = array ($link, $title, $author, $publisher, $publishDate, $placeOfPublication, $uniqueFormats, $output);
 					fputcsv($fp, $row);
 				}
 			}

@@ -100,11 +100,12 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 		$publishers = $this->getPublishers();
 		$pubDates = $this->getPublicationDates();
 		$pubPlaces = $this->getPlacesOfPublication();
+		$placesOfPublication = $this->getPlacesOfPublication();
 		$details = [
 			'authors' => $authors,
 			'title' => $this->getShortTitle(),
 			'subtitle' => $this->getSubtitle(),
-			'pubPlace' => count($pubPlaces) > 0 ? $pubPlaces[0] : null,
+			'placeOfPublication' => count($placesOfPublication) > 0 ? $placesOfPublication[0] : null,
 			'pubName' => count($publishers) > 0 ? $publishers[0] : null,
 			'pubDate' => count($pubDates) > 0 ? $pubDates[0] : null,
 			'edition' => $this->getEditions(),
@@ -113,6 +114,7 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 
 		$interface->assign('dc_pubName', count($publishers) > 0 ? $publishers[0] : null);
 		$interface->assign('dc_pubDate', count($pubDates) > 0 ? $pubDates[0] : null);
+		$interface->assign('dc_placeOfPublication', count($placesOfPublication) > 0 ? $placesOfPublication[0] : null);
 
 		// Build the citation:
 		$citation = new CitationBuilder($details);
@@ -393,17 +395,20 @@ abstract class GroupedWorkSubDriver extends RecordInterface {
 	 * @access  public
 	 * @return  array
 	 */
-	function getPublicationDetails() {
-		$places = $this->getPlacesOfPublication();
+	public function getPublicationDetails() {
+		// $places = $this->getPlacesOfPublication();
+		$placesOfPublication = $this->getPlacesOfPublication();
 		$names = $this->getPublishers();
 		$dates = $this->getPublicationDates();
 
 		$i = 0;
 		$returnVal = [];
-		while (isset($places[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		// while (isset($places[$i]) || isset($placesOfPublication[$i]) || isset($names[$i]) || isset($dates[$i])) {
+		while (isset($placesOfPublication[$i]) || isset($names[$i]) || isset($dates[$i])) {
 			// Put all the pieces together, and do a little processing to clean up
 			// unwanted whitespace.
-			$publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+			// $publicationInfo = (isset($places[$i]) ? $places[$i] . ' ' : '') . (isset($placesOfPublication[$i]) ? $placesOfPublication[$i] . ' ': '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
+			$publicationInfo = (isset($placesOfPublication[$i]) ? $placesOfPublication[$i] . ' ': '') . (isset($names[$i]) ? $names[$i] . ' ' : '') . (isset($dates[$i]) ? (', ' . $dates[$i] . '.') : '');
 			$publicationInfo = trim(str_replace('  ', ' ', $publicationInfo));
 			$publicationInfo = str_replace(' ,', ',', $publicationInfo);
 			$publicationInfo = htmlentities($publicationInfo);

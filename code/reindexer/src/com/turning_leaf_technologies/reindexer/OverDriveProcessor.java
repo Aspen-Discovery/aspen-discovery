@@ -41,7 +41,7 @@ class OverDriveProcessor {
 		try {
 			getProductInfoStmt = dbConn.prepareStatement("SELECT * from overdrive_api_products where overdriveId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getNumCopiesStmt = dbConn.prepareStatement("SELECT sum(copiesOwned) as totalOwned FROM overdrive_api_product_availability WHERE productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-			getProductMetadataStmt = dbConn.prepareStatement("SELECT id, productId, checksum, sortTitle, publisher, publishDate, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, UNCOMPRESS(rawData) as rawData, thumbnail, cover, isOwnedByCollections from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getProductMetadataStmt = dbConn.prepareStatement("SELECT id, productId, checksum, sortTitle, publisher, publishDate, placeOfPublication, isPublicDomain, isPublicPerformanceAllowed, shortDescription, fullDescription, starRating, popularity, UNCOMPRESS(rawData) as rawData, thumbnail, cover, isOwnedByCollections from overdrive_api_product_metadata where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductAvailabilityStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_availability where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getProductFormatsStmt = dbConn.prepareStatement("SELECT * from overdrive_api_product_formats where productId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			doubleDecodeRawMetadataStmt = dbConn.prepareStatement("SELECT UNCOMPRESS(UNCOMPRESS(rawData)) as rawData from overdrive_api_product_metadata where id = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
@@ -369,6 +369,7 @@ class OverDriveProcessor {
 						}
 						overDriveRecord.setPrimaryLanguage(primaryLanguage);
 						overDriveRecord.setPublisher(AspenStringUtils.trimTrailingPunctuation(metadata.get("publisher")));
+						overDriveRecord.setPlaceOfPublication(metadata.get("placeOfPublication"));
 						overDriveRecord.setPublicationDate(metadata.get("publicationDate"));
 						overDriveRecord.setPhysicalDescription("");
 
@@ -701,6 +702,9 @@ class OverDriveProcessor {
 			String publisher = metadataRS.getString("publisher");
 			groupedWork.addPublisher(publisher);
 			returnMetadata.put("publisher", publisher);
+			String placeOfPublication = metadataRS.getString("placeOfPublication");
+			groupedWork.addPlaceOfPublication(placeOfPublication);
+			returnMetadata.put("placeOfPublication", placeOfPublication);
 			String publicationDate = metadataRS.getString("publishDate");
 			groupedWork.addPublicationDate(publicationDate);
 			returnMetadata.put("publicationDate", publicationDate);

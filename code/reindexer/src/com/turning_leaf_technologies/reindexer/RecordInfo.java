@@ -21,6 +21,7 @@ public class RecordInfo {
 	private String primaryLanguage;
 	private String publisher;
 	private String publicationDate;
+	private String placeOfPublication;
 	private String physicalDescription;
 	private boolean isClosedCaptioned;
 
@@ -82,6 +83,14 @@ public class RecordInfo {
 		return this.publisher;
 	}
 
+	void setPlaceOfPublication(String placeOfPublication) {
+		this.placeOfPublication = placeOfPublication;
+	}
+
+	public String getPlaceOfPublication() {
+		return this.placeOfPublication;
+	}
+
 	void setPublicationDate(String publicationDate) {
 		this.publicationDate = publicationDate;
 	}
@@ -117,6 +126,7 @@ public class RecordInfo {
 					Util.getCleanDetailValue(edition) + "|" +
 					Util.getCleanDetailValue(primaryLanguage) + "|" +
 					Util.getCleanDetailValue(publisher) + "|" +
+					Util.getCleanDetailValue(placeOfPublication) + "|" +
 					Util.getCleanDetailValue(publicationDate) + "|" +
 					Util.getCleanDetailValue(physicalDescription)
 					;
@@ -328,6 +338,7 @@ public class RecordInfo {
 		this.edition = recordInfo.edition;
 		this.primaryLanguage = recordInfo.primaryLanguage;
 		this.publisher = recordInfo.publisher;
+		this.placeOfPublication = recordInfo.placeOfPublication;
 		this.publicationDate = recordInfo.publicationDate;
 		this.physicalDescription = recordInfo.physicalDescription;
 		this.isClosedCaptioned = recordInfo.isClosedCaptioned;

@@ -76,6 +76,7 @@ AspenDiscovery.Account = (function () {
 		 * @returns {boolean}
 		 */
 		ajaxLogin: function (trigger, ajaxCallback, closeModalOnAjaxSuccess) {
+
 			if (Globals.loggedIn) {
 				if (ajaxCallback !== undefined && typeof (ajaxCallback) === "function") {
 					ajaxCallback();
@@ -99,16 +100,17 @@ AspenDiscovery.Account = (function () {
 						dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 						loginLink = trigger.data('login');
 					}
-					var dialogDestination = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
+					var getLoginFormUrl = Globals.path + '/MyAccount/AJAX?method=getLoginForm';
 					if (multiStep && !loginLink) {
-						dialogDestination += "&multiStep=true";
+						getLoginFormUrl += "&multiStep=true";
 					}
-					var modalDialog = $("#modalDialog");
-					$('.modal-body').html("Loading...");
-					$(".modal-content").load(dialogDestination);
-					$(".modal-title").text(dialogTitle);
-					modalDialog.removeClass('image-popup');
-					modalDialog.modal("show");
+					$.getJSON(getLoginFormUrl, function (data) {
+						if (data.success === true) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, data.closeDestination === undefined, data.closeDestination);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.message);
+						}
+					});
 				}
 			}
 			return false;
@@ -202,7 +204,7 @@ AspenDiscovery.Account = (function () {
 				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
-					label = 'Axis 360 Checkouts';
+					label = 'Boundless Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -272,7 +274,7 @@ AspenDiscovery.Account = (function () {
 				} else if (source === 'cloud_library') {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
-					label = 'Axis 360 Holds';
+					label = 'Boundless Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -567,11 +569,7 @@ AspenDiscovery.Account = (function () {
 					} else if (response.result.success === false && response.result.enroll2FA === true) {
 						AspenDiscovery.showMessageWithButtons('Error', 'Your patron type requires that you enroll into two-factor authentication before logging in.', '<button class=\'tool btn btn-primary\' onclick=\'AspenDiscovery.Account.show2FAEnrollment(true); return false;\'>Continue</button>');
 					} else if (response.result.success === false && response.result.has2FA === true) {
-						$.getJSON(Globals.path + "/MyAccount/AJAX?method=auth2FALogin&referer=" + referer + "&name=" + response.result.name, function (data) {
-							if (data.success) {
-								AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons);
-							}
-						});
+						AspenDiscovery.showMessageWithButtons(response.result.title, response.result.body, response.result.buttons);
 					} else {
 						loginErrorElem.html(response.result.message).show();
 					}
@@ -716,7 +714,7 @@ AspenDiscovery.Account = (function () {
 				}).fail(AspenDiscovery.ajaxFail)
 			} else {
 				this.ajaxLogin(null, function () {
-					this.confirmRenewTitle(renewIndicator);
+					this.confirmRenewalFee(renewIndicator);
 				}, false)
 			}
 			return false;
@@ -729,12 +727,35 @@ AspenDiscovery.Account = (function () {
 					// noinspection JSUnresolvedFunction
 					$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll", function (data) {
 						var reload = data.success || (data.renewed > 0);
-						AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
+						if(data.modalButtons) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+						} else {
+							AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload); // automatically close when successful
+						}
 					}).fail(AspenDiscovery.ajaxFail);
 				}
 			} else {
 				this.ajaxLogin(null, this.renewAll, true);
 				//auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
+			}
+			return false;
+		},
+
+		confirmRenewalFeeAll: function () {
+			if (Globals.loggedIn) {
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewAll&confirmedRenewal=true", function (data) {
+					if(data.modalButtons) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					}
+				}).fail(AspenDiscovery.ajaxFail)
+			} else {
+				this.ajaxLogin(null, function () {
+					this.confirmRenewalFeeAll();
+				}, false)
 			}
 			return false;
 		},
@@ -748,7 +769,11 @@ AspenDiscovery.Account = (function () {
 						// noinspection JSUnresolvedFunction
 						$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles, function (data) {
 							var reload = data.success || (data.renewed > 0);
-							AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload);
+							if(data.modalButtons) {
+								AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+							} else {
+								AspenDiscovery.showMessage(data.title, data.modalBody, reload, reload); // automatically close when successful
+							}
 						}).fail(AspenDiscovery.ajaxFail);
 					}
 				}
@@ -757,6 +782,26 @@ AspenDiscovery.Account = (function () {
 				//auto close so that if user opts out of renew, the login window closes; if the users continues, follow-up operations will reopen modal
 			}
 			return false
+		},
+
+		confirmRenewalFeeSelected: function () {
+			if (Globals.loggedIn) {
+				var selectedTitles = AspenDiscovery.getSelectedTitles();
+				AspenDiscovery.loadingMessage();
+				// noinspection JSUnresolvedFunction
+				$.getJSON(Globals.path + "/MyAccount/AJAX?method=renewSelectedItems&" + selectedTitles + "&confirmedRenewal=true", function (data) {
+					if(data.modalButtons) {
+						AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+					} else {
+						AspenDiscovery.showMessage(data.title, data.modalBody, data.success, data.success); // automatically close when successful
+					}
+				}).fail(AspenDiscovery.ajaxFail)
+			} else {
+				this.ajaxLogin(null, function () {
+					this.confirmRenewalFeeSelected();
+				}, false)
+			}
+			return false;
 		},
 
 		ajaxLightbox: function (urlToDisplay, requireLogin) {
@@ -1856,8 +1901,14 @@ AspenDiscovery.Account = (function () {
 				var selectedValue = $('#cardTypeSelect option:selected').val();
 				if (selectedValue === 'adult') {
 					$('#propertyRowparentName').hide();
+					$('#propertyRowparentname').hide();
+					$('#propertyRowcareof').hide();
+					$('#propertyRowcare_of').hide();
 				} else {
 					$('#propertyRowparentName').show();
+					$('#propertyRowparentname').show();
+					$('#propertyRowcareof').show();
+					$('#propertyRowcare_of').show();
 				}
 			}
 			var smsNotices = $("#smsNotices");
@@ -2250,7 +2301,7 @@ AspenDiscovery.Account = (function () {
 				AspenDiscovery.loadingMessage();
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=register&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false, '/MyAccount/Logout')
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}
@@ -2266,7 +2317,7 @@ AspenDiscovery.Account = (function () {
 			if (Globals.loggedIn || mandatoryEnroll) {
 				$.getJSON(Globals.path + "/MyAccount/AJAX?method=get2FAEnrollment&step=verify&mandatoryEnrollment=" + mandatoryEnroll, function (data) {
 					if (data.success) {
-						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons)
+						AspenDiscovery.showMessageWithButtons(data.title, data.body, data.buttons, false, '/MyAccount/Logout')
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
 					}
@@ -2450,6 +2501,9 @@ AspenDiscovery.Account = (function () {
 				});
 			}
 			return false;
+		},
+		logout: function () {
+			window.location = Globals.path + '/MyAccount/Logout';
 		}
 	};
 }(AspenDiscovery.Account || {}));

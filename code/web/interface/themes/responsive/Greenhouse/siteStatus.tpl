@@ -51,6 +51,7 @@
 					<th>{translate text="Implementation Status" isAdminFacing=true}</th>
 					<th>{translate text="Timezone" isAdminFacing=true}</th>
 					<th>{translate text="Version" isAdminFacing=true}</th>
+					<th>{translate text="Online?" isAdminFacing=true}</th>
 					{foreach from=$allChecks item=checkName key=checkType}
 						{if empty($showErrorsOnly) || array_key_exists($checkType,$checksWithErrors)}
 							<th>{translate text=$checkName isAdminFacing=true}</th>
@@ -76,6 +77,9 @@
 						</td>
 						<td>
 							{$siteStatus.version}
+						</td>
+						<td {if $siteStatus.isOnline} style="background-color: lightgreen;text-align: center" {else} style="background-color: #D50000;color:white;font-weight: bold;text-align: center"{/if}>
+							{if $siteStatus.isOnline}{translate text="Yes" isAdminFacing=true}{else}{translate text="No" isAdminFacing=true}{/if}
 						</td>
 						{foreach from=$allChecks item=checkName key=checkType}
 							{if empty($showErrorsOnly) || array_key_exists($checkType,$checksWithErrors)}

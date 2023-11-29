@@ -233,7 +233,7 @@ public class ExtractOverDriveInfoMain {
 			logger.error("Error loading settings from the database", e);
 		}
 		if (settings.size() == 0) {
-			logger.error("Unable to find settings for Axis 360, please add settings to the database");
+			logger.error("Unable to find settings for Boundless, please add settings to the database");
 		}
 		return settings;
 	}

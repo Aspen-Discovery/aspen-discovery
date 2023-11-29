@@ -75,6 +75,7 @@ public abstract class AbstractGroupedWorkSolr {
 
 	protected HashSet<String> publishers = new HashSet<>();
 	protected HashSet<String> publicationDates = new HashSet<>();
+	protected HashSet<String> placesOfPublication = new HashSet<>();
 	protected float rating = -1f;
 	protected HashMap<String, String> series = new HashMap<>();
 	protected HashMap<String, String> series2 = new HashMap<>();
@@ -188,6 +189,8 @@ public abstract class AbstractGroupedWorkSolr {
 		clonedWork.publishers = (HashSet<String>) publishers.clone();
 		// noinspection unchecked
 		clonedWork.publicationDates = (HashSet<String>) publicationDates.clone();
+		// noinspection unchecked
+		clonedWork.placesOfPublication = (HashSet<String>)placesOfPublication.clone();
 		// noinspection unchecked
 		clonedWork.series = (HashMap<String, String>) series.clone();
 		// noinspection unchecked
@@ -940,6 +943,22 @@ public abstract class AbstractGroupedWorkSolr {
 		}
 	}
 
+	void addPlacesOfPublication(Set<String> placesOfPublication) {
+		for (String placeOfPublication: placesOfPublication) {
+			addPlaceOfPublication(placeOfPublication);
+		}
+	}
+
+	void addPlaceOfPublication(String placeOfPublication) {
+		placeOfPublication	= placeOfPublication.trim();
+		if (placeOfPublication.endsWith(",") || placeOfPublication.endsWith(";")){
+			placeOfPublication = placeOfPublication.substring(0, placeOfPublication.length() -1).trim();
+		}
+		if (placeOfPublication.length() > 0) {
+			this.placesOfPublication.add(placeOfPublication);
+		}
+	}
+	
 	void addLiteraryForms(HashMap<String, Integer> literaryForms) {
 		for (String curLiteraryForm : literaryForms.keySet()) {
 			this.addLiteraryForm(curLiteraryForm, literaryForms.get(curLiteraryForm));

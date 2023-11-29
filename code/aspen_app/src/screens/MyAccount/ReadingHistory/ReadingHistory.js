@@ -1,22 +1,22 @@
-import React from 'react';
-import _ from 'lodash';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
-import { Box, VStack, Button, Text, ScrollView, FlatList, Pressable, HStack, Image, InfoIcon, Center, AlertDialog, Icon, Actionsheet, Alert, CheckIcon, FormControl, Select } from 'native-base';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { ListItem } from '@rneui/themed';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
+import { Actionsheet, Alert, AlertDialog, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
+import React from 'react';
+import { Platform, SafeAreaView } from 'react-native';
+import { loadError } from '../../../components/loadError';
 
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, getPatronCheckedOutItems, optIntoReadingHistory, optOutOfReadingHistory, refreshProfile, reloadProfile } from '../../../util/api/user';
-import { SafeAreaView, Platform } from 'react-native';
-import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
-import { loadError } from '../../../components/loadError';
-import { navigateStack } from '../../../helpers/RootNavigator';
-import AddToList from '../../Search/AddToList';
-import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { DisplaySystemMessage } from '../../../components/Notifications';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { getAuthor, getCleanTitle, getFormat, getTitle } from '../../../helpers/item';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import { deleteAllReadingHistory, deleteSelectedReadingHistory, fetchReadingHistory, optIntoReadingHistory, optOutOfReadingHistory } from '../../../util/api/user';
+import AddToList from '../../Search/AddToList';
 
 export const MyReadingHistory = () => {
      const navigation = useNavigation();
@@ -62,7 +62,7 @@ export const MyReadingHistory = () => {
      useFocusEffect(
           React.useCallback(() => {
                const update = async () => {
-                    let tmp = checkoutsBy;
+                    let tmp = sortBy;
                     let term = '';
 
                     term = getTermFromDictionary(language, 'sort_by_title');

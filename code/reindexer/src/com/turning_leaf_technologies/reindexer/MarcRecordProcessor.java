@@ -510,6 +510,7 @@ abstract class MarcRecordProcessor {
 						lexileValue = lexileValue.substring(0, lexileValue.length() - 1);
 					}
 					if (AspenStringUtils.isNumeric(lexileValue)) {
+						AspenStringUtils.trimTrailingPunctuation(lexileValue);
 						groupedWork.setLexileScore(lexileValue);
 					}else{
 						Matcher lexileMatcher = lexileMatchingPattern.matcher(lexileValue);
@@ -954,6 +955,16 @@ abstract class MarcRecordProcessor {
 			}
 		}
 
+		//load places of publication
+		Set<String> placesOfPublication = this.getPlacesOfPublication(record);
+		groupedWork.addPlacesOfPublication(placesOfPublication);
+		if (placesOfPublication.size() > 0){
+			String placeOfPublication = placesOfPublication.iterator().next();
+			for(RecordInfo ilsRecord : ilsRecords) {
+				ilsRecord.setPlaceOfPublication(placeOfPublication);
+			}
+		}
+
 	}
 
 	private Set<String> getPublicationDates(Record record) {
@@ -982,6 +993,32 @@ abstract class MarcRecordProcessor {
 		}
 
 		return publicationDates;
+	}
+
+	private Set<String> getPlacesOfPublication(Record record) {
+		List<DataField> rdaFields = record.getDataFields(264);
+		HashSet<String> placesOfPublication = new HashSet<>();
+		String place;
+		if(rdaFields.size() > 0) {
+			for(DataField dataField : rdaFields){
+				if (dataField.getIndicator2() == '1') {
+					Subfield subFieldA = dataField.getSubfield('a');
+					if (subFieldA != null) {
+						place = subFieldA.getData();
+						placesOfPublication.add(place);
+					}
+				}
+			}
+		}
+		//Try field 260
+		if (placesOfPublication.size() ==0) {
+			placesOfPublication.addAll(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFieldList(record, "260a")));
+		}
+		//Try 008
+		if(placesOfPublication.size() ==0) {
+			placesOfPublication.add(AspenStringUtils.trimTrailingPunctuation(MarcUtil.getFirstFieldVal(record, "008[15-17]")));
+		}
+		return placesOfPublication;
 	}
 
 	private Set<String> getPublishers(Record record){

@@ -19,6 +19,7 @@ class OAISolrRecord {
 	private String description;
 	private HashSet<String> coverage = new HashSet<>();
 	private HashSet<String> publisher = new HashSet<>();
+	private HashSet<String> placeOfPublication = new HashSet<>();
 	private HashSet<String> format = new HashSet<>();
 	private String language;
 	private HashSet<String> source = new HashSet<>();
@@ -93,6 +94,7 @@ class OAISolrRecord {
 		doc.addField("description", description);
 		doc.addField("coverage", coverage);
 		doc.addField("publisher", publisher);
+		doc.addField("placeOfPublication", placeOfPublication);
 		doc.addField("format", format);
 		doc.addField("language", language);
 		doc.addField("source", source);
@@ -113,6 +115,10 @@ class OAISolrRecord {
 
 	void addPublisher(String publisher) {
 		this.publisher.add(publisher);
+	}
+
+	void addPlaceOfPublication(String placeOfPublication) {
+		this.placeOfPublication.add(placeOfPublication);
 	}
 
 	void addFormat(String format) {

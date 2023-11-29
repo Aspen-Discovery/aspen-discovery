@@ -108,6 +108,7 @@ class SearchAPI extends Action {
 		//Check for a current backup
 		global $serverName;
 		$backupDir = "/data/aspen-discovery/{$serverName}/sql_backup/";
+		$lastBackupSize = 0;
 		if (!file_exists($backupDir)) {
 			$this->addCheck($checks, 'Backup', self::STATUS_CRITICAL, "Backup directory $backupDir does not exist");
 		} else {
@@ -122,6 +123,7 @@ class SearchAPI extends Action {
 						if ($fileSize > 1000) {
 							//We have a backup file created in the last 24.5 hours (30 min buffer to give time for the backup to be created)
 							$backupFileFound = true;
+							$lastBackupSize = $fileSize;
 						} else {
 							$backupFileFound = true;
 							$backupFileTooSmall = true;
@@ -159,9 +161,36 @@ class SearchAPI extends Action {
 		if (is_dir('/data')) {
 			$freeSpace = disk_free_space('/data');
 			$this->addServerStat($serverStats, 'Data Disk Space', StringUtils::formatBytes($freeSpace));
-			if ($freeSpace < 7500000000) {
-				$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 7.5GB of space available");
-			} else {
+			$backupSizeCriticalLevel = 2.5 * $lastBackupSize;
+			$backupSizeWarningLevel = 5 * $lastBackupSize;
+			$dataSizeCritical = false;
+			$dataSizeWarning = false;
+			if ($backupSizeCriticalLevel > 7500000000) {
+				if ($freeSpace < $backupSizeCriticalLevel) {
+					$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 2.5x the size of the last backup available");
+					$dataSizeCritical = true;
+				}
+			}else{
+				if ($freeSpace < 7500000000) {
+					$this->addCheck($checks, 'Data Disk Space', self::STATUS_CRITICAL, "The data drive currently has less than 7.5GB of space available");
+					$dataSizeCritical = true;
+				}
+			}
+			if (!$dataSizeCritical) {
+				if ($backupSizeWarningLevel > 10000000000) {
+					if ($freeSpace < $backupSizeWarningLevel) {
+						$this->addCheck($checks, 'Data Disk Space', self::STATUS_WARN, "The data drive currently has less than 5x the size of the last backup available");
+						$dataSizeWarning = true;
+					}
+				}else{
+					if ($freeSpace < 10000000000) {
+						$this->addCheck($checks, 'Data Disk Space', self::STATUS_WARN, "The data drive currently has less than 10GB of space available");
+						$dataSizeWarning = true;
+					}
+				}
+			}
+
+			if (!$dataSizeWarning && !$dataSizeCritical) {
 				$this->addCheck($checks, 'Data Disk Space');
 			}
 		}
@@ -637,6 +666,22 @@ class SearchAPI extends Action {
 		$omdbSetting = new OMDBSetting();
 		if ($omdbSetting->find(true)) {
 			$this->addCheck($checks, "OMDB");
+		}
+
+		require_once ROOT_DIR . '/sys/TwoFactorAuthSetting.php';
+		$twoFactorSetting = new TwoFactorAuthSetting();
+		if ($twoFactorSetting->find(true)) {
+			//If we have settings, make sure at least one is applied to a library and a location
+			$library = new Library();
+			$library->whereAdd('twoFactorAuthSettingId > 0');
+			if ($library->find(true)){
+				require_once ROOT_DIR . '/sys/Account/PType.php';
+				$ptype = new PType();
+				$ptype->whereAdd('twoFactorAuthSettingId > 0');
+				if ($ptype->find(true)) {
+					$this->addCheck($checks, "Two Factor Authentication");
+				}
+			}
 		}
 
 		$hasCriticalErrors = false;

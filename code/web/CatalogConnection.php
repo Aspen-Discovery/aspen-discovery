@@ -480,6 +480,10 @@ class CatalogConnection {
 		return $result;
 	}
 
+	public function isBlockedFromIllRequests(User $user) {
+		return $this->driver->isBlockedFromIllRequests($user);
+	}
+
 	/**
 	 * @param $nameFromUser  string
 	 * @param $nameFromIls   string
@@ -1230,7 +1234,7 @@ class CatalogConnection {
 	 * @param string $newPin
 	 * @return string[] a message to the user letting them know what happened
 	 */
-	function updatePin(User $user, string $oldPin, string $newPin) {
+	function updatePin(User $user, ?string $oldPin, string $newPin) {
 		return $this->driver->updatePin($user, $oldPin, $newPin);
 	}
 

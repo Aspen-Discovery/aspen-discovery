@@ -163,6 +163,9 @@ class AnodeAPI extends Action {
 				if (isset($groupedWorkRecord['publisher'])) {
 					$groupedWork['publisher'] = $groupedWorkRecord['publisher'];
 				}
+				if (isset($groupedWorkRecord['placeOfPublication'])) {
+					$groupedWork['placeOfPublication'] = $groupedWorkRecord['placeOfPublication'];
+				}
 				if (isset($groupedWorkRecord['language'])) {
 					$groupedWork['language'] = $groupedWorkRecord['language'];
 				}
@@ -222,6 +225,7 @@ class AnodeAPI extends Action {
 				unset($groupedWork['small_image']);
 				unset($groupedWork['titleURL']);
 				unset($groupedWork['publishDate']);
+				unset($groupedWork['placeOfPublication']);
 				unset($groupedWork['title_display']);
 				unset($groupedWork['title_short']);
 				unset($groupedWork['title_full']);

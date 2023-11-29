@@ -1347,7 +1347,7 @@ class Library extends DataObject {
 					],
 					'expirationNearMessage' => [
 						'property' => 'expirationNearMessage',
-						'type' => 'text',
+						'type' => 'html',
 						'label' => 'Expiration Near Message',
 						'description' => 'A message to show in the menu when the user account will expire soon',
 						'hideInLists' => true,
@@ -1357,7 +1357,7 @@ class Library extends DataObject {
 					],
 					'expiredMessage' => [
 						'property' => 'expiredMessage',
-						'type' => 'text',
+						'type' => 'html',
 						'label' => 'Expired Message',
 						'description' => 'A message to show in the menu when the user account has expired',
 						'hideInLists' => true,
@@ -3318,7 +3318,7 @@ class Library extends DataObject {
 			'axis360Section' => [
 				'property' => 'axis360Section',
 				'type' => 'section',
-				'label' => 'Axis 360',
+				'label' => 'Boundless',
 				'hideInLists' => true,
 				'renderAsHeading' => true,
 				'permissions' => ['Library Records included in Catalog'],
@@ -3327,8 +3327,8 @@ class Library extends DataObject {
 						'property' => 'axis360ScopeId',
 						'type' => 'enum',
 						'values' => $axis360Scopes,
-						'label' => 'Axis 360 Scope',
-						'description' => 'The Axis 360 scope to use',
+						'label' => 'Boundless Scope',
+						'description' => 'The Boundless scope to use',
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,

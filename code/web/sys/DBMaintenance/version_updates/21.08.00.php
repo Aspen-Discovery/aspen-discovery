@@ -129,6 +129,7 @@ function getUpdates21_08_00(): array {
 					editionId INT(11),
 					publisherId INT(11),
 					publicationDateId INT(11),
+					placeOfPublicationId INT(11),
 					physicalDescriptionId INT(11),
 					languageId INT(11),
 					INDEX(groupedWorkId),

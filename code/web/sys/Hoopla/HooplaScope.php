@@ -92,7 +92,7 @@ class HooplaScope extends DataObject {
 					1 => 'Hide Hoopla title if other copies are available',
 					2 => 'Hide Hoopla title if other copies are owned',
 				],
-				'label' => 'Exclude Records With Copies from other eContent Vendors (OverDrive, cloudLibrary, Axis 360, etc.)',
+				'label' => 'Exclude Records With Copies from other eContent Vendors (OverDrive, cloudLibrary, Boundless, etc.)',
 				'description' => 'Whether or not records in other collections should be included',
 				'default' => 0,
 				'forcesReindex' => true,

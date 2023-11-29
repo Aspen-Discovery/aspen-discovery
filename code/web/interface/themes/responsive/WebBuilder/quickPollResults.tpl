@@ -17,5 +17,10 @@
 		<div class="alert alert-success">
             {translate text=$submissionResultText isPublicFacing=true}
 		</div>
+		<div class="row">
+			<div class="col-xs-12">
+				<a href="/WebBuilder/QuickPollSubmissionsGraph?pollId={$quickPollId}" class="btn btn-default btn-sm">{translate text="View results" isAdminFacing=true}</a>
+			</div>
+		</div>
 	{/if}
 </div>

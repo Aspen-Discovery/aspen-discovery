@@ -1,12 +1,14 @@
 {strip}
+	{if $canViewResults || $showResultsToPatrons == 1 || $showResultsToPatrons == 3}
 	<div id="main-content" class="col-sm-12">
 		<h1>{translate text=$graphTitle isAdminFacing=true}</h1>
 		<div class="chart-container">
 			<canvas id="chart"></canvas>
 		</div>
 	</div>
-
-	<h2>{translate text="Data" isAdminFacing=true}</h2>
+    {/if}
+	{if $canViewResults || $showResultsToPatrons == 2 || $showResultsToPatrons == 3}
+	<h2>{translate text="Data"  isAdminFacing=true}</h2>
 	<div class="adminTableRegion fixed-height-table">
 		<table class="adminTable table table-responsive table-striped table-bordered table-condensed smallText table-sticky">
 			<thead>
@@ -25,6 +27,7 @@
 			</tbody>
 		</table>
 	</div>
+    {/if}
 {/strip}
 {literal}
 <script>

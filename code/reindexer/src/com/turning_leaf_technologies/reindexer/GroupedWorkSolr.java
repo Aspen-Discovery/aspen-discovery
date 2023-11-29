@@ -77,6 +77,7 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 			//Publication related fields
 			doc.addField("publisher", publishers);
 			doc.addField("publishDate", publicationDates);
+			doc.addField("placeOfPublication", placesOfPublication);
 			//Sorting will use the earliest date published
 			doc.addField("publishDateSort", earliestPublicationDate);
 
@@ -457,11 +458,12 @@ public class GroupedWorkSolr extends AbstractGroupedWorkSolr implements Cloneabl
 
 					if (curItem.isEContent()) {
 						eContentSourcesForScope.add(curItem.getTrimmedEContentSource());
-					}
-					if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
-						localCallNumbersForScope.add(curItem.getCallNumber());
-						if (sortableCallNumberForScope == null) {
-							sortableCallNumberForScope = curItem.getSortableCallNumber();
+					} else {
+						if (scopingInfo.isLocallyOwned() || scopingInfo.isLibraryOwned() || !scopingInfo.getScope().isRestrictOwningLibraryAndLocationFacets()) {
+							localCallNumbersForScope.add(curItem.getCallNumber());
+							if (sortableCallNumberForScope == null) {
+								sortableCallNumberForScope = curItem.getSortableCallNumber();
+							}
 						}
 					}
 				}

@@ -334,7 +334,7 @@ function getFinalBaseUpdates() {
 			'title' => 'Materials Request Table Creation',
 			'description' => 'Update reading History to include an id table',
 			'sql' => [
-				'CREATE TABLE IF NOT EXISTS materials_request (' . 'id int(11) NOT NULL AUTO_INCREMENT, ' . 'title varchar(255), ' . 'author varchar(255), ' . 'format varchar(25), ' . 'ageLevel varchar(25), ' . 'isbn varchar(15), ' . 'oclcNumber varchar(30), ' . 'publisher varchar(255), ' . 'publicationYear varchar(4), ' . 'articleInfo varchar(255), ' . 'abridged TINYINT, ' . 'about TEXT, ' . 'comments TEXT, ' .
+				'CREATE TABLE IF NOT EXISTS materials_request (' . 'id int(11) NOT NULL AUTO_INCREMENT, ' . 'title varchar(255), ' . 'author varchar(255), ' . 'format varchar(25), ' . 'ageLevel varchar(25), ' . 'isbn varchar(15), ' . 'oclcNumber varchar(30), ' . 'publisher varchar(255), ' . 'publicationYear varchar(4), ' . 'placeOfPublication varchar(255), ' . 'articleInfo varchar(255), ' . 'abridged TINYINT, ' . 'about TEXT, ' . 'comments TEXT, ' .
 				"status enum('pending', 'owned', 'purchased', 'referredToILL', 'ILLplaced', 'ILLreturned', 'notEnoughInfo', 'notAcquiredOutOfPrint', 'notAcquiredNotAvailable', 'notAcquiredFormatNotAvailable', 'notAcquiredPrice', 'notAcquiredPublicationDate', 'requestCancelled') DEFAULT 'pending', " . 'dateCreated int(11), ' . 'createdBy int(11), ' . 'dateUpdated int(11), ' . 'PRIMARY KEY (id) ' . ') ENGINE=InnoDB',
 			],
 		],

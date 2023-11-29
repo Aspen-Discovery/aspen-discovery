@@ -378,6 +378,7 @@ class Koha extends AbstractIlsDriver {
 
 	public function getCheckouts(User $patron): array {
 		require_once ROOT_DIR . '/sys/User/Checkout.php';
+		global $timer;
 
 		//Get checkouts by screen scraping
 		$checkouts = [];
@@ -401,13 +402,48 @@ class Koha extends AbstractIlsDriver {
 		}
 
 		/** @noinspection SqlResolve */
+		$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
+		$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
+		$renewPref = 0;
+		if ($renewPrefResults !== false) {
+			if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
+				$renewPref = $renewPrefRow['autorenew_checkouts'];
+			}
+
+			$renewPrefResults->close();
+		}
+		$timer->logTime("Loaded borrower preference for autorenew_checkouts");
+
+		$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
+		$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
+		$patronIsExpired = false;
+		if ($patronExpirationResults != false) {
+			if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
+				$patronExpirationDate = strtotime($patronExpirationRow['dateexpiry']);
+				$today = strtotime(date("Y-m-d"));
+
+				if ($patronExpirationDate < $today) {
+					$patronIsExpired = true;
+				}
+			}
+
+			$patronExpirationResults->close();
+		}
+		$timer->logTime("Loaded patron expiration date");
+
+		/** @noinspection SqlResolve */
 		$sql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, auto_renew, auto_renew_error, items.barcode from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$results = mysqli_query($this->dbConnection, $sql);
+		$timer->logTime("Query to load checkouts");
+		$allIssueIds = [];
+		$allItemNumbers = [];
+		$circulationRulesForCheckouts = [];
 		while ($curRow = $results->fetch_assoc()) {
 			$curCheckout = new Checkout();
 			$curCheckout->type = 'ils';
 			$curCheckout->source = $this->getIndexingProfile()->name;
 			$curCheckout->sourceId = $curRow['issue_id'];
+			$allIssueIds[] = $curRow['issue_id'];
 			$curCheckout->userId = $patron->id;
 
 			$curCheckout->recordId = $curRow['biblionumber'];
@@ -421,6 +457,7 @@ class Koha extends AbstractIlsDriver {
 				$curCheckout->title = $curRow['title'];
 				$curCheckout->author = $curRow['author'];
 			}
+			$timer->logTime("Initialize record driver");
 
 			if (isset($curRow['itemcallnumber'])) {
 				$curCheckout->callNumber = $curRow['itemcallnumber'];
@@ -430,44 +467,7 @@ class Koha extends AbstractIlsDriver {
 			}
 
 			$itemNumber = $curRow['itemnumber'];
-
-			//Check to see if there is a volume for the checkout
-			if ($this->getKohaVersion() >= 22.11) {
-				/** @noinspection SqlResolve */
-				$volumeSql = "SELECT description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id = $itemNumber";
-			} else {
-				/** @noinspection SqlResolve */
-				$volumeSql = "SELECT description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber = $itemNumber";
-			}
-			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
-			if ($volumeResults !== false) { //This is false if Koha does not support volumes
-				if ($volumeRow = $volumeResults->fetch_assoc()) {
-					$curCheckout->volume = $volumeRow['description'];
-				}
-				$volumeResults->close();
-			}
-
-			//Check to see if the item is Claims Returned
-			/** @noinspection SqlResolve */
-			$claimsReturnedSql = "SELECT created_on from return_claims where issue_id = {$curRow['issue_id']}";
-			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
-			$curCheckout->returnClaim = '';
-			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
-				if ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
-					try {
-						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
-						$curCheckout->returnClaim = translate([
-							'text' => 'Title marked as returned on %1%, but the library is still processing',
-							1 => date_format($claimsReturnedDate, 'M j, Y'),
-							'isPublicFacing' => true,
-						]);
-					} catch (Exception $e) {
-						global $logger;
-						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
-					}
-				}
-				$claimsReturnedResults->close();
-			}
+			$allItemNumbers[] = $itemNumber;
 
 			$dateDue = DateTime::createFromFormat('Y-m-d H:i:s', $curRow['date_due']);
 			if ($dateDue) {
@@ -487,21 +487,10 @@ class Koha extends AbstractIlsDriver {
 				$curCheckout->renewCount = $curRow['renewals'];
 			}
 
-			/** @noinspection SqlResolve */
-			$renewPrefSql = "SELECT autorenew_checkouts FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
-			$renewPrefResults = mysqli_query($this->dbConnection, $renewPrefSql);
-			if ($renewPrefResults !== false) {
-				if ($renewPrefRow = $renewPrefResults->fetch_assoc()) {
-					$renewPref = $renewPrefRow['autorenew_checkouts'];
-
-					if ($renewPref == 0) {
-						$curCheckout->autoRenew = "0";
-					} else {
-						$curCheckout->autoRenew = $curRow['auto_renew'];
-					}
-				}
-
-				$renewPrefResults->close();
+			if ($renewPref == 0) {
+				$curCheckout->autoRenew = "0";
+			} else {
+				$curCheckout->autoRenew = $curRow['auto_renew'];
 			}
 
 			$curCheckout->canRenew = !$curCheckout->autoRenew && $opacRenewalAllowed;
@@ -510,25 +499,40 @@ class Koha extends AbstractIlsDriver {
 			$itemType = $curRow['itype'];
 			$checkoutBranch = $curRow['branchcode'];
 
+			$curCheckout->returnClaim = '';
+
 			//Check if patron is allowed to auto-renew based on circulation rules
-			/** @noinspection SqlResolve */
-			$autoRenewRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'auto_renew' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
-			$autoRenewRulesRS = mysqli_query($this->dbConnection, $autoRenewRulesSql);
-			if ($autoRenewRulesRS !== false) {
-				if ($autoRenewRulesRow = $autoRenewRulesRS->fetch_assoc()) {
-					$curCheckout->autoRenew = (int)$autoRenewRulesRow['rule_value'];
+
+			$circulationRulesKey = "$patronType~$itemType~$checkoutBranch";
+			if (array_key_exists($circulationRulesKey, $circulationRulesForCheckouts)){
+				$circulationRulesForCheckout = $circulationRulesForCheckouts[$circulationRulesKey];
+			} else {
+				$circulationRulesForCheckout = [];
+				/** @noinspection SqlResolve */
+				/** @noinspection SqlDialectInspection */
+				$circulationRulesSql = "SELECT *  FROM circulation_rules where (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc";
+				$circulationRulesRS = mysqli_query($this->dbConnection, $circulationRulesSql);
+				if ($circulationRulesRS !== false) {
+					while ($circulationRulesRow = $circulationRulesRS->fetch_assoc()) {
+						$circulationRulesForCheckout[] = $circulationRulesRow;
+					}
+					$circulationRulesRS->close();
 				}
-				$autoRenewRulesRS->close();
+				$timer->logTime("Load circulation rules for checkout");
+				$circulationRulesForCheckouts[$circulationRulesKey] = $circulationRulesForCheckout;
+			}
+
+			foreach ($circulationRulesForCheckout as $circulationRule) {
+				if ($circulationRule['rule_name'] == 'auto_renew') {
+					$curCheckout->autoRenew = (int)$circulationRulesRow['rule_value'];
+					break;
+				}
 			}
 
 			//Get the max renewals by figuring out what rule the checkout was issued under
-			/** @noinspection SqlResolve */
-			$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
-			$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
-			if ($issuingRulesRS !== false) {
-				if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-					$curCheckout->maxRenewals = $issuingRulesRow['rule_value'];
-
+			foreach ($circulationRulesForCheckout as $circulationRule) {
+				if ($circulationRule['rule_name'] == 'renewalsallowed') {
+					$curCheckout->maxRenewals = $circulationRule['rule_value'];
 					if ($curCheckout->autoRenew == 1) {
 						if ($curCheckout->maxRenewals <= $curCheckout->renewCount) {
 							$curCheckout->autoRenewError = translate([
@@ -545,14 +549,15 @@ class Koha extends AbstractIlsDriver {
 							]);
 						}
 					}
+					break;
 				}
-				$issuingRulesRS->close();
 			}
 
 			$eligibleForRenewal = 0;
 			$willAutoRenew = 0;
 			$library = $patron->getHomeLibrary();
 			$allowRenewals = $this->checkAllowRenewals($curRow['issue_id']);
+			$timer->logTime("Load check allow renewals for checkout");
 			if ($allowRenewals['success']) {
 				$eligibleForRenewal = $allowRenewals['allows_renewal'] ? 1 : 0;
 				if($allowRenewals['error'] == 'auto_renew') {
@@ -613,11 +618,9 @@ class Koha extends AbstractIlsDriver {
 			// check for if no auto-renewal before day is set
 			if($this->getKohaVersion() >= 22.11) {
 				/** @noinspection SqlResolve */
-				$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'noautorenewalbefore' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
-				$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
-				if ($issuingRulesRS !== false) {
-					if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
-						$noRenewalsBefore = $issuingRulesRow['rule_value'];
+				foreach ($circulationRulesForCheckout as $circulationRule) {
+					if ($circulationRule['rule_name'] == 'noautorenewalbefore') {
+						$noRenewalsBefore = $circulationRule['rule_value'];
 						$renewError = translate([
 							'text' => 'Item cannot be renewed yet.',
 							'isPublicFacing' => true,
@@ -634,9 +637,8 @@ class Koha extends AbstractIlsDriver {
 									'isPublicFacing' => true,
 								]);
 						}
-
+						break;
 					}
-					$issuingRulesRS->close();
 				}
 			}
 
@@ -666,27 +668,73 @@ class Koha extends AbstractIlsDriver {
 
 			//Get the patron expiration date to check for active card
 			if ($curCheckout->autoRenew == 1) {
-				/** @noinspection SqlResolve */
-				$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
-				$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
-				if ($patronExpirationResults != false) {
-					if ($patronExpirationRow = $patronExpirationResults->fetch_assoc()) {
-						$expirationDate = strtotime($patronExpirationRow['dateexpiry']);
-						$today = strtotime(date("Y-m-d"));
-
-						if ($expirationDate < $today) {
-							$curCheckout->autoRenewError = translate([
-								'text' => 'Cannot auto renew, your account has expired',
-								'isPublicFacing' => true,
-							]);
-						}
-					}
-
-					$patronExpirationResults->close();
+				if ($patronIsExpired) {
+					$curCheckout->autoRenewError = translate([
+						'text' => 'Cannot auto renew, your account has expired',
+						'isPublicFacing' => true,
+					]);
 				}
 			}
 
 			$checkouts[$curCheckout->source . $curCheckout->sourceId . $curCheckout->userId] = $curCheckout;
+		}
+
+		//Check to see if any checkouts are Claims Returned
+		$allIssueIdsAsString = implode(',', $allIssueIds);
+		if (!empty($allIssueIdsAsString)) {
+			/** @noinspection SqlResolve */
+			/** @noinspection SqlDialectInspection */
+			$claimsReturnedSql = "SELECT issue_id, created_on from return_claims where issue_id in ($allIssueIdsAsString)";
+			$claimsReturnedResults = mysqli_query($this->dbConnection, $claimsReturnedSql);
+			if ($claimsReturnedResults !== false) { //This is false if Koha does not support volumes
+				while ($claimsReturnedResult = $claimsReturnedResults->fetch_assoc()) {
+					try {
+						$issueId = $claimsReturnedResult['issue_id'];
+						$claimsReturnedDate = new DateTime($claimsReturnedResult['created_on']);
+						foreach ($checkouts as $curCheckout) {
+							if ($curCheckout->sourceId == $issueId) {
+								$curCheckout->returnClaim = translate([
+									'text' => 'Title marked as returned on %1%, but the library is still processing',
+									1 => date_format($claimsReturnedDate, 'M j, Y'),
+									'isPublicFacing' => true,
+								]);
+								break;
+							}
+						}
+					} catch (Exception $e) {
+						global $logger;
+						$logger->log("Error parsing claims returned info " . $claimsReturnedResult['created_on'] . " $e", Logger::LOG_ERROR);
+					}
+				}
+				$claimsReturnedResults->close();
+			}
+			$timer->logTime("Load return claims");
+		}
+
+		//Check to see if there is a volume for the checkout
+		$allItemNumbersAsString = implode(',', $allItemNumbers);
+		if (!empty($allItemNumbersAsString)) {
+			if ($this->getKohaVersion() >= 22.11) {
+				/** @noinspection SqlResolve */
+				$volumeSql = "SELECT item_id, description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id IN ($allItemNumbersAsString)";
+			} else {
+				/** @noinspection SqlResolve */
+				$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
+			}
+			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+			if ($volumeResults !== false) { //This is false if Koha does not support volumes
+				while ($volumeRow = $volumeResults->fetch_assoc()) {
+					$itemId = $volumeRow['item_id'];
+					foreach ($checkouts as $curCheckout) {
+						if ($curCheckout->itemId == $itemId) {
+							$curCheckout->volume = $volumeRow['description'];
+							break;
+						}
+					}
+				}
+				$volumeResults->close();
+			}
+			$timer->logTime("Load volume info");
 		}
 
 		return $checkouts;
@@ -911,10 +959,10 @@ class Koha extends AbstractIlsDriver {
 					}
 				} else {
 
-					if (isset($jsonResponse->message) && str_ends_with($apiURL, '/cgi-bin/koha/ilsdi.pl')) {
+					if (isset($jsonResponse->message) && strpos($apiURL, '/cgi-bin/koha/ilsdi.pl') !== false) {
 						global $logger;
 						$logger->log("ILS-DI is disabled", Logger::LOG_ERROR);
-					} else if (isset($jsonResponse->message) && str_ends_with($apiURL, "/api/v1/auth/password/validation")) {
+					} else if (isset($jsonResponse->message) && strpos($apiURL, "/api/v1/auth/password/validation") !== false) {
 						global $logger;
 						$logger->log("OAuth2 is disabled", Logger::LOG_ERROR);
 					}
@@ -4621,7 +4669,7 @@ class Koha extends AbstractIlsDriver {
 		return $result;
 	}
 
-	function updatePin(User $patron, string $oldPin, string $newPin) {
+	function updatePin(User $patron, ?string $oldPin, string $newPin) {
 		if ($patron->cat_password != $oldPin) {
 			return [
 				'success' => false,
@@ -4770,6 +4818,12 @@ class Koha extends AbstractIlsDriver {
 				'maxLength' => 80,
 				'required' => false,
 			],
+				'property' => 'placeOfPublication',
+				'type' => 'text',
+				'label' => 'Place of Publication',
+				'description' => '',
+				'maxLength' => 80,
+				'required' => false,
 			[
 				'property' => 'quantity',
 				'type' => 'text',
@@ -4860,6 +4914,7 @@ class Koha extends AbstractIlsDriver {
 					'copyright_date' => null,
 					'isbn' => $_REQUEST['isbn'],
 					'publisher_code' => $_REQUEST['publishercode'],
+					'place_of_publication' => $_REQUEST['placeofPublication'],
 					'collection_title' => $_REQUEST['collectiontitle'],
 					'publication_place' => $_REQUEST['place'],
 					'quantity' => $_REQUEST['quantity'],
@@ -4946,6 +5001,7 @@ class Koha extends AbstractIlsDriver {
 					'copyrightdate' => $_REQUEST['copyrightdate'],
 					'isbn' => $_REQUEST['isbn'],
 					'publishercode' => $_REQUEST['publishercode'],
+					'placeOfPublication' => $_REQUEST['placeOfPublication'],
 					'collectiontitle' => $_REQUEST['collectiontitle'],
 					'place' => $_REQUEST['place'],
 					'quantity' => $_REQUEST['quantity'],
@@ -7354,7 +7410,7 @@ class Koha extends AbstractIlsDriver {
 			$apiUrl = $this->getWebServiceURL() . "/api/v1/checkouts/" . $issueId . "/allows_renewal/";
 
 			$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'GET');
-			ExternalRequestLogEntry::logRequest('koha.checkouts_allowRenewals', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
+			//ExternalRequestLogEntry::logRequest('koha.checkouts_allowRenewals', 'GET', $apiUrl, $this->apiCurlWrapper->getHeaders(), "", $this->apiCurlWrapper->getResponseCode(), $response, []);
 			$response = json_decode($response);
 
 			if ($this->apiCurlWrapper->getResponseCode() == 200) {
