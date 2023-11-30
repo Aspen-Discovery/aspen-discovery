@@ -524,7 +524,7 @@ class Koha extends AbstractIlsDriver {
 
 			foreach ($circulationRulesForCheckout as $circulationRule) {
 				if ($circulationRule['rule_name'] == 'auto_renew') {
-					$curCheckout->autoRenew = (int)$circulationRulesRow['rule_value'];
+					$curCheckout->autoRenew = (int)$circulationRule['rule_value'];
 					break;
 				}
 			}
