@@ -27,6 +27,7 @@ export const LoginScreen = () => {
      const [isLoading, setIsLoading] = React.useState(true);
      const [permissionRequested, setPermissionRequested] = React.useState(false);
      const [shouldRequestPermissions, setShouldRequestPermissions] = React.useState(false);
+     const [permissionStatus, setPermissionStatus] = React.useState(null);
      const [selectedLibrary, setSelectedLibrary] = React.useState(null);
      const [libraries, setLibraries] = React.useState([]);
      const [allLibraries, setAllLibraries] = React.useState([]);
@@ -54,11 +55,17 @@ export const LoginScreen = () => {
      useFocusEffect(
           React.useCallback(() => {
                const bootstrapAsync = async () => {
-                    await getPermissions('statusCheck').then((result) => {
+                    await getPermissions('statusCheck').then(async (result) => {
                          if (result.success === false && result.status === 'undetermined' && GLOBALS.releaseChannel !== 'DEV' && Platform.OS === 'android') {
                               setShouldRequestPermissions(true);
+                              setPermissionStatus(result.status);
                          }
-                         setPermissionRequested(true);
+
+                         if (result.status !== 'granted' && Platform.OS === 'ios') {
+                              setPermissionRequested(true);
+                              setPermissionStatus(result.status);
+                              await getPermissions('request');
+                         }
                     });
 
                     await fetchNearbyLibrariesFromGreenhouse().then((result) => {
@@ -203,17 +210,6 @@ const SelectYourLibraryModal = (payload) => {
           return <PermissionsPrompt promptTitle="permissions_location_title" promptBody="permissions_location_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
      }
 
-     if (Platform.OS === 'ios') {
-          React.useCallback(() => {
-               const getPermissionsAsync = async () => {
-                    await getPermissions('request');
-               };
-               getPermissionsAsync().then(() => {
-                    return () => getPermissionsAsync();
-               });
-          }, []);
-     }
-
      return (
           <Center>
                <Button onPress={() => setShowModal(true)} colorScheme="primary" m={5} size="md" startIcon={<Icon as={MaterialIcons} name="place" size={5} />}>
@@ -318,25 +314,29 @@ async function getPermissions(kind = 'statusCheck') {
                     status: status,
                };
           }
+
+          let location = await Location.getLastKnownPositionAsync({});
+
+          if (location != null) {
+               const latitude = JSON.stringify(location.coords.latitude);
+               const longitude = JSON.stringify(location.coords.longitude);
+               await SecureStore.setItemAsync('latitude', latitude);
+               await SecureStore.setItemAsync('longitude', longitude);
+               PATRON.coords.lat = latitude;
+               PATRON.coords.long = longitude;
+          } else {
+               await SecureStore.setItemAsync('latitude', '0');
+               await SecureStore.setItemAsync('longitude', '0');
+               PATRON.coords.lat = 0;
+               PATRON.coords.long = 0;
+          }
+          return {
+               success: true,
+               status: 'granted',
+          };
      }
 
-     let location = await Location.getLastKnownPositionAsync({});
-
-     if (location != null) {
-          const latitude = JSON.stringify(location.coords.latitude);
-          const longitude = JSON.stringify(location.coords.longitude);
-          await SecureStore.setItemAsync('latitude', latitude);
-          await SecureStore.setItemAsync('longitude', longitude);
-          PATRON.coords.lat = latitude;
-          PATRON.coords.long = longitude;
-     } else {
-          await SecureStore.setItemAsync('latitude', '0');
-          await SecureStore.setItemAsync('longitude', '0');
-          PATRON.coords.lat = 0;
-          PATRON.coords.long = 0;
-     }
      return {
-          success: true,
-          status: 'granted',
+          success: false,
      };
 }

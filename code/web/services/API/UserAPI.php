@@ -1578,6 +1578,18 @@ class UserAPI extends Action {
 		if ($user && !($user instanceof AspenError)) {
 			if ($source == 'ils' || $source == null) {
 				$result = $user->renewCheckout($user, $itemBarcode);
+
+				if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
+					$action = $result['api']['action'] ?? null;
+					return [
+						'success' => $result['success'],
+						'title' => $result['api']['title'],
+						'message' => $result['api']['message'],
+						'action' => $action,
+						'confirmRenewalFee' => $result['confirmRenewalFee'],
+					];
+				}
+
 				if ($result['success']) {
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 					APIUsage::incrementStat('UserAPI', 'successfulRenewals');
@@ -1647,6 +1659,18 @@ class UserAPI extends Action {
 				require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
 				APIUsage::incrementStat('UserAPI', 'successfulRenewals');
 			}
+
+			if(isset($result['confirmRenewalFee']) && $result['confirmRenewalFee']) {
+				$action = $result['api']['action'] ?? null;
+				return [
+					'success' => $result['success'],
+					'title' => $result['api']['title'],
+					'message' => $result['api']['message'],
+					'action' => $action,
+					'confirmRenewalFee' => $result['confirmRenewalFee'],
+				];
+			}
+
 			if ($result['Renewed'] == 0) {
 				$result['success'] = false;
 			}
