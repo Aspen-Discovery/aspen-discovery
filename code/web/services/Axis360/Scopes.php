@@ -14,7 +14,7 @@ class Axis360_Scopes extends ObjectEditor {
 	}
 
 	function getModule(): string {
-		return 'Boundless';
+		return 'Axis360';
 	}
 
 	function getPageTitle(): string {

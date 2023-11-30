@@ -35,14 +35,32 @@ function getUpdates23_12_00(): array {
 				"UPDATE permissions SET name = 'Administer Boundless' WHERE name = 'Administer Axis 360'",
 			]
 		], //rename_axis360_permission
-		'rename_axis360_module' => [
-			'title' => 'Rename Axis 360 Module',
-			'description' => 'Rename Axis 360 module to Boundless',
+		'rename_boundless_module' => [
+			'title' => 'Rename Boundless Module',
+			'description' => 'Revert change where Axis 360 module was renamed to Boundless',
 			'continueOnError' => true,
 			'sql' => [
-				"UPDATE modules SET name = 'Boundless' WHERE name = 'Axis 360'",
+				"UPDATE modules SET name = 'Axis 360' WHERE name = 'Boundless'",
 			]
-		], //rename_axis360_module
+		], //rename_boundless_module
+		'readerName' => [
+			'title' => 'Libby Reader Name',
+			'description' => 'Name of Libby product to display to patrons. Default is "Libby"',
+			'sql' => [
+				"ALTER TABLE overdrive_scopes DROP COLUMN IF EXISTS libbySora",
+				"ALTER TABLE overdrive_scopes ADD COLUMN readerName varchar(25) DEFAULT 'Libby'",
+			],
+		],
+		//readerName
+		'rename_overdrive_permission' => [
+			'title' => 'Rename Permission: Administer OverDrive',
+			'description' => 'Rename permission "Administer OverDrive" to "Administer Libby/Sora"',
+			'continueOnError' => true,
+			'sql' => [
+				"UPDATE permissions SET description = 'Allows the user configure Libby/Sora integration for all libraries.' WHERE name = 'Administer OverDrive'",
+				"UPDATE permissions SET name = 'Administer Libby/Sora' WHERE name = 'Administer OverDrive'",
+			]
+		], //rename_overdrive_permission
 
 		//lucas - Theke
 		'show_quick_poll_results' => [

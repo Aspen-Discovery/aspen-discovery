@@ -14,6 +14,7 @@ class OverDriveScope extends DataObject {
 	public $clientKey;
 	public $authenticationILSName;
 	public $requirePin;
+	public $readerName;
 	public /** @noinspection PhpUnused */
 		$overdriveAdvantageName;
 	public /** @noinspection PhpUnused */
@@ -113,6 +114,12 @@ class OverDriveScope extends DataObject {
 				'size' => '80',
 				'hideInLists' => false,
 				'forcesReindex' => true,
+			],
+			'readerName' => [
+				'property' => 'readerName',
+				'type' => 'text',
+				'label' => 'Reader Name',
+				'description' => 'Name of Libby product to display to patrons. Default is Libby',
 			],
 			'includeAdult' => [
 				'property' => 'includeAdult',

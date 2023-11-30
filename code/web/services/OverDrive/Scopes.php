@@ -18,7 +18,9 @@ class OverDrive_Scopes extends ObjectEditor {
 	}
 
 	function getPageTitle(): string {
-		return 'OverDrive Scopes';
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		return $readerName . ' Scopes';
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
@@ -59,9 +61,11 @@ class OverDrive_Scopes extends ObjectEditor {
 	}
 
 	function getBreadcrumbs(): array {
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', $readerName);
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/Scopes', 'Scopes');
 		return $breadcrumbs;
 	}
@@ -71,6 +75,6 @@ class OverDrive_Scopes extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer OverDrive');
+		return UserAccount::userHasPermission('Administer Libby/Sora');
 	}
 }
