@@ -860,7 +860,7 @@ class Library extends DataObject {
 				'label' => 'Show Language and Display Settings in Page Header',
 				'description' => 'Whether to display the language and display settings in the page header',
 				'hideInLists' => true,
-				'default' => false,
+				'default' => true,
 				'permissions' => ['Library Theme Configuration'],
 			],
 			'isConsortialCatalog' => [

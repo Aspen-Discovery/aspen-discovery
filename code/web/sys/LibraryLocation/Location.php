@@ -444,7 +444,7 @@ class Location extends DataObject {
 				'label' => 'Show language and display settings in page header',
 				'description' => 'Whether or not to display the language and display settings in the page header',
 				'hideInLists' => true,
-				'default' => false,
+				'default' => true,
 				'permissions' => ['Location Theme Configuration'],
 			],
 			'libraryId' => [
