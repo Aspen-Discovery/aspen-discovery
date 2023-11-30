@@ -1703,6 +1703,8 @@ class Record_AJAX extends Action {
 		global $interface;
 
 		$id = $_REQUEST['id'];
+		$variationId = $_REQUEST['variationId'];
+
 		/** @var MarcRecordDriver $recordDriver */
 		$recordDriver = RecordDriverFactory::initRecordDriverById($id);
 		if ($recordDriver->isValid()) {
@@ -1715,7 +1717,7 @@ class Record_AJAX extends Action {
 			$interface->assign('id', $id);
 
 			$idWithSource = $recordDriver->getIdWithSource();
-			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecordForVariation($idWithSource, $variationId);
 			$allItems = $relatedRecord->getItems();
 			foreach ($allItems as $index => $item) {
 				if (!$item->isEContent) {
@@ -1724,6 +1726,7 @@ class Record_AJAX extends Action {
 			}
 
 			$interface->assign('items', $allItems);
+			$interface->assign('variationId', $variationId);
 
 			$buttonTitle = translate([
 				'text' => 'Access Online',
@@ -1756,6 +1759,7 @@ class Record_AJAX extends Action {
 	/** @noinspection PhpUnused */
 	function viewItem(): array {
 		$id = $_REQUEST['id'];
+		$variationId = $_REQUEST['variationId'];
 		$itemId = $_REQUEST['selectedItem'];
 
 		/** @var MarcRecordDriver $recordDriver */
@@ -1769,7 +1773,7 @@ class Record_AJAX extends Action {
 			}
 
 			$idWithSource = $recordDriver->getIdWithSource();
-			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecord($idWithSource);
+			$relatedRecord = $recordDriver->getGroupedWorkDriver()->getRelatedRecordForVariation($idWithSource, $variationId);
 			$allItems = $relatedRecord->getItems();
 			foreach ($allItems as $index => $item) {
 				if (!$item->isEContent) {
