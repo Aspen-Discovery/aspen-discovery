@@ -9,11 +9,15 @@ class OverDrive_IndexingLog extends Admin_IndexingLog {
 	}
 
 	function getTemplateName(): string {
+		global $interface;
+		$interface->assign('title', $this->getTitle());
 		return 'overdriveExtractLog.tpl';
 	}
 
 	function getTitle(): string {
-		return 'OverDrive Export Log';
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		return $readerName . ' Extract Log';
 	}
 
 	function getModule(): string {
@@ -29,9 +33,11 @@ class OverDrive_IndexingLog extends Admin_IndexingLog {
 	}
 
 	function getBreadcrumbs(): array {
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', $readerName);
 		$breadcrumbs[] = new Breadcrumb('', 'Indexing Log');
 		return $breadcrumbs;
 	}

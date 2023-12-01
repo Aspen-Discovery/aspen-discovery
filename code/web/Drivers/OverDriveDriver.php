@@ -67,6 +67,16 @@ class OverDriveDriver extends AbstractEContentDriver {
 		return OverDriveDriver::$singletonDriver;
 	}
 
+	public function getReaderName() {
+		global $library;
+		require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
+		$this->scope = new OverDriveScope();
+		$this->scope->id = $library->overDriveScopeId;
+		if ($this->scope->find(true)) {
+			return $this->scope->readerName;
+		}
+		return 'Libby';
+	}
 
 	public function getSettings() {
 		if ($this->settings == null) {

@@ -266,6 +266,10 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			}
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		return 'RecordDrivers/OverDrive/staff.tpl';
 	}
 
@@ -776,6 +780,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			//Check to see if OverDrive circulation is enabled
 			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
 			$overDriveDriver = OverDriveDriver::getOverDriveDriver();
+			$readerName = $overDriveDriver->getReaderName();
 			if (!$overDriveDriver->isCirculationEnabled()) {
 				$overDriveMetadata = $this->getOverDriveMetaData();
 				$crossRefId = $overDriveMetadata->getDecodedRawData()->crossRefId;
@@ -802,8 +807,9 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 					if ($isAvailable) {
 						$this->_actions[] = [
 							'title' => translate([
-								'text' => 'Check Out OverDrive',
-								'isPublicFacing' => true,
+								'text' => "Check Out %1%",
+								1 => $readerName,
+								"isPublicFacing" => true,
 							]),
 							'onclick' => "return AspenDiscovery.OverDrive.checkOutTitle('{$this->id}');",
 							'requireLogin' => false,
@@ -812,7 +818,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 					} else {
 						$this->_actions[] = [
 							'title' => translate([
-								'text' => 'Place Hold OverDrive',
+								'text' => 'Place Hold %1%',
+								1 => $readerName,
 								'isPublicFacing' => true,
 							]),
 							'onclick' => "return AspenDiscovery.OverDrive.placeHold('{$this->id}');",

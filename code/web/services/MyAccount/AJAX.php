@@ -2626,9 +2626,10 @@ class MyAccount_AJAX extends JSON_Action {
 		];
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
+			require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
+			$driver = new OverDriveDriver();
+			$readerName = $driver->getReaderName();
 			if ($user->isValidForEContentSource('overdrive')) {
-				require_once ROOT_DIR . '/Drivers/OverDriveDriver.php';
-				$driver = new OverDriveDriver();
 				$overDriveSummary = $driver->getAccountSummary($user);
 				if ($user->getLinkedUsers() != null) {
 					/** @var User $user */
@@ -2639,13 +2640,13 @@ class MyAccount_AJAX extends JSON_Action {
 						$overDriveSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
 					}
 				}
-				$timer->logTime("Loaded OverDrive Summary for User and linked users");
+				$timer->logTime("Loaded " . $readerName . " Summary for User and linked users");
 				$result = [
 					'success' => true,
 					'summary' => $overDriveSummary->toArray(),
 				];
 			} else {
-				$result['message'] = 'Invalid for OverDrive';
+				$result['message'] = 'Invalid for ' . $readerName;
 			}
 		} else {
 			$result['message'] = 'You must be logged in to get menu data';
