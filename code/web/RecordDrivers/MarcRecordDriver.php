@@ -259,6 +259,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('uploadedSupplementalFiles', $this->getUploadedSupplementalFiles());
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 

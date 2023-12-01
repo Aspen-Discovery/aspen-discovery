@@ -2087,6 +2087,10 @@ class GroupedWorkDriver extends IndexRecordDriver {
 
 		$interface->assign('bookcoverInfo', $this->getBookcoverInfo());
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		return 'RecordDrivers/GroupedWork/staff-view.tpl';
 	}
 

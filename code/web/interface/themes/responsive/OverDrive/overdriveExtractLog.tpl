@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text="OverDrive Extract Log" isAdminFacing=true}</h1>
+		<h1>{translate text={$title} isAdminFacing=true}</h1>
 
         {include file='Admin/exportLogFilters.tpl'}
 		<div class="adminTableRegion fixed-height-table">

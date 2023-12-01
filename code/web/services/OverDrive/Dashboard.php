@@ -13,6 +13,9 @@ class OverDrive_Dashboard extends Admin_Dashboard {
 		$instanceName = $this->loadInstanceInformation('UserOverDriveUsage');
 		$this->loadDates();
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+
 		//Generate stats
 
 		$activeUsersThisMonth = $this->getUserStats($instanceName, $this->thisMonth, $this->thisYear);
@@ -78,7 +81,9 @@ class OverDrive_Dashboard extends Admin_Dashboard {
 		$interface->assign('loansAllTime', $loansAllTime);
 		$interface->assign('holdsAllTime', $holdsAllTime);
 
-		$this->display('dashboard.tpl', 'OverDrive Dashboard');
+		$interface->assign('title', $readerName . ' Dashboard');
+
+		$this->display('dashboard.tpl', $readerName . ' Dashboard');
 	}
 
 	/**
@@ -134,9 +139,11 @@ class OverDrive_Dashboard extends Admin_Dashboard {
 	}
 
 	function getBreadcrumbs(): array {
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', $readerName);
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/Dashboard', 'Usage Dashboard');
 		return $breadcrumbs;
 	}
