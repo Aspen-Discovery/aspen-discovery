@@ -44,6 +44,7 @@ public class GroupedWorkIndexer {
 	private CloudLibraryProcessor cloudLibraryProcessor;
 	private Axis360Processor axis360Processor;
 	private HooplaProcessor hooplaProcessor;
+	private PalaceProjectProcessor palaceProjectProcessor;
 	private final HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
 	private final HashMap<String, LexileTitle> lexileInformation = new HashMap<>();
 	protected static final HashSet<String> hideSubjects = new HashSet<>();
@@ -422,6 +423,8 @@ public class GroupedWorkIndexer {
 
 		axis360Processor = new Axis360Processor(this, dbConn, logger);
 
+		palaceProjectProcessor = new PalaceProjectProcessor(this, dbConn, logger);
+
 		//Check to see if we want to display Unknown and Not Coded Literary Forms.  This is done by looking
 		//at the indexing profiles since that is the least confusing place to put the settings.
 		for (MarcRecordProcessor recordProcessor : ilsRecordProcessors.values()){
@@ -470,6 +473,7 @@ public class GroupedWorkIndexer {
 		cloudLibraryProcessor = null;
 		axis360Processor = null;
 		hooplaProcessor = null;
+		palaceProjectProcessor = null;
 		translationMaps.clear();
 		lexileInformation.clear();
 		hideSubjects.clear();
@@ -985,6 +989,8 @@ public class GroupedWorkIndexer {
 					}
 				} else if (type.equals("hoopla")) {
 					newId = getRecordGroupingProcessor().groupHooplaRecord(identifier);
+				} else if (type.equals("palace_project")) {
+					newId = getRecordGroupingProcessor().groupPalaceProjectRecord(identifier);
 				}
 				if (newId == null) {
 					//The record is not valid, skip it.
@@ -1292,6 +1298,9 @@ public class GroupedWorkIndexer {
 				break;
 			case "axis360":
 				axis360Processor.processRecord(groupedWork, identifier, logEntry);
+				break;
+			case "palace_project":
+				palaceProjectProcessor.processRecord(groupedWork, identifier, logEntry);
 				break;
 			default:
 				if (ilsRecordProcessors.containsKey(type)) {

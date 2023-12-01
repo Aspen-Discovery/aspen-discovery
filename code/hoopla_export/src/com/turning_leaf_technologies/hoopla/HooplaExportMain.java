@@ -657,7 +657,6 @@ public class HooplaExportMain {
 		if (username == null || password == null){
 			logger.error("Please set HooplaAPIUser and HooplaAPIPassword in settings");
 			logEntry.addNote("Please set HooplaAPIUser and HooplaAPIPassword in settings");
-			return null;
 		} else {
 			int numTries = 1;
 			while (numTries <= 3) {
@@ -685,8 +684,8 @@ public class HooplaExportMain {
 			}
 
 			logEntry.addNote("Could not get access token in 3 tries");
-			return null;
 		}
+		return null;
 	}
 
 	private static Connection connectToDatabase(){

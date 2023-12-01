@@ -3505,6 +3505,25 @@ class User extends DataObject {
 			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
 		}
 
+		if (array_key_exists('Palace Project', $enabledModules)) {
+			$sections['palace_project'] = new AdminSection('Palace Project');
+			$palaceProjectSettingsAction = new AdminAction('Settings', 'Define connection information between Palace Project and Aspen Discovery.', '/PalaceProject/Settings');
+			$palaceProjectScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/PalaceProject/Scopes');
+			if ($sections['palace_project']->addAction($palaceProjectSettingsAction, 'Administer Palace Project')) {
+				$palaceProjectSettingsAction->addSubAction($palaceProjectScopesAction, 'Administer Palace Project');
+			} else {
+				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
+			}
+			$sections['palace_project']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Palace Project.', '/PalaceProject/IndexingLog'), [
+				'View System Reports',
+				'View Indexing Logs',
+			]);
+			$sections['palace_project']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Palace Project integration.', '/PalaceProject/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
+		}
+
 		if (array_key_exists('RBdigital', $enabledModules)) {
 			$sections['rbdigital'] = new AdminSection('RBdigital');
 			$sections['rbdigital']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for RBdigital integration.', '/RBdigital/Dashboard'), [

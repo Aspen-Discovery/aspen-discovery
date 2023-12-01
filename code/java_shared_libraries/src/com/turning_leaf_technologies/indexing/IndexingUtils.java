@@ -26,12 +26,13 @@ public class IndexingUtils {
 			HashMap<Long, HooplaScope> hooplaScopes = loadHooplaScopes(dbConn, logger);
 			HashMap<Long, Axis360Scope> axis360Scopes = loadAxis360Scopes(dbConn, logger);
 			HashMap<Long, CloudLibraryScope> cloudLibraryScopes = loadCloudLibraryScopes(dbConn, logger);
+			HashMap<Long, PalaceProjectScope> palaceProjectScopes = loadPalaceProjectScopes(dbConn, logger);
 			HashMap<Long, SideLoadScope> sideLoadScopes = loadSideLoadScopes(dbConn, logger);
 			HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings = loadGroupedWorkDisplaySettings(dbConn, logger);
 
-			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
+			loadLibraryScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, sideLoadScopes, dbConn, logger);
 
-			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, sideLoadScopes, dbConn, logger);
+			loadLocationScopes(scopes, groupedWorkDisplaySettings, overDriveScopes, hooplaScopes, cloudLibraryScopes, axis360Scopes, palaceProjectScopes, sideLoadScopes, dbConn, logger);
 		} catch (SQLException e) {
 			logger.error("Error setting up scopes", e);
 			return null;
@@ -124,6 +125,26 @@ public class IndexingUtils {
 		return axis360Scopes;
 	}
 
+	private static HashMap<Long, PalaceProjectScope> loadPalaceProjectScopes(Connection dbConn, Logger logger) {
+		HashMap<Long, PalaceProjectScope> palaceProjectScopes = new HashMap<>();
+		try {
+			PreparedStatement palaceProjectScopeStmt = dbConn.prepareStatement("SELECT * from palace_project_scopes", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet palaceProjectScopesRS = palaceProjectScopeStmt.executeQuery();
+
+			while (palaceProjectScopesRS.next()) {
+				PalaceProjectScope palaceProjectScope = new PalaceProjectScope();
+				palaceProjectScope.setId(palaceProjectScopesRS.getLong("id"));
+				palaceProjectScope.setName(palaceProjectScopesRS.getString("name"));
+				palaceProjectScope.setSettingId(palaceProjectScopesRS.getLong("settingId"));
+
+				palaceProjectScopes.put(palaceProjectScope.getId(), palaceProjectScope);
+			}
+		} catch (SQLException e) {
+			logger.error("Error loading Palace Project scopes", e);
+		}
+		return palaceProjectScopes;
+	}
+
 	private static HashMap<Long, OverDriveScope> loadOverDriveScopes(Connection dbConn, Logger logger) {
 		HashMap<Long, OverDriveScope> overDriveScopes = new HashMap<>();
 		try {
@@ -198,7 +219,7 @@ public class IndexingUtils {
 		return sideLoadScopes;
 	}
 
-	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLocationScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		//To minimize the amount of data in the index, only load locations that have more than one location within the library.
 		PreparedStatement librariesWithMoreThanOneLocationStmt = dbConn.prepareStatement("select libraryId, count(*) as numLocations from location WHERE createSearchInterface = 1 group by libraryId having numLocations > 1", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		ResultSet librariesWithMoreThanOneLocation = librariesWithMoreThanOneLocationStmt.executeQuery();
@@ -223,6 +244,7 @@ public class IndexingUtils {
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
 						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
+						"library.palaceProjectScopeId as palaceProjectScopeLibrary, location.palaceProjectScopeId as palaceProjectScopeLocation " +
 						"FROM location INNER JOIN library on library.libraryId = location.libraryId WHERE location.libraryId IN (" + librariesToFetch + ") ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement locationRecordInclusionRulesStmt = dbConn.prepareStatement("SELECT location_records_to_include.*, indexing_profiles.name FROM location_records_to_include INNER JOIN indexing_profiles ON indexingProfileId = indexing_profiles.id WHERE locationId = ?",
@@ -340,6 +362,16 @@ public class IndexingUtils {
 				}
 			} else if (axis360ScopeLocation != -2) {
 				locationScopeInfo.setAxis360Scope(axis360Scopes.get(axis360ScopeLocation));
+			}
+
+			long palaceProjectScopeLocation = locationInformationRS.getLong("palaceProjectScopeLocation");
+			long palaceProjectScopeLibrary = locationInformationRS.getLong("palaceProjectScopeLibrary");
+			if (palaceProjectScopeLocation == -1) {
+				if (palaceProjectScopeLibrary != -1) {
+					locationScopeInfo.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLibrary));
+				}
+			} else if (palaceProjectScopeLocation != -2) {
+				locationScopeInfo.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLocation));
 			}
 
 			locationSideLoadScopesStmt.setLong(1, locationId);
@@ -526,11 +558,11 @@ public class IndexingUtils {
 		}
 	}
 
-	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
+	private static void loadLibraryScopes(TreeSet<Scope> scopes, HashMap<Long, GroupedWorkDisplaySettings> groupedWorkDisplaySettings, HashMap<Long, OverDriveScope> overDriveScopes, HashMap<Long, HooplaScope> hooplaScopes, HashMap<Long, CloudLibraryScope> cloudLibraryScopes, HashMap<Long, Axis360Scope> axis360Scopes, HashMap<Long, PalaceProjectScope> palaceProjectScopes, HashMap<Long, SideLoadScope> sideLoadScopes, Connection dbConn, Logger logger) throws SQLException {
 		PreparedStatement libraryInformationStmt = dbConn.prepareStatement("SELECT libraryId, ilsCode, subdomain, " +
 						"displayName, facetLabel, restrictOwningBranchesAndSystems, publicListsToInclude, isConsortialCatalog, " +
 						"additionalLocationsToShowAvailabilityFor, courseReserveLibrariesToInclude, overDriveScopeId, " +
-						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId " +
+						"groupedWorkDisplaySettingId, hooplaScopeId, axis360ScopeId, palaceProjectScopeId " +
 						"FROM library WHERE createSearchInterface = 1 ORDER BY ilsCode ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		PreparedStatement numLocationsForLibraryStmt = dbConn.prepareStatement("SELECT count(locationId) as numLocations from location where libraryId = ? and createSearchInterface = 1");
@@ -606,6 +638,11 @@ public class IndexingUtils {
 			long axis360ScopeLibrary = libraryInformationRS.getLong("axis360ScopeId");
 			if (axis360ScopeLibrary != -1) {
 				newScope.setAxis360Scope(axis360Scopes.get(axis360ScopeLibrary));
+			}
+
+			long palaceProjectScopeLibrary = libraryInformationRS.getLong("palaceProjectScopeId");
+			if (palaceProjectScopeLibrary != -1) {
+				newScope.setPalaceProjectScope(palaceProjectScopes.get(palaceProjectScopeLibrary));
 			}
 
 			librarySideLoadScopesStmt.setLong(1, libraryId);
