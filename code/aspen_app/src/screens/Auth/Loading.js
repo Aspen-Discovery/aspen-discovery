@@ -192,10 +192,10 @@ export const LoadingScreen = () => {
                <Center flex={1} px="3" w="100%">
                     <Box w="90%" maxW="400">
                          <VStack>
-                              <Heading pb={5} color="primary.500" fontSize="md">
+                              <Heading pb={5} color="primary.500"  _dark={{ color: "coolGray.800" }} fontSize="md">
                                    {loadingText}
                               </Heading>
-                              <Progress size="lg" value={progress} colorScheme="primary" />
+                              <Progress size="lg" value={progress} colorScheme="primary" _dark={{ colorScheme: "light" }} />
                          </VStack>
                     </Box>
                </Center>
