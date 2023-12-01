@@ -26,7 +26,7 @@ function getUpdates23_12_00(): array {
 			'title' => 'Create Palace Project module',
 			'description' => 'Setup module for Palace Project Integration',
 			'sql' => [
-				"INSERT INTO modules (name, indexName, backgroundProcess,logClassPath,logClassName) VALUES ('Palace Project', 'grouped_works', 'palace_project_export','/sys/PalaceProject/PalaceProjectLogEntry.php', 'PalaceProjectLogEntry','/sys/PalaceProject/PalaceProjectSetting.php', 'PalaceProjectSetting')",
+				"INSERT INTO modules (name, indexName, backgroundProcess,logClassPath,logClassName,settingsClassPath,settingsClassName) VALUES ('Palace Project', 'grouped_works', 'palace_project_export','/sys/PalaceProject/PalaceProjectLogEntry.php', 'PalaceProjectLogEntry','/sys/PalaceProject/PalaceProjectSetting.php', 'PalaceProjectSetting')",
 			],
 		], //createPalaceProjectModule
 
