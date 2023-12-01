@@ -123,7 +123,7 @@ export function popAlert(title, description, status) {
                                    <HStack flexShrink={1} space={2} alignItems="center" justifyContent="space-between">
                                         <HStack flexShrink={1} space={2} alignItems="center">
                                              <Alert.Icon />
-                                             <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolCray.800' }}>
+                                             <Text fontSize="md" fontWeight="medium" _dark={{ color: 'coolGray.800' }}>
                                                   {title}
                                              </Text>
                                         </HStack>

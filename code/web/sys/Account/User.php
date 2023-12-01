@@ -3409,7 +3409,7 @@ class User extends DataObject {
 			'View All Collection Reports',
 		]);
 
-		if (array_key_exists('Boundless', $enabledModules)) {
+		if (array_key_exists('Axis 360', $enabledModules)) {
 			$sections['boundless'] = new AdminSection('Boundless');
 			$axis360SettingsAction = new AdminAction('Settings', 'Define connection information between Boundless and Aspen Discovery.', '/Axis360/Settings');
 			$axis360ScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/Axis360/Scopes');
@@ -3485,24 +3485,45 @@ class User extends DataObject {
 		}
 
 		if (array_key_exists('OverDrive', $enabledModules)) {
-			$sections['overdrive'] = new AdminSection('OverDrive');
-			$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between OverDrive and Aspen Discovery.', '/OverDrive/Settings');
+			$readerName = new OverDriveDriver();
+			$readerName = $readerName->getReaderName();
+			$sections['overdrive'] = new AdminSection($readerName);
+			$overDriveSettingsAction = new AdminAction('Settings', 'Define connection information between ' . $readerName . ' and Aspen Discovery.', '/OverDrive/Settings');
 			$overDriveScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/OverDrive/Scopes');
-			if ($sections['overdrive']->addAction($overDriveSettingsAction, 'Administer OverDrive')) {
-				$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'Administer OverDrive');
+			if ($sections['overdrive']->addAction($overDriveSettingsAction, 'Administer Libby/Sora')) {
+				$overDriveSettingsAction->addSubAction($overDriveScopesAction, 'Administer Libby/Sora');
 			} else {
-				$sections['overdrive']->addAction($overDriveScopesAction, 'Administer OverDrive');
+				$sections['overdrive']->addAction($overDriveScopesAction, 'Administer Libby/Sora');
 			}
-			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for OverDrive.', '/OverDrive/IndexingLog'), [
+			$sections['overdrive']->addAction(new AdminAction('Indexing Log', 'View the indexing log for ' . $readerName . '.', '/OverDrive/IndexingLog'), [
 				'View System Reports',
 				'View Indexing Logs',
 			]);
-			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for OverDrive integration.', '/OverDrive/Dashboard'), [
+			$sections['overdrive']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for ' . $readerName . ' integration.', '/OverDrive/Dashboard'), [
 				'View Dashboards',
 				'View System Reports',
 			]);
-			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for OverDrive integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
-			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an OverDrive product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('API Information', 'View API information for ' . $readerName . ' integration to test connections.', '/OverDrive/APIData'), 'View OverDrive Test Interface');
+			$sections['overdrive']->addAction(new AdminAction('Aspen Information', 'View information stored within Aspen about an ' . $readerName . ' product.', '/OverDrive/AspenData'), 'View OverDrive Test Interface');
+		}
+
+		if (array_key_exists('Palace Project', $enabledModules)) {
+			$sections['palace_project'] = new AdminSection('Palace Project');
+			$palaceProjectSettingsAction = new AdminAction('Settings', 'Define connection information between Palace Project and Aspen Discovery.', '/PalaceProject/Settings');
+			$palaceProjectScopesAction = new AdminAction('Scopes', 'Define which records are loaded for each library and location.', '/PalaceProject/Scopes');
+			if ($sections['palace_project']->addAction($palaceProjectSettingsAction, 'Administer Palace Project')) {
+				$palaceProjectSettingsAction->addSubAction($palaceProjectScopesAction, 'Administer Palace Project');
+			} else {
+				$sections['palace_project']->addAction($palaceProjectScopesAction, 'Administer Palace Project');
+			}
+			$sections['palace_project']->addAction(new AdminAction('Indexing Log', 'View the indexing log for Palace Project.', '/PalaceProject/IndexingLog'), [
+				'View System Reports',
+				'View Indexing Logs',
+			]);
+			$sections['palace_project']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Palace Project integration.', '/PalaceProject/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
 		}
 
 		if (array_key_exists('RBdigital', $enabledModules)) {

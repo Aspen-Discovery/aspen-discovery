@@ -56,6 +56,7 @@ public class RecordGroupingProcessor {
 	private PreparedStatement getAxis360DetailsForRecordStmt;
 	private PreparedStatement getCloudLibraryDetailsForRecordStmt;
 	private PreparedStatement getHooplaRecordStmt;
+	private PreparedStatement getPalaceProjectRecordStmt;
 
 
 	HashMap<String, HashMap<String, String>> translationMaps = new HashMap<>();
@@ -119,6 +120,7 @@ public class RecordGroupingProcessor {
 			getAxis360DetailsForRecordStmt.close();
 			getCloudLibraryDetailsForRecordStmt.close();
 			getHooplaRecordStmt.close();
+			getPalaceProjectRecordStmt.close();
 
 		} catch (Exception e) {
 			logEntry.incErrors("Error closing prepared statements in record grouping processor", e);
@@ -234,6 +236,7 @@ public class RecordGroupingProcessor {
 			getAxis360DetailsForRecordStmt = dbConnection.prepareStatement("SELECT title, subtitle, primaryAuthor, formatType, rawResponse from axis360_title where axis360Id = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getCloudLibraryDetailsForRecordStmt =  dbConnection.prepareStatement("SELECT title, subTitle, author, format from cloud_library_title where cloudLibraryId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			getHooplaRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from hoopla_export where hooplaId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			getPalaceProjectRecordStmt = dbConnection.prepareStatement("SELECT UNCOMPRESS(rawResponse) as rawResponse from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 
 			PreparedStatement recordsToNotGroupStmt = dbConnection.prepareStatement("SELECT * from nongrouped_records");
 			ResultSet nonGroupedRecordsRS = recordsToNotGroupStmt.executeQuery();
@@ -1075,6 +1078,71 @@ public class RecordGroupingProcessor {
 
 		String language = itemDetails.getString("language");
 		String languageCode = translateValue("language_to_three_letter_code", language);
+
+		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
+	}
+
+	public String groupPalaceProjectRecord(String palaceProjectId) throws JSONException {
+		try {
+			getPalaceProjectRecordStmt.setString(1, palaceProjectId);
+			ResultSet getPalaceProjectRecordRS = getPalaceProjectRecordStmt.executeQuery();
+			if (getPalaceProjectRecordRS.next()){
+				String rawResponseString = new String(getPalaceProjectRecordRS.getBytes("rawResponse"), StandardCharsets.UTF_8);
+				JSONObject rawResponse = new JSONObject(rawResponseString);
+				//Pass null to processMarcRecord.  It will do the lookup to see if there is an existing id there.
+				return groupPalaceProjectRecord(rawResponse, palaceProjectId);
+			}
+		}catch (Exception e){
+			logEntry.incErrors("Error grouping palace project record " + palaceProjectId, e);
+		}
+		return null;
+	}
+
+	public String groupPalaceProjectRecord(JSONObject titleDetails, String palaceProjectId) {
+		String title;
+		String subTitle;
+
+		JSONObject titleMetadata = titleDetails.getJSONObject("metadata");
+
+		if (titleMetadata.has("sortAs")) {
+			title = titleMetadata.getString("sortAs");
+		} else {
+			title = titleMetadata.getString("title");
+		}
+		if (titleMetadata.has("subtitle")){
+			subTitle = titleMetadata.getString("subtitle");
+		}else{
+			subTitle = "";
+		}
+		String author = "";
+		if (titleMetadata.has("author")) {
+			JSONObject authorInfo = titleMetadata.getJSONObject("author");
+			author = AspenStringUtils.swapFirstLastNames(authorInfo.getString("name"));
+		} else if (titleMetadata.has("publisher")) {
+			JSONObject publisherInfo = titleMetadata.getJSONObject("publisher");
+			author = publisherInfo.getString("name");
+		}
+
+		String type = titleMetadata.getString("@type");
+		String primaryFormat;
+		switch (type) {
+			case "http://bib.schema.org/Audiobook":
+				primaryFormat = "eAudiobook";
+				break;
+			case "http://schema.org/EBook":
+				//TODO: May need to check the subjects to determine if this is a comic/graphic novel
+				primaryFormat = "eBook";
+				break;
+			default:
+				logger.error("Unhandled Palace Project type " + type);
+				primaryFormat = type;
+				break;
+		}
+
+		RecordIdentifier primaryIdentifier = new RecordIdentifier("palace_project", palaceProjectId);
+
+		String language = titleMetadata.getString("language");
+		String languageCode = translateValue("two_to_three_character_language_codes", language.toLowerCase(Locale.ROOT));
 
 		return processRecord(primaryIdentifier, title, subTitle, author, primaryFormat, languageCode, true);
 	}

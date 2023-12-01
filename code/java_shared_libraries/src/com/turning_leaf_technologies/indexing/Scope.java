@@ -45,6 +45,7 @@ public class Scope implements Comparable<Scope>{
 	private HooplaScope hooplaScope;
 	private final HashMap<Long, CloudLibraryScope> cloudLibraryScopes = new HashMap<>();
 	private Axis360Scope axis360Scope;
+	private PalaceProjectScope palaceProjectScope;
 
 	private final HashMap<Long, SideLoadScope> sideLoadScopes = new HashMap<>();
 
@@ -287,6 +288,14 @@ public class Scope implements Comparable<Scope>{
 
 	public void setAxis360Scope(Axis360Scope axis360Scope) {
 		this.axis360Scope = axis360Scope;
+	}
+
+	public PalaceProjectScope getPalaceProjectScope() {
+		return palaceProjectScope;
+	}
+
+	public void setPalaceProjectScope(PalaceProjectScope palaceProjectScope) {
+		this.palaceProjectScope = palaceProjectScope;
 	}
 
 	public boolean isConsortialCatalog() {

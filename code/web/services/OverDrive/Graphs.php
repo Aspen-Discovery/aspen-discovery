@@ -8,7 +8,11 @@ require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 class OverDrive_Graphs extends Admin_Admin {
 	function launch() {
 		global $interface;
-		$title = 'OverDrive Usage Graph';
+
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+
+		$title = $readerName . ' Usage Graph';
 		if (!empty($_REQUEST['instance'])) {
 			$instanceName = $_REQUEST['instance'];
 		} else {
@@ -214,9 +218,11 @@ class OverDrive_Graphs extends Admin_Admin {
 	}
 
 	function getBreadcrumbs(): array {
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 		$breadcrumbs = [];
 		$breadcrumbs[] = new Breadcrumb('/Admin/Home', 'Administration Home');
-		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', 'OverDrive');
+		$breadcrumbs[] = new Breadcrumb('/Admin/Home#overdrive', $readerName);
 		$breadcrumbs[] = new Breadcrumb('/OverDrive/Dashboard', 'Usage Dashboard');
 		$breadcrumbs[] = new Breadcrumb('', 'Usage Graph');
 		return $breadcrumbs;

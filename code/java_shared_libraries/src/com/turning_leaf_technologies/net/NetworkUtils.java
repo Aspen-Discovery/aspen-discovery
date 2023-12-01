@@ -92,6 +92,7 @@ public class NetworkUtils {
 				}
 				retVal = new WebServiceResponse(false, conn.getResponseCode(), response.toString());
 			}
+			conn.disconnect();
 
 		} catch (MalformedURLException e) {
 			logger.error("URL to post (" + url + ") is malformed", e);
@@ -237,7 +238,7 @@ public class NetworkUtils {
 				}
 				retVal = new WebServiceResponse(false, conn.getResponseCode(), response.toString());
 			}
-
+			conn.disconnect();
 		} catch (SocketTimeoutException e) {
 			logger.error("Timeout connecting to URL (" + url + ") data " + postData, e);
 			retVal = new WebServiceResponse(false, -1, "Timeout connecting to URL (" + url + ")");

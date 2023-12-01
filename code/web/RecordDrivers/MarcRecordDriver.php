@@ -259,6 +259,10 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 		$interface->assign('uploadedSupplementalFiles', $this->getUploadedSupplementalFiles());
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		return 'RecordDrivers/Marc/staff.tpl';
 	}
 
@@ -1279,7 +1283,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->_actions[$variationId];
 	}
 
-	function createActionsFromUrls($relatedUrls, $variationId) {
+	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
 		global $configArray;
 		$actions = [];
 		$i = 0;

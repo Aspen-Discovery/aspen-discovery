@@ -86,10 +86,12 @@ class QuickPollSubmission extends DataObject {
 			$user = new User();
 			$user->id = $this->userId;
 			if ($user->find(true)) {
-				$this->_data[$name] = empty($user->displayName) ? ($user->firstname . ' ' . $user->lastname) : $user->displayName;
+				$this->_data[$name] = $this->name ?? $user->displayName;
+			} else {
+				$this->_data[$name] = $this->name;
 			}
 			$user->__destruct();
-			return $this->_data[$name] ?? null;
+			return $this->_data[$name];
 		} elseif ($name == 'selectedOptions') {
 			if ($this->_selectedOptions == null) {
 				$this->_selectedOptions = [];
