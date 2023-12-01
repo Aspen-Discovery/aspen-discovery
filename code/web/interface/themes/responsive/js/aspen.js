@@ -7836,6 +7836,46 @@ AspenDiscovery.Account = (function () {
 			}
 			return false;
 		},
+		toggleKohaDigestCheckbox: function () {
+			var sms1 = $('#sms1');
+			var phone1 = $('#phone1');
+			var email1 = $('#email1');
+			var digest1 = $('#digest1');
+			if (sms1.is(":checked") || phone1.is(":checked") || email1.is(":checked")) {
+				digest1.prop('disabled', false);
+			} else {
+				digest1.prop('disabled', true);
+				if(digest1.is(":checked")) {
+					digest1.prop('checked', false);
+				}
+			}
+
+			var sms2 = $('#sms2');
+			var phone2 = $('#phone2');
+			var email2 = $('#email2');
+			var digest2 = $('#digest2');
+			if (sms2.is(":checked") || phone2.is(":checked") || email2.is(":checked")) {
+				digest2.prop('disabled', false);
+			} else {
+				digest2.prop('disabled', true);
+				if(digest2.is(":checked")) {
+					digest2.prop('checked', false);
+				}
+			}
+
+			var sms9 = $('#sms9');
+			var phone9 = $('#phone9');
+			var email9 = $('#email9');
+			var digest9 = $('#digest9');
+			if (sms9.is(":checked") || phone9.is(":checked") || email9.is(":checked")) {
+				digest9.prop('disabled', false);
+			} else {
+				digest9.prop('disabled', true);
+				if(digest9.is(":checked")) {
+					digest9.prop('checked', false);
+				}
+			}
+		},
 		logout: function () {
 			window.location = Globals.path + '/MyAccount/Logout';
 		}
