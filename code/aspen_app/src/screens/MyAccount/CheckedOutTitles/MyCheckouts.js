@@ -3,7 +3,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useIsFetching, useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
-import { Actionsheet, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
+import { Actionsheet, AlertDialog, Box, Button, Center, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
 import React, { useState } from 'react';
 import { Platform, SafeAreaView } from 'react-native';
 
@@ -14,8 +14,9 @@ import { CheckoutsContext, LanguageContext, LibrarySystemContext, SystemMessages
 import { getAuthor, getCheckedOutTo, getCleanTitle, getDueDate, getFormat, getRenewalCount, getTitle, isOverdue, willAutoRenew } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
+import { confirmRenewAllCheckouts, confirmRenewCheckout, renewAllCheckouts, renewCheckout, returnCheckout, viewOnlineItem, viewOverDriveItem } from '../../../util/accountActions';
 import { getPatronCheckedOutItems } from '../../../util/api/user';
+import { stripHTML } from '../../../util/apiAuth';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const MyCheckouts = () => {
@@ -30,6 +31,12 @@ export const MyCheckouts = () => {
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+
+     const [renewConfirmationIsOpen, setRenewConfirmationIsOpen] = React.useState(false);
+     const onRenewConfirmationClose = () => setRenewConfirmationIsOpen(false);
+     const renewConfirmationRef = React.useRef(null);
+     const [renewConfirmationResponse, setRenewConfirmationResponse] = React.useState('');
+     const [confirmingRenewal, setConfirmingRenewal] = React.useState(false);
 
      const [checkoutsBy, setCheckoutBy] = React.useState({
           ils: 'Checked Out Titles for Physical Materials',
@@ -150,12 +157,6 @@ export const MyCheckouts = () => {
           queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
      };
 
-     const refreshCheckouts = async () => {
-          setLoading(true);
-          queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
-          queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
-     };
-
      const actionButtons = () => {
           if (numCheckedOut > 0) {
                return (
@@ -168,8 +169,24 @@ export const MyCheckouts = () => {
                               colorScheme="primary"
                               onPress={() => {
                                    setRenewAll(true);
-                                   renewAllCheckouts(library.baseUrl).then((r) => {
-                                        refreshCheckouts();
+                                   renewAllCheckouts(library.baseUrl).then((result) => {
+                                        if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                             setRenewConfirmationResponse({
+                                                  message: result.api.message,
+                                                  title: result.api.title,
+                                                  confirmRenewalFee: result.confirmRenewalFee ?? false,
+                                                  recordId: record ?? null,
+                                                  action: result.api.action,
+                                                  renewType: 'all',
+                                             });
+                                        }
+
+                                        if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                             setRenewConfirmationIsOpen(true);
+                                        } else {
+                                             reloadCheckouts();
+                                        }
+
                                         setRenewAll(false);
                                    });
                               }}
@@ -234,19 +251,66 @@ export const MyCheckouts = () => {
           return null;
      };
 
+     const decodeMessage = (string) => {
+          return stripHTML(string);
+     };
+
      return (
           <SafeAreaView style={{ flex: 1 }}>
                <Box safeArea={2} bgColor="coolGray.100" borderBottomWidth="1" _dark={{ borderColor: 'gray.600', bg: 'coolGray.700' }} borderColor="coolGray.200" flexWrap="nowrap">
                     {showSystemMessage()}
                     <ScrollView horizontal>{actionButtons()}</ScrollView>
                </Box>
-               <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} reloadCheckouts={reloadCheckouts} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />
+               <Center>
+                    <AlertDialog leastDestructiveRef={renewConfirmationRef} isOpen={renewConfirmationIsOpen} onClose={onRenewConfirmationClose}>
+                         <AlertDialog.Content>
+                              <AlertDialog.Header>{renewConfirmationResponse?.title ? renewConfirmationResponse.title : 'Unknown Error'}</AlertDialog.Header>
+                              <AlertDialog.Body>{renewConfirmationResponse?.message ? decodeMessage(renewConfirmationResponse.message) : 'Unable to renew checkout for unknown error. Please contact the library.'}</AlertDialog.Body>
+                              <AlertDialog.Footer>
+                                   <Button.Group space={3}>
+                                        <Button variant="outline" colorScheme="primary" onPress={() => setHoldConfirmationIsOpen(false)}>
+                                             {getTermFromDictionary(language, 'close_window')}
+                                        </Button>
+                                        <Button
+                                             isLoading={confirmingRenewal}
+                                             isLoadingText={getTermFromDictionary(language, 'renewing', true)}
+                                             onPress={async () => {
+                                                  setConfirmingRenewal(true);
+
+                                                  if (renewConfirmationResponse.renewType === 'all') {
+                                                       await confirmRenewAllCheckouts(library.baseUrl).then(async (result) => {
+                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                            queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
+
+                                                            setRenewConfirmationIsOpen(false);
+                                                            setConfirmingRenewal(false);
+                                                       });
+                                                  } else {
+                                                       await confirmRenewCheckout(renewConfirmationResponse.barcode, renewConfirmationResponse.recordId, renewConfirmationResponse.source, renewConfirmationResponse.itemId, library.baseUrl, renewConfirmationResponse.userId).then(async (result) => {
+                                                            queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
+                                                            queryClient.invalidateQueries({ queryKey: ['checkouts', user.id, library.baseUrl, language, source] });
+
+                                                            setRenewConfirmationIsOpen(false);
+                                                            setConfirmingRenewal(false);
+                                                       });
+                                                  }
+                                             }}>
+                                             {renewConfirmationResponse?.action ? renewConfirmationResponse.action : 'Renew Item'}
+                                        </Button>
+                                   </Button.Group>
+                              </AlertDialog.Footer>
+                         </AlertDialog.Content>
+                    </AlertDialog>
+               </Center>
+               <FlatList data={checkouts} ListEmptyComponent={noCheckouts} renderItem={({ item }) => <Checkout data={item} reloadCheckouts={reloadCheckouts} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} setRenewConfirmationIsOpen={setRenewConfirmationIsOpen} setRenewConfirmationResponse={setRenewConfirmationResponse} />
           </SafeAreaView>
      );
 };
 
 const Checkout = (props) => {
      const checkout = props.data;
+     const setRenewConfirmationIsOpen = props.setRenewConfirmationIsOpen;
+     const setRenewConfirmationResponse = props.setRenewConfirmationResponse;
      const reloadCheckouts = props.reloadCheckouts;
      const navigation = useNavigation();
      const { user, updateUser } = React.useContext(UserContext);
@@ -430,7 +494,28 @@ const Checkout = (props) => {
                                         setRenew(true);
                                         renewCheckout(checkout.barcode, checkout.recordId, checkout.source, checkout.itemId, library.baseUrl, checkout.userId).then((result) => {
                                              setRenew(false);
-                                             reloadCheckouts();
+
+                                             if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                                  setRenewConfirmationResponse({
+                                                       message: result.api.message,
+                                                       title: result.api.title,
+                                                       confirmRenewalFee: result.confirmRenewalFee ?? false,
+                                                       action: result.api.action,
+                                                       recordId: checkout.recordId ?? null,
+                                                       barcode: checkout.barcode ?? null,
+                                                       source: checkout.source ?? null,
+                                                       itemId: checkout.itemId ?? null,
+                                                       userId: checkout.userId ?? null,
+                                                       renewType: 'single',
+                                                  });
+                                             }
+
+                                             if (result?.confirmRenewalFee && result.confirmRenewalFee) {
+                                                  setRenewConfirmationIsOpen(true);
+                                             } else {
+                                                  reloadCheckouts();
+                                             }
+
                                              toggle();
                                         });
                                    }}
