@@ -471,10 +471,12 @@ class Sierra extends Millennium {
 						if($recordType == 'i') {
 							// Get volume for Item holds
 							$relatedRecord = $recordDriver->getRelatedRecord();
-							$groupingItem = $relatedRecord->getItemById($itemId);
-							if ($groupingItem != null) {
-								$curHold->volume = $groupingItem->volume;
-								$curHold->callNumber = $groupingItem->callNumber;
+							if ($relatedRecord != null) {
+								$groupingItem = $relatedRecord->getItemById($itemId);
+								if ($groupingItem != null) {
+									$curHold->volume = $groupingItem->volume;
+									$curHold->callNumber = $groupingItem->callNumber;
+								}
 							}
 						}
 					}
@@ -1266,7 +1268,7 @@ class Sierra extends Millennium {
 		if (!$response) {
 			return false;
 		} else {
-			if ($response->deleted || $response->suppressed) {
+			if (!empty($response->deleted) || !empty($response->suppressed) || (!empty($response->httpStatus) && $response->httpStatus == 404)) {
 				return false;
 			} else {
 				return $response;
@@ -1640,14 +1642,16 @@ class Sierra extends Millennium {
 		if (!empty($patronInfo->addresses)) {
 			$primaryAddress = reset($patronInfo->addresses);
 			$user->_address1 = $primaryAddress->lines[0];
-			$line2 = $primaryAddress->lines[1];
-			if (strpos($line2, ',')) {
-				$user->_city = substr($line2, 0, strrpos($line2, ','));
-				$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
-				$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
-				$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
-			} else {
-				$user->_city = $line2;
+			if (array_key_exists(1, $primaryAddress->lines)) {
+				$line2 = $primaryAddress->lines[1];
+				if (strpos($line2, ',')) {
+					$user->_city = substr($line2, 0, strrpos($line2, ','));
+					$stateZip = trim(substr($line2, strrpos($line2, ',') + 1));
+					$user->_state = substr($stateZip, 0, strrpos($stateZip, ' '));
+					$user->_zip = substr($stateZip, strrpos($stateZip, ' '));
+				} else {
+					$user->_city = $line2;
+				}
 			}
 		}
 		if (!empty($patronInfo->phones)) {
