@@ -284,6 +284,20 @@ class CustomForm extends DB_LibraryLinkedObject {
 		return $interface->fetch('DataObjectUtil/objectEditForm.tpl');
 	}
 
+	public function getAdditionalListActions(): array {
+		$objectActions = [];
+		require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+		$customForm = new CustomForm();
+		if ($customForm->find(true)) {
+			$objectActions[] = [
+				'text' => 'View Submissions',
+				'url' => '/WebBuilder/CustomFormSubmissions?formId=' . $customForm->id,
+			];
+		}
+		return $objectActions;
+	}
+
+
 	public function getLinksForJSON(): array {
 		$links = parent::getLinksForJSON();
 
