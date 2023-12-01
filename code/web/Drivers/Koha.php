@@ -5998,6 +5998,7 @@ class Koha extends AbstractIlsDriver {
 			$catalogUrl = $this->accountProfile->vendorOpacUrl;
 			$updateMessageUrl = "$catalogUrl/cgi-bin/koha/opac-messaging.pl?";
 			$getParams = [];
+			$digestParams = '';
 			foreach ($params as $key => $value) {
 				//Koha is using non standard HTTP functionality
 				//where array values are being passed without array bracket values
@@ -6010,6 +6011,11 @@ class Koha extends AbstractIlsDriver {
 					if ($key == 'SMSnumber') {
 						/** @noinspection RegExpRedundantEscape */
 						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-z]/', '', $value));
+					} elseif (str_starts_with($key, 'digest')) {
+						if(strlen($digestParams > 0)) {
+							$digestParams .= '&';
+						}
+						$digestParams .= 'digest=' . $value;
 					} else {
 						$getParams[] = urlencode($key) . '=' . urlencode($value);
 					}
@@ -6023,6 +6029,9 @@ class Koha extends AbstractIlsDriver {
 			}
 
 			$updateMessageUrl .= implode('&', $getParams);
+
+			$updateMessageUrl .= '&' . $digestParams;
+
 			$result = $this->getKohaPage($updateMessageUrl);
 			if (strpos($result, 'Settings updated') !== false) {
 				$result = [
