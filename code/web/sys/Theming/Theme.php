@@ -478,6 +478,15 @@ class Theme extends DataObject {
 	private $_libraries;
 	private $_locations;
 
+	public function getNumericColumnNames(): array {
+		return [
+			'additionalCssType',
+			'capitalizeBrowseCategories',
+			'browseCategoryImageSize',
+			'browseImageLayout',
+		];
+	}
+
 	static function getObjectStructure($context = ''): array {
 		$libraryThemeStructure = LibraryTheme::getObjectStructure($context);
 		unset($libraryThemeStructure['themeId']);
