@@ -1283,7 +1283,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->_actions[$variationId];
 	}
 
-	function createActionsFromUrls($relatedUrls, $variationId) {
+	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
 		global $configArray;
 		$actions = [];
 		$i = 0;

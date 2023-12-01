@@ -110,7 +110,7 @@ class SideLoadedRecord extends BaseEContentDriver {
 		return '';
 	}
 
-	function createActionsFromUrls($relatedUrls) {
+	function createActionsFromUrls($relatedUrls, $variationId = 'any') {
 		/** @var SideLoad[] $sideLoadSettings */ global $sideLoadSettings;
 		$sideLoad = $sideLoadSettings[strtolower($this->profileType)];
 
