@@ -4742,6 +4742,7 @@ class Library extends DataObject {
 			'usernameLabel' => $this->loginFormUsernameLabel ?? 'Your Name',
 			'passwordLabel' => $this->loginFormPasswordLabel ?? 'Library Card Number',
 			'code' => $this->ilsCode,
+			'finePaymentType' => (int)$this->finePaymentType,
 		];
 		if (empty($this->baseUrl)) {
 			$apiInfo['baseUrl'] = $configArray['Site']['url'];
