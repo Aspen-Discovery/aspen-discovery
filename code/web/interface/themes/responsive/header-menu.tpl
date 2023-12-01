@@ -95,15 +95,41 @@
 			{/if}
 		{/foreach}
 	{/if}
+	{if !empty($allActiveThemes)}
+		{if count($allActiveThemes) > 1}
+			<div class="header-menu-option">
+				<i class="fas fa-cog fa-fw"></i>
+				<span>
+					<a onclick="AspenDiscovery.showDisplaySettings()">
+					 	{translate text="Display Options" isPublicFacing=true}
+					</a>
+				</span>
+			</div>
+		{else}
+			<div class="header-menu-option">
+				<i class="fas fa-cog fa-fw"></i> 
+				{* <span> *}
+				<a onclick="AspenDiscovery.showDisplaySettings()">
+					{translate text="Display" isPublicFacing=true}
+				</a>
+				{* </span> *}
+			</div>
+		{/if}
+	{/if}
 
-	{if count($validLanguages) > 1}
-		<div class="header-menu-section" id="aspenLanguagesMenuSection">
-			<i class="fas fa-globe fa-fw"></i>{translate text="Language" isPublicFacing=true}
-		</div>
-
+	{if !empty($validLanguages)}
+		{if count($validLanguages) > 1}
+			<div class="header-menu-section" id="aspenLanguagesMenuSection">
+				<i class="fas fa-globe fa-fw"></i> {translate text="Languages" isPublicFacing=true}
+			</div>
+		{else}
+			<div class="header-menu-section" id="aspenLanguagesMenuSection">
+				<i class="fas fa-globe fa-fw"></i> {translate text="Language" isPublicFacing=true}
+			</div>
+		{/if}
 		{foreach from=$validLanguages key=languageCode item=language}
 			{if $userLang->code!=$languageCode}
-			<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
+				<a onclick="return AspenDiscovery.setLanguage('{$languageCode}')">
 			{/if}
 				<div class="header-menu-option languageSelect{if $userLang->code==$languageCode}ed{/if}">
 					{if $userLang->code==$languageCode}
@@ -116,7 +142,6 @@
 			{/if}
 		{/foreach}
 	{/if}
-
 	{if !empty($masqueradeMode)}
 		<a class="btn btn-default btn-sm btn-block" onclick="AspenDiscovery.Account.endMasquerade()">{translate text="End Masquerade" isAdminFacing=true}</a>
 	{/if}

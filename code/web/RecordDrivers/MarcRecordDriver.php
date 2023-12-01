@@ -1049,7 +1049,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 					}
 				}
 
-				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls));
+				$this->_actions[$variationId] = array_merge($this->_actions[$variationId], $this->createActionsFromUrls($relatedUrls, $variationId));
 
 				if ($interface->getVariable('displayingSearchResults')) {
 					$showHoldButton = $interface->getVariable('showHoldButtonInSearchResults');
@@ -1279,7 +1279,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 		return $this->_actions[$variationId];
 	}
 
-	function createActionsFromUrls($relatedUrls) {
+	function createActionsFromUrls($relatedUrls, $variationId) {
 		global $configArray;
 		$actions = [];
 		$i = 0;
@@ -1292,7 +1292,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 			$actions[] = [
 				'title' => $title,
 				'url' => '',
-				'onclick' => "return AspenDiscovery.Record.selectItemLink('{$this->getId()}');",
+				'onclick' => "return AspenDiscovery.Record.selectItemLink('{$this->getId()}', '{$variationId}');",
 				'requireLogin' => false,
 				'type' => 'access_online',
 				'id' => "accessOnline_{$this->getId()}",
@@ -1307,7 +1307,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 				'isPublicFacing' => true,
 			]);
 			$alt = 'Available online from ' . $urlInfo['source'];
-			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i";
+			$action = $configArray['Site']['url'] . '/' . $this->getModule() . '/' . $this->id . "/AccessOnline?index=$i&variationId=$variationId";
 			$fileOrUrl = isset($urlInfo['url']) ? $urlInfo['url'] : $urlInfo['file'];
 			if (strlen($fileOrUrl) > 0) {
 				if (strlen($fileOrUrl) >= 3) {
@@ -2552,6 +2552,14 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 	public function getRelatedRecord() {
 		if ($this->getGroupedWorkDriver()->isValid()) {
 			return $this->getGroupedWorkDriver()->getRelatedRecord($this->getIdWithSource());
+		}else{
+			return null;
+		}
+	}
+
+	public function getRelatedRecordForVariation($variationId = '') {
+		if ($this->getGroupedWorkDriver()->isValid()) {
+			return $this->getGroupedWorkDriver()->getRelatedRecordForVariation($this->getIdWithSource(), $variationId);
 		}else{
 			return null;
 		}
