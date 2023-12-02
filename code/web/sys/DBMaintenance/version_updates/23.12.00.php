@@ -131,11 +131,12 @@ function getUpdates23_12_00(): array {
 				"UPDATE modules SET name = 'Axis 360' WHERE name = 'Boundless'",
 			]
 		], //rename_boundless_module
-		'readerName' => [
+		'readerName2' => [
 			'title' => 'Libby Reader Name',
 			'description' => 'Name of Libby product to display to patrons. Default is "Libby"',
+			'continueOnError' => true,
 			'sql' => [
-				"ALTER TABLE overdrive_scopes DROP COLUMN IF EXISTS libbySora",
+				"ALTER TABLE overdrive_scopes DROP COLUMN libbySora",
 				"ALTER TABLE overdrive_scopes ADD COLUMN readerName varchar(25) DEFAULT 'Libby'",
 			],
 		],
