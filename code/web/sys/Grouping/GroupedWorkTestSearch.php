@@ -12,6 +12,12 @@ class GroupedWorkTestSearch extends DataObject {
 	public $status;
 	public $notes;
 
+	public function getNumericColumnNames(): array {
+		return [
+			'status'
+		];
+	}
+
 	public static function getObjectStructure($context = '') {
 		$searchObject = SearchObjectFactory::initSearchObject();
 		$searchIndexes = $searchObject->getSearchIndexes();
