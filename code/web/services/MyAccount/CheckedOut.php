@@ -24,6 +24,10 @@ class MyAccount_CheckedOut extends MyAccount {
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		$interface->assign('profile', $user);
 		$this->display('checkedout.tpl', 'Checked Out Titles');
 	}

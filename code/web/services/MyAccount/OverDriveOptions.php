@@ -42,6 +42,10 @@ class MyAccount_OverDriveOptions extends MyAccount {
 			$interface->assign('profile', $patron);
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		$this->display('overDriveOptions.tpl', 'Account Settings');
 	}
 
