@@ -3300,6 +3300,11 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['message'] = "";
 				$result['checkoutInfoLastLoaded'] = $user->getFormattedCheckoutInfoLastLoaded();
+
+				$readerName = new OverDriveDriver();
+				$readerName = $readerName->getReaderName();
+				$interface->assign('readerName', $readerName);
+
 				$result['checkouts'] = $interface->fetch('MyAccount/checkoutsList.tpl');
 			}
 		} else {
@@ -3439,6 +3444,11 @@ class MyAccount_AJAX extends JSON_Action {
 				$result['success'] = true;
 				$result['message'] = "";
 				$result['holdInfoLastLoaded'] = $user->getFormattedHoldInfoLastLoaded();
+
+				$readerName = new OverDriveDriver();
+				$readerName = $readerName->getReaderName();
+				$interface->assign('readerName', $readerName);
+
 				$result['holds'] = $interface->fetch('MyAccount/holdsList.tpl');
 			}
 		} else {

@@ -79,6 +79,10 @@ abstract class MyAccount extends Action {
 		global $interface;
 		$interface->setPageTitle($pageTitle, $translateTitle);
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		// If neither sidebar sections are show, don't display the sidebar
 		if ($interface->getVariable('showMyAccount') || $interface->getVariable('showAccountSettings')) {
 			parent::display($mainContentTemplate, $pageTitle, $sidebar, $translateTitle);

@@ -81,7 +81,7 @@ class OverDrive_Dashboard extends Admin_Dashboard {
 		$interface->assign('loansAllTime', $loansAllTime);
 		$interface->assign('holdsAllTime', $holdsAllTime);
 
-		$interface->assign('title', $readerName . ' Dashboard');
+		$interface->assign('readerName', $readerName);
 
 		$this->display('dashboard.tpl', $readerName . ' Dashboard');
 	}

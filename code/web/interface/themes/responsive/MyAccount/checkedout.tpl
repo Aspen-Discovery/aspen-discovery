@@ -26,7 +26,7 @@
 					<li role="presentation"{if $tab=='ils'} class="active"{/if}><a href="#ils" aria-controls="ils" role="tab" data-toggle="tab">{translate text="Physical Materials" isPublicFacing=true} <span class="badge"><span class="ils-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
-					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive" isPublicFacing=true} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{$readerName} <span class="badge"><span class="overdrive-checkouts-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
 					<li role="presentation"{if $tab=='hoopla'} class="active"{/if}><a href="#hoopla" aria-controls="hoopla" role="tab" data-toggle="tab">{translate text="Hoopla" isPublicFacing=true} <span class="badge"><span class="hoopla-checkouts-placeholder">&nbsp;</span></span></a></li>
@@ -49,7 +49,7 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='ils'} active{/if}" id="ils" aria-label="Physical Checkouts List"><div id="ilsCheckoutsPlaceholder">{translate text="Loading checkouts of physical materials" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from OverDrive" isPublicFacing=true}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="OverDrive Checkouts List"><div id="overdriveCheckoutsPlaceholder">{translate text="Loading checkouts from %1%" 1=$readerName isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('hoopla')}
 					<div role="tabpanel" class="tab-pane{if $tab=='hoopla'} active{/if}" id="hoopla" aria-label="Hoopla Checkouts List"><div id="hooplaCheckoutsPlaceholder">{translate text="Loading checkouts from Hoopla" isPublicFacing=true}</div></div>

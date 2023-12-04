@@ -1,6 +1,6 @@
 {strip}
 	<div id="main-content" class="col-sm-12">
-		<h1>{translate text={$title} isAdminFacing=true}</h1>
+		<h1>{translate text="%1% Dashboard" 1=$readerName isAdminFacing=true}</h1>
 		{include file="Admin/selectInterfaceForm.tpl"}
 		<div class="row">
 			<div class="col-xs-12">
