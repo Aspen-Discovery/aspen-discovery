@@ -192,6 +192,9 @@ class IndexingProfile extends DataObject {
 	public $customFacet3ValuesToInclude;
 	public $customFacet3ValuesToExclude;
 
+	public $numRetriesForBibLookups;
+	public $numMillisecondsToPauseAfterBibLookups;
+
 	private $_translationMaps;
 	private $_timeToReshelve;
 	private $_sierraFieldMappings;
@@ -1428,6 +1431,36 @@ class IndexingProfile extends DataObject {
 						'forcesReindex' => true,
 						'default' => 1
 					],
+					'numRetriesForBibLookups' => [
+						'property' => 'numRetriesForBibLookups',
+						'type' => 'enum',
+						'label' => 'Num Retries for failed bib lookups',
+						'values' => [
+							0 => 'No Retries',
+							1 => '1 retry',
+							2 => '2 retries',
+						],
+						'description' => 'Controls how many retries are performed after bib lookups fail',
+						'forcesReindex' => false,
+						'default' => 3
+					],
+					'numMillisecondsToPauseAfterBibLookups' => [
+						'property' => 'numMillisecondsToPauseAfterBibLookups',
+						'type' => 'enum',
+						'label' => 'Num Milliseconds to pause after Bib Lookups',
+						'values' => [
+							0 => '0 milliseconds',
+							25 => '25 milliseconds',
+							50 => '50 milliseconds',
+							100 => '100 milliseconds',
+							250 => '250 milliseconds',
+							500 => '500 milliseconds',
+							1000 => '1000 milliseconds',
+						],
+						'description' => 'Controls how long Aspen pauses after each ',
+						'forcesReindex' => false,
+						'default' => 0
+					]
 				],
 			],
 

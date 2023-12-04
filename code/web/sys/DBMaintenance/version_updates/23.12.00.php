@@ -124,6 +124,15 @@ function getUpdates23_12_00(): array {
 			]
 		], //search_options
 
+		'evergreen_extract_options' => [
+			'title' => 'Evergreen Extract Options',
+			'description' => 'Add options for controlling Evergreen extract',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN numRetriesForBibLookups TINYINT DEFAULT 2',
+				'ALTER TABLE indexing_profiles ADD COLUMN numMillisecondsToPauseAfterBibLookups INT DEFAULT 0',
+			]
+		], //evergreen_indexing_options
+
 		//kirstien - ByWater
 
 		//kodi - ByWater

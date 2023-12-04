@@ -1420,7 +1420,8 @@ public class EvergreenExportMain {
 
 		int numTries = 0;
 		boolean successfulResponse = false;
-		while (numTries < 3 && !successfulResponse) {
+		int maxTries = indexingProfile.getNumRetriesForBibLookups() + 1;
+		while (numTries < maxTries && !successfulResponse) {
 			numTries++;
 			WebServiceResponse getBibsResponse = callEvergreenAPI(getBibsRequestUrl);
 			if (getBibsResponse.isSuccess()) {
@@ -1637,10 +1638,26 @@ public class EvergreenExportMain {
 					response.doneLoading = true;
 				}
 			} else {
-				if (numTries == 3) {
+				if (getBibsResponse.getResponseCode() == 502) {
+					//We were rate limited, wait 1 second.
+					try {
+						Thread.sleep(1000);
+					}catch (Exception e) {
+						logEntry.addNote("Sleep was interrupted when pausing after being rate limited");
+					}
+				}
+				if (numTries == maxTries) {
 					logEntry.incErrors("Could not get bibs from " + getBibsRequestUrl + " " + getBibsResponse.getResponseCode() + " " + getBibsResponse.getMessage());
 					response.doneLoading = true;
 				}
+			}
+		}
+
+		if (indexingProfile.getNumMillisecondsToPauseAfterBibLookups() > 0) {
+			try {
+				Thread.sleep(indexingProfile.getNumMillisecondsToPauseAfterBibLookups());
+			}catch (Exception e) {
+				logEntry.addNote("Sleep was interrupted when pausing after fetching bib from Evergreen");
 			}
 		}
 
