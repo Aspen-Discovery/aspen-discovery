@@ -488,7 +488,7 @@ public class GroupedWorkIndexer {
 		}
 	}
 
-	boolean isOkToIndex(){
+	public boolean isOkToIndex(){
 		return okToIndex;
 	}
 

@@ -153,6 +153,7 @@ class Library extends DataObject {
 		$hooplaScopeId;
 	public /** @noinspection PhpUnused */
 		$axis360ScopeId;
+	public $palaceProjectScopeId;
 	public /** @noinspection PhpUnused */
 		$systemsToRepeatIn;
 	public $additionalLocationsToShowAvailabilityFor;
@@ -682,6 +683,16 @@ class Library extends DataObject {
 		$axis360Scopes[-1] = 'none';
 		while ($axis360Scope->fetch()) {
 			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
+		}
+
+		require_once  ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		$palaceProjectScope = new PalaceProjectScope();
+		$palaceProjectScope->orderBy('name');
+		$palaceProjectScopes = [];
+		$palaceProjectScope->find();
+		$palaceProjectScopes[-1] = 'none';
+		while ($palaceProjectScope->fetch()) {
+			$palaceProjectScopes[$palaceProjectScope->id] = $palaceProjectScope->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Ebsco/EDSSettings.php';
@@ -3414,6 +3425,26 @@ class Library extends DataObject {
 						'values' => $overDriveScopes,
 						'label' => 'OverDrive Scope',
 						'description' => 'The OverDrive scope to use',
+						'hideInLists' => true,
+						'default' => -1,
+						'forcesReindex' => true,
+					],
+				],
+			],
+			'palaceProjectSection' => [
+				'property' => 'palaceProjectSection',
+				'type' => 'section',
+				'label' => 'Palace Project',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Library Records included in Catalog'],
+				'properties' => [
+					'palaceProjectScopeId' => [
+						'property' => 'palaceProjectScopeId',
+						'type' => 'enum',
+						'values' => $palaceProjectScopes,
+						'label' => 'Palace Project Scope',
+						'description' => 'The Palace Project scope to use',
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,
