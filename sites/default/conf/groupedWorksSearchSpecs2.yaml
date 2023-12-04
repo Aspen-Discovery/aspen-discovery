@@ -194,31 +194,36 @@ SubjectProper:
 
 Title:
   QueryFields:
-    - title_exact:
-      - [localized_callnumber, 10000]
-    - title_left:
-      - [text_left, 8000]
-    - title_proper:
-      - [exact, 800]
-      - [onephrase, 500]
-      - [and, 200]
-    - title:
-      - [onephrase, 200]
-      - [and, 125]
-    - title_alt:
-      - [and, 100]
-    - title_new:
-      - [and, 50]
-    - series_proper:
-      - [exact, 800]
-      - [onephrase, 300]
-      - [and, 50]
-    - series:
-      - [exact, 600]
-      - [onephrase, 200]
-      - [and, 50]
-    - series2:
-      - [and, 30]
+    -
+      - [OR, 50]
+      - title_exact:
+        - [localized_callnumber, 10000]
+      - title_left:
+        - [text_left_word, 5000]
+        - [text_left, 750]
+      - title_proper:
+        - [exact, 800]
+        - [onephrase, 500]
+        - [and, 200]
+      - title:
+        - [onephrase, 200]
+        - [and, 125]
+      - title_alt:
+        - [and, 100]
+      - title_new:
+        - [and, 50]
+    -
+      - [OR, 1]
+      - series_proper:
+        - [exact, 200]
+        - [onephrase, 100]
+        - [and, 25]
+      - series:
+        - [exact, 100]
+        - [onephrase, 50]
+        - [and, 10]
+      - series2:
+        - [and, 10]
 
 TitleProper:
   QueryFields:
@@ -232,7 +237,7 @@ TitleProper:
 StartOfTitle:
   QueryFields:
     - title_left:
-      - [text_left, 1600]
+      - [text_left, 1]
 
 Series:
   QueryFields:
@@ -270,12 +275,15 @@ Keyword:
       - title_exact:
         - [localized_callnumber, 10000]
       - title_left:
-        - [text_left, 4000]
+        - [ text_left_word, 6000 ]
+        - [ text_left, 2000 ]
       - title_proper:
-        - [onephrase, 800]
-        - [and, 500]
+        - [ exact, 800 ]
+        - [ onephrase, 500 ]
+        - [ and, 200 ]
         - [single_word_removal, 50]
       - title:
+        - [onephrase, 200]
         - [and, 125]
       - title_alt:
         - [and, 100]
@@ -286,7 +294,7 @@ Keyword:
         - [single_word_removal, 50]
 #Authors
     -
-      - [OR, 400]
+      - [OR, 200]
       - author_exact:
         - [localized_callnumber, 2000]
       - author_left:
@@ -329,13 +337,17 @@ Keyword:
         - [onephrase, ~]
 # Series
     -
-      - [OR, 300]
+      - [OR, 200]
+      - series_proper:
+        - [ exact, 200 ]
+        - [ onephrase, 100 ]
+        - [ and, 25 ]
       - series:
-        - [exact_quoted, 1500]
-        - [onephrase, 600]
-        - [and, 50]
+        - [ exact, 100 ]
+        - [ onephrase, 50 ]
+        - [ and, 10 ]
       - series2:
-        - [and, 30]
+        - [ and, 10 ]
 # Check everything else
     - table_of_contents:
       - [and, 50]

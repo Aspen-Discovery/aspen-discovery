@@ -712,6 +712,7 @@ abstract class Solr {
 				':',
 				'/',
 			], ' ', $noWildCardLookFor);
+			$values['text_left_word'] = $values['text_left'] . ' ';
 		} else {
 			// If we're skipping tokenization, we just want to pass $lookfor through
 			// unmodified (it's probably an advanced search that won't benefit from
@@ -743,6 +744,7 @@ abstract class Solr {
 					'/',
 				], ' ', $cleanedQuery),
 			];
+			$values['text_left_word'] = $values['text_left'] . ' ';
 		}
 
 		// Apply custom munge operations if necessary

@@ -12,7 +12,14 @@ class GroupedWorksSolrConnector2 extends Solr {
 	 * @return string
 	 */
 	function getSearchSpecsFile() {
-		return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs.yaml';
+		global $library;
+		$searchSpecsVersion = $library->getGroupedWorkDisplaySettings()->searchSpecVersion;
+		if ($searchSpecsVersion == 2) {
+			return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs2.yaml';
+		}else {
+			return ROOT_DIR . '/../../sites/default/conf/groupedWorksSearchSpecs.yaml';
+		}
+
 	}
 
 	function getRecordByBarcode($barcode) {
@@ -373,10 +380,24 @@ class GroupedWorksSolrConnector2 extends Solr {
 			if (isset($searchLibrary) && !is_null($searchLibrary)) {
 				$applyHoldingsBoost = $searchLibrary->getGroupedWorkDisplaySettings()->applyNumberOfHoldingsBoost;
 			}
+
+			$limitBoosts = $searchLibrary->getGroupedWorkDisplaySettings()->limitBoosts;
+			$maxTotalBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxTotalBoost;
+			$maxPopularityBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxPopularityBoost;
+			$maxFormatBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxFormatBoost;
+			$maxHoldingsBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxHoldingsBoost;
 			if ($applyHoldingsBoost) {
-				$boostFactors[] = 'product(format_boost,max(num_holdings,1),div(max(popularity,1),max(num_holdings,1)))';
+				if ($limitBoosts) {
+					$boostFactors[] = "min($maxTotalBoost,product(min($maxFormatBoost,format_boost),min($maxHoldingsBoost,max(num_holdings,1)),div(min($maxPopularityBoost,max(popularity,1)),min($maxFormatBoost,max(num_holdings,1)))))";
+				}else{
+					$boostFactors[] = "product(format_boost,max(num_holdings,1),div(max(popularity,1),max(num_holdings,1)))";
+				}
 			} else {
-				$boostFactors[] = 'div(popularity,format_boost)';
+				if ($limitBoosts) {
+					$boostFactors[] = "min($maxTotalBoost,div(min($maxPopularityBoost,popularity),min($maxFormatBoost,format_boost)))";
+				}else{
+					$boostFactors[] = "div(popularity,format_boost)";
+				}
 			}
 		} else {
 			if ($searchPreferenceLanguage == 1) {

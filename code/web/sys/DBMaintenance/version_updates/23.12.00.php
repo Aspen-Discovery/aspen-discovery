@@ -111,6 +111,19 @@ function getUpdates23_12_00(): array {
 			],
 		], //palace_project_titles
 
+		'search_options' => [
+			'title' => 'Create search options to tweak search results',
+			'description' => 'Create search options to tweak search results',
+			'sql' => [
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN searchSpecVersion TINYINT(1) DEFAULT 2',
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN limitBoosts TINYINT(1) DEFAULT 1',
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN maxTotalBoost INT DEFAULT 500',
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN maxPopularityBoost INT DEFAULT 25',
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN maxFormatBoost INT DEFAULT 25',
+				'ALTER TABLE grouped_work_display_settings ADD COLUMN maxHoldingsBoost INT DEFAULT 25',
+			]
+		], //search_options
+
 		//kirstien - ByWater
 
 		//kodi - ByWater

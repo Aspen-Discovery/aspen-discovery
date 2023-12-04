@@ -69,6 +69,14 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public $showOtherSubjects;
 	public $showInMainDetails;
 
+	//search options
+	public $searchSpecVersion;
+	public $limitBoosts;
+	public $maxTotalBoost;
+	public $maxPopularityBoost;
+	public $maxFormatBoost;
+	public $maxHoldingsBoost;
+
 	//Item details
 	public $showItemDueDates;
 
@@ -242,7 +250,7 @@ class GroupedWorkDisplaySetting extends DataObject {
 								'type' => 'checkbox',
 								'label' => 'Show Covers for Editions',
 								'description' => 'Turn on to show individual covers for each edition',
-								'default' => false,
+								'default' => true,
 								'hideInLists' => true,
 							],
 						],
@@ -348,6 +356,91 @@ class GroupedWorkDisplaySetting extends DataObject {
 							],
 						],
 					],
+					'searchAlgorithm' => [
+						'property' => 'searchAlgorithm',
+						'type' => 'section',
+						'label' => 'Search Algorithm (Experimental)',
+						'hideInLists' => true,
+						'expandByDefault' => false,
+						'properties' => [
+							'searchSpecVersion' => [
+								'property' => 'searchSpecVersion',
+								'type' => 'enum',
+								'values' => [
+									1 => '23.11 and before',
+									2 => '23.12 de-emphasize series in title search '
+								],
+								'label' => 'Search Specification Version',
+								'default' => 2,
+							],
+							'limitBoosts' => [
+								'property' => 'limitBoosts',
+								'type' => 'checkbox',
+								'label' => 'Limit boosts',
+								'default' => true
+							],
+							'maxTotalBoost' => [
+								'property' => 'maxTotalBoost',
+								'type' => 'enum',
+								'values' => [
+									1 => 'Apply no boosting',
+									50 => 'Low Boosting (50)',
+									250 => 'Medium-Low Boosting (250)',
+									500 => 'Medium Boosting (500)',
+									750 => 'Medium-High Boosting (750)',
+									1000 => 'High Boosting (1000)',
+									10000 => 'Very High Boosting (10000)',
+								],
+								'label' => 'Maximum Total Boost',
+								'default' => 500,
+							],
+							'maxPopularityBoost' => [
+								'property' => 'maxPopularityBoost',
+								'type' => 'enum',
+								'values' => [
+									1 => 'Apply no boosting',
+									5 => 'Low Boosting (5)',
+									10 => 'Medium-Low Boosting (10)',
+									25 => 'Medium Boosting (25)',
+									50 => 'Medium-High Boosting (50)',
+									100 => 'High Boosting (100)',
+									1000 => 'Very High Boosting (1000)',
+								],
+								'label' => 'Maximum Popularity (Checkouts & Usage) Boost',
+								'default' => 25,
+							],
+							'maxFormatBoost' => [
+								'property' => 'maxFormatBoost',
+								'type' => 'enum',
+								'values' => [
+									1 => 'Apply no boosting',
+									5 => 'Low Boosting (5)',
+									10 => 'Medium-Low Boosting (10)',
+									25 => 'Medium Boosting (25)',
+									50 => 'Medium-High Boosting (50)',
+									100 => 'High Boosting (100)',
+									1000 => 'Very High Boosting (1000)',
+								],
+								'label' => 'Maximum Format Boost',
+								'default' => 25,
+							],
+							'maxHoldingsBoost' => [
+								'property' => 'maxHoldingsBoost',
+								'type' => 'enum',
+								'values' => [
+									1 => 'Apply no boosting',
+									5 => 'Low Boosting (5)',
+									10 => 'Medium-Low Boosting (10)',
+									25 => 'Medium Boosting (25)',
+									50 => 'Medium-High Boosting (50)',
+									100 => 'High Boosting (100)',
+									1000 => 'Very High Boosting (1000)',
+								],
+								'label' => 'Maximum Holdings (number of copies) Boost',
+								'default' => 25,
+							]
+						]
+					]
 				],
 			],
 
@@ -577,6 +670,10 @@ class GroupedWorkDisplaySetting extends DataObject {
 			unset($structure['fullRecordSection']['properties']['showCheckInGrid']);
 		}
 
+		if (!UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			unset($structure['searchingSection']['properties']['searchAlgorithm']);
+		}
+
 		return $structure;
 	}
 
@@ -773,15 +870,27 @@ class GroupedWorkDisplaySetting extends DataObject {
 	public static function getDefaultDisplaySettings() {
 		$defaultDisplaySettings = new GroupedWorkDisplaySetting();
 		$defaultDisplaySettings->name = 'default';
+		$defaultDisplaySettings->sortOwnedEditionsFirst = true;
 		$defaultDisplaySettings->applyNumberOfHoldingsBoost = true;
 		$defaultDisplaySettings->includeOutOfSystemExternalLinks = false;
 		$defaultDisplaySettings->showSearchTools = true;
+		$defaultDisplaySettings->showSearchToolsAtTop = true;
 		$defaultDisplaySettings->showQuickCopy = true;
+		$defaultDisplaySettings->showInSearchResultsMainDetails = '';
 		$defaultDisplaySettings->alwaysShowSearchResultsMainDetails = false;
+		$defaultDisplaySettings->alwaysFlagNewTitles = false;
+		$defaultDisplaySettings->showRelatedRecordLabels = true;
+		$defaultDisplaySettings->showEditionCovers = true;
 		$defaultDisplaySettings->availabilityToggleLabelSuperScope = 'Entire Collection';
 		$defaultDisplaySettings->availabilityToggleLabelLocal = '';
 		$defaultDisplaySettings->availabilityToggleLabelAvailable = 'Available Now';
 		$defaultDisplaySettings->availabilityToggleLabelAvailableOnline = 'Available Online';
+		$defaultDisplaySettings->defaultAvailabilityToggle = 'global';
+		$defaultDisplaySettings->baseAvailabilityToggleOnLocalHoldingsOnly = false;
+		$defaultDisplaySettings->includeOnlineMaterialsInAvailableToggle = false;
+		$defaultDisplaySettings->includeAllRecordsInShelvingFacets = false;
+		$defaultDisplaySettings->includeAllRecordsInDateAddedFacets = false;
+		$defaultDisplaySettings->facetCountsToShow = 2;
 		return $defaultDisplaySettings;
 	}
 
