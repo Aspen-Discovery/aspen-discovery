@@ -28,6 +28,9 @@ abstract class Action
 		$interface->setTemplate($mainContentTemplate);
 		$interface->setPageTitle($pageTitle, $translateTitle, false, true);
 		$interface->assign('moreDetailsTemplate', 'GroupedWork/moredetails-accordion.tpl');
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
 		global $isAJAX;
 		if (!$isAJAX && UserAccount::isLoggedIn()){
 			$this->loadAccountSidebarVariables();

@@ -20,6 +20,10 @@ class MyAccount_Holds extends MyAccount {
 			$interface->assign('libraryHoursMessage', $libraryHoursMessage);
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+		$interface->assign('readerName', $readerName);
+
 		$interface->assign('profile', $user);
 		$this->display('holds.tpl', 'Titles On Hold');
 	}

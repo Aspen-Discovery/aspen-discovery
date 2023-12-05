@@ -95,6 +95,10 @@ public class IndexingProfile extends BaseIndexingSettings {
 	private String customFacet3ValuesToExclude;
 	private Pattern customFacet3ValuesToExcludePattern;
 
+	//Evergreen settings
+	private int numRetriesForBibLookups;
+	private int numMillisecondsToPauseAfterBibLookups;
+
 	public IndexingProfile(ResultSet indexingProfileRS, BaseIndexingLogEntry logEntry)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
 		this.setName(indexingProfileRS.getString("name"));
@@ -274,6 +278,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 				logEntry.incErrors("Unable to compile pattern for customFacet3ValuesToExcludePattern", e);
 			}
 		}
+
+		this.numRetriesForBibLookups = indexingProfileRS.getInt("numRetriesForBibLookups");
+		this.numMillisecondsToPauseAfterBibLookups = indexingProfileRS.getInt("numMillisecondsToPauseAfterBibLookups");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -846,5 +853,13 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public Pattern getCustomFacet3ValuesToExcludePattern() {
 		return customFacet3ValuesToExcludePattern;
+	}
+
+	public int getNumRetriesForBibLookups() {
+		return numRetriesForBibLookups;
+	}
+
+	public int getNumMillisecondsToPauseAfterBibLookups() {
+		return numMillisecondsToPauseAfterBibLookups;
 	}
 }

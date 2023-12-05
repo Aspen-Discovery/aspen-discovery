@@ -1,9 +1,9 @@
 {strip}
 	<div id="main-content" class="col-md-12">
-		<h1>{translate text="{$readerName} Aspen Data" isAdminFacing=true}</h1>
+		<h1>{translate text="%1% Aspen Data" 1=$readerName isAdminFacing=true}</h1>
 		<form class="navbar form-inline row">
 			<div class="form-group col-xs-12">
-				<label for="overDriveId" class="control-label">{translate text="{$readerName} ID" isAdminFacing=true}</label>
+				<label for="overDriveId" class="control-label">{translate text="%1% ID" 1=$readerName isAdminFacing=true}</label>
 				<input id ="overDriveId" type="text" name="overDriveId" class="form-control" value="{$overDriveId}">
 				<button class="btn btn-primary" type="submit">{translate text=Go isAdminFacing=true}</button>
 			</div>
@@ -15,7 +15,7 @@
 		{if !empty($overDriveProduct)}
 			<h2>{$overDriveProduct->title}</h2>
 			<div class="row"><div class="col-sm-4">{translate text="ID" isAdminFacing=true}</div><div class="col-sm-8">{$overDriveProduct->id}</div></div>
-			<div class="row"><div class="col-sm-4">{translate text="{$readerName} ID" isAdminFacing=true}</div><div class="col-sm-8">{$overDriveProduct->overdriveId}</div></div>
+			<div class="row"><div class="col-sm-4">{translate text="%1% ID" 1=$readerName isAdminFacing=true}</div><div class="col-sm-8">{$overDriveProduct->overdriveId}</div></div>
 			<div class="row"><div class="col-sm-4">{translate text="Media Type" isAdminFacing=true}</div><div class="col-sm-8">{$overDriveProduct->mediaType}</div></div>
 			<div class="row"><div class="col-sm-4">{translate text="Title" isAdminFacing=true}</div><div class="col-sm-8">{$overDriveProduct->title}</div></div>
 			<div class="row"><div class="col-sm-4">{translate text="Subtitle" isAdminFacing=true}</div><div class="col-sm-8">{$overDriveProduct->subtitle}</div></div>

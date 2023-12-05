@@ -119,6 +119,30 @@ public class PalaceProjectExportMain {
 			int numChanges = logEntry.getNumChanges();
 			processRecordsToReload(logEntry);
 
+			if (recordGroupingProcessorSingleton != null) {
+				recordGroupingProcessorSingleton.close();
+				recordGroupingProcessorSingleton = null;
+			}
+
+			if (groupedWorkIndexer != null) {
+				groupedWorkIndexer.finishIndexingFromExtract(logEntry);
+				groupedWorkIndexer.close();
+				groupedWorkIndexer = null;
+				existingRecords = null;
+			}
+
+			if (logEntry.hasErrors()) {
+				logger.error("There were errors during the export!");
+			}
+
+			logger.info("Finished exporting data " + new Date());
+			long endTime = new Date().getTime();
+			long elapsedTime = endTime - startTime.getTime();
+			logger.info("Elapsed Minutes " + (elapsedTime / 60000));
+
+			//Mark that indexing has finished
+			logEntry.setFinished();
+
 			if (extractSingleWork) {
 				disconnectDatabase(aspenConn);
 				break;
@@ -210,6 +234,7 @@ public class PalaceProjectExportMain {
 								JSONObject curLink = links.getJSONObject(i);
 								if (curLink.getString("rel").equals("next")) {
 									url = curLink.getString("href");
+									break;
 								}
 							}
 						}
@@ -343,7 +368,7 @@ public class PalaceProjectExportMain {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
 				getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
-				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, ?, ?)");
+				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, COMPRESS(rawResponse), dateFirstDetected) VALUES (?, ?, ?, ?, ?)");
 				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
 			}else{
@@ -459,6 +484,11 @@ public class PalaceProjectExportMain {
 	private static GroupedWorkIndexer getGroupedWorkIndexer() {
 		if (groupedWorkIndexer == null) {
 			groupedWorkIndexer = new GroupedWorkIndexer(serverName, aspenConn, configIni, false, false, logEntry, logger);
+			if (!groupedWorkIndexer.isOkToIndex()) {
+				logEntry.incErrors("Indexer could not be initialized properly");
+				logEntry.saveResults();
+				System.exit(1);
+			}
 		}
 		return groupedWorkIndexer;
 	}

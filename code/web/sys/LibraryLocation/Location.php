@@ -80,6 +80,8 @@ class Location extends DataObject {
 		$hooplaScopeId;
 	public /** @noinspection PhpUnused */
 		$axis360ScopeId;
+	public /** @noinspection PhpUnused */
+		$palaceProjectScopeId;
 	public $showHoldButton;
 	public $curbsidePickupInstructions;
 	public $repeatSearchOption;
@@ -259,6 +261,17 @@ class Location extends DataObject {
 		$axis360Scopes[-1] = 'Use Library Setting';
 		while ($axis360Scope->fetch()) {
 			$axis360Scopes[$axis360Scope->id] = $axis360Scope->name;
+		}
+
+		require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectScope.php';
+		$palaceProjectScope = new PalaceProjectScope();
+		$palaceProjectScope->orderBy('name');
+		$palaceProjectScopes = [];
+		$palaceProjectScope->find();
+		$palaceProjectScopes[-2] = 'None';
+		$palaceProjectScopes[-1] = 'Use Library Setting';
+		while ($palaceProjectScope->fetch()) {
+			$palaceProjectScopes[$palaceProjectScope->id] = $palaceProjectScope->name;
 		}
 
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveScope.php';
@@ -1092,6 +1105,27 @@ class Location extends DataObject {
 						'values' => $overDriveScopes,
 						'label' => 'OverDrive Scope',
 						'description' => 'The OverDrive scope to use',
+						'hideInLists' => true,
+						'default' => -1,
+						'forcesReindex' => true,
+					],
+				],
+			],
+
+			'palaceProjectSection' => [
+				'property' => 'palaceProjectSection',
+				'type' => 'section',
+				'label' => 'Palace Project',
+				'hideInLists' => true,
+				'renderAsHeading' => true,
+				'permissions' => ['Location Records included in Catalog'],
+				'properties' => [
+					'palaceProjectScopeId' => [
+						'property' => 'palaceProjectScopeId',
+						'type' => 'enum',
+						'values' => $palaceProjectScopes,
+						'label' => 'Palace Project Scope',
+						'description' => 'The Palace Project scope to use',
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,

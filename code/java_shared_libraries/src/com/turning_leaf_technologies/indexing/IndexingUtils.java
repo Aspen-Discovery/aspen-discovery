@@ -243,7 +243,7 @@ public class IndexingUtils {
 						"location.includeLibraryRecordsToInclude, library.courseReserveLibrariesToInclude, " +
 						"library.overDriveScopeId as overDriveScopeIdLibrary, location.overDriveScopeId as overDriveScopeIdLocation, " +
 						"library.hooplaScopeId as hooplaScopeLibrary, location.hooplaScopeId as hooplaScopeLocation, " +
-						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation " +
+						"library.axis360ScopeId as axis360ScopeLibrary, location.axis360ScopeId as axis360ScopeLocation, " +
 						"library.palaceProjectScopeId as palaceProjectScopeLibrary, location.palaceProjectScopeId as palaceProjectScopeLocation " +
 						"FROM location INNER JOIN library on library.libraryId = location.libraryId WHERE location.libraryId IN (" + librariesToFetch + ") ORDER BY code ASC",
 				ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);

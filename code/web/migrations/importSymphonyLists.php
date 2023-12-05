@@ -124,7 +124,11 @@ function importLists($startTime, $exportPath, &$existingUsers, &$missingUsers, &
 		$userListId = $existingLists[$listId];
 
 		//Get the grouped work id for the bib record
-		$bibNumber = 'a' . str_replace('ent://SD_ILS/0/SD_ILS:', '', $documentId);
+		if (strpos($documentId, 'SD_ILS') !== false) {
+			$bibNumber = 'a' . str_replace('ent://SD_ILS/0/SD_ILS:', '', $documentId);
+		}else{
+			$bibNumber = $documentId;
+		}
 		$groupedWorkForRecordId = getGroupedWorkForRecordId($bibNumber, $validRecords, $invalidRecords);
 		if ($groupedWorkForRecordId != null) {
 			$listEntry = new UserListEntry();

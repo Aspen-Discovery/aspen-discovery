@@ -30,7 +30,7 @@ public class PalaceProjectProcessor {
 		this.logger = logger;
 
 		try {
-			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_export where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
+			getProductInfoStmt = dbConn.prepareStatement("SELECT id, palaceProjectId, title, rawChecksum, UNCOMPRESS(rawResponse) as rawResponse, dateFirstDetected from palace_project_title where palaceProjectId = ?", ResultSet.TYPE_FORWARD_ONLY,  ResultSet.CONCUR_READ_ONLY);
 		} catch (SQLException e) {
 			logger.error("Error setting up hoopla processor", e);
 		}
@@ -130,7 +130,11 @@ public class PalaceProjectProcessor {
 				}
 
 				if (metadata.has("publisher")) {
-					groupedWork.addPublisher(metadata.getString("publisher"));
+					if (metadata.get("publisher") instanceof String) {
+						groupedWork.addPublisher(metadata.getString("publisher"));
+					}else{
+						groupedWork.addPublisher(metadata.getJSONObject("publisher").getString("name"));
+					}
 				}
 
 				if (metadata.has("published")) {
@@ -188,7 +192,12 @@ public class PalaceProjectProcessor {
 				}
 
 				if (metadata.has("narrator")) {
-					String narrator = metadata.getString("narrator");
+					String narrator;
+					if (metadata.get("narrator") instanceof String) {
+						narrator = metadata.getString("narrator");
+					}else{
+						narrator = metadata.getJSONObject("narrator").getString("name");
+					}
 					HashSet<String> artistsToAdd = new HashSet<>();
 					HashSet<String> artistsWithRoleToAdd = new HashSet<>();
 					artistsToAdd.add(narrator);

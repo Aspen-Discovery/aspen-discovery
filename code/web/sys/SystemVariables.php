@@ -35,7 +35,7 @@ class SystemVariables extends DataObject {
 
 
 	static function getObjectStructure($context = ''): array {
-		return [
+		$objectStructure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -289,6 +289,15 @@ class SystemVariables extends DataObject {
 						'default' => false,
 			],
 		];
+
+		if (!UserAccount::getActiveUserObj()->isAspenAdminUser()) {
+			$objectStructure['indexingSection']['properties']['storeRecordDetailsInSolr']['type'] = 'hidden';
+			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
+			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
+			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
+		}
+
+		return $objectStructure;
 	}
 
 	public static function forceNightlyIndex() {

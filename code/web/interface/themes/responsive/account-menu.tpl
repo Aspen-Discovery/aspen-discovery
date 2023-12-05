@@ -89,7 +89,7 @@
 				<div class="header-menu-option" ><a href="/MyAccount/ResetPinPage">{translate text='Reset PIN/Password' isPublicFacing=true}</a></div>
 			{/if}
 			{if $user->isValidForEContentSource('overdrive') && $showUserCirculationModules}
-				<div class="header-menu-option" ><a href="/MyAccount/OverDriveOptions">{translate text='OverDrive Options' isPublicFacing=true}</a></div>
+				<div class="header-menu-option" ><a href="/MyAccount/OverDriveOptions">{translate text='%1% Options' 1=$readerName isPublicFacing=true}</a></div>
 			{/if}
 			{if $user->isValidForEContentSource('hoopla') && $showUserCirculationModules}
 				<div class="header-menu-option" ><a href="/MyAccount/HooplaOptions">{translate text='Hoopla Options' isPublicFacing=true}</a></div>

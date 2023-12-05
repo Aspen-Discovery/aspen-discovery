@@ -72,7 +72,7 @@
 
 {if !empty($overDriveMetaDataRaw)}
 	<div id="formattedSolrRecord">
-		<h3>{translate text="{$readerName} MetaData" isPublicFacing=true}</h3>
+		<h3>{translate text="%1% MetaData" 1=$readerName isPublicFacing=true}</h3>
 		{formatJSON subject=$overDriveMetaDataRaw}
 	</div>
 {/if}

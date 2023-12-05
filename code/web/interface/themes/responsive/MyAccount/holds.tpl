@@ -30,7 +30,7 @@
 					<li role="presentation"{if $tab=='interlibrary_loan'} class="active"{/if}><a href="#interlibrary_loan" aria-controls="interlibrary_loan" role="tab" data-toggle="tab">{translate text="Interlibrary Loan Requests" isPublicFacing=true} <span class="badge"><span class="interlibrary-loan-requests-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
-					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{translate text="OverDrive" isPublicFacing=true} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
+					<li role="presentation"{if $tab=='overdrive'} class="active"{/if}><a href="#overdrive" aria-controls="overdrive" role="tab" data-toggle="tab">{$readerName} <span class="badge"><span class="overdrive-holds-placeholder">&nbsp;</span></span></a></li>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<li role="presentation"{if $tab=='cloud_library'} class="active"{/if}><a href="#cloud_library" aria-controls="cloud_library" role="tab" data-toggle="tab">{translate text="cloudLibrary" isPublicFacing=true} <span class="badge"><span class="cloud_library-holds-placeholder">&nbsp;</span></span></a></li>
@@ -53,7 +53,7 @@
 					<div role="tabpanel" class="tab-pane{if $tab=='interlibrary_loan'} active{/if}" id="interlibrary_loan" aria-label="List of Interlibrary Loan Requests"><div id="interlibrary_loanHoldsPlaceholder">{translate text="Loading Interlibrary Loan Requests" isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('overdrive')}
-					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="List of Holds on OverDrive Titles"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from OverDrive" isPublicFacing=true}</div></div>
+					<div role="tabpanel" class="tab-pane{if $tab=='overdrive'} active{/if}" id="overdrive" aria-label="List of Holds on OverDrive Titles"><div id="overdriveHoldsPlaceholder">{translate text="Loading holds from %1%" 1=$readerName isPublicFacing=true}</div></div>
 				{/if}
 				{if $user->isValidForEContentSource('cloud_library')}
 					<div role="tabpanel" class="tab-pane{if $tab=='cloud_library'} active{/if}" id="cloud_library" aria-label="List of Holds on cloudLibrary Titles"><div id="cloud_libraryHoldsPlaceholder">{translate text="Loading holds from cloudLibrary" isPublicFacing=true}</div></div>
