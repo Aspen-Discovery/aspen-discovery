@@ -330,8 +330,8 @@ class ACISpeedpaySetting extends DataObject {
 			return $authCode;
 		}
 
-		$paymentAmount = $payment->totalPaid;
-		$paymentAmount = (int)((string)($paymentAmount)) * 100;
+		$paymentAmount = (int)$payment->totalPaid;
+		$paymentAmount = $paymentAmount * 100;
 
 		$serviceFee = $this->getServiceFee($paymentAmount, $fundingToken, $authCode['token']);
 
