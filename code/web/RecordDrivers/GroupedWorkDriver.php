@@ -1493,6 +1493,18 @@ class GroupedWorkDriver extends IndexRecordDriver {
 		return isset($this->fields['publishDateSort']) ? $this->fields['publishDateSort'] : '';
 	}
 
+	function getPlaceOfPublication () {
+		$relatedRecords = $this->getRelatedRecords();
+		foreach ($relatedRecords as $relatedRecord) {
+			$relatedRecordDriver = $relatedRecord->getDriver();
+			$placesOfPublicationForDriver = $relatedRecordDriver->getPlacesOfPublication();
+			if (count($placesOfPublicationForDriver) > 0) {
+				return reset($placesOfPublicationForDriver);
+			}
+		}
+		return '';
+	}
+
 	/**
 	 * Get the publishers of the record.
 	 *
