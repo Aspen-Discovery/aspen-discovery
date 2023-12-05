@@ -107,6 +107,11 @@ class BookCoverProcessor {
 				if ($this->getCloudLibraryCover($this->id, true)) {
 					return true;
 				}
+			} elseif ($this->type == 'palace_project') {
+				//Will exit if we find a cover
+				if ($this->getPalaceProjectCover($this->id, true)) {
+					return true;
+				}
 			} elseif ($this->type == 'Colorado State Government Documents') {
 				if ($this->getColoradoGovDocCover()) {
 					return true;
@@ -329,6 +334,24 @@ class BookCoverProcessor {
 		return false;
 	}
 
+	private function getPalaceProjectCover($id, $createDefaultIfNotFound = false) {
+		require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
+		$driver = new PalaceProjectRecordDriver($id);
+		if ($driver->isValid()) {
+			$coverUrl = $driver->getPalaceProjectBookcoverUrl();
+			if ($coverUrl != null) {
+				return $this->processImageURL('cloud_library', $coverUrl, true);
+			} else {
+				if ($createDefaultIfNotFound) {
+					return $this->getDefaultCover($driver);
+				} else {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
+
 	private function getCloudLibraryCover($id, $createDefaultIfNotFound = false) {
 		if (strpos($id, ':') !== false) {
 			[
@@ -416,7 +439,7 @@ class BookCoverProcessor {
 			[
 				$this->type,
 				$this->id,
-			] = explode(':', $this->id);
+			] = explode(':', $this->id, 2);
 		}
 
 		$this->bookCoverInfo = new BookCoverInfo();
