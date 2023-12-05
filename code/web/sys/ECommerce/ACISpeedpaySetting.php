@@ -330,8 +330,9 @@ class ACISpeedpaySetting extends DataObject {
 			return $authCode;
 		}
 
-		$paymentAmount = (int)$payment->totalPaid;
+		$paymentAmount = $payment->totalPaid;
 		$paymentAmount = $paymentAmount * 100;
+		$paymentAmount = (int)$paymentAmount;
 
 		$serviceFee = $this->getServiceFee($paymentAmount, $fundingToken, $authCode['token']);
 
@@ -400,13 +401,13 @@ class ACISpeedpaySetting extends DataObject {
 				$totalPaid = $paymentResponse['accountTransactionResults'][0]['principalAmount']['value'] + $paymentResponse['accountTransactionResults'][0]['serviceFeeAmount']['value'];
 				$payment->transactionId = $paymentResponse['confirmationCode'];
 				$payment->orderId = $paymentResponse['id'];
-				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
 
 				$user = new User();
 				$user->id = $payment->userId;
 				if ($user->find(true)) {
 					$finePaymentCompleted = $user->completeFinePayment($payment);
 					if ($finePaymentCompleted['success']) {
+						$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
 						$payment->message .= "Payment completed, TransactionId = $payment->transactionId, Confirmation Code = $confirmationCode, CC Number = $ccNumber, Net Amount = $payment->totalPaid. ";
 						$payment->update();
 						return [
