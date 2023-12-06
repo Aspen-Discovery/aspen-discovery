@@ -111,6 +111,14 @@ function getUpdates23_12_00(): array {
 			],
 		], //palace_project_titles
 
+		'palace_project_identifier_length' => [
+			'title' => 'Increase Palace Project ID Length',
+			'description' => 'Increase Palace Project ID Length',
+			'sql' => [
+				'ALTER TABLE palace_project_title CHANGE COLUMN palaceProjectId palaceProjectId VARCHAR(125)'
+			],
+		], //palace_project_identifier_length
+
 		'search_options' => [
 			'title' => 'Create search options to tweak search results',
 			'description' => 'Create search options to tweak search results',
