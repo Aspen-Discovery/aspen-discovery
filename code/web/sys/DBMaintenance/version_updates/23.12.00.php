@@ -119,6 +119,14 @@ function getUpdates23_12_00(): array {
 			],
 		], //palace_project_identifier_length
 
+		'grouped_work_primary_identifier_length' => [
+			'title' => 'Increase Grouped Work Primary Identifier Length',
+			'description' => 'Increase Grouped Work Primary Identifier Length',
+			'sql' => [
+				'ALTER TABLE grouped_work_primary_identifiers CHANGE COLUMN identifier identifier VARCHAR(150)'
+			],
+		], //grouped_work_primary_identifier_length
+
 		'search_options' => [
 			'title' => 'Create search options to tweak search results',
 			'description' => 'Create search options to tweak search results',
