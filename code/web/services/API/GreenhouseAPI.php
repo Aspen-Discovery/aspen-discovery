@@ -450,10 +450,10 @@ class GreenhouseAPI extends Action {
 					//get the theme for the location
 					$themeArray = [];
 					$theme = new Theme();
-					if (isset($location) && $location->theme != -1) {
-						$theme->id = $location->theme;
+					if (isset($location) && ($location->useLibraryThemes || empty($location->getThemes()))) {
+						$theme->id = $library->getPrimaryTheme()->themeId;
 					} else {
-						$theme->id = $library->theme;
+						$theme->id = $location->getPrimaryTheme()->themeId;
 					}
 					if ($theme->find(true)) {
 						$theme->applyDefaults();
