@@ -143,6 +143,17 @@ public class PalaceProjectExportMain {
 			//Mark that indexing has finished
 			logEntry.setFinished();
 
+			if (!updatesRun) {
+				//delete the log entry
+				try {
+					PreparedStatement deleteLogEntryStmt = aspenConn.prepareStatement("DELETE from palace_project_export_log WHERE id = " + logEntry.getLogEntryId());
+					deleteLogEntryStmt.executeUpdate();
+				} catch (SQLException e) {
+					logger.error("Could not delete log export ", e);
+				}
+
+			}
+
 			if (extractSingleWork) {
 				disconnectDatabase(aspenConn);
 				break;
@@ -185,11 +196,7 @@ public class PalaceProjectExportMain {
 				//Pause before running the next export (longer if we didn't get any actual changes)
 				try {
 					System.gc();
-					if (numChanges == 0) {
-						Thread.sleep(1000 * 60 * 5);
-					} else {
-						Thread.sleep(1000 * 60);
-					}
+					Thread.sleep(1000 * 60 * 15);
 				} catch (InterruptedException e) {
 					logger.info("Thread was interrupted");
 				}
@@ -205,7 +212,19 @@ public class PalaceProjectExportMain {
 			ResultSet getSettingsRS = getSettingsStmt.executeQuery();
 			int numSettings = 0;
 			while (getSettingsRS.next()) {
+				long settingsId = getSettingsRS.getLong("id");
 				numSettings++;
+
+				long lastUpdateOfChangedRecords = getSettingsRS.getLong("lastUpdateOfChangedRecords");
+				long lastUpdateOfAllRecords = getSettingsRS.getLong("lastUpdateOfAllRecords");
+				long lastUpdate = Math.max(lastUpdateOfChangedRecords, lastUpdateOfAllRecords);
+				Date now = new Date();
+				if ((now.getTime()  / 1000 - lastUpdate) < 60 * 60) {
+					//Don't update since it hasn't been an hour
+					continue;
+				}
+
+				//Check to see if we should run.  For Palace Project we only need to check for updates once an hour.
 				palaceProjectBaseUrl = getSettingsRS.getString("apiUrl");
 				String palaceProjectLibraryId = getSettingsRS.getString("libraryId");
 				boolean doFullReload = getSettingsRS.getBoolean("runFullUpdate");
@@ -241,6 +260,26 @@ public class PalaceProjectExportMain {
 					}
 				}
 				updatesRun = true;
+
+				//Set the extract time
+				PreparedStatement updateSettingsStmt = null;
+				if (doFullReload){
+					if (!logEntry.hasErrors()) {
+						updateSettingsStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set lastUpdateOfAllRecords = ? where id = ?");
+					} else {
+						//force another full update
+						PreparedStatement reactiveFullUpdateStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set runFullUpdate = 1 where id = ?");
+						reactiveFullUpdateStmt.setLong(1, settingsId);
+						reactiveFullUpdateStmt.executeUpdate();
+					}
+				}else{
+					updateSettingsStmt = aspenConn.prepareStatement("UPDATE palace_project_settings set lastUpdateOfChangedRecords = ? where id = ?");
+				}
+				if (updateSettingsStmt != null) {
+					updateSettingsStmt.setLong(1, startTimeForLogging);
+					updateSettingsStmt.setLong(2, settingsId);
+					updateSettingsStmt.executeUpdate();
+				}
 			}
 			if (numSettings == 0){
 				logger.error("Unable to find settings for Palace Project, please add settings to the database");
