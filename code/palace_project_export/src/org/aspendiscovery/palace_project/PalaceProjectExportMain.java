@@ -407,7 +407,7 @@ public class PalaceProjectExportMain {
 				aspenConn = DriverManager.getConnection(databaseConnectionInfo);
 
 				getAllExistingPalaceProjectTitlesStmt = aspenConn.prepareStatement("SELECT id, palaceProjectId, rawChecksum, UNCOMPRESSED_LENGTH(rawResponse) as rawResponseLength from palace_project_title");
-				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, COMPRESS(rawResponse), dateFirstDetected) VALUES (?, ?, ?, ?, ?)");
+				addPalaceProjectTitleToDbStmt = aspenConn.prepareStatement("INSERT INTO palace_project_title (palaceProjectId, title, rawChecksum, rawResponse, dateFirstDetected) VALUES (?, ?, ?, COMPRESS(?), ?)");
 				updatePalaceProjectTitleInDbStmt = aspenConn.prepareStatement("UPDATE palace_project_title set title = ?, rawChecksum = ?, rawResponse = COMPRESS(?) WHERE id = ?");
 				deletePalaceProjectTitleFromDbStmt = aspenConn.prepareStatement("DELETE FROM palace_project_title where id = ?");
 			}else{
