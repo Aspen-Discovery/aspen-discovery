@@ -168,6 +168,9 @@ public class PalaceProjectProcessor {
 							case "http://schema.org/audience":
 								audience = subjectObject.getString("name");
 								break;
+							case "http://schema.org/typicalAgeRange":
+								//TODO: Do we want to apply this anywhere?
+								break;
 							default:
 								logEntry.addNote("Unknown subject scheme " + scheme);
 						}

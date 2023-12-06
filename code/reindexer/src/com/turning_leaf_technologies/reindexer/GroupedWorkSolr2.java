@@ -42,6 +42,12 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			doc.addField("title_display", displayTitle);
 			//This is set lower now with additional titles added with formats
 			//doc.addField("title_full", fullTitles);
+			HashSet<String> startOfTitle = new HashSet<>();
+			startOfTitle.add(fullTitle);
+			String sortableTitle = AspenStringUtils.makeValueSortable(fullTitle);
+			startOfTitle.add(sortableTitle);
+			startOfTitle.add(titleSort);
+			doc.addField("title_left", startOfTitle);
 
 			doc.addField("subtitle_display", subTitle);
 			doc.addField("title_short", title);

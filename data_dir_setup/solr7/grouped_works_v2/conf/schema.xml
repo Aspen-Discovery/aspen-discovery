@@ -195,7 +195,7 @@
 		<field name="title_sort" type="alphaOnlySort" indexed="true" stored="true"/> <!-- title for sorting -->
 		<!-- variations of title for searching -->
 		<field name="title_exact" type="text-exact" indexed="true" stored="false"/>
-		<field name="title_left" type="text-left" indexed="true" stored="false"/>
+		<field name="title_left" type="text-left" indexed="true" stored="false" multiValued="true"/>
 		<field name="title_proper" type="textProper" indexed="true" stored="false"/>
 		<!-- Title full includes the author -->
 		<field name="title_full" type="searchable_text" indexed="true" stored="true" multiValued="true"/>
@@ -399,7 +399,6 @@
 	<!-- CopyFields for Proper (Unstemmed) searching -->
 	<copyField source="title" dest="title_proper"/>
 	<copyField source="title" dest="title_exact"/>
-	<copyField source="title" dest="title_left"/>
 	<copyField source="keywords" dest="keywords_proper"/>
 	<copyField source="table_of_contents" dest="table_of_contents_proper"/>
 	<copyField source="series" dest="series_proper"/>
