@@ -1456,6 +1456,8 @@ class IndexingProfile extends DataObject {
 							250 => '250 milliseconds',
 							500 => '500 milliseconds',
 							1000 => '1000 milliseconds',
+							1500 => '1500 milliseconds',
+							2000 => '2000 milliseconds',
 						],
 						'description' => 'Controls how long Aspen pauses after each ',
 						'forcesReindex' => false,

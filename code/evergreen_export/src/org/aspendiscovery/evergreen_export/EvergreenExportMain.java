@@ -1638,10 +1638,10 @@ public class EvergreenExportMain {
 					response.doneLoading = true;
 				}
 			} else {
-				if (getBibsResponse.getResponseCode() == 502) {
+				if (getBibsResponse.getResponseCode() == 502 || getBibsResponse.getResponseCode() == 503) {
 					//We were rate limited, wait 1 second.
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(2000);
 					}catch (Exception e) {
 						logEntry.addNote("Sleep was interrupted when pausing after being rate limited");
 					}
