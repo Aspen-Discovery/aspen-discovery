@@ -98,6 +98,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 	//Evergreen settings
 	private int numRetriesForBibLookups;
 	private int numMillisecondsToPauseAfterBibLookups;
+	private int numExtractionThreads;
 
 	public IndexingProfile(ResultSet indexingProfileRS, BaseIndexingLogEntry logEntry)  throws SQLException {
 		this.setId(indexingProfileRS.getLong("id"));
@@ -281,6 +282,7 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 		this.numRetriesForBibLookups = indexingProfileRS.getInt("numRetriesForBibLookups");
 		this.numMillisecondsToPauseAfterBibLookups = indexingProfileRS.getInt("numMillisecondsToPauseAfterBibLookups");
+		this.numExtractionThreads = indexingProfileRS.getInt("numExtractionThreads");
 	}
 
 	private void setFilenamesToInclude(String filenamesToInclude) {
@@ -861,5 +863,9 @@ public class IndexingProfile extends BaseIndexingSettings {
 
 	public int getNumMillisecondsToPauseAfterBibLookups() {
 		return numMillisecondsToPauseAfterBibLookups;
+	}
+
+	public int getNumExtractionThreads() {
+		return numExtractionThreads;
 	}
 }

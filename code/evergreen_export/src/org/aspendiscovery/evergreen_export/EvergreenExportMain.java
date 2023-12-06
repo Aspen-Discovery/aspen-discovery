@@ -874,7 +874,7 @@ public class EvergreenExportMain {
 		MarcFactory marcFactory = MarcFactory.newInstance();
 
 		//Process all the threads, we will allow up to 10 concurrent threads to start
-		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(10);
+		ThreadPoolExecutor es = (ThreadPoolExecutor) Executors.newFixedThreadPool(indexingProfile.getNumExtractionThreads());
 
 		for (String idToProcess : idsToProcess) {
 			es.execute(() -> {

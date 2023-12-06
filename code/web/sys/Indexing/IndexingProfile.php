@@ -194,6 +194,7 @@ class IndexingProfile extends DataObject {
 
 	public $numRetriesForBibLookups;
 	public $numMillisecondsToPauseAfterBibLookups;
+	public $numExtractionThreads;
 
 	private $_translationMaps;
 	private $_timeToReshelve;
@@ -1462,7 +1463,23 @@ class IndexingProfile extends DataObject {
 						'description' => 'Controls how long Aspen pauses after each ',
 						'forcesReindex' => false,
 						'default' => 0
-					]
+					],
+					'numExtractionThreads' => [
+						'property' => 'numExtractionThreads',
+						'type' => 'enum',
+						'label' => 'Number of Extraction Threads',
+						'values' => [
+							1 => '1',
+							2 => '2',
+							3 => '3',
+							5 => '5',
+							7 => '7',
+							10 => '10',
+						],
+						'description' => 'Controls the number of concurrent threads that can be used while extracting bibs from Evergreen ',
+						'forcesReindex' => false,
+						'default' => 10
+					],
 				],
 			],
 
