@@ -6,6 +6,7 @@ Disallow: /images/fiveStar/
 Disallow: /Record/*/Search/
 Disallow: /Circa/
 Disallow: /Search/AJAX
+Disallow: /*?*view=excel*
 
 User-agent: SemrushBot
 Disallow: /
