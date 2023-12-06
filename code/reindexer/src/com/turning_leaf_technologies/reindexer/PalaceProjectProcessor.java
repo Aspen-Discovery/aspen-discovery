@@ -119,7 +119,7 @@ public class PalaceProjectProcessor {
 
 				if (metadata.has("language")) {
 					String languageCode = metadata.getString("language");
-					String threeLetterLanguage = indexer.translateSystemValue("language_to_three_letter_code", languageCode, identifier);
+					String threeLetterLanguage = indexer.translateSystemValue("two_to_three_character_language_codes", languageCode, identifier);
 					String language = indexer.translateSystemValue("language", threeLetterLanguage, identifier);
 					palaceProjectRecord.setPrimaryLanguage(language);
 					if (language.equalsIgnoreCase("English")){

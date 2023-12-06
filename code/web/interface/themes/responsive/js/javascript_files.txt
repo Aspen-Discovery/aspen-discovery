@@ -55,3 +55,4 @@ aspen/wikipedia.js
 aspen/indexing-profile.js
 aspen/tab-switcher.js
 aspen/cookieConsent.js
+aspen/palace-project.js
