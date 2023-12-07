@@ -359,6 +359,11 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					HashSet<String> availableAtForItem = new HashSet<>();
 					availabilityToggleForItem.reset();
 
+					String readerName = "Libby";
+
+					if ((scopingInfo.getScope().getOverDriveScope()) != null){
+						readerName = scopingInfo.getScope().getOverDriveScope().getReaderName();
+					}
 					ItemInfo curItem = scopingInfo.getItem();
 					try {
 						formatsForItem = curItem.getFormatsForIndexing();
@@ -373,6 +378,9 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 						boolean isEContent = curItem.isEContent();
 						if (isEContent) {
 							String trimmedEContentSource = curItem.getTrimmedEContentSource();
+							if (trimmedEContentSource.equals("overdrive")){
+								trimmedEContentSource = readerName;
+							}
 							addAvailabilityToggle(locallyOwned || libraryOwned, scopeDisplaySettings.isIncludeOnlineMaterialsInAvailableToggle() && isAvailable, isAvailable, availabilityToggleForItem);
 							owningLibraries.add(scopePrefix + trimmedEContentSource);
 							if (isAvailable) {
@@ -537,6 +545,7 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 		doc.addField("shelf_location", shelfLocations);
 		doc.addField("itype", iTypes);
 		doc.addField("econtent_source", eContentSources);
+
 		doc.addField("availability_toggle", availabilityToggleValues);
 		doc.addField("available_at", availableAt);
 

@@ -110,7 +110,7 @@ class ExtractOverDriveInfo {
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
-					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
+					logEntry.addNote("Did not find correct configuration in settings, not loading Libby titles");
 				} else {
 					if (checkForDeletedRecords) {
 						//Load all products from API to figure out what is actually new, what is deleted, and what needs an update
@@ -119,7 +119,7 @@ class ExtractOverDriveInfo {
 						if (!loadProductsFromAPI(LOAD_ALL_PRODUCTS, extractStartTime)) {
 							return 0;
 						}
-						logger.info("There are a total of " + totalProductsInCollection + " products in the combined overdrive collections");
+						logger.info("There are a total of " + totalProductsInCollection + " products in the combined Libby collections");
 					}
 
 					//We now have a list of all products in all collections, but we need to know what needs availability
@@ -148,7 +148,7 @@ class ExtractOverDriveInfo {
 						}
 						if (!libraryConnectedToAspen) {
 							idsToRemove.add(recordInfo.getId());
-							logger.info("Removing " + recordInfo.getId() + " because there are no records connected to OverDrive");
+							logger.info("Removing " + recordInfo.getId() + " because there are no records connected to Libby");
 						}else{
 							if (recordInfo.hasChanges || recordInfo.isNew){
 								numProductsToUpdate++;
@@ -170,7 +170,7 @@ class ExtractOverDriveInfo {
 						if (settings.getProductsToUpdate().contains(curRecord.getId().toLowerCase())){
 							curRecord.hasChanges = true;
 						}
-						//Extract data from overdrive and update the database
+						//Extract data from Libby and update the database
 						if (curRecord.isNew){
 							numNewRecords++;
 						}else if (curRecord.hasChanges) {
@@ -190,7 +190,7 @@ class ExtractOverDriveInfo {
 					for (OverDriveRecordInfo curRecord : allProductsInOverDrive.values()) {
 						numProcessed[0]++;
 						try {
-							//Extract data from overdrive and update the database
+							//Extract data from Libby and update the database
 							final boolean[] errorsEncountered = {false};
 							if (settings.isRunFullUpdate() || curRecord.isNew || curRecord.hasChanges) {
 								//Load Metadata for the record
@@ -248,7 +248,7 @@ class ExtractOverDriveInfo {
 
 					if (checkForDeletedRecords) {
 						//Remove any records that no longer exist
-						//There is currently an issue with OverDrive Search APIs that cause all records to not be returned,
+						//There is currently an issue with Libby Search APIs that cause all records to not be returned,
 						//so we will avoid deleting records if we are deleting more than 500 records or 5% of the collection
 						int totalRecordsToDelete = 0;
 						getNumDeletedProductsStmt.setLong(1, settings.getId());
@@ -287,7 +287,7 @@ class ExtractOverDriveInfo {
 								logEntry.incErrors("More than 5% of the collection was marked as being deleted. Detected " + totalRecordsToDelete + " of " + totalOverDriveRecords + " to delete, not deleting records");
 							}
 						} else {
-							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from OverDrive.");
+							logger.info("Did not delete " + totalRecordsToDelete + " records that no longer exist because we received errors from Libby.");
 						}
 					}
 
@@ -304,12 +304,12 @@ class ExtractOverDriveInfo {
 
 				}
 			}catch (SocketTimeoutException toe){
-				logger.info("Timeout while loading information from OverDrive, aborting");
-				logEntry.addNote("Timeout while loading information from OverDrive, aborting");
+				logger.info("Timeout while loading information from Libby, aborting");
+				logEntry.addNote("Timeout while loading information from Libby, aborting");
 				errorsWhileLoadingProducts = true;
 			}catch (Exception e){
-				logger.error("Error while loading information from OverDrive, aborting");
-				logEntry.addNote("Error while loading information from OverDrive, aborting");
+				logger.error("Error while loading information from Libby, aborting");
+				logEntry.addNote("Error while loading information from Libby, aborting");
 				errorsWhileLoadingProducts = true;
 			}
 
@@ -340,7 +340,7 @@ class ExtractOverDriveInfo {
 			}
 		} catch (SQLException e) {
 			// handle any errors
-			this.logEntry.incErrors("Error initializing overdrive extraction ", e);
+			this.logEntry.incErrors("Error initializing Libby extraction ", e);
 		}
 		return numProcessed[0];
 	}
@@ -400,7 +400,7 @@ class ExtractOverDriveInfo {
 
 			try {
 				if (settings.getClientSecret() == null || settings.getClientKey() == null || settings.getAccountId() == null || settings.getClientSecret().length() == 0 || settings.getClientKey().length() == 0 || settings.getAccountId().length() == 0) {
-					logEntry.addNote("Did not find correct configuration in settings, not loading overdrive titles");
+					logEntry.addNote("Did not find correct configuration in settings, not loading Libby titles");
 				} else {
 					//Load products from database this lets us know what is new, what has been deleted, and what has been updated
 					singleWorkId = singleWorkId.toLowerCase();
@@ -442,12 +442,12 @@ class ExtractOverDriveInfo {
 
 				logger.info("Processed " + numChanges);
 			}catch (SocketTimeoutException toe){
-				logger.info("Timeout while loading information from OverDrive, aborting");
-				logEntry.addNote("Timeout while loading information from OverDrive, aborting");
+				logger.info("Timeout while loading information from Libby, aborting");
+				logEntry.addNote("Timeout while loading information from Libby, aborting");
 				errorsWhileLoadingProducts = true;
 			}catch (Exception e){
-				logger.error("Error while loading information from OverDrive, aborting");
-				logEntry.addNote("Error while loading information from OverDrive, aborting");
+				logger.error("Error while loading information from Libby, aborting");
+				logEntry.addNote("Error while loading information from Libby, aborting");
 				errorsWhileLoadingProducts = true;
 			}
 
@@ -465,7 +465,7 @@ class ExtractOverDriveInfo {
 			}
 		} catch (SQLException e) {
 			// handle any errors
-			this.logEntry.incErrors("Error initializing overdrive extraction ", e);
+			this.logEntry.incErrors("Error initializing Libby extraction ", e);
 		}
 		return numChanges;
 	}
@@ -596,7 +596,7 @@ class ExtractOverDriveInfo {
 				}
 			}
 		} catch (SQLException e) {
-			logEntry.incErrors("Error deleting overdrive product " + aspenOverDriveId, e);
+			logEntry.incErrors("Error deleting Libby product " + aspenOverDriveId, e);
 		}
 	}
 
@@ -624,7 +624,7 @@ class ExtractOverDriveInfo {
 				updateProductChangeTimeStmt.executeUpdate();
 			}
 		} catch (SQLException e) {
-			logEntry.incErrors("Error updating overdrive product " + overDriveId, e);
+			logEntry.incErrors("Error updating Libby product " + overDriveId, e);
 		}
 		
 	}
@@ -651,7 +651,7 @@ class ExtractOverDriveInfo {
 			if (newIdRS.next()) {
 				databaseId = newIdRS.getLong(1);
 			}else{
-				//get the id of the title in overdrive. This happens when we are adding titles in multiple threads.
+				//get the id of the title in Libby. This happens when we are adding titles in multiple threads.
 				//or when the title was not previously available in a setting, but did exist in another setting
 				getProductIdByOverDriveIdStmt.setString(1, overDriveId);
 				ResultSet getProductIdByOverDriveIdRS = getProductIdByOverDriveIdStmt.executeQuery();
@@ -676,7 +676,7 @@ class ExtractOverDriveInfo {
 	private void loadNewProducts(long startTime) throws SocketTimeoutException {
 		int daysToLoad = (int)Math.ceil((double)(new Date().getTime() - lastExtractDate.getTime()) / (double)(24 * 60 * 60 * 1000));
 
-		//Only use a maximum of 90 days since that is all that OverDrive supports.
+		//Only use a maximum of 90 days since that is all that Libby supports.
 		if (daysToLoad > 90){
 			daysToLoad = 90;
 		}
@@ -692,7 +692,7 @@ class ExtractOverDriveInfo {
 	private final int LOAD_NEW_PRODUCTS = 3;
 
 	/**
-	 * Get all products that are currently in OverDrive to determine what needs to be deleted.
+	 * Get all products that are currently in Libby to determine what needs to be deleted.
 	 * We just get minimal information to start, the id and the list of collections that the product is valid for.
 	 *
 	 * @return boolean whether errors occurred
@@ -717,7 +717,7 @@ class ExtractOverDriveInfo {
 				if (loadType == LOAD_ALL_PRODUCTS || allAdvantageCollections.size() == 0) {
 					mainCollectionInfo = new AdvantageCollectionInfo();
 					mainCollectionInfo.setAdvantageId(-1);
-					mainCollectionInfo.setName("Shared OverDrive Collection");
+					mainCollectionInfo.setName("Shared Libby Collection");
 					mainCollectionInfo.setCollectionToken(libraryInfo.getString("collectionToken"));
 					mainCollectionInfo.setAspenLibraryId(-1);
 					allAdvantageCollections.add(mainCollectionInfo);
@@ -749,7 +749,7 @@ class ExtractOverDriveInfo {
 									try {
 										loadProductsForAdvantageAccount(loadType, curAdvantageAccount, startTime, finalLoadCollectionInfo);
 									} catch (SocketTimeoutException e) {
-										logEntry.incErrors("Socket timeout loading information from OverDrive API ", e);
+										logEntry.incErrors("Socket timeout loading information from Libby API ", e);
 										hadTimeoutsFromOverDrive = true;
 									}
 								});
@@ -781,7 +781,7 @@ class ExtractOverDriveInfo {
 			} catch (SocketTimeoutException toe){
 				throw toe;
 			} catch (Exception e) {
-				logEntry.incErrors("error loading information from OverDrive API ", e);
+				logEntry.incErrors("error loading information from Libby API ", e);
 				return false;
 			}
 		}else{
@@ -789,7 +789,7 @@ class ExtractOverDriveInfo {
 			if (libraryInfoResponse.getMessage() != null){
 				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
-			logger.info("Error loading overdrive titles " + libraryInfoResponse.getMessage());
+			logger.info("Error loading Libby titles " + libraryInfoResponse.getMessage());
 			return false;
 		}
 	}
@@ -823,7 +823,7 @@ class ExtractOverDriveInfo {
 
 		boolean processCollection = true;
 		if (collectionInfo == null){
-			//This happens when we are processing individual advantage accounts. It should only happen for collections that OverDrive has designated as Inactive
+			//This happens when we are processing individual advantage accounts. It should only happen for collections that Libby has designated as Inactive
 			if (!curAdvantageAccount.getString("name").contains("Inactive")) {
 				logger.error("Did not get collection information for " + curAdvantageAccount.getString("name"));
 			}
@@ -864,7 +864,7 @@ class ExtractOverDriveInfo {
 	}
 
 	/**
-	 * Get all products that are currently in OverDrive, so we can determine what needs to be deleted.
+	 * Get all products that are currently in Libby, so we can determine what needs to be deleted.
 	 * We just get minimal information to start, the id and the list of collections that the product is valid for.
 	 *
 	 * @return boolean whether errors occurred
@@ -877,7 +877,7 @@ class ExtractOverDriveInfo {
 			try {
 				AdvantageCollectionInfo mainCollectionInfo = new AdvantageCollectionInfo();
 				mainCollectionInfo.setAdvantageId(-1);
-				mainCollectionInfo.setName("Shared OverDrive Collection");
+				mainCollectionInfo.setName("Shared Libby Collection");
 				mainCollectionInfo.setCollectionToken(libraryInfo.getString("collectionToken"));
 				mainCollectionInfo.setAspenLibraryId(-1);
 				allAdvantageCollections.add(mainCollectionInfo);
@@ -920,7 +920,7 @@ class ExtractOverDriveInfo {
 			} catch (SocketTimeoutException toe){
 				throw toe;
 			} catch (Exception e) {
-				logEntry.incErrors("error loading information from OverDrive API ", e);
+				logEntry.incErrors("error loading information from Libby API ", e);
 				return false;
 			}
 		}else{
@@ -928,7 +928,7 @@ class ExtractOverDriveInfo {
 			if (libraryInfoResponse.getMessage() != null){
 				logEntry.addNote(libraryInfoResponse.getMessage());
 			}
-			logger.info("Error loading overdrive accounts " + libraryInfoResponse.getMessage());
+			logger.info("Error loading Libby accounts " + libraryInfoResponse.getMessage());
 			return false;
 		}
 	}
@@ -1019,7 +1019,7 @@ class ExtractOverDriveInfo {
 							logEntry.addNote(batchUrl);
 							errorsWhileLoadingProducts = true;
 						}else{
-							//Give OverDrive a few seconds to sort itself out.
+							//Give Libby a few seconds to sort itself out.
 							try {
 								Thread.sleep(30000);
 							} catch (InterruptedException e) {
@@ -1271,7 +1271,7 @@ class ExtractOverDriveInfo {
 					addFormatStmt.setLong(1, overDriveInfo.getDatabaseId());
 					String textFormat = format.getString("id");
 					addFormatStmt.setString(2, textFormat);
-					//Numeric ids are no longer important in our integration with OverDrive
+					//Numeric ids are no longer important in our integration with Libby
 					addFormatStmt.setLong(3, 0L);
 					addFormatStmt.setString(4, format.getString("name"));
 					addFormatStmt.setString(5, format.has("filename") ? format.getString("fileName") : "");
@@ -1361,7 +1361,7 @@ class ExtractOverDriveInfo {
 			}
 			existingAvailabilityRS.close();
 		}catch (SQLException e){
-			logger.warn("Could not load existing availability for overdrive product " + databaseId);
+			logger.warn("Could not load existing availability for Libby product " + databaseId);
 		}
 
 		BlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(overDriveInfo.getCollections().size());
@@ -1394,7 +1394,7 @@ class ExtractOverDriveInfo {
 					//No longer needed for logging
 					//logEntry.addNote("Got a 404 availability response code for " + url + " not updating for " + collectionInfo.getName());
 				} else if (availabilityResponse.getResponseCode() != 200) {
-					//We got an error calling the OverDrive API, do nothing.
+					//We got an error calling the Libby API, do nothing.
 					if (singleWork) {
 						logEntry.addNote("Found availability for api key " + apiKey);
 					}
@@ -1443,7 +1443,7 @@ class ExtractOverDriveInfo {
 
 							//Check to see if we have a default account.  There is a case where a library can own a title, but the
 							//consortium doesn't.  If the title is shared with the consortium, we need to add availability for the
-							//consortium even though OverDrive doesn't provide it.
+							//consortium even though Libby doesn't provide it.
 							JSONArray allAccounts = availability.getJSONArray("accounts");
 							int numCopiesOwned = 0;
 							int numConsortiumCopies = 0;
@@ -1616,10 +1616,10 @@ class ExtractOverDriveInfo {
 					try {
 						Thread.sleep(30000);
 					} catch (InterruptedException e) {
-						logger.warn("Timeout waiting to retry call to OverDrive", e);
+						logger.warn("Timeout waiting to retry call to Libby", e);
 					}
 				}else{
-					//Retry on 404 errors because OverDrive occasionally returns a 404 for a record that is really there
+					//Retry on 404 errors because Libby occasionally returns a 404 for a record that is really there
 					// they suggested retrying.
 					if (!response.isCallTimedOut() && response.getResponseCode() != 500 && response.getResponseCode() != 404) {
 						break;
@@ -1634,7 +1634,7 @@ class ExtractOverDriveInfo {
 			return response;
 		}else{
 			logger.error("Unable to connect to API");
-			return new WebServiceResponse(false, -1, "Failed to connect to OverDrive API");
+			return new WebServiceResponse(false, -1, "Failed to connect to Libby API");
 		}
 	}
 
@@ -1692,9 +1692,9 @@ class ExtractOverDriveInfo {
 				overDriveAPITokenType = parser.getString("token_type");
 				//logger.debug("Token expires in " + parser.getLong("expires_in") + " seconds");
 				overDriveAPIExpiration = new Date().getTime() + (parser.getLong("expires_in") * 1000) - 10000;
-				//logger.debug("OverDrive token is " + overDriveAPIToken);
+				//logger.debug("Libby token is " + overDriveAPIToken);
 			} else {
-				logger.error("Received error " + conn.getResponseCode() + " connecting to overdrive authentication service");
+				logger.error("Received error " + conn.getResponseCode() + " connecting to Libby authentication service");
 				// Get any errors
 				BufferedReader rd = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
 				String line;
@@ -1709,7 +1709,7 @@ class ExtractOverDriveInfo {
 		} catch (SocketTimeoutException toe){
 			throw toe;
 		} catch (Exception e) {
-			logger.error("Error connecting to overdrive API", e );
+			logger.error("Error connecting to Libby API", e );
 			return false;
 		}
 		return true;
@@ -1730,7 +1730,7 @@ class ExtractOverDriveInfo {
 	}
 
 	void close(){
-		logger.info("Closing the overdrive extractor");
+		logger.info("Closing the Libby extractor");
 		if (recordGroupingProcessorSingleton != null) {
 			recordGroupingProcessorSingleton.close();
 			recordGroupingProcessorSingleton = null;
@@ -1761,7 +1761,7 @@ class ExtractOverDriveInfo {
 			deleteAvailabilityStmt.close();
 			updateProductAvailabilityStmt.close();
 		} catch (SQLException e) {
-			logger.error("Error closing overdrive extractor", e);
+			logger.error("Error closing Libby extractor", e);
 		}
 	}
 
