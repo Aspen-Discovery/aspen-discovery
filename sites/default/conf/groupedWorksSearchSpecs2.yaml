@@ -118,11 +118,11 @@ Author:
       - [onephrase, 350]
       - [proximal, 200]
     - author2:
-      - [onephrase, 100]
-      - [proximal, 50]
+      - [onephrase, 25]
+      - [proximal, 1]
     - author_additional:
-      - [onephrase, 100]
-      - [proximal, 50]
+      - [onephrase, 25]
+      - [proximal, 1]
 
 AuthorProper:
   QueryFields:
@@ -133,9 +133,9 @@ AuthorProper:
     - auth_author2:
       - [onephrase, 100]
     - author2:
-      - [ onephrase, 100 ]
+      - [ onephrase, 25 ]
     - author_additional:
-      - [onephrase, 50]
+      - [onephrase, 25]
 
 ISN:
   QueryFields:
@@ -303,11 +303,11 @@ Keyword:
         - [onephrase, 800]
         - [proximal, 200]
       - author2:
-        - [onephrase, 100]
-        - [proximal, 50]
+        - [onephrase, 25]
+        - [proximal, 1]
       - author_additional:
-        - [onephrase, 100]
-        - [proximal, 50]
+        - [onephrase, 25]
+        - [proximal, 1]
 #IDs within the records
     -
       - [OR, 300]
