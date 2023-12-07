@@ -4876,6 +4876,9 @@ class Library extends DataObject {
 		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
 		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
 
+		$readerName = new OverDriveDriver();
+		$apiInfo['libbyReaderName'] = $readerName->getReaderName();
+
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
 
