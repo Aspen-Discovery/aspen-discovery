@@ -63,7 +63,7 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -217,7 +217,7 @@ class Koha extends AbstractIlsDriver {
 					]);
 				} else {
 
-					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+					$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 					$postParams = json_encode($postVariables);
 
 					$this->apiCurlWrapper->addCustomHeaders([
@@ -414,6 +414,7 @@ class Koha extends AbstractIlsDriver {
 		}
 		$timer->logTime("Loaded borrower preference for autorenew_checkouts");
 
+		/** @noinspection SqlResolve */
 		$patronExpirationSql = "SELECT dateexpiry FROM borrowers WHERE borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
 		$patronExpirationResults = mysqli_query($this->dbConnection, $patronExpirationSql);
 		$patronIsExpired = false;
@@ -510,7 +511,7 @@ class Koha extends AbstractIlsDriver {
 				$circulationRulesForCheckout = [];
 				/** @noinspection SqlResolve */
 				/** @noinspection SqlDialectInspection */
-				$circulationRulesSql = "SELECT *  FROM circulation_rules where (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc";
+				$circulationRulesSql = "SELECT *  FROM circulation_rules where (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc";
 				$circulationRulesRS = mysqli_query($this->dbConnection, $circulationRulesSql);
 				if ($circulationRulesRS !== false) {
 					while ($circulationRulesRow = $circulationRulesRS->fetch_assoc()) {
@@ -757,7 +758,7 @@ class Koha extends AbstractIlsDriver {
 					$logger->log("Error parsing xml", Logger::LOG_ERROR);
 					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach (libxml_get_errors() as $error) {
-						$logger->log("\t {$error->message}", Logger::LOG_ERROR);
+						$logger->log("\t $error->message", Logger::LOG_ERROR);
 					}
 					return false;
 				} else {
@@ -803,7 +804,7 @@ class Koha extends AbstractIlsDriver {
 					$logger->log("Error parsing xml", Logger::LOG_ERROR);
 					$logger->log($xml, Logger::LOG_DEBUG);
 					foreach (libxml_get_errors() as $error) {
-						$logger->log("\t {$error->message}", Logger::LOG_ERROR);
+						$logger->log("\t $error->message", Logger::LOG_ERROR);
 					}
 					return false;
 				} else {
@@ -1374,7 +1375,7 @@ class Koha extends AbstractIlsDriver {
 				global $logger;
 				$logger->log("Unable to authenticate with the ILS from doReadingHistoryAction", Logger::LOG_ERROR);
 			} else {
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 				$postParams = json_encode($postVariables);
 
 				$this->apiCurlWrapper->addCustomHeaders([
@@ -1604,7 +1605,7 @@ class Koha extends AbstractIlsDriver {
 	 *
 	 * @param User $patron The User to place a hold for
 	 * @param string $recordId The id of the bib record
-	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
 	 * @param null|string $cancelDate The date the hold should be automatically cancelled
 	 * @return  mixed                 True if successful, false if unsuccessful
 	 *                                If an error occurs, return a AspenError
@@ -2014,7 +2015,7 @@ class Koha extends AbstractIlsDriver {
 	 * @param User $patron The User to place a hold for
 	 * @param string $recordId The id of the bib record
 	 * @param string $itemId The id of the item to hold
-	 * @param string $pickupBranch The branch where the user wants to pickup the item when available
+	 * @param string $pickupBranch The branch where the user wants to pick up the item when available
 	 * @param null|string $cancelDate The date to automatically cancel the hold if not filled
 	 * @return  mixed               True if successful, false if unsuccessful
 	 *                              If an error occurs, return a AspenError
@@ -2341,7 +2342,7 @@ class Koha extends AbstractIlsDriver {
 					$itemType = $curRow['itype'];
 					$checkoutBranch = $curRow['branchcode'];
 					/** @noinspection SqlResolve */
-					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'waiting_hold_cancellation' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 					if ($issuingRulesRS !== false) {
 						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
@@ -2352,6 +2353,7 @@ class Koha extends AbstractIlsDriver {
 						$issuingRulesRS->close();
 					}
 
+					/** @noinspection SqlResolve */
 					$isPendingCancellationSql = "SELECT * FROM hold_cancellation_requests WHERE hold_id={$curRow['reserve_id']}";
 					$isPendingCancellationRS = mysqli_query($this->dbConnection, $isPendingCancellationSql);
 					if ($isPendingCancellationRS !== false) {
@@ -2365,6 +2367,7 @@ class Koha extends AbstractIlsDriver {
 			} elseif ($curRow['found'] == 'T') {
 				$curHold->status = "In Transit";
 				if($this->getKohaVersion() >= 22.11) {
+					/** @noinspection SpellCheckingInspection */
 					if(strpos($allowUserToChangeBranch, 'intransit') !== false) {
 						$curHold->locationUpdateable = true;
 					}
@@ -2554,6 +2557,7 @@ class Koha extends AbstractIlsDriver {
 					// Store result for API or app use
 					$result['api'] = [];
 
+					/** @noinspection PhpArrayIndexImmediatelyRewrittenInspection */
 					$result = [
 						'success' => false,
 						'message' => 'Unknown error canceling hold.',
@@ -2597,7 +2601,7 @@ class Koha extends AbstractIlsDriver {
 						$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'DELETE');
 						ExternalRequestLogEntry::logRequest('koha.cancelHold', 'DELETE', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 						if ($this->apiCurlWrapper->getResponseCode() !== 204 && $this->apiCurlWrapper->getResponseCode() !== 202) {
-							$cancel_response = json_decode($response, false);
+							$cancel_response = json_decode($response);
 							$allCancelsSucceed = false;
 							if (isset($cancel_response->error)) {
 								$result['message'] = translate([
@@ -2637,8 +2641,8 @@ class Koha extends AbstractIlsDriver {
 			}
 			$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 			$patron->forceReloadOfHolds();
+			$result['title'] = $titles;
 			if ($allCancelsSucceed) {
-				$result['title'] = $titles;
 				$result['success'] = true;
 				$result['message'] = translate([
 					'text' => 'Cancelled %1% hold(s) successfully.',
@@ -2655,9 +2659,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			} else {
-				$result['title'] = $titles;
 				$result['success'] = false;
 				$result['message'] = translate([
 					'text' => 'Some holds could not be cancelled.  Please try again later or see your librarian.',
@@ -2673,12 +2675,12 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			}
+			return $result;
 		} else {
+			$result['title'] = $titles;
+			$result['success'] = false;
 			if ($locationId) {
-				$result['title'] = $titles;
-				$result['success'] = false;
 				$result['message'] = translate([
 					'text' => 'Changing location for a hold is not supported.',
 					'isPublicFacing' => true,
@@ -2693,10 +2695,7 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			} else {
-				$result['title'] = $titles;
-				$result['success'] = false;
 				$result['message'] = translate([
 					'text' => 'Freezing and thawing holds is not supported.',
 					'isPublicFacing' => true,
@@ -2711,8 +2710,8 @@ class Koha extends AbstractIlsDriver {
 					'isPublicFacing' => true,
 				]);
 
-				return $result;
 			}
+			return $result;
 		}
 	}
 
@@ -2821,7 +2820,7 @@ class Koha extends AbstractIlsDriver {
 					'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 					'Accept-Encoding: gzip, deflate',
 				], true);
-				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST', null);
+				$response = $this->apiCurlWrapper->curlSendPage($apiUrl, 'POST');
 				$responseCode = $this->apiCurlWrapper->getResponseCode();
 				ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'POST', $apiUrl, $this->apiCurlWrapper->getHeaders(), '', $this->apiCurlWrapper->getResponseCode(), $response, []);
 				if ($responseCode == 201) {
@@ -2842,8 +2841,8 @@ class Koha extends AbstractIlsDriver {
 					$patron->clearCachedAccountSummaryForSource($this->getIndexingProfile()->name);
 					$patron->forceReloadOfCheckouts();
 				} else {
+					$result['success'] = false;
 					if ($responseCode == 403) {
-						$result['success'] = false;
 						$result['api']['title'] = translate([
 							'text' => 'Unable to renew checkout',
 							'isPublicFacing' => true,
@@ -2871,7 +2870,6 @@ class Koha extends AbstractIlsDriver {
 							}
 						}
 					} else {
-						$result['success'] = false;
 						$result['message'] = translate([
 							'text' => "Error (%1%) renewing this title.",
 							1 => $responseCode,
@@ -2884,10 +2882,10 @@ class Koha extends AbstractIlsDriver {
 			$this->initDatabaseConnection();
 			if($this->getKohaVersion() >= 22.11) {
 				/** @noinspection SqlResolve */
-				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals_count from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = {$itemId} limit 1";
+				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals_count from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = $itemId limit 1";
 			} else {
 				/** @noinspection SqlResolve */
-				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = {$itemId} limit 1";
+				$renewSql = "SELECT issues.*, items.biblionumber, items.itype, items.itemcallnumber, items.enumchron, title, author, issues.renewals from issues left join items on items.itemnumber = issues.itemnumber left join biblio ON items.biblionumber = biblio.biblionumber where borrowernumber =  '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "' AND issues.itemnumber = $itemId limit 1";
 			}
 
 			$renewResults = mysqli_query($this->dbConnection, $renewSql);
@@ -2899,7 +2897,7 @@ class Koha extends AbstractIlsDriver {
 				'item_id' => $itemId,
 			];
 
-			require_once ROOT_DIR . '/sys/User/Checkout.php';;
+			require_once ROOT_DIR . '/sys/User/Checkout.php';
 			$renewURL = $this->getWebServiceUrl() . '/cgi-bin/koha/ilsdi.pl?' . http_build_query($params);
 			$renewResponse = $this->getXMLWebServiceResponse($renewURL);
 			ExternalRequestLogEntry::logRequest('koha.renewCheckout', 'GET', $renewURL, $this->curlWrapper->getHeaders(), '', $this->curlWrapper->getResponseCode(), $renewResponse, []);
@@ -2917,7 +2915,7 @@ class Koha extends AbstractIlsDriver {
 						$renewCount = $curRow['renewals'] + 1;
 					}
 					/** @noinspection SqlResolve */
-					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('{$patronType}', '*') OR categorycode IS NULL) and (itemtype IN('{$itemType}', '*') OR itemtype is null) and (branchcode IN ('{$checkoutBranch}', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
+					$issuingRulesSql = "SELECT *  FROM circulation_rules where rule_name =  'renewalsallowed' AND (categorycode IN ('$patronType', '*') OR categorycode IS NULL) and (itemtype IN('$itemType', '*') OR itemtype is null) and (branchcode IN ('$checkoutBranch', '*') OR branchcode IS NULL) order by branchcode desc, categorycode desc, itemtype desc limit 1";
 					$issuingRulesRS = mysqli_query($this->dbConnection, $issuingRulesSql);
 					if ($issuingRulesRS !== false) {
 						if ($issuingRulesRow = $issuingRulesRS->fetch_assoc()) {
@@ -4584,7 +4582,7 @@ class Koha extends AbstractIlsDriver {
 	private function postSelfRegistrationToKoha($postVariables) : array {
 		$result = ['success' => false,];
 
-		$autobarcode = $this->getKohaSystemPreference('autoMemberNum');
+		$autoBarcode = $this->getKohaSystemPreference('autoMemberNum');
 		$verificationRequired = $this->getKohaSystemPreference('PatronSelfRegistrationVerifyByEmail');
 
 		$oauthToken = $this->getOAuthToken();
@@ -4635,7 +4633,7 @@ class Koha extends AbstractIlsDriver {
 				if ($verificationRequired != "0") {
 					$result['message'] = "Your account was registered, and a confirmation email will be sent to the email you provided. Your account will not be activated until you follow the link provided in the confirmation email.";
 				} else {
-					if ($autobarcode == "1") {
+					if ($autoBarcode == "1") {
 						$result['barcode'] = $jsonResponse->cardnumber;
 						$patronId = $jsonResponse->patron_id;
 						if (isset($_REQUEST['borrower_password'])) {
@@ -4902,6 +4900,7 @@ class Koha extends AbstractIlsDriver {
 					]),
 				];
 			} else {
+				/** @noinspection SpellCheckingInspection */
 				$postFields = [
 					'title' => $_REQUEST['title'],
 					'author' => $_REQUEST['author'],
@@ -5075,7 +5074,7 @@ class Koha extends AbstractIlsDriver {
 				if (!$response) {
 					return $result;
 				} else {
-					$materialRequests = json_decode($response, false);
+					$materialRequests = json_decode($response);
 					foreach ($materialRequests as $materialRequest) {
 						$managedBy = $materialRequest->managed_by;
 						/** @noinspection SqlResolve */
@@ -5186,7 +5185,7 @@ class Koha extends AbstractIlsDriver {
 				];
 			} else {
 				$suggestionId = $_REQUEST['delete_field'];
-				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/{$suggestionId}";
+				$apiUrl = $this->getWebServiceURL() . "/api/v1/suggestions/$suggestionId";
 				$this->delApiCurlWrapper->addCustomHeaders([
 					'Authorization: Bearer ' . $oauthToken,
 					'User-Agent: Aspen Discovery',
@@ -5495,7 +5494,7 @@ class Koha extends AbstractIlsDriver {
 			$currentListTitles = $newList->getListTitles();
 
 			/** @noinspection SqlResolve */
-			$listContentsSql = "SELECT * FROM virtualshelfcontents where shelfnumber = {$shelfNumber}";
+			$listContentsSql = "SELECT * FROM virtualshelfcontents where shelfnumber = $shelfNumber";
 			$listContentResults = mysqli_query($this->dbConnection, $listContentsSql);
 			while ($curTitle = $listContentResults->fetch_assoc()) {
 				$bibNumber = $curTitle['biblionumber'];
@@ -5723,6 +5722,7 @@ class Koha extends AbstractIlsDriver {
 		/** @noinspection SqlResolve */
 		if (!empty($patronBarcode)) {
 			//search by barcode
+			/** @noinspection SqlResolve */
 			$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where cardnumber = '" . mysqli_escape_string($this->dbConnection, $patronBarcode) . "'";
 
 			$lookupUserResult = mysqli_query($this->dbConnection, $sql);
@@ -5736,6 +5736,7 @@ class Koha extends AbstractIlsDriver {
 			}
 		}else{
 			//search by username
+			/** @noinspection SqlResolve */
 			$sql = "SELECT borrowernumber, cardnumber, userId from borrowers where userId = '" . mysqli_escape_string($this->dbConnection, $patronUsername) . "'";
 
 			$lookupUserResult = mysqli_query($this->dbConnection, $sql);
@@ -6010,7 +6011,7 @@ class Koha extends AbstractIlsDriver {
 					/** @noinspection SpellCheckingInspection */
 					if ($key == 'SMSnumber') {
 						/** @noinspection RegExpRedundantEscape */
-						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-z]/', '', $value));
+						$getParams[] = urlencode($key) . '=' . urlencode(preg_replace('/[-&\\#,()$~%.:*?<>{}\sa-zA-Z]/', '', $value));
 					} elseif (str_starts_with($key, 'digest')) {
 						if(strlen($digestParams > 0)) {
 							$digestParams .= '&';
@@ -6177,7 +6178,7 @@ class Koha extends AbstractIlsDriver {
 				'Content-Type: application/json;charset=UTF-8',
 				'Host: ' . preg_replace('~http[s]?://~', '', $this->getWebServiceURL()),
 			], true);
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}/account/credits";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id/account/credits";
 			if (count($accountLinesPaid) > 0) {
 				$postVariables = [
 					'account_lines_ids' => $accountLinesPaid,
@@ -6293,7 +6294,7 @@ class Koha extends AbstractIlsDriver {
 		if ($accountSummary->isExpired()) {
 			//Check the patron category as well
 			/** @noinspection SqlResolve */
-			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '{$patron->patronType}'";
+			$patronCategorySql = "select BlockExpiredPatronOpacActions from categories where categorycode = '$patron->patronType'";
 			$patronCategoryResult = mysqli_query($this->dbConnection, $patronCategorySql, MYSQLI_USE_RESULT);
 			$useSystemPreference = true;
 			$blockExpiredPatronOpacActions = true;
@@ -6393,7 +6394,7 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -6535,7 +6536,7 @@ class Koha extends AbstractIlsDriver {
 	 * @return array
 	 */
 	protected function resetPinInKoha($borrowerNumber, string $newPin, string $oauthToken): array {
-		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/password";
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/password";
 		$postParams = [];
 		$postParams['password'] = $newPin;
 		$postParams['password_2'] = $newPin;
@@ -6619,7 +6620,7 @@ class Koha extends AbstractIlsDriver {
 	 */
 	protected function updateExtendedAttributesInKoha($borrowerNumber, array $extendedAttributes, string $oauthToken): array {
 
-		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
+		$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/extended_attributes";
 
 		$postVariables = [];
 		foreach ($extendedAttributes as $extendedAttribute) {
@@ -6688,7 +6689,7 @@ class Koha extends AbstractIlsDriver {
 		$extendedAttributes = [];
 		$oauthToken = $this->getOAuthToken();
 		if ($oauthToken != false) {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$borrowerNumber}/extended_attributes";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$borrowerNumber/extended_attributes";
 
 			$this->apiCurlWrapper->addCustomHeaders([
 				'Authorization: Bearer ' . $oauthToken,
@@ -6745,7 +6746,7 @@ class Koha extends AbstractIlsDriver {
 	public function getPluginStatus(string $pluginName) {
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM plugin_data WHERE plugin_class LIKE '%{$pluginName}';";
+		$sql = "SELECT * FROM plugin_data WHERE plugin_class LIKE '%$pluginName';";
 		$results = mysqli_query($this->dbConnection, $sql);
 
 		if ($results !== false) {
@@ -6845,7 +6846,7 @@ class Koha extends AbstractIlsDriver {
 				'isPublicFacing' => true,
 			]);
 		} else {
-			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/{$patron->unique_ils_id}";
+			$apiUrl = $this->getWebServiceURL() . "/api/v1/patrons/$patron->unique_ils_id";
 			$postParams = json_encode($postVariables);
 
 			$this->apiCurlWrapper->addCustomHeaders([
@@ -7046,7 +7047,7 @@ class Koha extends AbstractIlsDriver {
 
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
-		$sql = "SELECT * FROM curbside_pickup_policy WHERE branchcode='{$locationCode}';";
+		$sql = "SELECT * FROM curbside_pickup_policy WHERE branchcode='$locationCode';";
 		$results = mysqli_query($this->dbConnection, $sql);
 
 		if ($results !== false) {
@@ -7792,7 +7793,7 @@ class Koha extends AbstractIlsDriver {
 			$postVariables = $this->setPostField($postVariables, 'email', $library->useAllCapsWhenUpdatingProfile);
 			$postVariables = $this->setPostField($postVariables, 'phone', $library->useAllCapsWhenUpdatingProfile);
 
-			$pTypeToSet = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');;
+			$pTypeToSet = $this->getKohaSystemPreference('PatronSelfRegistrationDefaultCategory');
 			if ($addressValidated) {
 				if ($library->thirdPartyPTypeAddressValidated > 0) {
 					$pTypeToSet = $library->thirdPartyPTypeAddressValidated;
