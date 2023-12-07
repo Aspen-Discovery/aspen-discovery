@@ -149,6 +149,14 @@ function getUpdates23_12_00(): array {
 			]
 		], //evergreen_indexing_options
 
+		'evergreen_extract_number_of_threads' => [
+			'title' => 'Evergreen Extract Number of Threads',
+			'description' => 'Add options for controlling Evergreen extract threads',
+			'sql' => [
+				'ALTER TABLE indexing_profiles ADD COLUMN numExtractionThreads TINYINT DEFAULT 10',
+			]
+		], //evergreen_extract_number_of_threads
+
 		//kirstien - ByWater
 
 		//kodi - ByWater

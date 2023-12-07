@@ -111,7 +111,7 @@ class OverDriveProcessor {
 						if (!metadata.containsKey("rawMetadata") || (metadata.get("rawMetadata") == null)){
 							//We didn't get metadata for the title.  This shouldn't happen in normal cases, but if it does,
 							//we should just skip processing this record.
-							logEntry.addNote("OverDrive record " + identifier + " did not have metadata, skipping");
+							logEntry.addNote("Libby record " + identifier + " did not have metadata, skipping");
 							productRS.close();
 							return;
 						}
@@ -119,7 +119,7 @@ class OverDriveProcessor {
 						if (rawMetadataString.charAt(0) != '{' || rawMetadataString.charAt(rawMetadataString.length() -1) != '}'){
 							rawMetadataString = fixOverDriveMetaData(productId);
 							if (rawMetadataString == null){
-								logEntry.incErrors("Could not read or correct raw OverDrive Metadata for " + identifier);
+								logEntry.incErrors("Could not read or correct raw Libby Metadata for " + identifier);
 							}
 						}
 
@@ -132,7 +132,7 @@ class OverDriveProcessor {
 						try {
 							rawMetadataDecoded = new JSONObject(rawMetadataString);
 						} catch (JSONException e) {
-							logEntry.incErrors("Error loading raw data for OverDrive MetaData for record " + identifier, e);
+							logEntry.incErrors("Error loading raw data for Libby MetaData for record " + identifier, e);
 						}
 
 						boolean isOnOrder = false;
@@ -322,7 +322,7 @@ class OverDriveProcessor {
 							targetAudience = loadOverDriveSubjects(groupedWork, rawMetadataDecoded);
 						}
 
-						//Load the formats for the record.  For OverDrive, we will create a separate item for each format.
+						//Load the formats for the record.  For Libby, we will create a separate item for each format.
 						HashSet<String> validFormats = loadOverDriveFormats(productId, identifier);
 						if (validFormats.contains("Kindle Book")){
 							hasKindle = true;
@@ -377,12 +377,7 @@ class OverDriveProcessor {
 						int numHolds = 0;
 						//Just create one item for each with a list of sub formats.
 						ItemInfo itemInfo = new ItemInfo();
-						itemInfo.seteContentSource("OverDrive");
 						itemInfo.setIsEContent(true);
-						itemInfo.setShelfLocation("OverDrive");
-						itemInfo.setDetailedLocation("OverDrive");
-						itemInfo.setCallNumber("OverDrive");
-						itemInfo.setSortableCallNumber("OverDrive");
 						if (isOnOrder) {
 							itemInfo.setIsOrderItem();
 							itemInfo.setDateAdded(publishDate);
@@ -410,6 +405,18 @@ class OverDriveProcessor {
 						availabilityRS.close();
 
 						for (Scope scope : indexer.getScopes()) {
+							String readerName = "Libby";
+
+							if (scope.getOverDriveScope() != null){
+								readerName = scope.getOverDriveScope().getReaderName();
+							}
+
+							itemInfo.seteContentSource(readerName);
+							itemInfo.setShelfLocation(readerName);
+							itemInfo.setDetailedLocation(readerName);
+							itemInfo.setCallNumber(readerName);
+							itemInfo.setSortableCallNumber(readerName);
+
 							if (scope.isIncludeOverDriveCollection()) {
 
 								//Load availability & determine which scopes are valid for the record
@@ -477,7 +484,7 @@ class OverDriveProcessor {
 										groupedWork.addScopingInfo(scope.getScopeName(), scopingInfo);
 									}
 								}
-							} // Scope has OverDrive content
+							} // Scope has Libby content
 						} // End looping through scopes
 						overDriveRecord.addItem(itemInfo);
 
@@ -545,7 +552,7 @@ class OverDriveProcessor {
 				}
 			}
 		}else{
-			logger.warn("OverDrive product did not have formats");
+			logger.warn("Libby product did not have formats");
 		}
 	}
 
@@ -553,7 +560,7 @@ class OverDriveProcessor {
 	 * Load information based on subjects for the record
 	 *
 	 * @param groupedWork     The Grouped Work being updated
-	 * @param productMetadata JSON representing the raw data metadata from OverDrive
+	 * @param productMetadata JSON representing the raw data metadata from Libby
 	 * @return The target audience for use later in scoping
 	 * @throws JSONException Exception if something goes horribly wrong
 	 */
@@ -635,7 +642,7 @@ class OverDriveProcessor {
 			for (int i = 0; i < languagesFromMetadata.length(); i++) {
 				JSONObject curLanguageObj = languagesFromMetadata.getJSONObject(i);
 				String language = curLanguageObj.getString("name");
-				//OverDrive now adds multiple languages separated by commas
+				//Libby now adds multiple languages separated by commas
 				String[] splitLanguages = language.split(";");
 				for (String curLanguage : splitLanguages) {
 					curLanguage = curLanguage.trim();
@@ -705,7 +712,7 @@ class OverDriveProcessor {
 			groupedWork.addPublicationDate(publicationDate);
 			returnMetadata.put("publicationDate", publicationDate);
 			//Need to divide this because it seems to be all time checkouts for all libraries, not just our libraries
-			//Hopefully OverDrive will give us better stats in the near future that we can use.
+			//Hopefully Libby will give us better stats in the near future that we can use.
 			groupedWork.addPopularity(metadataRS.getFloat("popularity") / 500f);
 			String shortDescription = metadataRS.getString("shortDescription");
 			groupedWork.addDescription(shortDescription, format, formatCategory);

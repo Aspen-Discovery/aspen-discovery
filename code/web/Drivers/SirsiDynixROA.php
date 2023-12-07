@@ -3435,35 +3435,27 @@ class SirsiDynixROA extends HorizonAPI {
 						'label' => 'Receive notices via text',
 						'onchange' => 'AspenDiscovery.Account.updateSelfRegistrationFields()',
 					];
-				} /*elseif ($customField->symphonyName == 'city_state') {
-					$fields['City'] = [
-						'property' => 'city',
+				} elseif ($customField->symphonyName == "email"){
+					$fields[$customField->symphonyName] = [
+						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,
-						'label' => 'City',
+						'label' => $customField->displayName,
+						'maxLength' => 128,
 						'required' => $customField->required,
-						'note' => $customField->note
+						'note' => $customField->note,
+						'autocomplete' => false,
 					];
-					if (!empty($library->validSelfRegistrationStates)){
-						$validStates = explode('|', $library->validSelfRegistrationStates);
-						$validStates = array_combine($validStates, $validStates);
-						$fields['State'] = [
-							'property' => 'state',
-							'type' => 'enum',
-							'values' => $validStates,
-							'label' => 'State',
+					if ($customField->required){
+						$fields['email2'] = [
+							'property' => 'email2',
+							'type' => 'email',
+							'label' => 'Confirm Email',
+							'maxLength' => 128,
 							'required' => $customField->required,
-							'note' => $customField->note,
-						];
-					} else {
-						$fields['State'] = [
-							'property' => 'state',
-							'type' => $customField->fieldType,
-							'label' => 'State',
-							'required' => $customField->required,
-							'note' => $customField->note
+							'autocomplete' => false,
 						];
 					}
-				}*/ elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
+				} elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
 						'type' => $customField->fieldType,

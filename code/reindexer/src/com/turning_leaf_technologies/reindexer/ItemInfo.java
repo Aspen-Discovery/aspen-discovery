@@ -186,7 +186,7 @@ public class ItemInfo{
 	}
 
 	int getNumCopies() {
-		//Deal with OverDrive always available
+		//Deal with Libby always available
 		if (numCopies > 1000){
 			return 1;
 		}else {

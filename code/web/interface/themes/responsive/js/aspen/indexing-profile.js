@@ -59,7 +59,7 @@ AspenDiscovery.IndexingClass = (function () {
 				III: ['propertyRowbCode3sToSuppress', 'propertyRowiCode2', 'propertyRowuseICode2Suppression', 'propertyRowiCode2sToSuppress', 'propertyRoworderSection', 'propertyRowsierraSection', 'propertyRoworderRecordsStatusesToInclude', 'propertyRowhideOrderRecordsForBibsWithPhysicalItems', 'propertyRoworderRecordsToSuppressByDate', 'propertyRowsierraFieldMappings', 'propertyRowcheckSierraMatTypeForFormat'],
 				Symphony: ['propertyRowlastVolumeExportTimestamp'],
 				Polaris: [],
-				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection', 'propertyRownumRetriesForBibLookups', 'propertyRownumMillisecondsToPauseAfterBibLookups']
+				Evergreen: ['propertyRowevergreenOrgUnitSchema', 'propertyRowevergreenSection', 'propertyRownumRetriesForBibLookups', 'propertyRownumMillisecondsToPauseAfterBibLookups', 'propertyRownumExtractionThreads']
 			};
 
 			//Show rows for selected class
