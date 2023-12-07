@@ -41,8 +41,8 @@ export const MyCheckouts = () => {
      const [checkoutsBy, setCheckoutBy] = React.useState({
           ils: 'Checked Out Titles for Physical Materials',
           hoopla: 'Checked Out Titles for Hoopla',
-          overdrive: 'Checked Out Titles for OverDrive',
-          axis_360: 'Checked Out Titles for Axis 360',
+          overdrive: 'Checked Out Titles for Libby',
+          axis_360: 'Checked Out Titles for Boundless',
           cloud_library: 'Checked Out Titles for cloudLibrary',
           all: 'Checked Out Titles',
      });
@@ -100,7 +100,7 @@ export const MyCheckouts = () => {
                          setCheckoutBy(tmp);
                     }
 
-                    term = getTermFromDictionary(language, 'checkouts_for_overdrive');
+                    term = getTermFromDictionary(language, 'checkouts_for_libby');
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'overdrive', term);
                          setCheckoutBy(tmp);
@@ -118,7 +118,7 @@ export const MyCheckouts = () => {
                          setCheckoutBy(tmp);
                     }
 
-                    term = getTermFromDictionary(language, 'checkouts_for_axis_360');
+                    term = getTermFromDictionary(language, 'checkouts_for_boundless');
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'axis_360', term);
                          setCheckoutBy(tmp);
@@ -215,10 +215,10 @@ export const MyCheckouts = () => {
                                    onValueChange={(itemValue) => toggleSource(itemValue)}>
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_overdrive') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
+                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_libby') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_axis_360') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} />
+                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} />
                               </Select>
                          </FormControl>
                     </HStack>

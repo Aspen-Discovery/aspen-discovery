@@ -76,11 +76,11 @@ export const MyHolds = () => {
                if (value === 'ils') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_ils') });
                } else if (value === 'overdrive') {
-                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_overdrive') });
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_libby') });
                } else if (value === 'cloud_library') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_cloud_library') });
                } else if (value === 'axis360') {
-                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_axis_360') });
+                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_boundless') });
                } else {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_all') });
                }
@@ -359,9 +359,9 @@ export const MyHolds = () => {
                                         onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_overdrive') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
+                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_libby') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_axis_360') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={4} />
+                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={4} />
                                    </Select>
                               </FormControl>
                          </HStack>
