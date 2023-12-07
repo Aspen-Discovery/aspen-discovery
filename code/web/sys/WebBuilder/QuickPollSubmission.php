@@ -99,7 +99,12 @@ class QuickPollSubmission extends DataObject {
 				$selectedOption->pollSubmissionId = $this->id;
 				$selectedOption->find();
 				while ($selectedOption->fetch()) {
-					$this->_selectedOptions[$selectedOption->id] = clone($selectedOption);
+					$quickPollOption = new QuickPollOption();
+					$quickPollOption->id = $selectedOption->pollOptionId;
+					$quickPollOption->find(true);
+					if(!empty($quickPollOption->label)){
+						$this->_selectedOptions[$selectedOption->id] = clone($selectedOption);
+					}
 				}
 				$selectedOption->__destruct();
 			}
