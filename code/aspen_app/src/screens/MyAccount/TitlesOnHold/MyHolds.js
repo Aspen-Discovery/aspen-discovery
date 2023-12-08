@@ -9,7 +9,7 @@ import { Platform, SafeAreaView, SectionList } from 'react-native';
 import { loadingSpinner } from '../../../components/loadingSpinner';
 import { DisplayMessage, DisplaySystemMessage } from '../../../components/Notifications';
 import { HoldsContext, LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { getPatronHolds } from '../../../util/api/user';
 import { getPickupLocations } from '../../../util/loadLibrary';
 import { ManageAllHolds, ManageSelectedHolds, MyHold } from './MyHold';
@@ -40,6 +40,9 @@ export const MyHolds = () => {
           library_account: 'Sort by Library Account',
           expiration: 'Sort by Expiration Date',
      });
+
+     const [filterByLibby, setFilterByLibby] = React.useState(false);
+     const [filterByLibbyTitle, setFilterByLibbyTitle] = React.useState(false);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -76,7 +79,7 @@ export const MyHolds = () => {
                if (value === 'ils') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_ils') });
                } else if (value === 'overdrive') {
-                    navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_libby') });
+                    navigation.setOptions({ title: filterByLibbyTitle });
                } else if (value === 'cloud_library') {
                     navigation.setOptions({ title: getTermFromDictionary(language, 'titles_on_hold_for_cloud_library') });
                } else if (value === 'axis360') {
@@ -154,6 +157,23 @@ export const MyHolds = () => {
                          tmp = _.set(tmp, 'expiration', term);
                          setSortBy(tmp);
                     }
+
+                    let libbyTitle = getTermFromDictionary(language, 'titles_on_hold_for_libby');
+                    let libbyFilterLabel = getTermFromDictionary(language, 'filter_by_libby');
+                    if (library.libbyReaderName) {
+                         term = await getTranslationsWithValues('titles_on_hold_for_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (term[0] && !term[0].includes('%1%')) {
+                              libbyTitle = term[0];
+                         }
+
+                         term = await getTranslationsWithValues('filter_by_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (term[0] && !term[0].includes('%1%')) {
+                              libbyFilterLabel = term[0];
+                         }
+                    }
+
+                    setFilterByLibbyTitle(libbyTitle);
+                    setFilterByLibby(libbyFilterLabel);
 
                     setLoading(false);
                };
@@ -359,7 +379,7 @@ export const MyHolds = () => {
                                         onValueChange={(itemValue) => toggleHoldSource(itemValue)}>
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
-                                        <Select.Item label={getTermFromDictionary(language, 'filter_by_libby') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
+                                        <Select.Item label={filterByLibby + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={3} />
                                         <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={4} />
                                    </Select>

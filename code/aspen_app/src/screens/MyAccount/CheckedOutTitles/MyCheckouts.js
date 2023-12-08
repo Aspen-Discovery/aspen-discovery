@@ -31,6 +31,7 @@ export const MyCheckouts = () => {
      const [renewAll, setRenewAll] = React.useState(false);
      const [source, setSource] = React.useState('all');
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+     const [filterByLibby, setFilterByLibby] = React.useState(false);
 
      const [renewConfirmationIsOpen, setRenewConfirmationIsOpen] = React.useState(false);
      const onRenewConfirmationClose = () => setRenewConfirmationIsOpen(false);
@@ -101,6 +102,21 @@ export const MyCheckouts = () => {
                     }
 
                     term = getTermFromDictionary(language, 'checkouts_for_libby');
+                    if (library.libbyReaderName) {
+                         term = await getTranslationsWithValues('checkouts_for_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (term[0]) {
+                              term = term[0];
+                         }
+
+                         let filterTerm = await getTranslationsWithValues('filter_by_libby', library.libbyReaderName, language, library.baseUrl);
+                         if (filterTerm[0]) {
+                              setFilterByLibby(filterTerm[0]);
+                         } else {
+                              filterTerm = getTermFromDictionary(language, 'filter_by_libby');
+                              setFilterByLibby(filterTerm);
+                         }
+                    }
+
                     if (!term.includes('%1%')) {
                          tmp = _.set(tmp, 'overdrive', term);
                          setCheckoutBy(tmp);
@@ -215,7 +231,7 @@ export const MyCheckouts = () => {
                                    onValueChange={(itemValue) => toggleSource(itemValue)}>
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_all') + ' (' + (user.numCheckedOut ?? 0) + ')'} value="all" key={0} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_ils') + ' (' + (user.numCheckedOutIls ?? 0) + ')'} value="ils" key={1} />
-                                   <Select.Item label={getTermFromDictionary(language, 'filter_by_libby') + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
+                                   <Select.Item label={filterByLibby + ' (' + (user.numCheckedOutOverDrive ?? 0) + ')'} value="overdrive" key={2} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_hoopla') + ' (' + (user.numCheckedOut_Hoopla ?? 0) + ')'} value="hoopla" key={3} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_cloud_library') + ' (' + (user.numCheckedOut_cloudLibrary ?? 0) + ')'} value="cloud_library" key={4} />
                                    <Select.Item label={getTermFromDictionary(language, 'filter_by_boundless') + ' (' + (user.numCheckedOut_axis360 ?? 0) + ')'} value="axis360" key={5} />
