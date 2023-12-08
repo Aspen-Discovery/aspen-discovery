@@ -1,11 +1,11 @@
 import _ from 'lodash';
-import { LoadOverDriveSample } from './LoadOverDriveSample';
 import { CheckedOutToYou } from './CheckedOutToYou';
-import { OnHoldForYou } from './OnHoldForYou';
+import { CheckOut } from './CheckOut/CheckOut';
 import { PlaceHold } from './Holds/PlaceHold';
 import { StartVDXRequest } from './Holds/VDXRequest';
+import { LoadOverDriveSample } from './LoadOverDriveSample';
+import { OnHoldForYou } from './OnHoldForYou';
 import { OpenSideLoad } from './OpenSideLoad';
-import { CheckOut } from './CheckOut/CheckOut';
 
 export const ActionButton = (data) => {
      const action = data.actions;
@@ -45,6 +45,8 @@ export const ActionButton = (data) => {
      if (_.isObject(action)) {
           if (action.type === 'overdrive_sample') {
                return <LoadOverDriveSample title={action.title} prevRoute={prevRoute} id={fullRecordId} type={action.type} sampleNumber={action.sampleNumber} formatId={action.formatId} />;
+          } else if (action.type === 'project_palace_sample') {
+               return null;
           } else if (action.url === '/MyAccount/CheckedOut') {
                return <CheckedOutToYou title={action.title} prevRoute={prevRoute} />;
           } else if (action.url === '/MyAccount/Holds') {
