@@ -9302,7 +9302,7 @@ a.placard-link {
   -webkit-column-break-inside: avoid;
   display: inline-block;
   text-align: center;
-  min-height: 200px;
+  min-height: 125px;
 }
 .browse-thumbnail > img,
 .browse-thumbnail a > img {
