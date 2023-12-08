@@ -201,7 +201,7 @@ class SystemVariables extends DataObject {
 			'allowableHtmlTags' => [
 				'property' => 'allowableHtmlTags',
 				'type' => 'text',
-				'label' => 'Allowable HTML Tags (blank to allow all, separate tags with pipes)',
+				'label' => 'Allowable HTML Tags',
 				'description' => 'HTML Tags to allow in HTML and Markdown fields',
 				'maxLength' => 512,
 				'default' => 'p|em|i|strong|b|span|style|a|table|ul|ol|li|h1|h2|h3|h4|h5|h6|pre|code|hr|table|tbody|tr|th|td|caption|img|br|div|span',
