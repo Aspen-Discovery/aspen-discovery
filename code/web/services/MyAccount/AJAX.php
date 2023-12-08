@@ -4859,7 +4859,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$paymentId = $payment->id;
 				$paymentAmount = $payment->totalPaid;
 				$body = [
-					'idempotency_key' => $paymentId,
+					'idempotency_key' => strval($paymentId), // Square needs this to be a string, so guarantee it
 					'amount_money' => [
 						'amount' => (int)round($payment->totalPaid * 100),
 						'currency' => 'USD'
