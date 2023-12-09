@@ -292,7 +292,10 @@ if (!$siteOnWindows) {
 }
 
 //Import the database
-$mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\" --port \"{$variables['aspenDBPort']}\"";
+$mysqlConnectionCommand = "mariadb -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+if ($variables['aspenDBPort'] != "3306") {
+	$mysqlConnectionCommand .= " --port \"{$variables['aspenDBPort']}\"";
+}
 if ($clearExisting) {
 	echo("Removing existing database\r\n");
 	exec("$mysqlConnectionCommand -e\"DROP DATABASE IF EXISTS {$variables['aspenDBName']}\"");
