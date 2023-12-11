@@ -11,7 +11,6 @@ yum remove -y MariaDB-server
 
 cp mariadb.repo /etc/yum.repos.d/mariadb.repo
 yum -y install MariaDB-server
-yum update -y
 
 service mysqld start
 
