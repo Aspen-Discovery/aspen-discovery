@@ -273,7 +273,7 @@ class UserAPI extends Action {
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
-					$_REQUEST['rememberMe'] = true;
+					$_REQUEST['rememberMe'] = "true";
 					UserAccount::updateSession($validatedUser);
 					return [
 						'success' => true,
