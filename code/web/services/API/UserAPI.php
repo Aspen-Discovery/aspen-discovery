@@ -84,7 +84,8 @@ class UserAPI extends Action {
 					'updateNotificationOnboardingStatus',
 					'resetPassword',
 					'disableAccountLinking',
-					'enableAccountLinking'
+					'enableAccountLinking',
+					'validateSession'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -266,14 +267,18 @@ class UserAPI extends Action {
 						'success' => false,
 						'message' => 'Unknown authentication method',
 						'session' => false,
+						'validUntil' => null,
 					];
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
+					$_REQUEST['rememberMe'] = true;
+					UserAccount::updateSession($validatedUser);
 					return [
 						'success' => true,
 						'message' => 'User is valid',
 						'session' => session_id(),
+						'validUntil' => strtotime('+2 weeks'),
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
@@ -285,6 +290,7 @@ class UserAPI extends Action {
 							'resetToken' => $invalidUser['resetToken'] ?? null,
 							'userId' => $invalidUser['userId'] ?? null,
 							'session' => false,
+							'validUntil' => null,
 						];
 					}
 				}
@@ -509,6 +515,30 @@ class UserAPI extends Action {
 		} else {
 			return ['success' => false];
 		}
+	}
+
+	/**
+	 * Validate if the session is still valid
+	 * If the user is valid, but the session has expired, then start a new session.
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function validateSession() {
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user != null) {
+			$sessionId = $_REQUEST['sessionId'] ?? null;
+			if($sessionId) {
+				$session = new Session();
+				$session->setSessionId($sessionId);
+				if($session->find(true)) {
+					return ['success' => true];
+				} else {
+					return $this->loginToLiDA();
+				}
+			}
+		}
+		return ['success' => false];
 	}
 
 	/**
