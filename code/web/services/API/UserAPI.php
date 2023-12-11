@@ -85,7 +85,8 @@ class UserAPI extends Action {
 					'resetPassword',
 					'disableAccountLinking',
 					'enableAccountLinking',
-					'validateSession'
+					'validateSession',
+					'prepareSharedSession'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -535,6 +536,40 @@ class UserAPI extends Action {
 					return ['success' => true];
 				} else {
 					return $this->loginToLiDA();
+				}
+			}
+		}
+		return ['success' => false];
+	}
+
+	/**
+	 * Validate the user for the incoming shared session
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function prepareSharedSession() {
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user != null) {
+			// validate the incoming request
+			$validSession = $this->validateSession();
+			if($validSession['success'] && $this->getLiDAUserAgent()) {
+				$data = random_bytes(16);
+				assert(strlen($data) == 16);
+				$data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+				$data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+				$uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+
+				require_once ROOT_DIR . '/sys/Session/SharedSession.php';
+				$sharedSession = new SharedSession();
+				$sharedSession->setSessionId($uuid);
+				$sharedSession->setUserId($user->id);
+				$sharedSession->setCreated(strtotime('now'));
+				if($sharedSession->insert()) {
+					return [
+						'success' => true,
+						'session' => $uuid,
+					];
 				}
 			}
 		}
@@ -4367,6 +4402,17 @@ class UserAPI extends Action {
 			if ($name == 'LiDA-SessionID' || $name == 'lida-sessionid') {
 				$sessionId = explode(' ', $value);
 				return $sessionId[0];
+			}
+		}
+		return false;
+	}
+
+	function getLiDAUserAgent() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'User-Agent' || $name == 'user-agent') {
+				if(str_contains($value, 'Aspen LiDA') || str_contains($value, 'aspen lida')) {
+					return true;
+				}
 			}
 		}
 		return false;
