@@ -1,6 +1,6 @@
 <?php
 
-function getUpdates23_12_00(): array {
+function getUpdates24_01_00(): array {
 	$curTime = time();
 	return [
 		/*'name' => [
@@ -15,6 +15,14 @@ function getUpdates23_12_00(): array {
 		//mark - ByWater
 
 		//kirstien - ByWater
+		'add_enable_branded_app_settings' => [
+			'title' => 'Add option in System Variables to enable/disable Branded App Settings',
+			'description' => 'Add option in System Variables to enable/disable Branded App Settings',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN enableBrandedApp TINYINT(1) DEFAULT 0'
+			]
+		], //add_enable_branded_app_settings
 
 		//kodi - ByWater
 
