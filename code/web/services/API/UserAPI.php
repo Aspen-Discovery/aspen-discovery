@@ -527,7 +527,7 @@ class UserAPI extends Action {
 		[$username, $password] = $this->loadUsernameAndPassword();
 		$user = UserAccount::validateAccount($username, $password);
 		if ($user != null) {
-			$sessionId = $_REQUEST['sessionId'] ?? null;
+			$sessionId = $this->getLiDASession() ?? null;
 			if($sessionId) {
 				$session = new Session();
 				$session->setSessionId($sessionId);
@@ -4360,6 +4360,16 @@ class UserAPI extends Action {
 			}
 		}
 		return 0;
+	}
+
+	function getLiDASession() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'LiDA-SessionID' || $name == 'lida-sessionid') {
+				$sessionId = explode(' ', $value);
+				return $sessionId[0];
+			}
+		}
+		return false;
 	}
 
 	function getLinkedAccounts() {
