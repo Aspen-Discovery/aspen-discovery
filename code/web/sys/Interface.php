@@ -525,7 +525,7 @@ class UInterface extends Smarty {
 
 		//Load JavaScript Snippets
 		$customJavascript = '';
-		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript'])) {
+		if (!isset($_REQUEST['noCustomJavaScript']) && !isset($_REQUEST['noCustomJavascript']) || !isset($_REQUEST['noCustom'])) {
 			try {
 				if (isset($location)) {
 					require_once ROOT_DIR . '/sys/LocalEnrichment/JavaScriptSnippetLocation.php';
@@ -667,12 +667,18 @@ class UInterface extends Smarty {
 		if ($showHoldButton == 0) {
 			$showHoldButtonInSearchResults = 0;
 		}
-		if (!empty($library->additionalCss)) {
-			$this->assign('additionalCss', $library->additionalCss);
+
+		$additionalCSS = '';
+		if (!isset($_REQUEST['noCustomCSS']) || !isset($_REQUEST['noCustom'])) {
+			if (!empty($library->additionalCss)) {
+				$additionalCSS = $library->additionalCss;
+			}
+			if (!empty($location->additionalCss)) {
+				$additionalCSS = $location->additionalCss;
+			}
 		}
-		if (!empty($location->additionalCss)) {
-			$this->assign('additionalCss', $location->additionalCss);
-		}
+		$this->assign('additionalCss', $additionalCSS);
+
 		if (!empty($library->headerText)) {
 			$this->assign('headerText', $library->headerText);
 		}
