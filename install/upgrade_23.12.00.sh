@@ -5,7 +5,19 @@ if [ -z "$1" ]
     exit 1
 fi
 
-yum-config-manager --enable remi-php83
+service mysqld stop
+
+yum remove -y MariaDB-server
 
 cp mariadb.repo /etc/yum.repos.d/mariadb.repo
+yum -y install MariaDB-server
 yum update -y
+
+service mysqld start
+
+php /usr/local/aspen-discovery/install/runMariaDbUpgrade_23_12.php $1
+
+yum-config-manager --enable remi-php83
+yum update -y
+
+apachectl restart
