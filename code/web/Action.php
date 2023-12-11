@@ -31,6 +31,10 @@ abstract class Action
 		$readerName = new OverDriveDriver();
 		$readerName = $readerName->getReaderName();
 		$interface->assign('readerName', $readerName);
+
+		$minimalInterface = $_REQUEST['minimalInterface'] ?? false;
+		$interface->assign('minimalInterface', $minimalInterface);
+
 		global $isAJAX;
 		if (!$isAJAX && UserAccount::isLoggedIn()){
 			$this->loadAccountSidebarVariables();
