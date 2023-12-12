@@ -51,7 +51,7 @@
 			{if !empty($userHasCatalogConnection)}
 				Globals.hasILSConnection = true;
 			{/if}
-			{if array_key_exists('Boundless', $enabledModules)}
+			{if array_key_exists('Axis 360', $enabledModules)}
 				Globals.hasAxis360Connection = true;
 			{/if}
 			{if array_key_exists('Cloud Library', $enabledModules)}
