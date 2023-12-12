@@ -773,6 +773,9 @@ class Library extends DataObject {
 		$cloudLibraryScopeStructure = LibraryCloudLibraryScope::getObjectStructure($context);
 		unset($cloudLibraryScopeStructure['libraryId']);
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+
 		$barcodeTypes = [
 			'none' => 'Do not show the barcode',
 			'CODE128' => 'CODE128 (automatic mode switching)',
@@ -3414,7 +3417,7 @@ class Library extends DataObject {
 			'overdriveSection' => [
 				'property' => 'overdriveSection',
 				'type' => 'section',
-				'label' => 'OverDrive',
+				'label' => "$readerName",
 				'hideInLists' => true,
 				'renderAsHeading' => true,
 				'permissions' => ['Library Records included in Catalog'],
@@ -3423,8 +3426,8 @@ class Library extends DataObject {
 						'property' => 'overDriveScopeId',
 						'type' => 'enum',
 						'values' => $overDriveScopes,
-						'label' => 'OverDrive Scope',
-						'description' => 'The OverDrive scope to use',
+						'label' => "$readerName Scope",
+						'description' => "The $readerName scope to use",
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,

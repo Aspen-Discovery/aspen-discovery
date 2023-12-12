@@ -589,7 +589,7 @@ class User extends DataObject {
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
-					return array_key_exists('Boundless', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
