@@ -5422,6 +5422,11 @@ expo-eas-client@~0.5.0:
   resolved "https://registry.yarnpkg.com/expo-eas-client/-/expo-eas-client-0.5.1.tgz#3ef80dbbde13abe35be4e2a2e29b73d2f7fdf27a"
   integrity sha512-i3L/iwhI6cFhSUpVsCxSU5qehNznL/rQFYoof6qUIh3CMyijCuTEwjEhwbw2a5W6obPBzQUXbomMSFDO6D5/0Q==
 
+expo-eas-client@~0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/expo-eas-client/-/expo-eas-client-0.8.0.tgz#fb19d343eb4841ec99bae90fc7d5eda570866c3b"
+  integrity sha512-GHhmxuQ8jTg3++4qgcp7GblBgqJYQVrln9R6n75iLK++joJR+k3f4/EpdfDg0sgckKt6Bh0th65C31h+q4BA4A==
+
 expo-file-system@~15.2.0, expo-file-system@~15.2.2:
   version "15.2.2"
   resolved "https://registry.yarnpkg.com/expo-file-system/-/expo-file-system-15.2.2.tgz#a1ddf8aabf794f93888a146c4f5187e2004683a3"
@@ -5440,6 +5445,13 @@ expo-image-loader@~4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/expo-image-loader/-/expo-image-loader-4.1.1.tgz#efadbb17de1861106864820194900f336dd641b6"
   integrity sha512-ciEHVokU0f6w0eTxdRxLCio6tskMsjxWIoV92+/ZD37qePUJYMfEphPhu1sruyvMBNR8/j5iyOvPFVGTfO8oxA==
+
+expo-insights@^0.4.0:
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/expo-insights/-/expo-insights-0.4.0.tgz#5961bf019c151ddbfd3258974d492ebebe647566"
+  integrity sha512-8TtFfgHj5iuuV76qsMTNOlwZ1SwU6/3wTXbLXkZcxJ15RNxg6A8lRJCRbF80s31zIuAQPRqewsTYagyXtVyGDg==
+  dependencies:
+    expo-eas-client "~0.8.0"
 
 expo-json-utils@~0.5.0:
   version "0.5.1"
