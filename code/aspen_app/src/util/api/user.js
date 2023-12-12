@@ -109,24 +109,26 @@ export async function validateUser(username, password, url) {
 }
 
 /**
- * Checks if the user has an active Aspen Discovery session
+ * Validates the given session to see if still valid in Discovery.
  * @param {string} url
  **/
-export async function isLoggedIn(url) {
+export async function validateSession(url) {
      const postBody = await postData();
-     const discovery = create({
-          baseURL: url,
+     const api = create({
+          baseURL: url + '/API',
           timeout: GLOBALS.timeoutFast,
-          headers: getHeaders(endpoint.isPost),
+          headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await discovery.post(`${endpoint.url}isLoggedIn`, postBody);
+     const response = await api.post('/UserAPI?method=validateSession', postBody);
      if (response.ok) {
-          return response.data.result;
+          if (response?.data?.result) {
+               return response.data.result;
+          }
      } else {
           console.log(response);
-          return false;
      }
+     return [];
 }
 
 /**
