@@ -4879,6 +4879,8 @@ class Library extends DataObject {
 		$readerName = new OverDriveDriver();
 		$apiInfo['libbyReaderName'] = $readerName->getReaderName();
 
+		$apiInfo['showFines'] = $configArray['Catalog']['showFines'];
+
 		$generalSettings = $this->getLiDAGeneralSettings();
 		$apiInfo['generalSettings']['autoRotateCard'] = $generalSettings->autoRotateCard ?? 0;
 
