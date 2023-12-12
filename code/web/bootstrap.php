@@ -188,7 +188,7 @@ function initDatabase() {
 		if ($configArray['System']['debug']) {
 			echo("Could not connect to database {$configArray['Database']['database_dsn']}, define database connection information in config.pwd.ini<br>\r\n");
 		} else {
-			echo("Could not connect to database");
+			echo("Could not connect to database\r\n");
 		}
 		die();
 	}
