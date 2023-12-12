@@ -11,6 +11,8 @@ if [ -z "$2" ]
     exit 1
 fi
 
+echo "Starting upgrade of $1 to version $2"
+
 service crond stop
 pkill java
 

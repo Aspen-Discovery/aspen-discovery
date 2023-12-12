@@ -5,6 +5,8 @@ if [ -z "$1" ]
     exit 1
 fi
 
+echo "Starting Upgrade 23.12.00.sh for $1"
+
 service mysqld stop
 sleep 10
 
