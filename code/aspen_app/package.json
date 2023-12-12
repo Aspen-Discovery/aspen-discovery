@@ -42,6 +42,7 @@
     "expo-constants": "~14.2.1",
     "expo-dev-client": "~2.2.1",
     "expo-device": "~5.2.1",
+    "expo-insights": "^0.4.0",
     "expo-linking": "~4.0.1",
     "expo-localization": "~14.1.1",
     "expo-location": "~15.1.1",

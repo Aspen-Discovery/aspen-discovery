@@ -4461,7 +4461,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4475,7 +4475,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4487,7 +4487,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4499,7 +4499,7 @@ class UserAPI extends Action {
 							return [
 								'success' => false,
 								'title' => translate([
-									'text' => 'Unable to link accounts',
+									'text' => 'Error',
 									'isPublicFacing' => true,
 								]),
 								'message' => translate([
@@ -4514,7 +4514,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => 'Unable to link accounts',
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4528,10 +4528,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4550,7 +4547,7 @@ class UserAPI extends Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => 'Accounts no longer linked',
+						'text' => 'Linked Account Removed',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4562,11 +4559,11 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => 'Unable to unlink accounts',
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
-						'text' => 'Sorry, we could remove that account.',
+						'text' => "Sorry, this account link has already been removed or doesn't exist.",
 						'isPublicFacing' => true,
 					]),
 				];
@@ -4575,10 +4572,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4597,11 +4591,11 @@ class UserAPI extends Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => 'Accounts no longer linked',
+						'text' => 'Linked Account Removed',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
-						'text' => 'Successfully removed linked account.',
+						'text' => 'Successfully removed linked account. Removing this link does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account.',
 						'isPublicFacing' => true,
 					]),
 				];
@@ -4610,10 +4604,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4666,18 +4657,21 @@ class UserAPI extends Action {
 
 					return [
 						'success' => true,
-						'title' => 'Linking Disabled',
-						'message' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+						'title' => translate([
+							'text' => 'Linking Disabled',
+							'isPublicFacing' => true,
+							]),
+						'message' => translate([
+							'text' => 'Account linking has been disabled. Disabling account linking does not guarantee the security of your account. If another user has your barcode and PIN/password they will still be able to access your account. Please contact your library if you wish to update your PIN/Password.',
+							'isPublicFacing' => true
+						])
 					];
 				} else {
 					// failed to update
 					return [
 						'success' => false,
 						'title' => translate([
-							'text' => translate([
-								'text' => 'Error',
-								'isPublicFacing' => true,
-							]),
+							'text' => 'Error',
 							'isPublicFacing' => true,
 						]),
 						'message' => translate([
@@ -4691,10 +4685,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Error',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4707,10 +4698,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4730,10 +4718,7 @@ class UserAPI extends Action {
 				return [
 					'success' => true,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Linking Enabled',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Linking Enabled',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4746,10 +4731,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Error',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4763,10 +4745,7 @@ class UserAPI extends Action {
 				return [
 					'success' => false,
 					'title' => translate([
-						'text' => translate([
-							'text' => 'Error',
-							'isPublicFacing' => true,
-						]),
+						'text' => 'Error',
 						'isPublicFacing' => true,
 					]),
 					'message' => translate([
@@ -4779,10 +4758,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
@@ -4827,10 +4803,7 @@ class UserAPI extends Action {
 			return [
 				'success' => false,
 				'title' => translate([
-					'text' => translate([
-						'text' => 'Error',
-						'isPublicFacing' => true,
-					]),
+					'text' => 'Error',
 					'isPublicFacing' => true,
 				]),
 				'message' => translate([
