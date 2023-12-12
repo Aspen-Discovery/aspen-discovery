@@ -429,10 +429,32 @@ export const DiscoverHomeScreen = () => {
                               onSubmitEditing={search}
                               value={searchTerm}
                               size="xl"
-                              InputLeftElement={<Icon as={<Ionicons name="search" />} size={5} ml="2" color="muted.800" />}
+                              _dark={{
+                                   color: 'muted.50',
+                                   borderColor: 'muted.50',
+                              }}
+                              InputLeftElement={
+                                   <Icon
+                                        as={<Ionicons name="search" />}
+                                        size={5}
+                                        ml="2"
+                                        color="muted.800"
+                                        _dark={{
+                                             color: 'muted.50',
+                                        }}
+                                   />
+                              }
                               InputRightElement={
                                    <Pressable onPress={() => openScanner()}>
-                                        <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
+                                        <Icon
+                                             as={<Ionicons name="barcode-outline" />}
+                                             size={6}
+                                             mr="2"
+                                             color="muted.800"
+                                             _dark={{
+                                                  color: 'muted.50',
+                                             }}
+                                        />
                                    </Pressable>
                               }
                          />

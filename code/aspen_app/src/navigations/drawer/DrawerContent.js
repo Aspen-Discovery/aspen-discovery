@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import _ from 'lodash';
-import { Badge, Box, Button, Container, Divider, HStack, Icon, Image, Pressable, Text, VStack } from 'native-base';
+import { Badge, Box, Button, Container, Divider, HStack, Icon, Image, Pressable, Text, useColorModeValue, useToken, VStack } from 'native-base';
 import React from 'react';
 import { AuthContext } from '../../components/navigation';
 
@@ -532,6 +532,8 @@ const Fines = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const version = formatDiscoveryVersion(library.discoveryVersion);
+     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
+     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
 
      let shouldShowFines = true;
      if (typeof library.showFines !== 'undefined') {
@@ -550,7 +552,7 @@ const Fines = () => {
 
      if (version >= '24.01.00' && shouldShowFines) {
           return (
-               <Pressable px="2" py="3" rounded="md" onPress={async () => await passUserToDiscovery(library.baseUrl, 'Fines', user.id)}>
+               <Pressable px="2" py="3" rounded="md" onPress={async () => await passUserToDiscovery(library.baseUrl, 'Fines', user.id, backgroundColor, textColor)}>
                     <HStack space="1" alignItems="center">
                          <Icon as={MaterialIcons} name="chevron-right" size="7" />
                          <VStack w="100%">

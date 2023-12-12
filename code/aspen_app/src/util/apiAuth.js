@@ -95,8 +95,11 @@ export function getHeaders(isPost = false, language = 'en') {
  * @param {string} url
  * @param {string} redirectTo
  * @param {string} userId
+ * @param {string} backgroundColor
+ * @param {string} textColor
  **/
-export async function passUserToDiscovery(url, redirectTo, userId) {
+export async function passUserToDiscovery(url, redirectTo, userId, backgroundColor, textColor) {
+     console.log(backgroundColor);
      const postBody = await postData();
      const discovery = create({
           baseURL: url + '/API',
@@ -107,19 +110,36 @@ export async function passUserToDiscovery(url, redirectTo, userId) {
      const response = await discovery.post('/UserAPI?method=prepareSharedSession', postBody);
      if (response.ok) {
           const sessionId = response?.data?.result?.session ?? null;
+
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'popover',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
+          };
+
           if (sessionId && userId) {
                const accessUrl = url + '/Authentication/LiDA?init&session=' + sessionId + '&user=' + userId + '&goTo=' + redirectTo + '&minimalInterface=true';
-               await WebBrowser.openBrowserAsync(accessUrl)
+               await WebBrowser.openBrowserAsync(accessUrl, browserParams)
                     .then((res) => {
                          console.log(res);
+                         if (res.type === 'cancel') {
+                              console.log('User closed window.');
+                         }
                     })
                     .catch(async (err) => {
                          if (err.message === 'Another WebBrowser is already being presented.') {
                               try {
                                    WebBrowser.dismissBrowser();
-                                   await WebBrowser.openBrowserAsync(accessUrl)
+                                   WebBrowser.coolDownAsync();
+                                   await WebBrowser.openBrowserAsync(accessUrl, browserParams)
                                         .then((response) => {
                                              console.log(response);
+                                             if (response.type === 'cancel') {
+                                                  console.log('User closed window.');
+                                             }
                                         })
                                         .catch(async (error) => {
                                              console.log('Unable to close previous browser session.');
