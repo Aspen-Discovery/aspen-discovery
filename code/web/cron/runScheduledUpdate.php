@@ -58,9 +58,9 @@ if (count($updatesToRun) == 0) {
 					//Prepare the system to be updated
 					if ($operatingSystem == 'linux' && $scheduledUpdate->updateType === 'complete') {
 						if ($linuxDistribution == 'debian') {
-							executeCommand('Stopping cron', 'service cron stop', $scheduledUpdate);
+							executeCommand('Stopping cron', 'cron stop', $scheduledUpdate);
 						} else {
-							executeCommand('Stopping cron', 'service crond stop', $scheduledUpdate);
+							executeCommand('Stopping cron', '/usr/sbin/service crond stop', $scheduledUpdate);
 							executeCommand('Running system updates', 'yum -y update', $scheduledUpdate);
 						}
 					}
@@ -107,16 +107,16 @@ if (count($updatesToRun) == 0) {
 					//Restart services
 					if ($operatingSystem == 'linux' && $scheduledUpdate->updateType === 'complete') {
 						//Restart mysql
-						executeCommand('Restarting MySQL', 'service mysqld restart', $scheduledUpdate);
+						executeCommand('Restarting MySQL', '/usr/sbin/service mysqld restart', $scheduledUpdate);
 						sleep(10);
 						//Restart apache
-						executeCommand('Restarting apache', 'apachectl graceful', $scheduledUpdate);
+						executeCommand('Restarting apache', '/usr/sbin/apachectl graceful', $scheduledUpdate);
 						sleep(2);
 						//Start cron
 						if ($linuxDistribution == 'debian') {
-							executeCommand('Starting cron', 'service cron start', $scheduledUpdate);
+							executeCommand('Starting cron', '/usr/sbin/service cron start', $scheduledUpdate);
 						} else {
-							executeCommand('Starting cron', 'service crond start', $scheduledUpdate);
+							executeCommand('Starting cron', '/usr/sbin/service crond start', $scheduledUpdate);
 						}
 						sleep(2);
 					}

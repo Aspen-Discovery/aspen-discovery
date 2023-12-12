@@ -9,7 +9,7 @@ if (count($_SERVER['argv']) > 1) {
 		$databaseUser = $configArray['Database']['database_user'];
 		$databasePassword = $configArray['Database']['database_password'];
 
-		$dbUpgradeResult = shell_exec("runuser -umysql -- /usr/bin/mariadb-upgrade -u$databaseUser -p$databasePassword");
+		$dbUpgradeResult = shell_exec("/usr/sbin/runuser -umysql -- /usr/bin/mariadb-upgrade -u$databaseUser -p$databasePassword");
 		echo $dbUpgradeResult;
 	} else {
 		echo("- Could not load configuration file\n");
