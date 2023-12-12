@@ -25,3 +25,5 @@ yum update -y
 
 apachectl restart
 sleep 10
+
+echo "Finished Upgrade 23.12.00.sh for $1"

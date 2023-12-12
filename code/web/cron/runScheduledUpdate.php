@@ -38,6 +38,8 @@ if (count($updatesToRun) == 0) {
 				$scheduledUpdate->notes = "FAILED: Bad version to update to $versionToUpdateTo \n";
 			}else{
 				if (str_replace('.', '', $versionToUpdateTo) >= str_replace('.', '', $currentVersion)) {
+					console_log("starting upgrade to $versionToUpdateTo\n");
+
 					$operatingSystem = $configArray['System']['operatingSystem'];
 					$linuxDistribution = '';
 					if (strcasecmp($operatingSystem, 'windows') == 0) {
@@ -289,9 +291,12 @@ function doFullUpgrade($operatingSystem, $linuxDistribution, $serverName, $versi
 function executeCommand(string $commandNote, string $commandToExecute, ScheduledUpdate $scheduledUpdate) {
 	$scheduledUpdate->notes .= $commandNote . "\n";
 	exec($commandToExecute, $execResult);
+	console_log($commandToExecute);
 	foreach ($execResult as $result) {
 		$scheduledUpdate->notes .= $result . "\n";
+		console_log($result);
 	}
+
 }
 
 function hasErrors($notes) : bool {
