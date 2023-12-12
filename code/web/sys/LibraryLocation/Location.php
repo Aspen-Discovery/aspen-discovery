@@ -331,6 +331,9 @@ class Location extends DataObject {
 			$appSelfCheckSettings[$appSelfCheckSetting->id] = $appSelfCheckSetting->name;
 		}
 
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
+
 		$structure = [
 			'locationId' => [
 				'property' => 'locationId',
@@ -1094,7 +1097,7 @@ class Location extends DataObject {
 			'overdriveSection' => [
 				'property' => 'overdriveSection',
 				'type' => 'section',
-				'label' => 'OverDrive',
+				'label' => "$readerName",
 				'hideInLists' => true,
 				'renderAsHeading' => true,
 				'permissions' => ['Location Records included in Catalog'],
@@ -1103,8 +1106,8 @@ class Location extends DataObject {
 						'property' => 'overDriveScopeId',
 						'type' => 'enum',
 						'values' => $overDriveScopes,
-						'label' => 'OverDrive Scope',
-						'description' => 'The OverDrive scope to use',
+						'label' => "$readerName Scope",
+						'description' => "The $readerName scope to use",
 						'hideInLists' => true,
 						'default' => -1,
 						'forcesReindex' => true,
