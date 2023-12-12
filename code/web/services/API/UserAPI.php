@@ -84,7 +84,9 @@ class UserAPI extends Action {
 					'updateNotificationOnboardingStatus',
 					'resetPassword',
 					'disableAccountLinking',
-					'enableAccountLinking'
+					'enableAccountLinking',
+					'validateSession',
+					'prepareSharedSession'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -266,14 +268,18 @@ class UserAPI extends Action {
 						'success' => false,
 						'message' => 'Unknown authentication method',
 						'session' => false,
+						'validUntil' => null,
 					];
 				}
 				$validatedUser = $authN->validateAccount($username, $password, $additionalInfo['accountProfile'], $parentAccount, $validatedViaSSO);
 				if ($validatedUser && !($validatedUser instanceof AspenError)) {
+					$_REQUEST['rememberMe'] = "true";
+					UserAccount::updateSession($validatedUser);
 					return [
 						'success' => true,
 						'message' => 'User is valid',
 						'session' => session_id(),
+						'validUntil' => strtotime('+2 weeks'),
 					];
 				} else {
 					$invalidUser = (array) $validatedUser;
@@ -285,6 +291,7 @@ class UserAPI extends Action {
 							'resetToken' => $invalidUser['resetToken'] ?? null,
 							'userId' => $invalidUser['userId'] ?? null,
 							'session' => false,
+							'validUntil' => null,
 						];
 					}
 				}
@@ -509,6 +516,64 @@ class UserAPI extends Action {
 		} else {
 			return ['success' => false];
 		}
+	}
+
+	/**
+	 * Validate if the session is still valid
+	 * If the user is valid, but the session has expired, then start a new session.
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function validateSession() {
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user != null) {
+			$sessionId = $this->getLiDASession() ?? null;
+			if($sessionId) {
+				$session = new Session();
+				$session->setSessionId($sessionId);
+				if($session->find(true)) {
+					return ['success' => true];
+				} else {
+					return $this->loginToLiDA();
+				}
+			}
+		}
+		return ['success' => false];
+	}
+
+	/**
+	 * Validate the user for the incoming shared session
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function prepareSharedSession() {
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user != null) {
+			// validate the incoming request
+			$validSession = $this->validateSession();
+			if($validSession['success'] && $this->getLiDAUserAgent()) {
+				$data = random_bytes(16);
+				assert(strlen($data) == 16);
+				$data[6] = chr(ord($data[6]) & 0x0f | 0x40);
+				$data[8] = chr(ord($data[8]) & 0x3f | 0x80);
+				$uuid = vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+
+				require_once ROOT_DIR . '/sys/Session/SharedSession.php';
+				$sharedSession = new SharedSession();
+				$sharedSession->setSessionId($uuid);
+				$sharedSession->setUserId($user->id);
+				$sharedSession->setCreated(strtotime('now'));
+				if($sharedSession->insert()) {
+					return [
+						'success' => true,
+						'session' => $uuid,
+					];
+				}
+			}
+		}
+		return ['success' => false];
 	}
 
 	/**
@@ -4330,6 +4395,27 @@ class UserAPI extends Action {
 			}
 		}
 		return 0;
+	}
+
+	function getLiDASession() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'LiDA-SessionID' || $name == 'lida-sessionid') {
+				$sessionId = explode(' ', $value);
+				return $sessionId[0];
+			}
+		}
+		return false;
+	}
+
+	function getLiDAUserAgent() {
+		foreach (getallheaders() as $name => $value) {
+			if ($name == 'User-Agent' || $name == 'user-agent') {
+				if(str_contains($value, 'Aspen LiDA') || str_contains($value, 'aspen lida')) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	function getLinkedAccounts() {

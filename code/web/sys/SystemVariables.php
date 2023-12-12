@@ -27,6 +27,7 @@ class SystemVariables extends DataObject {
 	public $catalogStatus;
 	public $offlineMessage;
 	public $appScheme;
+	public $enableBrandedApp;
 	public $supportingCompany;
 	public $googleBucket;
 	public $trackIpAddresses;
@@ -274,6 +275,13 @@ class SystemVariables extends DataObject {
 				'label' => 'App Scheme',
 				'description' => 'Scheme used for creating deep links into the app',
 			],
+			'enableBrandedApp' => [
+				'property' => 'enableBrandedApp',
+				'type' => 'checkbox',
+				'label' => 'Enable Branded App Settings',
+				'description' => 'Whether or not the library can configure branded Aspen LiDA',
+				'default' => false,
+			],
 			'supportingCompany' => [
 				'property' => 'supportingCompany',
 				'type' => 'text',
@@ -282,11 +290,11 @@ class SystemVariables extends DataObject {
 				'default' => 'ByWater Solutions',
 			],
 			'trackIpAddresses' => [
-						'property' => 'trackIpAddresses',
-						'type' => 'checkbox',
-						'label' => 'Track IP Addresses',
-						'description' => 'Determine if IP Addresses should be tracked for each page view',
-						'default' => false,
+				'property' => 'trackIpAddresses',
+				'type' => 'checkbox',
+				'label' => 'Track IP Addresses',
+				'description' => 'Determine if IP Addresses should be tracked for each page view',
+				'default' => false,
 			],
 		];
 
@@ -295,6 +303,7 @@ class SystemVariables extends DataObject {
 			$objectStructure['indexingSection']['properties']['storeRecordDetailsInDatabase']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['indexVersion']['type'] = 'hidden';
 			$objectStructure['indexingSection']['properties']['searchVersion']['type'] = 'hidden';
+			$objectStructure['enableBrandedApp']['type'] = 'hidden';
 		}
 
 		return $objectStructure;

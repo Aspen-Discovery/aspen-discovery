@@ -32,7 +32,9 @@
 			</a>
 		</div>
 	{/if}
-	{if count($validLanguages) > 1 || count($allActiveThemes) > 1}
+
+	{if !$minimalInterface}
+		{if count($validLanguages) > 1 || count($allActiveThemes) > 1}
 		<div id="language-selection-header" class="col-tn-12 col-xs-4 col-sm-4 col-md-4 col-lg-4 pull-right">
 		{if $languageAndDisplayInHeader}
 			<a id="theme-selection-dropdown" class="btn btn-default btn-sm" {if !empty($loggedIn)}href="/MyAccount/MyPreferences" {else} onclick="AspenDiscovery.showDisplaySettings()"{/if}>
@@ -120,6 +122,6 @@
 			{/if}
 		</div>
 		</div>
-	
+    {/if}
 	{/if}
 {/strip}

@@ -14,7 +14,8 @@ import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext,
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLists } from '../../util/api/list';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile } from '../../util/api/user';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, validateSession } from '../../util/api/user';
+import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets } from '../../util/search';
@@ -154,6 +155,16 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
           onSuccess: (data) => {
                updateBrowseCategoryList(data);
+          },
+     });
+
+     useQuery(['session', library.baseUrl, user.id], () => validateSession(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 5, // 86400000 = run once per day, temporarily set to every 5 minutes to make sure it's working
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               if (typeof data.result?.session !== 'undefined') {
+                    GLOBALS.appSessionId = data.result.session;
+               }
           },
      });
 

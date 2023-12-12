@@ -432,5 +432,6 @@
   "forgot_barcode_body": "To receive your %1% to login, provide your phone number.  You must have a text-capable phone number associated with your account to receive your %1%.  If you do not, please contact the library.",
   "forgot_barcode_success_body_1": "If you do not receive an text within a few minutes, please contact your library to have them retrieve your barcode.",
   "send_my_barcode": "Send My %1%",
-  "phone_number": "Phone Number"
+  "phone_number": "Phone Number",
+  "fines": "Fines"
 }
