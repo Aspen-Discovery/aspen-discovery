@@ -35,7 +35,9 @@ cd /usr/local/aspen-discovery/data_dir_setup
 /usr/local/aspen-discovery/data_dir_setup/update_solr_files.sh $1
 
 service mysqld restart
+sleep 10
 apachectl graceful
+sleep 5
 
 cd /usr/local/aspen-discovery
 git gc

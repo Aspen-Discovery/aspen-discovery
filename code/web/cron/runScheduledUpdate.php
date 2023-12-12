@@ -106,14 +106,17 @@ if (count($updatesToRun) == 0) {
 					if ($operatingSystem == 'linux' && $scheduledUpdate->updateType === 'complete') {
 						//Restart mysql
 						executeCommand('Restarting MySQL', 'service mysqld restart', $scheduledUpdate);
+						sleep(10);
 						//Restart apache
 						executeCommand('Restarting apache', 'apachectl graceful', $scheduledUpdate);
+						sleep(2);
 						//Start cron
 						if ($linuxDistribution == 'debian') {
 							executeCommand('Starting cron', 'service cron start', $scheduledUpdate);
 						} else {
 							executeCommand('Starting cron', 'service crond start', $scheduledUpdate);
 						}
+						sleep(2);
 					}
 
 					//Run git cleanup
