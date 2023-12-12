@@ -1120,7 +1120,7 @@ class Evergreen extends AbstractIlsDriver {
 							return $hold_result;
 						}
 					} else {
-						$hold_result['message'] = "Holds cannot be placed on this title";
+						$hold_result['message'] = translate(['text'=>"This hold cannot be placed at this time. If you feel that this is in error, please contact your library for more information.",'isPublicFacing'=>true]);
 						return $hold_result;
 					}
 				}
