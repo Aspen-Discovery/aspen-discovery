@@ -1,10 +1,14 @@
 import { API_KEY_1, API_KEY_2, API_KEY_3, API_KEY_4, API_KEY_5 } from '@env';
+import { create } from 'apisauce';
 import * as Device from 'expo-device';
 import * as SecureStore from 'expo-secure-store';
+import * as WebBrowser from 'expo-web-browser';
+import { decode } from 'html-entities';
 import _ from 'lodash';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import base64 from 'react-native-base64';
-import {decode} from 'html-entities';
+import { popToast } from '../components/loadError';
+import { getTermFromDictionary } from '../translations/TranslationService';
 
 import { GLOBALS } from './globals';
 
@@ -84,6 +88,57 @@ export function getHeaders(isPost = false, language = 'en') {
      }
 
      return headers;
+}
+
+/**
+ * Passes the logged-in user to a Discovery page
+ * @param {string} url
+ * @param {string} redirectTo
+ * @param {string} userId
+ **/
+export async function passUserToDiscovery(url, redirectTo, userId) {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutAverage,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post('/UserAPI?method=prepareSharedSession', postBody);
+     if (response.ok) {
+          const sessionId = response?.data?.result?.session ?? null;
+          if (sessionId && userId) {
+               const accessUrl = url + '/Authentication/LiDA?init&session=' + sessionId + '&user=' + userId + '&goTo=' + redirectTo + '&minimalInterface=true';
+               await WebBrowser.openBrowserAsync(accessUrl)
+                    .then((res) => {
+                         console.log(res);
+                    })
+                    .catch(async (err) => {
+                         if (err.message === 'Another WebBrowser is already being presented.') {
+                              try {
+                                   WebBrowser.dismissBrowser();
+                                   await WebBrowser.openBrowserAsync(accessUrl)
+                                        .then((response) => {
+                                             console.log(response);
+                                        })
+                                        .catch(async (error) => {
+                                             console.log('Unable to close previous browser session.');
+                                        });
+                              } catch (error) {
+                                   console.log('Really borked.');
+                              }
+                         } else {
+                              popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+                         }
+                    });
+          } else {
+               // unable to validate the user
+               popToast(getTermFromDictionary('en', 'error_no_open_resource'), getTermFromDictionary('en', 'error_device_block_browser'), 'warning');
+          }
+     } else {
+          popToast(getTermFromDictionary('en', 'error_no_server_connection'), getTermFromDictionary('en', 'error_no_library_connection'), 'warning');
+          console.log(response);
+     }
 }
 
 /**

@@ -1,24 +1,25 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
+import { useFocusEffect, useLinkTo } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
 import * as Notifications from 'expo-notifications';
 import _ from 'lodash';
 import { Badge, Box, Button, Container, Divider, HStack, Icon, Image, Pressable, Text, VStack } from 'native-base';
 import React from 'react';
-import { useFocusEffect, useLinkTo } from '@react-navigation/native';
+import { AuthContext } from '../../components/navigation';
 
 // custom components and helper files
 import { showILSMessage } from '../../components/Notifications';
-import { AuthContext } from '../../components/navigation';
-import { UseColorMode } from '../../themes/theme';
-import { getTermFromDictionary, getTranslationsWithValues, LanguageSwitcher } from '../../translations/TranslationService';
-import { formatDiscoveryVersion } from '../../util/loadLibrary';
-import { reloadProfile } from '../../util/api/user';
-import { getILSMessages } from '../../util/loadPatron';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { navigateStack } from '../../helpers/RootNavigator';
+import { UseColorMode } from '../../themes/theme';
+import { getTermFromDictionary, getTranslationsWithValues, LanguageSwitcher } from '../../translations/TranslationService';
+import { reloadProfile } from '../../util/api/user';
+import { passUserToDiscovery } from '../../util/apiAuth';
+import { formatDiscoveryVersion } from '../../util/loadLibrary';
+import { getILSMessages } from '../../util/loadPatron';
 
 Notifications.setNotificationHandler({
      handleNotification: async () => ({
@@ -105,6 +106,7 @@ export const DrawerContent = () => {
                     setFinesSummary(_.toString(result));
                });
           }
+
           fetchTranslations();
      }, [language]);
 
@@ -141,7 +143,6 @@ export const DrawerContent = () => {
                <VStack space="4" my="2" mx="1">
                     <UserProfileOverview />
 
-                    {displayFinesAlert()}
                     {displayILSMessages()}
 
                     <Divider />
@@ -153,6 +154,7 @@ export const DrawerContent = () => {
                               <UserLists />
                               <SavedSearches />
                               <ReadingHistory />
+                              <Fines />
                          </VStack>
 
                          <VStack space="3">
@@ -199,20 +201,20 @@ const UserProfileOverview = () => {
                     <Image source={{ uri: icon }} fallbackSource={require('../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} rounded="8" />
                     <Box>
                          {user && user.displayName ? (
-                              <Text bold fontSize="14">
+                              <Text bold fontSize="14" isTruncated maxW="175">
                                    {user.displayName}
                               </Text>
                          ) : null}
 
                          {library && library.displayName ? (
-                              <Text fontSize="12" fontWeight="500">
+                              <Text fontSize="12" fontWeight="500" isTruncated maxW="175">
                                    {library.displayName}
                               </Text>
                          ) : null}
                          <HStack space={1} alignItems="center">
                               <Icon as={MaterialIcons} name="credit-card" size="xs" />
                               {user && (user.ils_barcode || user.cat_username) ? (
-                                   <Text fontSize="12" fontWeight="500">
+                                   <Text fontSize="12" fontWeight="500" isTruncated maxW="175">
                                         {user.ils_barcode ?? user.cat_username}
                                    </Text>
                               ) : null}
@@ -236,6 +238,7 @@ const Checkouts = () => {
                     setCheckoutSummary(result);
                });
           }
+
           fetchTranslations();
      }, [language]);
 
@@ -281,6 +284,7 @@ const Holds = () => {
                     setHoldSummary(result);
                });
           }
+
           fetchTranslations();
      }, [language]);
 
@@ -378,6 +382,7 @@ const SavedSearches = () => {
                     setSavedSearchSummary(result);
                });
           }
+
           fetchTranslations();
      }, [language]);
 
@@ -520,6 +525,49 @@ const UserPreferences = () => {
                </HStack>
           </Pressable>
      );
+};
+
+const Fines = () => {
+     const { user } = React.useContext(UserContext);
+     const { library } = React.useContext(LibrarySystemContext);
+     const { language } = React.useContext(LanguageContext);
+     const version = formatDiscoveryVersion(library.discoveryVersion);
+
+     let shouldShowFines = true;
+     if (typeof library.showFines !== 'undefined') {
+          shouldShowFines = library.showFines;
+     }
+
+     let userFineAmount = user.fines ?? '$0.00';
+     let hasFines = false;
+     if (user.fines) {
+          userFineAmount = userFineAmount.substring(1);
+          userFineAmount = Number(userFineAmount);
+          if (userFineAmount > 0) {
+               hasFines = true;
+          }
+     }
+
+     if (version >= '24.01.00' && shouldShowFines) {
+          return (
+               <Pressable px="2" py="3" rounded="md" onPress={async () => await passUserToDiscovery(library.baseUrl, 'Fines', user.id)}>
+                    <HStack space="1" alignItems="center">
+                         <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                         <VStack w="100%">
+                              <Text fontWeight="500">{getTermFromDictionary(language, 'fines')}</Text>
+                         </VStack>
+                    </HStack>
+
+                    <Container>
+                         <Badge colorScheme={hasFines ? 'error' : 'info'} ml={10} rounded="4px" _text={{ fontSize: 'xs' }}>
+                              {user.fines ?? '$0.00'}
+                         </Badge>
+                    </Container>
+               </Pressable>
+          );
+     }
+
+     return null;
 };
 
 async function getStoredNotifications() {
