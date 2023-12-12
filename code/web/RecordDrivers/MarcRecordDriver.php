@@ -2686,7 +2686,7 @@ class MarcRecordDriver extends GroupedWorkSubDriver {
 
 				global $library;
 				$location = new Location();
-				//$location->libraryId = $library->libraryId;
+				$location->libraryId = $library->libraryId;
 				$localLocationCodes = $location->fetchAll('code', 'displayName', true);
 
 				$indexingProfile = $this->getIndexingProfile();
