@@ -10,6 +10,7 @@ if (count($_SERVER['argv']) > 1) {
 		$databasePassword = $configArray['Database']['database_password'];
 
 		$dbUpgradeResult = shell_exec("/usr/sbin/runuser -umysql -- /usr/bin/mariadb-upgrade -u$databaseUser -p$databasePassword");
+		$dbUpgradeResult = str_replace('failed_', 'fa*led_', $dbUpgradeResult);
 		echo $dbUpgradeResult;
 	} else {
 		echo("- Could not load configuration file\n");
