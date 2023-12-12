@@ -301,7 +301,7 @@ function executeCommand(string $commandNote, string $commandToExecute, Scheduled
 
 function hasErrors($notes) : bool {
 	$lowerNotes = strtolower($notes);
-	if ((strpos($lowerNotes, 'fatal') !== false) || (strpos($lowerNotes, 'failed') !== false) || (strpos($lowerNotes, 'rejected') !== false)) {
+	if ((strpos($lowerNotes, 'fatal') !== false) || (preg_match('/failed[\s.]/si', $lowerNotes) === 1) || (strpos($lowerNotes, 'rejected') !== false)) {
 		return true;
 	} else {
 		return false;
