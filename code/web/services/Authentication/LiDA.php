@@ -25,8 +25,6 @@ class Authentication_LiDA extends Action {
 								$session->redirectUser($tmpUser, $returnTo);
 							}
 						}
-					} else {
-
 					}
 				} else {
 					// ask the user to log into Discovery
