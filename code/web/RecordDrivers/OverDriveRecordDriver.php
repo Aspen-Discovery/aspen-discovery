@@ -160,6 +160,8 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 	public function getStatusSummary() {
 		$holdings = $this->getHoldings();
 		$availability = $this->getAvailability();
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 
 		$holdPosition = 0;
 
@@ -194,7 +196,7 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 			$statusSummary['alwaysAvailable'] = true;
 		}
 		if ($availableCopies > 0) {
-			$statusSummary['status'] = "Available from OverDrive";
+			$statusSummary['status'] = "Available from " . $readerName;
 			$statusSummary['available'] = true;
 			$statusSummary['class'] = 'available';
 		} else {
@@ -491,8 +493,36 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		if ($this->subSource == 'kindle') {
 			$formats[] = 'Kindle';
 		} else {
+			$readerName = new OverDriveDriver();
+			$readerName = $readerName->getReaderName();
 			foreach ($this->getItems() as $item) {
-				$formats[] = $item->name;
+				switch ($item->textId) {
+					case "ebook-overdrive":
+						$formats[] = "$readerName Read";
+						break;
+					case "audiobook-wma":
+						$formats[] = "$readerName WMA Audiobook";
+						break;
+					case "audiobook-mp3":
+						$formats[] = "$readerName MP3 Audiobook";
+						break;
+					case "music-wma":
+						$formats[] = "$readerName Music";
+						break;
+					case "video-streaming":
+					case "music-wmv":
+						$formats[] = "$readerName Video";
+						break;
+					case "video-wmv-mobile":
+						$formats[] = "$readerName Video (mobile)";
+						break;
+					case "magazine-overdrive":
+						$formats[] = "$readerName Magazine";
+						break;
+					default:
+						$formats[] = $item->name;
+						break;
+				}
 			}
 		}
 		return $formats;
@@ -628,7 +658,37 @@ class OverDriveRecordDriver extends GroupedWorkSubDriver {
 		$interface->assign('showAvailabilityOther', $showAvailabilityOther);
 		$showOverDriveConsole = false;
 		$showAdobeDigitalEditions = false;
+		$readerName = new OverDriveDriver();
+		$readerName = $readerName->getReaderName();
 		foreach ($holdings as $item) {
+			switch ($item->textId) {
+				case "ebook-overdrive":
+					$formatName = "$readerName Read";
+					break;
+				case "audiobook-wma":
+					$formatName = "$readerName WMA Audiobook";
+					break;
+				case "audiobook-mp3":
+					$formatName = "$readerName MP3 Audiobook";
+					break;
+				case "music-wma":
+					$formatName = "$readerName Music";
+					break;
+				case "video-streaming":
+				case "music-wmv":
+					$formatName = "$readerName Video";
+					break;
+				case "video-wmv-mobile":
+					$formatName = "$readerName Video (mobile)";
+					break;
+				case "magazine-overdrive":
+					$formatName = "$readerName Magazine";
+					break;
+				default:
+					$formatName = $item->name;
+					break;
+			}
+			$item->name = $formatName;
 			if (in_array($item->textId, [
 				'ebook-epub-adobe',
 				'ebook-pdf-adobe',
