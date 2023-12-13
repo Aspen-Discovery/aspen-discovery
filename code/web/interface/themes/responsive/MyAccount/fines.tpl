@@ -119,7 +119,11 @@
                                     {if ($finePaymentType >= 2) && $finesToPay >= 1 && $fineTotalsVal.$userId > $minimumFineAmount}
 										<td></td>
                                     {/if}
-									<th>{translate text="Total" isPublicFacing=true}</th>
+									<th>
+										<div style="width: 100%">
+											<span style="white-space:pre-line">{translate text="Total" isPublicFacing=true}</span>
+										</div>
+									</th>
 									<th id="formattedTotal{$userId}">{$fineTotalsVal.$userId|formatCurrency}</th>
                                     {if !empty($showOutstanding)}
 										<th id="formattedOutstandingTotal{$userId}">{$outstandingTotalVal.$userId|formatCurrency}</th>
@@ -135,7 +139,11 @@
 											<td></td>
                                         {/if}
                                         {if empty($showOutstanding)}<td></td>{/if}
-										<th>{translate text="Convenience Fee" isPublicFacing=true}</th>
+										<th>
+											<div style="width: 100%">
+												<span style="white-space:pre-line">{translate text="Convenience Fee" isPublicFacing=true}</span>
+											</div>
+										</th>
 										<th></th>
 										<th id="convenienceFee" data-fee_amt="{$convenienceFee}">{$convenienceFee|formatCurrency}</th>
 										<th></th>
@@ -145,7 +153,11 @@
 											<td></td>
                                         {/if}
                                         {if empty($showOutstanding)}<td></td>{/if}
-										<th>{translate text="Grand Total" isPublicFacing=true}</th>
+										<th>
+											<div style="width: 100%">
+												<span style="white-space:pre-line">{translate text="Grand Total" isPublicFacing=true}</span>
+											</div>
+										</th>
 										<th></th>
 										<th id="outstandingGrandTotal{$userId}">{$outstandingGrandTotalVal.$userId|formatCurrency}</th>
 										<th></th>
