@@ -5,11 +5,11 @@ import React from 'react';
 
 // custom components and helper files
 import { popToast } from '../components/loadError';
+import { getTermFromDictionary } from '../translations/TranslationService';
 import { createAuthTokens, getHeaders, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { PATRON } from './loadPatron';
 import { RemoveData } from './logout';
-import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const LIBRARY = {
      url: '',
@@ -546,7 +546,7 @@ export function formatBrowseCategories(payload) {
                                         id = category.listId;
                                    }
 
-                                   if (!_.isUndefined(category.sourceId) && !_.isNull(category.sourceId)) {
+                                   if (!_.isUndefined(category.sourceId) && !_.isNull(category.sourceId) && category.sourceId !== -1 && category.sourceId !== '-1') {
                                         id = category.sourceId;
                                    }
 
