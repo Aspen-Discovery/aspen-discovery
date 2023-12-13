@@ -286,7 +286,7 @@ class GreenhouseAPI extends Action {
 
 				$version = $aspenSite->version;
 
-				if ($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3) {
+				if ($aspenSite->appAccess == 1 || $aspenSite->appAccess == 3 || ($aspenSite->appAccess == 2 && ($releaseChannel == 'alpha' || $releaseChannel == 'beta' || $releaseChannel == 'zeta'))) {
 					//See if we need to reload the cache
 					$reloadCache = false;
 

@@ -1,13 +1,12 @@
 import { create } from 'apisauce';
 import Constants from 'expo-constants';
-import * as Updates from 'expo-updates';
-import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import _ from 'lodash';
+import { Platform } from 'react-native';
 
 import { popToast } from '../components/loadError';
 import { createAuthTokens, getHeaders, problemCodeMap } from './apiAuth';
-import { GLOBALS, LOGIN_DATA } from './globals';
-import _ from 'lodash';
+import { GLOBALS } from './globals';
 import { PATRON } from './loadPatron';
 
 /**
@@ -99,7 +98,13 @@ export async function fetchNearbyLibrariesFromGreenhouse() {
           method = 'getLibrary';
           url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
      }
-     if (GLOBALS.slug === 'aspen-lida-alpha' || GLOBALS.slug === 'aspen-lida-beta' || GLOBALS.slug === 'aspen-lida-zeta' || GLOBALS.slug === 'aspen-lida-bws') {
+     if (GLOBALS.slug === 'aspen-lida-alpha') {
+          channel = 'alpha';
+     } else if (GLOBALS.slug === 'aspen-lida-beta') {
+          channel = 'beta';
+     } else if (GLOBALS.slug === 'aspen-lida-zeta') {
+          channel = 'zeta';
+     } else if (GLOBALS.slug === 'aspen-lida-bws') {
           channel = 'any';
      }
      if (_.isNull(PATRON.coords.lat) && _.isNull(PATRON.coords.long)) {
@@ -164,6 +169,17 @@ export async function fetchAllLibrariesFromGreenhouse() {
      if (!_.includes(GLOBALS.slug, 'aspen-lida') || GLOBALS.slug === 'aspen-lida-bws') {
           url = Constants.manifest2?.extra?.expoClient?.extra?.apiUrl ?? Constants.manifest.extra.apiUrl;
      }
+
+     if (GLOBALS.slug === 'aspen-lida-alpha') {
+          channel = 'alpha';
+     } else if (GLOBALS.slug === 'aspen-lida-beta') {
+          channel = 'beta';
+     } else if (GLOBALS.slug === 'aspen-lida-zeta') {
+          channel = 'zeta';
+     } else if (GLOBALS.slug === 'aspen-lida-bws') {
+          channel = 'any';
+     }
+
      const api = create({
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutSlow,

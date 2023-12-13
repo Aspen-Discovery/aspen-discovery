@@ -42,7 +42,7 @@ function getUpdates23_12_00(): array {
 					runFullUpdate TINYINT(1) DEFAULT 0,
 					lastUpdateOfChangedRecords INT(11) DEFAULT 0,
 					lastUpdateOfAllRecords INT(11) DEFAULT 0
-				)",
+				) ENGINE = InnoDB",
 				'CREATE TABLE IF NOT EXISTS palace_project_scopes (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					name VARCHAR(50) NOT NULL,
@@ -156,6 +156,15 @@ function getUpdates23_12_00(): array {
 				'ALTER TABLE indexing_profiles ADD COLUMN numExtractionThreads TINYINT DEFAULT 10',
 			]
 		], //evergreen_extract_number_of_threads
+
+		'email_stats' => [
+			'title' => 'Add email stat tracking',
+			'description' => 'Add tracking of emails sent successfully and emails that failed',
+			'sql' => [
+				"ALTER TABLE aspen_usage ADD COLUMN emailsSent INT DEFAULT 0",
+				"ALTER TABLE aspen_usage ADD COLUMN emailsFailed INT DEFAULT 0",
+			]
+		], //email_stats
 
 		//kirstien - ByWater
 

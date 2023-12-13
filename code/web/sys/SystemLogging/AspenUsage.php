@@ -28,6 +28,8 @@ class AspenUsage extends DataObject {
 	protected $timedOutSearches;
 	protected $timedOutSearchesWithHighLoad;
 	protected $searchesWithErrors;
+	protected $emailsSent;
+	protected $emailsFailed;
 
 	public function getUniquenessFields(): array {
 		return [
@@ -57,6 +59,8 @@ class AspenUsage extends DataObject {
 			'timedOutSearchesWithHighLoad',
 			'searchesWithErrors',
 			'ebscohostSearches',
+			'emailsSent',
+			'emailsFailed'
 		];
 	}
 
@@ -100,9 +104,23 @@ class AspenUsage extends DataObject {
 		$usage->selectAdd('SUM(timedOutSearches) as totalTimedOutSearches');
 		$usage->selectAdd('SUM(timedOutSearchesWithHighLoad) as totalTimedOutSearchesWithHighLoad');
 		$usage->selectAdd('SUM(searchesWithErrors) as totalSearchesWithErrors');
+		$usage->selectAdd('SUM(emailsSent) as totalEmailsSent');
+		$usage->selectAdd('SUM(emailsFailed) as totalFailedEmails');
 
 		$usage->find(true);
 
 		return $usage;
+	}
+
+	public function getInstance() {
+		return $this->instance;
+	}
+
+	public function incEmailsSent() {
+		$this->__set('emailsSent', $this->emailsSent+1);
+	}
+
+	public function incEmailsFailed() {
+		$this->__set('emailsFailed', $this->emailsFailed+1);
 	}
 }

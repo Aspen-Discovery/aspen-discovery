@@ -48,12 +48,11 @@ public class SierraExportAPIMain {
 	private static Connection dbConn;
 	private static String serverName;
 
-	private static boolean exportItemHolds = true;
-
 	private static String apiBaseUrl = null;
 
 	private static final TreeSet<String> allBibsToUpdate = new TreeSet<>();
 	private static final TreeSet<String> allDeletedIds = new TreeSet<>();
+	private static final HashSet<String> bibsWithHoldings = new HashSet<>();
 
 	//Reporting information
 	private static IlsExtractLogEntry logEntry;
@@ -116,7 +115,6 @@ public class SierraExportAPIMain {
 				}
 				dbConn = DriverManager.getConnection(databaseConnectionInfo);
 
-
 				logEntry = new IlsExtractLogEntry(dbConn, profileToLoad, logger);
 				//Remove log entries older than 45 days
 				long earliestLogToKeep = (startTime.getTime() / 1000) - (60 * 60 * 24 * 45);
@@ -146,10 +144,7 @@ public class SierraExportAPIMain {
 					}
 				}
 
-				String exportItemHoldsStr = configIni.get("Catalog", "exportItemHolds");
-				if (exportItemHoldsStr != null){
-					exportItemHolds = exportItemHoldsStr.equalsIgnoreCase("true");
-				}
+				getBibsWithHoldings(sierraConn);
 
 				sierraExportFieldMapping = SierraExportFieldMapping.loadSierraFieldMappings(dbConn, indexingProfile.getId(), logger);
 
@@ -337,6 +332,9 @@ public class SierraExportAPIMain {
 		try{
 			//Close the connection
 			dbConn.close();
+			bibsWithHoldings.clear();
+			allDeletedIds.clear();
+			allBibsToUpdate.clear();
 		}catch(Exception e){
 			System.out.println("Error closing connection: " + e);
 			e.printStackTrace();
@@ -447,6 +445,23 @@ public class SierraExportAPIMain {
 		return numProcessed;
 	}
 
+	private static void getBibsWithHoldings(Connection sierraConn) {
+		bibsWithHoldings.clear();
+		try {
+		PreparedStatement bibHoldingsStmt = sierraConn.prepareStatement("select distinct(record_num) as record_num from sierra_view.bib_record_holding_record_link INNER JOIN sierra_view.record_metadata ON bib_record_id = record_metadata.id where record_type_code = 'b'", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		ResultSet bibHoldingsRS = bibHoldingsStmt.executeQuery();
+		while (bibHoldingsRS.next()){
+			String bibId = bibHoldingsRS.getString("record_num");
+			//Don't need the .b and checksum for this
+			bibsWithHoldings.add(bibId);
+		}
+			bibHoldingsRS.close();
+		} catch (Exception e) {
+			logger.error("Unable to get bibs with holdings from Sierra", e);
+		}
+		logEntry.addNote("Finished getting bibs with holdings " + dateTimeFormatter.format(new Date()));
+	}
+
 	private static void exportHolds(Connection sierraConn, Connection dbConn) {
 		Savepoint startOfHolds = null;
 		try {
@@ -472,27 +487,25 @@ public class SierraExportAPIMain {
 			}
 			bibHoldsRS.close();
 
-			if (exportItemHolds) {
-				//Export item level holds
-				PreparedStatement itemHoldsStmt = sierraConn.prepareStatement("select count(hold.id) as numHolds, record_num\n" +
-						"from sierra_view.hold \n" +
-						"inner join sierra_view.bib_record_item_record_link ON hold.record_id = item_record_id \n" +
-						"inner join sierra_view.record_metadata on bib_record_item_record_link.bib_record_id = record_metadata.id \n" +
-						"WHERE status = '0' OR status = 't' " +
-						"group by record_num", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-				ResultSet itemHoldsRS = itemHoldsStmt.executeQuery();
-				while (itemHoldsRS.next()) {
-					String bibId = itemHoldsRS.getString("record_num");
-					bibId = ".b" + bibId + getCheckDigit(bibId);
-					Long numHolds = itemHoldsRS.getLong("numHolds");
-					if (numHoldsByBib.containsKey(bibId)) {
-						numHoldsByBib.put(bibId, numHolds + numHoldsByBib.get(bibId));
-					} else {
-						numHoldsByBib.put(bibId, numHolds);
-					}
+			//Export item level holds
+			PreparedStatement itemHoldsStmt = sierraConn.prepareStatement("select count(hold.id) as numHolds, record_num\n" +
+					"from sierra_view.hold \n" +
+					"inner join sierra_view.bib_record_item_record_link ON hold.record_id = item_record_id \n" +
+					"inner join sierra_view.record_metadata on bib_record_item_record_link.bib_record_id = record_metadata.id \n" +
+					"WHERE status = '0' OR status = 't' " +
+					"group by record_num", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+			ResultSet itemHoldsRS = itemHoldsStmt.executeQuery();
+			while (itemHoldsRS.next()) {
+				String bibId = itemHoldsRS.getString("record_num");
+				bibId = ".b" + bibId + getCheckDigit(bibId);
+				Long numHolds = itemHoldsRS.getLong("numHolds");
+				if (numHoldsByBib.containsKey(bibId)) {
+					numHoldsByBib.put(bibId, numHolds + numHoldsByBib.get(bibId));
+				} else {
+					numHoldsByBib.put(bibId, numHolds);
 				}
-				itemHoldsRS.close();
 			}
+			itemHoldsRS.close();
 
 			//Export volume level holds
 			PreparedStatement volumeHoldsStmt = sierraConn.prepareStatement("select count(hold.id) as numHolds, bib_metadata.record_num as bib_num, volume_metadata.record_num as volume_num\n" +
@@ -893,19 +906,27 @@ public class SierraExportAPIMain {
 			itemIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/items?limit=1000&deleted=false&suppressed=false&fields=id,updatedDate,createdDate,location,status,barcode,callNumber,itemType,fixedFields,varFields&bibIds=" + id, false, true);
 		});
 		final JSONObject[] holdingIds = {null};
-		//noinspection CodeBlock2Expr
-		Thread holdingsUpdateThread = new Thread(() -> {
-			holdingIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/holdings?limit=1000&deleted=false&suppressed=false&fields=id,fixedFields,varFields&bibIds=" + id, true, false);
-		});
+		boolean hasHoldings = bibsWithHoldings.contains(id);
+		Thread holdingsUpdateThread = null;
+		if (hasHoldings) {
+			//noinspection CodeBlock2Expr
+			holdingsUpdateThread = new Thread(() -> {
+				holdingIds[0] = callSierraApiURL(sierraInstanceInformation, apiBaseUrl, apiBaseUrl + "/holdings?limit=1000&deleted=false&suppressed=false&fields=id,fixedFields,varFields&bibIds=" + id, true, false);
+			});
+		}
 		getMarcResultsThread.start();
 		fixedFieldThread.start();
 		itemUpdateThread.start();
-		holdingsUpdateThread.start();
+		if (hasHoldings) {
+			holdingsUpdateThread.start();
+		}
 		try {
 			getMarcResultsThread.join();
 			fixedFieldThread.join();
 			itemUpdateThread.join();
-			holdingsUpdateThread.join();
+			if (hasHoldings) {
+				holdingsUpdateThread.join();
+			}
 		}catch (InterruptedException e){
 			logEntry.incErrors("Loading data from Sierra was interrupted", e);
 		}
@@ -999,7 +1020,7 @@ public class SierraExportAPIMain {
 				}
 
 				//Get Holdings for the bib record
-				if (holdingIds[0] != null) {
+				if (hasHoldings && holdingIds[0] != null) {
 					JSONObject holdingsData = holdingIds[0];
 					if (holdingsData.getInt("total") > 0) {
 						JSONArray holdings = holdingsData.getJSONArray("entries");

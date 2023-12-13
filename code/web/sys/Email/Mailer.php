@@ -22,16 +22,28 @@ class Mailer {
 		require_once ROOT_DIR . '/sys/CurlWrapper.php';
 		//TODO: Do validation of the address
 		$amazonSesSettings = new AmazonSesSetting();
+
 		if ($amazonSesSettings->find(true)) {
-			return $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody);
+			$result = $this->sendViaAmazonSes($amazonSesSettings, $to, $replyTo, $subject, $body, $htmlBody);
 		} else {
 			$sendGridSettings = new SendGridSetting();
 			if ($sendGridSettings->find(true)) {
-				return $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $body, $htmlBody);
+				$result = $this->sendViaSendGrid($sendGridSettings, $to, $replyTo, $subject, $body, $htmlBody);
 			} else {
-				return false;
+				$result = false;
 			}
 		}
+
+		/** AspenUsage $aspenUsage */
+		global $aspenUsage;
+		if ($result) {
+			$aspenUsage->incEmailsSent();
+		}else{
+			$aspenUsage->incEmailsFailed();
+		}
+		$ret = $aspenUsage->update();
+
+		return $result;
 	}
 
 	/**

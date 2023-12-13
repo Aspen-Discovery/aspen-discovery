@@ -50,7 +50,7 @@ $usageByIPAddress = new UsageByIPAddress();
 $usageByIPAddress->year = date('Y');
 $usageByIPAddress->month = date('n');
 $usageByIPAddress->ipAddress = IPAddress::getClientIP();
-$usageByIPAddress->instance = $aspenUsage->instance;
+$usageByIPAddress->instance = $aspenUsage->getInstance();
 
 require_once ROOT_DIR . '/sys/Timer.php';
 global $timer;
@@ -69,7 +69,7 @@ ob_start();
 initMemcache();
 initDatabase();
 
-if ($aspenUsage->instance != 'aspen_internal') {
+if ($aspenUsage->getInstance() != 'aspen_internal') {
 	$isValidServerName = true;
 	//Validate that we are getting a valid, non-spoofed name.
 	if (!empty($_SERVER['SERVER_NAME'])) {
@@ -85,7 +85,7 @@ if ($aspenUsage->instance != 'aspen_internal') {
 		$validServerNames = getValidServerNames();
 
 		foreach ($validServerNames as $validServerName) {
-			if (strcasecmp($aspenUsage->instance, $validServerName) === 0) {
+			if (strcasecmp($aspenUsage->getInstance(), $validServerName) === 0) {
 				$isValidServerName = true;
 				break;
 			}
@@ -94,7 +94,7 @@ if ($aspenUsage->instance != 'aspen_internal') {
 	if (!$isValidServerName) {
 		http_response_code(404);
 		if (IPAddress::showDebuggingInformation()) {
-			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host $aspenUsage->instance, valid instances are " . implode(', ', $validServerNames) . "</body></html>");
+			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host $aspenUsage->getInstance(), valid instances are " . implode(', ', $validServerNames) . "</body></html>");
 		} else {
 			echo("<html><head><title>Invalid Request</title></head><body>Invalid Host</body></html>");
 		}

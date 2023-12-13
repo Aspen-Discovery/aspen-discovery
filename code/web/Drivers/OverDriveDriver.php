@@ -21,28 +21,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 	private $overdriveApiHost = null;
 	private $clientKey = null;
 	private $clientSecret = null;
-
-	protected $format_map = [
-		'ebook-epub-adobe' => 'Adobe EPUB eBook',
-		'ebook-epub-open' => 'Open EPUB eBook',
-		'ebook-pdf-adobe' => 'Adobe PDF eBook',
-		'ebook-pdf-open' => 'Open PDF eBook',
-		'ebook-kindle' => 'Kindle Book',
-		'ebook-disney' => 'Disney Online Book',
-		'ebook-overdrive' => 'OverDrive Read',
-		'ebook-microsoft' => 'Microsoft eBook',
-		'audiobook-wma' => 'OverDrive WMA Audiobook',
-		'audiobook-mp3' => 'OverDrive MP3 Audiobook',
-		'audiobook-streaming' => 'Streaming Audiobook',
-		'music-wma' => 'OverDrive Music',
-		'video-wmv' => 'OverDrive Video',
-		'video-wmv-mobile' => 'OverDrive Video (mobile)',
-		'periodicals-nook' => 'NOOK Periodicals',
-		'audiobook-overdrive' => 'OverDrive Listen',
-		'video-streaming' => 'OverDrive Video',
-		'ebook-mediado' => 'MediaDo Reader',
-		'magazine-overdrive' => 'OverDrive Magazine',
-	];
+	protected $format_map = null;
 	private $lastHttpCode;
 
 	/** @var CurlWrapper */
@@ -65,6 +44,34 @@ class OverDriveDriver extends AbstractEContentDriver {
 			OverDriveDriver::$singletonDriver = new OverDriveDriver();
 		}
 		return OverDriveDriver::$singletonDriver;
+	}
+
+	public function getFormatMap() {
+		if ($this->format_map == null) {
+			$readerName = $this->getReaderName();
+			$this->format_map = [
+				'ebook-epub-adobe' => 'Adobe EPUB eBook',
+				'ebook-epub-open' => 'Open EPUB eBook',
+				'ebook-pdf-adobe' => 'Adobe PDF eBook',
+				'ebook-pdf-open' => 'Open PDF eBook',
+				'ebook-kindle' => 'Kindle Book',
+				'ebook-disney' => 'Disney Online Book',
+				'ebook-overdrive' => "$readerName Read",
+				'ebook-microsoft' => 'Microsoft eBook',
+				'audiobook-wma' => "$readerName WMA Audiobook",
+				'audiobook-mp3' => "$readerName MP3 Audiobook",
+				'audiobook-streaming' => 'Streaming Audiobook',
+				'music-wma' => "$readerName Music",
+				'video-wmv' => "$readerName Video",
+				'video-wmv-mobile' => "$readerName Video (mobile)",
+				'periodicals-nook' => 'NOOK Periodicals',
+				'audiobook-overdrive' => '$readerName Listen',
+				'video-streaming' => "$readerName Video",
+				'ebook-mediado' => 'MediaDo Reader',
+				'magazine-overdrive' => "$readerName Magazine",
+			];
+		}
+		return $this->format_map;
 	}
 
 	public function getReaderName() {
@@ -1593,7 +1600,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/OverDrive/UserOverDriveUsage.php';
 		$userUsage = new UserOverDriveUsage();
 		global $aspenUsage;
-		$userUsage->instance = $aspenUsage->instance;
+		$userUsage->instance = $aspenUsage->getInstance();
 		$userUsage->userId = $user->id;
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
@@ -1614,7 +1621,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 		$recordUsage = new OverDriveRecordUsage();
 		global $aspenUsage;
-		$recordUsage->instance = $aspenUsage->instance;
+		$recordUsage->instance = $aspenUsage->getInstance();
 		$recordUsage->overdriveId = $overDriveId;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -1635,7 +1642,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveRecordUsage.php';
 		$recordUsage = new OverDriveRecordUsage();
 		global $aspenUsage;
-		$recordUsage->instance = $aspenUsage->instance;
+		$recordUsage->instance = $aspenUsage->getInstance();
 		$recordUsage->overdriveId = $overDriveId;
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
@@ -1744,13 +1751,13 @@ class OverDriveDriver extends AbstractEContentDriver {
 					$bookshelfItem->overdriveMagazine = true;
 					$bookshelfItem->allowDownload = false;
 				} else {
-					$bookshelfItem->selectedFormatName = $this->format_map[$format->formatType];
+					$bookshelfItem->selectedFormatName = $this->getFormatMap()[$format->formatType];
 					$bookshelfItem->selectedFormatValue = $format->formatType;
 				}
 				$curFormat = [];
 				$curFormat['id'] = $id;
 				$curFormat['format'] = $format;
-				$curFormat['name'] = $this->format_map[$format->formatType];
+				$curFormat['name'] = $this->getFormatMap()[$format->formatType];
 				if (isset($format->links->self)) {
 					$curFormat['downloadUrl'] = $format->links->self->href . '/downloadlink';
 				}
@@ -1782,13 +1789,13 @@ class OverDriveDriver extends AbstractEContentDriver {
 							$bookshelfItem->overdriveMagazine = true;
 							$bookshelfItem->allowDownload = false;
 						} else {
-							$bookshelfItem->selectedFormatName = $this->format_map[$format];
+							$bookshelfItem->selectedFormatName = $this->getFormatMap()[$format];
 							$bookshelfItem->selectedFormatValue = $format;
 						}
 						$curFormat = [];
 						$curFormat['id'] = $curFieldIndex;
 						$curFormat['format'] = $format;
-						$curFormat['name'] = $this->format_map[$format];
+						$curFormat['name'] = $this->getFormatMap()[$format];
 						if (isset($format->links->downloadRedirect)) {
 							$curFormat['downloadUrl'] = $format->links->downloadRedirect->href . '/downloadlink';
 						}
@@ -1822,7 +1829,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 				foreach ($formatField->options as $index => $format) {
 					$curFormat = [];
 					$curFormat['id'] = $format;
-					$curFormat['name'] = $this->format_map[$format];
+					$curFormat['name'] = $this->getFormatMap()[$format];
 					$bookshelfItem->formats[] = $curFormat;
 				}
 				//}else{
@@ -1855,7 +1862,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/OverDrive/OverDriveStats.php';
 		$axis360Stats = new OverDriveStats();
 		global $aspenUsage;
-		$axis360Stats->instance = $aspenUsage->instance;
+		$axis360Stats->instance = $aspenUsage->getInstance();
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {
