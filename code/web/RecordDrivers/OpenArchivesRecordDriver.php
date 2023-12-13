@@ -67,7 +67,7 @@ class OpenArchivesRecordDriver extends IndexRecordDriver {
 		$openArchivesUsage = new OpenArchivesRecordUsage();
 		$openArchivesUsage->openArchivesRecordId = $this->getUniqueID();
 		global $aspenUsage;
-		$openArchivesUsage->instance = $aspenUsage->instance;
+		$openArchivesUsage->instance = $aspenUsage->getInstance();
 		$openArchivesUsage->year = date('Y');
 		$openArchivesUsage->month = date('n');
 		if ($openArchivesUsage->find(true)) {

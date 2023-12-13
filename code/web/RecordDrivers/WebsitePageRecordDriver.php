@@ -46,7 +46,7 @@ class WebsitePageRecordDriver extends IndexRecordDriver {
 		require_once ROOT_DIR . '/sys/WebsiteIndexing/WebPageUsage.php';
 		$webPageUsage = new WebPageUsage();
 		global $aspenUsage;
-		$webPageUsage->instance = $aspenUsage->instance;
+		$webPageUsage->instance = $aspenUsage->getInstance();
 		$webPageUsage->webPageId = str_replace('WebPage:', '', $this->getUniqueID());
 		$webPageUsage->year = date('Y');
 		$webPageUsage->month = date('n');
