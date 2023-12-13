@@ -222,7 +222,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
 
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, 'mlt');
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
@@ -290,7 +290,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, 'mlt');
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
@@ -362,7 +362,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary, $searchLocation) {
+	public function getBoostFactors($searchLibrary, $searchLocation, $searchIndex) {
 		global $activeLanguage;
 
 		$boostFactors = [];
@@ -383,6 +383,9 @@ class GroupedWorksSolrConnector2 extends Solr {
 
 			$limitBoosts = $searchLibrary->getGroupedWorkDisplaySettings()->limitBoosts;
 			$maxTotalBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxTotalBoost;
+			if ($searchIndex != 'Keyword' && $searchIndex != 'mlt') {
+				$maxTotalBoost = $maxTotalBoost / 4;
+			}
 			$maxPopularityBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxPopularityBoost;
 			$maxFormatBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxFormatBoost;
 			$maxHoldingsBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxHoldingsBoost;

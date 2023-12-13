@@ -200,11 +200,12 @@ Title:
         - [localized_callnumber, 10000]
       - title_left:
         - [text_left_word, 5000]
-        - [text_left, 750]
+        - [text_left, 400]
       - title_proper:
         - [exact, 800]
         - [onephrase, 500]
         - [and, 200]
+        - [single_word_removal, 1]
       - title:
         - [onephrase, 200]
         - [and, 125]
@@ -275,13 +276,13 @@ Keyword:
       - title_exact:
         - [localized_callnumber, 10000]
       - title_left:
-        - [ text_left_word, 6000 ]
-        - [ text_left, 2000 ]
+        - [ text_left_word, 5000 ]
+        - [ text_left, 400 ]
       - title_proper:
         - [ exact, 800 ]
         - [ onephrase, 500 ]
         - [ and, 200 ]
-        - [single_word_removal, 50]
+        - [single_word_removal, 1]
       - title:
         - [onephrase, 200]
         - [and, 125]
