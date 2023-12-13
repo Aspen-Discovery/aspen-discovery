@@ -94,9 +94,13 @@ export const HoldPrompt = (props) => {
                typeOfHold = 'volume';
                promptForHoldType = true;
           }
-          if (_.isEmpty(volumeInfo.hasItemsWithoutVolumes) || !volumeInfo.hasItemsWithoutVolumes === false) {
+          if (_.isEmpty(volumeInfo.hasItemsWithoutVolumes)) {
                typeOfHold = 'volume';
                promptForHoldType = false;
+          }
+          if (volumeInfo.hasItemsWithoutVolumes) {
+               promptForHoldType = true;
+               typeOfHold = 'item';
           }
      }
 
