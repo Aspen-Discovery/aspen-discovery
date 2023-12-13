@@ -103,10 +103,11 @@
                                         {/if}
                                         {if $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount && $fine.canPayFine !== false}
                                             {if !empty($showOutstanding)}
-												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountOutstandingVal}" class="form-control amountToPay" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> {if !empty($overPayWarning)}<span id="overPayWarning{$fine.fineId}" class="text-danger" style="display:none;"><i class="fas fa-exclamation-triangle"></i> {$overPayWarning}</span>{/if}</td>
+												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountOutstandingVal}" class="form-control amountToPay" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountOutstandingVal|string_format:'%.2f'}" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');"> {if !empty($overPayWarning)}
+														<div style="width: 100%"><span id="overPayWarning{$fine.fineId}" class="text-danger" style="white-space:pre-line; display:none;"><i class="fas fa-exclamation-triangle"></i> {$overPayWarning}</span></div>{/if}</td>
                                             {else}
 												<td><input aria-label="Amount to Pay for fine {$counter}" type="text" min="0" max="{$fine.amountVal}" name="amountToPay[{$fine.fineId}]" id="amountToPay{$fine.fineId}" value="{$fine.amountVal|string_format:'%.2f'}" class="form-control amountToPay" onchange="AspenDiscovery.Account.updateFineTotal('#fines{$userId}', '{$userId}', '{$finesToPay}');">
-                                                    {if !empty($overPayWarning)}<span id="overPayWarning{$fine.fineId}" class="text-danger" style="display:none;"><i class="fas fa-exclamation-triangle"></i> {$overPayWarning}</span>{/if}</td>
+													{if !empty($overPayWarning)}<div style="width: 100%"><span id="overPayWarning{$fine.fineId}" class="text-danger" style="white-space:pre-line; display:none;"><i class="fas fa-exclamation-triangle"></i> {$overPayWarning}</span></div>{/if}</td>
                                             {/if}
                                         {elseif $finesToPay == 2 && $fineTotalsVal.$userId > $minimumFineAmount}
 											<td></td>
