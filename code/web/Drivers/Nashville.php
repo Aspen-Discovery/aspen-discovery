@@ -646,7 +646,7 @@ EOT;
         return $data;
     }
 
-    public function getStudentReportData($location, $showOverdueOnly, $date) : array {
+    public function getStudentReportData($location, $showOverdueOnly, $date) : ?array {
         $this->initDatabaseConnection();
         if ($showOverdueOnly == 'checkedOut') {
             $statuses = "(TRANSITEM_V.transcode = 'O' or transitem_v.transcode='L' or transitem_v.transcode='C')";
