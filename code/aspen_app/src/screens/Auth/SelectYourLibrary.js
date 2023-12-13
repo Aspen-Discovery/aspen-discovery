@@ -15,12 +15,6 @@ export const SelectYourLibrary = (payload) => {
      const { isCommunity, showModal, setShowModal, updateSelectedLibrary, selectedLibrary, shouldRequestPermissions, permissionRequested, libraries, allLibraries, setShouldRequestPermissions } = payload;
      const [query, setQuery] = React.useState('');
 
-     let resultsHeader = '';
-
-     if ((PATRON.coords.lat !== 0 && PATRON.coords.long !== 0 && _.isEmpty(query)) || query === ' ') {
-          resultsHeader = 'We found these libraries within 60 miles';
-     }
-
      function FilteredLibraries() {
           let haystack = [];
 
@@ -62,11 +56,6 @@ export const SelectYourLibrary = (payload) => {
                          <Modal.Header>{getTermFromDictionary('en', 'find_your_library')}</Modal.Header>
                          <Box bg="white" _dark={{ bg: 'coolGray.800' }} p={2} pb={query ? 0 : 5}>
                               <Input variant="filled" size="lg" autoCorrect={false} status="info" placeholder={getTermFromDictionary('en', 'search')} clearButtonMode="always" value={query} onChangeText={(text) => setQuery(text)} />
-                              {resultsHeader !== '' ? (
-                                   <Text p={2} bold>
-                                        {resultsHeader}
-                                   </Text>
-                              ) : null}
                          </Box>
                          <FlatList keyboardShouldPersistTaps="handled" keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => <Item data={item} isCommunity={isCommunity} setShowModal={setShowModal} updateSelectedLibrary={updateSelectedLibrary} />} data={FilteredLibraries(libraries)} />
                     </Modal.Content>
