@@ -4153,8 +4153,9 @@ class User extends DataObject {
 		$obj->pushToken = $token;
 		if ($obj->find(true)) {
 			$obj->$option = $newValue;
-			$obj->update();
-			return true;
+			if($obj->update()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -4165,8 +4166,9 @@ class User extends DataObject {
 		$pushToken->userId = $this->id;
 		$pushToken->pushToken = $token;
 		if ($pushToken->find(true)) {
-			$pushToken->delete();
-			return true;
+			if($pushToken->delete()) {
+				return true;
+			}
 		}
 		return false;
 	}
