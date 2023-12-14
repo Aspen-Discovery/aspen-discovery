@@ -41,7 +41,7 @@ class EventsSolrConnector extends Solr {
 		return $filter;
 	}
 
-	public function getBoostFactors($searchLibrary, $searchLocation) {
+	public function getBoostFactors($searchLibrary, $searchLocation, $searchIndex) {
 		$boostFactors = [];
 
 		$userLocation = null;

@@ -385,6 +385,61 @@
 			{/if}
 		</div>
 
+		<h2>{translate text="Email Usage" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=emailSending&instance={$selectedInstance}" title="{translate text="Email Report Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h2>
+		<div class="row">
+			<div class="dashboardCategory col-sm-6">
+				<div class="row">
+					<div class="col-sm-10 col-sm-offset-1">
+						<h3 class="dashboardCategoryLabel">{translate text="Emails Sent Successfully" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=emailsSent&instance={$selectedInstance}" title="{translate text="Emails Sent Successfully Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisMonth.totalEmailsSent|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageLastMonth.totalEmailsSent|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisYear.totalEmailsSent|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageAllTime.totalEmailsSent|number_format}</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="dashboardCategory col-sm-6">
+				<div class="row">
+					<div class="col-sm-10 col-sm-offset-1">
+						<h3 class="dashboardCategoryLabel">{translate text="Failed Emails" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=failedEmails&instance={$selectedInstance}" title="{translate text="Failed Emails Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h3>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisMonth.totalFailedEmails|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="Last Month" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageLastMonth.totalFailedEmails|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="This Year" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageThisYear.totalFailedEmails|number_format}</div>
+					</div>
+					<div class="col-tn-6">
+						<div class="dashboardLabel">{translate text="All Time" isAdminFacing=true}</div>
+						<div class="dashboardValue">{$aspenUsageAllTime.totalFailedEmails|number_format}</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<h2>{translate text="Exceptions" isAdminFacing=true} <a href="/Admin/UsageGraphs?stat=exceptionsReport&instance={$selectedInstance}" title="{translate text="Exceptions Report Graph" inAttribute="true" isAdminFacing=true}"><i class="fas fa-chart-line"></i></a></h2>
 		<div class="row">
 			<div class="dashboardCategory col-sm-6">

@@ -888,7 +888,7 @@ class WebBuilder_AJAX extends JSON_Action {
 			$webResourceUsage->year = date('Y');
 			$webResourceUsage->month = date('n');
 			global $aspenUsage;
-			$webResourceUsage->instance = $aspenUsage->instance;
+			$webResourceUsage->instance = $aspenUsage->getInstance();
 			$webResourceUsage->resourceName = $webResource->name;
 			if ($webResourceUsage->find(true)) {
 				$webResourceUsage->pageViews++;
