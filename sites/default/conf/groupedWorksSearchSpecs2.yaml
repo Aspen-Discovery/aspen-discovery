@@ -282,7 +282,7 @@ Keyword:
       - [localized_callnumber, 6000]
     - title_left:
       - [ text_left_word, 2500 ]
-      - [ text_left, 400 ]
+      - [ text_left, 100 ]
     - title_proper:
       - [ exact, 800 ]
       - [ onephrase, 500 ]
@@ -302,7 +302,7 @@ Keyword:
     - local_callnumber_left:
       - [text_left, 300]
     - subject:
-      - [onephrase, 300]
+      - [onephrase, 800]
     - title:
       - [onephrase, 200]
     - topic:
