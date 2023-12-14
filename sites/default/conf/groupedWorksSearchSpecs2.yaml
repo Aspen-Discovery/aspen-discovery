@@ -194,37 +194,42 @@ SubjectProper:
 
 Title:
   QueryFields:
-    -
-      - [OR, 50]
-      - title_exact:
-        - [localized_callnumber, 10000]
-      - title_left:
-        - [text_left_word, 5000]
-        - [text_left, 400]
-      - title_proper:
-        - [exact, 800]
-        - [onephrase, 500]
-        - [and, 200]
-        - [single_word_removal, 1]
-      - title:
-        - [onephrase, 200]
-        - [and, 125]
-      - title_alt:
-        - [and, 100]
-      - title_new:
-        - [and, 50]
-    -
-      - [OR, 1]
-      - series_proper:
-        - [exact, 200]
-        - [onephrase, 100]
-        - [and, 25]
-      - series:
-        - [exact, 100]
-        - [onephrase, 50]
-        - [and, 10]
-      - series2:
-        - [and, 10]
+    - title_exact:
+      - [localized_callnumber, 10000]
+    - title_left:
+      - [text_left_word, 5000]
+    - title_left:
+      - [text_left, 400]
+    - title_proper:
+      - [exact, 800]
+    - title_proper:
+      - [onephrase, 500]
+    - title_proper:
+      - [and, 200]
+    - title_proper:
+      - [single_word_removal, 1]
+    - title:
+      - [onephrase, 200]
+    - title:
+      - [and, 125]
+    - title_alt:
+      - [and, 100]
+    - title_new:
+      - [and, 50]
+    - series_proper:
+      - [exact, 200]
+    - series_proper:
+      - [onephrase, 100]
+    - series_proper:
+      - [and, 25]
+    - series:
+      - [exact, 100]
+    - series:
+      - [onephrase, 50]
+    - series:
+      - [and, 10]
+    - series2:
+      - [and, 10]
 
 TitleProper:
   QueryFields:
@@ -272,7 +277,7 @@ Keyword:
   QueryFields:
 # Titles
     - title_exact:
-      - [localized_callnumber, 5000]
+      - [localized_callnumber, 6000]
     - author_exact:
       - [localized_callnumber, 3000]
     - title_left:
@@ -386,18 +391,23 @@ KeywordProper:
       - [onephrase, ~]
     - issn:
       - [and, 100]
+    - issn:
       - [or, ~]
     - isbn:
       - [and, 100]
+    - isbn:
       - [or, ~]
     - upc:
       - [and, 100]
-      - [or, ~]      
+    - upc:
+      - [or, ~]
     - oclc:
       - [and, 100]
+    - oclc:
       - [or, ~]
     - callnumber-subject:
       - [onephrase, ~]
+    - callnumber-subject:
       - [exact, ~]
     - id:
       - [exact, ~]
