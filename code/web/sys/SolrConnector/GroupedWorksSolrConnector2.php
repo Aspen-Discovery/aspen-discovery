@@ -391,13 +391,14 @@ class GroupedWorksSolrConnector2 extends Solr {
 			$maxHoldingsBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxHoldingsBoost;
 			if ($applyHoldingsBoost) {
 				if ($limitBoosts) {
-					$boostFactors[] = "min($maxTotalBoost,product(min($maxFormatBoost,format_boost),min($maxHoldingsBoost,max(num_holdings,1)),div(min($maxPopularityBoost,max(popularity,1)),min($maxFormatBoost,max(num_holdings,1)))))";
+					//Add format boost, number of holdings, popularity divided by number of holdings
+					$boostFactors[] = "min($maxTotalBoost,sum(min($maxFormatBoost,format_boost),min($maxHoldingsBoost,max(num_holdings,1)),min($maxPopularityBoost,div(max(popularity,1),max(num_holdings,1)))))";
 				}else{
 					$boostFactors[] = "product(format_boost,max(num_holdings,1),div(max(popularity,1),max(num_holdings,1)))";
 				}
 			} else {
 				if ($limitBoosts) {
-					$boostFactors[] = "min($maxTotalBoost,div(min($maxPopularityBoost,popularity),min($maxFormatBoost,format_boost)))";
+					$boostFactors[] = "min($maxTotalBoost,product(min($maxPopularityBoost,popularity),min($maxFormatBoost,format_boost)))";
 				}else{
 					$boostFactors[] = "div(popularity,format_boost)";
 				}
