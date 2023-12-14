@@ -55,7 +55,7 @@ class EBSCO_JSON extends JSON_Action {
 		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 		$ebscoEdsRecordUsage = new EbscoEdsRecordUsage();
 		global $aspenUsage;
-		$ebscoEdsRecordUsage->instance = $aspenUsage->instance;
+		$ebscoEdsRecordUsage->instance = $aspenUsage->getInstance();
 		$ebscoEdsRecordUsage->ebscoId = $id;
 		$ebscoEdsRecordUsage->year = date('Y');
 		$ebscoEdsRecordUsage->month = date('n');
@@ -77,7 +77,7 @@ class EBSCO_JSON extends JSON_Action {
 			require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 			$userEbscoEdsUsage = new UserEbscoEdsUsage();
 			global $aspenUsage;
-			$userEbscoEdsUsage->instance = $aspenUsage->instance;
+			$userEbscoEdsUsage->instance = $aspenUsage->getInstance();
 			$userEbscoEdsUsage->userId = $userId;
 			$userEbscoEdsUsage->year = date('Y');
 			$userEbscoEdsUsage->month = date('n');

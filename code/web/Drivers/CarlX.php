@@ -2262,7 +2262,7 @@ class CarlX extends AbstractIlsDriver {
         return false;
     }
 
-    public function getStudentReportData($location, $showOverdueOnly, $date) {
+    public function getStudentReportData($location, $showOverdueOnly, $date) : ?array {
         return false;
     }
 

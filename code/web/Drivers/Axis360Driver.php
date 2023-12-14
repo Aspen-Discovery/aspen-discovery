@@ -703,7 +703,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		$userUsage->year = date('Y');
 		$userUsage->month = date('n');
 		global $aspenUsage;
-		$userUsage->instance = $aspenUsage->instance;
+		$userUsage->instance = $aspenUsage->getInstance();
 
 		if ($userUsage->find(true)) {
 			$userUsage->usageCount++;
@@ -726,7 +726,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		if ($product->find(true)) {
 			$recordUsage->axis360Id = $product->axis360Id;
 			global $aspenUsage;
-			$recordUsage->instance = $aspenUsage->instance;
+			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
 			if ($recordUsage->find(true)) {
@@ -751,7 +751,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		$product->axis360Id = $recordId;
 		if ($product->find(true)) {
 			global $aspenUsage;
-			$recordUsage->instance = $aspenUsage->instance;
+			$recordUsage->instance = $aspenUsage->getInstance();
 			$recordUsage->axis360Id = $product->axis360Id;
 			$recordUsage->year = date('Y');
 			$recordUsage->month = date('n');
@@ -1001,7 +1001,7 @@ class Axis360Driver extends AbstractEContentDriver {
 		require_once ROOT_DIR . '/sys/Axis360/Axis360Stats.php';
 		$axis360Stats = new Axis360Stats();
 		global $aspenUsage;
-		$axis360Stats->instance = $aspenUsage->instance;
+		$axis360Stats->instance = $aspenUsage->getInstance();
 		$axis360Stats->year = date('Y');
 		$axis360Stats->month = date('n');
 		if ($axis360Stats->find(true)) {

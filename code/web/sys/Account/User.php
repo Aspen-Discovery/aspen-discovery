@@ -589,7 +589,7 @@ class User extends DataObject {
 				} elseif ($source == 'cloud_library') {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
-					return array_key_exists('Boundless', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
 				}
 			}
 		}
@@ -681,8 +681,8 @@ class User extends DataObject {
 				$this->linkedUsers[] = clone($linkedUser);
 
 				/* Send all the things to the user who was linked to */
-				$this->newLinkMessage(); // Display alert in Aspen Discovery
-				$this->sendNewLinkNotification($linkedUser); // Send Aspen LiDA notification
+				$linkedUser->newLinkMessage(); // Display alert in Aspen Discovery to the linked user
+				$linkedUser->sendNewLinkNotification($this); // Send Aspen LiDA notification to the linked user
 
 				return true;
 			}
@@ -719,9 +719,18 @@ class User extends DataObject {
 		$userLink->primaryAccountId = $managingAccount;
 		$userLink->linkedAccountId = $this->id;
 		if($userLink->delete(true)) {
-			/* Send all the things to the managing account that the user removed the link from */
-			$this->removeManagingAccountMessage($managingAccount); // Display alert in Aspen Discovery
-			$this->sendRemoveManagingLinkNotification($managingAccount); // Send Aspen LiDA notification
+
+			$managingUser = new User();
+			$managingUser->id = $managingAccount;
+			if($managingUser->find(true)) {
+				/* Send all the things to the managing account that the user removed the link from */
+				$managingUser->removeManagingAccountMessage($this); // Display alert in Aspen Discovery
+				$managingUser->sendRemoveManagingLinkNotification($this); // Send Aspen LiDA notification
+
+				// Force a reload of data
+				$managingUser->linkedUsers = null;
+				$managingUser->getLinkedUsers();
+			}
 
 			// Force a reload of data
 			$this->linkedUsers = null;
@@ -2767,7 +2776,7 @@ class User extends DataObject {
 	 * Sends an Aspen LiDA notification when a user has been linked to.
 	 **/
 	function sendNewLinkNotification(User $initiatingUser): void {
-		if ($initiatingUser->canReceiveNotifications($initiatingUser, 'notifyAccount')) {
+		if ($this->canReceiveNotifications($this, 'notifyAccount')) {
 			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
 			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
 			$appScheme = 'aspen-lida';
@@ -2777,7 +2786,7 @@ class User extends DataObject {
 				$appScheme = $systemVariables->appScheme;
 			}
 			$notificationToken = new UserNotificationToken();
-			$notificationToken->userId = $initiatingUser->id;
+			$notificationToken->userId = $this->id;
 			$notificationToken->find();
 			while ($notificationToken->fetch()) {
 				$body = [
@@ -2797,11 +2806,11 @@ class User extends DataObject {
 	/**
 	 * Displays an alert in Aspen Discovery to the managing account when a user removes the link.
 	 **/
-	function removeManagingAccountMessage($managingAccount) {
+	function removeManagingAccountMessage(User $unlinkedUser) {
 		require_once ROOT_DIR . '/sys/Account/UserMessage.php';
 		$userMessage = new UserMessage();
 		$userMessage->messageType = 'confirm_linked_accts';
-		$userMessage->userId = $this->id;
+		$userMessage->userId = $unlinkedUser->id;
 		$userMessage->isDismissed = '0';
 		$userMessage->find();
 		while ($userMessage->fetch()) {
@@ -2810,44 +2819,40 @@ class User extends DataObject {
 		}
 
 		$userMessage = new UserMessage();
-		$userMessage->messageType = 'linked_acct_notify_removed_' . $this->id;
-		$userMessage->userId = $managingAccount;
+		$userMessage->messageType = 'linked_acct_notify_removed_' . $unlinkedUser->id;
+		$userMessage->userId = $this->id;
 		$userMessage->isDismissed = '0';
-		$userMessage->message = "An account you were previously linked to, $this->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
+		$userMessage->message = "An account you were previously linked to, $unlinkedUser->displayName, has removed the link to your account. To learn more about linked accounts, please visit your <a href='/MyAccount/LinkedAccounts'>Linked Accounts</a> page.";
 		$userMessage->update();
 	}
 
 	/**
 	 * Sends an Aspen LiDA notification to the managing account when a user removes the link.
 	 **/
-	function sendRemoveManagingLinkNotification($managingUserId): void {
-		$managingUser = new User();
-		$managingUser->id = $managingUserId;
-		if($managingUser->find(true)) {
-			if ($managingUser->canReceiveNotifications($managingUser, 'notifyAccount')) {
-				require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
-				require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
-				$appScheme = 'aspen-lida';
-				require_once ROOT_DIR . '/sys/SystemVariables.php';
-				$systemVariables = SystemVariables::getSystemVariables();
-				if ($systemVariables && !empty($systemVariables->appScheme)) {
-					$appScheme = $systemVariables->appScheme;
-				}
-				$notificationToken = new UserNotificationToken();
-				$notificationToken->userId = $managingUser->id;
-				$notificationToken->find();
-				while ($notificationToken->fetch()) {
-					$body = [
-						'to' => $notificationToken->pushToken,
-						'title' => 'Account link removed',
-						'body' => 'An account you were previously linked to, ' . $this->displayName . ', has removed the link to your account ' . $managingUser->displayName . '. Learn more about account linking at your library.',
-						'categoryId' => 'accountAlert',
-						'channelId' => 'accountAlert',
-						'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
-					];
-					$expoNotification = new ExpoNotification();
-					$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
-				}
+	function sendRemoveManagingLinkNotification(User $unlinkedUser): void {
+		if ($this->canReceiveNotifications($this, 'notifyAccount')) {
+			require_once ROOT_DIR . '/sys/Notifications/ExpoNotification.php';
+			require_once ROOT_DIR . '/sys/Account/UserNotificationToken.php';
+			$appScheme = 'aspen-lida';
+			require_once ROOT_DIR . '/sys/SystemVariables.php';
+			$systemVariables = SystemVariables::getSystemVariables();
+			if ($systemVariables && !empty($systemVariables->appScheme)) {
+				$appScheme = $systemVariables->appScheme;
+			}
+			$notificationToken = new UserNotificationToken();
+			$notificationToken->userId = $this->id;
+			$notificationToken->find();
+			while ($notificationToken->fetch()) {
+				$body = [
+					'to' => $notificationToken->pushToken,
+					'title' => 'Account link removed',
+					'body' => 'An account you were previously linked to, ' . $unlinkedUser->displayName . ', has removed the link to your account ' . $this->displayName . '. Learn more about account linking at your library.',
+					'categoryId' => 'accountAlert',
+					'channelId' => 'accountAlert',
+					'data' => ['url' => urlencode($appScheme . '://user/linked_accounts')],
+				];
+				$expoNotification = new ExpoNotification();
+				$expoNotification->sendExpoPushNotification($body, $notificationToken->pushToken, $this->id, 'linked_account');
 			}
 		}
 	}

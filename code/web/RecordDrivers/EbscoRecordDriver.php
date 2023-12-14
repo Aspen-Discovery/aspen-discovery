@@ -134,7 +134,7 @@ class EbscoRecordDriver extends RecordInterface {
 		require_once ROOT_DIR . '/sys/Ebsco/EbscoEdsRecordUsage.php';
 		$recordUsage = new EbscoEdsRecordUsage();
 		global $aspenUsage;
-		$recordUsage->instance = $aspenUsage->instance;
+		$recordUsage->instance = $aspenUsage->getInstance();
 		$recordUsage->ebscoId = $this->getUniqueID();
 		$recordUsage->year = date('Y');
 		$recordUsage->month = date('n');
