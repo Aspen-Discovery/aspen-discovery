@@ -275,41 +275,34 @@ SeriesProper:
 # Try reorganizing to match things better and ensure that we don't look at similar fields multiple times.
 Keyword:
   QueryFields:
-# Titles
+    - author:
+      - [proximal, 8000]
+      - [single_word, 250]
     - title_exact:
       - [localized_callnumber, 6000]
-    - author_exact:
-      - [localized_callnumber, 3000]
     - title_left:
       - [ text_left_word, 2500 ]
-    - author_left:
-      - [text_left, 1000]
+      - [ text_left, 100 ]
     - title_proper:
       - [ exact, 800 ]
-    - author:
-      - [onephrase, 800]
-    - author:
-      - [proximal, 500]
-    - series_proper:
-      - [ exact, 500 ]
-    - title_proper:
       - [ onephrase, 500 ]
+      - [single_word_removal, 1]
+    - series_proper:
+      - [ proximal, 7000 ]
+      - [ single_word, 100]
+      - [ onephrase, 50 ]
     - id:
       - [exact, 500]
     - alternate_ids:
       - [exact, 500]
     - barcode:
       - [onephrase, 500]
-    - title_left:
-      - [ text_left, 400 ]
     - local_callnumber_exact:
       - [localized_callnumber, 400]
     - local_callnumber_left:
       - [text_left, 300]
     - subject:
-      - [onephrase, 300]
-    - author:
-      - [proximal, 250]
+      - [onephrase, 800]
     - title:
       - [onephrase, 200]
     - topic:
@@ -332,28 +325,19 @@ Keyword:
       - [onephrase, 75]
     - literary_form_full:
       - [onephrase, 75]
-    - series_proper:
-      - [ onephrase, 50 ]
     - series:
       - [ exact, 50 ]
+      - [ onephrase, 10 ]
     - author2:
-      - [onephrase, 25]
+      - [proximal, 25]
     - author_additional:
-      - [onephrase, 25]
+      - [proximal, 25]
     - table_of_contents:
       - [onephrase, 20]
     - description:
       - [onephrase, 15]
     - keywords:
       - [onephrase, 10]
-    - series:
-      - [ onephrase, 10 ]
-    - author2:
-      - [proximal, 1]
-    - author_additional:
-      - [proximal, 1]
-    - title_proper:
-      - [single_word_removal, 1]
     - title_full:
       - [single_word_removal, 1]
     - issn:
