@@ -288,6 +288,8 @@ Keyword:
       - [ exact, 800 ]
     - author:
       - [onephrase, 800]
+    - author:
+      - [proximal, 500]
     - series_proper:
       - [ exact, 500 ]
     - title_proper:
@@ -307,7 +309,7 @@ Keyword:
     - subject:
       - [onephrase, 300]
     - author:
-      - [proximal, 200]
+      - [proximal, 250]
     - title:
       - [onephrase, 200]
     - topic:
