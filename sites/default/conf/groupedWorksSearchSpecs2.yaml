@@ -272,11 +272,11 @@ Keyword:
   QueryFields:
 # Titles
     - title_exact:
-      - [localized_callnumber, 10000]
+      - [localized_callnumber, 5000]
     - author_exact:
-      - [localized_callnumber, 6000]
+      - [localized_callnumber, 3000]
     - title_left:
-      - [ text_left_word, 5000 ]
+      - [ text_left_word, 2500 ]
     - author_left:
       - [text_left, 1000]
     - title_proper:
