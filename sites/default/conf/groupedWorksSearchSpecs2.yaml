@@ -288,6 +288,8 @@ Keyword:
       - [ exact, 800 ]
     - author:
       - [onephrase, 800]
+    - series_proper:
+      - [ exact, 500 ]
     - title_proper:
       - [ onephrase, 500 ]
     - id:
@@ -318,8 +320,6 @@ Keyword:
       - [and, 100]
     - upc:
       - [and, 100]
-    - series_proper:
-      - [ exact, 100 ]
     - geographic:
       - [onephrase, 75]
     - genre:
