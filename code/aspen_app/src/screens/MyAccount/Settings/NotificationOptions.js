@@ -1,16 +1,16 @@
-import _ from 'lodash';
-import * as Device from 'expo-device';
 import { useFocusEffect } from '@react-navigation/native';
-import { Box, FlatList, HStack, Switch, Text, Center, Button, Icon, AlertDialog } from 'native-base';
+import { useIsFetching, useQueryClient } from '@tanstack/react-query';
+import * as Device from 'expo-device';
+import _ from 'lodash';
+import { Box, FlatList, HStack, Switch, Text } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
-import { useQuery, useQueryClient, useIsFetching } from '@tanstack/react-query';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import { getPatronCheckedOutItems, refreshProfile, reloadProfile } from '../../../util/api/user';
+import { createChannelsAndCategories, deletePushToken, getNotificationPreference, registerForPushNotificationsAsync, setNotificationPreference } from '../../../components/Notifications';
 import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { reloadProfile } from '../../../util/api/user';
 
 export const Settings_NotificationOptions = () => {
      const isFetchingUserProfile = useIsFetching({ queryKey: ['user'] });
@@ -177,11 +177,11 @@ const EnableAllNotifications = (data) => {
                setNotifyCustom(allowAllNotifications);
                setNotifyAccount(allowAllNotifications);
                /*
-                _.set(notificationSettings.notifySavedSearch, notificationSettings.notifySavedSearch.allow, allowAllNotifications);
-               _.set(notificationSettings.notifyCustom, notificationSettings.notifyCustom.allow, allowAllNotifications);
-               _.set(notificationSettings.notifyAccount, notificationSettings.notifyAccount.allow, allowAllNotifications);
-             
-               */
+			 _.set(notificationSettings.notifySavedSearch, notificationSettings.notifySavedSearch.allow, allowAllNotifications);
+			 _.set(notificationSettings.notifyCustom, notificationSettings.notifyCustom.allow, allowAllNotifications);
+			 _.set(notificationSettings.notifyAccount, notificationSettings.notifyAccount.allow, allowAllNotifications);
+
+			 */
                await reloadProfile(library.baseUrl).then((data) => {
                     updateUser(data);
                     updateNotificationSettings(data.notification_preferences, language);
@@ -216,10 +216,9 @@ const DisplayPreference = (data) => {
      const { notifySavedSearch, setNotifySavedSearch, notifyCustom, setNotifyCustom, notifyAccount, setNotifyAccount } = data;
 
      let defaultToggleState = false;
-     defaultToggleState = preference.allow === 1 || preference.allow === '1' || preference.allow === true;
+     console.log(preference.allow);
+     defaultToggleState = preference.allow === 1 || preference.allow === '1' || preference.allow === true || preference.allow === 'true';
 
-     //console.log('defaultToggleState > ' + defaultToggleState);
-     //console.log(notifyAccount);
      const [toggled, setToggle] = React.useState(defaultToggleState);
      const toggleSwitch = () => setToggle((previousState) => !previousState);
 
@@ -232,7 +231,6 @@ const DisplayPreference = (data) => {
           } else {
                allowNotification = false;
           }
-          console.log((allowNotification = true));
           if (expoToken) {
                await setNotificationPreference(library.baseUrl, expoToken, pref, allowNotification);
                if (pref === 'notifySavedSearch') {
