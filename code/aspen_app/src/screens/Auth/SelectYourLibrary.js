@@ -25,9 +25,10 @@ export const SelectYourLibrary = (payload) => {
 
           if (!_.isEmpty(query) && query !== ' ') {
                haystack = allLibraries;
-          }
-          if (!isCommunity) {
-               haystack = libraries;
+
+               if (!isCommunity) {
+                    haystack = libraries;
+               }
           }
 
           if (!isCommunity) {
