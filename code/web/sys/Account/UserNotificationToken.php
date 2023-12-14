@@ -11,6 +11,10 @@ class UserNotificationToken extends DataObject {
 	public $notifyAccount;
 	public $onboardAppNotifications;
 
+	function getNumericColumnNames(): array {
+		return ['id, userId, notifySavedSearch, notifyCustom, notifyAccount, onboardAppNotifications'];
+	}
+
 	public static function deleteToken($token): bool {
 		$storedToken = new UserNotificationToken();
 		$storedToken->pushToken = $token;
