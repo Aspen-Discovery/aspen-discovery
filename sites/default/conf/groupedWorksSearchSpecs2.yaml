@@ -285,14 +285,15 @@ Keyword:
         - [single_word_removal, 1]
       - title:
         - [onephrase, 200]
-        - [and, 125]
-      - title_alt:
-        - [and, 100]
-      - title_new:
         - [and, 50]
+      - title_alt:
+        - [onephrase, 100]
+        - [and, 10]
+      - title_new:
+        - [and, 25]
       - title_full:
-        - [and, 200]
-        - [single_word_removal, 50]
+        - [and, 25]
+        - [single_word_removal, 1]
 #Authors
     -
       - [OR, 200]
