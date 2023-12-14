@@ -288,7 +288,8 @@ Keyword:
       - [ onephrase, 500 ]
       - [single_word_removal, 1]
     - series_proper:
-      - [ exact, 500 ]
+      - [ proximal, 7000 ]
+      - [ single_word, 100]
       - [ onephrase, 50 ]
     - id:
       - [exact, 500]
