@@ -36,6 +36,14 @@ function getUpdates24_01_00(): array {
 				) ENGINE = InnoDB',
 			],
 		], //add_shared_session_table
+		'add_show_link_on' => [
+			'title' => 'Add options in Library Links to where a link should show',
+			'description' => 'Add option in Library Links to whether or not the menu item should also show in Aspen LiDA',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE library_links ADD COLUMN showLinkOn TINYINT(1) DEFAULT 0'
+			]
+		], //add_show_link_on
 
 		//kodi - ByWater
 
