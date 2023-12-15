@@ -151,14 +151,14 @@ ISN:
 
 Subject:
   QueryFields:
+    - topic_proper:
+      - [onephrase, 600]
+      - [and, 100]
     - subject:
-      - [onephrase, 300]
+      - [onephrase, 500]
       - [and, 100]
     - topic:
-      - [onephrase, 300]
-      - [and, 100]
-    - topic_proper:
-      - [onephrase, 300]
+      - [onephrase, 500]
       - [and, 100]
     - geographic:
       - [onephrase, 300]
@@ -173,24 +173,15 @@ Subject:
 SubjectProper:
   QueryFields:
     - subject_proper:
-      - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
+      - [onephrase, 500]
     - topic_proper:
-      - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
+      - [onephrase, 500]
     - geographic_proper:
       - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
     - genre_proper:
       - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
     - era_proper:
-      - [and, 100]
-      - [or, ~]
+      - [onephrase, 300]
 
 Title:
   QueryFields:
@@ -198,7 +189,6 @@ Title:
       - [localized_callnumber, 10000]
     - title_left:
       - [text_left_word, 5000]
-    - title_left:
       - [text_left, 400]
     - title_proper:
       - [exact, 800]
@@ -282,7 +272,6 @@ Keyword:
       - [localized_callnumber, 6000]
     - title_left:
       - [ text_left_word, 2500 ]
-      - [ text_left, 100 ]
     - title_proper:
       - [ exact, 800 ]
       - [ onephrase, 500 ]
