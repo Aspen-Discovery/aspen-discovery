@@ -757,6 +757,13 @@ class SirsiDynixROA extends HorizonAPI {
 				return $selfRegResult;
 			}
 
+			if (isset($_REQUEST['email']) && (isset($_REQUEST['email2']))) {
+				if ($_REQUEST['email'] != ($_REQUEST['email2'])){
+					$selfRegResult['message'] = 'Email validation must match original email entered.';
+					return $selfRegResult;
+				}
+			}
+
 			//If the user is opted in to SMS messages, set up their notifications automatically.
 			if (!empty($_REQUEST['smsNotices']) && !empty($_REQUEST['cellPhone'])) {
 				$defaultCountryCode = '';
@@ -3438,7 +3445,7 @@ class SirsiDynixROA extends HorizonAPI {
 				} elseif ($customField->symphonyName == "email"){
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
-						'type' => $customField->fieldType,
+						'type' => 'email',
 						'label' => $customField->displayName,
 						'maxLength' => 128,
 						'required' => $customField->required,
@@ -3448,7 +3455,7 @@ class SirsiDynixROA extends HorizonAPI {
 					if ($customField->required){
 						$fields['email2'] = [
 							'property' => 'email2',
-							'type' => 'email',
+							'type' => 'email2',
 							'label' => 'Confirm Email',
 							'maxLength' => 128,
 							'required' => $customField->required,
