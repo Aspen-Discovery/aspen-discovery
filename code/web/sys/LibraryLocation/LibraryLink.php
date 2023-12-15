@@ -20,6 +20,7 @@ class LibraryLink extends DataObject {
 	public $published;
 	public /** @noinspection PhpUnused */
 		$openInNewTab;
+	public $showLinkOn;
 
 	private $_allowAccess;
 	private $_languages;
@@ -33,6 +34,7 @@ class LibraryLink extends DataObject {
 			'showInTopMenu',
 			'showToLoggedInUsersOnly',
 			'weight',
+			'showLinkOn'
 		];
 	}
 
@@ -153,6 +155,18 @@ class LibraryLink extends DataObject {
 				'label' => 'Display only for',
 				'description' => 'Define what patron types should see the menu link',
 				'values' => $patronTypeList,
+			],
+			'showLinkOn' => [
+				'property' => 'showLinkOn',
+				'type' => 'enum',
+				'label' => 'Show on',
+				'description' => 'Define where this menu link should be shown',
+				'values' => [
+					0 => 'Aspen Discovery Only',
+					1 => 'Aspen LiDA Only',
+					2 => 'Aspen Discovery + Aspen LiDA',
+				],
+				'default' => 0,
 			],
 			'languages' => [
 				'property' => 'languages',
@@ -342,6 +356,46 @@ class LibraryLink extends DataObject {
 					}
 				} else {
 					return false;
+				}
+			} else {
+				return false;
+			}
+		} else {
+			return true;
+		}
+	}
+
+	public function isValidForDisplayForApp(User $user) {
+		if($this->showLinkOn == 0) {
+			return false;
+		}
+		//Check to see if the library link is valid based on the language
+		global $activeLanguage;
+		$validLanguages = $this->getLanguages();
+		if (!in_array($activeLanguage->id, $validLanguages)) {
+			return false;
+		}
+		if ($this->showToLoggedInUsersOnly) {
+			$userPatronType = $user->patronType;
+			$userId = $user->id;
+			require_once ROOT_DIR . '/sys/Account/PType.php';
+			$patronType = new pType();
+			$patronType->pType = $userPatronType;
+			if ($patronType->find(true)) {
+				$patronTypeId = $patronType->id;
+				try {
+					require_once ROOT_DIR . '/sys/LibraryLocation/LibraryLinkAccess.php';
+					$patronTypeLink = new LibraryLinkAccess();
+					$patronTypeLink->libraryLinkId = $this->id;
+					$patronTypeLink->patronTypeId = $patronTypeId;
+					if ((!$patronTypeLink->find(true)) && $userId != 1) {
+						return false;
+					} else {
+						return true;
+					}
+				} catch (Exception $e) {
+					//This happens before the table has been defined, ignore it
+					return true;
 				}
 			} else {
 				return false;

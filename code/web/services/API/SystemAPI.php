@@ -39,7 +39,8 @@ class SystemAPI extends Action {
 					'getVdxForm',
 					'getSelfCheckSettings',
 					'getSystemMessages',
-					'dismissSystemMessage'
+					'dismissSystemMessage',
+					'getLibraryLinks',
 				])) {
 					$result = [
 						'result' => $this->$method(),
@@ -1084,6 +1085,74 @@ class SystemAPI extends Action {
 				'message' => 'Login unsuccessful',
 			];
 		}
+	}
+
+	function getLibraryLinks() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			global $library;
+			$links = $library->libraryLinks;
+			$libraryLinks = [];
+			/** @var LibraryLink $libraryLink */
+			foreach ($links as $libraryLink) {
+				if(!$libraryLink->isValidForDisplayForApp($user)) {
+					continue;
+				}
+
+				if (empty($libraryLink->category)) {
+					$libraryLink->category = 'none-' . $libraryLink->id;
+				}
+				if (!array_key_exists($libraryLink->category, $libraryLinks)) {
+					$libraryLinks[$libraryLink->category] = [];
+				}
+				$libraryLinks[$libraryLink->category][$libraryLink->linkText] = $libraryLink;
+			}
+
+			return [
+				'success' => true,
+				'items' => $libraryLinks,
+			];
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	/**
+	 * @return array
+	 * @noinspection PhpUnused
+	 */
+	private function loadUsernameAndPassword() {
+		$username = $_REQUEST['username'] ?? '';
+		$password = $_REQUEST['password'] ?? '';
+
+		if (isset($_POST['username']) && isset($_POST['password'])) {
+			$username = $_POST['username'];
+			$password = $_POST['password'];
+		}
+
+		if (is_array($username)) {
+			$username = reset($username);
+		}
+		if (is_array($password)) {
+			$password = reset($password);
+		}
+		return [$username, $password];
+	}
+
+	/**
+	 * @return bool|User
+	 */
+	protected function getUserForApiCall() {
+		$user = false;
+		[$username, $password] = $this->loadUsernameAndPassword();
+		$user = UserAccount::validateAccount($username, $password);
+		if ($user !== false && $user->source == 'admin') {
+			return false;
+		}
+		return $user;
 	}
 
 	function getBreadcrumbs(): array {
