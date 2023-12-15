@@ -171,6 +171,7 @@ class DataObjectUtil {
 			'hidden',
 			'url',
 			'email',
+			'email2',
             'email_prefill',
 			'multiemail',
             'barcode_prefill',
