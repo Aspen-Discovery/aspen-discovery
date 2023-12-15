@@ -222,7 +222,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
 
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, 'mlt');
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, '', 'mlt');
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
@@ -290,7 +290,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, 'mlt');
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, '', 'mlt');
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
@@ -362,7 +362,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary, $searchLocation, $searchIndex) {
+	public function getBoostFactors($searchLibrary, $searchLocation, $searchTerm, $searchIndex) {
 		global $activeLanguage;
 
 		$boostFactors = [];
