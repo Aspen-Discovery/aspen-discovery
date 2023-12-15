@@ -140,6 +140,14 @@ function getUpdates23_12_00(): array {
 			]
 		], //search_options
 
+		'update_default_boost_limits' => [
+			'title' => 'Update default boosting limits',
+			'description' => 'Update default boosting limits',
+			'sql' => [
+				'UPDATE grouped_work_display_settings SET maxPopularityBoost = 100, maxFormatBoost = 100, maxHoldingsBoost = 100'
+			]
+		], //update_default_boost_limits
+
 		'evergreen_extract_options' => [
 			'title' => 'Evergreen Extract Options',
 			'description' => 'Add options for controlling Evergreen extract',
