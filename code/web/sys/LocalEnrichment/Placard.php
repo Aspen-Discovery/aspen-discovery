@@ -21,10 +21,13 @@ class Placard extends DB_LibraryLocationLinkedObject {
 	public $startDate;
 	public $endDate;
 
+	/** @var PlacardTrigger[] */
 	protected $_triggers;
+	/** @var int[] */
+	protected $_languages;
+
 	protected $_libraries;
 	protected $_locations;
-	protected $_languages;
 
 	public function getUniquenessFields(): array {
 		return ['title'];
@@ -503,5 +506,15 @@ class Placard extends DB_LibraryLocationLinkedObject {
 			$result = true;
 		}
 		return $result;
+	}
+
+	public function loadCopyableSubObjects() {
+		$this->getTriggers();
+		$index = -1;
+		foreach ($this->_triggers as $subObject) {
+			$subObject->id = $index;
+			$index--;
+		}
+		$this->getLanguages();
 	}
 }

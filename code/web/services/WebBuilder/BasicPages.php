@@ -97,4 +97,8 @@ class WebBuilder_BasicPages extends ObjectEditor {
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
 }

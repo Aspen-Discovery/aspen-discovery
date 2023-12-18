@@ -110,4 +110,8 @@ class Admin_Placards extends ObjectEditor {
 			'Administer Library Placards',
 		]);
 	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
 }

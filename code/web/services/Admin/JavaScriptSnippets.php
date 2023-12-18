@@ -102,4 +102,8 @@ class Admin_JavaScriptSnippets extends ObjectEditor {
 			'Administer All JavaScript Snippets',
 		]);
 	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
 }

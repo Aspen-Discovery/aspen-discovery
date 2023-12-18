@@ -277,6 +277,7 @@ abstract class ObjectEditor extends Admin_Admin {
 			$existingObject = $this->getExistingObjectById($id);
 			if ($existingObject != null) {
 				if ($existingObject->canActiveUserEdit()) {
+					$existingObject->loadCopyableSubObjects();
 					$interface->assign('objectName', $existingObject->__toString());
 					$existingObject->unsetUniquenessFields();
 					if (method_exists($existingObject, 'label')) {

@@ -963,7 +963,7 @@ class IndexingProfile extends DataObject {
 						'values' => [
 							'bib' => 'Bib Record',
 							'item' => 'Item Record',
-							'specified' => 'Specified Value',
+							//'specified' => 'Specified Value',
 						],
 						'default' => 'bib',
 						'forcesReindex' => true,
