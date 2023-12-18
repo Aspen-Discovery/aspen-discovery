@@ -107,6 +107,14 @@ class WebBuilder_PortalPages extends ObjectEditor {
 	function viewIndividualObject($structure) {
 		global $interface;
 		$interface->assign('previewMode', true);
-		return parent::viewIndividualObject($structure);
+		parent::viewIndividualObject($structure);
+	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
+
+	public function getCopyNotes() {
+		return '/admin_instructions/portal_page_copy.MD';
 	}
 }

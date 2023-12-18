@@ -7,13 +7,26 @@
 	</div>
 {/if}
 
+{if $objectAction == 'copy'}
+	{if !empty($copyNotes)}
+		<div class="alert alert-info">{$copyNotes}</div>
+	{/if}
+{/if}
+
 {* Create the base form *}
 <form id='objectEditor-{if !empty($id)}{$id}{else}-1{/if}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} {if !empty($submitUrl)}action="{$submitUrl}"{/if} role="form" onsubmit="setFormSubmitting();" {if !empty($formLabel)}aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}"{/if}>
 	<div class='editor'>
-		<input type='hidden' name='objectAction' value='save' />
+		{if $objectAction == 'copy'}
+			<input type='hidden' name='objectAction' value='saveCopy' />
+		{else}
+			<input type='hidden' name='objectAction' value='save' />
+		{/if}
 		{if !empty($id)}
 		<input type='hidden' name='id' value='{$id}' id="id" />
 		{/if}
+	    {if !empty($sourceId)}
+			<input type='hidden' name='sourceId' value='{$sourceId}' id="sourceId" />
+	    {/if}
 
 		{foreach from=$structure item=property}
 			{include file="DataObjectUtil/property.tpl"}

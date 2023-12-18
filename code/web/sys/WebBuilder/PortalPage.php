@@ -17,6 +17,7 @@ class PortalPage extends DB_LibraryLinkedObject {
 	public $requireLoginUnlessInLibrary;
 	public $lastUpdate;
 
+	/** @var PortalRow[] */
 	protected $_rows;
 
 	protected $_libraries;
@@ -237,6 +238,11 @@ class PortalPage extends DB_LibraryLinkedObject {
 			$this->clearAudiences();
 			$this->clearCategories();
 			$this->clearAccess();
+			if ($useWhere == false) {
+				foreach ($this->getRows() as $row) {
+					$row->delete();
+				}
+			}
 		}
 		return $ret;
 	}
@@ -568,5 +574,51 @@ class PortalPage extends DB_LibraryLinkedObject {
 		} else {
 			return '';
 		}
+	}
+
+	public function loadCopyableSubObjects() {
+		$this->getCategories();
+		$this->getAudiences();
+		$this->getRows();
+		$index = -1;
+		foreach ($this->_rows as $subObject) {
+			$cells = $subObject->getCells(false);
+			$subObject->unsetUniquenessFields();
+
+			$subObject->id = $index;
+			foreach ($cells as $cell) {
+				$cell->portalRowId = $subObject->id;
+			}
+			$subObject->setCells($cells);
+
+			$index--;
+		}
+		$this->getAccess();
+	}
+
+	public function finishCopy($sourceId) {
+		$sourcePage = new PortalPage();
+		$sourcePage->id = $sourceId;
+		if ($sourcePage->find(true)) {
+			if ($sourcePage->canActiveUserEdit()) {
+				//Copy rows and cells
+				$sourceRows = $sourcePage->getRows();
+				foreach ($sourceRows as $sourceRow) {
+					$newRow = clone $sourceRow;
+					unset($newRow->id);
+					$newRow->portalPageId = $this->id;
+					$newRow->insert('finishCopy');
+
+					$sourceCells = $sourceRow->getCells(false);
+					foreach ($sourceCells as $sourceCell) {
+						$newCell = clone $sourceCell;
+						unset ($newCell->id);
+						$newCell->portalRowId = $newRow->id;
+						$newCell->insert('finishCopy');
+					}
+				}
+			}
+		}
+		parent::finishCopy($sourceId);
 	}
 }

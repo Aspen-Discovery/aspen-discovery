@@ -1247,4 +1247,8 @@ abstract class DataObject implements JsonSerializable {
 		}
 		return $serializedData;
 	}
+
+	public function finishCopy($sourceId) {
+
+	}
 }
