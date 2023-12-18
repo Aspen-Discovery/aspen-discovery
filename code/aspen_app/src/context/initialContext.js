@@ -41,6 +41,8 @@ export const LibrarySystemContext = React.createContext({
      library: [],
      version: '',
      url: '',
+     menu: [],
+     updateMenu: () => {},
      resetLibrary: () => {},
 });
 export const LibraryBranchContext = React.createContext({
@@ -154,6 +156,7 @@ export const LibrarySystemProvider = ({ children }) => {
      const [library, setLibrary] = useState();
      const [version, setVersion] = useState();
      const [url, setUrl] = useState();
+     const [menu, setMenu] = useState();
 
      const updateLibrary = (data) => {
           if (!_.isUndefined(data.discoveryVersion)) {
@@ -174,7 +177,13 @@ export const LibrarySystemProvider = ({ children }) => {
           setLibrary({});
           setVersion({});
           setUrl({});
+          setMenu({});
           console.log('reset LibrarySystemContext');
+     };
+
+     const updateMenu = (data) => {
+          setMenu(data);
+          console.log('updated menu in LibrarySystemContext');
      };
 
      return (
@@ -185,6 +194,8 @@ export const LibrarySystemProvider = ({ children }) => {
                     url,
                     updateLibrary,
                     resetLibrary,
+                    menu,
+                    updateMenu,
                }}>
                {children}
           </LibrarySystemContext.Provider>

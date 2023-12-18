@@ -1,9 +1,9 @@
+import { useRoute } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
+import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../context/initialContext';
 import { LoadingScreen } from '../screens/Auth/Loading';
 import AccountDrawer from './drawer/DrawerNavigator';
-import { LibrarySystemContext, LibraryBranchContext, UserContext, BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext, SystemMessagesContext } from '../context/initialContext';
-import { useRoute } from '@react-navigation/native';
 
 const LaunchStackNavigator = () => {
      const Stack = createNativeStackNavigator();
@@ -16,7 +16,7 @@ const LaunchStackNavigator = () => {
                     <LanguageContext.Consumer>
                          {(language, updateLanguage, languages, updateLanguages, dictionary, updateDictionary) => (
                               <LibrarySystemContext.Consumer>
-                                   {(library, version, url) => (
+                                   {(library, version, url, menu) => (
                                         <LibraryBranchContext.Consumer>
                                              {(location) => (
                                                   <UserContext.Consumer>
@@ -51,6 +51,7 @@ const LaunchStackNavigator = () => {
                                                                                                               library,
                                                                                                               version,
                                                                                                               url,
+                                                                                                              menu,
                                                                                                          },
                                                                                                          locationContext: location,
                                                                                                          userContext: { user, updateUser },

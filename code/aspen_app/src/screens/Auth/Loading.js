@@ -8,7 +8,7 @@ import React from 'react';
 import { checkVersion } from 'react-native-check-version';
 import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary, getTranslatedTermsForUserPreferredLanguage, translationsLibrary } from '../../translations/TranslationService';
-import { getLibraryInfo, getLibraryLanguages, getSystemMessages } from '../../util/api/library';
+import { getLibraryInfo, getLibraryLanguages, getLibraryLinks, getSystemMessages } from '../../util/api/library';
 import { getLocationInfo, getSelfCheckSettings } from '../../util/api/location';
 import { getLinkedAccounts, refreshProfile } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
@@ -41,7 +41,7 @@ export const LoadingScreen = () => {
      const [hasIncomingUrlChanged, setIncomingUrlChanged] = React.useState(false);
 
      const { user, updateUser, accounts, updateLinkedAccounts, cards, updateLibraryCards } = React.useContext(UserContext);
-     const { library, updateLibrary } = React.useContext(LibrarySystemContext);
+     const { library, updateLibrary, updateMenu } = React.useContext(LibrarySystemContext);
      const { location, updateLocation, updateScope, updateEnableSelfCheck, updateSelfCheckSettings } = React.useContext(LibraryBranchContext);
      const { category, updateBrowseCategories, updateBrowseCategoryList, updateMaxCategories } = React.useContext(BrowseCategoryContext);
      const { language, updateLanguage, updateLanguages, updateDictionary, dictionary } = React.useContext(LanguageContext);
@@ -112,7 +112,7 @@ export const LoadingScreen = () => {
                if (_.isUndefined(data) || _.isEmpty(data)) {
                     setHasError(true);
                } else {
-                    setProgress(40);
+                    setProgress(30);
                     updateUser(data);
                     updateLanguage(data.interfaceLanguage ?? 'en');
                     PATRON.language = data.interfaceLanguage ?? 'en';
@@ -120,8 +120,17 @@ export const LoadingScreen = () => {
                }
           },
      });
+
+     const { status: libraryLinksQueryStatus, data: libraryLinksQuery } = useQuery(['library_links', LIBRARY.url], () => getLibraryLinks(LIBRARY.url), {
+          enabled: !!userQueryStatus,
+          onSuccess: (data) => {
+               setProgress(40);
+               updateMenu(data);
+          },
+     });
+
      const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
-          enabled: !!userQuery,
+          enabled: !!libraryLinksQuery,
           onSuccess: (data) => {
                setProgress(50);
                updateDictionary(translationsLibrary);
