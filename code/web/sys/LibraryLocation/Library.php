@@ -438,6 +438,7 @@ class Library extends DataObject {
 
 	public function getNumericColumnNames(): array {
 		return [
+			'accountProfileId',
 			'compriseSettingId',
 			'proPaySettingId',
 			'worldPaySettingId',
@@ -451,7 +452,6 @@ class Library extends DataObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
-		global $serverName;
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure($context);
 
@@ -3626,6 +3626,12 @@ class Library extends DataObject {
 				'permissions' => ['Library Menu'],
 				'canAddNew' => true,
 				'canDelete' => true,
+				'additionalOneToManyActions' => [
+//					'copyMenuLinks' => [
+//						'text' => 'Copy Menu Links',
+//						'url' => '/Admin/Libraries?id=$id&amp;objectAction=showCopyMenuLinksForm',
+//					],
+				]
 			],
 
 			'recordsToInclude' => [
