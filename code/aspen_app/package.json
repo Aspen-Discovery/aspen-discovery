@@ -70,6 +70,7 @@
     "react-native-base64": "^0.2.1",
     "react-native-check-version": "^1.0.20",
     "react-native-device-info": "^10.4.0",
+    "react-native-drawer-layout": "^3.2.2",
     "react-native-elements": "^4.0.0-rc.2",
     "react-native-gesture-handler": "~2.9.0",
     "react-native-map-link": "^2.10.2",

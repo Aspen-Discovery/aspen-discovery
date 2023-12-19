@@ -161,7 +161,6 @@ export const DrawerContent = () => {
                               <VStack>
                                    <UserProfile />
                                    <LinkedAccounts />
-                                   <UserPreferences />
                               </VStack>
                          </VStack>
                     </VStack>

@@ -1,18 +1,18 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
-import { Box, FlatList, HStack, Icon, Pressable, Text } from 'native-base';
+import { Box, Center, Divider, FlatList, HStack, Icon, Pressable, Text, VStack } from 'native-base';
 import React, { Component } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 
 // custom components and helper files
 import { userContext } from '../../../context/user';
-import { LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { LanguageContext } from '../../../context/initialContext';
-import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { navigate } from '../../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { GLOBALS } from '../../../util/globals';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const PreferencesScreen = () => {
@@ -87,40 +87,28 @@ export const PreferencesScreen = () => {
           if (item.external) {
                return (
                     <Pressable
-                         borderBottomWidth="1"
-                         _dark={{ borderColor: 'gray.600' }}
-                         borderColor="coolGray.200"
-                         pl="4"
-                         pr="5"
-                         py="2"
+                         px="2"
+                         py="3"
                          onPress={() => {
                               openWebsite(item.path, item.minVersion);
                          }}>
-                         <HStack space={3}>
+                         <HStack space="1" alignItems="center">
                               <Icon as={MaterialIcons} name={item.icon} size="7" />
-                              <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800" bold fontSize={{ base: 'lg', lg: 'xl' }}>
-                                   {item.title}
-                              </Text>
+                              <Text bold>{item.title}</Text>
                          </HStack>
                     </Pressable>
                );
           } else {
                return (
                     <Pressable
-                         borderBottomWidth="1"
-                         _dark={{ borderColor: 'gray.600' }}
-                         borderColor="coolGray.200"
-                         pl="4"
-                         pr="5"
-                         py="2"
+                         px="2"
+                         py="3"
                          onPress={() => {
                               onPressMenuItem(item.path, item.minVersion);
                          }}>
-                         <HStack>
+                         <HStack space="1" alignItems="center">
                               <Icon as={MaterialIcons} name={item.icon} size="7" />
-                              <Text _dark={{ color: 'warmGray.50' }} color="coolGray.800" bold fontSize={{ base: 'lg', lg: 'xl' }}>
-                                   {item.title}
-                              </Text>
+                              <Text bold>{item.title}</Text>
                          </HStack>
                     </Pressable>
                );
@@ -128,8 +116,27 @@ export const PreferencesScreen = () => {
      };
 
      return (
-          <Box>
-               <FlatList data={defaultMenuItems} renderItem={({ item }) => menuItem(item)} keyExtractor={(item, index) => index.toString()} />
+          <Box pt={5}>
+               <VStack space="4">
+                    <FlatList data={defaultMenuItems} renderItem={({ item }) => menuItem(item)} keyExtractor={(item, index) => index.toString()} />
+               </VStack>
+               <Divider mt={5} />
+               <Center>
+                    <Text mt={10} fontSize="xs" bold>
+                         {getTermFromDictionary(language, 'app_name')}
+                         <Text color="coolGray.600" _dark={{ color: 'warmGray.400' }} ml={1}>
+                              {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel}]
+                         </Text>
+                    </Text>
+                    {library.discoveryVersion ? (
+                         <Text fontSize="xs" bold>
+                              {getTermFromDictionary(language, 'aspen_discovery')}
+                              <Text color="coolGray.600" _dark={{ color: 'warmGray.400' }} ml={1}>
+                                   {library.discoveryVersion}
+                              </Text>
+                         </Text>
+                    ) : null}
+               </Center>
           </Box>
      );
 };

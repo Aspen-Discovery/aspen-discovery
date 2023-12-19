@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
 import _ from 'lodash';
-import React from 'react';
 import { createAuthTokens, getHeaders, postData } from '../apiAuth';
 import { GLOBALS } from '../globals';
 import { LIBRARY } from '../loadLibrary';
@@ -72,6 +71,28 @@ export async function getLibraryInfo(url = null, id = null) {
 }
 
 /**
+ * Return list of library menu links
+ **/
+export async function getLibraryLinks(url = null) {
+     const postBody = await postData();
+     const apiUrl = url ?? LIBRARY.url;
+     const discovery = create({
+          baseURL: apiUrl + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await discovery.post('/SystemAPI?method=getLibraryLinks', postBody);
+     if (response.ok) {
+          if (response?.data?.result?.items) {
+               return response?.data?.result?.items;
+          }
+     }
+
+     return [];
+}
+
+/**
  * Return list of available languages
  **/
 export async function getLibraryLanguages(url = null) {
@@ -119,13 +140,13 @@ export async function getSystemMessages(libraryId = null, locationId = null, url
           let messages = [];
           if (response?.data?.result) {
                /*
-                0 => 'All Pages',
-                1 => 'All Account Pages',
-                2 => 'Checkouts Page',
-                3 => 'Holds Page',
-                4 => 'Fines Page',
-                5 => 'Contact Information Page'
-               */
+			 0 => 'All Pages',
+			 1 => 'All Account Pages',
+			 2 => 'Checkouts Page',
+			 3 => 'Holds Page',
+			 4 => 'Fines Page',
+			 5 => 'Contact Information Page'
+			 */
                console.log('System messages fetched and stored');
                return _.castArray(response.data.result.systemMessages);
           }
