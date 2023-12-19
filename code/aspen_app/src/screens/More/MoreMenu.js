@@ -22,24 +22,24 @@ export const MoreMenu = () => {
           <Box>
                <VStack space="4" my="2" mx="1">
                     <Box m="4" bg="primary.400" p="6" rounded="xl">
-                         <HStack space="1" alignItems="center" justifyContent="space-between">
-                              <Pressable onPress={() => navigate('Contact')}>
-                                   <Text bold fontSize="16" maxW="300" color={contrastTextColor}>
+                         <Pressable display="flex" flexDirection="row" onPress={() => navigate('Contact')} space="1" alignItems="center" justifyContent="space-between">
+                              <VStack>
+                                   <Text bold fontSize="16" maxW="90%" color={contrastTextColor}>
                                         {library.displayName}
                                    </Text>
                                    {library.displayName !== location.displayName ? (
-                                        <Text bold maxW="300" color={contrastTextColor}>
+                                        <Text bold maxW="90%" color={contrastTextColor}>
                                              {location.displayName}
                                         </Text>
                                    ) : null}
                                    {location.hoursMessage ? (
-                                        <Text maxW="300" color={contrastTextColor}>
+                                        <Text maxW="90%" color={contrastTextColor}>
                                              {location.hoursMessage}
                                         </Text>
                                    ) : null}
-                              </Pressable>
+                              </VStack>
                               <Icon as={MaterialIcons} name="chevron-right" size="7" color={contrastTextColor} />
-                         </HStack>
+                         </Pressable>
                     </Box>
                     <Divider />
 
@@ -166,7 +166,7 @@ const MenuLink = (payload) => {
                                    <HStack space="1" alignItems="center" px="2" py="3">
                                         <Icon as={expanded ? Entypo : MaterialIcons} name={expanded ? 'chevron-small-down' : 'chevron-right'} size="7" />
                                         <VStack w="100%">
-                                             <Text>{categoryLabel}</Text>
+                                             <Text fontWeight="500">{categoryLabel}</Text>
                                         </VStack>
                                    </HStack>
                               </>
