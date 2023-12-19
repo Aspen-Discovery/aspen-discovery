@@ -1,31 +1,47 @@
+import { useIsFocused, useNavigation, useRoute } from '@react-navigation/native';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
 import moment from 'moment';
-import { Badge, Box, Center, FlatList, HStack, Image, Pressable, Text, VStack } from 'native-base';
+import { Badge, Box, Center, FlatList, HStack, Pressable, Text, VStack } from 'native-base';
 import React from 'react';
 import { SafeAreaView } from 'react-native';
-import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query';
-import CachedImage from 'expo-cached-image';
-import { useNavigation } from '@react-navigation/native';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import CreateList from './CreateList';
+import { DisplaySystemMessage } from '../../../components/Notifications';
 import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { getListDetails, getLists, getListTitles } from '../../../util/api/list';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
-import _ from 'lodash';
-import { DisplaySystemMessage } from '../../../components/Notifications';
+import { getListDetails, getLists, getListTitles } from '../../../util/api/list';
+import CreateList from './CreateList';
 
 export const MyLists = () => {
      const navigation = useNavigation();
+     const hasPendingChanges = useRoute().params.hasPendingChanges ?? false;
      const { user } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { lists, updateLists } = React.useContext(UserContext);
      const { language } = React.useContext(LanguageContext);
+
      const [loading, setLoading] = React.useState(false);
 
      const queryClient = useQueryClient();
      const { systemMessages, updateSystemMessages } = React.useContext(SystemMessagesContext);
+
+     const isFocused = useIsFocused();
+
+     React.useEffect(() => {
+          if (isFocused) {
+               if (hasPendingChanges) {
+                    setLoading(true);
+                    queryClient.invalidateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
+                    navigation.setParams({
+                         hasPendingChanges: false,
+                    });
+               }
+          }
+     }, [isFocused]);
 
      React.useLayoutEffect(() => {
           navigation.setOptions({
@@ -36,6 +52,9 @@ export const MyLists = () => {
      useQuery(['lists', user.id, library.baseUrl, language], () => getLists(library.baseUrl), {
           onSuccess: (data) => {
                updateLists(data);
+               setLoading(false);
+          },
+          onSettle: (data) => {
                setLoading(false);
           },
           placeholderData: [],
@@ -177,7 +196,7 @@ export const MyLists = () => {
           <SafeAreaView style={{ flex: 1 }}>
                <Box safeArea={2} t={10} pb={10}>
                     {showSystemMessage()}
-                    <CreateList />
+                    <CreateList setLoading={setLoading} />
                     <FlatList data={lists} ListEmptyComponent={listEmptyComponent} renderItem={({ item }) => renderList(item, library.baseUrl)} keyExtractor={(item, index) => index.toString()} />
                </Box>
           </SafeAreaView>

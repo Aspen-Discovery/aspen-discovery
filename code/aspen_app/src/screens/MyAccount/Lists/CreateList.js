@@ -1,21 +1,21 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Button, Center, Modal, Stack, Icon, FormControl, Input, TextArea, Heading, Radio } from 'native-base';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button, Center, FormControl, Heading, Icon, Input, Modal, Radio, Stack, TextArea } from 'native-base';
 import React, { useState } from 'react';
 
 import { popAlert } from '../../../components/loadError';
-import { createList, getLists } from '../../../util/api/list';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { reloadProfile } from '../../../util/api/user';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { createList } from '../../../util/api/list';
 
-const CreateList = () => {
+const CreateList = (props) => {
+     const { setLoading } = props;
      const queryClient = useQueryClient();
      const { user, updateUser } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { updateLists } = React.useContext(UserContext);
-     const [loading, setLoading] = React.useState(false);
+     const [loading, setAdding] = React.useState(false);
      const [showModal, setShowModal] = useState(false);
 
      const [title, setTitle] = React.useState('');
@@ -27,7 +27,7 @@ const CreateList = () => {
           setTitle('');
           setDescription('');
           setPublic(false);
-          setLoading(false);
+          setAdding(false);
      };
 
      return (
@@ -78,7 +78,7 @@ const CreateList = () => {
                                         isLoading={loading}
                                         isLoadingText={getTermFromDictionary(language, 'creating_list', true)}
                                         onPress={async () => {
-                                             setLoading(true);
+                                             setAdding(true);
                                              await createList(title, description, isPublic, library.baseUrl).then(async (res) => {
                                                   let status = 'success';
                                                   if (!res.success) {
@@ -87,6 +87,7 @@ const CreateList = () => {
                                                   queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                                   queryClient.invalidateQueries({ queryKey: ['lists', user.id, library.baseUrl, language] });
                                                   toggle();
+                                                  setLoading(true);
                                                   popAlert(getTermFromDictionary(language, 'list_created'), res.message, status);
                                              });
                                         }}>
