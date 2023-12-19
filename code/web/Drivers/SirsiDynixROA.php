@@ -3452,16 +3452,14 @@ class SirsiDynixROA extends HorizonAPI {
 						'note' => $customField->note,
 						'autocomplete' => false,
 					];
-					if ($customField->required){
-						$fields['email2'] = [
+					$fields['email2'] = [
 							'property' => 'email2',
 							'type' => 'email2',
 							'label' => 'Confirm Email',
 							'maxLength' => 128,
 							'required' => $customField->required,
 							'autocomplete' => false,
-						];
-					}
+					];
 				} elseif ($customField->symphonyName == 'zip' && !empty($library->validSelfRegistrationZipCodes)) {
 					$fields[$customField->symphonyName] = [
 						'property' => $customField->symphonyName,
