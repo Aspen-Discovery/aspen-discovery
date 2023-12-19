@@ -7,6 +7,8 @@ Disallow: /Record/*/Search/
 Disallow: /Circa/
 Disallow: /Search/AJAX
 Disallow: /*?*view=excel*
+Disallow: /Record/*/AJAX*
+Disallow: /GroupedWork/*/AJAX*
 
 User-agent: SemrushBot
 Disallow: /
