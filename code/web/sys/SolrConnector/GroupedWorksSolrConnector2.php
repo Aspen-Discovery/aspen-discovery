@@ -222,7 +222,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 			$options['fq'][] = '-user_reading_history_link:' . UserAccount::getActiveUserId();
 		}
 
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, '', 'mlt');
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
@@ -290,7 +290,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 		foreach ($scopingFilters as $filter) {
 			$options['fq'][] = $filter;
 		}
-		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation);
+		$boostFactors = $this->getBoostFactors($searchLibrary, $searchLocation, '', 'mlt');
 		if (!empty($boostFactors)) {
 			$options['bf'] = $boostFactors;
 		}
@@ -362,7 +362,7 @@ class GroupedWorksSolrConnector2 extends Solr {
 	 * @param Library $searchLibrary
 	 * @return array
 	 */
-	public function getBoostFactors($searchLibrary, $searchLocation) {
+	public function getBoostFactors($searchLibrary, $searchLocation, $searchTerm, $searchIndex) {
 		global $activeLanguage;
 
 		$boostFactors = [];
@@ -383,18 +383,22 @@ class GroupedWorksSolrConnector2 extends Solr {
 
 			$limitBoosts = $searchLibrary->getGroupedWorkDisplaySettings()->limitBoosts;
 			$maxTotalBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxTotalBoost;
+			if ($searchIndex != 'Keyword' && $searchIndex != 'mlt') {
+				$maxTotalBoost = $maxTotalBoost / 4;
+			}
 			$maxPopularityBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxPopularityBoost;
 			$maxFormatBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxFormatBoost;
 			$maxHoldingsBoost = $searchLibrary->getGroupedWorkDisplaySettings()->maxHoldingsBoost;
 			if ($applyHoldingsBoost) {
 				if ($limitBoosts) {
-					$boostFactors[] = "min($maxTotalBoost,product(min($maxFormatBoost,format_boost),min($maxHoldingsBoost,max(num_holdings,1)),div(min($maxPopularityBoost,max(popularity,1)),min($maxFormatBoost,max(num_holdings,1)))))";
+					//Add format boost, number of holdings, popularity divided by number of holdings
+					$boostFactors[] = "min($maxTotalBoost,sum(min($maxFormatBoost,format_boost),min($maxHoldingsBoost,max(num_holdings,1)),min($maxPopularityBoost,div(max(popularity,1),max(num_holdings,1)))))";
 				}else{
 					$boostFactors[] = "product(format_boost,max(num_holdings,1),div(max(popularity,1),max(num_holdings,1)))";
 				}
 			} else {
 				if ($limitBoosts) {
-					$boostFactors[] = "min($maxTotalBoost,div(min($maxPopularityBoost,popularity),min($maxFormatBoost,format_boost)))";
+					$boostFactors[] = "min($maxTotalBoost,product(min($maxPopularityBoost,popularity),min($maxFormatBoost,format_boost)))";
 				}else{
 					$boostFactors[] = "div(popularity,format_boost)";
 				}

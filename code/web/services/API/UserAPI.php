@@ -5438,6 +5438,11 @@ class UserAPI extends Action {
 					$session->init();
 					$_SESSION['activeUserId'] = $user->id;
 
+					if($user->isLoggedInViaSSO) {
+						$_SESSION['rememberMe'] = false;
+						$_SESSION['loggedInViaSSO'] = true;
+					}
+
 					return ['success' => true];
 				} else {
 					UserAccount::softLogout();

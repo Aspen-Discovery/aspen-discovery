@@ -79,6 +79,10 @@ abstract class DataObject implements JsonSerializable {
 		unset($this->$primaryKey);
 	}
 
+	public function loadCopyableSubObjects() {
+
+	}
+
 	function __toString() {
 		$stringProperty = $this->__primaryKey;
 		if ($this->__displayNameColumn != null) {
@@ -1242,5 +1246,9 @@ abstract class DataObject implements JsonSerializable {
 			}
 		}
 		return $serializedData;
+	}
+
+	public function finishCopy($sourceId) {
+
 	}
 }

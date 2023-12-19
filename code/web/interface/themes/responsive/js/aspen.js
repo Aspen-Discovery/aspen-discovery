@@ -5316,6 +5316,14 @@ jQuery.validator.addMethod("multiemail", function (value, element) {
 	return valid;
 }, "Invalid email format: please use a comma to separate multiple email addresses.");
 
+jQuery.validator.addMethod("email2", function (value, element) {
+	if (this.optional(element)) {
+		return true;
+	}
+	var emailToMatch = $("#email").val();
+	return value === emailToMatch;
+}, "Email addresses must match.");
+
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
 		var idOriginal = element.id.slice(0,-6);

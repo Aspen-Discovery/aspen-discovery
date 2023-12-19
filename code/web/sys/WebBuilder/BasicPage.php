@@ -583,4 +583,11 @@ class BasicPage extends DB_LibraryLinkedObject {
 			return '';
 		}
 	}
+
+	public function loadCopyableSubObjects() {
+		$this->getCategories();
+		$this->getAudiences();
+		$this->getAllowableHomeLocations();
+		$this->getAccess();
+	}
 }

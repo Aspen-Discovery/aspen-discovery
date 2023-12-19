@@ -24,7 +24,7 @@ class SystemMessage extends DB_LibraryLocationLinkedObject {
 	protected $_preFormattedMessage;
 
 	public function getUniquenessFields(): array {
-		return ['id'];
+		return ['title'];
 	}
 
 	static function getObjectStructure($context = ''): array {

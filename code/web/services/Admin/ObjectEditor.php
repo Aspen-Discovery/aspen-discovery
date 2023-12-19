@@ -25,6 +25,17 @@ abstract class ObjectEditor extends Admin_Admin {
 		$structure = $this->applyPermissionsToObjectStructure($structure);
 		$interface->assign('canAddNew', $this->canAddNew());
 		$interface->assign('canCopy', $this->canCopy());
+		if ($this->canCopy() && $objectAction == 'copy') {
+			$copyNoteTemplate = $this->getCopyNotes();
+			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+			$parsedown = AspenParsedown::instance();
+			if (!file_exists(ROOT_DIR . $copyNoteTemplate)) {
+				$interface->assign('copyNotes', '');
+			}else {
+				$copyNotes = $parsedown->parse(file_get_contents(ROOT_DIR . $copyNoteTemplate));
+				$interface->assign('copyNotes', $copyNotes);
+			}
+		}
 		$interface->assign('canCompare', $this->canCompare());
 		$interface->assign('canDelete', $this->canDelete());
 		$interface->assign('canSort', $this->canSort());
@@ -50,7 +61,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('customListActions', $customListActions);
 		if (is_null($objectAction) || $objectAction == 'list') {
 			$this->viewExistingObjects($structure);
-		} elseif ($objectAction == 'save' || $objectAction == 'delete') {
+		} elseif ($objectAction == 'save' || $objectAction == 'saveCopy' || $objectAction == 'delete') {
 			$this->editObject($objectAction, $structure);
 		} elseif ($objectAction == 'compare') {
 			$this->compareObjects($structure);
@@ -277,12 +288,14 @@ abstract class ObjectEditor extends Admin_Admin {
 			$existingObject = $this->getExistingObjectById($id);
 			if ($existingObject != null) {
 				if ($existingObject->canActiveUserEdit()) {
+					$existingObject->loadCopyableSubObjects();
 					$interface->assign('objectName', $existingObject->__toString());
 					$existingObject->unsetUniquenessFields();
 					if (method_exists($existingObject, 'label')) {
 						$interface->assign('objectName', $existingObject->label());
 					}
 					$this->activeObject = $existingObject;
+					$interface->assign('sourceId', $id);
 				} else {
 					$interface->setTemplate('../Admin/noPermission.tpl');
 					return;
@@ -557,6 +570,12 @@ abstract class ObjectEditor extends Admin_Admin {
 				$user->updateMessageIsError = true;
 				$user->update();
 				$errorOccurred = true;
+			}
+		}
+		if (!empty($id) && $objectAction == 'saveCopy') {
+			if (!empty($_REQUEST['sourceId'])) {
+				$sourceId = $_REQUEST['sourceId'];
+				$curObject->finishCopy($sourceId);
 			}
 		}
 		if (empty($id) && $errorOccurred) {
@@ -1131,4 +1150,8 @@ abstract class ObjectEditor extends Admin_Admin {
 		}
 		return $structure;
 	}
+
+	public function getCopyNotes() {
+		return ''
+;	}
 }

@@ -80,4 +80,8 @@ class WebBuilder_WebResources extends ObjectEditor {
 	function getActiveAdminSection(): string {
 		return 'web_builder';
 	}
+
+	function canCopy() {
+		return $this->canAddNew();
+	}
 }
