@@ -5131,10 +5131,14 @@ class Koha extends AbstractIlsDriver {
 			while ($curRow = $results->fetch_assoc()) {
 				$managedBy = $curRow['managedby'];
 				/** @noinspection SqlResolve */
-				$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
-				$userResults = mysqli_query($this->dbConnection, $userSql);
-				if ($userResults && $userResult = $userResults->fetch_assoc()) {
-					$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+				if (!empty($managedBy)) {
+					$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
+					$userResults = mysqli_query($this->dbConnection, $userSql);
+					if ($userResults && $userResult = $userResults->fetch_assoc()) {
+						$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+					} else {
+						$managedByStr = '';
+					}
 				} else {
 					$managedByStr = '';
 				}
