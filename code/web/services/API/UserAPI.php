@@ -617,7 +617,11 @@ class UserAPI extends Action {
 					} else {
 						if (!is_object($value) && !is_array($value)) {
 							$shortKey = substr($key, 1);
-							$userData->$shortKey = $value;
+							if ($shortKey == 'trackReadingHistory') {
+								$userData->$shortKey = (string)$value;
+							} else {
+								$userData->$shortKey = $value;
+							}
 						}
 					}
 				} else {
