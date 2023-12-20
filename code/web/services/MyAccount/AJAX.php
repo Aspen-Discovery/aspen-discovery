@@ -4432,6 +4432,9 @@ class MyAccount_AJAX extends JSON_Action {
 				if($paymentType == 'square') {
 					$payment->squareToken = $_REQUEST['token'];
 				}
+				if($paymentType == 'stripe'){
+					$payment->stripeToken = $_REQUEST['token'];
+				}
 			}
 
 			$paymentId = $payment->insert();
@@ -4860,6 +4863,186 @@ class MyAccount_AJAX extends JSON_Action {
 				$paymentAmount = $payment->totalPaid;
 				$body = [
 					'idempotency_key' => strval($paymentId), // Square needs this to be a string, so guarantee it
+					'amount_money' => [
+						'amount' => (int)round($payment->totalPaid * 100),
+						'currency' => 'USD'
+					],
+					'source_id' => $paymentToken
+				];
+
+				$paymentUrl = $baseUrl . '/v2/payments';
+				$paymentRequestResults = $paymentRequest->curlPostBodyData($paymentUrl, $body);
+				$paymentRequestResults = json_decode($paymentRequestResults);
+				if ($paymentRequestResults->payment) {
+					$paymentResults = $paymentRequestResults->payment;
+					if ($paymentResults->status == 'COMPLETED' || $paymentResults->status == 'APPROVED') {
+						if($transactionType == 'donation') {
+							$payment->completed = 1;
+							$payment->transactionId = $paymentResults->id;
+							$payment->orderId = $paymentResults->order_id;
+							$payment->update();
+							return [
+								'success' => true,
+								'isDonation' => true,
+								'paymentId' => $payment->id,
+								'donationId' => $donation->id,
+							];
+						} else {
+							if($payment->completed) {
+								return [
+									'success' => false,
+									'message' => 'This payment has already been processed'
+								];
+							} else {
+								$payment->transactionId = $paymentResults->id;
+								$payment->orderId = $paymentResults->order_id;
+								$payment->update();
+								$user = UserAccount::getActiveUserObj();
+								$patron = $user->getUserReferredTo($patronId);
+								$result = $patron->completeFinePayment($payment);
+								if($result['success'] == false) {
+									$payment->message .= 'Your payment was received, but was not cleared in our library software. Your account will be updated within the next business day. If you need more immediate assistance, please visit the library with your receipt. ' . $result['message'];
+									$payment->update();
+									$result['message'] = $payment->message;
+								}
+
+								return $result;
+							}
+						}
+					}
+				} else {
+					$error = $paymentRequestResults->error;
+					$payment->error = 1;
+					$payment->message = $error->detail;
+					$payment->update();
+					return [
+						'success' => false,
+						'message' => $error->detail,
+					];
+				}
+			}
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function createStripeOrder() {
+		global $configArray;
+
+		$transactionType = $_REQUEST['type'];
+		if ($transactionType == 'donation') {
+			$result = $this->createGenericDonation('stripe');
+		} else {
+			$result = $this->createGenericOrder('stripe');
+		}
+
+		if (array_key_exists('success', $result) && $result['success'] === false) {
+			return $result;
+		} else {
+			if ($transactionType == 'donation') {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+					$tempDonation,
+				] = $result;
+				$donation = $this->addDonation($payment, $tempDonation);
+			} else {
+				[
+					$paymentLibrary,
+					$userLibrary,
+					$payment,
+					$purchaseUnits,
+					$patron,
+				] = $result;
+			}
+
+			return [
+				'success' => true,
+				'paymentId' => $payment->id,
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function completeStripeOrder() {
+		global $configArray;
+
+		$patronId = $_REQUEST['patronId'];
+		$transactionType = $_REQUEST['type'];
+		$paymentToken = $_REQUEST['token'];
+
+		global $library;
+		$paymentLibrary = $library;
+
+		if ($transactionType == 'donation') {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->stripeToken = $paymentToken;
+			$payment->transactionType = 'donation';
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				require_once ROOT_DIR . '/sys/Donations/Donation.php';
+				$donation = new Donation();
+				$donation->paymentId = $payment->id;
+				if (!$donation->find(true)) {
+					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=stripe&payment=' . $payment->id . '&donation=' . $donation->id);
+				}
+			} else {
+				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=stripe&payment=' . $payment->id);
+			}
+		} else {
+			//Get the order information
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->stripeToken = $paymentToken;
+			$payment->userId = $patronId;
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				$user = UserAccount::getLoggedInUser();
+				$patronId = $_REQUEST['patronId'];
+				$patron = $user->getUserReferredTo($patronId);
+				$userLibrary = $patron->getHomeLibrary();
+				global $library;
+				$paymentLibrary = $library;
+				$systemVariables = SystemVariables::getSystemVariables();
+				if ($systemVariables->libraryToUseForPayments == 0) {
+					$paymentLibrary = $userLibrary;
+				}
+			}
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+		$stripeSettings = new StripeSetting();
+		$stripeSettings->id = $paymentLibrary->stripeSettingId;
+		if($stripeSettings->find(true)) {
+			require_once ROOT_DIR . '/sys/CurlWrapper.php';
+			$paymentRequest = new CurlWrapper();
+			// TODO-STRIPE
+			$baseUrl = '';
+			if($stripeSettings->sandboxMode == 1) {
+				$baseUrl = '';
+			}
+
+			// TODO-STRIPE
+			$paymentRequest->addCustomHeaders([
+				'Content-Type: application/json',
+				'Stripe-Version: 2023-06-08',
+				"Authorization: Bearer $stripeSettings->accessToken",
+			], true);
+
+			$paymentId = null;
+			$paymentAmount = null;
+			require_once ROOT_DIR . '/sys/Account/UserPayment.php';
+			$payment = new UserPayment();
+			$payment->stripeToken = $paymentToken;
+			if ($payment->find(true)) {
+				$paymentId = $payment->id;
+				$paymentAmount = $payment->totalPaid;
+				$body = [
+					'idempotency_key' => strval($paymentId),
 					'amount_money' => [
 						'amount' => (int)round($payment->totalPaid * 100),
 						'currency' => 'USD'

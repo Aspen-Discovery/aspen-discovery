@@ -232,6 +232,19 @@ class MyAccount_Fines extends MyAccount {
 					}
 				}
 
+				// Stripe
+				if($userLibrary->finePaymentType == 13) {
+					global $library;
+					require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+					$stripeSetting = new StripeSetting();
+					$stripeSetting->id = $library->stripeSettingId;
+					if($stripeSetting->find(true)) {
+						//$baseUrl = 'https://api.stripe.com';
+						$interface->assign('stripePublicKey', $stripeSetting->stripePublicKey);
+						$interface->assign('stripeSecretKey', $stripeSetting->stripeSecretKey);
+					}
+				}
+
 				$interface->assign('finesToPay', $userLibrary->finesToPay);
 				$interface->assign('userFines', $fines);
 

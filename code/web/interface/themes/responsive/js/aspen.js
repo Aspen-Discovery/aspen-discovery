@@ -6916,6 +6916,8 @@ AspenDiscovery.Account = (function () {
 							orderInfo = response.paymentIframe;
 						} else if (paymentType === 'Square') {
 							orderInfo = response.paymentId;
+						} else if (paymentType === 'Stripe') {
+							orderInfo = response.paymentId;
 						}
 					}
 				}
@@ -7032,6 +7034,10 @@ AspenDiscovery.Account = (function () {
 			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
 		},
 
+		createStripeOrder: function (finesFormId, transactionType, token) {
+			this.createGenericOrder(finesFormId, 'Stripe', transactionType, token);
+		},
+
 		createPayPalPayflowOrder: function (userId, transactionType) {
 			var result = this.createGenericOrder('#fines' + userId, 'PayPalPayflow', transactionType);
 			if (result === false) {
@@ -7105,6 +7111,38 @@ AspenDiscovery.Account = (function () {
 				} else {
 					if (data.isDonation) {
 						window.location.href = Globals.path + '/Donations/DonationCancelled?type=square&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						var message;
+						if (data.message) {
+							message = data.message;
+						} else {
+							message = 'Unable to process your payment, please visit the library with your receipt';
+						}
+						AspenDiscovery.showMessage('Error', message, false);
+					}
+				}
+			}).fail(AspenDiscovery.ajaxFail);
+		},
+
+		completeStripeOrder: function (patronId, transactionType, token) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "completeStripeOrder",
+				patronId: patronId,
+				type: transactionType,
+				token: token,
+			};
+			// noinspection JSUnresolvedFunction
+			$.getJSON(url, params, function (data) {
+				if (data.success) {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCompleted?type=stripee&payment=' + data.paymentId + '&donation=' + data.donationId;
+					} else {
+						AspenDiscovery.showMessage('Thank you', data.message, false, true);
+					}
+				} else {
+					if (data.isDonation) {
+						window.location.href = Globals.path + '/Donations/DonationCancelled?type=stripe&payment=' + data.paymentId + '&donation=' + data.donationId;
 					} else {
 						var message;
 						if (data.message) {
