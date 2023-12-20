@@ -1994,6 +1994,7 @@ class UserAPI extends Action {
 					if (!is_string($pickupLocation)) {
 						$pickupLocationArray = $pickupLocation->toArray();
 						$pickupLocationArray['locationId'] = (string)$pickupLocationArray['locationId'];
+						$pickupLocationArray['libraryId'] = (string)$pickupLocationArray['libraryId'];
 						$pickupLocations[] = $pickupLocationArray;
 					}
 				}
