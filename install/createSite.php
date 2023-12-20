@@ -292,7 +292,11 @@ if (!$siteOnWindows) {
 }
 
 //Import the database
-$mysqlConnectionCommand = "mariadb -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+if ($runningOnWindows) {
+	$mysqlConnectionCommand = "mysql -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+}else{
+	$mysqlConnectionCommand = "mariadb -u{$variables['aspenDBUser']} -p\"{$variables['aspenDBPwd']}\" -h\"{$variables['aspenDBHost']}\"";
+}
 if ($variables['aspenDBPort'] != "3306") {
 	$mysqlConnectionCommand .= " --port \"{$variables['aspenDBPort']}\"";
 }
