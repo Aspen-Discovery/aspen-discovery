@@ -1992,7 +1992,9 @@ class UserAPI extends Action {
 				$pickupLocations = [];
 				foreach ($tmpPickupLocations as $pickupLocation) {
 					if (!is_string($pickupLocation)) {
-						$pickupLocations[] = $pickupLocation->toArray();
+						$pickupLocationArray = $pickupLocation->toArray();
+						$pickupLocationArray['locationId'] = (string)$pickupLocationArray['locationId'];
+						$pickupLocations[] = $pickupLocationArray;
 					}
 				}
 				return [
