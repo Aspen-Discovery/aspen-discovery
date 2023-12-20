@@ -9,6 +9,7 @@ Disallow: /Search/AJAX
 Disallow: /*?*view=excel*
 Disallow: /Record/*/AJAX*
 Disallow: /GroupedWork/*/AJAX*
+Disallow: /MyAccount/*/AJAX*
 
 User-agent: SemrushBot
 Disallow: /
