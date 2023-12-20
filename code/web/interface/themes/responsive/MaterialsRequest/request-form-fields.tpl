@@ -107,7 +107,7 @@
 
 				{* Readonly Fields *}
 			{elseif $formField->fieldType == 'id'}
-				{if !empty($isAdminUser) && !$new}
+				{if !empty($isAdminUser) && empty($new)}
 					{assign var="hasId" value=1}
 					{assign var="materialRequestTableColumnName" value=$formField->fieldType}
 					<div class="request_detail_field row">
@@ -220,11 +220,11 @@
 					<div class="request_detail_field_value col-sm-9">
 
 						<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
-							<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName === "1"} checked="checked"{/if}>{translate text='Yes' isPublicFacing=true}
+							<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if}>{translate text='Yes' isPublicFacing=true}
 						</label>
 						&nbsp;&nbsp;
 						<label for="{$materialRequestTableColumnName}No" class="radio-inline">
-							<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName === "0"} checked="checked"{/if}>{translate text='No' isPublicFacing=true}
+							<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName === "0" || $materialsRequest->$materialRequestTableColumnName == 0} checked="checked"{/if}>{translate text='No' isPublicFacing=true}
 						</label>
 
 					</div>
@@ -268,11 +268,11 @@
 						<div class="request_detail_field_value col-sm-9">
 
 							<label for="{$materialRequestTableColumnName}Yes" class="radio-inline">
-								<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName === "1"} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='Yes' isPublicFacing=true}
+								<input type="radio" name="{$materialRequestTableColumnName}" value="1" id="{$materialRequestTableColumnName}Yes"{if $materialsRequest->$materialRequestTableColumnName == 1} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='Yes' isPublicFacing=true}
 							</label>
 							&nbsp;&nbsp;
 							<label for="{$materialRequestTableColumnName}No" class="radio-inline">
-								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName === "0"} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='No' isPublicFacing=true}
+								<input type="radio" name="{$materialRequestTableColumnName}" value="0" id="{$materialRequestTableColumnName}No"{if $materialsRequest->$materialRequestTableColumnName === "0" || $materialsRequest->$materialRequestTableColumnName === 0} checked="checked"{/if} onchange="AspenDiscovery.MaterialsRequest.updateHoldOptions()">{translate text='No' isPublicFacing=true}
 							</label>
 
 						</div>
