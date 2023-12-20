@@ -104,6 +104,7 @@ class Hold extends CircEntry {
 		$hold['freezable'] = (boolean)$this->canFreeze;
 		$hold['canFreeze'] = (boolean)$this->canFreeze;
 		if ($this->pickupLocationId != null) {
+			$hold['pickupLocationId'] = (string)$this->pickupLocationId;
 			$hold['currentPickupId'] = (string)$this->pickupLocationId;
 			$hold['currentPickupName'] = $this->pickupLocationName;
 			$location = new Location();
