@@ -3638,15 +3638,19 @@ class Koha extends AbstractIlsDriver {
 				asort($pickupLocations);
 			}
 		} else {
-			$patron = UserAccount::getActiveUserObj();
-			$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-			$pickupLocations = [];
-			foreach ($userPickupLocations as $key => $location) {
-				if ($location instanceof Location) {
-					$pickupLocations[$location->code] = $location->displayName;
-				} else {
-					if ($key == '0default') {
-						$pickupLocations[-1] = $location;
+			if (UserAccount::isLoggedIn()) {
+				$patron = UserAccount::getActiveUserObj();
+				if (!empty($patron)) {
+					$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+					$pickupLocations = [];
+					foreach ($userPickupLocations as $key => $location) {
+						if ($location instanceof Location) {
+							$pickupLocations[$location->code] = $location->displayName;
+						} else {
+							if ($key == '0default') {
+								$pickupLocations[-1] = $location;
+							}
+						}
 					}
 				}
 			}
