@@ -725,24 +725,21 @@ class Koha extends AbstractIlsDriver {
 			if ($this->getKohaVersion() >= 22.11) {
 				/** @noinspection SqlResolve */
 				$volumeSql = "SELECT item_id, description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id IN ($allItemNumbersAsString)";
-			} else {
-				/** @noinspection SqlResolve */
-				$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
-			}
-			$volumeResults = @mysqli_query($this->dbConnection, $volumeSql);
-			if ($volumeResults !== false) { //This is false if Koha does not support volumes
-				while ($volumeRow = $volumeResults->fetch_assoc()) {
-					$itemId = $volumeRow['item_id'];
-					foreach ($checkouts as $curCheckout) {
-						if ($curCheckout->itemId == $itemId) {
-							$curCheckout->volume = $volumeRow['description'];
-							break;
+				$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+				if ($volumeResults !== false) { //This is false if Koha does not support volumes
+					while ($volumeRow = $volumeResults->fetch_assoc()) {
+						$itemId = $volumeRow['item_id'];
+						foreach ($checkouts as $curCheckout) {
+							if ($curCheckout->itemId == $itemId) {
+								$curCheckout->volume = $volumeRow['description'];
+								break;
+							}
 						}
 					}
+					$volumeResults->close();
 				}
-				$volumeResults->close();
+				$timer->logTime("Load volume info");
 			}
-			$timer->logTime("Load volume info");
 		}
 
 		return $checkouts;
