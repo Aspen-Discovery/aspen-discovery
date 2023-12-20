@@ -1968,7 +1968,7 @@ class SearchAPI extends Action {
 								'title' => $categoryInformation->label,
 								'id' => $categoryInformation->id,
 								'source' => $categoryInformation->source,
-								'listId' => $categoryInformation->sourceListId,
+								'listId' => (string)$categoryInformation->sourceListId,
 								'isHidden' => $categoryInformation->isDismissed($appUser),
 								'records' => [],
 								'lists' => [],
