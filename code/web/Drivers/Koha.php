@@ -729,7 +729,7 @@ class Koha extends AbstractIlsDriver {
 				/** @noinspection SqlResolve */
 				$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
 			}
-			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+			$volumeResults = @mysqli_query($this->dbConnection, $volumeSql);
 			if ($volumeResults !== false) { //This is false if Koha does not support volumes
 				while ($volumeRow = $volumeResults->fetch_assoc()) {
 					$itemId = $volumeRow['item_id'];
@@ -1433,16 +1433,9 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
-		//So assume that it is on if we don't get a good response
+		//So assume that it is on
 		/** @noinspection SqlResolve */
-		$sql = "select disable_reading_history from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
-		$historyEnabledRS = mysqli_query($this->dbConnection, $sql);
-		if ($historyEnabledRS) {
-			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
-			$historyEnabled = !$historyEnabledRow['disable_reading_history'];
-		} else {
-			$historyEnabled = true;
-		}
+		$historyEnabled = true;
 
 		// Update patron's setting in Aspen if the setting has changed in Koha
 		if ($historyEnabled != $patron->trackReadingHistory) {
