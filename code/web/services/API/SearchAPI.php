@@ -2085,7 +2085,7 @@ class SearchAPI extends Action {
 														'title' => $displayLabel,
 														'source' => $temp->source,
 														'isHidden' => $temp->isDismissed($appUser),
-														'sourceId' => $temp->sourceListId,
+														'sourceId' => (string)$temp->sourceListId,
 														'records' => $records,
 													];
 													$formattedCategories[] = $categoryResponse;
