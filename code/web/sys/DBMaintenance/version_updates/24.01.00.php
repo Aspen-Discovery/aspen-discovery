@@ -13,6 +13,14 @@ function getUpdates24_01_00(): array {
 		 ], //name*/
 
 		//mark - ByWater
+		'remove_web_builder_menu' => [
+			'title' => 'Remove old unused Web Builder Menu',
+			'description' => 'Remove old unused Web Builder Menu',
+			'continueOnError' => false,
+			'sql' => [
+				'DROP TABLE IF EXISTS web_builder_menu'
+			]
+		],
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [

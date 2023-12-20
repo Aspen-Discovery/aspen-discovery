@@ -1342,4 +1342,166 @@ class Admin_AJAX extends JSON_Action {
 		}
 		return $result;
 	}
+
+	public function getCopyMenuLinksForm() {
+		$result = [
+			'success' => false,
+			'message' =>  translate([
+				'text' => 'Unknown error getting copy menu links form',
+				'isAdminFacing' => true,
+			])
+		];
+		if (!empty($_REQUEST['libraryId'])) {
+			$libraryId = $_REQUEST['libraryId'];
+			$library = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true)) {
+				if ($library->canActiveUserEdit()) {
+					global $interface;
+					$interface->assign('sourceLibraryId', $libraryId);
+					$menuLinks = $library->getLibraryLinks();
+					$interface->assign('menuLinks', $menuLinks);
+					//get a list of libraries we can copy to
+					$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+					//Do not allow copying to the source library
+					unset($libraryList[$libraryId]);
+					if (count($libraryList) > 0) {
+						$interface->assign('libraryList', $libraryList);
+
+						$modalBody = $interface->fetch('Admin/copyMenuLinksForm.tpl');
+
+						return [
+							'success' => true,
+							'title' => translate([
+								'text' => "Copy menu items",
+								'isAdminFacing' => true,
+							]),
+							'modalBody' => $modalBody,
+							'modalButtons' => "<button onclick=\"return AspenDiscovery.Admin.processCopyMenuLinksForm();\" class=\"modal-buttons btn btn-primary\">" . translate([
+									'text' => 'Copy',
+									'isAdminFacing' => true,
+								]) . "</button>",
+						];
+					}else{
+						$result['message'] = translate([
+							'text' => 'No valid libraries to copy to.',
+							'isAdminFacing' => true,
+						]);
+					}
+				} else {
+					$result['message'] = translate([
+						'text' => 'You do not have permissions to edit the provided library.',
+						'isAdminFacing' => true,
+					]);
+				}
+			}else{
+				$result['message'] = translate([
+					'text' => 'Invalid library id provided.',
+					'isAdminFacing' => true,
+				]);
+			}
+		} else {
+			$result['message'] = translate([
+				'text' => 'No library ID was provided.',
+				'isAdminFacing' => true,
+			]);
+		}
+
+		return $result;
+	}
+
+	public function copyMenuLinks() {
+		$result = [
+			'success' => false,
+			'title' => translate([
+				'text' => "Error",
+				'isAdminFacing' => true,
+			]),
+			'message' =>  translate([
+				'text' => 'Unknown copying menu links',
+				'isAdminFacing' => true,
+			])
+		];
+		if (!empty($_REQUEST['sourceLibraryId'])) {
+			$libraryId = $_REQUEST['sourceLibraryId'];
+			$library = new Library();
+			$library->libraryId = $libraryId;
+			if ($library->find(true)) {
+				if ($library->canActiveUserEdit()) {
+					global $interface;
+					$interface->assign('sourceLibraryId', $libraryId);
+					$menuLinks = $library->getLibraryLinks();
+					$interface->assign('menuLinks', $menuLinks);
+					//get a list of libraries we can copy to
+					$libraryList = Library::getLibraryList(!UserAccount::userHasPermission('Administer All Libraries'));
+					//Do not allow copying to the source library
+					unset($libraryList[$libraryId]);
+					if (count($libraryList) > 0) {
+						$interface->assign('libraryList', $libraryList);
+
+						$selectedMenuLinks = $_REQUEST['menuLink'];
+						$librariesToCopyTo = $_REQUEST['library'];
+						if (!empty($selectedMenuLinks)) {
+							if (!empty($librariesToCopyTo)) {
+								foreach ($selectedMenuLinks as $menuLinkId => $state) {
+									foreach ($librariesToCopyTo as $libraryId => $state2) {
+										if (array_key_exists($menuLinkId, $menuLinks) && array_key_exists($libraryId, $libraryList)) {
+											$menuLinkCopy = clone $menuLinks[$menuLinkId];
+											unset($menuLinkCopy->id);
+											$menuLinkCopy->libraryId = $libraryId;
+											$menuLinkCopy->insert();
+										}
+									}
+								}
+
+								$result = [
+									'success' => true,
+									'title' => translate([
+										'text' => "Success",
+										'isAdminFacing' => true,
+									]),
+									'message' =>  translate([
+										'text' => 'Menu Links were copied successfully',
+										'isAdminFacing' => true,
+									])
+								];
+							}else{
+								$result['message'] = translate([
+									'text' => 'No libraries were selected.',
+									'isAdminFacing' => true,
+								]);
+							}
+						}else{
+							$result['message'] = translate([
+								'text' => 'No menu links were selected.',
+								'isAdminFacing' => true,
+							]);
+						}
+					}else{
+						$result['message'] = translate([
+							'text' => 'No valid libraries to copy to.',
+							'isAdminFacing' => true,
+						]);
+					}
+				} else {
+					$result['message'] = translate([
+						'text' => 'You do not have permissions to edit the source library.',
+						'isAdminFacing' => true,
+					]);
+				}
+			}else{
+				$result['message'] = translate([
+					'text' => 'Invalid library id provided.',
+					'isAdminFacing' => true,
+				]);
+			}
+		} else {
+			$result['message'] = translate([
+				'text' => 'No library ID was provided.',
+				'isAdminFacing' => true,
+			]);
+		}
+
+		return $result;
+	}
 }

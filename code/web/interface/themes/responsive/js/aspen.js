@@ -9938,6 +9938,58 @@ AspenDiscovery.Admin = (function () {
 				}
 			});
 			return false;
+		},
+
+		showCopyMenuLinksForm: function(libraryId) {
+			var url = Globals.path + '/Admin/AJAX';
+			var params = {
+				method: 'getCopyMenuLinksForm',
+				libraryId: libraryId
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
+
+		processCopyMenuLinksForm: function () {
+			var selectedMenuLinks = $('.menuLink:checked');
+			var selectedLibraries = $('.library:checked');
+			if (selectedMenuLinks.length >= 1) {
+				if (selectedLibraries.length >= 1) {
+					var url = Globals.path + "/Admin/AJAX";
+					var params = {
+						method: 'copyMenuLinks',
+						sourceLibraryId: $('#sourceLibraryId').val()
+					};
+					selectedMenuLinks.each(function () {
+						params[$(this).prop('name')] = 'on';
+					});
+					selectedLibraries.each(function () {
+						params[$(this).prop('name')] = 'on';
+					});
+					$.getJSON(url, params,
+						function (data) {
+							if (data.success) {
+								AspenDiscovery.showMessage(data.title, data.message, true, true);
+							} else {
+								AspenDiscovery.showMessage(data.title, data.message);
+							}
+						}
+					).fail(AspenDiscovery.ajaxFail);
+					return false;
+				} else {
+					alert("Select at least one library to copy to");
+				}
+			} else {
+				alert("Select at least one menu link to copy");
+			}
+			return false;
 		}
 
 	};

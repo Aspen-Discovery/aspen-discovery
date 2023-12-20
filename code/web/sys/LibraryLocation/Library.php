@@ -438,6 +438,7 @@ class Library extends DataObject {
 
 	public function getNumericColumnNames(): array {
 		return [
+			'accountProfileId',
 			'compriseSettingId',
 			'proPaySettingId',
 			'worldPaySettingId',
@@ -451,7 +452,6 @@ class Library extends DataObject {
 	}
 
 	static function getObjectStructure($context = ''): array {
-		global $serverName;
 		// get the structure for the library system's holidays
 		$holidaysStructure = Holiday::getObjectStructure($context);
 
@@ -3626,6 +3626,12 @@ class Library extends DataObject {
 				'permissions' => ['Library Menu'],
 				'canAddNew' => true,
 				'canDelete' => true,
+				'additionalOneToManyActions' => [
+					'copyMenuLinks' => [
+						'text' => 'Copy Menu Links',
+						'onclick' => 'AspenDiscovery.Admin.showCopyMenuLinksForm($id);',
+					],
+				]
 			],
 
 			'recordsToInclude' => [
@@ -3981,17 +3987,7 @@ class Library extends DataObject {
 			}
 			return $this->holidays;
 		} elseif ($name == 'libraryLinks') {
-			if (!isset($this->_libraryLinks) && $this->libraryId) {
-				$this->_libraryLinks = [];
-				$libraryLink = new LibraryLink();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while ($libraryLink->fetch()) {
-					$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
-				}
-			}
-			return $this->_libraryLinks;
+			return $this->getLibraryLinks();
 		} elseif ($name == 'recordsToInclude') {
 			if (!isset($this->recordsToInclude) && $this->libraryId) {
 				$this->recordsToInclude = [];
@@ -4269,6 +4265,23 @@ class Library extends DataObject {
 			$this->saveOneToManyOptions($this->_materialsRequestFormFields, 'libraryId');
 			unset($this->_materialsRequestFormFields);
 		}
+	}
+
+	/**
+	 * @return LibraryLink[]
+	 */
+	public function getLibraryLinks() : array {
+		if (!isset($this->_libraryLinks) && $this->libraryId) {
+			$this->_libraryLinks = [];
+			$libraryLink = new LibraryLink();
+			$libraryLink->libraryId = $this->libraryId;
+			$libraryLink->orderBy('weight');
+			$libraryLink->find();
+			while ($libraryLink->fetch()) {
+				$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
+			}
+		}
+		return $this->_libraryLinks;
 	}
 
 	/**

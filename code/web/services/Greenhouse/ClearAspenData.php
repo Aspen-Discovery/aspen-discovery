@@ -356,9 +356,6 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 						require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderCategory.php';
 						$message .= $this->deleteAll('WebBuilderCategory');
 
-						require_once ROOT_DIR . '/sys/WebBuilder/WebBuilderMenu.php';
-						$message .= $this->deleteAll('WebBuilderMenu');
-
 						require_once ROOT_DIR . '/sys/WebBuilder/WebResource.php';
 						$message .= $this->deleteAll('WebResource');
 
