@@ -1634,7 +1634,7 @@ public class EvergreenExportMain {
 						response.numChanges++;
 					}
 				} catch (Exception e) {
-					logEntry.incErrors("Unable to parse document for get bibs response " + getBibsRequestUrl, e);
+					logEntry.incRecordsWithInvalidMarc("Unable to parse document for get bibs response " + getBibsRequestUrl);
 					response.doneLoading = true;
 				}
 			} else {
