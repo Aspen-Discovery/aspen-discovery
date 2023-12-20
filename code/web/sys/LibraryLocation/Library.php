@@ -3627,10 +3627,10 @@ class Library extends DataObject {
 				'canAddNew' => true,
 				'canDelete' => true,
 				'additionalOneToManyActions' => [
-//					'copyMenuLinks' => [
-//						'text' => 'Copy Menu Links',
-//						'url' => '/Admin/Libraries?id=$id&amp;objectAction=showCopyMenuLinksForm',
-//					],
+					'copyMenuLinks' => [
+						'text' => 'Copy Menu Links',
+						'onclick' => 'AspenDiscovery.Admin.showCopyMenuLinksForm($id);',
+					],
 				]
 			],
 
@@ -3987,17 +3987,7 @@ class Library extends DataObject {
 			}
 			return $this->holidays;
 		} elseif ($name == 'libraryLinks') {
-			if (!isset($this->_libraryLinks) && $this->libraryId) {
-				$this->_libraryLinks = [];
-				$libraryLink = new LibraryLink();
-				$libraryLink->libraryId = $this->libraryId;
-				$libraryLink->orderBy('weight');
-				$libraryLink->find();
-				while ($libraryLink->fetch()) {
-					$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
-				}
-			}
-			return $this->_libraryLinks;
+			return $this->getLibraryLinks();
 		} elseif ($name == 'recordsToInclude') {
 			if (!isset($this->recordsToInclude) && $this->libraryId) {
 				$this->recordsToInclude = [];
@@ -4275,6 +4265,23 @@ class Library extends DataObject {
 			$this->saveOneToManyOptions($this->_materialsRequestFormFields, 'libraryId');
 			unset($this->_materialsRequestFormFields);
 		}
+	}
+
+	/**
+	 * @return LibraryLink[]
+	 */
+	public function getLibraryLinks() : array {
+		if (!isset($this->_libraryLinks) && $this->libraryId) {
+			$this->_libraryLinks = [];
+			$libraryLink = new LibraryLink();
+			$libraryLink->libraryId = $this->libraryId;
+			$libraryLink->orderBy('weight');
+			$libraryLink->find();
+			while ($libraryLink->fetch()) {
+				$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
+			}
+		}
+		return $this->_libraryLinks;
 	}
 
 	/**
