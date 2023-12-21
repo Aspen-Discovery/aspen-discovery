@@ -131,6 +131,7 @@ class Library extends DataObject {
 	public $payPalSettingId;
 	public $proPaySettingId;
 	public $squareSettingId;
+	public $stripeSettingId;
 	public $worldPaySettingId;
 	public $xpressPaySettingId;
 	public $aciSpeedpaySettingId;
@@ -447,7 +448,8 @@ class Library extends DataObject {
 			'invoiceCloudSettingId',
 			'deluxeCertifiedPaymentsSettingId',
 			'paypalPayflowSettingId',
-			'squareSettingId'
+			'squareSettingId',
+			'sripteSettingId'
 		];
 	}
 
@@ -663,6 +665,16 @@ class Library extends DataObject {
 		$squareSettings[-1] = 'none';
 		while ($squareSetting->fetch()) {
 			$squareSettings[$squareSetting->id] = $squareSetting->name;
+		}
+
+		require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+		$stripeSetting = new StripeSetting();
+		$stripeSetting->orderBy('name');
+		$stripeSettings = [];
+		$stripeSetting->find();
+		$stripeSettings[-1] = 'none';
+		while ($stripeSetting->fetch()) {
+			$stripeSettings[$stripeSetting->id] = $stripeSetting->name;
 		}
 
 		require_once ROOT_DIR . '/sys/Hoopla/HooplaScope.php';
@@ -2446,7 +2458,8 @@ class Library extends DataObject {
 							9 => 'InvoiceCloud',
 							10 => 'Certified Payments by Deluxe',
 							11 => 'PayPal Payflow',
-							12 => 'Square'
+							12 => 'Square',
+							13 => 'Stripe'
 						],
 						'description' => 'Whether or not users should be allowed to pay fines',
 						'hideInLists' => true,
@@ -2611,6 +2624,15 @@ class Library extends DataObject {
 						'values' => $squareSettings,
 						'label' => 'Square Settings',
 						'description' => 'The Square settings to use',
+						'hideInLists' => true,
+						'default' => -1,
+					],
+					'stripeSettingId' => [
+						'property' => 'stripeSettingId',
+						'type' => 'enum',
+						'values' => $stripeSettings,
+						'label' => 'Stripe Settings',
+						'description' => 'The Stripe settings to use',
 						'hideInLists' => true,
 						'default' => -1,
 					],
