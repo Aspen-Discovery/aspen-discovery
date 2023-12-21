@@ -1,14 +1,14 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
 import { AlertDialog, Button, Center, FormControl, Heading, Icon, Input, Modal, Radio, Stack, TextArea } from 'native-base';
 import React, { useState } from 'react';
-import _ from 'lodash';
 import { popAlert } from '../../../components/loadError';
-import { useNavigation, useFocusEffect, useRoute } from '@react-navigation/native';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { clearListTitles, deleteList, editList, getListDetails, getLists } from '../../../util/api/list';
-import { getTermFromDictionary } from '../../../translations/TranslationService';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { navigateStack } from '../../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { deleteList, editList, getListDetails } from '../../../util/api/list';
 
 const EditList = (props) => {
      const queryClient = useQueryClient();
@@ -151,6 +151,7 @@ const DeleteList = (props) => {
                                                        popAlert('List deleted', res.message, status);
                                                        navigateStack('AccountScreenTab', 'MyLists', {
                                                             libraryUrl: library.baseUrl,
+                                                            hasPendingChanges: true,
                                                        });
                                                   }
                                              });

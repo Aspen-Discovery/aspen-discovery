@@ -62,8 +62,8 @@ function getUpdates24_01_00(): array {
 				'CREATE TABLE IF NOT EXISTS stripe_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					name VARCHAR(50) NOT NULL UNIQUE,
-					stripePublicKey VARCHAR(80) NOT NULL,
-					stripeSecretKey VARCHAR(80) NOT NULL,
+					stripePublicKey VARCHAR(255) NOT NULL,
+					stripeSecretKey VARCHAR(255) NOT NULL
 				) ENGINE = InnoDB',
 				'ALTER TABLE library ADD COLUMN stripeSettingId INT(11) DEFAULT -1',
 				'ALTER TABLE user_payments ADD COLUMN stripeToken VARCHAR(255) DEFAULT null',
