@@ -1,36 +1,27 @@
 {strip}
 	<input type="hidden" name="patronId" value="{$userId}"/>
-	<div class="row">
-		<div class="col-tn-12 col-sm-8 col-md-6 col-lg -3">
+	<div class="row" style="margin-left: .25em; margin-right: .25em">
+			<div class="panel panel-info col-tn-12" style="padding-left: 0; padding-right: 0">
+				<div class="panel-heading">
+                    {translate text="Pay Online" isPublicFacing=true}
+				</div>
+				<div class="panel-body">
+					<div id="stripe-container" class="row">
+						<div id="card-element" class="form-group col-tn-12"></div>
+						<div class="form-group col-tn-12">
+							<button type="submit" class="btn btn-primary">{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}</button>
+						</div>
+					</div>
+				</div>
+				</div>
+
 			<script src="https://js.stripe.com/v3/"></script>
 			<script>
-				const stripe = Stripe('{$stripePublicKey}');
-				const appearance = {
-					theme: 'flat',
-				};
-				const options = {
-					layout: {
-						type: 'tabs',
-						defaultCollapsed: false,
-					}
-				};
-				const elements = stripe.elements({
-					'{$stripeSecretKey}',
-					appearance
-				});
-				const paymentElement = elements.create('payment', options);
-
+				let stripe = Stripe('{$stripePublicKey}');
+				let options = { /* style options for card element */ };
+				let elements = stripe.elements();
+				let card = elements.create('card', options);
+				card.mount('#card-element')
 			</script>
-			<form action="/process-payment" method="post" id="stripe-payment-form">
-				<div>
-					<label>Card Info</label>
-					<div id="payment-element"></div>
-				</div>
-				<button type="submit">Submit Payment</button>
-			</form>
-			<script>
-				paymentElement.mount('#payment-element');
-			</script>
-		</div>
 	</div>
 {/strip}
