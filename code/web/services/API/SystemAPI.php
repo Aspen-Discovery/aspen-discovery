@@ -1024,7 +1024,7 @@ class SystemAPI extends Action {
 						'style' => $message->messageStyle,
 						'dismissable' => (int)$message->dismissable,
 						'message' => $message->appMessage,
-						'showOn' => $message->showOn,
+						'showOn' => (string)$message->showOn,
 					];
 				}
 			}
