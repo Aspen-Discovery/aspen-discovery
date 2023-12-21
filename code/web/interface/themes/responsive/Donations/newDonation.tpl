@@ -36,6 +36,8 @@
                     {include file="Donations/paypalPayflowPayments.tpl"}
                 {elseif $finePaymentType == 12}
                     {include file="Donations/squarePayments.tpl"}
+                {elseif $finePaymentType == 13}
+                    {include file="Donations/stripePayments.tpl"}
                 {/if}
             </form>
         {/if}
