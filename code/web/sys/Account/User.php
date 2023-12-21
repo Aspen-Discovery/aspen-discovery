@@ -4043,23 +4043,30 @@ class User extends DataObject {
 		return false;
 	}
 
-	public function canReceiveNotifications($user, $alertType): bool {
-		$userLibrary = Library::getPatronHomeLibrary($user);
-		require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
-		$settings = new NotificationSetting();
-		$settings->id = $userLibrary->lidaNotificationSettingId;
-		if ($settings->find(true)) {
-			if ($settings->$alertType == 1 || $settings->$alertType == "1") {
-				if ($settings->sendTo == 2 || $settings->sendTo == '2') {
-					return true;
-				} elseif ($settings->sendTo == 1 || $settings->sendTo == '1') {
-					$isStaff = 0;
-					$patronType = $this->getPTypeObj();
-					if (!empty($patronType)) {
-						$isStaff = $patronType->isStaff;
-					}
-					if ($isStaff == 1 || $isStaff == '1') {
-						return true;
+	public function canReceiveNotifications($alertType): bool {
+		$userHomeLocation = $this->homeLocationId;
+		$userLocation = new Location();
+		$userLocation->locationId = $this->homeLocationId;
+		if($userLocation->find(true)) {
+			$userLibrary = $userLocation->getParentLibrary();
+			if($userLibrary) {
+				require_once ROOT_DIR . '/sys/AspenLiDA/NotificationSetting.php';
+				$settings = new NotificationSetting();
+				$settings->id = $userLibrary->lidaNotificationSettingId;
+				if ($settings->find(true)) {
+					if ($settings->$alertType == 1 || $settings->$alertType == '1') {
+						if ($settings->sendTo == 2 || $settings->sendTo == '2') {
+							return true;
+						} elseif ($settings->sendTo == 1 || $settings->sendTo == '1') {
+							$isStaff = 0;
+							$patronType = $this->getPTypeObj();
+							if (!empty($patronType)) {
+								$isStaff = $patronType->isStaff;
+							}
+							if ($isStaff == 1 || $isStaff == '1') {
+								return true;
+							}
+						}
 					}
 				}
 			}
