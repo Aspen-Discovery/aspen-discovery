@@ -52,6 +52,22 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE library_links ADD COLUMN showLinkOn TINYINT(1) DEFAULT 0'
 			]
 		], //add_show_link_on
+		'update_user_notification_onboard' => [
+			'title' => 'Update onboardAppNotifications column to not allow null values',
+			'description' => 'Update onboardAppNotifications column to not allow null values',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user MODIFY COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1 NOT NULL'
+			]
+		], //update_user_notification_onboard
+		'add_user_brightness_permission' => [
+			'title' => 'Add column to determine if we should prompt the user for screen brightness permissions or not',
+			'description' => 'Add column to determine if we should prompt the user for screen brightness permissions or not',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user ADD COLUMN shouldAskBrightness TINYINT(1) DEFAULT 1 NOT NULL'
+			]
+		], //add_user_brightness_permission
 
 		//kodi - ByWater
 		'add_ecommerce_stripe_settings' => [

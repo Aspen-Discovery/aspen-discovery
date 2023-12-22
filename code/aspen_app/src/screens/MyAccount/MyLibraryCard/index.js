@@ -1,25 +1,25 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as Brightness from 'expo-brightness';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import _ from 'lodash';
 import moment from 'moment';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { Center, Flex, Image, Text, Box, Button, Icon, Modal } from 'native-base';
+import { Box, Button, Center, Flex, Icon, Image, Modal, Text } from 'native-base';
 import React, { Component } from 'react';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Barcode from 'react-native-barcode-expo';
-import Carousel from 'react-native-reanimated-carousel';
-import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Dimensions } from 'react-native';
-import * as ScreenOrientation from 'expo-screen-orientation';
-import * as Brightness from 'expo-brightness';
-import { useQueryClient, useQuery, useIsFetching } from '@tanstack/react-query';
+import Barcode from 'react-native-barcode-expo';
+import { Extrapolate, interpolate, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import Carousel from 'react-native-reanimated-carousel';
+import { loadError } from '../../../components/loadError';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
+import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
 import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { getLinkedAccounts } from '../../../util/api/user';
-import { loadError } from '../../../components/loadError';
 import { userContext } from '../../../context/user';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import { PermissionsPrompt } from '../../../components/PermissionsPrompt';
+import { getLinkedAccounts, updateScreenBrightnessStatus } from '../../../util/api/user';
 
 export const MyLibraryCard = () => {
      const queryClient = useQueryClient();
@@ -37,16 +37,16 @@ export const MyLibraryCard = () => {
      let autoRotate = library.generalSettings?.autoRotateCard ?? 0;
 
      /*     async function changeScreenOrientation(isLandscape) {
-        console.log("changeScreenOrientation > " + isLandscape);
-        await ScreenOrientation.unlockAsync().then(async result => {
-                if (isLandscape) {
-                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_LEFT);
-                } else {
-                    await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
-                }
-            }
-        )
-    } */
+	 console.log("changeScreenOrientation > " + isLandscape);
+	 await ScreenOrientation.unlockAsync().then(async result => {
+	 if (isLandscape) {
+	 await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE_LEFT);
+	 } else {
+	 await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+	 }
+	 }
+	 )
+	 } */
 
      useQuery(['linked_accounts', user, cards, library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
           onSuccess: (data) => {
@@ -63,7 +63,9 @@ export const MyLibraryCard = () => {
           const brightenScreen = navigation.addListener('focus', async () => {
                const { status } = await Brightness.getPermissionsAsync();
                if (status === 'undetermined') {
-                    setShouldRequestPermissions(true);
+                    if (!_.isUndefined(user.shouldAskBrightness) && (user.shouldAskBrightness === 1 || user.shouldAskBrightness === '1')) {
+                         setShouldRequestPermissions(true);
+                    }
                } else {
                     if (status === 'granted') {
                          await Brightness.getBrightnessAsync().then((level) => {
@@ -76,8 +78,12 @@ export const MyLibraryCard = () => {
                          });
                          console.log('Updating screen brightness');
                          Brightness.setSystemBrightnessAsync(1);
+                         await updateScreenBrightnessStatus(false, library.baseUrl, language);
+                         setShouldRequestPermissions(false);
                     } else {
                          // we were denied permissions
+                         await updateScreenBrightnessStatus(false, library.baseUrl, language);
+                         setShouldRequestPermissions(false);
                          console.log('Unable to update screen brightness');
                     }
                }
@@ -122,6 +128,7 @@ export const MyLibraryCard = () => {
                          Brightness.setSystemBrightnessAsync(previousBrightness);
                          console.log('Restoring system brightness');
                          Brightness.restoreSystemBrightnessAsync();
+                         await updateScreenBrightnessStatus(false, library.baseUrl, language);
                     }
                     if (status === 'granted' && brightnessMode) {
                          console.log('Restoring brightness mode');
@@ -130,6 +137,7 @@ export const MyLibraryCard = () => {
                               mode = 'BrightnessMode.AUTOMATIC';
                          }
                          Brightness.setSystemBrightnessModeAsync(brightnessMode);
+                         await updateScreenBrightnessStatus(false, library.baseUrl, language);
                     }
                     console.log('navigationListener isLandscape > ' + isLandscape);
                     if (isLandscape) {
@@ -148,28 +156,28 @@ export const MyLibraryCard = () => {
      }
 
      /* useFocusEffect(
-         React.useCallback(() => {
-             console.log("numCards listener > " + numCards);
-             console.log("isLandscape listener > " + isLandscape);
-             if(numCards <= 1 && !isLandscape) {
-                 toggleOrientation();
-             }
+	 React.useCallback(() => {
+	 console.log("numCards listener > " + numCards);
+	 console.log("isLandscape listener > " + isLandscape);
+	 if(numCards <= 1 && !isLandscape) {
+	 toggleOrientation();
+	 }
 
-             if(numCards > 1 && isLandscape) {
-                 toggleOrientation();
-             }
-             return () => {};
-         }, [numCards])
-     ) */
+	 if(numCards > 1 && isLandscape) {
+	 toggleOrientation();
+	 }
+	 return () => {};
+	 }, [numCards])
+	 ) */
 
      /*     const toggleOrientation = () => {
-        setIsLandscape(!isLandscape)
-        changeScreenOrientation(!isLandscape)
-    } */
+	 setIsLandscape(!isLandscape)
+	 changeScreenOrientation(!isLandscape)
+	 } */
 
      /*if (isLoading) {
-          return loadingSpinner();
-     }*/
+	 return loadingSpinner();
+	 }*/
 
      //MaterialCommunityIcons = phone-rotate-landscape
      return (
@@ -215,6 +223,7 @@ const CreateLibraryCard = (data) => {
                          setExpirationText(result);
                     });
                }
+
                fetchTranslations();
           }, [language]);
      }
@@ -576,4 +585,5 @@ export class MyLibraryCard221200 extends Component {
           );
      }
 }
+
 MyLibraryCard221200.contextType = UserContext;

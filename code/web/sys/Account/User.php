@@ -54,6 +54,7 @@ class User extends DataObject {
 	public $checkoutInfoLastLoaded;
 
 	public $onboardAppNotifications;
+	public $shouldAskBrightness;
 
 	/** @var Role[] */
 	private $_roles;

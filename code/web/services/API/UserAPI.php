@@ -86,7 +86,8 @@ class UserAPI extends Action {
 					'disableAccountLinking',
 					'enableAccountLinking',
 					'validateSession',
-					'prepareSharedSession'
+					'prepareSharedSession',
+					'updateScreenBrightnessStatus'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -921,6 +922,8 @@ class UserAPI extends Action {
 			$userData->numSavedSearches = $numSavedSearches;
 			$userData->numSavedSearchesNew = $numSavedSearchesNew;
 
+			$userData->onboardAppNotifications = $user->onboardAppNotifications;
+			$userData->shouldAskBrightness = $user->shouldAskBrightness;
 			$userData->notification_preferences = $user->getNotificationPreferencesByUser();
 
 			$promptForHoldNotifications = $user->getCatalogDriver()->isPromptForHoldNotifications();
@@ -4311,6 +4314,39 @@ class UserAPI extends Action {
 					'success' => false,
 					'title' => 'Error',
 					'message' => 'New status or user token not provided',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'title' => 'Error',
+				'message' => 'Unable to validate user',
+			];
+		}
+	}
+
+	/** @noinspection PhpUnused */
+	function updateScreenBrightnessStatus(): array {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$newStatus = $_REQUEST['status'] ?? null;
+			if($newStatus) {
+				if ($newStatus == 'false' || !$newStatus) {
+					$user->shouldAskBrightness = 0;
+					$user->update();
+					return [
+						'success' => true,
+						'title' => 'Success',
+						'message' => 'Updated user screen brightness prompt status'
+					];
+				} else {
+					// no update to the status since it defaults to 1
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => 'Error',
+					'message' => 'New status not provided',
 				];
 			}
 		} else {

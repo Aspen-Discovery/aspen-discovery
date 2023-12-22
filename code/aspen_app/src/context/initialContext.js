@@ -285,7 +285,11 @@ export const UserProvider = ({ children }) => {
           }
 
           if (_.isObject(data) && !_.isUndefined(data.notification_preferences)) {
-               updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en');
+               updateNotificationSettings(data.notification_preferences, data.interfaceLanguage ?? 'en', data.onboardAppNotifications);
+          }
+
+          if (_.isObject(data) && !_.isUndefined(data.onboardAppNotifications)) {
+               updateNotificationOnboard(data.onboardAppNotifications);
           }
 
           setUser(data);
@@ -335,7 +339,7 @@ export const UserProvider = ({ children }) => {
           console.log('updated library cards in UserContext');
      };
 
-     const updateNotificationSettings = async (data, language) => {
+     const updateNotificationSettings = async (data, language, userOnboardStatus) => {
           if (Device.isDevice) {
                if (!_.isEmpty(data)) {
                     const device = Device.modelName;
@@ -394,6 +398,10 @@ export const UserProvider = ({ children }) => {
                               if (deviceSettings[0].onboardStatus) {
                                    setNotificationOnboard(deviceSettings[0].onboardStatus);
                               }
+                         }
+
+                         if (userOnboardStatus) {
+                              setNotificationOnboard(userOnboardStatus);
                          }
                     }
                } else {
