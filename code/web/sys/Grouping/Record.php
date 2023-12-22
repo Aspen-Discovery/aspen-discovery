@@ -726,7 +726,7 @@ class Grouping_Record {
 	 * @return string
 	 */
 	public function getFormat(): string {
-		return $this->format;
+		return $this->format ?? 'Unknown';
 	}
 
 	public function isLocallyOwned() {
