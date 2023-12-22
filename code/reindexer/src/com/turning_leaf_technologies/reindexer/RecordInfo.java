@@ -369,6 +369,16 @@ public class RecordInfo {
 		return uniqueItemFormats;
 	}
 
+	public HashSet<String> getUniqueItemFormatsCategories() {
+		HashSet<String> uniqueItemFormatCategories = new HashSet<>();
+		for (ItemInfo curItem : relatedItems){
+			if (curItem.getFormat() != null){
+				uniqueItemFormatCategories.add(curItem.getFormatCategory());
+			}
+		}
+		return uniqueItemFormatCategories;
+	}
+
 	public String getFirstItemFormatCategory(){
 		for (ItemInfo curItem : relatedItems){
 			if (curItem.getFormatCategory() != null){

@@ -166,6 +166,8 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 			//Check to see if all items are on order.  If so, add on order keywords
 			boolean allItemsOnOrder = true;
 			int numItems = 0;
+			HashSet<String> uniqueFormatCategories = new HashSet<>();
+			HashSet<String> uniqueFormats = new HashSet<>();
 			for (RecordInfo record : relatedRecords.values()) {
 				for (ItemInfo item : record.getRelatedItems()) {
 					numItems++;
@@ -174,11 +176,23 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					}
 				}
 				if (record.getFormatCategories().size() > 0) {
-					if (record.getFormatCategories().size() > 0) {
-						fullTitles.add(fullTitle + " " + StringUtils.join(record.getFormatCategories(), ", "));
-						fullTitles.add(fullTitle + " " + StringUtils.join(record.getFormats(), ", "));
-					}
+					uniqueFormatCategories.addAll(record.getFormatCategories());
 				}
+				if (record.hasItemFormats()) {
+					uniqueFormats.addAll(record.getUniqueItemFormats());
+					uniqueFormats.addAll(record.getUniqueItemFormatsCategories());
+				}
+				if (record.getFormats().size() > 0) {
+					uniqueFormats.addAll(record.getFormats());
+				}
+			}
+			if (uniqueFormatCategories.size() > 0) {
+				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormatCategories, ", "));
+				addKeywords(uniqueFormatCategories);
+			}
+			if (uniqueFormats.size() > 0) {
+				fullTitles.add(fullTitle + " " + StringUtils.join(uniqueFormats, ", "));
+				addKeywords(uniqueFormats);
 			}
 			doc.addField("title_full", fullTitles);
 
