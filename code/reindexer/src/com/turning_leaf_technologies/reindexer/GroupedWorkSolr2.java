@@ -5,6 +5,7 @@ import com.turning_leaf_technologies.indexing.GroupedWorkDisplaySettings;
 import com.turning_leaf_technologies.indexing.Scope;
 import com.turning_leaf_technologies.logging.BaseIndexingLogEntry;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -173,7 +174,10 @@ public class GroupedWorkSolr2 extends AbstractGroupedWorkSolr implements Cloneab
 					}
 				}
 				if (record.getFormatCategories().size() > 0) {
-					fullTitles.add(fullTitle + " " + record.getFormatCategories().toString());
+					if (record.getFormatCategories().size() > 0) {
+						fullTitles.add(fullTitle + " " + StringUtils.join(record.getFormatCategories(), ", "));
+						fullTitles.add(fullTitle + " " + StringUtils.join(record.getFormats(), ", "));
+					}
 				}
 			}
 			doc.addField("title_full", fullTitles);
