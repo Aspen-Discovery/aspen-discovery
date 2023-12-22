@@ -52,6 +52,14 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE library_links ADD COLUMN showLinkOn TINYINT(1) DEFAULT 0'
 			]
 		], //add_show_link_on
+		'update_user_notification_onboard' => [
+			'title' => 'Update onboardAppNotifications column to not allow null values',
+			'description' => 'Update onboardAppNotifications column to not allow null values',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE user MODIFY COLUMN onboardAppNotifications TINYINT(1) DEFAULT 1 NOT NULL'
+			]
+		], //update_user_notification_onboard
 
 		//kodi - ByWater
 		'add_ecommerce_stripe_settings' => [
