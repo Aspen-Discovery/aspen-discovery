@@ -891,3 +891,40 @@ export async function updateNotificationOnboardingStatus(status, token, url, lan
           return false;
      }
 }
+
+/** *******************************************************************
+ * Screen Brightness
+ ******************************************************************* **/
+/**
+ * Update the status on if the user should be prompted for providing screen brightness permissions
+ * @param {boolean} status
+ * @param {string} url
+ * @param {string} language
+ **/
+export async function updateScreenBrightnessStatus(status, url, language = 'en') {
+     const postBody = await postData();
+     const discovery = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+          params: {
+               status,
+               language,
+          },
+     });
+     const response = await discovery.post('/UserAPI?method=updateScreenBrightnessStatus', postBody);
+     if (response.ok) {
+          let wasUpdated = false;
+          if (!_.isUndefined(response.data.result.success)) {
+               wasUpdated = response.data.result.success;
+               if (wasUpdated === true || wasUpdated === 'true') {
+                    return true;
+               }
+          }
+          return false;
+     } else {
+          console.log(response);
+          return false;
+     }
+}
