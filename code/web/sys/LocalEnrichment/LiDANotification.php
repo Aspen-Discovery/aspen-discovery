@@ -335,45 +335,42 @@ class LiDANotification extends DB_LibraryLocationLinkedObject {
 		$ptypesForNotifications->lidaNotificationId = $this->id;
 		$ptypes = $ptypesForNotifications->fetchAll('patronTypeId');
 
-		foreach ($ptypes as $ptype) {
-			$getPTypes = new LiDANotificationPType();
-			$displayLabel = $getPTypes->getPtypeById($ptype);
+		$allTokens = new UserNotificationToken();
+		$allTokens->notifyCustom = 1;
+		$userTokens = $allTokens->fetchAll('userId');
 
-			$usersForPType = new PType();
-			$usersForPType->pType = $displayLabel;
-			$usersForPType->find();
-			while ($usersForPType->fetch()) {
-				$user = new User();
-				$user->patronType = $displayLabel;
-				if ($user->find()) {
-					if ($user->canReceiveNotifications($user, 'notifyCustom')) {
-						$users[$displayLabel] = $user->fetchAll('id');
-					}
-				}
-			}
-		}
-
-		foreach ($users as $user => $userArray) {
-			foreach ($userArray as $obj) {
-				$n = new User();
-				$n->id = $obj;
-				if ($n->find(true)) {
-					$homeLocation = $n->getHomeLocation();
-					$homeLibrary = $n->getHomeLibrary();
+		foreach($userTokens as $userToken) {
+			$eligibleUser = new User();
+			$eligibleUser->id = $userToken;
+			if($eligibleUser->find(true)) {
+				$homeLocation = $eligibleUser->getHomeLocation();
+				$homeLibrary = $eligibleUser->getHomeLibrary();
+				if(in_array($eligibleUser->patronType, $ptypes)) {
 					if (in_array($homeLocation->locationId, $locations) && in_array($homeLibrary->libraryId, $libraries)) {
-						$token = new UserNotificationToken();
-						$token->userId = $obj;
-						$token->notifyCustom = 1;
-						$token->find();
-						while ($token->fetch()) {
-							$userToken['uid'] = $n->id;
-							$userToken['token'] = $token->pushToken;
-							$tokens[] = $userToken;
-						}
+						$users[] = $userToken;
 					}
 				}
 			}
 		}
+
+		foreach($users as $user) {
+			$eligibleUser = new User();
+			$eligibleUser->id = $user;
+				if($eligibleUser->find(true)) {
+					$token = new UserNotificationToken();
+					$token->userId = $user;
+					$token->notifyCustom = 1;
+					$allUserTokens = $token->fetchAll('pushToken');
+					foreach ($allUserTokens as $userToken) {
+						$tmpToken['uid'] = $user;
+						$tmpToken['token'] = $userToken;
+						$tokens[] = $tmpToken;
+					}
+					$token->__destruct();
+					$token = null;
+				}
+			}
+
 		return $tokens;
 	}
 }
