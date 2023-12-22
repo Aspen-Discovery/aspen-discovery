@@ -63,7 +63,7 @@ export const MyLibraryCard = () => {
           const brightenScreen = navigation.addListener('focus', async () => {
                const { status } = await Brightness.getPermissionsAsync();
                if (status === 'undetermined') {
-                    if (user.shouldAskBrightness === 1 || user.shouldAskBrightness === '1') {
+                    if (!_.isUndefined(user.shouldAskBrightness) && (user.shouldAskBrightness === 1 || user.shouldAskBrightness === '1')) {
                          setShouldRequestPermissions(true);
                     }
                } else {
