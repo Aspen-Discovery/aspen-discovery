@@ -86,18 +86,6 @@ export const DiscoverHomeScreen = () => {
           placeholderData: [],
      });
 
-     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 15,
-          refetchIntervalInBackground: true,
-          notifyOnChangeProps: ['data'],
-          onSuccess: (data) => {
-               updateUser(data);
-               updateLanguage(data.interfaceLanguage ?? 'en');
-               PATRON.language = data.interfaceLanguage ?? 'en';
-          },
-          placeholderData: [],
-     });
-
      useQuery(['linked_accounts', user, cards ?? [], library.baseUrl, language], () => getLinkedAccounts(user, cards, library.barcodeStyle, library.baseUrl, language), {
           refetchInterval: 60 * 1000 * 15,
           refetchIntervalInBackground: true,
@@ -164,6 +152,25 @@ export const DiscoverHomeScreen = () => {
           onSuccess: (data) => {
                if (typeof data.result?.session !== 'undefined') {
                     GLOBALS.appSessionId = data.result.session;
+               }
+          },
+     });
+
+     useQuery(['user', library.baseUrl, language], () => reloadProfile(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 15,
+          refetchIntervalInBackground: true,
+          notifyOnChangeProps: ['data'],
+          onSuccess: (data) => {
+               if (user) {
+                    if (data !== user) {
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                    }
+               } else {
+                    updateUser(data);
+                    updateLanguage(data.interfaceLanguage ?? 'en');
+                    PATRON.language = data.interfaceLanguage ?? 'en';
                }
           },
      });
