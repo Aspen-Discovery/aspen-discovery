@@ -3106,7 +3106,7 @@ class SirsiDynixROA extends HorizonAPI {
 						'key' => $paymentType,
 					],
 					//We could include the actual transaction id from the processor, but it's limited to 30 chars so we can just use Aspen ID.
-					'vendorTransactionID' => $payment->id,
+					'vendorTransactionID' => (string)$payment->id,
 					'creditReason' => [
 						'resource' => '/policy/creditReason',
 						'key' => 'PAYMENT',
