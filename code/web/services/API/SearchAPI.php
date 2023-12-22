@@ -1733,7 +1733,7 @@ class SearchAPI extends Action {
 											'key' => $thisId,
 											'title' => $categoryInformation->label . ': ' . $obj->title,
 											'source' => 'List',
-											'sourceId' => $obj->id,
+											'sourceId' => (string)$obj->id,
 											'isHidden' => $obj->isDismissed($appUser),
 										];
 										$formattedCategories[] = $categoryResponse;
@@ -1747,7 +1747,7 @@ class SearchAPI extends Action {
 							'title' => $categoryInformation->label,
 							'categoryId' => $categoryInformation->id,
 							'source' => $categoryInformation->source,
-							'sourceId' => $categoryInformation->sourceListId,
+							'sourceId' => (string)$categoryInformation->sourceListId,
 							'isHidden' => $categoryInformation->isDismissed($appUser),
 						];
 						$count = 0;
@@ -1968,7 +1968,7 @@ class SearchAPI extends Action {
 								'title' => $categoryInformation->label,
 								'id' => $categoryInformation->id,
 								'source' => $categoryInformation->source,
-								'listId' => $categoryInformation->sourceListId,
+								'listId' => (string)$categoryInformation->sourceListId,
 								'isHidden' => $categoryInformation->isDismissed($appUser),
 								'records' => [],
 								'lists' => [],
@@ -2085,7 +2085,7 @@ class SearchAPI extends Action {
 														'title' => $displayLabel,
 														'source' => $temp->source,
 														'isHidden' => $temp->isDismissed($appUser),
-														'sourceId' => $temp->sourceListId,
+														'sourceId' => (string)$temp->sourceListId,
 														'records' => $records,
 													];
 													$formattedCategories[] = $categoryResponse;

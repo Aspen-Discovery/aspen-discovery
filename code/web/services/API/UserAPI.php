@@ -686,7 +686,11 @@ class UserAPI extends Action {
 						}
 					}
 				} else {
-					$userData->$key = $value;
+					if ($key == 'trackReadingHistory') {
+						$userData->$key = (string)$value;
+					}else{
+						$userData->$key = $value;
+					}
 				}
 			}
 
@@ -2053,7 +2057,10 @@ class UserAPI extends Action {
 				$pickupLocations = [];
 				foreach ($tmpPickupLocations as $pickupLocation) {
 					if (!is_string($pickupLocation)) {
-						$pickupLocations[] = $pickupLocation->toArray();
+						$pickupLocationArray = $pickupLocation->toArray();
+						$pickupLocationArray['locationId'] = (string)$pickupLocationArray['locationId'];
+						$pickupLocationArray['libraryId'] = (string)$pickupLocationArray['libraryId'];
+						$pickupLocations[] = $pickupLocationArray;
 					}
 				}
 				return [

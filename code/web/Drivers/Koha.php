@@ -184,7 +184,7 @@ class Koha extends AbstractIlsDriver {
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'firstname', 'borrower_firstname', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'gender', 'borrower_sex', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
 				$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'initials', 'borrower_initials', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
-				if (!isset($_REQUEST['library_id']) || $_REQUEST['library_id'] == -1) {
+				if (!isset($_REQUEST['borrower_branchcode']) || $_REQUEST['borrower_branchcode'] == -1) {
 					$postVariables['library_id'] = $patron->getHomeLocation()->code;
 				} else {
 					$postVariables = $this->setPostFieldWithDifferentName($postVariables, 'library_id', 'borrower_branchcode', $library->useAllCapsWhenUpdatingProfile, false, $validFieldsToUpdate);
@@ -725,24 +725,21 @@ class Koha extends AbstractIlsDriver {
 			if ($this->getKohaVersion() >= 22.11) {
 				/** @noinspection SqlResolve */
 				$volumeSql = "SELECT item_id, description from item_group_items inner JOIN item_groups on item_group_items.item_group_id = item_groups.item_group_id where item_id IN ($allItemNumbersAsString)";
-			} else {
-				/** @noinspection SqlResolve */
-				$volumeSql = "SELECT itemnumber as item_id, description from volume_items inner JOIN volumes on volume_id = volumes.id where itemnumber IN ($allItemNumbersAsString)";
-			}
-			$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
-			if ($volumeResults !== false) { //This is false if Koha does not support volumes
-				while ($volumeRow = $volumeResults->fetch_assoc()) {
-					$itemId = $volumeRow['item_id'];
-					foreach ($checkouts as $curCheckout) {
-						if ($curCheckout->itemId == $itemId) {
-							$curCheckout->volume = $volumeRow['description'];
-							break;
+				$volumeResults = mysqli_query($this->dbConnection, $volumeSql);
+				if ($volumeResults !== false) { //This is false if Koha does not support volumes
+					while ($volumeRow = $volumeResults->fetch_assoc()) {
+						$itemId = $volumeRow['item_id'];
+						foreach ($checkouts as $curCheckout) {
+							if ($curCheckout->itemId == $itemId) {
+								$curCheckout->volume = $volumeRow['description'];
+								break;
+							}
 						}
 					}
+					$volumeResults->close();
 				}
-				$volumeResults->close();
+				$timer->logTime("Load volume info");
 			}
-			$timer->logTime("Load volume info");
 		}
 
 		return $checkouts;
@@ -1433,16 +1430,9 @@ class Koha extends AbstractIlsDriver {
 		$this->initDatabaseConnection();
 
 		//Figure out if the user is opted in to reading history.  Only LibLime Koha has the option to turn it off
-		//So assume that it is on if we don't get a good response
+		//So assume that it is on
 		/** @noinspection SqlResolve */
-		$sql = "select disable_reading_history from borrowers where borrowernumber = '" . mysqli_escape_string($this->dbConnection, $patron->unique_ils_id) . "';";
-		$historyEnabledRS = mysqli_query($this->dbConnection, $sql);
-		if ($historyEnabledRS) {
-			$historyEnabledRow = $historyEnabledRS->fetch_assoc();
-			$historyEnabled = !$historyEnabledRow['disable_reading_history'];
-		} else {
-			$historyEnabled = true;
-		}
+		$historyEnabled = true;
 
 		// Update patron's setting in Aspen if the setting has changed in Koha
 		if ($historyEnabled != $patron->trackReadingHistory) {
@@ -3648,15 +3638,19 @@ class Koha extends AbstractIlsDriver {
 				asort($pickupLocations);
 			}
 		} else {
-			$patron = UserAccount::getActiveUserObj();
-			$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
-			$pickupLocations = [];
-			foreach ($userPickupLocations as $key => $location) {
-				if ($location instanceof Location) {
-					$pickupLocations[$location->code] = $location->displayName;
-				} else {
-					if ($key == '0default') {
-						$pickupLocations[-1] = $location;
+			if (UserAccount::isLoggedIn()) {
+				$patron = UserAccount::getActiveUserObj();
+				if (!empty($patron)) {
+					$userPickupLocations = $patron->getValidPickupBranches($patron->getAccountProfile()->recordSource);
+					$pickupLocations = [];
+					foreach ($userPickupLocations as $key => $location) {
+						if ($location instanceof Location) {
+							$pickupLocations[$location->code] = $location->displayName;
+						} else {
+							if ($key == '0default') {
+								$pickupLocations[-1] = $location;
+							}
+						}
 					}
 				}
 			}
@@ -5131,10 +5125,14 @@ class Koha extends AbstractIlsDriver {
 			while ($curRow = $results->fetch_assoc()) {
 				$managedBy = $curRow['managedby'];
 				/** @noinspection SqlResolve */
-				$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
-				$userResults = mysqli_query($this->dbConnection, $userSql);
-				if ($userResults && $userResult = $userResults->fetch_assoc()) {
-					$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+				if (!empty($managedBy)) {
+					$userSql = "SELECT firstname, surname FROM borrowers where borrowernumber = " . mysqli_escape_string($this->dbConnection, $managedBy);
+					$userResults = mysqli_query($this->dbConnection, $userSql);
+					if ($userResults && $userResult = $userResults->fetch_assoc()) {
+						$managedByStr = $userResult['firstname'] . ' ' . $userResult['surname'];
+					} else {
+						$managedByStr = '';
+					}
 				} else {
 					$managedByStr = '';
 				}
