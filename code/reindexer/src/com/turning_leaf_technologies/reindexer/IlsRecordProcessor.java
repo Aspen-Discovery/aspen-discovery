@@ -1241,7 +1241,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		if (format == null){
 			format = itemInfo.getRecordInfo().getPrimaryFormat();
 		}
-		return inLibraryUseOnlyFormats.contains(format.toUpperCase());
+		if (format == null){
+			return false;
+		}else {
+			return inLibraryUseOnlyFormats.contains(format.toUpperCase());
+		}
 	}
 
 	protected void setDetailedStatus(ItemInfo itemInfo, DataField itemField, String itemStatus, String identifier) {
@@ -1478,7 +1482,11 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 			}
 		}
 		String format = itemInfo.getPrimaryFormatUppercase();
-		return !nonHoldableFormats.contains(format.toUpperCase());
+		if (format != null) {
+			return !nonHoldableFormats.contains(format.toUpperCase());
+		}else{
+			return true;
+		}
 	}
 
 	String getShelfLocationForItem(DataField itemField, String identifier) {
