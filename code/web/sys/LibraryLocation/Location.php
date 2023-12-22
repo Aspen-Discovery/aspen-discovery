@@ -2513,7 +2513,7 @@ class Location extends DataObject {
 			'description' => $this->description,
 			'vdxFormId' => $this->vdxFormId,
 			'vdxLocation' => $this->vdxLocation,
-			'showInLocationsAndHoursList' => $this->showInLocationsAndHoursList,
+			'showInLocationsAndHoursList' => (string)$this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
 			'hours' => [],
 			'code' => $this->code
