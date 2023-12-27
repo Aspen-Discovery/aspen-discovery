@@ -434,8 +434,29 @@ class Library extends DataObject {
 	public $cookieStorageConsent;
 	public $cookiePolicyHTML;
 
+	/** @var MaterialsRequestFormFields[] */
+	private $_materialsRequestFormFields;
+	/** @var MaterialsRequestFieldsToDisplay[] */
+	private $_materialsRequestFieldsToDisplay;
+	/** @var MaterialsRequestFormats[] */
+	private $_materialsRequestFormats;
+
+
+	/** @var Holiday[] */
+	private $_holidays;
+	/** @var LibrarySideLoadScope[] */
+	private $_sideLoadScopes;
+	/** @var LibraryCloudLibraryScope[] */
 	private $_cloudLibraryScopes;
+	/** @var ILLItemType[] */
+	private $_interLibraryLoanItemTypes;
+	/** @var LibraryLink[] */
 	private $_libraryLinks;
+	/** @var LibraryRecordToInclude[] */
+	private $_recordsToInclude;
+
+	/** @var LibraryCombinedResultSection[] */
+	private $_combinedResultSections;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -450,6 +471,14 @@ class Library extends DataObject {
 			'paypalPayflowSettingId',
 			'squareSettingId',
 			'sripteSettingId'
+		];
+	}
+
+
+	public function getUniquenessFields(): array {
+		return [
+			'libraryId',
+			'subdomain',
 		];
 	}
 
@@ -3997,88 +4026,27 @@ class Library extends DataObject {
 
 	public function __get($name) {
 		if ($name == "holidays") {
-			if (!isset($this->holidays) && $this->libraryId) {
-				$this->holidays = [];
-				$holiday = new Holiday();
-				$holiday->libraryId = $this->libraryId;
-				$holiday->orderBy('date');
-				$holiday->find();
-				while ($holiday->fetch()) {
-					$this->holidays[$holiday->id] = clone($holiday);
-				}
-			}
-			return $this->holidays;
+			return $this->getHolidays();
 		} elseif ($name == 'libraryLinks') {
 			return $this->getLibraryLinks();
 		} elseif ($name == 'recordsToInclude') {
-			if (!isset($this->recordsToInclude) && $this->libraryId) {
-				$this->recordsToInclude = [];
-				$object = new LibraryRecordToInclude();
-				$object->libraryId = $this->libraryId;
-				$object->orderBy('weight');
-				$object->find();
-				while ($object->fetch()) {
-					$this->recordsToInclude[$object->id] = clone($object);
-				}
-			}
-			return $this->recordsToInclude;
+			return $this->getRecordsToInclude();
 		} elseif ($name == 'sideLoadScopes') {
-			if (!isset($this->sideLoadScopes) && $this->libraryId) {
-				$this->sideLoadScopes = [];
-				$object = new LibrarySideLoadScope();
-				$object->libraryId = $this->libraryId;
-				$object->find();
-				while ($object->fetch()) {
-					$this->sideLoadScopes[$object->id] = clone($object);
-				}
-			}
-			return $this->sideLoadScopes;
+			return $this->getSideLoadScopes();
 		} elseif ($name == 'materialsRequestFieldsToDisplay') {
-			if (!isset($this->materialsRequestFieldsToDisplay) && $this->libraryId) {
-				$this->materialsRequestFieldsToDisplay = [];
-				$materialsRequestFieldsToDisplay = new MaterialsRequestFieldsToDisplay();
-				$materialsRequestFieldsToDisplay->libraryId = $this->libraryId;
-				$materialsRequestFieldsToDisplay->orderBy('weight');
-				if ($materialsRequestFieldsToDisplay->find()) {
-					while ($materialsRequestFieldsToDisplay->fetch()) {
-						$this->materialsRequestFieldsToDisplay[$materialsRequestFieldsToDisplay->id] = clone $materialsRequestFieldsToDisplay;
-					}
-				}
-				return $this->materialsRequestFieldsToDisplay;
-			}
+			return $this->getMaterialsRequestFieldsToDisplay();
 		} elseif ($name == 'materialsRequestFormats') {
 			return $this->getMaterialsRequestFormats();
 		} elseif ($name == 'materialsRequestFormFields') {
 			return $this->getMaterialsRequestFormFields();
 		} elseif ($name == 'combinedResultSections') {
-			if (!isset($this->combinedResultSections) && $this->libraryId) {
-				$this->combinedResultSections = [];
-				$combinedResultSection = new LibraryCombinedResultSection();
-				$combinedResultSection->libraryId = $this->libraryId;
-				$combinedResultSection->orderBy('weight');
-				if ($combinedResultSection->find()) {
-					while ($combinedResultSection->fetch()) {
-						$this->combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
-					}
-				}
-				return $this->combinedResultSections;
-			}
+			return $this->getCombinedResultSections();
 		} elseif ($name == 'themes') {
 			return $this->getThemes();
 		} elseif ($name == 'cloudLibraryScopes') {
 			return $this->getCloudLibraryScopes();
 		} elseif ($name == 'interLibraryLoanItemTypes') {
-			if (!isset($this->interLibraryLoanItemTypes) && $this->libraryId) {
-				$this->interLibraryLoanItemTypes = [];
-				$interLibraryLoanItemType = new ILLItemType();
-				$interLibraryLoanItemType->libraryId = $this->libraryId;
-				$interLibraryLoanItemType->orderBy('code');
-				$interLibraryLoanItemType->find();
-				while ($interLibraryLoanItemType->fetch()) {
-					$this->interLibraryLoanItemTypes[$interLibraryLoanItemType->id] = clone($interLibraryLoanItemType);
-				}
-			}
-			return $this->interLibraryLoanItemTypes;
+			return $this->getILLItemTypes();
 		} else {
 			return parent::__get($name);
 		}
@@ -4086,26 +4054,21 @@ class Library extends DataObject {
 
 	public function __set($name, $value) {
 		if ($name == "holidays") {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->holidays = $value;
+			$this->_holidays = $value;
 		} elseif ($name == 'libraryLinks') {
 			$this->_libraryLinks = $value;
 		} elseif ($name == 'recordsToInclude') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->recordsToInclude = $value;
+			$this->_recordsToInclude = $value;
 		} elseif ($name == 'sideLoadScopes') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->sideLoadScopes = $value;
+			$this->_sideLoadScopes = $value;
 		} elseif ($name == 'materialsRequestFieldsToDisplay') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->materialsRequestFieldsToDisplay = $value;
+			$this->_materialsRequestFieldsToDisplay = $value;
 		} elseif ($name == 'materialsRequestFormats') {
 			$this->_materialsRequestFormats = $value;
 		} elseif ($name == 'materialsRequestFormFields') {
 			$this->_materialsRequestFormFields = $value;
 		} elseif ($name == 'combinedResultSections') {
-			/** @noinspection PhpUndefinedFieldInspection */
-			$this->combinedResultSections = $value;
+			$this->_combinedResultSections = $value;
 		} elseif ($name == 'themes') {
 			$this->_themes = $value;
 		} elseif ($name == 'cloudLibraryScopes') {
@@ -4237,24 +4200,72 @@ class Library extends DataObject {
 		}
 	}
 
-	public function saveRecordsToInclude() {
-		if (isset ($this->recordsToInclude) && is_array($this->recordsToInclude)) {
-			$this->saveOneToManyOptions($this->recordsToInclude, 'libraryId');
-			unset($this->recordsToInclude);
+	public function getRecordsToInclude() {
+		if (!isset($this->_recordsToInclude)) {
+			$this->_recordsToInclude = [];
+			if (!empty($this->libraryId)) {
+				$object = new LibraryRecordToInclude();
+				$object->libraryId = $this->libraryId;
+				$object->orderBy('weight');
+				$object->find();
+				while ($object->fetch()) {
+					$this->_recordsToInclude[$object->id] = clone($object);
+				}
+			}
 		}
+		return $this->_recordsToInclude;
+	}
+
+	public function saveRecordsToInclude() {
+		if (isset ($this->_recordsToInclude) && is_array($this->_recordsToInclude)) {
+			$this->saveOneToManyOptions($this->_recordsToInclude, 'libraryId');
+			unset($this->_recordsToInclude);
+		}
+	}
+
+	public function getSideLoadScopes() {
+		if (!isset($this->_sideLoadScopes)) {
+			$this->_sideLoadScopes = [];
+			if (!empty($this->libraryId)) {
+				$object = new LibrarySideLoadScope();
+				$object->libraryId = $this->libraryId;
+				$object->find();
+				while ($object->fetch()) {
+					$this->_sideLoadScopes[$object->id] = clone($object);
+				}
+			}
+		}
+		return $this->_sideLoadScopes;
 	}
 
 	public function saveSideLoadScopes() {
-		if (isset ($this->sideLoadScopes) && is_array($this->sideLoadScopes)) {
-			$this->saveOneToManyOptions($this->sideLoadScopes, 'libraryId');
-			unset($this->sideLoadScopes);
+		if (isset ($this->_sideLoadScopes) && is_array($this->_sideLoadScopes)) {
+			$this->saveOneToManyOptions($this->_sideLoadScopes, 'libraryId');
+			unset($this->_sideLoadScopes);
 		}
 	}
 
+	public function getMaterialsRequestFieldsToDisplay() {
+		if (!isset($this->_materialsRequestFieldsToDisplay)) {
+			$this->_materialsRequestFieldsToDisplay = [];
+			if (!empty($this->libraryId)) {
+				$materialsRequestFieldsToDisplay = new MaterialsRequestFieldsToDisplay();
+				$materialsRequestFieldsToDisplay->libraryId = $this->libraryId;
+				$materialsRequestFieldsToDisplay->orderBy('weight');
+				if ($materialsRequestFieldsToDisplay->find()) {
+					while ($materialsRequestFieldsToDisplay->fetch()) {
+						$this->_materialsRequestFieldsToDisplay[$materialsRequestFieldsToDisplay->id] = clone $materialsRequestFieldsToDisplay;
+					}
+				}
+			}
+		}
+		return $this->_materialsRequestFieldsToDisplay;
+	}
+
 	public function saveMaterialsRequestFieldsToDisplay() {
-		if (isset ($this->materialsRequestFieldsToDisplay) && is_array($this->materialsRequestFieldsToDisplay)) {
-			$this->saveOneToManyOptions($this->materialsRequestFieldsToDisplay, 'libraryId');
-			unset($this->materialsRequestFieldsToDisplay);
+		if (isset ($this->_materialsRequestFieldsToDisplay) && is_array($this->_materialsRequestFieldsToDisplay)) {
+			$this->saveOneToManyOptions($this->_materialsRequestFieldsToDisplay, 'libraryId');
+			unset($this->_materialsRequestFieldsToDisplay);
 		}
 	}
 
@@ -4293,14 +4304,16 @@ class Library extends DataObject {
 	 * @return LibraryLink[]
 	 */
 	public function getLibraryLinks() : array {
-		if (!isset($this->_libraryLinks) && $this->libraryId) {
+		if (!isset($this->_libraryLinks)) {
 			$this->_libraryLinks = [];
-			$libraryLink = new LibraryLink();
-			$libraryLink->libraryId = $this->libraryId;
-			$libraryLink->orderBy('weight');
-			$libraryLink->find();
-			while ($libraryLink->fetch()) {
-				$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
+			if (!empty($this->libraryId)) {
+				$libraryLink = new LibraryLink();
+				$libraryLink->libraryId = $this->libraryId;
+				$libraryLink->orderBy('weight');
+				$libraryLink->find();
+				while ($libraryLink->fetch()) {
+					$this->_libraryLinks[$libraryLink->id] = clone($libraryLink);
+				}
 			}
 		}
 		return $this->_libraryLinks;
@@ -4310,13 +4323,15 @@ class Library extends DataObject {
 	 * @return LibraryCloudLibraryScope[]|null
 	 */
 	public function getCloudLibraryScopes(): ?array {
-		if (!isset($this->_cloudLibraryScopes) && $this->libraryId) {
+		if (!isset($this->_cloudLibraryScopes)) {
 			$this->_cloudLibraryScopes = [];
-			$cloudLibraryScope = new LibraryCloudLibraryScope();
-			$cloudLibraryScope->libraryId = $this->libraryId;
-			if ($cloudLibraryScope->find()) {
-				while ($cloudLibraryScope->fetch()) {
-					$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+			if (!empty($this->libraryId)) {
+				$cloudLibraryScope = new LibraryCloudLibraryScope();
+				$cloudLibraryScope->libraryId = $this->libraryId;
+				if ($cloudLibraryScope->find()) {
+					while ($cloudLibraryScope->fetch()) {
+						$this->_cloudLibraryScopes[$cloudLibraryScope->id] = clone $cloudLibraryScope;
+					}
 				}
 			}
 		}
@@ -4336,7 +4351,7 @@ class Library extends DataObject {
 	}
 
 	/**
-	 * @return LibraryTheme[]|null
+	 * @return LibraryTheme[]
 	 */
 	public function getThemes(): ?array {
 		if (!isset($this->_themes)) {
@@ -4360,7 +4375,9 @@ class Library extends DataObject {
 			foreach($this->_themes as $obj) {
 				/** @var DataObject $obj */
 				if($obj->_deleteOnSave) {
-					$obj->delete();
+					if ($obj->getPrimaryKeyValue() > 0) {
+						$obj->delete();
+					}
 				} else {
 					if (isset($obj->{$obj->__primaryKey}) && is_numeric($obj->{$obj->__primaryKey})) {
 						if($obj->{$obj->__primaryKey} <= 0) {
@@ -4404,23 +4421,75 @@ class Library extends DataObject {
 	}
 
 	public function saveCombinedResultSections() {
-		if (isset ($this->combinedResultSections) && is_array($this->combinedResultSections)) {
-			$this->saveOneToManyOptions($this->combinedResultSections, 'libraryId');
-			unset($this->combinedResultSections);
+		if (isset ($this->_combinedResultSections) && is_array($this->_combinedResultSections)) {
+			$this->saveOneToManyOptions($this->_combinedResultSections, 'libraryId');
+			unset($this->_combinedResultSections);
 		}
+	}
+
+	/**
+	 * @return LibraryCombinedResultSection[]
+	 */
+	public function getCombinedResultSections() : array {
+		if (!isset($this->_combinedResultSections)) {
+			$this->_combinedResultSections = [];
+			if (!empty($this->libraryId)) {
+				$combinedResultSection = new LibraryCombinedResultSection();
+				$combinedResultSection->libraryId = $this->libraryId;
+				$combinedResultSection->orderBy('weight');
+				if ($combinedResultSection->find()) {
+					while ($combinedResultSection->fetch()) {
+						$this->_combinedResultSections[$combinedResultSection->id] = clone $combinedResultSection;
+					}
+				}
+			}
+		}
+		return $this->_combinedResultSections;
+	}
+
+	public function getHolidays() {
+		if (!isset($this->_holidays)) {
+			$this->_holidays = [];
+			if (!empty($this->libraryId)) {
+				$holiday = new Holiday();
+				$holiday->libraryId = $this->libraryId;
+				$holiday->orderBy('date');
+				$holiday->find();
+				while ($holiday->fetch()) {
+					$this->_holidays[$holiday->id] = clone($holiday);
+				}
+			}
+		}
+		return $this->_holidays;
 	}
 
 	public function saveHolidays() {
-		if (isset ($this->holidays) && is_array($this->holidays)) {
-			$this->saveOneToManyOptions($this->holidays, 'libraryId');
-			unset($this->holidays);
+		if (isset ($this->_holidays) && is_array($this->_holidays)) {
+			$this->saveOneToManyOptions($this->_holidays, 'libraryId');
+			unset($this->_holidays);
 		}
 	}
 
+	public function getILLItemTypes() {
+		if (!isset($this->_interLibraryLoanItemTypes)) {
+			$this->_interLibraryLoanItemTypes = [];
+			if (!empty($this->libraryId)) {
+				$interLibraryLoanItemType = new ILLItemType();
+				$interLibraryLoanItemType->libraryId = $this->libraryId;
+				$interLibraryLoanItemType->orderBy('code');
+				$interLibraryLoanItemType->find();
+				while ($interLibraryLoanItemType->fetch()) {
+					$this->_interLibraryLoanItemTypes[$interLibraryLoanItemType->id] = clone($interLibraryLoanItemType);
+				}
+			}
+		}
+		return $this->_interLibraryLoanItemTypes;
+	}
+
 	public function saveILLItemTypes() {
-		if (isset ($this->interLibraryLoanItemTypes) && is_array($this->interLibraryLoanItemTypes)) {
-			$this->saveOneToManyOptions($this->interLibraryLoanItemTypes, 'libraryId');
-			unset($this->interLibraryLoanItemTypes);
+		if (isset ($this->_interLibraryLoanItemTypes) && is_array($this->_interLibraryLoanItemTypes)) {
+			$this->saveOneToManyOptions($this->_interLibraryLoanItemTypes, 'libraryId');
+			unset($this->_interLibraryLoanItemTypes);
 		}
 	}
 
@@ -4477,7 +4546,7 @@ class Library extends DataObject {
 
     protected $_eventFacetSettings = null;
 
-    /** @return EventsFacetGroup */
+    /** @return LibraryEventsSetting */
     public function getEventFacetSettings() {
         if ($this->_eventFacetSettings == null) {
             try {
@@ -4627,9 +4696,6 @@ class Library extends DataObject {
 		return $this->_overdriveScope;
 	}
 
-
-	private $_materialsRequestFormFields;
-
 	public function setMaterialsRequestFormFields($value) {
 		$this->_materialsRequestFormFields = $value;
 	}
@@ -4651,8 +4717,6 @@ class Library extends DataObject {
 		}
 		return $this->_materialsRequestFormFields;
 	}
-
-	private $_materialsRequestFormats;
 
 	public function setMaterialsRequestFormats($value) {
 		$this->_materialsRequestFormats = $value;
@@ -4935,5 +4999,120 @@ class Library extends DataObject {
 		], $thirdPartyRegistrationLocations);
 		$structure['ilsSection']['properties']['thirdPartyRegistrationSection']['properties']['thirdPartyRegistrationLocation']['values'] = $thirdPartyRegistrationLocations;
 		return $structure;
+	}
+
+	public function loadCopyableSubObjects() {
+		if (empty($_REQUEST['aspenLida'])) {
+			$this->lidaGeneralSettingId = -1;
+			$this->lidaNotificationSettingId = -1;
+		}
+		if (!empty($_REQUEST['combinedResults'])) {
+			$this->getCombinedResultSections();
+			$index = -1;
+			foreach ($this->_combinedResultSections as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['eContent'])) {
+			$this->axis360ScopeId = -1;
+			$this->hooplaLibraryID = 0;
+			$this->hooplaScopeId = -1;
+			$this->overDriveScopeId = -1;
+			$this->palaceProjectScopeId = -1;
+		}else{
+			$this->getCloudLibraryScopes();
+			$index = -1;
+			foreach ($this->_cloudLibraryScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$this->getSideLoadScopes();
+			$index = -1;
+			foreach ($this->_sideLoadScopes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['holidays'])) {
+			$this->getHolidays();
+			$index = -1;
+			foreach ($this->_holidays as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['illItemTypes'])) {
+			$this->getILLItemTypes();
+			$index = -1;
+			foreach ($this->_interLibraryLoanItemTypes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['materialsRequest'])) {
+			$this->getMaterialsRequestFieldsToDisplay();
+			$this->getMaterialsRequestFormats();
+			$this->getMaterialsRequestFormFields();
+			$index = -1;
+			foreach ($this->_materialsRequestFieldsToDisplay as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$index = -1;
+			foreach ($this->_materialsRequestFormats as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+			$index = -1;
+			foreach ($this->_materialsRequestFormFields as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (!empty($_REQUEST['menuLinks'])) {
+			$this->getLibraryLinks();
+			$index = -1;
+			foreach ($this->_libraryLinks as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['messagingSettings'])) {
+			$this->twilioSettingId = -1;
+		}
+		if (empty($_REQUEST['novelist'])) {
+			$this->novelistSettingId = -1;
+		}
+		if (!empty($_REQUEST['recordsToInclude'])) {
+			$this->getRecordsToInclude();
+			$index = -1;
+			foreach ($this->_recordsToInclude as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
+		if (empty($_REQUEST['singleSignOn'])) {
+			$this->ssoSettingId = -1;
+		}
+		if (!empty($_REQUEST['themes'])) {
+			$this->getThemes();
+			$index = -1;
+			foreach ($this->_themes as $subObject) {
+				$subObject->id = $index;
+				unset($subObject->libraryId);
+				$index--;
+			}
+		}
 	}
 }

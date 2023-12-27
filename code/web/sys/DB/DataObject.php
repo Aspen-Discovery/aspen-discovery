@@ -848,7 +848,9 @@ abstract class DataObject implements JsonSerializable {
 		/** @var DataObject $oneToManyDBObject */
 		foreach ($oneToManySettings as $oneToManyDBObject) {
 			if ($oneToManyDBObject->_deleteOnSave == true) {
-				$oneToManyDBObject->delete();
+				if ($oneToManyDBObject->getPrimaryKeyValue() > 0) {
+					$oneToManyDBObject->delete();
+				}
 			} else {
 				if (isset($oneToManyDBObject->{$oneToManyDBObject->__primaryKey}) && is_numeric($oneToManyDBObject->{$oneToManyDBObject->__primaryKey})) { // (negative ids need processed with insert)
 					if ($oneToManyDBObject->{$oneToManyDBObject->__primaryKey} <= 0) {

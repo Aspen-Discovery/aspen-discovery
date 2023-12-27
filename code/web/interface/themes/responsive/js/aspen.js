@@ -9978,6 +9978,23 @@ AspenDiscovery.Admin = (function () {
 			return false;
 		},
 
+		showCopyOptions: function(module, toolname, id) {
+			var url = Globals.path + '/' + module + '/' + toolname;
+			var params = {
+				id: id,
+				objectAction: 'getCopyOptions'
+			};
+
+			$.getJSON(url, params, function (data) {
+				if (data.success){
+					AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
+				} else {
+					AspenDiscovery.showMessage('An error occurred', data.message);
+				}
+			});
+			return false;
+		},
+
 		showCopyMenuLinksForm: function(libraryId) {
 			var url = Globals.path + '/Admin/AJAX';
 			var params = {

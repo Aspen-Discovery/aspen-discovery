@@ -1,5 +1,5 @@
 {* Create the base form *}
-<form id='objectEditor{if !empty($id)}-{$id}{/if}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} {if !empty($submitUrl)}action="{$submitUrl}"{/if} role="form" onsubmit="setFormSubmitting();" {if !empty($formLabel)}aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}"{/if}>
+<form id='{if empty($ajaxFormId)}objectEditor{if !empty($id)}-{$id}{/if}{else}{$ajaxFormId}{/if}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} {if !empty($submitUrl)}action="{$submitUrl}"{/if} role="form" onsubmit="setFormSubmitting();" {if !empty($formLabel)}aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}"{/if}>
 	<div class='editor'>
 		{if !empty($id)}
 		<input type='hidden' name='id' value='{$id}' id="id" />

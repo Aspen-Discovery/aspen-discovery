@@ -31,7 +31,11 @@
 				</div>
 				<div class="btn-group">
 					{if !empty($id) && $canCopy}
-						<a class="btn btn-default" href='/{$module}/{$toolName}?sourceId={$id}&amp;objectAction=copy'><i class="fas fa-copy"></i> {translate text="Copy" isAdminFacing=true}</a>
+						{if $hasCopyOptions}
+							<a class="btn btn-default" onclick="AspenDiscovery.Admin.showCopyOptions('{$module}', '{$toolName}', {$id})"><i class="fas fa-copy"></i> {translate text="Copy" isAdminFacing=true}</a>
+						{else}
+							<a class="btn btn-default" href='/{$module}/{$toolName}?sourceId={$id}&amp;objectAction=copy'><i class="fas fa-copy"></i> {translate text="Copy" isAdminFacing=true}</a>
+						{/if}
 					{/if}
 				</div>
 				<div class="btn-group">
