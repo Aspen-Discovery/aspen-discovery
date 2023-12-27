@@ -117,4 +117,96 @@ class Admin_Locations extends ObjectEditor {
 	function getInitializationJs(): string {
 		return 'return AspenDiscovery.Admin.updateLocationFields();';
 	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
+
+	public function hasCopyOptions() {
+		return true;
+	}
+	public function getCopyOptionsFormStructure($activeObject) {
+		$settings = [
+			'aspenLida' => [
+				'property' => 'aspenLida',
+				'type' => 'checkbox',
+				'label' => 'Aspen LiDA Settings',
+				'description' => 'Whether or not to copy Aspen LiDA settings',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			'combinedResults' => [
+				'property' => 'combinedResults',
+				'type' => 'checkbox',
+				'label' => 'Combined Results Settings',
+				'description' => 'Whether or not to copy Combined Results settings',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			'eContent' => [
+				'property' => 'eContent',
+				'type' => 'checkbox',
+				'label' => 'eContent',
+				'description' => 'Whether or not to copy eContent settings',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			'moreDetails' => [
+				'property' => 'moreDetails',
+				'type' => 'checkbox',
+				'label' => 'Full Record Options',
+				'description' => 'Whether or not to copy Full Record Options',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			'hours' => [
+				'property' => 'hours',
+				'type' => 'checkbox',
+				'label' => 'Hours',
+				'description' => 'Whether or not to copy Hours',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			'recordsToInclude' => [
+				'property' => 'recordsToInclude',
+				'type' => 'checkbox',
+				'label' => 'Records To Include',
+				'description' => 'Whether or not to copy Records To Include',
+				'hideInLists' => false,
+				'default' => true,
+			],
+			'themes' => [
+				'property' => 'themes',
+				'type' => 'checkbox',
+				'label' => 'Themes',
+				'description' => 'Whether or not to copy themes',
+				'hideInLists' => false,
+				'default' => true,
+			],
+		];
+		if ($activeObject instanceof Location) {
+			if ($activeObject->lidaLocationSettingId == -1 && $activeObject->lidaSelfCheckSettingId == -1) {
+				unset($settings['aspenLida']);
+			}
+			if (!$activeObject->useLibraryCombinedResultsSettings || !$activeObject->enableCombinedResults || empty($activeObject->getCombinedResultSections())) {
+				unset($settings['combinedResults']);
+			}
+			if ($activeObject->axis360ScopeId <= -1 && empty($activeObject->getCloudLibraryScopes()) && $activeObject->hooplaScopeId <= -1 && $activeObject->overDriveScopeId <= -1 && $activeObject->palaceProjectScopeId <= -1 && empty($activeObject->getSideLoadScopes())) {
+				unset($settings['eContent']);
+			}
+			if (empty($activeObject->getMoreDetailsOptions())) {
+				unset($settings['moreDetails']);
+			}
+			if (empty($activeObject->getHours())) {
+				unset($settings['hours']);
+			}
+			if (empty($activeObject->getRecordsToInclude())) {
+				unset($settings['recordsToInclude']);
+			}
+			if ($activeObject->useLibraryThemes || empty($activeObject->getThemes())) {
+				unset($settings['themes']);
+			}
+		}
+		return $settings;
+	}
 }
