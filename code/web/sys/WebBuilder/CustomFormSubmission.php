@@ -78,8 +78,28 @@ class CustomFormSubmission extends DataObject {
 			}
 			$user->__destruct();
 			return $this->_data[$name] ?? null;
-		}
-		return parent::__get($name);
+		} elseif ($name == 'submission') {
+            error_log("ENTRO AL SUBMISSION");
+            if (!isset($this->submission)) {
+                $this->submission = '';
+                $submissionSelection = new CustomFormSubmissionSelection();
+                $submissionSelection->formSubmissionId = $this->id;
+                $submissionSelection->find();
+                while ($submissionSelection->fetch()) {
+                    $customFormField = new CustomFormField();
+                    $customFormField->id = $submissionSelection->submissionFieldId;
+                    $customFormField->find(true);
+                    if(!empty($customFormField->label)){
+                        $copySubmissionField = clone($customFormField);
+                        $this->_data[$name] = $this->submission . $copySubmissionField;
+                    }
+                }
+                error_log("LGM SUBMISSION SELECTION : " . print_r($submissionSelection,true));
+                $submissionSelection->__destruct();
+            }
+            return $this->_data[$name];
+        }
+        return parent::__get($name);
 	}
 
 	public function okToExport(array $selectedFilters): bool {

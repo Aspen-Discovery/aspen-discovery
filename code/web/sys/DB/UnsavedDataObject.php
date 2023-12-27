@@ -29,7 +29,7 @@ class UnsavedDataObject extends DataObject {
 		$printableData = '';
 		foreach ($this->_data as $fieldId => $value) {
 			$fieldLabel = $structure[$fieldId]['label'];
-			$printableData .= "<div><b>$fieldLabel<b></div><div>$value</div><br/>";
+			$printableData .= "<div><b>$fieldLabel</b></div><div>$value</div><br/>";
 		}
 		return $printableData;
 	}
