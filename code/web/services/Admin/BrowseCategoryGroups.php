@@ -150,4 +150,8 @@ class Admin_BrowseCategoryGroups extends ObjectEditor {
 		}
 		return $this->_numObjects;
 	}
+
+	public function canCopy() {
+		return $this->canAddNew();
+	}
 }

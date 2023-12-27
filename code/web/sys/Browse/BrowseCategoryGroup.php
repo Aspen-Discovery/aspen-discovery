@@ -13,6 +13,7 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 	public $defaultBrowseMode;
 	public $browseCategoryRatingsMode;
 
+	/** @var BrowseCategoryGroupEntry[] */
 	protected $_browseCategories;
 
 	protected $_libraries;
@@ -431,5 +432,15 @@ class BrowseCategoryGroup extends DB_LibraryLocationLinkedObject {
 			$result = true;
 		}
 		return $result;
+	}
+
+	public function loadCopyableSubObjects() {
+		$this->getBrowseCategories();
+		$index = -1;
+		foreach ($this->_browseCategories as $subObject) {
+			$subObject->id = $index;
+			$subObject->browseCategoryGroupId = $this->id;
+			$index--;
+		}
 	}
 }

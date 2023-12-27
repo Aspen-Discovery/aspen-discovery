@@ -27,11 +27,11 @@ abstract class ObjectEditor extends Admin_Admin {
 		$interface->assign('canCopy', $this->canCopy());
 		if ($this->canCopy() && $objectAction == 'copy') {
 			$copyNoteTemplate = $this->getCopyNotes();
-			require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
-			$parsedown = AspenParsedown::instance();
-			if (!file_exists(ROOT_DIR . $copyNoteTemplate)) {
+			if (empty($copyNoteTemplate) || !file_exists(ROOT_DIR . $copyNoteTemplate)) {
 				$interface->assign('copyNotes', '');
 			}else {
+				require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
+				$parsedown = AspenParsedown::instance();
 				$copyNotes = $parsedown->parse(file_get_contents(ROOT_DIR . $copyNoteTemplate));
 				$interface->assign('copyNotes', $copyNotes);
 			}
