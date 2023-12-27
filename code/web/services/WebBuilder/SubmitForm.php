@@ -68,6 +68,32 @@ class WebBuilder_SubmitForm extends Action {
 					$submission->userId = 0;
 				}
 				$submission->submission = $htmlData;
+
+
+                //Recover and save the selected values
+                $dom = new DOMDocument;
+                $dom->loadHTML($htmlData);
+                $elements = $dom->getElementsByTagName('div');
+                $count = $elements->count();
+                $submissionValues [] = 'No values';
+                for ($index = 0; $index < $count/2; $index++){
+                    $value = $elements->item($index*2+1)->textContent;
+                    $submissionValues[$index] = $value;
+                }
+                error_log("LGM SUBMISSION VALUES  : " . print_r($submissionValues,true));
+               /* for ($index = 0; $index < $count; $index+=2){
+                    $field = $elements->item($index)->textContent;
+                    $value = $elements->item($index+1)->textContent;
+                    $submissionValues[$field] = $value;
+                }*/
+
+                foreach ($submissionValues as $field => $value) {
+                    $submissionSelection = new CustomFormSubmissionSelection();
+                    $submissionSelection->formSubmissionId = $submission->id;
+                    $submissionSelection->submissionFieldId = $field;
+                    $submissionSelection->insert();
+                }
+
 				$submission->dateSubmitted = time();
 				$submission->insert();
 

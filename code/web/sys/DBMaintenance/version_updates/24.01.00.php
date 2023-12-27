@@ -105,6 +105,7 @@ function getUpdates24_01_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Stripe'))",
 			],
 		],
+
 		//permissions_ecommerce_stripe
 		'self_reg_no_duplicate_check' => [
 			'title' => 'Symphony Self Registration Duplicate Checking Toggle',
@@ -115,7 +116,21 @@ function getUpdates24_01_00(): array {
 		],
 		//self_reg_no_duplicate_check
 
-		//lucas - Theke
+        //lucas - Theke
+        'format_submissions_for_CSV' => [
+            'title' => 'Export submissions to CSV correctly',
+            'description' => 'Create table to store information about submissions responses',
+            'continueOnError' => true,
+            'sql' => [
+                'CREATE TABLE web_builder_custom_form_field_submission (
+                                      id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                      formSubmissionId INT(11) NOT NULL,
+                                      submissionFieldId INT(11) NOT NULL,
+                                      UNIQUE (formSubmissionId, submissionFieldId)
+                              ) ENGINE = InnoDB',
+
+            ]
+        ],
 
 		//alexander - PTFS Europe
 
