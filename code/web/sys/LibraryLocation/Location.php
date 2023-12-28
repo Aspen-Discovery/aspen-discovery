@@ -139,6 +139,8 @@ class Location extends DataObject {
     public $openArchivesFacetSettingId;
     public $websiteIndexingFacetSettingId;
 
+	public $locationImage;
+
 	function getNumericColumnNames(): array {
 		return [
 			'scope',
@@ -390,6 +392,18 @@ class Location extends DataObject {
 				'forcesReindex' => true,
 				'canBatchUpdate' => false,
 				'editPermissions' => ['Location Domain Settings'],
+			],
+			'locationImage' => [
+				'property' => 'locationImage',
+				'type' => 'image',
+				'label' => 'Location Image',
+				'description' => '',
+				'required' => false,
+				'thumbWidth' => 400,
+				'maxWidth' => 1170,
+				'maxHeight' => 400,
+				'hideInLists' => true,
+				'affectsLiDA' => true,
 			],
 			'createSearchInterface' => [
 				'property' => 'createSearchInterface',
@@ -2608,6 +2622,11 @@ class Location extends DataObject {
 		$apiInfo['groupedWorkDisplaySettings']['availableOnlineLabel'] = $availableOnlineLabel;
 		$apiInfo['groupedWorkDisplaySettings']['availabilityToggleValue'] = $availabilityToggleValue;
 		$apiInfo['groupedWorkDisplaySettings']['facetCountsToShow'] = $facetCountsToShow;
+
+		$apiInfo['locationImage'] = null;
+		if(isset($this->locationImage)) {
+			$apiInfo['locationImage'] = $configArray['Site']['url'] . '/files/original/' . $this->locationImage;
+		}
 
 		return $apiInfo;
 	}

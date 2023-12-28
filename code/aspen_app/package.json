@@ -74,6 +74,7 @@
     "react-native-elements": "^4.0.0-rc.2",
     "react-native-gesture-handler": "~2.9.0",
     "react-native-map-link": "^2.10.2",
+    "react-native-maps": "1.3.2",
     "react-native-modal": "^13.0.1",
     "react-native-modal-datetime-picker": "^15.0.0",
     "react-native-reanimated": "~2.14.4",
