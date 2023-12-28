@@ -33,6 +33,7 @@ class SystemVariables extends DataObject {
 	public $trackIpAddresses;
 	public $allowScheduledUpdates;
 	public $doQuickUpdates;
+	public $monitorAntivirus;
 
 
 	static function getObjectStructure($context = ''): array {
@@ -296,6 +297,13 @@ class SystemVariables extends DataObject {
 				'description' => 'Determine if IP Addresses should be tracked for each page view',
 				'default' => false,
 			],
+			'monitorAntivirus' => [
+				'property' => 'monitorAntivirus',
+				'type' => 'checkbox',
+				'label' => 'Monitor Antivirus',
+				'description' => 'Determine whether or not Antivirus logs should be monitored',
+				'default' => true,
+			]
 		];
 
 		if (!UserAccount::getActiveUserObj()->isAspenAdminUser()) {

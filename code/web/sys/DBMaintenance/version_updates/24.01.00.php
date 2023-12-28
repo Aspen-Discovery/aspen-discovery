@@ -21,6 +21,14 @@ function getUpdates24_01_00(): array {
 				'DROP TABLE IF EXISTS web_builder_menu'
 			]
 		],
+		'monitorAntivirus' => [
+			'title' => 'Add an option to allow antivirus to not be monitored',
+			'description' => 'Add an option to allow antivirus to not be monitored',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE system_variables ADD COLUMN monitorAntivirus TINYINT(1) DEFAULT 1'
+			]
+		],
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
