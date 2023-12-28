@@ -152,8 +152,8 @@ class Admin_AJAX extends JSON_Action {
 			require_once ROOT_DIR . '/sys/OpenArchives/OpenArchivesExportLogEntry.php';
 			$extractLog = new OpenArchivesExportLogEntry();
 		} elseif ($source == 'palace_project') {
-			require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectExportLogEntry.php';
-			$extractLog = new PalaceProjectExportLogEntry();
+			require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectLogEntry.php';
+			$extractLog = new PalaceProjectLogEntry();
 		} elseif ($source == 'events') {
 			require_once ROOT_DIR . '/sys/Events/EventsIndexingLogEntry.php';
 			$extractLog = new EventsIndexingLogEntry();
