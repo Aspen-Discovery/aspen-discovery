@@ -2398,7 +2398,7 @@ class CarlX extends AbstractIlsDriver {
 		$sql = <<<EOT
 			select
 				newpatronid
-			from patronidchange_v p
+			from patronidchange_v2 p
 			where oldpatronid = :searchpatronid
 			order by changetime desc 
 			-- fetch first 1 rows only
