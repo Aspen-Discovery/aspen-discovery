@@ -7,3 +7,5 @@ fi
 
 echo "Updating cron\n"
 php /usr/local/aspen-discovery/install/updateCron_24_01.php $1
+
+systemctl enable mariadb
