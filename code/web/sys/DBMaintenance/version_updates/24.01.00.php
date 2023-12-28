@@ -68,6 +68,14 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE user ADD COLUMN shouldAskBrightness TINYINT(1) DEFAULT 1 NOT NULL'
 			]
 		], //add_user_brightness_permission
+		'add_sso_updateAccount' => [
+			'title' => 'Add column to determine if contact information should be updated when logging in via SSO',
+			'description' => 'Add column to determine if contact information should be updated when logging in via SSO',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN updateAccount TINYINT(1) DEFAULT 0 NOT NULL'
+			]
+		], //add_sso_updateAccount
 
 		//kodi - ByWater
 		'add_ecommerce_stripe_settings' => [

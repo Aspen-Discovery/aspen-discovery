@@ -13,6 +13,7 @@ class SSOSetting extends DataObject {
 	public $ssoAuthOnly;
     public $forceReAuth;
 	public $restrictByIP;
+	public $updateAccount;
 
 	//oAuth
 	public $clientId;
@@ -223,6 +224,13 @@ class SSOSetting extends DataObject {
 				'description' => 'Whether or not to restrict the ability to use the SSO login by IP address.',
 				'hideInLists' => true,
 				'default' => true,
+			],
+			'updateAccount' => [
+				'property' => 'updateAccount',
+				'type' => 'checkbox',
+				'label' => 'Update users ILS account information with data from the IdP when logging in using the data mapping provided',
+				'description' => 'Whether or not users ILS account information is updated each time they log in using the data mapping provided',
+				'default' => 0,
 			],
 			'oAuthConfigSection' => [
 				'property' => 'oAuthConfigSection',
