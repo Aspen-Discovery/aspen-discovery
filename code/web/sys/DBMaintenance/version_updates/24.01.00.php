@@ -97,6 +97,16 @@ function getUpdates24_01_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Stripe'))",
 			],
 		],
+		//permissions_ecommerce_stripe
+		'self_reg_no_duplicate_check' => [
+			'title' => 'Symphony Self Registration Duplicate Checking Toggle',
+			'description' => 'Adds toggle to turn duplicate checking on or off for Symphony self registration (default is on)',
+			'sql' => [
+				"ALTER TABLE self_registration_form ADD COLUMN noDuplicateCheck TINYINT default 0",
+			],
+		],
+		//self_reg_no_duplicate_check
+
 		//lucas - Theke
 
 		//alexander - PTFS Europe
