@@ -248,7 +248,7 @@ export const MyReadingHistory = () => {
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
                                              <Button colorScheme="muted" variant="outline" onPress={onCloseDeleteAll}>
-                                                  {getTermFromDictionary(language, 'close')}
+                                                  {getTermFromDictionary(language, 'cancel')}
                                              </Button>
                                              <Button isLoading={deleting} isLoadingText={getTermFromDictionary(language, 'deleting', true)} colorScheme="danger" onPress={deleteAll} ref={cancelRef}>
                                                   {getTermFromDictionary(language, 'button_ok')}
