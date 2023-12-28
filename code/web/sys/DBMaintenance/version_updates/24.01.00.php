@@ -68,6 +68,14 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE user ADD COLUMN shouldAskBrightness TINYINT(1) DEFAULT 1 NOT NULL'
 			]
 		], //add_user_brightness_permission
+		'add_sso_updateAccount' => [
+			'title' => 'Add column to determine if contact information should be updated when logging in via SSO',
+			'description' => 'Add column to determine if contact information should be updated when logging in via SSO',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE sso_setting ADD COLUMN updateAccount TINYINT(1) DEFAULT 0 NOT NULL'
+			]
+		], //add_sso_updateAccount
 
 		//kodi - ByWater
 		'add_ecommerce_stripe_settings' => [
@@ -97,6 +105,16 @@ function getUpdates24_01_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Stripe'))",
 			],
 		],
+		//permissions_ecommerce_stripe
+		'self_reg_no_duplicate_check' => [
+			'title' => 'Symphony Self Registration Duplicate Checking Toggle',
+			'description' => 'Adds toggle to turn duplicate checking on or off for Symphony self registration (default is on)',
+			'sql' => [
+				"ALTER TABLE self_registration_form ADD COLUMN noDuplicateCheck TINYINT default 0",
+			],
+		],
+		//self_reg_no_duplicate_check
+
 		//lucas - Theke
 
 		//alexander - PTFS Europe

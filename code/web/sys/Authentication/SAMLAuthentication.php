@@ -21,6 +21,7 @@ class SAMLAuthentication{
 
 	protected bool $ssoAuthOnly = false;
     protected bool $forceReAuth = false;
+	protected bool $updateAccount = false;
 
 	/**
 	 * @throws Exception
@@ -42,6 +43,8 @@ class SAMLAuthentication{
 			} elseif(str_contains($ssoSettings->ssoUniqueAttribute, 'mail')) {
 				$this->uidAsEmail = true;
 			}
+
+			$this->updateAccount = $ssoSettings->updateAccount ?? false;
 
 			$metadata = [];
 			if($ssoSettings->ssoXmlUrl || $ssoSettings->ssoMetadataFilename) {
@@ -259,7 +262,9 @@ class SAMLAuthentication{
 		}
 
 		$user->update();
-		$user->updatePatronInfo(true);
+		if($this->updateAccount) {
+			$user->updatePatronInfo(true);
+		}
 		if(!empty($this->ilsUniqueAttribute)) {
 			$user = $catalogConnection->findUserByField($this->ilsUniqueAttribute, $this->uid);
 			if(is_string($user)) {
