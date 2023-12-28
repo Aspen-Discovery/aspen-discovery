@@ -76,6 +76,14 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE sso_setting ADD COLUMN updateAccount TINYINT(1) DEFAULT 0 NOT NULL'
 			]
 		], //add_sso_updateAccount
+		'add_location_image' => [
+			'title' => 'Add column to store image for location',
+			'description' => 'Add ability for admins to upload an image for a location',
+			'continueOnError' => false,
+			'sql' => [
+				'ALTER TABLE location ADD COLUMN locationImage VARCHAR(100) DEFAULT NULL'
+			]
+		], //add_location_image
 
 		//kodi - ByWater
 		'add_ecommerce_stripe_settings' => [
