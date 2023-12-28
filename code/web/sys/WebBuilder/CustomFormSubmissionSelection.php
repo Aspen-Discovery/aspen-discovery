@@ -32,7 +32,6 @@ class CustomFormSubmissionSelection extends DataObject {
                 $formFieldContent->id = $this->submissionFieldId;
                 if ($formFieldContent->find(true)) {
                     $this->_formFieldContent = $formFieldContent->label;
-                    error_log("LGM FORM FIELD CONTENT : " . print_r($formFieldContent->label,true));
                 } else {
                     $this->_formFieldContent = '';
                 }
