@@ -34,6 +34,18 @@ class UnsavedDataObject extends DataObject {
 		return $printableData;
 	}
 
+    function saveFields($submissionId) {
+        foreach ($this->_data as $fieldId => $value) {
+            $submissionSelection = new CustomFormSubmissionSelection();
+            $submissionSelection->formSubmissionId = $submissionId;
+            $submissionSelection->submissionFieldId = $fieldId;
+            $submissionSelection->value = $value;
+
+            $submissionSelection->insert();
+        }
+        return;
+    }
+
 	function getPrintableTextData($structure) {
 		$printableData = '';
 		foreach ($this->_data as $fieldId => $value) {

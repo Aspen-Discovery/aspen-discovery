@@ -1,11 +1,15 @@
 <?php
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
+
 class WebBuilder_SubmitForm extends Action {
 	private $form;
 
 	function launch() {
 		require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+        require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
+        require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmissionSelection.php';
+
 		$id = strip_tags($_REQUEST['id']);
 		$this->form = new CustomForm();
 		$this->form->id = $id;
@@ -43,6 +47,7 @@ class WebBuilder_SubmitForm extends Action {
 				$serializedData = new UnsavedDataObject();
 				DataObjectUtil::updateFromUI($serializedData, $structure);
 
+
 				//Convert the form values to JSON
 				if ($this->form->includeIntroductoryTextInEmail) {
 					require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
@@ -69,9 +74,10 @@ class WebBuilder_SubmitForm extends Action {
 				}
 				$submission->submission = $htmlData;
 
+                $serializedData->saveFields($submission->id);
 
                 //Recover and save the selected values
-                $dom = new DOMDocument;
+                /*$dom = new DOMDocument;
                 $dom->loadHTML($htmlData);
                 $elements = $dom->getElementsByTagName('div');
                 $count = $elements->count();
@@ -79,20 +85,21 @@ class WebBuilder_SubmitForm extends Action {
                 for ($index = 0; $index < $count/2; $index++){
                     $value = $elements->item($index*2+1)->textContent;
                     $submissionValues[$index] = $value;
-                }
-                error_log("LGM SUBMISSION VALUES  : " . print_r($submissionValues,true));
+                }*/
+
                /* for ($index = 0; $index < $count; $index+=2){
                     $field = $elements->item($index)->textContent;
                     $value = $elements->item($index+1)->textContent;
                     $submissionValues[$field] = $value;
                 }*/
 
-                foreach ($submissionValues as $field => $value) {
+                /*foreach ($submissionValues as $field => $value) {
                     $submissionSelection = new CustomFormSubmissionSelection();
                     $submissionSelection->formSubmissionId = $submission->id;
                     $submissionSelection->submissionFieldId = $field;
                     $submissionSelection->insert();
-                }
+                }*/
+
 
 				$submission->dateSubmitted = time();
 				$submission->insert();
