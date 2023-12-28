@@ -6,6 +6,7 @@
 ###################################################################
 tmp
 sites/*/backup
+sites/*.localhost
 sites/*/conf/log4j.*.properties
 sites/*/conf/passkey
 !sites/default/conf/log4j.properties
