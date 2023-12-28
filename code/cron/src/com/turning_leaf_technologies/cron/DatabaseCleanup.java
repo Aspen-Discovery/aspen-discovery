@@ -31,6 +31,8 @@ public class DatabaseCleanup implements IProcessHandler {
 
 		cleanupReadingHistory(dbConn, logger, processLog);
 
+		removeOldObjectHistory(dbConn, logger, processLog);
+
 		processLog.setFinished();
 		processLog.saveResults();
 	}
@@ -105,7 +107,7 @@ public class DatabaseCleanup implements IProcessHandler {
 
 			processLog.saveResults();
 		} catch (SQLException e) {
-			processLog.incErrors("Unable to delete old cached objects. ", e);
+			processLog.incErrors("Unable to delete old external requests. ", e);
 		}
 	}
 
@@ -310,6 +312,25 @@ public class DatabaseCleanup implements IProcessHandler {
 			processLog.saveResults();
 		} catch (SQLException e) {
 			processLog.incErrors("Unable to delete spammy searches. ", e);
+		}
+	}
+
+	private void removeOldObjectHistory(Connection dbConn, Logger logger, CronProcessLogEntry processLog) {
+		try {
+			long now = new Date().getTime() / 1000;
+			//Remove anything more than 90 days hours old
+			long removalTime = now - 90 * 24 * 60 * 60;
+			PreparedStatement removeOldObjectHistoryStmt = dbConn.prepareStatement("DELETE from object_history where changeDate <= ?");
+			removeOldObjectHistoryStmt.setLong(1, removalTime);
+
+			int rowsRemoved = removeOldObjectHistoryStmt.executeUpdate();
+
+			processLog.addNote("Removed " + rowsRemoved + " rows from object history");
+			processLog.incUpdated();
+
+			processLog.saveResults();
+		} catch (SQLException e) {
+			processLog.incErrors("Unable to delete old object history. ", e);
 		}
 	}
 
