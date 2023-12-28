@@ -667,9 +667,9 @@ EOT;
                       , itembranch.branchgroup AS SYSTEM
                       , item_v2.cn AS Call_Number
                       , bbibmap_v2.title AS Title
-                      , to_char(transitem_v2.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date
+                      , to_char(transitem_v2.duedate,'MM/DD/YYYY') AS Due_Date
                       , item_v2.price AS Owed
-                      , to_char(transitem_v2.dueornotneededafterdate,'MM/DD/YYYY') AS Due_Date_Dup
+                      , to_char(transitem_v2.duedate,'MM/DD/YYYY') AS Due_Date_Dup
                       , item_v2.item AS Item
                     from 
                       bbibmap_v2
@@ -734,7 +734,7 @@ EOT;
                     , p.patronid
                     , r.callnumber
                     , r.title
-                    , to_char(r.dueornotneededafterdate,'MM/DD/YYYY') as due
+                    , to_char(r.duedate,'MM/DD/YYYY') as due
                     , to_char(r.amountowed / 100, 'fm999D00') as owed
                     , r.item
                 from p 
