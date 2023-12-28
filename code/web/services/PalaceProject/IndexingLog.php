@@ -1,11 +1,11 @@
 <?php
 
 require_once ROOT_DIR . '/services/Admin/IndexingLog.php';
-require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectExportLogEntry.php';
+require_once ROOT_DIR . '/sys/PalaceProject/PalaceProjectLogEntry.php';
 
 class PalaceProject_IndexingLog extends Admin_IndexingLog {
 	function getIndexLogEntryObject(): BaseLogEntry {
-		return new PalaceProjectExportLogEntry();
+		return new PalaceProjectLogEntry();
 	}
 
 	function getTemplateName(): string {
@@ -21,7 +21,7 @@ class PalaceProject_IndexingLog extends Admin_IndexingLog {
 	}
 
 	function applyMinProcessedFilter(DataObject $indexingObject, $minProcessed) {
-		if ($indexingObject instanceof PalaceProjectExportLogEntry) {
+		if ($indexingObject instanceof PalaceProjectLogEntry) {
 			$indexingObject->whereAdd('numProducts >= ' . $minProcessed);
 		}
 	}

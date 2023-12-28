@@ -523,6 +523,18 @@ class SirsiDynixROA extends HorizonAPI {
 			// $addressDescribeResponse  = $this->getWebServiceResponse('addressDescribe', $webServiceURL . '/user/patron/address/describe');
 			// $userProfileDescribeResponse  = $this->getWebServiceResponse('userProfileDescribe', $webServiceURL . '/policy/userProfile/describe');
 
+			$selfRegistrationForm = null;
+			$formFields = null;
+			if ($library->selfRegistrationFormId > 0){
+				$selfRegistrationForm = new SelfRegistrationForm();
+				$selfRegistrationForm->id = $library->selfRegistrationFormId;
+				if ($selfRegistrationForm->find(true)) {
+					$formFields = $selfRegistrationForm->getFields();
+				}else {
+					$selfRegistrationForm = null;
+				}
+			}
+
 			$firstName = isset($_REQUEST['firstName']) ? trim($_REQUEST['firstName']) : '';
 			$lastName = isset($_REQUEST['lastName']) ? trim($_REQUEST['lastName']) : '';
 			if (isset($_REQUEST['dob'])){
@@ -534,9 +546,11 @@ class SirsiDynixROA extends HorizonAPI {
 			if (empty($birthDate)) {
 				$birthDate = isset($_REQUEST['birthDate']) ? trim($_REQUEST['birthDate']) : '';
 			}
-			if ($this->isDuplicatePatron($firstName, $lastName, $birthDate)) {
-				$selfRegResult['message'] = 'We have found an existing account for you. Please contact the library to access your account.';
-				return $selfRegResult;
+			if($selfRegistrationForm->noDuplicateCheck == 0){
+				if ($this->isDuplicatePatron($firstName, $lastName, $birthDate)) {
+					$selfRegResult['message'] = 'We have found an existing account for you. Please contact the library to access your account.';
+					return $selfRegResult;
+				}
 			}
 
 			$createPatronInfoParameters = [
@@ -552,18 +566,6 @@ class SirsiDynixROA extends HorizonAPI {
 				'resource' => '/policy/userProfile',
 				'key' => $library->selfRegistrationUserProfile,
 			];
-
-			$selfRegistrationForm = null;
-			$formFields = null;
-			if ($library->selfRegistrationFormId > 0){
-				$selfRegistrationForm = new SelfRegistrationForm();
-				$selfRegistrationForm->id = $library->selfRegistrationFormId;
-				if ($selfRegistrationForm->find(true)) {
-					$formFields = $selfRegistrationForm->getFields();
-				}else {
-					$selfRegistrationForm = null;
-				}
-			}
 			//$formFields = (new SelfRegistrationFormValues)->getFormFieldsInOrder($library->selfRegistrationFormId);
 
 			if ($formFields != null) {
