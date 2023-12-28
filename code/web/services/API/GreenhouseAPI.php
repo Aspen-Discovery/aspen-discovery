@@ -385,6 +385,18 @@ class GreenhouseAPI extends Action {
 		require_once ROOT_DIR . '/sys/Theming/Theme.php';
 		require_once ROOT_DIR . '/sys/AspenLiDA/LocationSetting.php';
 
+		// prep user location
+		if (isset($_GET['latitude'])) {
+			$userLatitude = $_GET['latitude'];
+		} else {
+			$userLatitude = 0;
+		}
+		if (isset($_GET['longitude'])) {
+			$userLongitude = $_GET['longitude'];
+		} else {
+			$userLongitude = 0;
+		}
+
 		$num = 0;
 		$enabledAccess = 0;
 		$releaseChannel = 0;
@@ -432,6 +444,8 @@ class GreenhouseAPI extends Action {
 						$latitude = 0;
 						$longitude = 0;
 					}
+
+					$distance = $this->findDistance($userLongitude, $userLatitude, $location->longitude, $location->latitude, $location->unit);
 
 					//TODO: We will eventually want to be able to search individual library branches in the app.
 					// i.e. for schools
@@ -488,6 +502,7 @@ class GreenhouseAPI extends Action {
 							'favicon' => $themeArray['favicon'],
 							'logo' => $themeArray['logo'],
 							'theme' => $themeArray,
+							'distance' => $distance,
 						];
 
 						$num = $num + 1;
