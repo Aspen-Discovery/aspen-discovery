@@ -65,7 +65,7 @@ class OverDriveDriver extends AbstractEContentDriver {
 				'video-wmv' => "$readerName Video",
 				'video-wmv-mobile' => "$readerName Video (mobile)",
 				'periodicals-nook' => 'NOOK Periodicals',
-				'audiobook-overdrive' => '$readerName Listen',
+				'audiobook-overdrive' => "$readerName Listen",
 				'video-streaming' => "$readerName Video",
 				'ebook-mediado' => 'MediaDo Reader',
 				'magazine-overdrive' => "$readerName Magazine",
