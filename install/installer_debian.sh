@@ -33,8 +33,6 @@ grep -q '^memory_limit = 256M' "$php_ini" || sed -Ei 's/^memory_limit = [0-9]+M/
 grep -q '^post_max_size = 75M' "$php_ini" || sed -Ei 's/^post_max_size = [0-9]+M/post_max_size = 75M/' "$php_ini"
 grep -q '^upload_max_filesize = 75M' "$php_ini" || sed -Ei 's/^upload_max_filesize = [0-9]+M/upload_max_filesize = 75M/' "$php_ini"
 
-./samlsso_installer_debian.sh
-
 # MariaDB overrides
 cp 60-aspen.cnf /etc/mysql/mariadb.conf.d/
 
