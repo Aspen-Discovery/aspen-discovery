@@ -1,12 +1,12 @@
-import { Button, Center, Modal, FormControl, Select, Heading, CheckIcon } from 'native-base';
+import _ from 'lodash';
+import { Button, Center, CheckIcon, FormControl, Heading, Modal, Select } from 'native-base';
 import React from 'react';
 import { Platform } from 'react-native';
-import { completeAction } from './Record';
 import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { refreshProfile } from '../../util/api/user';
-import _ from 'lodash';
-import { SelectVolume } from './SelectVolume';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { refreshProfile } from '../../util/api/user';
+import { completeAction } from './Record';
+import { SelectVolume } from './SelectVolume';
 
 const SelectLinkedAccount = (props) => {
      const { id, action, title, volumeInfo, prevRoute, isEContent, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
@@ -42,7 +42,11 @@ const SelectLinkedAccount = (props) => {
      const [holdType, setHoldType] = React.useState(typeOfHold);
      const [volume, setVolume] = React.useState(null);
 
-     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
+     let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
+     if (_.isNumber(user.pickupLocationId)) {
+          userPickupLocationId = _.toString(user.pickupLocationId);
+     }
+     const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
      let pickupLocation = '';
      if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
           pickupLocation = userPickupLocation[0];

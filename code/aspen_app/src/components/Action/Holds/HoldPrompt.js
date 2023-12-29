@@ -110,7 +110,11 @@ export const HoldPrompt = (props) => {
 
      const [activeAccount, setActiveAccount] = React.useState(user.id ?? '');
 
-     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
+     let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
+     if (_.isNumber(user.pickupLocationId)) {
+          userPickupLocationId = _.toString(user.pickupLocationId);
+     }
+     const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
      let pickupLocation = '';
      if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
           pickupLocation = userPickupLocation[0];
