@@ -397,6 +397,8 @@ class Evergreen extends AbstractIlsDriver {
 			if (isset($_REQUEST['phoneNotification']) && $_REQUEST['phoneNotification'] == 'on') {
 				if (isset($_REQUEST['phoneNumber']) && strlen($_REQUEST['phoneNumber']) > 0) {
 					$namedParams['phone_notify'] = $_REQUEST['phoneNumber'];
+				} elseif (isset($patron->phone) && strlen($patron->phone) > 0) {
+					$namedParams['phone_notify'] = $patron->phone;
 				}
 			}
 			if (isset($_REQUEST['smsNotification']) && $_REQUEST['smsNotification'] == 'on') {
@@ -1049,6 +1051,8 @@ class Evergreen extends AbstractIlsDriver {
 			if (isset($_REQUEST['phoneNotification']) && $_REQUEST['phoneNotification'] == 'on') {
 				if (isset($_REQUEST['phoneNumber']) && strlen($_REQUEST['phoneNumber']) > 0) {
 					$namedParams['phone_notify'] = $_REQUEST['phoneNumber'];
+				} elseif (isset($patron->phone) && strlen($patron->phone) > 0) {
+					$namedParams['phone_notify'] = $patron->phone;
 				}
 			}
 			if (isset($_REQUEST['smsNotification']) && $_REQUEST['smsNotification'] == 'on') {

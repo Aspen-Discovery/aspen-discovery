@@ -29,6 +29,13 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE system_variables ADD COLUMN monitorAntivirus TINYINT(1) DEFAULT 1'
 			]
 		],
+		'palace_project_identifier_length2' => [
+			'title' => 'Increase recordIdentifier length in grouped work records for palace project',
+			'description' => 'Increase recordIdentifier length in grouped work records for palace project',
+			'sql' => [
+				'ALTER TABLE grouped_work_records CHANGE COLUMN recordIdentifier recordIdentifier VARCHAR(125) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL'
+			],
+		], //palace_project_identifier_length
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
