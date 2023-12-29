@@ -22,13 +22,11 @@ class Donations_DonationCompleted extends Action {
 				if ($donation->find(true)) {
 					if ($userPayment->completed == true) {
 						$message = 'Your payment has been completed.';
-						$donation->sendReceiptEmail();
 					} else {
 						if (empty($userPayment->message)) {
 							$error = 'Your payment has not been marked as complete within the system, please contact the library with your receipt to have the payment credited to your account.';
 						} else {
 							$error = $userPayment->message;
-							$donation->delete();
 						}
 					}
 				} else {

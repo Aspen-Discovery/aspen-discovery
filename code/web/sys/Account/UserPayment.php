@@ -226,14 +226,29 @@ class UserPayment extends DataObject {
 					}
 
 					if ($result == 0) {
-						//Check to see if we have a donation for this payment
-						require_once ROOT_DIR . '/sys/Donations/Donation.php';
-						$donation = new Donation();
-						$donation->paymentId = $userPayment->id;
-						if ($donation->find(true)) {
-							$success = true;
-							$message = 'Your donation payment has been completed. ';
-							$userPayment->message .= "Donation payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
+						if($userPayment->transactionType == 'donation') {
+							//Check to see if we have a donation for this payment
+							require_once ROOT_DIR . '/sys/Donations/Donation.php';
+							$donation = new Donation();
+							$donation->paymentId = $userPayment->id;
+							if ($donation->find(true)) {
+								$success = true;
+								$message = translate([
+									'text' => 'Your donation payment has been completed. ',
+									'isPublicFacing' => true,
+								]);
+								$userPayment->message .= "Donation payment completed, TROUTD = $troutD, AUTHCODE = $authCode, CCNUMBER = $ccNumber. ";
+								$userPayment->completed = true;
+								$userPayment->update();
+
+								$donation->sendReceiptEmail();
+							} else {
+								$message = translate([
+									'text' => 'Unable to locate donation with given payment id %1%',
+									'isPublicFacing' => true,
+									1 => $userPayment->id,
+								]);
+							}
 						} else {
 							$user = new User();
 							$user->id = $userPayment->userId;
@@ -348,52 +363,90 @@ class UserPayment extends DataObject {
 							$userPayment->update();
 							$error = $userPayment->message;
 						} elseif ($proPayResult == 'Success') {
-							$userPayment->completed = true;
-							if ($jsonResponse == null) {
-								$userPayment->error = true;
-								$userPayment->message = 'Could not receive transaction response from ProPay.  Please visit the library with your receipt to have the fine removed from your account.';
-							} else {
-								if ($jsonResponse->Result->ResultValue == 'SUCCESS') {
+							if($userPayment->transactionType == 'donation') {
+								//Check to see if we have a donation for this payment
+								require_once ROOT_DIR . '/sys/Donations/Donation.php';
+								$donation = new Donation();
+								$donation->paymentId = $userPayment->id;
+								if ($donation->find(true)) {
 									$success = true;
-									$amountPaid = $jsonResponse->HostedTransaction->GrossAmt;
-									if ($amountPaid != (int)round($userPayment->totalPaid * 100)) {
-										$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
-										$userPayment->totalPaid = $amountPaid;
-									}
-									$user = new User();
-									$user->id = $userPayment->userId;
-									if ($user->find(true)) {
-										$finePaymentCompleted = $user->completeFinePayment($userPayment);
-										if ($finePaymentCompleted['success']) {
-											$success = true;
-											$message = translate([
-												'text' => 'Your payment has been completed. ',
-												'isPublicFacing' => true,
-											]);
+									$message = translate([
+										'text' => 'Your donation payment has been completed. ',
+										'isPublicFacing' => true,
+									]);
+									$userPayment->message .= "Donation payment completed";
+									$userPayment->completed = true;
+									if ($jsonResponse) {
+										if($jsonResponse->Result->ResultValue == 'SUCCESS') {
 											$authCode = $jsonResponse->HostedTransaction->AuthCode;
 											$netAmt = $jsonResponse->HostedTransaction->NetAmt;
 											$transactionId = $jsonResponse->HostedTransaction->TransactionId;
 											if (isset($jsonResponse->HostedTransaction->ObfuscatedAccountNumber)) {
 												$ccNumber = $jsonResponse->HostedTransaction->ObfuscatedAccountNumber;
 											} else {
-												$ccNumber = "Not provided";
+												$ccNumber = 'Not provided';
 											}
-											$userPayment->message .= "Payment completed, TransactionId = $transactionId, AuthCode = $authCode, CC Number = $ccNumber, Net Amount = $netAmt. ";
+											$userPayment->message .= ", TransactionId = $transactionId, AuthCode = $authCode, CC Number = $ccNumber, Net Amount = $netAmt. ";
+										}
+									}
+									$userPayment->update();
+
+									$donation->sendReceiptEmail();
+								} else {
+									$message = translate([
+										'text' => 'Unable to locate donation with given payment id %1%',
+										'isPublicFacing' => true,
+										1 => $userPayment->id,
+									]);
+								}
+							} else {
+								$userPayment->completed = true;
+								if ($jsonResponse == null) {
+									$userPayment->error = true;
+									$userPayment->message = 'Could not receive transaction response from ProPay.  Please visit the library with your receipt to have the fine removed from your account.';
+								} else {
+									if ($jsonResponse->Result->ResultValue == 'SUCCESS') {
+										$success = true;
+										$amountPaid = $jsonResponse->HostedTransaction->GrossAmt;
+										if ($amountPaid != (int)round($userPayment->totalPaid * 100)) {
+											$userPayment->message = "Payment amount did not match, was $userPayment->totalPaid, paid $amountPaid. ";
+											$userPayment->totalPaid = $amountPaid;
+										}
+										$user = new User();
+										$user->id = $userPayment->userId;
+										if ($user->find(true)) {
+											$finePaymentCompleted = $user->completeFinePayment($userPayment);
+											if ($finePaymentCompleted['success']) {
+												$success = true;
+												$message = translate([
+													'text' => 'Your payment has been completed. ',
+													'isPublicFacing' => true,
+												]);
+												$authCode = $jsonResponse->HostedTransaction->AuthCode;
+												$netAmt = $jsonResponse->HostedTransaction->NetAmt;
+												$transactionId = $jsonResponse->HostedTransaction->TransactionId;
+												if (isset($jsonResponse->HostedTransaction->ObfuscatedAccountNumber)) {
+													$ccNumber = $jsonResponse->HostedTransaction->ObfuscatedAccountNumber;
+												} else {
+													$ccNumber = 'Not provided';
+												}
+												$userPayment->message .= "Payment completed, TransactionId = $transactionId, AuthCode = $authCode, CC Number = $ccNumber, Net Amount = $netAmt. ";
+											} else {
+												$success = false;
+												$userPayment->error = true;
+												$userPayment->message .= $finePaymentCompleted['message'];
+											}
 										} else {
-											$success = false;
 											$userPayment->error = true;
-											$userPayment->message .= $finePaymentCompleted['message'];
+											$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
 										}
 									} else {
 										$userPayment->error = true;
-										$userPayment->message .= "Could not find user to mark the fine paid in the ILS. ";
+										$userPayment->message .= 'Payment processing failed. ' . $jsonResponse->Result->ResultMessage;
 									}
-								} else {
-									$userPayment->error = true;
-									$userPayment->message .= "Payment processing failed. " . $jsonResponse->Result->ResultMessage;
-								}
 
-								$userPayment->completed = true;
+									$userPayment->completed = true;
+								}
 							}
 						} else {
 							$userPayment->error = true;
@@ -453,15 +506,30 @@ class UserPayment extends DataObject {
 											$userPayment->totalPaid = $amountPaid;
 										}*/
 
-					//Check to see if we have a donation for this payment
-					require_once ROOT_DIR . '/sys/Donations/Donation.php';
-					$donation = new Donation();
-					$donation->paymentId = $userPayment->id;
-					if ($donation->find(true)) {
-						$success = true;
-						$message = 'Your donation payment has been completed. ';
-						$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
-					} else {
+					if($userPayment->transactionType == 'donation') {
+						//Check to see if we have a donation for this payment
+						require_once ROOT_DIR . '/sys/Donations/Donation.php';
+						$donation = new Donation();
+						$donation->paymentId = $userPayment->id;
+						if ($donation->find(true)) {
+							$success = true;
+							$message = translate([
+								'text' => 'Your donation payment has been completed. ',
+								'isPublicFacing' => true,
+							]);
+							$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+							$userPayment->completed = true;
+							$userPayment->update();
+
+							$donation->sendReceiptEmail();
+						} else {
+							$message = translate([
+								'text' => 'Unable to locate donation with given payment id %1%',
+								'isPublicFacing' => true,
+								1 => $userPayment->id,
+							]);
+						}
+					}else {
 						$user = new User();
 						$user->id = $userPayment->userId;
 						if ($user->find(true)) {
@@ -530,14 +598,29 @@ class UserPayment extends DataObject {
 						$userPayment->totalPaid = $amountPaid;
 					}
 
-					//Check to see if we have a donation for this payment
-					require_once ROOT_DIR . '/sys/Donations/Donation.php';
-					$donation = new Donation();
-					$donation->paymentId = $userPayment->id;
-					if ($donation->find(true)) {
-						$success = true;
-						$message = 'Your donation payment has been completed. ';
-						$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId";
+					if($userPayment->transactionType == 'donation') {
+						//Check to see if we have a donation for this payment
+						require_once ROOT_DIR . '/sys/Donations/Donation.php';
+						$donation = new Donation();
+						$donation->paymentId = $userPayment->id;
+						if ($donation->find(true)) {
+							$success = true;
+							$message = translate([
+								'text' => 'Your donation payment has been completed. ',
+								'isPublicFacing' => true,
+							]);
+							$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId ";
+							$userPayment->completed = true;
+							$userPayment->update();
+
+							$donation->sendReceiptEmail();
+						} else {
+							$message = translate([
+								'text' => 'Unable to locate donation with given payment id %1%',
+								'isPublicFacing' => true,
+								1 => $userPayment->id,
+							]);
+						}
 					} else {
 						$user = new User();
 						$user->id = $userPayment->userId;
@@ -612,14 +695,29 @@ class UserPayment extends DataObject {
 							$userPayment->totalPaid = $amountPaid;
 						}
 
-						//Check to see if we have a donation for this payment
-						require_once ROOT_DIR . '/sys/Donations/Donation.php';
-						$donation = new Donation();
-						$donation->paymentId = $userPayment->id;
-						if ($donation->find(true)) {
-							$success = true;
-							$message = 'Your donation payment has been completed. ';
-							$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId";
+						if($userPayment->transactionType == 'donation') {
+							//Check to see if we have a donation for this payment
+							require_once ROOT_DIR . '/sys/Donations/Donation.php';
+							$donation = new Donation();
+							$donation->paymentId = $userPayment->id;
+							if ($donation->find(true)) {
+								$success = true;
+								$message = translate([
+									'text' => 'Your donation payment has been completed. ',
+									'isPublicFacing' => true,
+								]);
+								$userPayment->message .= "Donation payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId ";
+								$userPayment->completed = true;
+								$userPayment->update();
+
+								$donation->sendReceiptEmail();
+							} else {
+								$message = translate([
+									'text' => 'Unable to locate donation with given payment id %1%',
+									'isPublicFacing' => true,
+									1 => $userPayment->id,
+								]);
+							}
 						} else {
 							$user = new User();
 							$user->id = $userPayment->userId;
@@ -631,6 +729,7 @@ class UserPayment extends DataObject {
 										'text' => 'Your payment has been completed. ',
 										'isPublicFacing' => true,
 									]);
+									$userPayment->completed = true;
 									$userPayment->message .= "Payment completed, PaymentId = $paymentId, TotalAmount = $amountPaid, TransactionId = $transactionId ";
 								} else {
 									$userPayment->error = true;
@@ -641,7 +740,6 @@ class UserPayment extends DataObject {
 								$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
 							}
 						}
-						$userPayment->completed = true;
 
 					}
 				}
@@ -690,16 +788,29 @@ class UserPayment extends DataObject {
 					$transactionId = $payload['PaymentGUID'];
 					$paymentType = $payload['PaymentTypeID'];
 
-					require_once ROOT_DIR . '/sys/Donations/Donation.php';
-					$donation = new Donation();
-					$donation->paymentId = $userPayment->id;
-					if ($donation->find(true)) {
-						$success = true;
-						$message = translate([
-							'text' => 'Your donation payment has been completed.',
-							'isPublicFacing' => true
-						]);
-						$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+					if($userPayment->transactionType == 'donation') {
+						//Check to see if we have a donation for this payment
+						require_once ROOT_DIR . '/sys/Donations/Donation.php';
+						$donation = new Donation();
+						$donation->paymentId = $userPayment->id;
+						if ($donation->find(true)) {
+							$success = true;
+							$message = translate([
+								'text' => 'Your donation payment has been completed. ',
+								'isPublicFacing' => true,
+							]);
+							$userPayment->message .= "Donation payment completed, TransactionId = $transactionId, TotalAmount = $amountPaid, PaymentType = $paymentType. ";
+							$userPayment->completed = true;
+							$userPayment->update();
+
+							$donation->sendReceiptEmail();
+						} else {
+							$message = translate([
+								'text' => 'Unable to locate donation with given payment id %1%',
+								'isPublicFacing' => true,
+								1 => $userPayment->id,
+							]);
+						}
 					} else {
 						$user = new User();
 						$user->id = $userPayment->userId;
@@ -763,24 +874,48 @@ class UserPayment extends DataObject {
 				$userPayment->totalPaid = $payload['total_amount'];
 				$userPayment->update();
 
-				$user = new User();
-				$user->id = $userPayment->userId;
-				if ($user->find(true)) {
-					$completePayment = $user->completeFinePayment($userPayment);
-					if ($completePayment['success']) {
+				if($userPayment->transactionType == 'donation') {
+					//Check to see if we have a donation for this payment
+					require_once ROOT_DIR . '/sys/Donations/Donation.php';
+					$donation = new Donation();
+					$donation->paymentId = $userPayment->id;
+					if ($donation->find(true)) {
 						$success = true;
 						$message = translate([
-							'text' => 'Your payment has been completed. ',
+							'text' => 'Your donation payment has been completed. ',
 							'isPublicFacing' => true,
 						]);
-						$userPayment->message .= "Payment completed, TransactionId = " . $payload['transaction_id'] . ", TotalAmount = " . $payload['total_amount'] . ".";
+						$userPayment->message .= 'Donation payment completed, TransactionId = ' . $payload['transaction_id'] . ', TotalAmount = ' . $payload['total_amount'] . '.';
+						$userPayment->update();
+
+						$donation->sendReceiptEmail();
 					} else {
-						$userPayment->error = true;
-						$userPayment->message .= $completePayment['message'];
+						$message = translate([
+							'text' => 'Unable to locate donation with given payment id %1%',
+							'isPublicFacing' => true,
+							1 => $userPayment->id,
+						]);
 					}
 				} else {
-					$userPayment->error = true;
-					$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+					$user = new User();
+					$user->id = $userPayment->userId;
+					if ($user->find(true)) {
+						$completePayment = $user->completeFinePayment($userPayment);
+						if ($completePayment['success']) {
+							$success = true;
+							$message = translate([
+								'text' => 'Your payment has been completed. ',
+								'isPublicFacing' => true,
+							]);
+							$userPayment->message .= 'Payment completed, TransactionId = ' . $payload['transaction_id'] . ', TotalAmount = ' . $payload['total_amount'] . '.';
+						} else {
+							$userPayment->error = true;
+							$userPayment->message .= $completePayment['message'];
+						}
+					} else {
+						$userPayment->error = true;
+						$userPayment->message .= 'Could not find user to mark the fine paid in the ILS. ';
+					}
 				}
 			}
 		}
