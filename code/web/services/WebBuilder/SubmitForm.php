@@ -75,32 +75,7 @@ class WebBuilder_SubmitForm extends Action {
 				$submission->submission = $htmlData;
 
                 $serializedData->saveFields($submission->id);
-
-                //Recover and save the selected values
-                /*$dom = new DOMDocument;
-                $dom->loadHTML($htmlData);
-                $elements = $dom->getElementsByTagName('div');
-                $count = $elements->count();
-                $submissionValues [] = 'No values';
-                for ($index = 0; $index < $count/2; $index++){
-                    $value = $elements->item($index*2+1)->textContent;
-                    $submissionValues[$index] = $value;
-                }*/
-
-               /* for ($index = 0; $index < $count; $index+=2){
-                    $field = $elements->item($index)->textContent;
-                    $value = $elements->item($index+1)->textContent;
-                    $submissionValues[$field] = $value;
-                }*/
-
-                /*foreach ($submissionValues as $field => $value) {
-                    $submissionSelection = new CustomFormSubmissionSelection();
-                    $submissionSelection->formSubmissionId = $submission->id;
-                    $submissionSelection->submissionFieldId = $field;
-                    $submissionSelection->insert();
-                }*/
-
-
+                
 				$submission->dateSubmitted = time();
 				$submission->insert();
 
@@ -139,6 +114,17 @@ class WebBuilder_SubmitForm extends Action {
 
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
 	}
+
+    function saveFields($submissionId): void {
+        foreach ($this->_data as $fieldId => $formFieldContent) {
+            $submissionSelection = new CustomFormSubmissionSelection();
+            $submissionSelection->formSubmissionId = $submissionId;
+            $submissionSelection->submissionFieldId = $fieldId;
+            $submissionSelection->formFieldContent = $formFieldContent;
+            $submissionSelection->insert();
+        }
+        return;
+    }
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];

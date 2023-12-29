@@ -5,6 +5,7 @@ class CustomFormSubmissionSelection extends DataObject {
     public $id;
     public $formSubmissionId;
     public $submissionFieldId;
+    public $formFieldContent;
 
     static function getObjectStructure($context = ''): array {
         return [
@@ -23,21 +24,5 @@ class CustomFormSubmissionSelection extends DataObject {
             ],
         ];
 
-    }
-    private $_formFieldContent;
-    public function __get($name) {
-        if ($name == 'formFieldContent') {
-            if ($this->_formFieldContent == null) {
-                $formFieldContent = new CustomFormField();
-                $formFieldContent->id = $this->submissionFieldId;
-                if ($formFieldContent->find(true)) {
-                    $this->_formFieldContent = $formFieldContent->label;
-                } else {
-                    $this->_formFieldContent = '';
-                }
-            }
-            return $this->_formFieldContent;
-        }
-        return parent::__get($name);
     }
 }
