@@ -85,7 +85,11 @@ export const MyLibrary = () => {
                     {showSystemMessage()}
                     {library.displayName !== location.displayName ? <Heading mb={2}>{location.displayName}</Heading> : <Heading mb={1}>{library.displayName}</Heading>}
                     {location.address ? <Text>{location.address}</Text> : null}
-                    {location.phone ? <Text>Phone: {location.phone}</Text> : null}
+                    {location.phone ? (
+                         <Text>
+                              {getTermFromDictionary(language, 'phone')}: {location.phone}
+                         </Text>
+                    ) : null}
                     <Text mt={4} mb={2}>
                          <Badge colorScheme={isClosedToday ? 'error' : 'success'}>{hoursLabel}</Badge>
                     </Text>
