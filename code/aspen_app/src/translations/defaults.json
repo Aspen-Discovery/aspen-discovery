@@ -86,10 +86,10 @@
   "call_num": "Call #",
   "today_hours": "Today's Hours",
   "note": "Note",
-  "call_the_library": "Call the Library",
-  "email_a_librarian": "Email a Librarian",
-  "get_directions": "Get Directions",
-  "visit_our_website": "Visit Our Website",
+  "call_the_library": "Call Library",
+  "email_a_librarian": "Email Library",
+  "get_directions": "Directions",
+  "visit_our_website": "Visit Website",
   "closed": "Closed",
   "account_summary": "Account Summary",
   "library_card": "Library Card",
@@ -433,5 +433,11 @@
   "forgot_barcode_success_body_1": "If you do not receive an text within a few minutes, please contact your library to have them retrieve your barcode.",
   "send_my_barcode": "Send My %1%",
   "phone_number": "Phone Number",
-  "fines": "Fines"
+  "fines": "Fines",
+  "location_closed": "Closed",
+  "location_closed_until": "Closed until %1%",
+  "location_open_until": "Open until %1%",
+  "additional_information": "Additional Information",
+  "library_hours": "Hours",
+  "my_library": "My Library"
 }
