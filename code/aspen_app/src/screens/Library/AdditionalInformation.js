@@ -4,7 +4,7 @@ import { LanguageContext, LibraryBranchContext } from '../../context/initialCont
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 // custom components and helper files
-import { stripHTML } from '../../util/apiAuth';
+import { decodeHTML, stripHTML } from '../../util/apiAuth';
 
 const AdditionalInformation = () => {
      const { location } = React.useContext(LibraryBranchContext);
@@ -15,7 +15,7 @@ const AdditionalInformation = () => {
                <Box>
                     <Divider mb={2} />
                     <Heading mb={2}>{getTermFromDictionary(language, 'additional_information')}</Heading>
-                    <Text>{stripHTML(location.description)}</Text>
+                    <Text>{stripHTML(decodeHTML(location.description))}</Text>
                </Box>
           );
      }
