@@ -3,6 +3,7 @@
 
 class UnsavedDataObject extends DataObject {
 	function __get($name) {
+
 		return $this->_data[$name] ?? null;
 	}
 
@@ -33,6 +34,17 @@ class UnsavedDataObject extends DataObject {
 		}
 		return $printableData;
 	}
+
+    function getAllData($structure){
+        $formFields = [];
+        foreach ($this->_data as $fieldId => $value) {
+            $fieldLabel = $structure[$fieldId]['label'];
+            $formFields[$fieldLabel] = $value;
+        }
+
+        error_log("LGM DATA : " . print_r($formFields,true));
+        return $formFields;
+    }
 
 	function getPrintableTextData($structure) {
 		$printableData = '';

@@ -171,7 +171,7 @@ function getUpdates24_01_00(): array {
                                       submissionFieldId INT(11) NOT NULL,
                                       UNIQUE (formSubmissionId, submissionFieldId)
                               ) ENGINE = InnoDB',
-
+                'ALTER TABLE web_builder_custom_form_field_submission ADD COLUMN formFieldContent VARCHAR(255)',
             ]
         ],
         //format_submissions_for_CSV

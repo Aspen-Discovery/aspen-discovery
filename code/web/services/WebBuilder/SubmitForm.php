@@ -47,7 +47,6 @@ class WebBuilder_SubmitForm extends Action {
 				$serializedData = new UnsavedDataObject();
 				DataObjectUtil::updateFromUI($serializedData, $structure);
 
-
 				//Convert the form values to JSON
 				if ($this->form->includeIntroductoryTextInEmail) {
 					require_once ROOT_DIR . '/sys/Parsedown/AspenParsedown.php';
@@ -60,6 +59,7 @@ class WebBuilder_SubmitForm extends Action {
 					$introText = '';
 				}
 				$htmlData .= $serializedData->getPrintableHtmlData($structure);
+                $data = $serializedData->getAllData($structure);
 
 				//Save the form values to the database
 				global $library;
@@ -72,11 +72,10 @@ class WebBuilder_SubmitForm extends Action {
 				} else {
 					$submission->userId = 0;
 				}
-				$submission->submission = $htmlData;
 
-                $serializedData->saveFields($submission->id);
-                
-				$submission->dateSubmitted = time();
+                $this->saveFieldsContent($data,$submission->id);
+                $submission->submission = $htmlData;
+                $submission->dateSubmitted = time();
 				$submission->insert();
 
 				if (!empty($this->form->emailResultsTo)) {
@@ -115,15 +114,14 @@ class WebBuilder_SubmitForm extends Action {
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
 	}
 
-    function saveFields($submissionId): void {
-        foreach ($this->_data as $fieldId => $formFieldContent) {
+    function saveFieldsContent($data,$submissionId): void {
+        foreach ($data as $fieldId => $formFieldContent) {
             $submissionSelection = new CustomFormSubmissionSelection();
             $submissionSelection->formSubmissionId = $submissionId;
             $submissionSelection->submissionFieldId = $fieldId;
             $submissionSelection->formFieldContent = $formFieldContent;
             $submissionSelection->insert();
         }
-        return;
     }
 
 	function getBreadcrumbs(): array {
