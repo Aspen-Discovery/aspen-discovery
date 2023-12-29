@@ -1,9 +1,11 @@
 package com.turning_leaf_technologies.overdrive;
 
+import java.util.HashSet;
+
 class AdvantageCollectionInfo {
 	private int advantageId;
 	private String collectionToken;
-	private long aspenLibraryId = 0;
+	private HashSet<Long> aspenLibraryIds = new HashSet<>();
 	private String name;
 
 	int getAdvantageId() {
@@ -22,12 +24,12 @@ class AdvantageCollectionInfo {
 		this.collectionToken = collectionToken;
 	}
 
-	long getAspenLibraryId() {
-		return aspenLibraryId;
+	HashSet<Long> getAspenLibraryIds() {
+		return aspenLibraryIds;
 	}
 
-	void setAspenLibraryId(long aspenLibraryId) {
-		this.aspenLibraryId = aspenLibraryId;
+	void addAspenLibraryId(long aspenLibraryId) {
+		this.aspenLibraryIds.add(aspenLibraryId);
 	}
 
 	String getName() {
