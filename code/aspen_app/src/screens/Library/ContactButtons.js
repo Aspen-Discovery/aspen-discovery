@@ -1,7 +1,7 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
-import { Box, Button, Center, Icon, useColorModeValue } from 'native-base';
+import { Box, Button, Center, Icon, useColorModeValue, useToken } from 'native-base';
 import React from 'react';
 import { showLocation } from 'react-native-map-link';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
@@ -15,28 +15,41 @@ const ContactButtons = () => {
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
 
-     const callLibrary = (data) => {
+     const backgroundColor = useToken('colors', useColorModeValue('warmGray.200', 'coolGray.900'));
+     const textColor = useToken('colors', useColorModeValue('gray.800', 'coolGray.200'));
+
+     const callLibrary = () => {
           /* location.phone */
-          const phoneNumber = `tel:${data}`;
+          const phoneNumber = `tel:${location.phone}`;
           Linking.openURL(phoneNumber);
      };
 
-     const emailLibrary = (data) => {
+     const emailLibrary = () => {
           /* location.email */
-          const emailAddress = `mailto:${data}`;
+          const emailAddress = `mailto:${location.email}`;
           Linking.openURL(emailAddress);
      };
 
-     const visitWebsite = async (url) => {
+     const visitWebsite = async () => {
           /* location.homeLink */
-          if (url === '/') {
-               WebBrowser.openBrowserAsync(library.baseUrl);
+
+          const browserParams = {
+               enableDefaultShareMenuItem: false,
+               presentationStyle: 'popover',
+               showTitle: false,
+               toolbarColor: backgroundColor,
+               controlsColor: textColor,
+               secondaryToolbarColor: backgroundColor,
+          };
+
+          if (location.homeLink === '/') {
+               WebBrowser.openBrowserAsync(library.baseUrl, browserParams);
           } else {
-               WebBrowser.openBrowserAsync(url);
+               WebBrowser.openBrowserAsync(location.homeLink, browserParams);
           }
      };
 
-     const getDirections = async (locationLatitude, locationLongitude) => {
+     const getDirections = async () => {
           /* location.latitude & location.longitude */
           if (PATRON.coords.lat && PATRON.coords.long && PATRON.coords.lat !== 0 && PATRON.coords.long !== 0) {
                showLocation({
@@ -62,6 +75,7 @@ const ContactButtons = () => {
                          {location.phone ? (
                               <Button
                                    width="23%"
+                                   onPress={() => callLibrary()}
                                    _text={{
                                         padding: 0,
                                         textAlign: 'center',
@@ -82,6 +96,7 @@ const ContactButtons = () => {
                          {location.email ? (
                               <Button
                                    width="23%"
+                                   onPress={() => emailLibrary()}
                                    _text={{
                                         padding: 0,
                                         textAlign: 'center',
@@ -102,6 +117,7 @@ const ContactButtons = () => {
                          {location.latitude !== 0 ? (
                               <Button
                                    width="23%"
+                                   onPress={() => getDirections()}
                                    _text={{
                                         padding: 0,
                                         textAlign: 'center',
@@ -122,6 +138,7 @@ const ContactButtons = () => {
                          {location.homeLink ? (
                               <Button
                                    width="23%"
+                                   onPress={() => visitWebsite()}
                                    _text={{
                                         padding: 0,
                                         textAlign: 'center',
