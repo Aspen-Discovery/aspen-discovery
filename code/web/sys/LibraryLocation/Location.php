@@ -2552,6 +2552,7 @@ class Location extends DataObject {
 	}
 
 	public function getApiInfo(): array {
+		global $configArray;
 		$parentLibrary = $this->getParentLibrary();
 		$apiInfo = [
 			'locationId' => $this->locationId,
