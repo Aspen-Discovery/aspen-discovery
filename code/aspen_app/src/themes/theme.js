@@ -2,13 +2,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'apisauce';
 import chroma from 'chroma-js';
+import { LinearGradient } from 'expo-linear-gradient';
 import _ from 'lodash';
-import { extendTheme, Box, Icon, IconButton, useColorMode, useColorModeValue, StorageManager, ColorMode } from 'native-base';
+import { Box, extendTheme, Icon, IconButton, useColorMode, useColorModeValue } from 'native-base';
 import React, { useState } from 'react';
 
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
 import { GLOBALS } from '../util/globals';
-import { getAppSettings, getLibraryInfo } from '../util/loadLibrary';
+import { getAppSettings } from '../util/loadLibrary';
 
 export async function getThemeData() {
      let theme = [];
@@ -155,7 +156,7 @@ function generateSwatches(swatch) {
 }
 
 export async function createTheme(colorMode) {
-     console.log("createTheme: " + colorMode);
+     console.log('createTheme: ' + colorMode);
      const response = await getThemeInfo();
      const theme = extendTheme({
           colors: {
@@ -167,6 +168,9 @@ export async function createTheme(colorMode) {
                useAccessibleColors: true,
                useSystemColorMode: false,
                initialColorMode: colorMode,
+               dependencies: {
+                    'linear-gradient': LinearGradient,
+               },
           },
      });
      console.log('Theme created and saved.');
@@ -174,13 +178,13 @@ export async function createTheme(colorMode) {
 }
 
 export async function saveTheme(response) {
-     if(response) {
+     if (response) {
           const primaryColors = ['primaryColors', JSON.stringify(response.colors.primary)];
           const secondaryColors = ['secondaryColors', JSON.stringify(response.colors.secondary)];
           const tertiaryColors = ['tertiaryColors', JSON.stringify(response.colors.tertiary)];
 
           try {
-               await AsyncStorage.multiSet([primaryColors, secondaryColors, tertiaryColors]).then(r => {
+               await AsyncStorage.multiSet([primaryColors, secondaryColors, tertiaryColors]).then((r) => {
                     console.log('Essential colors stored in async storage in theme.js');
                });
           } catch (e) {
@@ -213,9 +217,9 @@ export function UseColorMode() {
 
      const switchColorMode = async () => {
           toggleColorMode();
-          console.log("Set colorMode to: " + colorMode);
+          console.log('Set colorMode to: ' + colorMode);
           await AsyncStorage.setItem('@colorMode', colorMode);
-     }
+     };
 
      return (
           <Box alignItems="center">
