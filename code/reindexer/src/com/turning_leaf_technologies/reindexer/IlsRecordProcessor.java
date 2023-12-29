@@ -943,7 +943,12 @@ abstract class IlsRecordProcessor extends MarcRecordProcessor {
 		ItemInfo itemInfo = new ItemInfo();
 
 		//Load base information from the Marc Record
-		itemInfo.setItemIdentifier(getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField));
+		String itemIdentifier = getItemSubfieldData(itemRecordNumberSubfieldIndicator, itemField);
+		if (itemIdentifier == null) {
+			suppressionNotes.append("Invalid item with no item number was suppressed.</br>");
+			return new ItemInfoWithNotes(null, suppressionNotes);
+		}
+		itemInfo.setItemIdentifier(itemIdentifier);
 
 		String itemStatus = getItemStatus(itemField, recordInfo.getRecordIdentifier());
 		if (statusesToSuppress.contains(itemStatus)){
