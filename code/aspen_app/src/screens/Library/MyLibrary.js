@@ -36,7 +36,11 @@ export const MyLibrary = () => {
 
      let isClosedToday = false;
      let hoursLabel = '';
+     let hasHours = false;
      if (location.hours) {
+          if (_.size(location.hours) > 0) {
+               hasHours = true;
+          }
           const day = moment().day();
           if (_.find(location.hours, _.matchesProperty('day', day))) {
                let todaysHours = _.filter(location.hours, { day: day });
@@ -90,12 +94,14 @@ export const MyLibrary = () => {
                               {getTermFromDictionary(language, 'phone')}: {location.phone}
                          </Text>
                     ) : null}
-                    <Text mt={4} mb={2}>
-                         <Badge colorScheme={isClosedToday ? 'error' : 'success'}>{hoursLabel}</Badge>
-                    </Text>
+                    {hasHours ? (
+                         <Text mt={4} mb={2}>
+                              <Badge colorScheme={isClosedToday ? 'error' : 'success'}>{hoursLabel}</Badge>
+                         </Text>
+                    ) : null}
                     <DisplayMap />
                     <ContactButtons />
-                    <Hours />
+                    {hasHours ? <Hours /> : null}
                     <AdditionalInformation />
                </Box>
           </ScrollView>
