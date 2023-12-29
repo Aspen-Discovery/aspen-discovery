@@ -11,7 +11,7 @@
 	{/if}
 	<div>
 		<label for="phoneNotification">
-			<input type="checkbox" id="phoneNotification" name="phoneNotification" {if !empty($opac_default_phone) && in_array('phone', $opac_hold_notify)}checked{/if}> {translate text="Yes, by phone" isPublicFacing=true}
+			<input type="checkbox" id="phoneNotification" name="phoneNotification" {if in_array('phone', $opac_hold_notify)}checked{/if}> {translate text="Yes, by phone" isPublicFacing=true}
 		</label>
 		<div class="form-group">
 			<label class="control-label" for="phoneNumber">{translate text="Phone Number" isPublicFacing=true}</label>
