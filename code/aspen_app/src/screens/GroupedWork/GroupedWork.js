@@ -132,7 +132,7 @@ const DisplayGroupedWork = (payload) => {
      return (
           <Box safeArea={5} w="100%">
                <Center mt={5} width="100%">
-                    <Image resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} shadow={3} style={{ borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
+                    <Image resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} style={{ borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>
