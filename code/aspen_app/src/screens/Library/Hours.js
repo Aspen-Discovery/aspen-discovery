@@ -1,0 +1,65 @@
+import _ from 'lodash';
+import { Box, FlatList, Heading, HStack, Text, VStack } from 'native-base';
+import React from 'react';
+
+// custom components and helper files
+import { LanguageContext, LibraryBranchContext } from '../../context/initialContext';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+
+const Hours = () => {
+     const { language } = React.useContext(LanguageContext);
+     const { location } = React.useContext(LibraryBranchContext);
+
+     /* location.hours */
+
+     if (location.showInLocationsAndHoursList === '1' || location.showInLocationsAndHoursList === 1) {
+          if (_.isArrayLikeObject(location.hours)) {
+               return (
+                    <Box>
+                         <Heading mb={2}>{getTermFromDictionary(language, 'library_hours')}</Heading>
+                         <FlatList data={location.hours} renderItem={({ item }) => <Day hours={item} />} />
+                    </Box>
+               );
+          }
+     }
+
+     return null;
+};
+
+const Day = (data) => {
+     const { language } = React.useContext(LanguageContext);
+     const hours = data.hours;
+
+     function formatTime(time) {
+          const stringTime = 'December 31, 1979 ' + time + ':00';
+          const date = new Date(stringTime);
+          const options = {
+               hour: 'numeric',
+               minute: 'numeric',
+               hour12: true,
+          };
+          return date.toLocaleString('en-US', options);
+     }
+
+     return (
+          <VStack mb={2}>
+               <HStack justifyContent="space-between">
+                    <Text bold>{hours.dayName}</Text>
+                    {!hours.isClosed ? (
+                         <Text>
+                              {formatTime(hours.open)} - {formatTime(hours.close)}
+                         </Text>
+                    ) : (
+                         <Text>{getTermFromDictionary(language, 'location_closed')}</Text>
+                    )}
+               </HStack>
+               {hours.notes !== '' ? (
+                    <Text fontSize="xs" italic>
+                         {hours.notes}
+                    </Text>
+               ) : null}
+          </VStack>
+     );
+};
+
+export default Hours;

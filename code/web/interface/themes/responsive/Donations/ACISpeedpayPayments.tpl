@@ -100,7 +100,7 @@
 							handler.createToken()
 								.then((tokenDetails) =>
 								{ldelim}
-									var paymentId = AspenDiscovery.Account.createACIOrder('#fines{$userId}', 'donation', tokenDetails.token.id, '{$accessToken}');
+									var paymentId = AspenDiscovery.Account.createACIOrder('#donation{$userId}', 'donation', tokenDetails.token.id, '{$accessToken}');
 									return AspenDiscovery.Account.completeACIOrder(tokenDetails.token.id, {$userId}, 'donation', paymentId, '{$accessToken}', '{$billerAccountId}');
                                     {rdelim})
 								.catch((error) =>

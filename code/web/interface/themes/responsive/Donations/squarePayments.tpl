@@ -20,7 +20,7 @@
               async function tokenize(paymentMethod) {ldelim}
                 const tokenResult = await paymentMethod.tokenize();
                 if (tokenResult.status === 'OK') {ldelim}
-                  AspenDiscovery.Account.createSquareOrder('#fines{$userId}', 'donation', tokenResult.token);
+                  AspenDiscovery.Account.createSquareOrder('#donation{$userId}', 'donation', tokenResult.token);
                   return tokenResult.token;
                 {rdelim} else {ldelim}
                   let errorMessage = `Tokenization failed.`;

@@ -4706,6 +4706,7 @@ class MyAccount_AJAX extends JSON_Action {
 		if ($transactionType == 'donation') {
 			$payment->completed = 1;
 			$payment->update();
+			$donation->sendReceiptEmail();
 			return [
 				'success' => true,
 				'isDonation' => true,
@@ -4881,6 +4882,7 @@ class MyAccount_AJAX extends JSON_Action {
 							$payment->transactionId = $paymentResults->id;
 							$payment->orderId = $paymentResults->order_id;
 							$payment->update();
+							$donation->sendReceiptEmail();
 							return [
 								'success' => true,
 								'isDonation' => true,
@@ -5061,6 +5063,7 @@ class MyAccount_AJAX extends JSON_Action {
 							$payment->transactionId = $paymentResults->id;
 							$payment->orderId = $paymentResults->order_id;
 							$payment->update();
+							$donation->sendReceiptEmail();
 							return [
 								'success' => true,
 								'isDonation' => true,

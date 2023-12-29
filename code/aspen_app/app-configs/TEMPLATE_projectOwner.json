@@ -11,5 +11,7 @@
   "googleServiceKeyPath": "",
   "greenhouseUrl": "",
   "language": "",
-  "country": ""
+  "country": "",
+  "googleApiKeyAndroid": "",
+  "googleApiKeyApple": ""
 }

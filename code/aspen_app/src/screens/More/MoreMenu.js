@@ -2,49 +2,27 @@ import { Entypo, MaterialIcons } from '@expo/vector-icons';
 import { ListItem } from '@rneui/themed';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
+import moment from 'moment';
 import { Box, Divider, FlatList, HStack, Icon, Pressable, Text, useColorModeValue, useContrastText, useToken, VStack } from 'native-base';
 import React from 'react';
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext } from '../../context/initialContext';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { GLOBALS } from '../../util/globals';
 import { LIBRARY } from '../../util/loadLibrary';
 
 export const MoreMenu = () => {
-     const { user } = React.useContext(UserContext);
-     const { library, menu } = React.useContext(LibrarySystemContext);
-     const { location } = React.useContext(LibraryBranchContext);
-     const { language } = React.useContext(LanguageContext);
-
-     const contrastTextColor = useToken('colors', useContrastText('primary.400'));
+     const { menu } = React.useContext(LibrarySystemContext);
+     const hasMenuItems = _.size(menu);
 
      return (
           <Box>
                <VStack space="4" my="2" mx="1">
-                    <Box m="4" bg="primary.400" p="6" rounded="xl">
-                         <Pressable display="flex" flexDirection="row" onPress={() => navigate('Contact')} space="1" alignItems="center" justifyContent="space-between">
-                              <VStack>
-                                   <Text bold fontSize="16" maxW="90%" color={contrastTextColor}>
-                                        {library.displayName}
-                                   </Text>
-                                   {library.displayName !== location.displayName ? (
-                                        <Text bold maxW="90%" color={contrastTextColor}>
-                                             {location.displayName}
-                                        </Text>
-                                   ) : null}
-                                   {location.hoursMessage ? (
-                                        <Text maxW="90%" color={contrastTextColor}>
-                                             {location.hoursMessage}
-                                        </Text>
-                                   ) : null}
-                              </VStack>
-                              <Icon as={MaterialIcons} name="chevron-right" size="7" color={contrastTextColor} />
-                         </Pressable>
-                    </Box>
+                    <MyLibrary />
                     <Divider />
 
                     <VStack divider={<Divider />} space="4">
-                         <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} />
+                         {hasMenuItems > 0 ? <FlatList data={Object.keys(menu)} renderItem={({ item }) => <MenuLink links={menu[item]} />} /> : null}
                          <VStack space="3">
                               <VStack>
                                    <Settings />
@@ -53,6 +31,71 @@ export const MoreMenu = () => {
                          </VStack>
                     </VStack>
                </VStack>
+          </Box>
+     );
+};
+
+const MyLibrary = () => {
+     const { library } = React.useContext(LibrarySystemContext);
+     const { location } = React.useContext(LibraryBranchContext);
+     const { language } = React.useContext(LanguageContext);
+
+     const contrastTextColor = useToken('colors', useContrastText('primary.400'));
+
+     let isClosedToday = false;
+     let hoursLabel = '';
+     if (location.hours) {
+          const day = moment().day();
+          if (_.find(location.hours, _.matchesProperty('day', day))) {
+               let todaysHours = _.filter(location.hours, { day: day });
+               if (todaysHours[0]) {
+                    todaysHours = todaysHours[0];
+                    if (todaysHours.isClosed) {
+                         isClosedToday = true;
+                         hoursLabel = getTermFromDictionary(language, 'location_closed');
+                    } else {
+                         const closingText = todaysHours.close;
+                         const time1 = closingText.split(':');
+                         const openingText = todaysHours.open;
+                         const time2 = openingText.split(':');
+                         const closeTime = moment().set({ hour: time1[0], minute: time1[1] });
+                         const openTime = moment().set({ hour: time2[0], minute: time2[1] });
+                         const nowTime = moment();
+                         const stillOpen = moment(nowTime).isBefore(closeTime);
+                         const stillClosed = moment(openTime).isBefore(nowTime);
+                         if (!stillOpen) {
+                              isClosedToday = true;
+                              hoursLabel = getTermFromDictionary(language, 'location_closed');
+                         }
+                         if (!stillClosed) {
+                              isClosedToday = true;
+                              let openingTime = moment(openTime).format('h:mm A');
+                              hoursLabel = 'Closed until ' + openingTime;
+                         } else {
+                              let closingTime = moment(closeTime).format('h:mm A');
+                              hoursLabel = 'Open until ' + closingTime;
+                         }
+                    }
+               }
+          }
+     }
+
+     return (
+          <Box m="4" bg="primary.400" p="6" rounded="xl">
+               <Pressable display="flex" flexDirection="row" onPress={() => navigate('MyLibrary')} space="1" alignItems="center" justifyContent="space-between">
+                    <VStack>
+                         <Text bold fontSize="16" color={contrastTextColor}>
+                              {library.displayName}
+                         </Text>
+                         {library.displayName !== location.displayName ? (
+                              <Text bold color={contrastTextColor}>
+                                   {location.displayName}
+                              </Text>
+                         ) : null}
+                         {hoursLabel ? <Text color={contrastTextColor}>{hoursLabel}</Text> : null}
+                    </VStack>
+                    <Icon as={MaterialIcons} name="chevron-right" size="7" color={contrastTextColor} />
+               </Pressable>
           </Box>
      );
 };

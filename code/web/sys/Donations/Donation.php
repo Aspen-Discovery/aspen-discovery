@@ -387,36 +387,37 @@ class Donation extends DataObject {
 		return $availableDedicationTypes;
 	}
 
-	function sendReceiptEmail() {
-		$donationReceipt = new Donation();
-		$donationReceipt->id = $this->id;
-		if ($donationReceipt->find(true)) {
-			if ($donationReceipt->sendEmailToUser == 1 && $this->email) {
-				require_once ROOT_DIR . '/sys/Email/Mailer.php';
-				$mail = new Mailer();
+	public function sendReceiptEmail() {
+		if ($this->sendEmailToUser == 1 && $this->email) {
+			require_once ROOT_DIR . '/sys/Email/Mailer.php';
+			$mail = new Mailer();
 
-				$replyToAddress = '';
+			$replyToAddress = '';
 
-				$body = '*****This is an auto-generated email response. Please do not reply.*****';
+			$body = '*****This is an auto-generated email response. Please do not reply.*****';
 
-				require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
-				$donationSettings = new DonationsSetting();
-				$donationSettings->id = $donationReceipt->donationSettingId;
-				if ($donationSettings->find(true)) {
-					$emailTemplate = $donationSettings->donationEmailTemplate;
-					$body .= "\r\n\r\n" . $emailTemplate;
-				}
+			require_once ROOT_DIR . '/sys/ECommerce/DonationsSetting.php';
+			$donationSettings = new DonationsSetting();
+			$donationSettings->id = $this->donationSettingId;
+			if ($donationSettings->find(true)) {
+				$emailTemplate = $donationSettings->donationEmailTemplate;
+				$body .= "\r\n\r\n" . $emailTemplate;
+			}
 
-				$error = $mail->send($this->email, translate([
-					'text' => "Your Donation Receipt",
-					'isPublicFacing' => true,
-				]), $body, $replyToAddress);
-				if (($error instanceof AspenError)) {
-					global $interface;
-					$interface->assign('error', $error->getMessage());
-				}
+			$error = $mail->send($this->email, translate([
+				'text' => 'Your Donation Receipt',
+				'isPublicFacing' => true,
+			]), $body, $replyToAddress);
+			if (($error instanceof AspenError)) {
+				global $interface;
+				$interface->assign('error', $error->getMessage());
+			} else {
+				$this->sendEmailToUser = 0;
+				$this->update();
+				return true;
 			}
 		}
+		return false;
 	}
 
 	function getPaymentProcessor(): array {
