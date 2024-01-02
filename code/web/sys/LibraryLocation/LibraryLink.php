@@ -326,9 +326,11 @@ class LibraryLink extends DataObject {
 		}
 		//Check to see if the library link is valid based on the language
 		global $activeLanguage;
-		$validLanguages = $this->getLanguages();
-		if (!in_array($activeLanguage->id, $validLanguages)) {
-			return false;
+		if ($activeLanguage != null) {
+			$validLanguages = $this->getLanguages();
+			if (!in_array($activeLanguage->id, $validLanguages)) {
+				return false;
+			}
 		}
 		if ($this->showToLoggedInUsersOnly) {
 			if (UserAccount::isLoggedIn()) {
