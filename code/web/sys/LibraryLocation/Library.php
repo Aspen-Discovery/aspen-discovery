@@ -175,6 +175,11 @@ class Library extends DataObject {
 	public $selfRegistrationPasswordNotes;
 	public $selfRegistrationUrl;
 	public $selfRegistrationLocationRestrictions;
+
+	public $enableCardRenewal;
+	public $showCardRenewalWhenExpirationIsClose;
+	public $cardRenewalUrl;
+
 	public $promptForBirthDateInSelfReg;
 	public $promptForParentInSelfReg;
 	public $promptForSMSNoticesInSelfReg;
@@ -839,10 +844,20 @@ class Library extends DataObject {
 		];
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
-		if ($quipuECardSettings->find(true)) {
+		if ($quipuECardSettings->find(true) && $quipuECardSettings->hasECard) {
 			$validSelfRegistrationOptions[3] = 'Quipu eCARD';
 		}
 
+		$validCardRenewalOptions = [
+			0 => 'No Card Renewal',
+			//1 => 'ILS Based Card Renewal',
+			2 => 'Redirect to Card Renewal URL',
+		];
+		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+		$quipuECardSettings = new QuipuECardSetting();
+		if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+			$validCardRenewalOptions[3] = 'Quipu eRenewal';
+		}
 
 		/** @noinspection HtmlRequiredAltAttribute */
 		/** @noinspection RequiredAttributes */
@@ -2418,6 +2433,38 @@ class Library extends DataObject {
 								'hideInLists' => true,
 							],
 						]
+					],
+					'cardRenewalSection' => [
+						'property' => 'cardRenewalSection',
+						'type' => 'section',
+						'label' => 'Card Renewal',
+						'hideInLists' => true,
+						'permissions' => ['Library Registration'],
+						'properties' => [
+							'enableCardRenewal' => [
+								'property' => 'enableCardRenewal',
+								'type' => 'enum',
+								'values' => $validCardRenewalOptions,
+								'label' => 'Enable Card Renewal',
+								'description' => 'Whether or not patrons can renew their library card',
+								'hideInLists' => true,
+							],
+							'showCardRenewalWhenExpirationIsClose' => [
+								'property' => 'showCardRenewalWhenExpirationIsClose',
+								'type' => 'checkbox',
+								'label' => 'Show Card Renewal when expiration is close',
+								'description' => 'Indicates if card renewal can be done before the card is expired',
+								'hideInLists' => true,
+								'default' => 1
+							],
+							'cardRenewalUrl' => [
+								'property' => 'cardRenewalUrl',
+								'type' => 'url',
+								'label' => 'Card Renewal URL',
+								'description' => 'An external URL where users can renew their card',
+								'hideInLists' => true,
+							],
+						],
 					],
 					'masqueradeModeSection' => [
 						'property' => 'masqueradeModeSection',

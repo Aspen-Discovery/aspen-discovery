@@ -36,6 +36,23 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE grouped_work_records CHANGE COLUMN recordIdentifier recordIdentifier VARCHAR(125) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL'
 			],
 		], //palace_project_identifier_length
+		'card_renewal_options' => [
+			'title' => 'Card renewal options',
+			'description' => 'Add options to configure card renewal',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN enableCardRenewal TINYINT(1) DEFAULT 0',
+				'ALTER TABLE library ADD COLUMN showCardRenewalWhenExpirationIsClose TINYINT(1) DEFAULT 1',
+				'ALTER TABLE library add COLUMN cardRenewalUrl VARCHAR(255)',
+			],
+		], //card_renewal_options
+		'quipu_e_renew' => [
+			'title' => 'Quipu eRenew',
+			'description' => 'Add options to allow eRenew to be enabled or disabled',
+			'sql' => [
+				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasECard TINYINT(1) DEFAULT 1',
+				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasERenew TINYINT(1) DEFAULT 0',
+			],
+		], //quipu_e_renew
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [

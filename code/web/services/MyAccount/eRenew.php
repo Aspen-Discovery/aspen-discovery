@@ -2,26 +2,26 @@
 
 require_once ROOT_DIR . "/Action.php";
 
-class eCARD extends Action {
+class eRenew extends Action {
 	public function launch() {
 		global $interface;
 
 		require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 		$quipuECardSettings = new QuipuECardSetting();
-		if ($quipuECardSettings->find(true) && $quipuECardSettings->hasECard) {
+		if ($quipuECardSettings->find(true)) {
 			$interface->assign('eCardSettings', $quipuECardSettings);
 		} else {
 			$interface->assign('eCardSettings', null);
 		}
 		global $library;
-		$interface->assign('selfRegistrationFormMessage', $library->selfRegistrationFormMessage);
+		//$interface->assign('selfRegistrationFormMessage', $library->selfRegistrationFormMessage);
 
-		$this->display('quipuECard.tpl', 'Register for a Library Card', '');
+		$this->display('quipuERenew.tpl', 'Renew Your Library Card', '');
 	}
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
-		$breadcrumbs[] = new Breadcrumb('', 'Register for a Library Card');
+		$breadcrumbs[] = new Breadcrumb('', 'Renew Your Library Card');
 		return $breadcrumbs;
 	}
 }
