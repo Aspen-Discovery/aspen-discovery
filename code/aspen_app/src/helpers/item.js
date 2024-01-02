@@ -31,10 +31,13 @@ export const getTitle = (title) => {
                <Text
                     bold
                     mb={1}
+                    pr={3}
                     fontSize={{
                          base: 'sm',
                          lg: 'lg',
-                    }}>
+                    }}
+                    maxW="100%"
+                    flexWrap="wrap">
                     {displayTitle}
                </Text>
           );
@@ -66,6 +69,8 @@ export const getAuthor = (author) => {
 
           return (
                <Text
+                    maxW="100%"
+                    flexWrap="wrap"
                     fontSize={{
                          base: 'xs',
                          lg: 'sm',
@@ -234,6 +239,8 @@ export const getCheckedOutTo = (props) => {
      if (user.id !== checkedOutTo) {
           return (
                <Text
+                    maxW="100%"
+                    flexWrap="wrap"
                     fontSize={{
                          base: 'xs',
                          lg: 'sm',
