@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { Box, useColorModeValue } from 'native-base';
 import React from 'react';
 import { Platform } from 'react-native';
@@ -252,7 +253,9 @@ const DisplayMap = () => {
           }
      }, [mapRef]);
 
-     if (location.latitude !== 0 && location.longitude !== 0) {
+     if (_.isNumber(location.latitude) && location.latitude !== 0 && location.longitude !== 0) {
+          console.log(location.latitude);
+          console.log(location.longitude);
           return (
                <Box pt={2} pb={2}>
                     <MapView
@@ -262,8 +265,8 @@ const DisplayMap = () => {
                          provider={PROVIDER_GOOGLE}
                          camera={{
                               center: {
-                                   latitude: location.latitude,
-                                   longitude: location.longitude,
+                                   latitude: latitude,
+                                   longitude: longitude,
                                    latitudeDelta: 0.01,
                                    longitudeDelta: 0.01,
                               },
@@ -281,8 +284,8 @@ const DisplayMap = () => {
                          style={{ height: 180, width: '100%' }}>
                          <Marker
                               coordinate={{
-                                   latitude: location.latitude,
-                                   longitude: location.longitude,
+                                   latitude: latitude,
+                                   longitude: longitude,
                               }}
                               title={location.displayName}
                               description={location.address}
