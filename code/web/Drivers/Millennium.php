@@ -1243,6 +1243,10 @@ class Millennium extends AbstractIlsDriver {
 					$newList->title = $title;
 					if (!$newList->find(true)) {
 						$newList->insert();
+					} elseif ($newList->deleted == 1) {
+						$newList->removeAllListEntries(true);
+						$newList->deleted = 0;
+						$newList->update();
 					}
 
 					$currentListTitles = $newList->getListTitles();
