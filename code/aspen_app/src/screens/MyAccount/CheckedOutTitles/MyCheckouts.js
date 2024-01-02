@@ -435,16 +435,17 @@ const Checkout = (props) => {
           renewMessage = checkout.renewError;
      }
 
-     const imageUrl = checkout.coverUrl;
+     const key = 'medium_' + checkout.groupedWorkId;
+     let url = library.baseUrl + '/bookcover.php?id=' + checkout.fullId + '&size=medium';
 
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3} maxW="75%">
                     <CachedImage
-                         cacheKey={checkout.groupedWorkId}
+                         cacheKey={key}
                          alt={checkout.title}
                          source={{
-                              uri: `${imageUrl}`,
+                              uri: `${url}`,
                               expiresIn: 86400,
                          }}
                          style={{
@@ -487,6 +488,9 @@ const Checkout = (props) => {
                               <Text
                                    fontSize="18"
                                    color="gray.500"
+                                   maxW="100%"
+                                   flexWrap="wrap"
+                                   isTruncated
                                    _dark={{
                                         color: 'gray.300',
                                    }}>
@@ -503,6 +507,8 @@ const Checkout = (props) => {
                          </Actionsheet.Item>
                          {renewMessage ? (
                               <Actionsheet.Item
+                                   maxW="100%"
+                                   isTruncated
                                    isDisabled={canRenew}
                                    isLoading={renewing}
                                    isLoadingText={getTermFromDictionary(language, 'renewing', true)}
@@ -536,7 +542,7 @@ const Checkout = (props) => {
                                         });
                                    }}
                                    startIcon={<Icon as={MaterialIcons} name="autorenew" color="trueGray.400" mr="1" size="6" />}>
-                                   {renewMessage}
+                                   {stripHTML(renewMessage)}
                               </Actionsheet.Item>
                          ) : null}
                          {checkout.source === 'overdrive' ? (

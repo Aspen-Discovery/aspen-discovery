@@ -74,7 +74,7 @@ const DisplayResult = (data) => {
           recordType = item.recordtype;
      }
      const imageUrl = library.baseUrl + '/bookcover.php?id=' + item.id + '&size=medium&type=' + recordType;
-
+     const key = 'medium_' + item.id;
      const handlePressItem = () => {
           if (item) {
                if (recordType === 'list') {
@@ -112,7 +112,7 @@ const DisplayResult = (data) => {
                <HStack space={3}>
                     <VStack maxW="30%">
                          <CachedImage
-                              cacheKey={item.id}
+                              cacheKey={key}
                               alt={item.title_display}
                               source={{
                                    uri: `${imageUrl}`,

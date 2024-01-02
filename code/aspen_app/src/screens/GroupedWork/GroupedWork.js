@@ -2,6 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 import _ from 'lodash';
 import { AlertDialog, Box, Button, Center, HStack, Icon, Image, ScrollView, Text, useToken } from 'native-base';
 import React, { Component, useEffect } from 'react';
@@ -129,10 +130,12 @@ const DisplayGroupedWork = (payload) => {
           }),
      });
 
+     const key = 'large_' + groupedWork.id;
+
      return (
           <Box safeArea={5} w="100%">
                <Center mt={5} width="100%">
-                    <Image resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover }} w={{ base: 200, lg: 300 }} h={{ base: 250, lg: 350 }} style={{ borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
+                    <CachedImage cacheKey={key} resizeMethod="scale" resizeMode="contain" alt={groupedWork.title} source={{ uri: groupedWork.cover, expiresIn: 86400 }} style={{ width: 200, height: 250, borderRadius: 4, resizeMode: 'contain', overlayColor: backgroundColor }} />
                     {getTitle(groupedWork.title)}
                     {getAuthor(groupedWork.author)}
                </Center>

@@ -263,6 +263,8 @@ export const DiscoverHomeScreen = () => {
                isNew = item.isNew;
           }
 
+          const key = 'medium_' + item.id;
+
           return (
                <Pressable
                     ml={1}
@@ -284,7 +286,7 @@ export const DiscoverHomeScreen = () => {
                          </Container>
                     ) : null}
                     <CachedImage
-                         cacheKey={item.id}
+                         cacheKey={key}
                          alt={item.title_display}
                          source={{
                               uri: `${imageUrl}`,

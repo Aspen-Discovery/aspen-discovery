@@ -1,17 +1,17 @@
-import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
-import { formatDiscoveryVersion } from '../../../util/loadLibrary';
-import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
-import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
-import { SelectThawDate } from './SelectThawDate.js';
-import { SelectPickupLocation } from './SelectPickupLocation';
-import _ from 'lodash';
-import React from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { Actionsheet, Box, Button, Center, Icon, Pressable, Text, HStack, VStack, Image, Checkbox, useDisclose } from 'native-base';
 import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
+import { Actionsheet, Box, Button, Center, Checkbox, HStack, Icon, Pressable, Text, useDisclose, VStack } from 'native-base';
+import React from 'react';
+import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { getAuthor, getBadge, getCleanTitle, getExpirationDate, getFormat, getOnHoldFor, getPickupLocation, getPosition, getStatus, getTitle, getType } from '../../../helpers/item';
 import { navigateStack } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
-import CachedImage from 'expo-cached-image';
+import { cancelHold, cancelHolds, cancelVdxRequest, thawHold, thawHolds } from '../../../util/accountActions';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+import { SelectPickupLocation } from './SelectPickupLocation';
+import { SelectThawDate } from './SelectThawDate.js';
 
 export const MyHold = (props) => {
      const hold = props.data;
@@ -37,6 +37,7 @@ export const MyHold = (props) => {
                     });
                }
           }
+
           fetchTranslations();
      }, [language]);
 
@@ -102,15 +103,19 @@ export const MyHold = (props) => {
      };
 
      const initializeLeftColumn = () => {
-          const imageUrl = hold.coverUrl;
+          const key = 'medium_' + hold.groupedWorkId;
           if (hold.coverUrl && hold.source !== 'vdx') {
+               let url = library.baseUrl + '/bookcover.php?id=' + hold.source + ':' + hold.id + '&size=medium';
+               if (hold.upc) {
+                    url = url + '&upc=' + hold.upc;
+               }
                return (
                     <VStack>
                          <CachedImage
-                              cacheKey={hold.groupedWorkId}
+                              cacheKey={key}
                               alt={hold.title}
                               source={{
-                                   uri: `${imageUrl}`,
+                                   uri: `${url}`,
                                    expiresIn: 86400,
                               }}
                               style={{

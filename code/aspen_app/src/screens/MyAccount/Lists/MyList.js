@@ -1,23 +1,23 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import _ from 'lodash';
-import { Box, Button, FlatList, HStack, Icon, Image, Pressable, Text, VStack, ScrollView, FormControl, CheckIcon, Select } from 'native-base';
-import React from 'react';
-import { Platform, SafeAreaView } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
+import { Box, Button, CheckIcon, FlatList, FormControl, HStack, Icon, Pressable, ScrollView, Select, Text, VStack } from 'native-base';
+import React from 'react';
+import { Platform, SafeAreaView } from 'react-native';
+import { loadError } from '../../../components/loadError';
 
 // custom components and helper files
 import { loadingSpinner } from '../../../components/loadingSpinner';
-import EditList from './EditList';
-import { useRoute } from '@react-navigation/native';
-import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { getListTitles, removeTitlesFromList } from '../../../util/api/list';
-import { navigateStack } from '../../../helpers/RootNavigator';
-import { getCleanTitle } from '../../../helpers/item';
-import { loadError } from '../../../components/loadError';
-import { formatDiscoveryVersion } from '../../../util/loadLibrary';
-import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
 import { DisplaySystemMessage } from '../../../components/Notifications';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { getCleanTitle } from '../../../helpers/item';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getTermFromDictionary, getTranslationsWithValues } from '../../../translations/TranslationService';
+import { getListTitles, removeTitlesFromList } from '../../../util/api/list';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+import EditList from './EditList';
 
 export const MyList = () => {
      const providedList = useRoute().params.details;
@@ -67,6 +67,7 @@ export const MyList = () => {
                     setSortBy(tmp);
                }
           }
+
           fetchTranslations();
      }, [language]);
 
@@ -109,12 +110,13 @@ export const MyList = () => {
 
      const renderItem = (item) => {
           const imageUrl = item.image;
+          const key = 'medium_' + item.id;
           return (
                <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={() => handleOpenItem(item.id, item.title)}>
                     <HStack space={3}>
                          <VStack maxW="35%">
                               <CachedImage
-                                   cacheKey={item.id}
+                                   cacheKey={key}
                                    alt={item.title}
                                    source={{
                                         uri: `${imageUrl}`,

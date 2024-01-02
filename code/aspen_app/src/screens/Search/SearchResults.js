@@ -237,15 +237,18 @@ const DisplayResult = (data) => {
 
      const imageUrl = item.image;
 
+     const key = 'medium_' + item.key;
+     let url = library.baseUrl + '/bookcover.php?id=' + item.key + '&size=medium';
+
      return (
           <Pressable borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2" onPress={handlePressItem}>
                <HStack space={3}>
                     <VStack maxW="35%">
                          <CachedImage
-                              cacheKey={item.key}
+                              cacheKey={key}
                               alt={item.title}
                               source={{
-                                   uri: `${imageUrl}`,
+                                   uri: `${url}`,
                                    expiresIn: 86400,
                               }}
                               style={{
