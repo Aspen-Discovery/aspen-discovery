@@ -63,10 +63,10 @@ class WebBuilder_SubmitForm extends Action {
 
 				//Save the form values to the database
 				global $library;
-				require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
 				$submission = new CustomFormSubmission();
 				$submission->formId = $this->form->id;
 				$submission->libraryId = $library->libraryId;
+
 				if (UserAccount::isLoggedIn()) {
 					$submission->userId = UserAccount::getActiveUserId();
 				} else {
@@ -114,10 +114,11 @@ class WebBuilder_SubmitForm extends Action {
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
 	}
 
-    function saveFieldsContent($data,$submissionId): void {
+    function saveFieldsContent($data,$formSubmissionId): void {
         foreach ($data as $fieldId => $formFieldContent) {
             $submissionSelection = new CustomFormSubmissionSelection();
-            $submissionSelection->formSubmissionId = $submissionId;
+            $submissionSelection->formSubmissionId = $formSubmissionId;
+            error_log("LGM SUBMISSION ID : " . print_r($submissionSelection->formSubmissionId,true));
             $submissionSelection->submissionFieldId = $fieldId;
             $submissionSelection->formFieldContent = $formFieldContent;
             $submissionSelection->insert();
