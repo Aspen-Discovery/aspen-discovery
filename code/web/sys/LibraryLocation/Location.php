@@ -2555,17 +2555,17 @@ class Location extends DataObject {
 		global $configArray;
 		$parentLibrary = $this->getParentLibrary();
 		$apiInfo = [
-			'locationId' => $this->locationId,
+			'locationId' => (int)$this->locationId,
 			'isMainBranch' => (bool)$this->isMainBranch,
 			'displayName' => $this->displayName,
 			'address' => $this->address,
-			'latitude' => $this->latitude,
-			'longitude' => $this->longitude,
+			'latitude' => (int)$this->latitude,
+			'longitude' => (int)$this->longitude,
 			'phone' => $this->phone,
             'secondaryPhone' => $this->secondaryPhoneNumber,
 			'tty' => $this->tty,
 			'description' => $this->description,
-			'vdxFormId' => $this->vdxFormId,
+			'vdxFormId' => (int)$this->vdxFormId,
 			'vdxLocation' => $this->vdxLocation,
 			'showInLocationsAndHoursList' => (string)$this->showInLocationsAndHoursList,
 			'hoursMessage' => Location::getLibraryHoursMessage($this->locationId),
