@@ -10,6 +10,7 @@ class eRenew extends Action {
 		$quipuECardSettings = new QuipuECardSetting();
 		if ($quipuECardSettings->find(true)) {
 			$interface->assign('eCardSettings', $quipuECardSettings);
+			$interface->assign('patronId', UserAccount::getActiveUserId());
 		} else {
 			$interface->assign('eCardSettings', null);
 		}
