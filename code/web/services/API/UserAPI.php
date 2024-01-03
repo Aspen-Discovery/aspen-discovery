@@ -87,7 +87,8 @@ class UserAPI extends Action {
 					'enableAccountLinking',
 					'validateSession',
 					'prepareSharedSession',
-					'updateScreenBrightnessStatus'
+					'updateScreenBrightnessStatus',
+					'validateUserCredentials'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -542,6 +543,20 @@ class UserAPI extends Action {
 		}
 		return ['success' => false, 'message' => 'Unable to validate user'];
 	}
+
+	/**
+	 * Returns if the provided user credentials are still valid, i.e. after a password or barcode has been changed in the ILS or on Aspen Discovery.
+	 *
+	 * @noinspection PhpUnused
+	 */
+	function validateUserCredentials() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			return ['valid' => true];
+		}
+		return ['valid' => false];
+	}
+
 
 	/**
 	 * Validate the user for the incoming shared session
