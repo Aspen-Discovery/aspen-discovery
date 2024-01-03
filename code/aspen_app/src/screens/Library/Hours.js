@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import moment from 'moment';
 import { Box, FlatList, Heading, HStack, Text, VStack } from 'native-base';
 import React from 'react';
 
@@ -31,14 +32,9 @@ const Day = (data) => {
      const hours = data.hours;
 
      function formatTime(time) {
-          const stringTime = 'December 31, 1979 ' + time + ':00';
-          const date = new Date(stringTime);
-          const options = {
-               hour: 'numeric',
-               minute: 'numeric',
-               hour12: true,
-          };
-          return date.toLocaleString('en-US', options);
+          let arr = time.split(':');
+          let timeString = moment().set({ hour: arr[0], minute: arr[1] });
+          return moment(timeString).format('h:mm A');
      }
 
      return (

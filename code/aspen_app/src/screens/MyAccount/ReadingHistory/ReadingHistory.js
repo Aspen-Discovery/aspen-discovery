@@ -384,15 +384,18 @@ const Item = (data) => {
      };
 
      const imageUrl = library.baseUrl + encodeURI(item.coverUrl);
+     ///bookcover.php?id=af5d146c-d9d8-130b-9857-03d4126be9fd-eng&size=small&type=grouped_work&category=Books"
+     const key = 'medium_' + item.permanentId;
+     let url = library.baseUrl + '/bookcover.php?id=' + item.permanentId + '&size=medium';
      return (
           <Pressable onPress={toggle} borderBottomWidth="1" _dark={{ borderColor: 'gray.600' }} borderColor="coolGray.200" pl="4" pr="5" py="2">
                <HStack space={3}>
                     <VStack maxW="30%">
                          <CachedImage
-                              cacheKey={item.permanentId}
+                              cacheKey={key}
                               alt={item.title}
                               source={{
-                                   uri: `${imageUrl}`,
+                                   uri: `${url}`,
                                    expiresIn: 86400,
                               }}
                               style={{

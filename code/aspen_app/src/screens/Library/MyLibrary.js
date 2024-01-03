@@ -1,9 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
+import CachedImage from 'expo-cached-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import _ from 'lodash';
 import moment from 'moment';
-import { Badge, Box, Heading, Image, ScrollView, Text, useColorModeValue, useToken } from 'native-base';
+import { Badge, Box, Heading, ScrollView, Text, useColorModeValue, useToken } from 'native-base';
 import React from 'react';
+
 import { DisplaySystemMessage } from '../../components/Notifications';
 import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
@@ -77,12 +79,42 @@ export const MyLibrary = () => {
           }
      }
 
+     const key = 'location_' + location.locationId;
+
      return (
           <ScrollView>
                {location.locationImage ? (
                     <>
                          <LinearGradient height={200} width="100%" locations={[0.45, 1]} colors={['transparent', bgColor]} zIndex={0} position="absolute" left={0} top={0} />
-                         <Image source={{ uri: location.locationImage }} h={{ base: 200 }} w="100%" zIndex={-1} position="absolute" left={0} top={0} alt={location.displayName} resizeMode="cover" />
+                         <CachedImage
+                              cacheKey={key}
+                              alt={location.displayName}
+                              source={{ uri: location.locationImage, expiresIn: 86400 }}
+                              resizeMode="cover"
+                              style={{
+                                   width: '100%',
+                                   height: 200,
+                                   borderRadius: 4,
+                                   zIndex: -1,
+                                   position: 'absolute',
+                                   left: 0,
+                                   top: 0,
+                              }}
+                              placeholderContent={
+                                   <Box
+                                        bg={bgColor}
+                                        _dark={{
+                                             bgColor: 'coolGray.800',
+                                        }}
+                                        width={{
+                                             base: '100%',
+                                        }}
+                                        height={{
+                                             base: 200,
+                                        }}
+                                   />
+                              }
+                         />
                     </>
                ) : null}
                <Box safeArea={5} mt={location.locationImage ? 40 : 0}>

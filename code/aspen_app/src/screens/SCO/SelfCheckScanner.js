@@ -26,7 +26,37 @@ export default function SelfCheckScanner() {
           const barcodeStyles = selfCheckSettings.barcodeStyles;
           allowedBarcodes = [];
           _.map(barcodeStyles, function (item, index, collection) {
-               allowedBarcodes = _.concat(barcodeStyles, 'BarCodeScanner.Constants.BarCodeType.' + item);
+               if (item === 'aztec') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.aztec);
+               } else if (item === 'codabar') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.codabar);
+               } else if (item === 'code39') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.code39);
+               } else if (item === 'code93') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.code93);
+               } else if (item === 'code128') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.code128);
+               } else if (item === 'datamatrix') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.datamatrix);
+               } else if (item === 'ean13') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.ean13);
+               } else if (item === 'ean8') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.ean8);
+               } else if (item === 'itf14') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.itf14);
+               } else if (item === 'pdf417') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.pdf417);
+               } else if (item === 'upc_e') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.upc_e);
+               } else if (item === 'upc_a') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.upc_a);
+               } else if (item === 'upc_ean') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.upc_ean);
+               } else if (item === 'qr') {
+                    allowedBarcodes = _.concat(allowedBarcodes, BarCodeScanner.Constants.BarCodeType.qr);
+               } else {
+                    // invalid or unexpected value
+               }
           });
      }
 

@@ -118,6 +118,9 @@ const app_config = {
                NSMicrophoneUsageDescription: 'This app uses your microphone when scanning barcodes when searching for items in the library catalog',
           },
           jsEngine: 'jsc',
+          config: {
+               googleMapsApiKey: owner['googleApiKeyApple'],
+          },
      },
      android: {
           allowBackup: false,
@@ -130,6 +133,11 @@ const app_config = {
           },
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appIcon&slug=' + app['slug'],
           googleServicesFile: './google-services.json',
+          config: {
+               googleMaps: {
+                    apiKey: owner['googleApiKeyAndroid'],
+               },
+          },
      },
      notification: {
           icon: app['discoveryUrl'] + 'API/SystemAPI?method=getLogoFile&themeId=' + app['themeId'] + '&type=appNotification&slug=' + app['slug'],
