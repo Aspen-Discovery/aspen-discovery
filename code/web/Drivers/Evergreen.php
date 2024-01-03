@@ -1442,6 +1442,14 @@ class Evergreen extends AbstractIlsDriver {
 
 		$firstName = $userData['first_given_name'];
 		$lastName = $userData['family_name'];
+
+		//Handle preferred name
+		if (!empty($userData['pref_first_given_name'])) {
+			$firstName = $userData['pref_first_given_name'];
+		}
+		if (!empty($userData['pref_family_name'])) {
+			$firstName = $userData['pref_family_name'];
+		}
 		$user->_fullname = $lastName . ',' . $firstName;
 		$forceDisplayNameUpdate = false;
 		if ($user->firstname != $firstName) {
@@ -2243,5 +2251,87 @@ class Evergreen extends AbstractIlsDriver {
 	// therefore we will disable masquerade with just  username.
 	public function supportsLoginWithUsername() : bool {
 		return false;
+	}
+
+	public function loadContactInformation(User $user) {
+		$staffSessionInfo = $this->getStaffUserInfo();
+		if ($staffSessionInfo !== false) {
+			$evergreenUrl = $this->accountProfile->patronApiUrl . '/osrf-gateway-v1';
+			$headers = [
+				'Content-Type: application/x-www-form-urlencoded',
+			];
+			$this->apiCurlWrapper->addCustomHeaders($headers, false);
+			$request = 'service=open-ils.actor&method=open-ils.actor.user.fleshed.retrieve_by_barcode';
+			$request .= '&param=' . json_encode($staffSessionInfo['authToken']);
+			$request .= '&param=' . json_encode($user->getBarcode());
+
+			$apiResponse = $this->apiCurlWrapper->curlPostPage($evergreenUrl, $request);
+
+			if ($this->apiCurlWrapper->getResponseCode() == 200) {
+				$apiResponse = json_decode($apiResponse);
+				if (isset($apiResponse->payload) && isset($apiResponse->payload[0]->__p)) {
+					if ($apiResponse->payload[0]->__c == 'au') { //class
+						$mappedPatronData = $this->mapEvergreenFields($apiResponse->payload[0]->__p, $this->fetchIdl('au')); //payload
+
+						$primaryAddress = reset($mappedPatronData['addresses']);
+						if (!empty($primaryAddress)) {
+							$primaryAddress = $this->mapEvergreenFields($primaryAddress->__p, $this->fetchIdl($primaryAddress->__c));
+							$user->_address1 = $primaryAddress['street1'];
+							$user->_address2 = $primaryAddress['street2'];
+							$user->_city = $primaryAddress['city'];
+							$user->_state = $primaryAddress['state'];
+							$user->_zip = $primaryAddress['post_code'];
+						}
+
+						$user->_preferredName = '';
+						if (!empty($mappedPatronData['pref_prefix'])) {
+							$user->_preferredName .= $mappedPatronData['pref_prefix'] . ' ';
+						}
+						$user->_preferredName .= $mappedPatronData['pref_first_given_name'];
+						if (!empty($mappedPatronData['pref_second_given_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['pref_second_given_name'];
+						}
+						if (!empty($mappedPatronData['pref_family_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['pref_family_name'];
+						}
+						if (!empty($mappedPatronData['pref_suffix'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['pref_suffix'];
+						}
+						$user->_preferredName = trim($user->_preferredName);
+
+						if (!empty($mappedPatronData['prefix'])) {
+							$user->_fullname .= $mappedPatronData['prefix'] . ' ';
+						}
+						$user->_fullname .= $mappedPatronData['first_given_name'];
+						if (!empty($mappedPatronData['second_given_name'])) {
+							$user->_fullname .= ' ' . $mappedPatronData['second_given_name'];
+						}
+						if (!empty($mappedPatronData['family_name'])) {
+							$user->_fullname .= ' ' . $mappedPatronData['family_name'];
+						}
+						if (!empty($mappedPatronData['suffix'])) {
+							$user->_fullname .= ' ' . $mappedPatronData['suffix'];
+						}
+						$user->_fullname = trim($user->_fullname);
+
+						if (!empty($mappedPatronData['expire_date'])) {
+							$expireTime = $mappedPatronData['expire_date'];
+							$expireTime = strtotime($expireTime);
+							$user->_expires = date('n-j-Y', $expireTime);
+							if (!empty($user->_expires)) {
+								$timeNow = time();
+								$timeToExpire = $expireTime - $timeNow;
+								if ($timeToExpire <= 30 * 24 * 60 * 60) {
+									if ($timeToExpire <= 0) {
+										$user->_expired = 1;
+									}
+									$user->_expireClose = 1;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 }
