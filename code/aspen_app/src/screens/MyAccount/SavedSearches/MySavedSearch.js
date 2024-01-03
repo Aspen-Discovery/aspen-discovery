@@ -1,22 +1,21 @@
-import { useIsFocused, useRoute } from '@react-navigation/native';
-import _ from 'lodash';
-import { Badge, Box, FlatList, Container, Pressable, Text, Stack, HStack, VStack, Image, Center } from 'native-base';
-import React from 'react';
-import { SafeAreaView } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
+import _ from 'lodash';
+import { Badge, Box, Center, Container, FlatList, HStack, Pressable, Stack, Text, VStack } from 'native-base';
+import React from 'react';
+import { SafeAreaView } from 'react-native';
+import { loadError } from '../../../components/loadError';
 
 // custom components and helper files
-import { loadingSpinner } from '../../../components/loadingSpinner';
-import AddToList from '../../Search/AddToList';
-import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
-import { navigateStack } from '../../../helpers/RootNavigator';
-import { getCleanTitle } from '../../../helpers/item';
-import { formatDiscoveryVersion } from '../../../util/loadLibrary';
-import { getSavedSearch } from '../../../util/api/user';
-import { loadError } from '../../../components/loadError';
-import { getTermFromDictionary } from '../../../translations/TranslationService';
 import { DisplaySystemMessage } from '../../../components/Notifications';
+import { LanguageContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../../context/initialContext';
+import { getCleanTitle } from '../../../helpers/item';
+import { navigateStack } from '../../../helpers/RootNavigator';
+import { getTermFromDictionary } from '../../../translations/TranslationService';
+import { getSavedSearch } from '../../../util/api/user';
+import { formatDiscoveryVersion } from '../../../util/loadLibrary';
+import AddToList from '../../Search/AddToList';
 
 export const MySavedSearch = () => {
      const route = useRoute();
@@ -70,6 +69,8 @@ const SavedSearch = (data) => {
      const { language } = React.useContext(LanguageContext);
 
      const imageUrl = library.baseUrl + item.image;
+     const key = 'medium_' + item.id;
+
      let formats = [];
      if (item.format) {
           formats = getFormats(item.format);
@@ -107,7 +108,7 @@ const SavedSearch = (data) => {
                               </Container>
                          ) : null}
                          <CachedImage
-                              cacheKey={item.id}
+                              cacheKey={key}
                               alt={item.title}
                               source={{
                                    uri: `${imageUrl}`,

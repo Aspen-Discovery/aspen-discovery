@@ -378,7 +378,7 @@ export const UserProvider = ({ children }) => {
                          setAspenToken(true);
 
                          if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (deviceSettings[0].onboardStatus) {
+                              if (!_.isUndefined(deviceSettings[0].onboardStatus)) {
                                    setNotificationOnboard(deviceSettings[0].onboardStatus);
                               }
                          } else {
@@ -395,7 +395,7 @@ export const UserProvider = ({ children }) => {
 
                          const deviceSettings = _.filter(data, { device: 'Unknown' });
                          if (deviceSettings && _.isObject(deviceSettings)) {
-                              if (deviceSettings[0].onboardStatus) {
+                              if (!_.isUndefined(deviceSettings[0].onboardStatus)) {
                                    setNotificationOnboard(deviceSettings[0].onboardStatus);
                               }
                          }

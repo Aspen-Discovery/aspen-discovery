@@ -52,7 +52,9 @@ export const MyHolds = () => {
 
      useQuery(['holds', user.id, library.baseUrl, language, readySortMethod, pendingSortMethod, holdSource], () => getPatronHolds(readySortMethod, pendingSortMethod, holdSource, library.baseUrl, true, language), {
           onSuccess: (data) => {
-               updateHolds(data);
+               if (data !== holds) {
+                    updateHolds(data);
+               }
                setLoading(false);
           },
      });
