@@ -73,10 +73,12 @@ class WebBuilder_SubmitForm extends Action {
 					$submission->userId = 0;
 				}
 
-                $this->saveFieldsContent($data,$submission->id);
                 $submission->submission = $htmlData;
                 $submission->dateSubmitted = time();
 				$submission->insert();
+
+                //Save form fields content to the database
+                $this->saveFieldsContent($data,$submission->id);
 
 				if (!empty($this->form->emailResultsTo)) {
 					global $interface;
@@ -115,10 +117,10 @@ class WebBuilder_SubmitForm extends Action {
 	}
 
     function saveFieldsContent($data,$formSubmissionId): void {
-        foreach ($data as $fieldId => $formFieldContent) {
+        $dataValues = array_values($data);
+        foreach ($dataValues as $fieldId => $formFieldContent) {
             $submissionSelection = new CustomFormSubmissionSelection();
             $submissionSelection->formSubmissionId = $formSubmissionId;
-            error_log("LGM SUBMISSION ID : " . print_r($submissionSelection->formSubmissionId,true));
             $submissionSelection->submissionFieldId = $fieldId;
             $submissionSelection->formFieldContent = $formFieldContent;
             $submissionSelection->insert();

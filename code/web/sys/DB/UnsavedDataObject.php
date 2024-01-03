@@ -41,8 +41,6 @@ class UnsavedDataObject extends DataObject {
             $fieldLabel = $structure[$fieldId]['label'];
             $formFields[$fieldLabel] = $value;
         }
-
-        error_log("LGM DATA : " . print_r($formFields,true));
         return $formFields;
     }
 
