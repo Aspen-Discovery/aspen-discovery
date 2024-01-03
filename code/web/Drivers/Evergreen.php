@@ -2294,16 +2294,28 @@ class Evergreen extends AbstractIlsDriver {
 						$user->_preferredName = '';
 						if (!empty($mappedPatronData['pref_prefix'])) {
 							$user->_preferredName .= $mappedPatronData['pref_prefix'] . ' ';
+						}elseif (!empty($mappedPatronData['prefix'])) {
+							$user->_preferredName .= $mappedPatronData['prefix'] . ' ';
 						}
-						$user->_preferredName .= $mappedPatronData['pref_first_given_name'];
+						if (!empty($mappedPatronData['pref_first_given_name'])) {
+							$user->_preferredName .= $mappedPatronData['pref_first_given_name'];
+						}elseif (!empty($mappedPatronData['first_given_name'])) {
+							$user->_preferredName .= $mappedPatronData['first_given_name'];
+						}
 						if (!empty($mappedPatronData['pref_second_given_name'])) {
 							$user->_preferredName .= ' ' . $mappedPatronData['pref_second_given_name'];
+						}elseif (!empty($mappedPatronData['second_given_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['second_given_name'];
 						}
 						if (!empty($mappedPatronData['pref_family_name'])) {
 							$user->_preferredName .= ' ' . $mappedPatronData['pref_family_name'];
+						}elseif (!empty($mappedPatronData['family_name'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['family_name'];
 						}
 						if (!empty($mappedPatronData['pref_suffix'])) {
 							$user->_preferredName .= ' ' . $mappedPatronData['pref_suffix'];
+						}elseif (!empty($mappedPatronData['suffix'])) {
+							$user->_preferredName .= ' ' . $mappedPatronData['suffix'];
 						}
 						$user->_preferredName = trim($user->_preferredName);
 
