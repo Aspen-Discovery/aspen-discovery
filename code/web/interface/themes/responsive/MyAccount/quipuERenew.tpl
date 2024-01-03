@@ -9,7 +9,7 @@
 {*		{/if}*}
 
 		<div id="eRenewParent">
-			{if !empty($patonId)}
+			{if !empty($patronId)}
 				<input type="hidden" id="patronID" value="{$patronId}">
 
 				<!-- The following script tags can be placed in the library's <head> or <body> tag -->
@@ -19,7 +19,7 @@
 				<!-- The following <div> tag should be placed on the web page where you the library would like the renewal form to display -->
 				<div id="eRenew" data-language="{$userLang->code}" data-branchid=""></div>
 			{else}
-				{translate text="Please sign in before renewing you card."}
+				{translate text="Please sign in before renewing you card." isPublicFacing=true}
 			{/if}
 		</div>
 	{else}
