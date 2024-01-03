@@ -450,6 +450,7 @@ class CarlX extends AbstractIlsDriver {
 	 * @access public
 	 */
 	public function getHolds(User $patron): array {
+		global $library;
 		require_once ROOT_DIR . '/sys/User/Hold.php';
 		$holds = [
 			'available' => [],
@@ -531,6 +532,11 @@ class CarlX extends AbstractIlsDriver {
 					$curHold->status = $this->holdStatusCodes[$hold->ItemStatus];
 					$curHold->automaticCancellationDate = strtotime($expireDate); // use this for unavailable holds
 					$curHold->cancelable = true;
+					if ($curHold->status == 'In Transit') {
+						if (!$library->allowCancellingInTransitHolds) {
+							$curHold->cancelable = false;
+						}
+					}
 
 					if ($curHold->frozen) {
 						$curHold->reactivateDate = strtotime($hold->SuspendedUntilDate);
