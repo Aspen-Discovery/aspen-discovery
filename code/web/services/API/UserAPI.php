@@ -540,7 +540,7 @@ class UserAPI extends Action {
 				}
 			}
 		}
-		return ['success' => false];
+		return ['success' => false, 'message' => 'Unable to validate user'];
 	}
 
 	/**
