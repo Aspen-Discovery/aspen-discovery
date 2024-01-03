@@ -527,9 +527,8 @@ class UserAPI extends Action {
 	 * @noinspection PhpUnused
 	 */
 	function validateSession() {
-		[$username, $password] = $this->loadUsernameAndPassword();
-		$user = UserAccount::validateAccount($username, $password);
-		if ($user != null) {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError))  {
 			$sessionId = $this->getLiDASession() ?? null;
 			if($sessionId) {
 				$session = new Session();
