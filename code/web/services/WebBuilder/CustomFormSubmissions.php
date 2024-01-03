@@ -21,7 +21,8 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
-		$object = new CustomFormSubmission();
+        $formSubmissionStructure = $this->getObjectStructure();
+        $object = new CustomFormSubmission();
 		$formId = $_REQUEST['formId'];
 		$this->applyFilters($object);
 		$object->formId = $formId;
@@ -30,6 +31,8 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		$object->find();
 		$objectList = [];
 		while ($object->fetch()) {
+            $object->setAdditionalFieldsToExport($formSubmissionStructure);
+            error_log("LGM OBJECT : " . print_r($object,true));
 			$objectList[$object->id] = clone $object;
 		}
 		return $objectList;
