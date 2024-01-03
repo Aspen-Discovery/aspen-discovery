@@ -3610,6 +3610,10 @@ class SirsiDynixROA extends HorizonAPI {
 		return true;
 	}
 
+	public function allowUpdatesOfPreferredName(User $patron) : bool {
+		return true;
+	}
+
 	public function suspendRequiresReactivationDate(): bool {
 		return true;
 	}

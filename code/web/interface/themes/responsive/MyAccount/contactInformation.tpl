@@ -53,7 +53,7 @@
 							{if !empty($showPreferredNameInProfile)}
 								<div class="form-group">
 									<div class="col-xs-4"><label for="preferredName">{translate text='Preferred Name' isPublicFacing=true}</label></div>
-									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo}<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">{else}{$profile->_preferredName|escape}{/if}</div>
+									<div class="col-xs-8">{if !empty($edit) && $canUpdateContactInfo && $allowUpdatesOfPreferredName}<input name="preferredName" id="preferredName" value="{$profile->_preferredName|escape}" size="50" maxlength="100" class="form-control">{else}{$profile->_preferredName|escape}{/if}</div>
 								</div>
 							{/if}
 						{/if}

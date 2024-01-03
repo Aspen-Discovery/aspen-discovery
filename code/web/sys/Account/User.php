@@ -994,6 +994,14 @@ class User extends DataObject {
 		}
 	}
 
+	public function allowUpdatesOfPreferredName() : bool {
+		if ($this->getCatalogDriver()) {
+			return $this->getCatalogDriver()->allowUpdatesOfPreferredName($this);
+		}else{
+			return false;
+		}
+	}
+
 	function updateOverDriveOptions() {
 		if (isset($_REQUEST['promptForOverdriveEmail']) && ($_REQUEST['promptForOverdriveEmail'] == 'yes' || $_REQUEST['promptForOverdriveEmail'] == 'on')) {
 			// if set check & on check must be combined because checkboxes/radios don't report 'offs'

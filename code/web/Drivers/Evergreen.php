@@ -2253,6 +2253,14 @@ class Evergreen extends AbstractIlsDriver {
 		return false;
 	}
 
+	public function showPreferredNameInProfile(): bool {
+		return true;
+	}
+
+	public function allowUpdatesOfPreferredName(User $patron) : bool {
+		return false;
+	}
+
 	public function loadContactInformation(User $user) {
 		$staffSessionInfo = $this->getStaffUserInfo();
 		if ($staffSessionInfo !== false) {
