@@ -93,6 +93,7 @@ class Library extends DataObject {
 	public $showMessagingSettings;
 	public $allowChangingPickupLocationForAvailableHolds;
 	public $allowCancellingAvailableHolds;
+	public $allowCancellingInTransitHolds;
 	public $allowFreezeHolds;   //tinyint(4)
 	public $maxDaysToFreeze;
 	public $showHoldButton;
@@ -2019,6 +2020,16 @@ class Library extends DataObject {
 								'hideInLists' => true,
 								'default' => 0,
 								'note' => 'Applies to Polaris Only',
+								'permissions' => ['Library ILS Connection'],
+							],
+							'allowCancellingInTransitHolds' => [
+								'property' => 'allowCancellingInTransitHolds',
+								'type' => 'checkbox',
+								'label' => 'Allow Cancelling In Transit Holds',
+								'description' => 'Whether or not the user can cancel in transit holds.',
+								'hideInLists' => true,
+								'default' => 1,
+								'note' => 'Applies to CARL.X Only',
 								'permissions' => ['Library ILS Connection'],
 							],
 							'allowFreezeHolds' => [
