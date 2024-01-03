@@ -229,7 +229,7 @@ export const MyReadingHistory = () => {
                                    <AlertDialog.Footer>
                                         <Button.Group space={3}>
                                              <Button colorScheme="muted" variant="outline" onPress={onClose}>
-                                                  {getTermFromDictionary(language, 'close')}
+                                                  {getTermFromDictionary(language, 'cancel')}
                                              </Button>
                                              <Button isLoading={optingOut} isLoadingText={getTermFromDictionary(language, 'updating', true)} colorScheme="danger" onPress={optOut} ref={cancelRef}>
                                                   {getTermFromDictionary(language, 'button_ok')}
