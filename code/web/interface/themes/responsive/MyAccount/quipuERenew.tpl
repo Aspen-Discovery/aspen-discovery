@@ -14,7 +14,7 @@
 
 				<!-- The following script tags can be placed in the library's <head> or <body> tag -->
 				<script src="https://{$eCardSettings->server}/js/eRenewEmbed.js"></script>
-				<script>loadQGeCARD({$eCardSettings->clientId})</script>
+				<script>loadQGeRenew({$eCardSettings->clientId})</script>
 
 				<!-- The following <div> tag should be placed on the web page where you the library would like the renewal form to display -->
 				<div id="eRenew" data-language="{$userLang->code}" data-branchid=""></div>
