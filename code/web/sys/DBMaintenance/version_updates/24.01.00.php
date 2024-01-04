@@ -60,6 +60,13 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE library ADD COLUMN allowCancellingInTransitHolds TINYINT(1) DEFAULT 1',
 			],
 		], //library_cancel_in_transit_holds
+		'renew_by_ptype' => [
+			'title' => 'PType - renew online',
+			'description' => 'Library - Cancel In Transit holds',
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN canRenewOnline TINYINT(1) DEFAULT 1',
+			],
+		], //renew_by_ptype
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
