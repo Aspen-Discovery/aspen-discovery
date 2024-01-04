@@ -131,4 +131,107 @@ class StripeSetting extends DataObject {
 			unset($this->_libraries);
 		}
 	}
+
+	private function createPaymentIntent($patron, $paymentAmount, $paymentMethodId) {
+		$baseUrl = 'https://api.stripe.com';
+		require_once ROOT_DIR . '/sys/CurlWrapper.php';
+		$paymentIntentSetup = new CurlWrapper();
+		$paymentIntentSetup->addCustomHeaders([
+			'Authorization: Bearer ' . $this->stripeSecretKey,
+			'Content-Type: application/x-www-form-urlencoded',
+			'Accept: application/json',
+		], false);
+
+		$postParams = [
+			'amount' => $paymentAmount,
+			'currency' => 'usd',
+			'automatic_payment_methods' => [
+				'enabled' => 'true',
+				'allow_redirects' => 'never',
+			],
+			'payment_method' => $paymentMethodId,
+		];
+
+		$url = $baseUrl . '/v1/payment_intents';
+		$paymentIntent = $paymentIntentSetup->curlPostPage($url, $postParams);
+		return json_decode($paymentIntent, true);
+	}
+
+	/*
+	 * @return array|bool
+	 */
+	public function submitTransaction($patron, $payment, $paymentMethodId): mixed {
+		$result = ['success' => false];
+
+		$paymentAmount = $payment->totalPaid;
+		$paymentAmount = $paymentAmount * 100;
+		$paymentAmount = (int)$paymentAmount;
+
+		$paymentIntent = $this->createPaymentIntent($patron, $paymentAmount, $paymentMethodId);
+		$paymentIntentId = $paymentIntent['id'];
+
+		$paymentRequest = new CurlWrapper();
+		$url = 'https://api.stripe.com/v1/payment_intents/' . $paymentIntentId . '/confirm';
+
+		$paymentRequest->addCustomHeaders([
+			'Accept: application/json',
+			'Authorization: Bearer ' . $this->stripeSecretKey,
+			'Content-Type: application/x-www-form-urlencoded',
+		], true);
+
+		$paymentTransaction = $paymentRequest->curlPostBodyData($url, null);
+
+		$paymentResponse = json_decode($paymentTransaction, true);
+		if ($paymentRequest->getResponseCode() == 200) {
+			{
+				$totalPaid = $paymentResponse['amount_received'];
+				$payment->transactionId = $paymentResponse['id'];
+				$payment->orderId = $paymentResponse['id'];
+				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
+
+				$user = new User();
+				$user->id = $payment->userId;
+				if ($user->find(true)) {
+					$finePaymentCompleted = $user->completeFinePayment($payment);
+					if ($finePaymentCompleted['success']) {
+						$payment->message .= "Payment completed, TransactionId = $payment->transactionId, Net Amount = $payment->totalPaid. ";
+						$payment->update();
+						return [
+							'success' => true,
+							'message' => translate([
+								'text' => 'Your payment has been completed. ',
+								'isPublicFacing' => true,
+							]),
+						];
+					} else {
+						$payment->error = true;
+						$payment->message .= $finePaymentCompleted['message'];
+						$payment->update();
+						return [
+							'success' => false,
+							'message' => $finePaymentCompleted['message'],
+						];
+					}
+				} else {
+					$payment->error = true;
+					$payment->message .= 'Could not find user to mark the fine paid in the ILS.';
+					$payment->update();
+				}
+
+			}
+		} else {
+			if(isset($paymentResponse['error']['message']['default'])) {
+				$message = $paymentResponse['error']['message']['default'];
+			} else {
+				$message = $paymentResponse['error']['message'];
+			}
+			$error = $paymentResponse['error']['status'] . ': ' . $message;
+			$payment->error = 1;
+			$payment->message = $error;
+			$payment->update();
+			$result['message'] = $error;
+		}
+
+		return $result;
+	}
 }
