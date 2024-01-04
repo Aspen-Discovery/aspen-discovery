@@ -90,6 +90,10 @@ class BookCoverProcessor {
 			if ($this->getEbscohostCover($this->id)) {
 				return true;
 			}
+		} elseif ($this->type == 'summon') {
+			if ($this->getSummonCover($this->id)) {
+				return true;
+			}
 		} else {
 			global $sideLoadSettings;
 			if ($this->type == 'overdrive') {
@@ -435,7 +439,7 @@ class BookCoverProcessor {
 				$this->type = 'ils';
 			}
 		}
-		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds' && $this->type != 'ebscohost') {
+		if (strpos($this->id, ':') > 0 && $this->type != 'ebsco_eds' && $this->type != 'ebscohost' && $this->type !='summon') {
 			[
 				$this->type,
 				$this->id,
@@ -1730,6 +1734,25 @@ class BookCoverProcessor {
 			];
 			$coverBuilder->getCover($title, $this->cacheFile, $props);
 			return $this->processImageURL('default_ebsco', $this->cacheFile, false);
+		} else {
+			return false;
+		}
+	}
+
+	private function getSummonCover($id) {
+		//Build a cover based on the title of the page
+		require_once ROOT_DIR . '/sys/Covers/SummonCoverBuilder.php';
+		$coverBuilder = new SummonCoverBuilder();
+		require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+
+		$summonRecordDriver = new SummonRecordDriver($id);
+		if ($summonRecordDriver->isValid()) {
+			$title = $summonRecordDriver->getTitle();
+			$props = [
+				'format' => $summonRecordDriver->getFormats(),
+			];
+			$coverBuilder->getCover($title, $this->cacheFile, $props);
+			return $this->processImageURL('default_summon', $this->cacheFile, false);
 		} else {
 			return false;
 		}

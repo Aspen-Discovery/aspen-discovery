@@ -1125,6 +1125,19 @@ class UserList extends DataObject {
 					$uniqueFormats = '';
 					$output = [''];
 
+				} elseif ($curDoc instanceof SummonRecordDriver) {
+					// Hyperlink to Summon record
+					$link = $curDoc->getLinkUrl() ?? '';
+					// Title
+					$title = $curDoc->getTitle() ?? '';
+					// Primary Author
+					$author = $curDoc->getPrimaryAuthor() ?? '';
+					//Set other values to empty string
+					$publishers = '';
+					$publishDate = '';
+					$uniqueFormats = '';
+					$output = [''];
+				
 				} elseif ($curDoc instanceof WebsitePageRecordDriver) {
 					// Hyperlink
 					$link = $curDoc->getLinkUrl() ?? '';

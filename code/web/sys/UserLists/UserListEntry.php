@@ -95,6 +95,9 @@ class UserListEntry extends DataObject {
 		} elseif ($this->source == 'Ebscohost') {
 			require_once ROOT_DIR . '/RecordDrivers/EbscohostRecordDriver.php';
 			return new EbscohostRecordDriver($this->sourceId);
+		} elseif ($this->source == 'Summon') {
+			require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+			return new SummonRecordDriver($this->sourceId);
 		} else {
 			return null;
 		}

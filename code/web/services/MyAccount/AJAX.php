@@ -1568,6 +1568,13 @@ class MyAccount_AJAX extends JSON_Action {
 								$title = $recordDriver->getTitle();
 								$userListEntry->title = substr($title, 0, 50);
 							}
+						} elseif ($userListEntry->source == 'Summon') {
+							require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+							$recordDriver = new SummonRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
 						}
 						$userListEntry->insert();
 					}
@@ -6557,8 +6564,14 @@ class MyAccount_AJAX extends JSON_Action {
 								$title = $recordDriver->getTitle();
 								$userListEntry->title = substr($title, 0, 50);
 							}
+						} elseif ($userListEntry->source == 'Summon') {
+							require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+							$recordDriver = new SummonRecordDriver($userListEntry->sourceId);
+							if ($recordDriver->isValid()) {
+								$title = $recordDriver->getTitle();
+								$userListEntry->title = substr($title, 0, 50);
+							}
 						}
-
 						$existingEntry = false;
 						if ($userListEntry->find(true)) {
 							$existingEntry = true;

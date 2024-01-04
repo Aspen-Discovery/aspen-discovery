@@ -228,6 +228,12 @@ class Greenhouse_ClearAspenData extends Admin_Admin {
 						require_once ROOT_DIR . '/sys/Ebsco/UserEbscoEdsUsage.php';
 						$message .= $this->deleteAll('UserEbscoEdsUsage');
 
+						require_once ROOT_DIR . '/sys/Summon/SummonRecordUsage.php';
+						$message .= $this->deleteAll('SummonRecordUsage');
+
+						require_once ROOT_DIR . '/sys/Summon/UserSummonUsage.php';
+						$message .= $this->deleteAll('UserSummonUsage');
+
 						require_once ROOT_DIR . '/sys/Events/EventsUsage.php';
 						$message .= $this->deleteAll('EventsUsage');
 
