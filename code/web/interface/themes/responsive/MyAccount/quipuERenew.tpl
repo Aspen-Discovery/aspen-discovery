@@ -1,5 +1,4 @@
 {strip}
-<h1>{translate text='Renew your Library Card' isPublicFacing=true}</h1>
 <div class="page">
 	{if !empty($eCardSettings)}
 {*		{if !empty($selfRegistrationFormMessage)}*}
@@ -17,12 +16,13 @@
 				<script>loadQGeRenew({$eCardSettings->clientId})</script>
 
 				<!-- The following <div> tag should be placed on the web page where you the library would like the renewal form to display -->
-				<div id="eRenew" data-language="{$userLang->code}" data-branchid=""></div>
+				<div id="eRenew" data-language="{$userLang->code}" data-branchid="">{translate text="Loading..." isPublicFacing=true}</div>
 			{else}
 				{translate text="Please sign in before renewing you card." isPublicFacing=true}
 			{/if}
 		</div>
 	{else}
+		<h1>{translate text='Renew your Library Card' isPublicFacing=true}</h1>
 		{translate text="eCARD functionality is not properly configured." isPublicFacing=true}
 	{/if}
 </div>

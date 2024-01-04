@@ -53,6 +53,13 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasERenew TINYINT(1) DEFAULT 0',
 			],
 		], //quipu_e_renew
+		'library_cancel_in_transit_holds' => [
+			'title' => 'Library - Cancel In Transit holds',
+			'description' => 'Library - Cancel In Transit holds',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowCancellingInTransitHolds TINYINT(1) DEFAULT 1',
+			],
+		], //library_cancel_in_transit_holds
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
