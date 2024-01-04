@@ -21,10 +21,13 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 	}
 
 	function getAllObjects($page, $recordsPerPage): array {
+		$formSubmissionStructure = $this->getObjectStructure();
 		$object = new CustomFormSubmission();
-		$formId = $_REQUEST['formId'];
+		if (isset($_REQUEST['formId'])) {
+			$formId = $_REQUEST['formId'];
+			$object->formId = $formId;
+		}
 		$this->applyFilters($object);
-		$object->formId = $formId;
 		$object->orderBy($this->getSort());
 		$object->limit(($page - 1) * $recordsPerPage, $recordsPerPage);
 		$object->find();
@@ -94,5 +97,17 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 
 	function getActiveAdminSection(): string {
 		return 'web_builder';
+	}
+
+	public function canAddNew() {
+		return false;
+	}
+
+	function getHiddenFields() {
+		if (!empty($_REQUEST['formId'])) {
+			return ['formId' => $_REQUEST['formId']];
+		}else{
+			return [];
+		}
 	}
 }

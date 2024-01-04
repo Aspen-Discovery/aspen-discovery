@@ -53,13 +53,6 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasERenew TINYINT(1) DEFAULT 0',
 			],
 		], //quipu_e_renew
-		'library_cancel_in_transit_holds' => [
-			'title' => 'Library - Cancel In Transit holds',
-			'description' => 'Library - Cancel In Transit holds',
-			'sql' => [
-				'ALTER TABLE library ADD COLUMN allowCancellingInTransitHolds TINYINT(1) DEFAULT 1',
-			],
-		], //library_cancel_in_transit_holds
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
@@ -155,6 +148,7 @@ function getUpdates24_01_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Stripe'))",
 			],
 		],
+
 		//permissions_ecommerce_stripe
 		'self_reg_no_duplicate_check' => [
 			'title' => 'Symphony Self Registration Duplicate Checking Toggle',
@@ -166,6 +160,21 @@ function getUpdates24_01_00(): array {
 		//self_reg_no_duplicate_check
 
 		//lucas - Theke
+		'store_form_submissions_by_field' => [
+			'title' => 'Store form submissions by field',
+			'description' => 'Create a table to store information about submissions responses',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE web_builder_custom_form_field_submission (
+					  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					  formSubmissionId INT(11) NOT NULL,
+					  submissionFieldId INT(11) NOT NULL,
+					  formFieldContent TEXT,
+					  UNIQUE (formSubmissionId, submissionFieldId)
+				  ) ENGINE = InnoDB',
+			],
+		],
+		//store_form_submissions_by_field
 
 		//alexander - PTFS Europe
 

@@ -1,5 +1,6 @@
 <?php
 
+require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmissionSelection.php';
 
 class CustomFormSubmission extends DataObject {
 	public $__table = 'web_builder_custom_from_submission';
@@ -18,7 +19,7 @@ class CustomFormSubmission extends DataObject {
 	}
 
 	public static function getObjectStructure($context = ''): array {
-		return [
+		$structure = [
 			'id' => [
 				'property' => 'id',
 				'type' => 'label',
@@ -57,6 +58,23 @@ class CustomFormSubmission extends DataObject {
 				'hideInLists' => true,
 			],
 		];
+		if (!empty($_REQUEST['formId'])) {
+			$form = new CustomForm();
+			$form->id = $_REQUEST['formId'];
+			if ($form->find(true)) {
+				$customFields = $form->getFormFields();
+				foreach ($customFields as $i => $field) {
+					$structure['field_' . $i] = [
+						'property' => 'field_' . $i,
+						'type' => 'label',
+						'label' => $field->label,
+						'description' => $field->description,
+						'readOnly' => true,
+					];
+				}
+			}
+		}
+		return $structure;
 	}
 
 	public function __get($name) {
@@ -78,6 +96,20 @@ class CustomFormSubmission extends DataObject {
 			}
 			$user->__destruct();
 			return $this->_data[$name] ?? null;
+		} elseif (substr($name, 0, 6) == 'field_') {
+			if (!array_key_exists($name, $this->_data)) {
+				$fieldId = str_replace('field_', '', $name);
+				$fieldSelection = new CustomFormSubmissionSelection();
+				$fieldSelection->formSubmissionId = $this->id;
+				$fieldSelection->submissionFieldId = $fieldId;
+				if ($fieldSelection->find(true)) {
+					$this->_data[$name] = $fieldSelection->formFieldContent;
+				}else{
+					$this->_data[$name] = '';
+				}
+			}
+
+			return $this->_data[$name];
 		}
 		return parent::__get($name);
 	}
