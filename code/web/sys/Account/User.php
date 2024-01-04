@@ -3506,6 +3506,15 @@ class User extends DataObject {
 			]);
 		}
 
+		if (array_key_exists('Summon', $enabledModules)) {
+			$sections['summon'] = new AdminSection('Summon');
+			$sections['summon']->addAction(new AdminAction('Settings', 'Define connection information between Summon and Aspen Discovery.', '/Summon/SummonSettings'), 'Administer Summon');
+			$sections['summon']->addAction(new AdminAction('Dashboard', 'View the usage dashboard for Summon integration.', '/Summon/Dashboard'), [
+				'View Dashboards',
+				'View System Reports',
+			]);
+		}
+
 		if (array_key_exists('Hoopla', $enabledModules)) {
 			$sections['hoopla'] = new AdminSection('Hoopla');
 			$hooplaSettingsAction = new AdminAction('Settings', 'Define connection information between Hoopla and Aspen Discovery.', '/Hoopla/Settings');
