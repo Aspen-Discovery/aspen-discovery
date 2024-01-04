@@ -38,6 +38,22 @@ class WebBuilder_CustomFormSubmissions extends ObjectEditor {
 		return $objectList;
 	}
 
+	/**
+	 * Get a count of the number of objects so we can paginate as needed
+	 */
+	function getNumObjects(): int {
+		if ($this->_numObjects == null) {
+			$object = new CustomFormSubmission();
+			if (isset($_REQUEST['formId'])) {
+				$formId = $_REQUEST['formId'];
+				$object->formId = $formId;
+			}
+			$this->applyFilters($object);
+			$this->_numObjects = $object->count();
+		}
+		return $this->_numObjects;
+	}
+
 	function getDefaultSort(): string {
 		return 'dateSubmitted desc';
 	}
