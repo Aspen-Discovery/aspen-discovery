@@ -1692,8 +1692,8 @@ AspenDiscovery.Account = (function () {
 			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
 		},
 
-		createStripeOrder: function (finesFormId, transactionType, token) {
-			this.createGenericOrder(finesFormId, 'Stripe', transactionType, token);
+		createStripeOrder: function (finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'Stripe', transactionType);
 		},
 
 		createPayPalPayflowOrder: function (userId, transactionType) {
@@ -1782,13 +1782,14 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		completeStripeOrder: function (patronId, transactionType, token) {
+		completeStripeOrder: function (patronId, transactionType, paymentId, paymentMethodId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completeStripeOrder",
+				paymentId: paymentId,
+				paymentMethodId: paymentMethodId,
 				patronId: patronId,
 				type: transactionType,
-				token: token,
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {

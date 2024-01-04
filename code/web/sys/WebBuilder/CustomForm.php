@@ -291,7 +291,7 @@ class CustomForm extends DB_LibraryLinkedObject {
 		if ($customForm->find(true)) {
 			$objectActions[] = [
 				'text' => 'View Submissions',
-				'url' => '/WebBuilder/CustomFormSubmissions?formId=' . $customForm->id,
+				'url' => '/WebBuilder/CustomFormSubmissions?formId=' . $this->id,
 			];
 		}
 		return $objectActions;

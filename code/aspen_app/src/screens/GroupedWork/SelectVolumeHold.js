@@ -1,15 +1,15 @@
-import { Button, FormControl, Modal, Select, CheckIcon, Radio, Heading, AlertDialog, Center } from 'native-base';
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Platform } from 'react-native';
-import { completeAction } from './Record';
-import { refreshProfile } from '../../util/api/user';
-import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import _ from 'lodash';
-import { getVolumes } from '../../util/api/item';
-import { loadingSpinner } from '../../components/loadingSpinner';
+import { Button, CheckIcon, FormControl, Heading, Modal, Radio, Select } from 'native-base';
+import React, { useState } from 'react';
+import { Platform } from 'react-native';
 import { loadError } from '../../components/loadError';
+import { loadingSpinner } from '../../components/loadingSpinner';
+import { HoldsContext, LanguageContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
 import { getTermFromDictionary } from '../../translations/TranslationService';
+import { getVolumes } from '../../util/api/item';
+import { refreshProfile } from '../../util/api/user';
+import { completeAction } from './Record';
 
 const SelectVolumeHold = (props) => {
      const { id, title, action, volumeInfo, prevRoute, response, setResponse, responseIsOpen, setResponseIsOpen, onResponseClose, cancelResponseRef } = props;
@@ -44,14 +44,28 @@ const SelectVolumeHold = (props) => {
 
      const [activeAccount, setActiveAccount] = React.useState(user.id);
 
-     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
+     let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
+     if (_.isNumber(user.pickupLocationId)) {
+          userPickupLocationId = _.toString(user.pickupLocationId);
+     }
+
      let pickupLocation = '';
-     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
-          pickupLocation = userPickupLocation[0];
+     if (_.size(locations) > 1) {
+          const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
+          if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+               pickupLocation = userPickupLocation[0];
+               if (_.isObject(pickupLocation)) {
+                    pickupLocation = pickupLocation.code;
+               }
+          }
+     } else {
+          pickupLocation = locations[0];
           if (_.isObject(pickupLocation)) {
                pickupLocation = pickupLocation.code;
           }
      }
+
+     //console.log(pickupLocation);
 
      const [location, setLocation] = React.useState(pickupLocation);
 
