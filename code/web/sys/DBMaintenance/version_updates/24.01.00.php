@@ -198,9 +198,11 @@ function migrateFormSubmissions(&$update) {
 	$customFormSubmissions->find();
 	$numUpdates = 0;
 	while ($customFormSubmissions->fetch()) {
+		require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmissionSelection.php';
 		$fieldSubmissions = new CustomFormSubmissionSelection();
 		$fieldSubmissions->formSubmissionId = $customFormSubmissions->id;
 		if ($fieldSubmissions->count() == 0) {
+			require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
 			$customForm = new CustomForm();
 			$customForm->id = $customFormSubmissions->formId;
 			if ($customForm->find(true)) {
