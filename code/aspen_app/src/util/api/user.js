@@ -132,6 +132,29 @@ export async function validateSession(url) {
 }
 
 /**
+ * Revalidates the stored user details.
+ * @param {string} url
+ **/
+export async function revalidateUser(url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await api.post('/UserAPI?method=revalidateUser', postBody);
+     if (response.ok) {
+          if (response?.data?.result) {
+               return response.data.result.success;
+          }
+     } else {
+          console.log(response);
+     }
+     return [];
+}
+
+/**
  * Logout the user and end the Aspen Discovery session
  **/
 export async function logoutUser(url) {

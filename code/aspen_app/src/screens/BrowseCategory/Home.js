@@ -14,11 +14,12 @@ import { BrowseCategoryContext, CheckoutsContext, HoldsContext, LanguageContext,
 import { navigateStack } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLists } from '../../util/api/list';
-import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, validateSession } from '../../util/api/user';
+import { fetchReadingHistory, fetchSavedSearches, getLinkedAccounts, getPatronCheckedOutItems, getPatronHolds, getViewerAccounts, reloadProfile, revalidateUser, validateSession } from '../../util/api/user';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion, getPickupLocations, reloadBrowseCategories } from '../../util/loadLibrary';
 import { getBrowseCategoryListForUser, getILSMessages, PATRON, updateBrowseCategoryStatus } from '../../util/loadPatron';
 import { getDefaultFacets } from '../../util/search';
+import { ForceLogout } from '../Auth/ForceLogout';
 import DisplayBrowseCategory from './Category';
 
 let maxCategories = 5;
@@ -27,6 +28,7 @@ export const DiscoverHomeScreen = () => {
      const isFocused = useIsFocused();
      const queryClient = useQueryClient();
      const navigation = useNavigation();
+     const [invalidSession, setInvalidSession] = React.useState(false);
      const [loading, setLoading] = React.useState(false);
      const [showNotificationsOnboarding, setShowNotificationsOnboarding] = React.useState(false);
      const [alreadyCheckedNotifications, setAlreadyCheckedNotifications] = React.useState(true);
@@ -126,6 +128,9 @@ export const DiscoverHomeScreen = () => {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           placeholderData: [],
+          onSuccess: (data) => {
+               console.log(data);
+          },
      });
 
      useQuery(['reading_history', user.id, library.baseUrl, 1, 'checkedOut'], () => fetchReadingHistory(1, 25, 'checkedOut', library.baseUrl, language), {
@@ -147,11 +152,21 @@ export const DiscoverHomeScreen = () => {
      });
 
      useQuery(['session', library.baseUrl, user.id], () => validateSession(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 5, // 86400000 = run once per day, temporarily set to every 5 minutes to make sure it's working
+          refetchInterval: 86400000,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
                if (typeof data.result?.session !== 'undefined') {
                     GLOBALS.appSessionId = data.result.session;
+               }
+          },
+     });
+
+     useQuery(['valid_user', library.baseUrl, user.id], () => revalidateUser(library.baseUrl), {
+          refetchInterval: 60 * 1000 * 5,
+          refetchIntervalInBackground: true,
+          onSuccess: (data) => {
+               if (data.result?.success === false || data.result?.success === 'false') {
+                    setInvalidSession(true);
                }
           },
      });
@@ -420,6 +435,10 @@ export const DiscoverHomeScreen = () => {
 
      if (loading === true) {
           return loadingSpinner();
+     }
+
+     if (invalidSession === true) {
+          return <ForceLogout />;
      }
 
      return (
