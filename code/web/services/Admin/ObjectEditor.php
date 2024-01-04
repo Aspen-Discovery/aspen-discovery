@@ -234,6 +234,7 @@ abstract class ObjectEditor extends Admin_Admin {
 		$filterFields = $this->getFilterFields($structure);
 		$interface->assign('filterFields', $filterFields);
 		$interface->assign('appliedFilters', $this->getAppliedFilters($filterFields));
+		$interface->assign('hiddenFields', $this->getHiddenFields());
 
 		$numObjects = $this->getNumObjects();
 		$page = isset($_REQUEST['page']) ? $_REQUEST['page'] : 1;
@@ -1209,6 +1210,10 @@ abstract class ObjectEditor extends Admin_Admin {
 ;	}
 
 	public function getCopyOptionsFormStructure($activeObject) {
+		return [];
+	}
+
+	function getHiddenFields() {
 		return [];
 	}
 }
