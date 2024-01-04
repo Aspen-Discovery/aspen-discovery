@@ -208,7 +208,7 @@ function migrateFormSubmissions(&$update) {
 			if ($customForm->find(true)) {
 				$formFields = $customForm->getFormFields();
 				$htmlResults = $customFormSubmissions->submission;
-				preg_match_all('%.*<div><b>(.*?)</?b></div><div>(.*?)</div><br/>%s', $htmlResults, $fieldMatches, PREG_SET_ORDER);
+				preg_match_all('%.*?<div><b>(.*?)</?b></div><div>(.*?)</div><br/>%s', $htmlResults, $fieldMatches, PREG_SET_ORDER);
 				foreach ($fieldMatches as $fieldMatch) {
 					$fieldLabel = $fieldMatch[1];
 					$fieldValue = $fieldMatch[2];
