@@ -319,6 +319,8 @@ class SystemAPI extends Action {
 		$overdrive_updates = getOverDriveUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/ebsco_updates.php';
 		$ebscoUpdates = getEbscoUpdates();
+		require_once ROOT_DIR . '/sys/DBMaintenance/summon_updates.php';
+		$summonUpdates = getSummonUpdates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/axis360_updates.php';
 		$axis360Updates = getAxis360Updates();
 		require_once ROOT_DIR . '/sys/DBMaintenance/theming_updates.php';
@@ -341,7 +343,7 @@ class SystemAPI extends Action {
 		$fileUploadUpdates = getFileUploadUpdates();
 		$finalBaseUpdates = getFinalBaseUpdates();
 
-		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates);
+		$baseUpdates = array_merge($initialUpdates, $library_location_updates, $postLibraryBaseUpdates, $user_updates, $grouped_work_updates, $genealogy_updates, $browse_updates, $collection_spotlight_updates, $indexing_updates, $overdrive_updates, $ebscoUpdates, $summonUpdates, $axis360Updates, $hoopla_updates, $rbdigital_updates, $sierra_api_updates, $theming_updates, $translation_updates, $open_archives_updates, $redwood_updates, $cloudLibraryUpdates, $websiteIndexingUpdates, $webBuilderUpdates, $eventsIntegrationUpdates, $fileUploadUpdates, $finalBaseUpdates);
 
 		//Get version updates
 		require_once ROOT_DIR . '/sys/Utils/StringUtils.php';
