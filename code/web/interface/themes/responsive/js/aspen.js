@@ -7034,8 +7034,8 @@ AspenDiscovery.Account = (function () {
 			this.createGenericOrder(finesFormId, 'Square', transactionType, token);
 		},
 
-		createStripeOrder: function (finesFormId, transactionType, token) {
-			this.createGenericOrder(finesFormId, 'Stripe', transactionType, token);
+		createStripeOrder: function (finesFormId, transactionType) {
+			return this.createGenericOrder(finesFormId, 'Stripe', transactionType);
 		},
 
 		createPayPalPayflowOrder: function (userId, transactionType) {
@@ -7124,13 +7124,43 @@ AspenDiscovery.Account = (function () {
 			}).fail(AspenDiscovery.ajaxFail);
 		},
 
-		completeStripeOrder: function (patronId, transactionType, token) {
+		/*createStripePaymentIntent: function (patronId, transactionType, paymentId) {
+			var url = Globals.path + "/MyAccount/AJAX";
+			var params = {
+				method: "createStripePaymentIntent",
+				paymentId: paymentId,
+				patronId: patronId,
+				type: transactionType,
+			};
+			var intent = false;
+			// noinspection JSUnresolvedFunction
+			$.ajax({
+				url: url,
+				data: params,
+				dataType: 'json',
+				async: false,
+				method: 'GET'
+			}).success(
+				function (response) {
+					if (response.success === false) {
+						AspenDiscovery.showMessage("Error", response.message);
+						return false;
+					} else {
+						intent = response.client_secret;
+					}
+				}
+			).fail(AspenDiscovery.ajaxFail);
+			return intent;
+		},*/
+
+		completeStripeOrder: function (patronId, transactionType, paymentId, paymentMethodId) {
 			var url = Globals.path + "/MyAccount/AJAX";
 			var params = {
 				method: "completeStripeOrder",
+				paymentId: paymentId,
+				paymentMethodId: paymentMethodId,
 				patronId: patronId,
 				type: transactionType,
-				token: token,
 			};
 			// noinspection JSUnresolvedFunction
 			$.getJSON(url, params, function (data) {
