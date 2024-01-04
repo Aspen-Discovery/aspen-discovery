@@ -16,7 +16,7 @@
 				<script>loadQGeRenew({$eCardSettings->clientId})</script>
 
 				<!-- The following <div> tag should be placed on the web page where you the library would like the renewal form to display -->
-				<div id="eRenew" data-language="{$userLang->code}" data-branchid="">{translate text="Loading..." isPublicFacing=}</div>
+				<div id="eRenew" data-language="{$userLang->code}" data-branchid="">{translate text="Loading..." isPublicFacing=true}</div>
 			{else}
 				{translate text="Please sign in before renewing you card." isPublicFacing=true}
 			{/if}
