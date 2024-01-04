@@ -25,6 +25,11 @@ class CustomFormField extends DataObject {
         8 => 'Username (prefill)',
         9 => 'Email (prefill)',
         10 => 'Phone (prefill)',
+        11 => 'Address (prefill)',
+        12 => 'Address 2 (prefill)',
+        13 => 'City (prefill)',
+        14 => 'State (prefill)',
+        15 => 'Zip (prefill)'
 	];
 
 	public static $fieldTypes = [
@@ -39,6 +44,11 @@ class CustomFormField extends DataObject {
         8 => 'name_prefill',
         9 => 'email_prefill',
         10 => 'phone_prefill',
+        11 => 'address_prefill',
+        12 => 'address2_prefill',
+        13 => 'city_prefill',
+        14 => 'state_prefill',
+        15 => 'zip_prefill'
 	];
 
 	static function getObjectStructure($context = ''): array {
