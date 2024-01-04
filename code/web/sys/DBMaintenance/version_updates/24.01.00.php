@@ -175,6 +175,14 @@ function getUpdates24_01_00(): array {
 			],
 		],
 		//store_form_submissions_by_field
+		'migrate_form_submissions' => [
+			'title' => 'Migrate form submissions to store by field',
+			'description' => 'Migrate form submissions to store by field',
+			'continueOnError' => true,
+			'sql' => [
+				'migrateFormSubmissions',
+			],
+		],
 
 		//alexander - PTFS Europe
 
@@ -182,4 +190,41 @@ function getUpdates24_01_00(): array {
 
 
 	];
+}
+
+function migrateFormSubmissions(&$update) {
+	require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
+	$customFormSubmissions = new CustomFormSubmission();
+	$customFormSubmissions->find();
+	$numUpdates = 0;
+	while ($customFormSubmissions->fetch()) {
+		$fieldSubmissions = new CustomFormSubmissionSelection();
+		$fieldSubmissions->formSubmissionId = $customFormSubmissions->id;
+		if ($fieldSubmissions->count() == 0) {
+			$customForm = new CustomForm();
+			$customForm->id = $customFormSubmissions->formId;
+			if ($customForm->find(true)) {
+				$formFields = $customForm->getFormFields();
+				$htmlResults = $customFormSubmissions->submission;
+				preg_match_all('%.*<div><b>(.*?)</?b></div><div>(.*?)</div><br/>%s', $htmlResults, $fieldMatches, PREG_SET_ORDER);
+				foreach ($fieldMatches as $fieldMatch) {
+					$fieldLabel = $fieldMatch[1];
+					$fieldValue = $fieldMatch[2];
+					foreach ($formFields as $formField) {
+						if ($formField->label == $fieldLabel) {
+							$customFormSubmissionField = new CustomFormSubmissionSelection();
+							$customFormSubmissionField->formSubmissionId = $customFormSubmissions->id;
+							$customFormSubmissionField->submissionFieldId = $formField->id;
+							$customFormSubmissionField->formFieldContent = $fieldValue;
+							$numUpdates += $customFormSubmissionField->insert();
+							break;
+						}
+					}
+				}
+			}
+
+		}
+	}
+	$update['status'] = "<strong>Migrated $numUpdates form submissions</strong><br/>";
+	$update['success'] = true;
 }
