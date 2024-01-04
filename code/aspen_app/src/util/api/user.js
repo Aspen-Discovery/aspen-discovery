@@ -143,15 +143,13 @@ export async function revalidateUser(url) {
           headers: getHeaders(true),
           auth: createAuthTokens(),
      });
-     const response = await api.post('/UserAPI?method=revalidateUser', postBody);
+     const response = await api.post('/UserAPI?method=validateUserCredentials', postBody);
      if (response.ok) {
-          if (response?.data?.result) {
-               return response.data.result.success;
+          if (response?.data?.result?.valid) {
+               return response.data.result.valid;
           }
-     } else {
-          console.log(response);
      }
-     return [];
+     return false;
 }
 
 /**
