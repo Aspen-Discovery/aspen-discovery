@@ -1,12 +1,11 @@
+import { useQueryClient } from '@tanstack/react-query';
+import _ from 'lodash';
 import { Button } from 'native-base';
 import React from 'react';
-import _ from 'lodash';
-import { useQueryClient } from '@tanstack/react-query';
 
 // custom components and helper files
 import { HoldsContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 import { completeAction } from '../../../screens/GroupedWork/Record';
-import { getPatronHolds, refreshProfile } from '../../../util/api/user';
 import { HoldPrompt } from './HoldPrompt';
 
 export const PlaceHold = (props) => {
@@ -46,15 +45,25 @@ export const PlaceHold = (props) => {
      const [loading, setLoading] = React.useState(false);
      const { updateHolds } = React.useContext(HoldsContext);
 
-     const userPickupLocation = _.filter(locations, { locationId: user.pickupLocationId });
-     let pickupLocation = '';
-     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
-          pickupLocation = userPickupLocation[0];
-          if (_.isObject(pickupLocation)) {
-               pickupLocation = pickupLocation.code;
-          }
+     let userPickupLocationId = user.pickupLocationId ?? user.homeLocationId;
+     if (_.isNumber(user.pickupLocationId)) {
+          userPickupLocationId = _.toString(user.pickupLocationId);
      }
 
+     let pickupLocation = '';
+     if (_.size(locations) > 1) {
+          const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
+          if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+               pickupLocation = userPickupLocation[0];
+               if (_.isObject(pickupLocation)) {
+                    pickupLocation = pickupLocation.code;
+               }
+          }
+     } else {
+          pickupLocation = locations[0];
+     }
+
+     //console.log(pickupLocation);
      let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
 
      let loadHoldPrompt = false;
@@ -137,8 +146,8 @@ export const PlaceHold = (props) => {
                                    queryClient.invalidateQueries({ queryKey: ['holds', user.id, library.baseUrl, language] });
                                    queryClient.invalidateQueries({ queryKey: ['user', library.baseUrl, language] });
                                    /*await refreshProfile(library.baseUrl).then((result) => {
-                                        updateUser(result);
-                                   });*/
+							 updateUser(result);
+							 });*/
                                    setLoading(false);
                                    if (ilsResponse?.confirmationNeeded && ilsResponse.confirmationNeeded) {
                                         setHoldConfirmationIsOpen(true);

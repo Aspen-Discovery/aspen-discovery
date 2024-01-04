@@ -44,14 +44,21 @@ const SelectPickupLocation = (props) => {
      if (_.isNumber(user.pickupLocationId)) {
           userPickupLocationId = _.toString(user.pickupLocationId);
      }
-     const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
+
      let pickupLocation = '';
-     if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
-          pickupLocation = userPickupLocation[0];
-          if (_.isObject(pickupLocation)) {
-               pickupLocation = pickupLocation.code;
+     if (_.size(locations) > 1) {
+          const userPickupLocation = _.filter(locations, { locationId: userPickupLocationId });
+          if (!_.isUndefined(userPickupLocation && !_.isEmpty(userPickupLocation))) {
+               pickupLocation = userPickupLocation[0];
+               if (_.isObject(pickupLocation)) {
+                    pickupLocation = pickupLocation.code;
+               }
           }
+     } else {
+          pickupLocation = locations[0];
      }
+
+     //console.log(pickupLocation);
 
      const [location, setLocation] = React.useState(pickupLocation);
 
