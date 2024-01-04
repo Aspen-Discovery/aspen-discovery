@@ -60,6 +60,9 @@ const SelectVolumeHold = (props) => {
           }
      } else {
           pickupLocation = locations[0];
+          if (_.isObject(pickupLocation)) {
+               pickupLocation = pickupLocation.code;
+          }
      }
 
      //console.log(pickupLocation);

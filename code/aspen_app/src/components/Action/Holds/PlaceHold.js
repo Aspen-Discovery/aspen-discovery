@@ -61,7 +61,12 @@ export const PlaceHold = (props) => {
           }
      } else {
           pickupLocation = locations[0];
+          if (_.isObject(pickupLocation)) {
+               pickupLocation = pickupLocation.code;
+          }
      }
+
+     console.log(pickupLocation);
 
      //console.log(pickupLocation);
      let promptForHoldNotifications = user.promptForHoldNotifications ?? false;
