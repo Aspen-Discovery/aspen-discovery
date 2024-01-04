@@ -3,6 +3,7 @@
 
 class UnsavedDataObject extends DataObject {
 	function __get($name) {
+
 		return $this->_data[$name] ?? null;
 	}
 
@@ -29,10 +30,19 @@ class UnsavedDataObject extends DataObject {
 		$printableData = '';
 		foreach ($this->_data as $fieldId => $value) {
 			$fieldLabel = $structure[$fieldId]['label'];
-			$printableData .= "<div><b>$fieldLabel<b></div><div>$value</div><br/>";
+			$printableData .= "<div><b>$fieldLabel</b></div><div>$value</div><br/>";
 		}
 		return $printableData;
 	}
+
+    function getAllData($structure){
+        $formFields = [];
+        foreach ($this->_data as $fieldId => $value) {
+            $fieldLabel = $structure[$fieldId]['label'];
+            $formFields[$fieldLabel] = $value;
+        }
+        return $formFields;
+    }
 
 	function getPrintableTextData($structure) {
 		$printableData = '';

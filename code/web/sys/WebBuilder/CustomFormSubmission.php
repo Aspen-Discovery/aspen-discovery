@@ -79,7 +79,7 @@ class CustomFormSubmission extends DataObject {
 			$user->__destruct();
 			return $this->_data[$name] ?? null;
 		}
-		return parent::__get($name);
+        return parent::__get($name);
 	}
 
 	public function okToExport(array $selectedFilters): bool {
@@ -139,4 +139,38 @@ class CustomFormSubmission extends DataObject {
 			}
 		}
 	}
+
+    public function setAdditionalFieldsToExport($structure) {
+        $submissionField = new CustomFormField();
+        $submissionField->formId = $this->formId;
+        $submissionField->find();
+        $fieldsLabels = [];
+        while($submissionField->fetch()){
+            error_log("LGM FIELD : " . print_r($submissionField,true));
+            $label = $submissionField->label;
+            $count = array_push($fieldsLabels,$label);
+        }
+        $submissionSelection = new CustomFormSubmissionSelection();
+        $submissionSelection->formSubmissionId = $this->id;
+        $submissionSelection->find();
+        $fieldsContents = [];
+        while($submissionSelection->fetch()){
+            $fieldsContents = $fieldsLabels + $submissionSelection->formFieldContent;
+        }
+
+        $structureForCSV = [];
+        for($i = 0;$i <= $count;$i++){
+            $structureForCSV = $structure;
+            $structureForCSV = $structureForCSV +
+                ["$fieldsLabels[$i]" => [
+                'property' => "$fieldsLabels[$i]",
+                'type' => 'label',
+                'label' => "$fieldsLabels[$i]",
+                'description' => 'The name of the field',
+                ],
+                    ];
+        }
+
+        return $structureForCSV;
+    }
 }

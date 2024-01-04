@@ -1,11 +1,15 @@
 <?php
 require_once ROOT_DIR . '/recaptcha/recaptchalib.php';
 
+
 class WebBuilder_SubmitForm extends Action {
 	private $form;
 
 	function launch() {
 		require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+        require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
+        require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmissionSelection.php';
+
 		$id = strip_tags($_REQUEST['id']);
 		$this->form = new CustomForm();
 		$this->form->id = $id;
@@ -55,21 +59,26 @@ class WebBuilder_SubmitForm extends Action {
 					$introText = '';
 				}
 				$htmlData .= $serializedData->getPrintableHtmlData($structure);
+                $data = $serializedData->getAllData($structure);
 
 				//Save the form values to the database
 				global $library;
-				require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
 				$submission = new CustomFormSubmission();
 				$submission->formId = $this->form->id;
 				$submission->libraryId = $library->libraryId;
+
 				if (UserAccount::isLoggedIn()) {
 					$submission->userId = UserAccount::getActiveUserId();
 				} else {
 					$submission->userId = 0;
 				}
-				$submission->submission = $htmlData;
-				$submission->dateSubmitted = time();
+
+                $submission->submission = $htmlData;
+                $submission->dateSubmitted = time();
 				$submission->insert();
+
+                //Save form fields content to the database
+                $this->saveFieldsContent($data,$submission->id);
 
 				if (!empty($this->form->emailResultsTo)) {
 					global $interface;
@@ -106,6 +115,17 @@ class WebBuilder_SubmitForm extends Action {
 
 		$this->display('customFormResults.tpl', $this->form->title, '', false);
 	}
+
+    function saveFieldsContent($data,$formSubmissionId): void {
+        $dataValues = array_values($data);
+        foreach ($dataValues as $fieldId => $formFieldContent) {
+            $submissionSelection = new CustomFormSubmissionSelection();
+            $submissionSelection->formSubmissionId = $formSubmissionId;
+            $submissionSelection->submissionFieldId = $fieldId;
+            $submissionSelection->formFieldContent = $formFieldContent;
+            $submissionSelection->insert();
+        }
+    }
 
 	function getBreadcrumbs(): array {
 		$breadcrumbs = [];
