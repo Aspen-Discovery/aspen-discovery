@@ -92,7 +92,7 @@ export const GroupedWorkScreen = () => {
                ) : (
                     <>
                          <Box h={{ base: 125, lg: 200 }} w="100%" bgColor="warmGray.200" _dark={{ bgColor: 'coolGray.900' }} zIndex={-1} position="absolute" left={0} top={0} />
-                         {systemMessages ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
+                         {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                          <DisplayGroupedWork data={data.results} initialFormat={data.format} updateFormat={data.format} />
                     </>
                )}
