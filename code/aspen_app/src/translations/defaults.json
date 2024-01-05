@@ -452,5 +452,7 @@
   "device_information": "Device Information",
   "current_location": "Current Location",
   "current_library": "Current Library",
-  "connected_to": "Connected To"
+  "connected_to": "Connected To",
+  "num_linked_accounts": "Number of Linked Accounts",
+  "contact_information": "Contact Information"
 }
