@@ -202,9 +202,9 @@ class Translation_Translations extends Admin_Admin {
 
 		$interfaceArea = $_REQUEST['interfaceArea'] ?? 'both';
 		if ($interfaceArea == 'public') {
-			$term->isPublicFacing = 1;
+			$term->setIsPublicFacing(1);
 		} elseif ($interfaceArea == 'admin') {
-			$term->isAdminFacing = 1;
+			$term->setIsAdminFacing(1);
 		}
 
 		if (!empty($_REQUEST['updatedSince'])) {
@@ -212,11 +212,11 @@ class Translation_Translations extends Admin_Admin {
 		}
 
 		if (empty($_REQUEST['showMetadata'])) {
-			$term->isMetadata = 0;;
+			$term->setIsMetadata(0);;
 		}
 
 		if (empty($_REQUEST['showAdminEnteredData'])) {
-			$term->isAdminEnteredData = 0;
+			$term->setIsAdminEnteredData(0);
 		}
 
 		$term->find();

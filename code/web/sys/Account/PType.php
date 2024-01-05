@@ -17,6 +17,7 @@ class PType extends DataObject {
 	public $accountLinkRemoveSetting;
 	public $enableReadingHistory;
 	public $canSuggestMaterials;
+	public $canRenewOnline;
 
 	public function getNumericColumnNames(): array {
 		return [
@@ -28,6 +29,7 @@ class PType extends DataObject {
 			'accountLinkRemoveSetting',
 			'enableReadingHistory',
 			'canSuggestMaterials',
+			'canRenewOnline',
 		];
 	}
 
@@ -151,6 +153,12 @@ class PType extends DataObject {
 				'type' => 'checkbox',
 				'label' => 'Allow users to create materials requests',
 				'description' => 'Allow users of this patron type to create materials requests or purchase suggestions.',
+			],
+			'canRenewOnline' => [
+				'property' => 'canRenewOnline',
+				'type' => 'checkbox',
+				'label' => 'Allow users to renew their account online',
+				'description' => 'Allow users of this patron type to renew their account when permitted by library system settings.',
 			],
 		];
 		if (!UserAccount::userHasPermission('Administer Permissions')) {

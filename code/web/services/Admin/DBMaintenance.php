@@ -39,6 +39,7 @@ class Admin_DBMaintenance extends Admin_Admin {
 			try {
 				global $aspen_db;
 				$aspen_db->query('OPTIMIZE TABLE external_request_log');
+				$aspen_db->query('OPTIMIZE TABLE object_history');
 			} catch (PDOException $e) {
 				//Just ignore any errors for now
 			}

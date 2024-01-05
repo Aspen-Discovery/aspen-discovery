@@ -7,7 +7,7 @@
 	</div>
 {/if}
 
-{if $objectAction == 'copy'}
+{if !empty($objectAction) && $objectAction == 'copy'}
 	{if !empty($copyNotes)}
 		<div class="alert alert-info">{$copyNotes}</div>
 	{/if}
@@ -16,7 +16,7 @@
 {* Create the base form *}
 <form id='objectEditor-{if !empty($id)}{$id}{else}-1{/if}' method="post" {if !empty($contentType)}enctype="{$contentType}"{/if} {if !empty($submitUrl)}action="{$submitUrl}"{/if} role="form" onsubmit="setFormSubmitting();" {if !empty($formLabel)}aria-label="{translate text=$formLabel isAdminFacing=true inAttribute=true}"{/if}>
 	<div class='editor'>
-		{if $objectAction == 'copy'}
+		{if !empty($objectAction) && $objectAction == 'copy'}
 			<input type='hidden' name='objectAction' value='saveCopy' />
 		{else}
 			<input type='hidden' name='objectAction' value='save' />
