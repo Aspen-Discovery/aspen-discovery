@@ -7,7 +7,7 @@
 	</div>
 {/if}
 
-{if $objectAction == 'copy'}
+{if !empty($objectAction) && $objectAction == 'copy'}
 	{if !empty($copyNotes)}
 		<div class="alert alert-info">{$copyNotes}</div>
 	{/if}
