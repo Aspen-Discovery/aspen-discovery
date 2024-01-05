@@ -331,6 +331,31 @@ class AJAX extends Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getSummonResults() {
+		require_once ROOT_DIR . '/sys/SearchObject/SummonSearcher.php';
+		$summon = new SummonSearcher();
+		$searchTerm = $_REQUEST['searchTerm'];
+		if (!empty($searchTerm)) {
+			$results = $summon->getSummonResults($searchTerm);
+			$formattedResults = $summon->formatResults($results['records']);
+
+			$returnVal = [
+				'rawResults' => $results['records'],
+				'formattedResults' => $formattedResults,
+			];
+		} else {
+			$returnVal = [
+				'rawResults' => [],
+				'formattedResults' => '',
+			];
+		}
+
+		//Format the results
+		return $returnVal;
+	}
+
+
+	/** @noinspection PhpUnused */
 	function getMoreSearchResults($displayMode = 'covers') {
 		// Called Only for Covers mode //
 		$success = true; // set to false on error

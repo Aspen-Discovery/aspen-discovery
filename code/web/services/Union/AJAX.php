@@ -40,6 +40,8 @@ class Union_AJAX extends JSON_Action {
 			$results = $this->getResultsFromDPLA($searchTerm, $numberOfResults, $fullResultsLink);
 		} elseif ($source == 'ebsco_eds') {
 			$results = $this->getResultsFromEDS($searchTerm, $numberOfResults, $fullResultsLink);
+		} elseif ($source == 'summon') {
+			$results = $this->getResultsFromSummon($searchTerm, $numberOfResults, $fullResultsLink);
 		} elseif ($source == 'ebscohost') {
 			$results = $this->getResultsFromEbscohost($searchTerm, $numberOfResults, $fullResultsLink);
 		} elseif ($source == 'events') {
@@ -208,6 +210,29 @@ class Union_AJAX extends JSON_Action {
 			$formattedNumResults = number_format($dplaResults['resultTotal']);
 			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 			$results .= $dpla->formatCombinedResults($dplaResults['records'], false);
+		}
+
+		return $results;
+	}
+
+	/**
+	 * @param $searchTerm
+	 * @param $numberOfResults
+	 * @param $fullResultsLink
+	 * @return string
+	 */
+	private function getResultsFromSummon($searchTerm, $numberOfResults, $fullResultsLink) {
+		global $interface;
+		$interface->assign('viewingCombinedResults', true);
+		require_once ROOT_DIR . '/sys/SearchObject/SummonSearcher.php';
+		$summon= new SummonSearcher();
+		$summonResults = $summon->getSummonResults($searchTerm, $numberOfResults);
+		if (!isset($summonResults['resultTotal']) || ($summonResults['resultTotal'] == 0)) {
+			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+		} else {
+			$formattedNumResults = number_format($summonResults['resultTotal']);
+			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
+			$results .= $summon->formatCombinedResults($summonResults['records'], false);
 		}
 
 		return $results;
