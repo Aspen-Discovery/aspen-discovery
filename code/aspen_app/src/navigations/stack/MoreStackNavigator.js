@@ -7,6 +7,7 @@ import { MoreMenu } from '../../screens/More/MoreMenu';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
 import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
+import { SupportScreen } from '../../screens/MyAccount/Settings/Support';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 
 const MoreStackNavigator = () => {
@@ -31,6 +32,7 @@ const MoreStackNavigator = () => {
                     <Stack.Screen name="MyPreferences" component={PreferencesScreen} options={{ title: getTermFromDictionary(language, 'preferences') }} />
                     <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
                     <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
+                    <Stack.Screen name="Support" component={SupportScreen} options={{ title: getTermFromDictionary(language, 'support') }} />
                </Stack.Group>
           </Stack.Navigator>
      );

@@ -4,20 +4,19 @@ import Constants from 'expo-constants';
 import * as Notifications from 'expo-notifications';
 import * as WebBrowser from 'expo-web-browser';
 import _ from 'lodash';
-import { Box, Center, Divider, FlatList, HStack, Icon, Pressable, Text, VStack } from 'native-base';
-import React, { Component } from 'react';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
+import { Box, Divider, Heading, HStack, Icon, Pressable, Text, VStack } from 'native-base';
+import React from 'react';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../../context/initialContext';
 
 // custom components and helper files
-import { userContext } from '../../../context/user';
 import { navigate } from '../../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../../translations/TranslationService';
-import { GLOBALS } from '../../../util/globals';
 import { formatDiscoveryVersion } from '../../../util/loadLibrary';
 
 export const PreferencesScreen = () => {
      const navigation = useNavigation();
      const { library } = React.useContext(LibrarySystemContext);
+     const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
      const { user, expoToken, aspenToken, updateExpoToken, updateAspenToken } = React.useContext(UserContext);
 
@@ -116,237 +115,61 @@ export const PreferencesScreen = () => {
      };
 
      return (
-          <Box pt={5}>
-               <VStack space="4">
-                    <FlatList data={defaultMenuItems} renderItem={({ item }) => menuItem(item)} keyExtractor={(item, index) => index.toString()} />
+          <Box safeArea={5}>
+               <VStack divider={<Divider />} space="4">
+                    <VStack space="3">
+                         <Heading>{getTermFromDictionary(language, 'preferences')}</Heading>
+                         <VStack>
+                              <Pressable py="3">
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'manage_browse_categories')}</Text>
+                                   </HStack>
+                              </Pressable>
+                              <Pressable py="3">
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'language')}</Text>
+                                   </HStack>
+                              </Pressable>
+                              <Pressable py="3">
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'appearance')}</Text>
+                                   </HStack>
+                              </Pressable>
+                         </VStack>
+                    </VStack>
+                    <VStack space="3">
+                         <Heading>{getTermFromDictionary(language, 'device_settings')}</Heading>
+                         <VStack>
+                              <Pressable py="3">
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'app_settings')}</Text>
+                                   </HStack>
+                              </Pressable>
+                              <Pressable py="3">
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'notifications')}</Text>
+                                   </HStack>
+                              </Pressable>
+                              <Pressable py="3">
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'permissions')}</Text>
+                                   </HStack>
+                              </Pressable>
+                              <Pressable py="3" onPress={() => navigate('Support')}>
+                                   <HStack space="1" alignItems="center">
+                                        <Icon as={MaterialIcons} name="chevron-right" size="7" />
+                                        <Text fontWeight="500">{getTermFromDictionary(language, 'support')}</Text>
+                                   </HStack>
+                              </Pressable>
+                         </VStack>
+                    </VStack>
                </VStack>
-               <Divider mt={5} />
-               <Center>
-                    <Text mt={10} fontSize="xs" bold>
-                         {getTermFromDictionary(language, 'app_name')}
-                         <Text color="coolGray.600" _dark={{ color: 'warmGray.400' }} ml={1}>
-                              {GLOBALS.appVersion} b[{GLOBALS.appBuild}] p[{GLOBALS.appPatch}] c[{GLOBALS.releaseChannel}]
-                         </Text>
-                    </Text>
-                    {library.discoveryVersion ? (
-                         <Text fontSize="xs" bold>
-                              {getTermFromDictionary(language, 'aspen_discovery')}
-                              <Text color="coolGray.600" _dark={{ color: 'warmGray.400' }} ml={1}>
-                                   {library.discoveryVersion}
-                              </Text>
-                         </Text>
-                    ) : null}
-               </Center>
           </Box>
      );
 };
-
-export default class Preferences extends Component {
-     static contextType = userContext;
-
-     constructor(props) {
-          super(props);
-          this.state = {
-               isLoading: true,
-               hasError: false,
-               error: null,
-               hasUpdated: false,
-               isRefreshing: false,
-               expoToken: null,
-               aspenToken: null,
-               defaultMenuItems: [
-                    {
-                         key: '1',
-                         title: 'manage_browse_categories',
-                         path: 'SettingsHomeScreen',
-                         external: false,
-                         icon: 'chevron-right',
-                         version: '22.06.00',
-                    },
-                    {
-                         key: '3',
-                         title: 'notifications_manage',
-                         path: 'SettingsNotifications',
-                         external: false,
-                         icon: 'chevron-right',
-                         version: '22.09.00',
-                    },
-               ],
-          };
-     }
-
-     componentDidMount = async () => {
-          const { navigation } = this.props;
-          if (Constants.isDevice) {
-               const expoToken = (await Notifications.getExpoPushTokenAsync()).data;
-               if (expoToken) {
-                    if (!_.isEmpty(this.context.user.notification_preferences)) {
-                         const tokenStorage = this.context.user.notification_preferences;
-                         if (_.find(tokenStorage, _.matchesProperty('token', expoToken))) {
-                              this.setState({
-                                   expoToken,
-                                   aspenToken: true,
-                              });
-                         }
-                    }
-               }
-          }
-
-          navigation.setOptions({
-               headerLeft: () => <Box />,
-          });
-
-          this.setState({
-               isLoading: false,
-          });
-     };
-
-     renderItem = (item, patronId, library, language) => {
-          if (item.external && library.version >= item.version) {
-               return (
-                    <Pressable
-                         borderBottomWidth="1"
-                         _dark={{ borderColor: 'gray.600' }}
-                         borderColor="coolGray.200"
-                         py="3"
-                         onPress={() => {
-                              this.openWebsite(item.path);
-                         }}>
-                         <HStack space="1" alignItems="center">
-                              <Icon as={MaterialIcons} name={item.icon} size="7" />
-                              <Text
-                                   _dark={{ color: 'warmGray.50' }}
-                                   color="coolGray.800"
-                                   bold
-                                   fontSize={{
-                                        base: 'md',
-                                        lg: 'lg',
-                                   }}>
-                                   {getTermFromDictionary(language, item.title)}
-                              </Text>
-                         </HStack>
-                    </Pressable>
-               );
-          } else if (library.version >= item.version) {
-               if (item.path === 'SettingsHomeScreen') {
-                    let screenPath = item.path;
-                    if (library.version >= '22.12.00') {
-                         screenPath = 'SettingsBrowseCategories';
-                    }
-                    return (
-                         <Pressable
-                              borderBottomWidth="1"
-                              _dark={{ borderColor: 'gray.600' }}
-                              borderColor="coolGray.200"
-                              py="3"
-                              onPress={() => {
-                                   this.onPressMenuItem(screenPath, patronId, library.url);
-                              }}>
-                              <HStack space="1" alignItems="center">
-                                   <Icon as={MaterialIcons} name={item.icon} size="7" />
-                                   <Text
-                                        _dark={{ color: 'warmGray.50' }}
-                                        color="coolGray.800"
-                                        bold
-                                        fontSize={{
-                                             base: 'md',
-                                             lg: 'lg',
-                                        }}>
-                                        {getTermFromDictionary(language, item.title)}
-                                   </Text>
-                              </HStack>
-                         </Pressable>
-                    );
-               }
-               if (item.path === 'SettingsNotifications') {
-                    let screenPath = item.path;
-                    if (library.version >= '23.01.00') {
-                         screenPath = 'SettingsNotificationOptions';
-                    }
-                    return (
-                         <Pressable
-                              borderBottomWidth="1"
-                              _dark={{ borderColor: 'gray.600' }}
-                              borderColor="coolGray.200"
-                              py="3"
-                              onPress={() => {
-                                   this.onPressMenuItem(screenPath, patronId, library.url);
-                              }}>
-                              <HStack space="1" alignItems="center">
-                                   <Icon as={MaterialIcons} name={item.icon} size="7" />
-                                   <Text
-                                        _dark={{ color: 'warmGray.50' }}
-                                        color="coolGray.800"
-                                        bold
-                                        fontSize={{
-                                             base: 'md',
-                                             lg: 'lg',
-                                        }}>
-                                        {getTermFromDictionary(language, item.title)}
-                                   </Text>
-                              </HStack>
-                         </Pressable>
-                    );
-               }
-               return (
-                    <Pressable
-                         borderBottomWidth="1"
-                         _dark={{ borderColor: 'gray.600' }}
-                         borderColor="coolGray.200"
-                         py="3"
-                         onPress={() => {
-                              this.onPressMenuItem(item.path, patronId, library.url);
-                         }}>
-                         <HStack space="1" alignItems="center">
-                              <Icon as={MaterialIcons} name={item.icon} size="7" />
-                              <Text
-                                   _dark={{ color: 'warmGray.50' }}
-                                   color="coolGray.800"
-                                   bold
-                                   fontSize={{
-                                        base: 'md',
-                                        lg: 'lg',
-                                   }}>
-                                   {item.title}
-                              </Text>
-                         </HStack>
-                    </Pressable>
-               );
-          } else {
-               return null;
-          }
-     };
-
-     onPressMenuItem = (path, patronId, libraryUrl) => {
-          this.props.navigation.navigate(path, {
-               libraryUrl,
-               patronId,
-               user: this.context.user,
-               pushToken: this.state.expoToken,
-               aspenToken: this.state.aspenToken,
-          });
-     };
-
-     openWebsite = async (url) => {
-          WebBrowser.openBrowserAsync(url);
-     };
-
-     render() {
-          const user = this.context.user;
-          return (
-               <>
-                    <LibrarySystemContext.Consumer>
-                         {(library) => (
-                              <LanguageContext.Consumer>
-                                   {(language) => (
-                                        <Box flex={1} safeArea={3}>
-                                             <FlatList data={this.state.defaultMenuItems} renderItem={({ item }) => this.renderItem(item, user.id, library, language.language)} keyExtractor={(item, index) => index.toString()} />
-                                        </Box>
-                                   )}
-                              </LanguageContext.Consumer>
-                         )}
-                    </LibrarySystemContext.Consumer>
-               </>
-          );
-     }
-}

@@ -33,7 +33,9 @@ export const GLOBALS = {
      themeId: Constants?.manifest2?.extra?.expoClient?.extra?.themeId ?? Constants.manifest.extra.themeId,
      bundleId: Platform.OS === 'android' ? androidBundle : iOSBundle,
      greenhouse: Constants.manifest2?.extra?.expoClient?.extra?.greenhouseUrl ?? Constants.manifest.extra.greenhouseUrl,
-     privacyPolicy: 'https://bywatersolutions.com/lida-app-privacy-policy'
+     privacyPolicy: 'https://bywatersolutions.com/lida-app-privacy-policy',
+     iosStoreUrl: Constants.manifest2?.extra?.expoClient?.extra?.iosStoreUrl ?? Constants.manifest.extra.iosStoreUrl,
+     androidStoreUrl: Constants.manifest2?.extra?.expoClient?.extra?.androidStoreUrl ?? Constants.manifest.extra.androidStoreUrl,
 };
 
 export const LOGIN_DATA = {
