@@ -19,8 +19,11 @@ function getUpdates23_12_02(): array {
             'description' => 'Adds CarlX database View Version to Account Profile',
             'continueOnError' => false,
             'sql' => [
-                "ALTER TABLE account_profiles ADD carlXViewVersion ENUM('v', 'v2') NOT NULL DEFAULT 'v'"
+                "ALTER TABLE account_profiles ADD carlXViewVersion ENUM('', 'v', 'v2') NOT NULL DEFAULT ''",
+                "UPDATE account_profiles SET carlXViewVersion = 'v2' WHERE driver = 'Nashville'",
+                "UPDATE account_profiles SET carlXViewVersion = 'v' WHERE driver = 'CarlX'",
             ]
         ], //account_profile_carlx_database_view_version
     ];
 }
+
