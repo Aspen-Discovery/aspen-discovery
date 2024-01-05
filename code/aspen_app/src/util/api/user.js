@@ -31,10 +31,16 @@ export async function refreshProfile(url) {
      if (response.ok) {
           if (response.data?.result) {
                //console.log(response.data.result.profile);
-               return response.data.result.profile;
+               if (response.data?.result?.profile) {
+                    return response.data.result.profile;
+               } else {
+                    return response.data.result;
+               }
           }
      }
-     return [];
+     return {
+          success: false,
+     };
 }
 
 /**
@@ -58,10 +64,16 @@ export async function reloadProfile(url) {
      if (response.ok) {
           if (response.data.result) {
                //console.log(response.data.result.profile);
-               return response.data.result.profile;
+               if (response.data?.result?.profile) {
+                    return response.data.result.profile;
+               } else {
+                    return response.data.result;
+               }
           }
      }
-     return [];
+     return {
+          success: false,
+     };
 }
 
 /**

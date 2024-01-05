@@ -165,7 +165,7 @@ export const DiscoverHomeScreen = () => {
           refetchInterval: 60 * 1000 * 5,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
-               if (data.result?.success === false || data.result?.success === 'false') {
+               if (data === false || data === 'false') {
                     setInvalidSession(true);
                }
           },
@@ -429,7 +429,7 @@ export const DiscoverHomeScreen = () => {
           return loadingSpinner();
      }
 
-     if (invalidSession === true) {
+     if (invalidSession === true || invalidSession === 'true') {
           return <ForceLogout />;
      }
 

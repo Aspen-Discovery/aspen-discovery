@@ -109,20 +109,26 @@ export const LoadingScreen = () => {
      const { status: userQueryStatus, data: userQuery } = useQuery(['user', LIBRARY.url, 'en'], () => refreshProfile(LIBRARY.url), {
           enabled: !!librarySystemQuery,
           onSuccess: (data) => {
+               console.log(data);
                if (_.isUndefined(data) || _.isEmpty(data)) {
                     setHasError(true);
                } else {
-                    setProgress(30);
-                    updateUser(data);
-                    updateLanguage(data.interfaceLanguage ?? 'en');
-                    PATRON.language = data.interfaceLanguage ?? 'en';
-                    setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
+                    console.log(data);
+                    if (data.success === false || data.success === 'false') {
+                         setHasError(true);
+                    } else {
+                         setProgress(30);
+                         updateUser(data);
+                         updateLanguage(data.interfaceLanguage ?? 'en');
+                         PATRON.language = data.interfaceLanguage ?? 'en';
+                         setLoadingText(getTermFromDictionary(language ?? 'en', 'loading_2'));
+                    }
                }
           },
      });
 
      const { status: libraryLinksQueryStatus, data: libraryLinksQuery } = useQuery(['library_links', LIBRARY.url], () => getLibraryLinks(LIBRARY.url), {
-          enabled: !!userQueryStatus,
+          enabled: hasError === false && !!userQueryStatus,
           onSuccess: (data) => {
                setProgress(40);
                updateMenu(data);
@@ -130,14 +136,14 @@ export const LoadingScreen = () => {
      });
 
      const { status: translationQueryStatus, data: translationQuery } = useQuery(['active_language', PATRON.language, LIBRARY.url], () => getTranslatedTermsForUserPreferredLanguage(PATRON.language ?? 'en', LIBRARY.url), {
-          enabled: !!libraryLinksQuery,
+          enabled: hasError === false && !!libraryLinksQuery,
           onSuccess: (data) => {
                setProgress(50);
                updateDictionary(translationsLibrary);
           },
      });
      const { status: browseCategoryQueryStatus, data: browseCategoryQuery } = useQuery(['browse_categories', LIBRARY.url], () => reloadBrowseCategories(5, LIBRARY.url), {
-          enabled: !!translationQuery,
+          enabled: hasError === false && !!translationQuery,
           onSuccess: (data) => {
                setProgress(60);
                updateBrowseCategories(data);
@@ -145,7 +151,7 @@ export const LoadingScreen = () => {
           },
      });
      const { status: browseCategoryListQueryStatus, data: browseCategoryListQuery } = useQuery(['browse_categories_list', LIBRARY.url, 'en'], () => getBrowseCategoryListForUser(LIBRARY.url), {
-          enabled: !!browseCategoryQuery,
+          enabled: hasError === false && !!browseCategoryQuery,
           onSuccess: (data) => {
                setProgress(70);
                updateBrowseCategoryList(data);
@@ -153,7 +159,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: libraryBranchQueryStatus, data: libraryBranchQuery } = useQuery(['library_location', LIBRARY.url, 'en'], () => getLocationInfo(LIBRARY.url), {
-          enabled: !!browseCategoryListQuery,
+          enabled: hasError === false && !!browseCategoryListQuery,
           onSuccess: (data) => {
                setProgress(80);
                updateLocation(data);
@@ -161,7 +167,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: selfCheckQueryStatus, data: selfCheckQuery } = useQuery(['self_check_settings', LIBRARY.url, 'en'], () => getSelfCheckSettings(LIBRARY.url), {
-          enabled: !!libraryBranchQuery,
+          enabled: hasError === false && !!userQuery && !!libraryBranchQuery,
           onSuccess: (data) => {
                setProgress(85);
                if (data.success) {
@@ -174,7 +180,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: linkedAccountQueryStatus, data: linkedAccountQuery } = useQuery(['linked_accounts', user ?? [], cards ?? [], LIBRARY.url, 'en'], () => getLinkedAccounts(user ?? [], cards ?? [], library.barcodeStyle, LIBRARY.url, 'en'), {
-          enabled: !!userQuery && !!librarySystemQuery && !!selfCheckQuery,
+          enabled: hasError === false && !!userQuery && !!librarySystemQuery && !!selfCheckQuery,
           onSuccess: (data) => {
                setProgress(90);
                updateLinkedAccounts(data.accounts);
@@ -184,7 +190,7 @@ export const LoadingScreen = () => {
      });
 
      const { status: systemMessagesQueryStatus, data: systemMessagesQuery } = useQuery(['system_messages', LIBRARY.url], () => getSystemMessages(library.libraryId, location.locationId, LIBRARY.url), {
-          enabled: !!userQuery && !!librarySystemQuery && !!libraryBranchQuery && !!linkedAccountQuery,
+          enabled: hasError === false && !!userQuery && !!librarySystemQuery && !!libraryBranchQuery && !!linkedAccountQuery,
           onSuccess: (data) => {
                setProgress(100);
                updateSystemMessages(data);
