@@ -3668,7 +3668,7 @@ class Library extends DataObject {
 				'label' => 'Summon',
 				'hideInLists' => true,
 				'renderAsHeading' => true,
-				'permissions' => ['Library Summon Options'],
+				// 'permissions' => ['A'],
 				'properties' => [
 					'summonSettingsId' => [
 						'property' => 'summonSettingsId',
@@ -3685,26 +3685,7 @@ class Library extends DataObject {
 			
 				
 
-			// 'summonSection' => [
-			// 	'property' => 'summonSection',
-			// 	'type' => 'section',
-			// 	'label' => 'Summon',
-			// 	'hideInLists' => true,
-			// 	'renderAsHeading' => true,
-			// 	'permissions' => ['Library Summon Options'],
-			// 	'properties' => [
-			// 		'summonSettingsId' => [
-			// 			'property' => 'summonSettingsId',
-			// 			'type' => 'enum',
-			// 			'values' => $summonSettings,
-			// 			'label' => 'Summon Settings',
-			// 			'description' => 'The Summon Settings to use for connection',
-			// 			'hideInLists' => true,
-			// 			'default' => -1,
-			// 		],
-			// 	],
-			// ],
-
+			
 			'casSection' => [
 				'property' => 'casSection',
 				'type' => 'section',

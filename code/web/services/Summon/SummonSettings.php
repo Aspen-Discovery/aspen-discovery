@@ -1,10 +1,11 @@
 <?php
 
 require_once ROOT_DIR . '/Action.php';
-require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 require_once ROOT_DIR . '/sys/Summon/SummonSettings.php';
+require_once ROOT_DIR . '/services/Admin/ObjectEditor.php';
 
-class Summon_Settings extends ObjectEditor {
+
+class Summon_SummonSettings extends ObjectEditor {	
 	function getObjectType(): string {
 		return 'SummonSettings';
 	}
@@ -71,6 +72,6 @@ class Summon_Settings extends ObjectEditor {
 	}
 
 	function canView(): bool {
-		return UserAccount::userHasPermission('Administer Summon');
+		return UserAccount::userHasPermission('View Dashboards');
 	}
 }
