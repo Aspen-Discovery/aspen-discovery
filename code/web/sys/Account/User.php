@@ -4381,6 +4381,31 @@ class User extends DataObject {
 	public function isAspenAdminUser() : bool {
 		return $this->source == 'admin' && $this->username == 'aspen_admin';
 	}
+
+	public function showRenewalLink(AccountSummary $ilsAccountSummary) : bool {
+		$showRenewalLink = false;
+		if ($ilsAccountSummary->isExpirationClose()) {
+			$pType = $this->getPTypeObj();
+			if ($pType->canRenewOnline) {
+				$userLibrary = $this->getHomeLibrary();
+				if ($userLibrary->enableCardRenewal == 2) {
+					if (!empty($userLibrary->cardRenewalUrl)) {
+						$showRenewalLink = true;
+					}
+				} elseif ($userLibrary->enableCardRenewal == 3) {
+					require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
+					$quipuECardSettings = new QuipuECardSetting();
+					if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
+						$showRenewalLink = true;
+					}
+				}
+				if (!$ilsAccountSummary->isExpired() && !$userLibrary->showCardRenewalWhenExpirationIsClose) {
+					$showRenewalLink = false;
+				}
+			}
+		}
+		return $showRenewalLink;
+	}
 }
 
 function modifiedEmpty($var) {
