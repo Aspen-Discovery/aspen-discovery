@@ -2398,13 +2398,18 @@ class CarlX extends AbstractIlsDriver {
 	}
 
 	public function getPatronIDChanges($searchPatronID): ?array {
+        if($this->accountProfile->carlXViewVersion == 'v2') {
+            $version = 'v2';
+        }else{
+            $version = 'v';
+        }
 		$this->initDatabaseConnection();
 		/** @noinspection SqlResolve */
 		/** @noinspection SqlDialectInspection */
 		$sql = <<<EOT
 			select
 				newpatronid
-			from patronidchange_v p
+			from patronidchange_$version p
 			where oldpatronid = :searchpatronid
 			order by changetime desc 
 			-- fetch first 1 rows only

@@ -35,6 +35,7 @@ class AccountProfile extends DataObject {
 	public $workstationId;
 	public $weight;
 	public $ssoSettingId;
+    public $carlXViewVersion;
 
 	/** @var bool|IndexingProfile|null */
 	private $_indexingProfile = false;
@@ -248,6 +249,20 @@ class AccountProfile extends DataObject {
 								'description' => 'Timezone to use when connecting',
 								'required' => false,
 							],
+                            'carlXViewVersion' => [
+                                'property' => 'carlXViewVersion',
+                                'type' => 'enum',
+                                'values' => [
+                                    '' => 'N/A',
+                                    'v' => 'v',
+                                    'v2' => 'v2',
+                                ],
+                                'default' => '',
+                                'label' => 'Carl.X Database View Version',
+                                'note' => 'Only used for Carl.X',
+                                'description' => 'Database View Version of Carl.X to use when connecting',
+                                'required' => false,
+                            ],
 						],
 					],
 					'sip2Section' => [
