@@ -60,6 +60,13 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE library ADD COLUMN allowCancellingInTransitHolds TINYINT(1) DEFAULT 1',
 			],
 		], //library_cancel_in_transit_holds
+		'renew_by_ptype' => [
+			'title' => 'PType - renew online',
+			'description' => 'Library - Cancel In Transit holds',
+			'sql' => [
+				'ALTER TABLE ptype ADD COLUMN canRenewOnline TINYINT(1) DEFAULT 1',
+			],
+		], //renew_by_ptype
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
@@ -136,8 +143,8 @@ function getUpdates24_01_00(): array {
 				'CREATE TABLE IF NOT EXISTS stripe_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					name VARCHAR(50) NOT NULL UNIQUE,
-					stripePublicKey VARCHAR(255) NOT NULL,
-					stripeSecretKey VARCHAR(255) NOT NULL
+					stripePublicKey VARCHAR(500) NOT NULL,
+					stripeSecretKey VARCHAR(500) NOT NULL
 				) ENGINE = InnoDB',
 				'ALTER TABLE library ADD COLUMN stripeSettingId INT(11) DEFAULT -1',
 				'ALTER TABLE user_payments ADD COLUMN stripeToken VARCHAR(255) DEFAULT null',
@@ -165,6 +172,15 @@ function getUpdates24_01_00(): array {
 			],
 		],
 		//self_reg_no_duplicate_check
+		'longer_stripe_keys' => [
+			'title' => 'Longer Stripe Keys',
+			'description' => 'Allow Longer Stripe Keys',
+			'sql' => [
+				"ALTER TABLE stripe_settings CHANGE COLUMN stripePublicKey stripePublicKey VARCHAR(500) NOT NULL",
+				"ALTER TABLE stripe_settings CHANGE COLUMN stripeSecretKey stripeSecretKey VARCHAR(500) NOT NULL"
+			]
+		],
+		//longer_stripe_keys
 
 		//lucas - Theke
 		'store_form_submissions_by_field' => [
