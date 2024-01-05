@@ -1,6 +1,6 @@
 <?php
 
-function getUpdates23_12_02(): array {
+function getUpdates23_12_10(): array {
 	$curTime = time();
 	return [
         /*'name' => [
