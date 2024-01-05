@@ -26,5 +26,17 @@ function getSummonUpdates() {
 				'ALTER TABLE library ADD COLUMN summonSettingsId INT(11) DEFAULT -1',
 			],
 		],
+		'createSummonPermissions' => [
+			'title' => 'Create Summon Permissions',
+			'description' => 'Create Summon Permissions',
+			'continueOnError' => true,
+			'sql' => [
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('Cataloging & eContent', 'Administer Summon', 'Summon', 180, 'Allows the user configure Summon integration for all libraries.')",
+				"INSERT INTO permissions (sectionName, name, requiredModule, weight, description) VALUES ('', 'Library Summon Options', '', 49, 'Configure Library fields related to Summon content.')",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'libraryAdmin'), (SELECT id from permissions where name='Library Summon Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name  = 'opacAdmin'), (SELECT id from permissions where name='Library Summon Options'))",
+				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Summon'))",
+			],
+		],
     ];
 }

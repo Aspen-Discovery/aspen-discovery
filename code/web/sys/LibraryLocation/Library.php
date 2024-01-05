@@ -3661,7 +3661,7 @@ class Library extends DataObject {
 					],
 				],
 			],
-
+			
 			'summonSection' => [
 				'property' => 'summonSection',
 				'type' => 'section',
@@ -3670,17 +3670,40 @@ class Library extends DataObject {
 				'renderAsHeading' => true,
 				'permissions' => ['Library Summon Options'],
 				'properties' => [
-					'edsSettingsId' => [
+					'summonSettingsId' => [
 						'property' => 'summonSettingsId',
 						'type' => 'enum',
 						'values' => $summonSettings,
 						'label' => 'Summon Settings',
-						'description' => 'The Summon Settings to use for connection',
+						'description' => 'Whether or not Summon content should be included for this library.',
 						'hideInLists' => true,
 						'default' => -1,
 					],
 				],
 			],
+	
+			
+				
+
+			// 'summonSection' => [
+			// 	'property' => 'summonSection',
+			// 	'type' => 'section',
+			// 	'label' => 'Summon',
+			// 	'hideInLists' => true,
+			// 	'renderAsHeading' => true,
+			// 	'permissions' => ['Library Summon Options'],
+			// 	'properties' => [
+			// 		'summonSettingsId' => [
+			// 			'property' => 'summonSettingsId',
+			// 			'type' => 'enum',
+			// 			'values' => $summonSettings,
+			// 			'label' => 'Summon Settings',
+			// 			'description' => 'The Summon Settings to use for connection',
+			// 			'hideInLists' => true,
+			// 			'default' => -1,
+			// 		],
+			// 	],
+			// ],
 
 			'casSection' => [
 				'property' => 'casSection',
