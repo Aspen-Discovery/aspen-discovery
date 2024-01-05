@@ -293,8 +293,8 @@ class GoDeeperData {
 				$syndeticsData->primaryUpc = $upc;
 				$doReload = false;
 				if ($syndeticsData->find(true)) {
-					//Reload the summary every 4 weeks
-					if ($syndeticsData->lastDescriptionUpdate < time() - 4 * 7 * 24 * 60 * 60) {
+					//Reload the summary every 2 weeks (to match covers)
+					if ($syndeticsData->lastDescriptionUpdate < time() - 2 * 7 * 24 * 60 * 60) {
 						$doReload = true;
 					}
 				} else {
