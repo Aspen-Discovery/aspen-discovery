@@ -4989,6 +4989,7 @@ class Library extends DataObject {
 	}
 
 	public function loadCopyableSubObjects() {
+		$this->isDefault = 0;
 		if (empty($_REQUEST['aspenLida'])) {
 			$this->lidaGeneralSettingId = -1;
 			$this->lidaNotificationSettingId = -1;

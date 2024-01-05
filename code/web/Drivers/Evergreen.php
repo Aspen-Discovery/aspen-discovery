@@ -1448,7 +1448,7 @@ class Evergreen extends AbstractIlsDriver {
 			$firstName = $userData['pref_first_given_name'];
 		}
 		if (!empty($userData['pref_family_name'])) {
-			$firstName = $userData['pref_family_name'];
+			$lastName = $userData['pref_family_name'];
 		}
 		$user->_fullname = $lastName . ',' . $firstName;
 		$forceDisplayNameUpdate = false;

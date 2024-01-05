@@ -2470,28 +2470,23 @@ class MyAccount_AJAX extends JSON_Action {
 				if ($interface->getVariable('expirationNearMessage')) {
 					$interface->assign('expirationNearMessage', str_replace('%date%', date('M j, Y', $ilsSummary->expirationDate), $interface->getVariable('expirationNearMessage')));
 				}
-				//Determine what renewal information should be shown
-				if ($ilsSummary->isExpirationClose()) {
+
+				$showRenewalLink = $user->showRenewalLink($ilsSummary);
+				$interface->assign('showRenewalLink', $showRenewalLink);
+				if ($showRenewalLink) {
 					$userLibrary = $user->getHomeLibrary();
-					$interface->assign('showRenewalLink', false);
 					if ($userLibrary->enableCardRenewal == 2) {
 						if (!empty($userLibrary->cardRenewalUrl)) {
-							$interface->assign('showRenewalLink', true);
 							$interface->assign('cardRenewalLink', $userLibrary->cardRenewalUrl);
 						}
 					} elseif ($userLibrary->enableCardRenewal == 3) {
 						require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 						$quipuECardSettings = new QuipuECardSetting();
 						if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
-							$interface->assign('showRenewalLink', true);
 							$interface->assign('cardRenewalLink', "/MyAccount/eRenew");
 						}
 					}
-					if (!$ilsSummary->isExpired() && !$userLibrary->showCardRenewalWhenExpirationIsClose) {
-						$interface->assign('showRenewalLink', false);
-					}
 				}
-
 
 				$ilsSummary->setExpirationNotice($interface->fetch('MyAccount/expirationNotice.tpl'));
 				$ilsSummary->setFinesBadge($interface->fetch('MyAccount/finesBadge.tpl'));
