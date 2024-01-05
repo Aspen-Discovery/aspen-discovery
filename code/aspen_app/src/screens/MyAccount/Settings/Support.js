@@ -11,10 +11,10 @@ import { getTermFromDictionary } from '../../../translations/TranslationService'
 import { GLOBALS } from '../../../util/globals';
 
 export const SupportScreen = () => {
+     const { accounts } = React.useContext(UserContext);
      const { library } = React.useContext(LibrarySystemContext);
      const { location } = React.useContext(LibraryBranchContext);
      const { language } = React.useContext(LanguageContext);
-     const { user, expoToken, aspenToken, updateExpoToken, updateAspenToken } = React.useContext(UserContext);
      const [status, setStatus] = React.useState({
           needsUpdate: false,
           url: null,
@@ -22,11 +22,15 @@ export const SupportScreen = () => {
           canOpenUrl: false,
      });
 
+     const numLinkedAccounts = _.size(accounts) ?? 0;
+
      React.useEffect(() => {
           (async () => {
                let tmp = await checkStoreVersion();
-               if (Linking.canOpenURL(tmp.url)) {
-                    tmp = _.set(tmp, 'canOpenUrl', true);
+               if (tmp.url) {
+                    if (Linking.canOpenURL(tmp.url)) {
+                         tmp = _.set(tmp, 'canOpenUrl', true);
+                    }
                }
                setStatus(tmp);
           })();
@@ -40,8 +44,6 @@ export const SupportScreen = () => {
                console.log(supported);
           }
      };
-
-     console.log(status);
 
      return (
           <Box safeArea={5}>
@@ -102,6 +104,14 @@ export const SupportScreen = () => {
                               {library.baseUrl}
                          </Text>
                     </HStack>
+                    <HStack justifyContent="space-between">
+                         <Text fontSize="xs" bold>
+                              {getTermFromDictionary(language, 'num_linked_accounts')}
+                         </Text>
+                         <Text fontSize="xs" color="coolGray.600" _dark={{ color: 'warmGray.400' }}>
+                              {numLinkedAccounts}
+                         </Text>
+                    </HStack>
                </VStack>
                {status.needsUpdate ? (
                     <Center mt={5}>
@@ -142,11 +152,9 @@ async function checkStoreVersion() {
                currentVersion: GLOBALS.appVersion,
           });
           if (version.needsUpdate) {
-               let url = version.url;
+               let url = (url = GLOBALS.iosStoreUrl);
                if (Platform.OS === 'android') {
                     url = GLOBALS.androidStoreUrl;
-               } else {
-                    url = GLOBALS.iosStoreUrl;
                }
                return {
                     needsUpdate: true,

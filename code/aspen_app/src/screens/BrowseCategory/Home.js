@@ -392,16 +392,8 @@ export const DiscoverHomeScreen = () => {
           queryClient.invalidateQueries({ queryKey: ['browse_categories_list', library.baseUrl, language] });
      };
 
-     const onPressSettings = (url, patronId) => {
-          const version = formatDiscoveryVersion(library.discoveryVersion);
-          let screen = 'SettingsHomeScreen';
-          if (version >= '22.12.00') {
-               screen = 'SettingsBrowseCategories';
-          }
-          navigateStack('AccountScreenTab', screen, {
-               url,
-               patronId,
-          });
+     const onPressSettings = () => {
+          navigateStack('MoreTab', 'MyPreferences_ManageBrowseCategories', {});
      };
 
      const handleOnPressCategory = (label, key, source) => {
@@ -527,7 +519,7 @@ const ButtonOptions = (props) => {
                          mt="3"
                          colorScheme="primary"
                          onPress={() => {
-                              onPressSettings(libraryUrl, patronId);
+                              onPressSettings();
                          }}
                          startIcon={<Icon as={MaterialIcons} name="settings" size="sm" />}>
                          {getTermFromDictionary(language, 'browse_categories_manage')}

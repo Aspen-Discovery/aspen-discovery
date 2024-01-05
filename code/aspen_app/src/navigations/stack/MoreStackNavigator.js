@@ -5,6 +5,7 @@ import { LanguageContext } from '../../context/initialContext';
 import { MyLibrary } from '../../screens/Library/MyLibrary';
 import { MoreMenu } from '../../screens/More/MoreMenu';
 import { Settings_BrowseCategories } from '../../screens/MyAccount/Settings/BrowseCategories';
+import { Settings_LanguageScreen } from '../../screens/MyAccount/Settings/Language';
 import { Settings_NotificationOptions } from '../../screens/MyAccount/Settings/NotificationOptions';
 import { PreferencesScreen } from '../../screens/MyAccount/Settings/Preferences';
 import { SupportScreen } from '../../screens/MyAccount/Settings/Support';
@@ -30,9 +31,11 @@ const MoreStackNavigator = () => {
                />
                <Stack.Group>
                     <Stack.Screen name="MyPreferences" component={PreferencesScreen} options={{ title: getTermFromDictionary(language, 'preferences') }} />
-                    <Stack.Screen name="SettingsBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
-                    <Stack.Screen name="SettingsNotificationOptions" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
-                    <Stack.Screen name="Support" component={SupportScreen} options={{ title: getTermFromDictionary(language, 'support') }} />
+                    <Stack.Screen name="MyPreferences_ManageBrowseCategories" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
+                    <Stack.Screen name="MyPreferences_Language" component={Settings_LanguageScreen} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
+                    <Stack.Screen name="MyPreferences_Appearance" component={Settings_BrowseCategories} options={{ title: getTermFromDictionary(language, 'manage_browse_categories') }} />
+                    <Stack.Screen name="MyDevice_Notifications" component={Settings_NotificationOptions} options={{ title: getTermFromDictionary(language, 'notification_settings') }} />
+                    <Stack.Screen name="MyDevice_Support" component={SupportScreen} options={{ title: getTermFromDictionary(language, 'support') }} />
                </Stack.Group>
           </Stack.Navigator>
      );
