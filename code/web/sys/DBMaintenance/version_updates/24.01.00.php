@@ -53,6 +53,13 @@ function getUpdates24_01_00(): array {
 				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasERenew TINYINT(1) DEFAULT 0',
 			],
 		], //quipu_e_renew
+		'library_cancel_in_transit_holds' => [
+			'title' => 'Library - Cancel In Transit holds',
+			'description' => 'Library - Cancel In Transit holds',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN allowCancellingInTransitHolds TINYINT(1) DEFAULT 1',
+			],
+		], //library_cancel_in_transit_holds
 
 		//kirstien - ByWater
 		'add_enable_branded_app_settings' => [
@@ -129,8 +136,8 @@ function getUpdates24_01_00(): array {
 				'CREATE TABLE IF NOT EXISTS stripe_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
 					name VARCHAR(50) NOT NULL UNIQUE,
-					stripePublicKey VARCHAR(255) NOT NULL,
-					stripeSecretKey VARCHAR(255) NOT NULL
+					stripePublicKey VARCHAR(500) NOT NULL,
+					stripeSecretKey VARCHAR(500) NOT NULL
 				) ENGINE = InnoDB',
 				'ALTER TABLE library ADD COLUMN stripeSettingId INT(11) DEFAULT -1',
 				'ALTER TABLE user_payments ADD COLUMN stripeToken VARCHAR(255) DEFAULT null',
@@ -148,6 +155,7 @@ function getUpdates24_01_00(): array {
 				"INSERT INTO role_permissions(roleId, permissionId) VALUES ((SELECT roleId from roles where name='opacAdmin'), (SELECT id from permissions where name='Administer Stripe'))",
 			],
 		],
+
 		//permissions_ecommerce_stripe
 		'self_reg_no_duplicate_check' => [
 			'title' => 'Symphony Self Registration Duplicate Checking Toggle',
@@ -157,8 +165,40 @@ function getUpdates24_01_00(): array {
 			],
 		],
 		//self_reg_no_duplicate_check
+		'longer_stripe_keys' => [
+			'title' => 'Longer Stripe Keys',
+			'description' => 'Allow Longer Stripe Keys',
+			'sql' => [
+				"ALTER TABLE stripe_settings CHANGE COLUMN stripePublicKey stripePublicKey VARCHAR(500) NOT NULL",
+				"ALTER TABLE stripe_settings CHANGE COLUMN stripeSecretKey stripeSecretKey VARCHAR(500) NOT NULL"
+			]
+		],
+		//longer_stripe_keys
 
 		//lucas - Theke
+		'store_form_submissions_by_field' => [
+			'title' => 'Store form submissions by field',
+			'description' => 'Create a table to store information about submissions responses',
+			'continueOnError' => true,
+			'sql' => [
+				'CREATE TABLE web_builder_custom_form_field_submission (
+					  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+					  formSubmissionId INT(11) NOT NULL,
+					  submissionFieldId INT(11) NOT NULL,
+					  formFieldContent TEXT,
+					  UNIQUE (formSubmissionId, submissionFieldId)
+				  ) ENGINE = InnoDB',
+			],
+		],
+		//store_form_submissions_by_field
+		'migrate_form_submissions' => [
+			'title' => 'Migrate form submissions to store by field',
+			'description' => 'Migrate form submissions to store by field',
+			'continueOnError' => true,
+			'sql' => [
+				'migrateFormSubmissions',
+			],
+		],
 
 		//alexander - PTFS Europe
 
@@ -166,4 +206,43 @@ function getUpdates24_01_00(): array {
 
 
 	];
+}
+
+function migrateFormSubmissions(&$update) {
+	require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmission.php';
+	$customFormSubmissions = new CustomFormSubmission();
+	$customFormSubmissions->find();
+	$numUpdates = 0;
+	while ($customFormSubmissions->fetch()) {
+		require_once ROOT_DIR . '/sys/WebBuilder/CustomFormSubmissionSelection.php';
+		$fieldSubmissions = new CustomFormSubmissionSelection();
+		$fieldSubmissions->formSubmissionId = $customFormSubmissions->id;
+		if ($fieldSubmissions->count() == 0) {
+			require_once ROOT_DIR . '/sys/WebBuilder/CustomForm.php';
+			$customForm = new CustomForm();
+			$customForm->id = $customFormSubmissions->formId;
+			if ($customForm->find(true)) {
+				$formFields = $customForm->getFormFields();
+				$htmlResults = $customFormSubmissions->submission;
+				preg_match_all('%.*?<div><b>(.*?)</?b></div><div>(.*?)</div><br/>%s', $htmlResults, $fieldMatches, PREG_SET_ORDER);
+				foreach ($fieldMatches as $fieldMatch) {
+					$fieldLabel = $fieldMatch[1];
+					$fieldValue = $fieldMatch[2];
+					foreach ($formFields as $formField) {
+						if ($formField->label == $fieldLabel) {
+							$customFormSubmissionField = new CustomFormSubmissionSelection();
+							$customFormSubmissionField->formSubmissionId = $customFormSubmissions->id;
+							$customFormSubmissionField->submissionFieldId = $formField->id;
+							$customFormSubmissionField->formFieldContent = $fieldValue;
+							$numUpdates += $customFormSubmissionField->insert();
+							break;
+						}
+					}
+				}
+			}
+
+		}
+	}
+	$update['status'] = "<strong>Migrated $numUpdates form submissions</strong><br/>";
+	$update['success'] = true;
 }

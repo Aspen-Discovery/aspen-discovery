@@ -7,8 +7,7 @@ import { LibraryBranchContext } from '../../context/initialContext';
 
 const mapStyle = [
      {
-          featureType: 'administrative.land_parcel',
-          elementType: 'labels',
+          featureType: 'poi.business',
           stylers: [
                {
                     visibility: 'off',
@@ -16,17 +15,16 @@ const mapStyle = [
           ],
      },
      {
-          featureType: 'poi',
+          featureType: 'poi.medical',
+          stylers: [
+               {
+                    visibility: 'off',
+               },
+          ],
+     },
+     {
+          featureType: 'poi.park',
           elementType: 'labels.text',
-          stylers: [
-               {
-                    visibility: 'off',
-               },
-          ],
-     },
-     {
-          featureType: 'road.local',
-          elementType: 'labels',
           stylers: [
                {
                     visibility: 'off',
@@ -60,15 +58,6 @@ const mapStyleDark = [
           ],
      },
      {
-          featureType: 'administrative.land_parcel',
-          elementType: 'labels',
-          stylers: [
-               {
-                    visibility: 'off',
-               },
-          ],
-     },
-     {
           featureType: 'administrative.locality',
           elementType: 'labels.text.fill',
           stylers: [
@@ -79,7 +68,15 @@ const mapStyleDark = [
      },
      {
           featureType: 'poi',
-          elementType: 'labels.text',
+          elementType: 'labels.text.fill',
+          stylers: [
+               {
+                    color: '#d59563',
+               },
+          ],
+     },
+     {
+          featureType: 'poi.business',
           stylers: [
                {
                     visibility: 'off',
@@ -87,11 +84,10 @@ const mapStyleDark = [
           ],
      },
      {
-          featureType: 'poi',
-          elementType: 'labels.text.fill',
+          featureType: 'poi.medical',
           stylers: [
                {
-                    color: '#d59563',
+                    visibility: 'off',
                },
           ],
      },
@@ -101,6 +97,15 @@ const mapStyleDark = [
           stylers: [
                {
                     color: '#263c3f',
+               },
+          ],
+     },
+     {
+          featureType: 'poi.park',
+          elementType: 'labels.text',
+          stylers: [
+               {
+                    visibility: 'off',
                },
           ],
      },
@@ -164,15 +169,6 @@ const mapStyleDark = [
           stylers: [
                {
                     color: '#f3d19c',
-               },
-          ],
-     },
-     {
-          featureType: 'road.local',
-          elementType: 'labels',
-          stylers: [
-               {
-                    visibility: 'off',
                },
           ],
      },
@@ -254,8 +250,6 @@ const DisplayMap = () => {
      }, [mapRef]);
 
      if (_.isNumber(location.latitude) && location.latitude !== 0 && location.longitude !== 0) {
-          console.log(location.latitude);
-          console.log(location.longitude);
           return (
                <Box pt={2} pb={2}>
                     <MapView
@@ -265,27 +259,22 @@ const DisplayMap = () => {
                          provider={PROVIDER_GOOGLE}
                          camera={{
                               center: {
-                                   latitude: latitude,
-                                   longitude: longitude,
-                                   latitudeDelta: 0.01,
-                                   longitudeDelta: 0.01,
+                                   latitude: location.latitude,
+                                   longitude: location.longitude,
                               },
                               pitch: 1,
                               zoom: 16,
                          }}
                          paddingAdjustmentBehavior="never"
                          loadingEnabled={true}
-                         zoomEnabled={false}
                          scrollEnabled={false}
-                         rotateEnabled={false}
                          showsPointsOfInterest={false}
-                         pitchEnabled={false}
                          customMapStyle={mapColorMode === 'light' ? mapStyle : mapStyleDark}
                          style={{ height: 180, width: '100%' }}>
                          <Marker
                               coordinate={{
-                                   latitude: latitude,
-                                   longitude: longitude,
+                                   latitude: location.latitude,
+                                   longitude: location.longitude,
                               }}
                               title={location.displayName}
                               description={location.address}

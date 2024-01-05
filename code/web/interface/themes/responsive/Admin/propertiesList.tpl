@@ -16,6 +16,11 @@
 {if $canCompare || $canAddNew || $canBatchUpdate || $canFilter || !empty($customListActions) || $canBatchDelete || $canFetchFromCommunity}
 <form action="" method="get" id='propertiesListForm' class="form-inline">
 {/if}
+	{if !empty($hiddenFields)}
+		{foreach from=$hiddenFields item=fieldValue key=fieldName}
+			<input type="hidden" name="{$fieldName}" value="{$fieldValue}">
+		{/foreach}
+	{/if}
 	{if !empty($canSort) && count($sortableFields) > 0}
 		<div class="row">
 			<div class="col-xs-12">
