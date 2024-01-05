@@ -147,7 +147,7 @@ export const DiscoverHomeScreen = () => {
      });
 
      useQuery(['session', library.baseUrl, user.id], () => validateSession(library.baseUrl), {
-          refetchInterval: 60 * 1000 * 5, // 86400000 = run once per day, temporarily set to every 5 minutes to make sure it's working
+          refetchInterval: 86400000,
           refetchIntervalInBackground: true,
           onSuccess: (data) => {
                if (typeof data.result?.session !== 'undefined') {
