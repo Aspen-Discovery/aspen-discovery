@@ -205,6 +205,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
 					label = 'Boundless Checkouts';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -275,6 +277,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
 					label = 'Boundless Holds';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -454,6 +458,23 @@ AspenDiscovery.Account = (function () {
 						if (data.summary.numAvailableHolds > 0) {
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
+						}
+					}
+				});
+			}
+			if (Globals.hasPalaceProjectConnection) {
+				var palaceProjectUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataPalaceProject&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(palaceProjectUrl, function (data) {
+					if (data.success) {
+						$(".palace_project-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".palace_project-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".palace_project-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".palace_project-available-holds").show();
 						}
 					}
 				});

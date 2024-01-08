@@ -2673,6 +2673,48 @@ class MyAccount_AJAX extends JSON_Action {
 	}
 
 	/** @noinspection PhpUnused */
+	function getMenuDataPalaceProject() {
+		global $timer;
+		$result = [
+			'success' => false,
+			'message' => translate([
+				'text' => 'Unknown Error',
+				'isPublicFacing' => true,
+			]),
+		];
+		if (UserAccount::isLoggedIn()) {
+			$user = UserAccount::getActiveUserObj();
+			if ($user->isValidForEContentSource('palace_project')) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$driver = new PalaceProjectDriver();
+				$palaceProjectSummary = $driver->getAccountSummary($user);
+				if ($user->getLinkedUsers() != null) {
+					/** @var User $user */
+					foreach ($user->getLinkedUsers() as $linkedUser) {
+						$linkedUserSummary = $driver->getAccountSummary($linkedUser);
+						$palaceProjectSummary->numCheckedOut += $linkedUserSummary->numCheckedOut;
+						$palaceProjectSummary->numUnavailableHolds += $linkedUserSummary->numUnavailableHolds;
+						$palaceProjectSummary->numAvailableHolds += $linkedUserSummary->numAvailableHolds;
+					}
+				}
+				$timer->logTime("Loaded Palace Project Summary for User and linked users");
+				$result = [
+					'success' => true,
+					'summary' => $palaceProjectSummary->toArray(),
+				];
+			} else {
+				$result['message'] = translate([
+					'text' => 'Unknown Error',
+					'isPublicFacing' => true,
+				]);
+			}
+		} else {
+			$result['message'] = 'You must be logged in to get menu data';
+		}
+		return $result;
+	}
+
+	/** @noinspection PhpUnused */
 	function getMenuDataInterlibraryLoan() {
 		global $timer;
 		$result = [

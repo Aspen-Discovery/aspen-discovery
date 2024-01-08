@@ -55,6 +55,14 @@
 											</a>
 										</li>
 									{/if}
+									{if $user->isValidForEContentSource('palace_project')}
+										<li class="myAccountLink">
+										&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/CheckedOut?tab=palace_project" id="checkedOutPalaceProject" title="View checkouts from Palace Project">
+												{translate text="Palace Project" isPublicFacing=true} {if empty($offline)}<span class="badge"><span class="palace_project-checkouts-placeholder">??</span></span>{/if}
+											</a>
+										</li>
+									{/if}
 									{if $user->isValidForEContentSource('cloud_library')}
 										<li class="myAccountLink">
 										&nbsp;&nbsp;&raquo;&nbsp;
@@ -100,6 +108,14 @@
 											&nbsp;&nbsp;&raquo;&nbsp;
 											<a href="/MyAccount/Holds?tab=overdrive" id="holdsOverDrive" title="View holds from OverDrive">
 												{$readerName}{if empty($offline)}<span class="badge"><span class="overdrive-holds-placeholder">??</span></span> <span class="overdrive-available-holds" style="display: none"> <span class="label label-success"><span class="overdrive-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
+											</a>
+										</li>
+									{/if}
+									{if $user->isValidForEContentSource('palace_project')}
+										<li class="myAccountLink">
+											&nbsp;&nbsp;&raquo;&nbsp;
+											<a href="/MyAccount/Holds?tab=palace_project" id="holdsPalaceProject" title="View holds from Palace Project">
+                                                {translate text="Palace Project" isPublicFacing=true}{if empty($offline)}<span class="badge"><span class="palace_project-holds-placeholder">??</span></span> <span class="palace_project-available-holds" style="display: none"> <span class="label label-success"><span class="palace_project-available-holds-placeholder"></span> {translate text="Available Now" isPublicFacing=true}</span></span>{/if}
 											</a>
 										</li>
 									{/if}

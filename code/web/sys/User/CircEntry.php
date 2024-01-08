@@ -42,6 +42,12 @@ abstract class CircEntry extends DataObject {
 				if (!$this->_recordDriver->isValid()) {
 					$this->_recordDriver = false;
 				}
+			} elseif ($this->type == 'palace_project') {
+				require_once ROOT_DIR . '/RecordDrivers/PalaceProjectRecordDriver.php';
+				$this->_recordDriver = new PalaceProjectRecordDriver($this->recordId);
+				if (!$this->_recordDriver->isValid()) {
+					$this->_recordDriver = false;
+				}
 			} elseif ($this->type == 'cloud_library') {
 				require_once ROOT_DIR . '/RecordDrivers/CloudLibraryRecordDriver.php';
 				$this->_recordDriver = new CloudLibraryRecordDriver($this->recordId);

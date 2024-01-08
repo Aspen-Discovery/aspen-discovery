@@ -34,6 +34,8 @@
 					{include file="MyAccount/cloudLibraryCheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{elseif $checkedOutTitle->type == 'axis360'}
 					{include file="MyAccount/axis360CheckedOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
+				{elseif $checkedOutTitle->type == 'palace_project'}
+					{include file="MyAccount/palaceProjectOutTitle.tpl" record=$checkedOutTitle resultIndex=$smarty.foreach.checkedOutTitleLoop.iteration}
 				{else}
 					<div class="row">
 						{translate text="Unknown record source %1%" 1=$checkedOutTitle->type isPublicFacing=true}

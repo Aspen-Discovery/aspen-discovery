@@ -4501,6 +4501,7 @@ var Globals = (function () {
 		hasCloudLibraryConnection: false,
 		hasHooplaConnection: false,
 		hasOverDriveConnection: false,
+		hasPalaceProjectConnection: false,
 		hasInterlibraryLoanConnection: false,
 		isPrint: false,
 		loadingTitle: 'Loading',
@@ -5547,6 +5548,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Checkouts';
 				} else if (source === 'axis360') {
 					label = 'Boundless Checkouts';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Checkouts';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -5617,6 +5620,8 @@ AspenDiscovery.Account = (function () {
 					label = 'Cloud Library Holds';
 				} else if (source === 'axis360') {
 					label = 'Boundless Holds';
+				} else if (source === 'palace_project') {
+					label = 'Palace Project Holds';
 				}
 				history.pushState(stateObj, label, newUrl);
 			}
@@ -5796,6 +5801,23 @@ AspenDiscovery.Account = (function () {
 						if (data.summary.numAvailableHolds > 0) {
 							$(".overdrive-available-holds-placeholder").html(data.summary.numAvailableHolds);
 							$(".overdrive-available-holds").show();
+						}
+					}
+				});
+			}
+			if (Globals.hasPalaceProjectConnection) {
+				var palaceProjectUrl = Globals.path + "/MyAccount/AJAX?method=getMenuDataPalaceProject&activeModule=" + Globals.activeModule + '&activeAction=' + Globals.activeAction;
+				$.getJSON(palaceProjectUrl, function (data) {
+					if (data.success) {
+						$(".palace_project-checkouts-placeholder").html(data.summary.numCheckedOut);
+						totalCheckouts += parseInt(data.summary.numCheckedOut);
+						$(".checkouts-placeholder").html(totalCheckouts);
+						$(".palace_project-holds-placeholder").html(data.summary.numHolds);
+						totalHolds += parseInt(data.summary.numHolds);
+						$(".holds-placeholder").html(totalHolds);
+						if (data.summary.numAvailableHolds > 0) {
+							$(".palace_project-available-holds-placeholder").html(data.summary.numAvailableHolds);
+							$(".palace_project-available-holds").show();
 						}
 					}
 				});
@@ -7123,35 +7145,6 @@ AspenDiscovery.Account = (function () {
 				}
 			}).fail(AspenDiscovery.ajaxFail);
 		},
-
-		/*createStripePaymentIntent: function (patronId, transactionType, paymentId) {
-			var url = Globals.path + "/MyAccount/AJAX";
-			var params = {
-				method: "createStripePaymentIntent",
-				paymentId: paymentId,
-				patronId: patronId,
-				type: transactionType,
-			};
-			var intent = false;
-			// noinspection JSUnresolvedFunction
-			$.ajax({
-				url: url,
-				data: params,
-				dataType: 'json',
-				async: false,
-				method: 'GET'
-			}).success(
-				function (response) {
-					if (response.success === false) {
-						AspenDiscovery.showMessage("Error", response.message);
-						return false;
-					} else {
-						intent = response.client_secret;
-					}
-				}
-			).fail(AspenDiscovery.ajaxFail);
-			return intent;
-		},*/
 
 		completeStripeOrder: function (patronId, transactionType, paymentId, paymentMethodId) {
 			var url = Globals.path + "/MyAccount/AJAX";
@@ -15460,5 +15453,86 @@ AspenDiscovery.PalaceProject = (function () {
 			);
 			return false;
 		},
+
+		getCheckOutPrompts: function (id) {
+			var url = Globals.path + "/PalaceProject/" + id + "/AJAX?method=getCheckOutPrompts";
+			var result = false;
+			$.ajax({
+				url: url,
+				cache: false,
+				success: function (data) {
+					result = data;
+					// noinspection JSUnresolvedVariable
+					if (data.promptNeeded) {
+						// noinspection JSUnresolvedVariable
+						AspenDiscovery.showMessageWithButtons(data.promptTitle, data.prompts, data.buttons);
+					}
+				},
+				dataType: 'json',
+				async: false,
+				error: function () {
+					alert("An error occurred processing your request.  Please try again in a few minutes.");
+					AspenDiscovery.closeLightbox();
+				}
+			});
+			return result;
+		},
+
+		checkOutTitle: function (id) {
+			if (Globals.loggedIn) {
+				//Get any prompts needed for checking out a title
+				var promptInfo = AspenDiscovery.PalaceProject.getCheckOutPrompts(id);
+				// noinspection JSUnresolvedVariable
+				if (!promptInfo.promptNeeded) {
+					AspenDiscovery.PalaceProject.doCheckOut(promptInfo.patronId, id);
+				}
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.PalaceProject.checkOutTitle(id);
+				});
+			}
+			return false;
+		},
+
+		doCheckOut: function (patronId, id) {
+			if (Globals.loggedIn) {
+				var ajaxUrl = Globals.path + "/PalaceProject/AJAX?method=checkOutTitle&patronId=" + patronId + "&id=" + id;
+				$.ajax({
+					url: ajaxUrl,
+					cache: false,
+					success: function (data) {
+						if (data.success === true) {
+							AspenDiscovery.showMessageWithButtons(data.title, data.message, data.buttons);
+							AspenDiscovery.Account.loadMenuData();
+						} else {
+							// noinspection JSUnresolvedVariable
+							if (data.noCopies === true) {
+								AspenDiscovery.closeLightbox(function (){
+									var ret = confirm(data.message);
+									if (ret === true) {
+										AspenDiscovery.PalaceProject.doHold(patronId, id);
+									}
+								});
+							} else {
+								AspenDiscovery.showMessage(data.title, data.message, false);
+							}
+						}
+					},
+					dataType: 'json',
+					async: false,
+					error: function () {
+						alert("An error occurred processing your request in Palace Project.  Please try again in a few minutes.");
+						//alert("ajaxUrl = " + ajaxUrl);
+						AspenDiscovery.closeLightbox();
+					}
+				});
+			} else {
+				AspenDiscovery.Account.ajaxLogin(null, function () {
+					AspenDiscovery.PalaceProject.checkOutTitle(id);
+				}, false);
+			}
+			return false;
+		},
+
 	}
 }(AspenDiscovery.PalaceProject || {}));

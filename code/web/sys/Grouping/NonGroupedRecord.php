@@ -21,6 +21,7 @@ class NonGroupedRecord extends DataObject {
 		$availableSources['cloud_library'] = 'cloudLibrary';
 		$availableSources['hoopla'] = 'Hoopla';
 		$availableSources['overdrive'] = 'Overdrive';
+		$availableSources['palace_project'] = 'Palace Project';
 
 		return [
 			[

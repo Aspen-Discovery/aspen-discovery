@@ -591,6 +591,8 @@ class User extends DataObject {
 					return array_key_exists('Cloud Library', $enabledModules) && (count($userHomeLibrary->cloudLibraryScopes) > 0);
 				} elseif ($source == 'axis360') {
 					return array_key_exists('Axis 360', $enabledModules) && ($userHomeLibrary->axis360ScopeId > 0);
+				} elseif ($source == 'palace_project') {
+					return array_key_exists('Palace Project', $enabledModules) && ($userHomeLibrary->palaceProjectScopeId > 0);
 				}
 			}
 		}
@@ -1341,6 +1343,17 @@ class User extends DataObject {
 				$allCheckedOut = array_merge($allCheckedOut, $axis360CheckedOutItems);
 				$timer->logTime("Loaded transactions from Boundless. {$this->id}");
 				if ($source == 'all' || $source == 'axis360') {
+					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
+				}
+			}
+
+			if ($this->isValidForEContentSource('palace_project')) {
+				require_once ROOT_DIR . '/Drivers/PalaceProjectDriver.php';
+				$palaceProjectDriver = new PalaceProjectDriver();
+				$palaceProjectCheckedOutItems = $palaceProjectDriver->getCheckouts($this);
+				$allCheckedOut = array_merge($allCheckedOut, $palaceProjectCheckedOutItems);
+				$timer->logTime("Loaded transactions from Palace Project. {$this->id}");
+				if ($source == 'all' || $source == 'palace_project') {
 					$checkoutsToReturn = array_merge($checkoutsToReturn, $axis360CheckedOutItems);
 				}
 			}

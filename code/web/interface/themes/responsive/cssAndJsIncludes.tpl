@@ -63,6 +63,9 @@
 			{if array_key_exists('OverDrive', $enabledModules)}
 				Globals.hasOverDriveConnection = true;
 			{/if}
+            {if array_key_exists('Palace Project', $enabledModules)}
+			Globals.hasPalaceProjectConnection = true;
+            {/if}
 			{if !empty($hasInterlibraryLoanConnection)}
 				Globals.hasInterlibraryLoanConnection = true;
 			{/if}

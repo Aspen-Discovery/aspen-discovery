@@ -68,6 +68,8 @@ class Hold extends CircEntry {
 			$hold['holdSource'] = 'CloudLibrary';
 		} elseif ($hold['type'] == 'axis360') {
 			$hold['holdSource'] = 'Axis360';
+		} elseif ($hold['type'] == 'palace_project') {
+			$hold['holdSource'] = 'Palace Project';
 		} elseif ($hold['type'] == 'overdrive') {
 			global $configArray;
 			$hold['holdSource'] = 'OverDrive';
