@@ -1,11 +1,11 @@
-import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { Button, AlertDialog } from 'native-base';
-import { LanguageContext, LibrarySystemContext, UserContext } from '../context/initialContext';
-import { getTermFromDictionary } from '../translations/TranslationService';
-import { navigateStack } from '../helpers/RootNavigator';
-import { updateNotificationOnboardingStatus } from '../util/api/user';
 import { useQueryClient } from '@tanstack/react-query';
+import { AlertDialog, Button } from 'native-base';
+import React from 'react';
+import { LanguageContext, LibrarySystemContext, UserContext } from '../context/initialContext';
+import { navigateStack } from '../helpers/RootNavigator';
+import { getTermFromDictionary } from '../translations/TranslationService';
+import { updateNotificationOnboardingStatus } from '../util/api/user';
 
 export const NotificationsOnboard = (props) => {
      const queryClient = useQueryClient();
@@ -68,7 +68,7 @@ export const NotificationsOnboard = (props) => {
                               <Button
                                    colorScheme="danger"
                                    onPress={() => {
-                                        onClose().then(() => navigateStack('AccountScreenTab', 'SettingsNotificationOptions', {}));
+                                        onClose().then(() => navigateStack('MoreTab', 'MyDevice_Notifications', {}));
                                    }}>
                                    {onboardingButton}
                               </Button>

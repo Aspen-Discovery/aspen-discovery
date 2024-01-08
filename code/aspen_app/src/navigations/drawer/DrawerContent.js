@@ -171,7 +171,7 @@ export const DrawerContent = () => {
                               <LogOutButton />
                          </HStack>
                          <HStack space={2}>
-                              <UseColorMode />
+                              <UseColorMode showText={false} />
                               <LanguageSwitcher />
                          </HStack>
                     </VStack>
@@ -468,7 +468,7 @@ const UserProfile = () => {
                }}>
                <HStack space="1" alignItems="center">
                     <Icon as={MaterialIcons} name="chevron-right" size="7" />
-                    <Text fontWeight="500">{getTermFromDictionary(language, 'profile')}</Text>
+                    <Text fontWeight="500">{getTermFromDictionary(language, 'contact_information')}</Text>
                </HStack>
           </Pressable>
      );

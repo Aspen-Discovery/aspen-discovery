@@ -101,7 +101,6 @@ const MyLibrary = () => {
 };
 
 const Settings = () => {
-     const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
 
      return (

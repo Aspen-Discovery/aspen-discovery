@@ -4,7 +4,7 @@ import { create } from 'apisauce';
 import chroma from 'chroma-js';
 import { LinearGradient } from 'expo-linear-gradient';
 import _ from 'lodash';
-import { Box, extendTheme, Icon, IconButton, useColorMode, useColorModeValue } from 'native-base';
+import { Box, extendTheme, HStack, Icon, IconButton, Text, useColorMode, useColorModeValue } from 'native-base';
 import React, { useState } from 'react';
 
 import { createAuthTokens, getHeaders } from '../util/apiAuth';
@@ -210,16 +210,28 @@ export async function fetchTheme() {
      }
 }
 
-export function UseColorMode() {
+export function UseColorMode(props) {
+     const { showText } = props;
      const { toggleColorMode } = useColorMode();
      const currentMode = useColorModeValue('nightlight-round', 'wb-sunny');
      const colorMode = useColorModeValue('dark', 'light');
+     const currentColorMode = useColorModeValue('Light', 'Dark');
+     const currentModeB = useColorModeValue('wb-sunny', 'nightlight-round');
 
      const switchColorMode = async () => {
           toggleColorMode();
           console.log('Set colorMode to: ' + colorMode);
           await AsyncStorage.setItem('@colorMode', colorMode);
      };
+
+     if (showText) {
+          return (
+               <HStack alignItems="center">
+                    <IconButton onPress={switchColorMode} icon={<Icon as={MaterialIcons} name={currentModeB} />} borderRadius="full" _icon={{ size: 'sm' }} />
+                    <Text fontSize="xs">{currentColorMode}</Text>
+               </HStack>
+          );
+     }
 
      return (
           <Box alignItems="center">

@@ -268,7 +268,7 @@ export const MyList = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{showSystemMessage()}</Box>
+               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (

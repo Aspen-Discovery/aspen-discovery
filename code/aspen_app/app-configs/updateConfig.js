@@ -112,7 +112,7 @@ const app_config = {
           infoPlist: {
                NSLocationAlwaysAndWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
                NSLocationWhenInUseUsageDescription: 'This app uses your location to find nearby libraries to make logging in easier',
-               LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta'],
+               LSApplicationQueriesSchemes: ['comgooglemaps', 'citymapper', 'uber', 'lyft', 'waze', 'aspen-lida', 'aspen-lida-beta', 'itms-apps'],
                CFBundleAllowMixedLocalizations: true,
                NSCameraUsageDescription: 'This app uses your camera to scan barcodes when searching for items in the library catalog',
                NSMicrophoneUsageDescription: 'This app uses your microphone when scanning barcodes when searching for items in the library catalog',
@@ -154,8 +154,8 @@ const app_config = {
           eas: {
                projectId: app['easId'],
           },
-          iosStoreUrl: 'https://apps.apple.com/us/app/id' + app['ascAppId'],
-          androidStoreUrl: 'https://play.google.com/store/apps/details?id=' + app['reverseDns'],
+          iosStoreUrl: 'itms-apps://apps.apple.com/id/app/' + app['slug'] + '/id' + app['ascAppId'],
+          androidStoreUrl: 'market://details?id=' + app['reverseDns'],
           patch: version['patch'],
      },
      hooks: {

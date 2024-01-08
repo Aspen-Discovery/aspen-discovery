@@ -168,7 +168,7 @@ export const SearchResults = () => {
      const NoResults = () => {
           return (
                <>
-                    <Box safeArea={2}>{showSystemMessage()}</Box>
+                    {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                     <Center flex={1}>
                          <Heading pt={5}>{getTermFromDictionary(language, 'no_results')}</Heading>
                          <Text bold w="75%" textAlign="center">
@@ -184,7 +184,7 @@ export const SearchResults = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{showSystemMessage()}</Box>
+               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {status === 'loading' || isFetching || translationIsFetching ? (
                     loadingSpinner()
                ) : status === 'error' ? (
