@@ -4530,11 +4530,11 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.autoOpenPanel();
 		AspenDiscovery.scrollToTopPage();
 
-		jQuery("#modalDialog").modal({show:false});
-		jQuery('[data-toggle="tooltip"]').tooltip();
-		jQuery('[data-toggle="popover"]').popover();
+		$("#modalDialog").modal({show:false});
+		$('[data-toggle="tooltip"]').tooltip();
+		$('[data-toggle="popover"]').popover();
 
-		jQuery('.panel')
+		$('.panel')
 				.on('show.bs.collapse', function () {
 					$(this).addClass('active');
 				})
@@ -4542,14 +4542,14 @@ var AspenDiscovery = (function(){
 					$(this).removeClass('active');
 				});
 
-		jQuery(window).on("popstate", function () {
+		$(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
 			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
-				jQuery(selector1).tab('show');
+				$(selector1).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
 				var selector2 = '#holdsTab a[href="#' + history.state.source + '"]';
-				jQuery(selector2).tab('show');
+				$(selector2).tab('show');
 			}else if (history.state && history.state.page === "ReadingHistory") {
 				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.pageNumber, history.state.showCovers, history.state.filter);
 			}else if (history.state && history.state.page === "Browse") {
@@ -4740,15 +4740,15 @@ var AspenDiscovery = (function(){
 		},
 
 		initializeModalDialogs: function() {
-			jQuery(".modalDialogTrigger").each(function(){
-				jQuery(this).click(function(){
+			$(".modalDialogTrigger").each(function(){
+				$(this).click(function(){
 					var trigger = $(this);
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					var dialogDestination = trigger.attr("href");
-					jQuery("#myModalLabel").text(dialogTitle);
-					jQuery(".modal-body").html('Loading.').load(dialogDestination);
-					jQuery(".extraModalButton").hide();
-					jQuery("#modalDialog").modal("show");
+					$("#myModalLabel").text(dialogTitle);
+					$(".modal-body").html('Loading.').load(dialogDestination);
+					$(".extraModalButton").hide();
+					$("#modalDialog").modal("show");
 					return false;
 				});
 			});
@@ -4881,10 +4881,10 @@ var AspenDiscovery = (function(){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
-			jQuery("#myModalLabel").html(title);
-			jQuery(".modal-body").html(body);
-			jQuery('.modal-buttons').html('');
-			var modalDialog = jQuery("#modalDialog");
+			$("#myModalLabel").html(title);
+			$(".modal-body").html(body);
+			$('.modal-buttons').html('');
+			var modalDialog = $("#modalDialog");
 			modalDialog.removeClass('image-popup');
 			modalDialog.modal('show');
 			if (autoClose) {
@@ -4906,12 +4906,12 @@ var AspenDiscovery = (function(){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
-			jQuery("#myModalLabel").html(title);
-			jQuery(".modal-body").html(body);
-			jQuery('.modal-buttons').html(buttons);
+			$("#myModalLabel").html(title);
+			$(".modal-body").html(body);
+			$('.modal-buttons').html(buttons);
 			if (closeDestination !== undefined) {
 				Globals.modalCloseDestination = closeDestination;
-				jQuery(".modalClose").click(function () {
+				$(".modalClose").click(function () {
 					if (Globals.modalCloseDestination.length > 0) {
 						document.location.href = Globals.modalCloseDestination
 						return false;
@@ -4920,9 +4920,9 @@ var AspenDiscovery = (function(){
 			}else{
 				Globals.modalCloseDestination = '';
 			}
-			jQuery("#modalDialog").modal('show');
+			$("#modalDialog").modal('show');
 			if (refreshAfterClose) {
-				jQuery("#modalDialog").on('hide.bs.modal', function(){
+				$("#modalDialog").on('hide.bs.modal', function(){
 					location.reload();
 				})
 			}
@@ -4944,11 +4944,11 @@ var AspenDiscovery = (function(){
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
-				jQuery(".modal-title").html(title);
+				$(".modal-title").html(title);
 				var elementText = $(elementId).html();
 				var elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
-				jQuery(".modal-body").html(elementText);
-				jQuery('.modal-buttons').html(elementButtons);
+				$(".modal-body").html(elementText);
+				$('.modal-buttons').html(elementButtons);
 
 				modalDialog.removeClass('image-popup')
 				modalDialog.modal('show');
@@ -5258,7 +5258,7 @@ var AspenDiscovery = (function(){
 
 		showDisplaySettings: function () {
 			var url = Globals.path + "/AJAX/JSON?method=getDisplaySettingsForm";
-			jQuery.getJSON(url, function(data){
+			$.getJSON(url, function(data){
 				AspenDiscovery.showMessageWithButtons(data.title, data.modalBody, data.modalButtons);
 			}).fail(AspenDiscovery.ajaxFail);
 			return false;
