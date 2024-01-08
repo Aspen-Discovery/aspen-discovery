@@ -441,5 +441,18 @@
   "additional_information": "Additional Information",
   "library_hours": "Hours",
   "my_library": "My Library",
-  "phone": "Phone"
+  "phone": "Phone",
+  "device_settings": "Device Settings",
+  "support": "Support",
+  "appearance": "Appearance",
+  "notifications": "Notifications",
+  "app_settings": "App Settings",
+  "permissions": "Permissions",
+  "os_information": "OS Information",
+  "device_information": "Device Information",
+  "current_location": "Current Location",
+  "current_library": "Current Library",
+  "connected_to": "Connected To",
+  "num_linked_accounts": "Number of Linked Accounts",
+  "contact_information": "Contact Information"
 }

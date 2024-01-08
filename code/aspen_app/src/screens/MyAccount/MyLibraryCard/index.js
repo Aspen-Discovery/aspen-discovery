@@ -5,7 +5,7 @@ import * as Brightness from 'expo-brightness';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import _ from 'lodash';
 import moment from 'moment';
-import { Box, Button, Center, Flex, Icon, Image, Modal, Text } from 'native-base';
+import { Box, Button, Center, Flex, Icon, Image, Modal, Text, useColorModeValue, useContrastText } from 'native-base';
 import React, { Component } from 'react';
 import { Dimensions } from 'react-native';
 import Barcode from 'react-native-barcode-expo';
@@ -282,30 +282,38 @@ const CreateLibraryCard = (data) => {
           );
      }
 
+     let cardBg = 'white';
+     let cardText = useContrastText(cardBg);
+
+     if (numCards > 1) {
+          cardBg = useColorModeValue('white', 'coolGray.700');
+          cardText = useContrastText(cardBg);
+     }
+
      return (
-          <Flex direction="column" bg="white" px={8} py={5} borderRadius={20} shadow={1}>
+          <Flex direction="column" bg={cardBg} px={8} py={5} borderRadius={20} shadow={1}>
                {numCards > 1 ? (
                     <>
                          <Center>
                               <Flex direction="row">
                                    {icon ? <Image source={{ uri: icon }} fallbackSource={require('../../../themes/default/aspenLogo.png')} w={42} h={42} alt={getTermFromDictionary(language, 'library_card')} /> : null}
-                                   <Text bold ml={3} mt={2} fontSize="lg" color="darkText">
+                                   <Text bold ml={3} mt={2} fontSize="lg" color={cardText}>
                                         {library.displayName}
                                    </Text>
                               </Flex>
                          </Center>
                          <Center pt={2}>
-                              <Text fontSize="md" color="darkText">
+                              <Text fontSize="md" color={cardText}>
                                    {card.displayName}
                               </Text>
                          </Center>
                     </>
                ) : null}
                <Center>
-                    {expirationDate && !neverExpires && numCards > 1 ? <Text color="darkText">{expirationText}</Text> : null}
+                    {expirationDate && !neverExpires && numCards > 1 ? <Text color={cardText}>{expirationText}</Text> : null}
                     {numCards > 1 ? <OpenBarcode barcodeValue={barcodeValue} barcodeFormat={barcodeStyle} handleBarcodeError={handleBarcodeError} language={language} /> : <Barcode value={barcodeValue} format={barcodeStyle} text={barcodeValue} background="warmGray.100" onError={handleBarcodeError} />}
                     {expirationDate && !neverExpires && numCards === 1 ? (
-                         <Text color="darkText" fontSize={10} pt={2}>
+                         <Text color={cardText} fontSize={10} pt={2}>
                               {expirationText}
                          </Text>
                     ) : null}

@@ -325,7 +325,7 @@ export const MyReadingHistory = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{showSystemMessage()}</Box>
+               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                {user.trackReadingHistory !== '1' ? (
                     <Box safeArea={5}>
                          <Button onPress={optIn} isLoading={optingIn} isLoadingText={getTermFromDictionary(language, 'updating', true)}>

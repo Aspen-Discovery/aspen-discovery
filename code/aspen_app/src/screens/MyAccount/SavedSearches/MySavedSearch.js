@@ -45,7 +45,7 @@ export const MySavedSearch = () => {
      const Empty = () => {
           return (
                <>
-                    <Box safeArea={2}>{showSystemMessage()}</Box>
+                    {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                     <Center mt={5} mb={5}>
                          <Text bold fontSize="lg">
                               {getTermFromDictionary(language, 'no_results_found')}
@@ -57,7 +57,7 @@ export const MySavedSearch = () => {
 
      return (
           <SafeAreaView style={{ flex: 1 }}>
-               <Box safeArea={2}>{showSystemMessage()}</Box>
+               {_.size(systemMessages) > 0 ? <Box safeArea={2}>{showSystemMessage()}</Box> : null}
                <Box safeArea={2}>{status === 'error' ? loadError('Error', '') : <FlatList data={data} ListEmptyComponent={Empty} renderItem={({ item }) => <SavedSearch data={item} />} keyExtractor={(item, index) => index.toString()} contentContainerStyle={{ paddingBottom: 30 }} />}</Box>
           </SafeAreaView>
      );

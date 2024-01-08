@@ -7,6 +7,8 @@ import { ScrollView } from 'react-native';
 
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { userContext } from '../../context/user';
+import { getTermFromDictionary } from '../../translations/TranslationService';
+import { LIBRARY } from '../../util/loadLibrary';
 import { addAppliedFilter, buildParamsForUrl, removeAppliedFilter, SEARCH, searchAvailableFacets } from '../../util/search';
 import Facet_Checkbox from './Facets/Checkbox';
 import Facet_RadioGroup from './Facets/RadioGroup';
@@ -14,8 +16,6 @@ import Facet_Rating from './Facets/Rating';
 import Facet_Slider from './Facets/Slider';
 import Facet_Year from './Facets/Year';
 import { UnsavedChangesExit } from './UnsavedChanges';
-import { getTermFromDictionary } from '../../translations/TranslationService';
-import { LIBRARY } from '../../util/loadLibrary';
 
 export default class Facet extends Component {
      static contextType = userContext;
@@ -113,19 +113,19 @@ export default class Facet extends Component {
                }
           });
           /*     if (sorted) {
-     const sortedList = _.orderBy(
-     list,
-     ["isApplied", "count", "display"],
-     ["desc", "desc", "asc"]
-     );
-     return _.filter(sortedList, function (facet) {
-     return facet.display.indexOf(filterByQuery) > -1;
-     });
-     }
+		 const sortedList = _.orderBy(
+		 list,
+		 ["isApplied", "count", "display"],
+		 ["desc", "desc", "asc"]
+		 );
+		 return _.filter(sortedList, function (facet) {
+		 return facet.display.indexOf(filterByQuery) > -1;
+		 });
+		 }
 
-     return _.filter(list, function (facet) {
-     return facet.display.indexOf(filterByQuery) > -1;
-     }); */
+		 return _.filter(list, function (facet) {
+		 return facet.display.indexOf(filterByQuery) > -1;
+		 }); */
      }
 
      searchBar = () => {
@@ -143,6 +143,10 @@ export default class Facet extends Component {
                               variant="outline"
                               returnKeyType="search"
                               placeholder={placeHolder}
+                              _dark={{
+                                   color: 'muted.50',
+                                   borderColor: 'muted.50',
+                              }}
                               onSubmitEditing={async () => {
                                    this.setState({
                                         isLoading: true,

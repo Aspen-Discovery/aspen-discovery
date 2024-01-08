@@ -31,10 +31,16 @@ export async function refreshProfile(url) {
      if (response.ok) {
           if (response.data?.result) {
                //console.log(response.data.result.profile);
-               return response.data.result.profile;
+               if (response.data?.result?.profile) {
+                    return response.data.result.profile;
+               } else {
+                    return response.data.result;
+               }
           }
      }
-     return [];
+     return {
+          success: false,
+     };
 }
 
 /**
@@ -58,10 +64,16 @@ export async function reloadProfile(url) {
      if (response.ok) {
           if (response.data.result) {
                //console.log(response.data.result.profile);
-               return response.data.result.profile;
+               if (response.data?.result?.profile) {
+                    return response.data.result.profile;
+               } else {
+                    return response.data.result;
+               }
           }
      }
-     return [];
+     return {
+          success: false,
+     };
 }
 
 /**
@@ -129,6 +141,27 @@ export async function validateSession(url) {
           console.log(response);
      }
      return [];
+}
+
+/**
+ * Revalidates the stored user details.
+ * @param {string} url
+ **/
+export async function revalidateUser(url) {
+     const postBody = await postData();
+     const api = create({
+          baseURL: url + '/API',
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(true),
+          auth: createAuthTokens(),
+     });
+     const response = await api.post('/UserAPI?method=validateUserCredentials', postBody);
+     if (response.ok) {
+          if (response?.data?.result?.valid) {
+               return response.data.result.valid;
+          }
+     }
+     return false;
 }
 
 /**
