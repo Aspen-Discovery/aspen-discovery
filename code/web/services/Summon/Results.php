@@ -23,7 +23,7 @@ class Summon_Results extends ResultsAction {
 		$this->setShowCovers();
 
 		$searchObject->init();
-		$result = $searchObject->processSearch(true, true);
+		$result = $searchObject->sendRequest();
 		if ($result instanceof AspenError) {
 			global $serverName;
 			$logSearchError = true;

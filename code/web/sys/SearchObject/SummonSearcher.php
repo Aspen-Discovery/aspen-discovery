@@ -12,6 +12,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     static $instance;
     private $summonSettings;
     private $summonBaseApi ='http://api.summon.serialssolutions.com';
+	private $summonApiId;
+	private $summonApiPassword;
     private static $sessionId;
     private $version = '2.0.0';
     private $service = 'search';
@@ -62,7 +64,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 
     public function __construct() {
-        global $library;
 
         //Initialize properties with default values
         $this->searchSource = 'summon';
@@ -78,9 +79,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 
         //Set Summon Settings
+		global $library;
         $this->summonSettings = new SummonSettings();
         $this->summonSettings->id = $library->summonSettingsId;
-
         if (!$this->summonSettings->find(true)) {
             $this->summonSettings = null;
         } 
@@ -155,27 +156,19 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->curl_connection;
 	}
 
-    public function authenticate() {
-        $settings = $this->getSettings();
-        $baseUrl = $this->summonBaseApi . '/' . $this->version;
+    public function authenticate($headers, $settings, $queryString) {
 
-
-        $headers = array(
-            'Accept' => 'application/'.$this->responseType,
-            'x-summon-date' => gmdate('D, d M Y H:i:s T'),
-            'Host' => 'api.summon.serialssolutions.com'
-        );
-        $data = implode("\n", $headers) . "\n/$this->version/auth\n\n";
-        $hmacHash = $this->hmacsha1($this->summonApiPassword, $data);
+        $data = implode("\n", $headers) . "\n/$this->version/auth\n".
+    	urldecode($queryString) . "\n";
+        $hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
         $headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
 
-        $authResult = $this->httpRequest($baseUrl, 'GET', '', $headers);
-        return $authResult;
+        return $headers;
     }
 
     public function endSession() {
 		if ($this->curl_connection) {
-			curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_EbscoEdsSearcher::$sessionId);
+			curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_SummonSearcher::$sessionId);
 			curl_exec($this->curl_connection);
 		}
 	}
@@ -466,60 +459,44 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	// 	$this->queryTime = $this->queryEndTime - $this->queryStartTime;
 	// }
 
-    protected function sendRequest() {
+    	public function sendRequest() {
             $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
-            global $libray;
+            global $library;
             $settings = $this->getSettings();
-            if ($settings != null && $settings->summonApiProfile) {
-                $query = array();
+            if ($settings != null) {
+				$queryTerms = '';
+				$queryString = "&query-1=AND,";
                 $this->startQueryTimer();
-                $hasSearchTerm = false;
+                // $hasSearchTerm = false;
+				//If earch terms are an array 
                 if (is_array($this->searchTerms)) {
                     $termIndex = 1;
                     foreach ($this->searchTerms as $term) {
                         if (!empty($term)) {
-                            if ($termIndex > 1) {
-                                $searchUrl = $baseUrl . '&';
-                            }
+                          
                             $term = str_replace(',', '', $term);
                             $searchIndex = $term['index'];
-                            $searchUrl .= "query-{$termIndex}=AND," .urlencode($searchIndex . ":" . $term['lookfor']);
-                            global $logger;
-                            $logger->log("Searchurl" . $searchUrl, Logger::LOG_ERROR);
+                            $queryString = "&query-{$termIndex}=AND,";
+							$queryTerms .= urlencode($searchIndex . ":" . $term['lookfor']);
                             $termIndex ++;
                             $hasSearchTerm = true;
                         }
                     }
+					$query = $queryString . $queryTerms;
                 } else {
+					//If search terms are not an array
                     if (isset($_REQUEST['searchIndex'])) {
                         $this->searchIndex = $_REQUEST['searchIndex'];
                     }
                     $searchTerms = str_replace(',', '', $this->searchTerms);
                     if (!empty($searchTerms)) {
                         $searchTerms = $this->searchIndex . ':' . $searchTerms;
-                        $searchUrl = $baseUrl . '?query=' . urlencode($searchTerms);
-                        $hasSearchTerm = true;
+                        $query = $baseUrl . $queryString . urlencode($searchTerms); 
                     }
                 }
-                if (!$hasSearchTerm) {
-                    return new AspenError('Please specify a search term');
-                }
-                $searchUrl .= '&searchmode=all';
+         
+                $query .= '&searchmode=all';
 
-
-
-                // foreach ($this->params as $function => $value){
-                //     if (is_array($value)) {
-                //         foreach ($value as $additional) {
-                //             if(!empty($additional)) {
-                //                 if ($termIndex > 1) {
-                //                     $searchUrl = $baseUrl . '&';
-                //                 }
-                //             }
-                //             $additional = urlencode($additional);
-                //             $query[] = "$function=$additional";
-                //         }
-               
 
                 // Build Authorization Headers
                 $headers = array(
@@ -527,22 +504,25 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                     'x-summon-date' => gmdate('D, d M Y H:i:s T'),
                     'Host' => 'api.summon.serialssolutions.com'
                 );
-                $data = implode("\n", $headers) . "\n/$this->version/$this->service\n" .
-                    urldecode($searchUrl) . "\n";
-                $hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
-                $headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
+				$headers = $this->authenticate($headers,$settings, "&q=".urlencode($searchTerms));
 
                 if ($this->sessionId) {
                     $headers['x-summon-session-id'] = $this->sessionId;
                 } 
                 // Send request
-                $recordData = $this->httpRequest($searchUrl, $this->method, $headers);
+				
+                $recordData = $this->httpRequest($baseUrl, $query, $headers);
+				
+				
                 if (!$this->raw) {
                     // Process response
                     $recordData = $this->process($recordData); 
                 }
                 return $recordData;
-            }
+            } else {
+				return new AspenError('Please specify a search term');
+
+			}
     }
 
     public function process($input) {
@@ -590,11 +570,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
     
 
-    protected function httpRequest($headers, $queryString, $baseUrl) {
-            foreach ($headers as $key =>$value) {
-                $modified_headers[] = $key.": ".$value;
-            }
-        
+    protected function httpRequest($baseUrl, $queryString, $headers ) {
+		foreach ($headers as $key =>$value) {
+			$modified_headers[] = $key.": ".$value;
+		}
+	
 
         $curlConnection = $this->getCurlConnection();
         $curlOptions = array(
