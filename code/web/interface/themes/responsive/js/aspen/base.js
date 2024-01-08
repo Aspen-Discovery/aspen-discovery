@@ -1,11 +1,12 @@
+var aspenJQ = $;
 var AspenDiscovery = (function(){
-
+	
 	// This provides a check to interrupt AjaxFail Calls on page redirects;
 	 window.onbeforeunload = function(){
 		Globals.LeavingPage = true;
 	};
 
-	$(document).ready(function(){
+	aspenJQ(document).ready(function(){
 		AspenDiscovery.initializeModalDialogs();
 		AspenDiscovery.setupFieldSetToggles();
 		AspenDiscovery.initCarousels();
@@ -13,26 +14,26 @@ var AspenDiscovery = (function(){
 		AspenDiscovery.autoOpenPanel();
 		AspenDiscovery.scrollToTopPage();
 
-		$("#modalDialog").modal({show:false});
-		$('[data-toggle="tooltip"]').tooltip();
-		$('[data-toggle="popover"]').popover();
+		aspenJQ("#modalDialog").modal({show:false});
+		aspenJQ('[data-toggle="tooltip"]').tooltip();
+		aspenJQ('[data-toggle="popover"]').popover();
 
-		$('.panel')
+		aspenJQ('.panel')
 				.on('show.bs.collapse', function () {
-					$(this).addClass('active');
+					aspenJQ(this).addClass('active');
 				})
 				.on('hide.bs.collapse', function () {
-					$(this).removeClass('active');
+					aspenJQ(this).removeClass('active');
 				});
 
-		$(window).on("popstate", function () {
+		aspenJQ(window).on("popstate", function () {
 			// if the state is the page you expect, pull the name and load it.
 			if (history.state && history.state.page === "Checkouts") {
 				var selector1 = '#checkoutsTab a[href="#' + history.state.source + '"]';
-				$(selector1).tab('show');
+				aspenJQ(selector1).tab('show');
 			}else if (history.state && history.state.page === "Holds") {
 				var selector2 = '#holdsTab a[href="#' + history.state.source + '"]';
-				$(selector2).tab('show');
+				aspenJQ(selector2).tab('show');
 			}else if (history.state && history.state.page === "ReadingHistory") {
 				AspenDiscovery.Account.loadReadingHistory(history.state.selectedUser, history.state.sort, history.state.pageNumber, history.state.showCovers, history.state.filter);
 			}else if (history.state && history.state.page === "Browse") {
@@ -59,12 +60,12 @@ var AspenDiscovery = (function(){
 				url = url.replace(/page=\d+/, "page=1");
 			}
 			if (url.match(/[&?]pageSize=\d+/)) {
-				url = url.replace(/pageSize=\d+/, "pageSize=" + $("#pageSize").val());
+				url = url.replace(/pageSize=\d+/, "pageSize=" + aspenJQ("#pageSize").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&pageSize=" + $("#pageSize").val();
+					url = url+ "&pageSize=" + aspenJQ("#pageSize").val();
 				}else{
-					url = url+ "?pageSize=" + $("#pageSize").val();
+					url = url+ "?pageSize=" + aspenJQ("#pageSize").val();
 				}
 			}
 			window.location.href = url;
@@ -73,12 +74,12 @@ var AspenDiscovery = (function(){
 		changePage: function(){
 			var url = window.location.href;
 			if (url.match(/[&?]page=\d+/)) {
-				url = url.replace(/page=\d+/, "page=" + $("#page").val());
+				url = url.replace(/page=\d+/, "page=" + aspenJQ("#page").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&page=" + $("#page").val();
+					url = url+ "&page=" + aspenJQ("#page").val();
 				}else{
-					url = url+ "?page=" + $("#page").val();
+					url = url+ "?page=" + aspenJQ("#page").val();
 				}
 			}
 			window.location.href = url;
@@ -88,12 +89,12 @@ var AspenDiscovery = (function(){
 		changeSort: function(){
 			var url = window.location.href;
 			if (url.match(/[&?]sort=([A-Za-z_]|%20)+/)) {
-				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + $("#sort").val());
+				url = url.replace(/sort=([A-Za-z_]|%20)+/, "sort=" + aspenJQ("#sort").val());
 			} else {
 				if (url.indexOf("?", 0) > 0){
-					url = url+ "&sort=" + $("#sort").val();
+					url = url+ "&sort=" + aspenJQ("#sort").val();
 				}else{
-					url = url+ "?sort=" + $("#sort").val();
+					url = url+ "?sort=" + aspenJQ("#sort").val();
 				}
 			}
 			window.location.href = url;
@@ -101,11 +102,11 @@ var AspenDiscovery = (function(){
 		},
 
 		closeLightbox: function(callback){
-			var modalDialog = $("#modalDialog");
+			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				modalDialog.modal('hide');
-				$('.modal-body').html("Loading...");
-				$(".modal-title").text("Loading...");
+				aspenJQ('.modal-body').html("Loading...");
+				aspenJQ(".modal-title").text("Loading...");
 
 				if (callback !== undefined){
 					modalDialog.on('hidden.bs.modal', function (e) {
@@ -117,18 +118,18 @@ var AspenDiscovery = (function(){
 		},
 
 		goToAnchor: function(anchorName) {
-			$('html,body').animate({scrollTop: $("#" + anchorName).offset().top},'slow');
+			aspenJQ('html,body').animate({scrollTop: aspenJQ("#" + anchorName).offset().top},'slow');
 		},
 
 		initCarousels: function(carouselClass){
 			carouselClass = carouselClass || '.jcarousel';
-			var jcarousel = $(carouselClass);
+			var jcarousel = aspenJQ(carouselClass);
 			var wrapper   = jcarousel.parents('.jcarousel-wrapper');
 			// console.log('init Carousels called for ', jcarousel);
 
 			jcarousel.on('jcarousel:reload jcarousel:create', function() {
 
-				var Carousel	   = $(this);
+				var Carousel	   = aspenJQ(this);
 				var width		  = Carousel.innerWidth();
 				var liTags		 = Carousel.find('li');
 				if (liTags == null ||liTags.length === 0){
@@ -173,11 +174,11 @@ var AspenDiscovery = (function(){
 				Carousel.jcarousel('items').css('width', Math.floor(calcWidth) + 'px');// Set Width
 
 				if (numItemsToShow >= numCategories){
-					$(this).offsetParent().children('.jcarousel-control-prev').hide();
-					$(this).offsetParent().children('.jcarousel-control-next').hide();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-prev').hide();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-next').hide();
 				}else{
-					$(this).offsetParent().children('.jcarousel-control-prev').show();
-					$(this).offsetParent().children('.jcarousel-control-next').show();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-prev').show();
+					aspenJQ(this).offsetParent().children('.jcarousel-control-next').show();
 				}
 
 			})
@@ -186,25 +187,25 @@ var AspenDiscovery = (function(){
 			});
 
 			// These Controls could possibly be replaced with data-api attributes
-			$('.jcarousel-control-prev', wrapper)
+			aspenJQ('.jcarousel-control-prev', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.jcarouselControl({
 						target: '-=1'
 					});
 
-			$('.jcarousel-control-next', wrapper)
+			aspenJQ('.jcarousel-control-next', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.jcarouselControl({
 						target: '+=1'
 					});
 
-			$('.jcarousel-pagination', wrapper)
+			aspenJQ('.jcarousel-pagination', wrapper)
 					//.not('.ajax-carousel-control') // ajax carousels get initiated when content is loaded
 					.on('jcarouselpagination:active', 'a', function() {
-						$(this).addClass('active');
+						aspenJQ(this).addClass('active');
 					})
 					.on('jcarouselpagination:inactive', 'a', function() {
-						$(this).removeClass('active');
+						aspenJQ(this).removeClass('active');
 					})
 					.on('click', function(e) {
 						e.preventDefault();
@@ -223,15 +224,15 @@ var AspenDiscovery = (function(){
 		},
 
 		initializeModalDialogs: function() {
-			$(".modalDialogTrigger").each(function(){
-				$(this).click(function(){
-					var trigger = $(this);
+			aspenJQ(".modalDialogTrigger").each(function(){
+				aspenJQ(this).click(function(){
+					var trigger = aspenJQ(this);
 					var dialogTitle = trigger.attr("title") ? trigger.attr("title") : trigger.data("title");
 					var dialogDestination = trigger.attr("href");
-					$("#myModalLabel").text(dialogTitle);
-					$(".modal-body").html('Loading.').load(dialogDestination);
-					$(".extraModalButton").hide();
-					$("#modalDialog").modal("show");
+					aspenJQ("#myModalLabel").text(dialogTitle);
+					aspenJQ(".modal-body").html('Loading.').load(dialogDestination);
+					aspenJQ(".extraModalButton").hide();
+					aspenJQ("#modalDialog").modal("show");
 					return false;
 				});
 			});
@@ -263,24 +264,24 @@ var AspenDiscovery = (function(){
 		},
 
 		getSelectedTitles: function(){
-			var selectedTitles = $("input.titleSelect:checked ").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
+			var selectedTitles = aspenJQ("input.titleSelect:checked ").map(function() {
+				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedTitles.length === 0){
 				var ret = confirm('You have not selected any items, process all items?');
 				if (ret === true){
-					var titleSelect = $("input.titleSelect");
+					var titleSelect = aspenJQ("input.titleSelect");
 					titleSelect.attr('checked', 'checked');
 					selectedTitles = titleSelect.map(function() {
-						return $(this).attr('name') + "=" + $(this).val();
+						return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 					}).get().join("&");
 				}
 			}
 			return selectedTitles;
 		},
 		getSelectedLists: function(){
-			var selectedLists = $("input.listSelect:checked ").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
+			var selectedLists = aspenJQ("input.listSelect:checked ").map(function() {
+				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedLists.length === 0){
 				var ret = confirm('No lists selected');
@@ -288,8 +289,8 @@ var AspenDiscovery = (function(){
 			return selectedLists;
 		},
 		getSelectedBrowseCategories: function(){
-			var selectedCategories = $("input.categorySelect:checked ").map(function() {
-				return $(this).attr('name') + "=" + $(this).val();
+			var selectedCategories = aspenJQ("input.categorySelect:checked ").map(function() {
+				return aspenJQ(this).attr('name') + "=" + aspenJQ(this).val();
 			}).get().join("&");
 			if (selectedCategories.length === 0){
 				var ret = confirm('No browse categories were selected');
@@ -297,8 +298,8 @@ var AspenDiscovery = (function(){
 			return selectedCategories;
 		},
 		getSelectedAspenSites: function(){
-			var selectedSites = $("input.siteSelect:checked ").map(function() {
-				return $(this).attr('name');
+			var selectedSites = aspenJQ("input.siteSelect:checked ").map(function() {
+				return aspenJQ(this).attr('name');
 			}).get().join(",");
 			if (selectedSites.length === 0){
 				AspenDiscovery.showMessage("Error", "Please select at least one site to update");
@@ -329,18 +330,18 @@ var AspenDiscovery = (function(){
 		},
 
 		setupFieldSetToggles: function (){
-			$('legend.collapsible').each(function(){
-				$(this).siblings().hide()
+			aspenJQ('legend.collapsible').each(function(){
+				aspenJQ(this).siblings().hide()
 				.addClass("collapsed")
 				.click(function() {
-					$(this).toggleClass("expanded collapsed")
+					aspenJQ(this).toggleClass("expanded collapsed")
 					.siblings().slideToggle();
 					return false;
 				});
 			});
 
-			$('fieldset.fieldset-collapsible').each(function() {
-				var collapsible = $(this);
+			aspenJQ('fieldset.fieldset-collapsible').each(function() {
+				var collapsible = aspenJQ(this);
 				var legend = collapsible.find('legend:first');
 				legend.addClass('fieldset-collapsible-label').bind('click', {collapsible: collapsible}, function(event) {
 					var collapsible = event.data.collapsible;
@@ -364,10 +365,10 @@ var AspenDiscovery = (function(){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
-			$("#myModalLabel").html(title);
-			$(".modal-body").html(body);
-			$('.modal-buttons').html('');
-			var modalDialog = $("#modalDialog");
+			aspenJQ("#myModalLabel").html(title);
+			aspenJQ(".modal-body").html(body);
+			aspenJQ('.modal-buttons').html('');
+			var modalDialog = aspenJQ("#modalDialog");
 			modalDialog.removeClass('image-popup');
 			modalDialog.modal('show');
 			if (autoClose) {
@@ -389,12 +390,12 @@ var AspenDiscovery = (function(){
 			if (refreshAfterClose === undefined){
 				refreshAfterClose = false;
 			}
-			$("#myModalLabel").html(title);
-			$(".modal-body").html(body);
-			$('.modal-buttons').html(buttons);
+			aspenJQ("#myModalLabel").html(title);
+			aspenJQ(".modal-body").html(body);
+			aspenJQ('.modal-buttons').html(buttons);
 			if (closeDestination !== undefined) {
 				Globals.modalCloseDestination = closeDestination;
-				$(".modalClose").click(function () {
+				aspenJQ(".modalClose").click(function () {
 					if (Globals.modalCloseDestination.length > 0) {
 						document.location.href = Globals.modalCloseDestination
 						return false;
@@ -403,9 +404,9 @@ var AspenDiscovery = (function(){
 			}else{
 				Globals.modalCloseDestination = '';
 			}
-			$("#modalDialog").modal('show');
+			aspenJQ("#modalDialog").modal('show');
 			if (refreshAfterClose) {
-				$("#modalDialog").on('hide.bs.modal', function(){
+				aspenJQ("#modalDialog").on('hide.bs.modal', function(){
 					location.reload();
 				})
 			}
@@ -423,15 +424,15 @@ var AspenDiscovery = (function(){
 
 		showElementInPopup: function(title, elementId, buttonsElementId){
 			// buttonsElementId is optional
-			var modalDialog = $("#modalDialog");
+			var modalDialog = aspenJQ("#modalDialog");
 			if (modalDialog.is(":visible")){
 				AspenDiscovery.closeLightbox(function(){AspenDiscovery.showElementInPopup(title, elementId)});
 			}else{
-				$(".modal-title").html(title);
-				var elementText = $(elementId).html();
-				var elementButtons = buttonsElementId ? $(buttonsElementId).html() : '';
-				$(".modal-body").html(elementText);
-				$('.modal-buttons').html(elementButtons);
+				aspenJQ(".modal-title").html(title);
+				var elementText = aspenJQ(elementId).html();
+				var elementButtons = buttonsElementId ? aspenJQ(buttonsElementId).html() : '';
+				aspenJQ(".modal-body").html(elementText);
+				aspenJQ('.modal-buttons').html(elementButtons);
 
 				modalDialog.removeClass('image-popup')
 				modalDialog.modal('show');
@@ -443,21 +444,21 @@ var AspenDiscovery = (function(){
 			if (embedLocation === undefined) {
 				embedLocation = "";
 			}
-			var selectedId = $("#selectLibraryHours" + embedLocation).find(":selected").val();
-			$(".locationInfo" + embedLocation).hide();
-			$("#locationAddress" + embedLocation + selectedId).show();
+			var selectedId = aspenJQ("#selectLibraryHours" + embedLocation).find(":selected").val();
+			aspenJQ(".locationInfo" + embedLocation).hide();
+			aspenJQ("#locationAddress" + embedLocation + selectedId).show();
 			return false;
 		},
 
 		toggleCheckboxes: function (checkboxSelector, toggleSelector){
-			var toggle = $(toggleSelector);
+			var toggle = aspenJQ(toggleSelector);
 			var value = toggle.prop('checked');
-			$(checkboxSelector).prop('checked', value);
+			aspenJQ(checkboxSelector).prop('checked', value);
 		},
 
 		submitOnEnter: function(event, formToSubmit){
 			if (event.keyCode === 13){
-				$(formToSubmit).submit();
+				aspenJQ(formToSubmit).submit();
 			}
 		},
 
@@ -493,7 +494,7 @@ var AspenDiscovery = (function(){
 		},
 
 		saveLanguagePreferences:function(){
-			var preference = $("#searchPreferenceLanguage option:selected").val();
+			var preference = aspenJQ("#searchPreferenceLanguage option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'saveLanguagePreference',
@@ -521,7 +522,7 @@ var AspenDiscovery = (function(){
 		setLanguage: function(selectedLanguage) {
 			//Update the user interface with the selected language
 			if (selectedLanguage === undefined) {
-				selectedLanguage = $("#selected-language option:selected").val();
+				selectedLanguage = aspenJQ("#selected-language option:selected").val();
 			}
 			var curLocation = window.location.href;
 			var newParam = 'myLang=' + selectedLanguage;
@@ -545,9 +546,9 @@ var AspenDiscovery = (function(){
 		},
 
 		saveTranslation: function(){
-			var termId = $("#termId").val();
-			var translationId = $("#translationId").val();
-			var translation = $("#translation").val();
+			var termId = aspenJQ("#termId").val();
+			var translationId = aspenJQ("#translationId").val();
+			var translation = aspenJQ("#translation").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'saveTranslation',
@@ -557,8 +558,8 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
-						$(".term_" + termId ).html(translation);
-						$(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
+						aspenJQ(".term_" + termId ).html(translation);
+						aspenJQ(".translation_id_" + translationId ).removeClass('not_translated').addClass("translated");
 						AspenDiscovery.closeLightbox();
 					} else {
 						AspenDiscovery.showMessage("Error", data.message);
@@ -575,7 +576,7 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.success) {
-						$("#term_" + termId ).hide();
+						aspenJQ("#term_" + termId ).hide();
 						AspenDiscovery.closeLightbox();
 					} else {
 						AspenDiscovery.showMessage(data.title, data.message);
@@ -586,60 +587,60 @@ var AspenDiscovery = (function(){
 		},
 		toggleMenu: function() {
 			// fixed bootstrap account-menu toggle
-			$('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.accountMenu a').on('click', function (event) {
+				aspenJQ(this).parent().toggleClass('open');
 			});
-			$('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
-				$(this).addClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.accountMenu').on('keyup', function (event) {
+				aspenJQ(this).addClass('open');
 			});
-			$(document).on('click', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+			aspenJQ(document).on('click', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.accountMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
 				}
 			});
-			$(document).on('keyup', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.accountMenu");
+			aspenJQ(document).on('keyup', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.accountMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.accountMenu').removeClass('open');
 				}
 			});
 			// fixed bootstrap header-menu toggle
-			$('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.headerMenu a').on('click', function (event) {
+				aspenJQ(this).parent().toggleClass('open');
 			});
 
-			$('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
-				$(this).addClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.headerMenu').on('keyup', function (event) {
+				aspenJQ(this).addClass('open');
 			});
 
-			$(document).on('click', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+			aspenJQ(document).on('click', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.headerMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
 				}
 			});
 
-			$(document).on('keyup', function (e) {
-				var $trigger = $("div.dropdown.menuToggleButton.headerMenu");
+			aspenJQ(document).on('keyup', function (e) {
+				var $trigger = aspenJQ("div.dropdown.menuToggleButton.headerMenu");
 				if($trigger !== event.target && !$trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.headerMenu').removeClass('open');
 				}
 			});
 			return false;
 		},
 		closeMenu: function(){
-			var headerMenu = $('#header-menu');
-			var menuButton = $('#menuToggleButton');
-			var menuButtonIcon = $('#menuToggleButton > i');
+			var headerMenu = aspenJQ('#header-menu');
+			var menuButton = aspenJQ('#menuToggleButton');
+			var menuButtonIcon = aspenJQ('#menuToggleButton > i');
 			headerMenu.slideUp('slow');
 			menuButtonIcon.addClass('fa-bars');
 			menuButtonIcon.removeClass('fa-times');
 			menuButton.removeClass('selected');
 		},
 		toggleMenuSection: function(categoryName) {
-			var menuSectionHeaderIcon = $('#' + categoryName + "MenuSection > i");
-			var menuSectionBody = $('#' + categoryName + "MenuSectionBody");
+			var menuSectionHeaderIcon = aspenJQ('#' + categoryName + "MenuSection > i");
+			var menuSectionBody = aspenJQ('#' + categoryName + "MenuSectionBody");
 			if (menuSectionBody.is(':visible')){
 				menuSectionBody.slideUp();
 				menuSectionHeaderIcon.addClass('fa-caret-right');
@@ -654,13 +655,13 @@ var AspenDiscovery = (function(){
 		},
 		showCustomMenu: function (menuName) {
 			// fixed bootstrap custom menu toggles
-			$('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
-				$(this).parent().toggleClass('open');
+			aspenJQ('div.dropdown.menuToggleButton.' + menuName + 'Menu a').on('click', function (event) {
+				aspenJQ(this).parent().toggleClass('open');
 			});
-			$(document).on('click', function (e) {
-				var trigger = $('div.dropdown.menuToggleButton.' + menuName + 'Menu');
+			aspenJQ(document).on('click', function (e) {
+				var trigger = aspenJQ('div.dropdown.menuToggleButton.' + menuName + 'Menu');
 				if(trigger !== event.target && !trigger.has(event.target).length){
-					$('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
+					aspenJQ('div.dropdown.menuToggleButton.' + menuName + 'Menu').removeClass('open');
 				}
 			});
 		},
@@ -673,9 +674,9 @@ var AspenDiscovery = (function(){
 			$.getJSON(url, params,
 				function(data) {
 					if (data.result.success) {
-						$(elementToUpdate).text(data.result.formattedValue);
+						aspenJQ(elementToUpdate).text(data.result.formattedValue);
 					} else {
-						$(elementToUpdate).text('Unable to format currency');
+						aspenJQ(elementToUpdate).text('Unable to format currency');
 					}
 				}
 			).fail(AspenDiscovery.ajaxFail);
@@ -689,11 +690,11 @@ var AspenDiscovery = (function(){
 			if (hash) {
 				var requestedPanel = hash;
 				var element = '#'.concat(requestedPanel);
-				$(element).addClass('active');
+				aspenJQ(element).addClass('active');
 				var element2 = '#'.concat(requestedPanel, "Body");
-				$(element2).removeClass('collapse');
-				$(element2).addClass('in');
-				$(element2).css("height","auto");
+				aspenJQ(element2).removeClass('collapse');
+				aspenJQ(element2).addClass('in');
+				aspenJQ(element2).css("height","auto");
 			}
 		},
 		scrollToTopPage: function() {
@@ -748,8 +749,8 @@ var AspenDiscovery = (function(){
 		},
 
 		updateDisplaySettings: function () {
-			var preferredLanguage = $("#preferredLanguage option:selected").val();
-			var preferredTheme = $("#preferredTheme option:selected").val();
+			var preferredLanguage = aspenJQ("#preferredLanguage option:selected").val();
+			var preferredTheme = aspenJQ("#preferredTheme option:selected").val();
 			var url = Globals.path + "/AJAX/JSON";
 			var params =  {
 				method : 'updateDisplaySettings',
@@ -803,14 +804,14 @@ jQuery.validator.addMethod("email2", function (value, element) {
 	if (this.optional(element)) {
 		return true;
 	}
-	var emailToMatch = $("#email").val();
+	var emailToMatch = aspenJQ("#email").val();
 	return value === emailToMatch;
 }, "Email addresses must match.");
 
 $.validator.addMethod('repeat', function(value, element){
 	if(element.id.lastIndexOf('Repeat') === element.id.length - 6) {
 		var idOriginal = element.id.slice(0,-6);
-		var valueOriginal = $('#' + idOriginal).val();
+		var valueOriginal = aspenJQ('#' + idOriginal).val();
 		return value === valueOriginal;
 	}
 }, "Repeat fields do not match");
