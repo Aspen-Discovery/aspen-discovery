@@ -22,6 +22,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private $method = 'GET';
     private $raw = false;
     private $curl_connection;
+    /**
+	 * @var string mixed
+	 */
+	private $searchIndex = 'Everything';
 
     protected $queryStartTime = null;
 	protected $queryEndTime = null;
@@ -82,55 +86,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         } 
     }
 
-    public function getCurlConnection() {
-		if ($this->curl_connection == null) {
-            $this->curl_connection = curl_init();
-			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
-			curl_setopt($this->curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
-			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($this->curl_connection, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($this->curl_connection, CURLOPT_FOLLOWLOCATION, 1);
-			curl_setopt($this->curl_connection, CURLOPT_TIMEOUT, 30);
-			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, TRUE);
-		}
-		return $this->curl_connection;
-	}
-
-    	/**
-	 * Use the record driver to build an array of HTML displays from the search
-	 * results.
-	 *
-	 * @access  public
-	 * @return  array   Array of HTML chunks for individual records.
-	 */
-	public function getCombinedResultHTML() {
-		global $interface;
-		$html = [];
-		
-		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
-				$current = &$this->lastSearchResults->Data->Records[$x];
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
-
-				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
-				$record = new SummonRecordDriver($current);
-				if ($record->isValid()) {
-					$interface->assign('recordDriver', $record);
-					$html[] = $interface->fetch($record->getCombinedResult());
-				} else {
-					$html[] = "Unable to find record";
-				}
-			}
-		}
-		return $html;
-	}
-
-
-
-   
-
-    	/**
+    /**
 	 * Initialise the object from the global
 	 *  search parameters in $_REQUEST.
 	 *
@@ -152,17 +108,17 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 		//********************
 		// Initialize standard search parameters
-		// $this->initView();
-		// $this->initPage();
-		// $this->initSort();
-		// $this->initFilters();
-		// $this->initLimiters();
+		$this->initView();
+		$this->initPage();
+		$this->initSort();
+		$this->initFilters();
+		$this->initLimiters();
 
-		// //********************
-		// // Basic Search logic
-		// if (!$this->initBasicSearch()) {
-		// 	$this->initAdvancedSearch();
-		// }
+		//********************
+		// Basic Search logic
+		if (!$this->initBasicSearch()) {
+			$this->initAdvancedSearch();
+		}
 
 		// If a query override has been specified, log it here
 		if (isset($_REQUEST['q'])) {
@@ -171,6 +127,260 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 		return true;
 	}
+
+    private function getSettings() {
+		global $library;
+		if ($this->summonSettings == null) {
+			$this->summonSettings = new SummonSettings();
+			$this->summonSettings->id = $library->summonSettingsId;
+			if (!$this->summonSettings->find(true)) {
+				$this->summonSettings = null;
+			}
+		}
+		return $this->summonSettings;
+	}
+
+
+    public function getCurlConnection() {
+		if ($this->curl_connection == null) {
+            $this->curl_connection = curl_init();
+			curl_setopt($this->curl_connection, CURLOPT_CONNECTTIMEOUT, 15);
+			curl_setopt($this->curl_connection, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($this->curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($this->curl_connection, CURLOPT_FOLLOWLOCATION, 1);
+			curl_setopt($this->curl_connection, CURLOPT_TIMEOUT, 30);
+			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, TRUE);
+		}
+		return $this->curl_connection;
+	}
+
+    public function authenticate() {
+        $settings = $this->getSettings();
+        $baseUrl = $this->summonBaseApi . '/' . $this->version;
+
+
+        $headers = array(
+            'Accept' => 'application/'.$this->responseType,
+            'x-summon-date' => gmdate('D, d M Y H:i:s T'),
+            'Host' => 'api.summon.serialssolutions.com'
+        );
+        $data = implode("\n", $headers) . "\n/$this->version/auth\n\n";
+        $hmacHash = $this->hmacsha1($this->summonApiPassword, $data);
+        $headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
+
+        $authResult = $this->httpRequest($baseUrl, 'GET', '', $headers);
+        return $authResult;
+    }
+
+    public function endSession() {
+		if ($this->curl_connection) {
+			curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_EbscoEdsSearcher::$sessionId);
+			curl_exec($this->curl_connection);
+		}
+	}
+
+    public function __destruct() {
+		$this->endSession();
+		if ($this->curl_connection) {
+			curl_close($this->curl_connection);
+		}
+	}
+
+	public function getQuerySpeed() {
+		return $this->queryTime;
+	}
+
+    
+	/**
+	 * Start the timer to figure out how long a query takes.  Complements
+	 * stopQueryTimer().
+	 *
+	 * @access protected
+	 */
+	protected function startQueryTimer() {
+		// Get time before the query
+		$time = explode(" ", microtime());
+		$this->queryStartTime = $time[1] . $time[0];
+	}
+
+	/**
+	 * End the timer to figure out how long a query takes.  Complements
+	 * startQueryTimer().
+	 *
+	 * @access protected
+	 */
+	protected function stopQueryTimer() {
+		$time = explode(" ", microtime());
+		$this->queryEndTime = $time[1] . $time[0];
+		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
+	}
+
+    /**
+	 * Return an array of data summarising the results of a search.
+	 *
+	 * @access  public
+	 * @return  array   summary of results
+	 */
+	public function getResultSummary() {
+		$summary = [];
+
+		$summary['page'] = $this->page;
+		$summary['perPage'] = $this->limit;
+		$summary['resultTotal'] = (int)$this->resultsTotal;
+		// 1st record is easy, work out the start of this page
+		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
+		// Last record needs more care
+		if ($this->resultsTotal < $this->limit) {
+			// There are less records returned than one page, then use total results
+			$summary['endRecord'] = $this->resultsTotal;
+		} elseif (($this->page * $this->limit) > $this->resultsTotal) {
+			// The end of the current page runs past the last record, use total results
+			$summary['endRecord'] = $this->resultsTotal;
+		} else {
+			// Otherwise use the last record on this page
+			$summary['endRecord'] = $this->page * $this->limit;
+		}
+
+		return $summary;
+	}
+
+    	/**
+	 * Return a url for use by pagination template
+	 *
+	 * @access  public
+	 * @return  string   URL of a new search
+	 */
+	public function renderLinkPageTemplate() {
+		// Stash our old data for a minute
+		$oldPage = $this->page;
+		// Add the page template
+		$this->page = '%d';
+		// Get the new url
+		$url = $this->renderSearchUrl();
+		// Restore the old data
+		$this->page = $oldPage;
+		// Return the URL
+		return $url;
+	}
+
+    	/**
+	 * Use the record driver to build an array of HTML displays from the search
+	 * results.
+	 *
+	 * @access  public
+	 * @return  array   Array of HTML chunks for individual records.
+	 */
+	public function getResultRecordHTML() {
+		global $interface;
+		$html = [];
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+				$record = new SummonRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getSearchResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+		//Save to history
+		$this->addToHistory();
+
+		return $html;
+	}
+
+    	/**
+	 * Use the record driver to build an array of HTML displays from the search
+	 * results.
+	 *
+	 * @access  public
+	 * @return  array   Array of HTML chunks for individual records.
+	 */
+	public function getCombinedResultHTML() {
+		global $interface;
+		$html = [];
+		//global $logger;
+		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+				$record = new SummonRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getCombinedResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+		return $html;
+	}
+
+
+    public function getFacetSet() {
+		$availableFacets = [
+            'IsScholarly,or,1,2',
+            'Library,or,1,30',
+            'ContentType,or,1,30',
+             'SubjectTerms,or,1,30',
+             'Language,or,1,30'
+        ];
+		if (isset($this->lastSearchResults) && isset($this->lastSearchResults->AvailableFacets)) {
+			foreach ($this->lastSearchResults->AvailableFacets as $facet) {
+				$facetId = (string)$facet->Id;
+				$availableFacets[$facetId] = [
+					'collapseByDefault' => true,
+					'multiSelect' => true,
+					'label' => (string)$facet->Label,
+					'valuesToShow' => 5,
+				];
+				if ($facetId == 'SourceType') {
+					$availableFacets[$facetId]['collapseByDefault'] = false;
+				}
+				$list = [];
+				foreach ($facet->AvailableFacetValues as $value) {
+					$facetValue = (string)$value->Value;
+					//Check to see if the facet has been applied
+					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+
+					$facetSettings = [
+						'value' => $facetValue,
+						'display' => $facetValue,
+						'count' => (string)$value->Count,
+						'isApplied' => $isApplied,
+						'countIsApproximate' => false,
+					];
+					if ($isApplied) {
+						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+					} else {
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+					}
+					$list[] = $facetSettings;
+				}
+				$availableFacets[$facetId]['list'] = $list;
+			}
+		}
+		return $availableFacets;
+	}
+    
+
+
+
+   
+
+    
+	
 
        /**
      * Generate an HMAC hash
@@ -212,59 +422,49 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return SearchObject_SummonSearcher::$instance;
 	}
 
-    private function getSettings() {
-		global $library;
-		if ($this->summonSettings == null) {
-			$this->summonSettings = new SummonSettings();
-			$this->summonSettings->id = $library->edsSettingsId;
-			if (!$this->summonSettings->find(true)) {
-				$this->summonSettings = null;
-			}
-		}
-		return $this->summonSettings;
-	}
+    
 
-    public function endSession() {
-		if ($this->curl_connection) {
-			curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_SummonSearcher::$sessionId);
-			curl_exec($this->curl_connection);
-		}
-	}
+    // public function endSession() {
+	// 	if ($this->curl_connection) {
+	// 		curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_SummonSearcher::$sessionId);
+	// 		curl_exec($this->curl_connection);
+	// 	}
+	// }
 
-	public function __destruct() {
-		$this->endSession();
-		if ($this->curl_connection) {
-			curl_close($this->curl_connection);
-		}
-	}
+	// public function __destruct() {
+	// 	$this->endSession();
+	// 	if ($this->curl_connection) {
+	// 		curl_close($this->curl_connection);
+	// 	}
+	// }
 
-	public function getQuerySpeed() {
-		return $this->queryTime;
-	}
+	// public function getQuerySpeed() {
+	// 	return $this->queryTime;
+	// }
 
-    /**
-	 * Start the timer to figure out how long a query takes.  Complements
-	 * stopQueryTimer().
-	 *
-	 * @access protected
-	 */
-	protected function startQueryTimer() {
-		// Get time before the query
-		$time = explode(" ", microtime());
-		$this->queryStartTime = $time[1] . $time[0];
-	}
+    // /**
+	//  * Start the timer to figure out how long a query takes.  Complements
+	//  * stopQueryTimer().
+	//  *
+	//  * @access protected
+	//  */
+	// protected function startQueryTimer() {
+	// 	// Get time before the query
+	// 	$time = explode(" ", microtime());
+	// 	$this->queryStartTime = $time[1] . $time[0];
+	// }
 
-	/**
-	 * End the timer to figure out how long a query takes.  Complements
-	 * startQueryTimer().
-	 *
-	 * @access protected
-	 */
-	protected function stopQueryTimer() {
-		$time = explode(" ", microtime());
-		$this->queryEndTime = $time[1] . $time[0];
-		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
-	}
+	// /**
+	//  * End the timer to figure out how long a query takes.  Complements
+	//  * startQueryTimer().
+	//  *
+	//  * @access protected
+	//  */
+	// protected function stopQueryTimer() {
+	// 	$time = explode(" ", microtime());
+	// 	$this->queryEndTime = $time[1] . $time[0];
+	// 	$this->queryTime = $this->queryEndTime - $this->queryStartTime;
+	// }
 
     protected function sendRequest() {
             $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
@@ -284,6 +484,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                             $term = str_replace(',', '', $term);
                             $searchIndex = $term['index'];
                             $searchUrl .= "query-{$termIndex}=AND," .urlencode($searchIndex . ":" . $term['lookfor']);
+                            global $logger;
+                            $logger->log("Searchurl" . $searchUrl, Logger::LOG_ERROR);
                             $termIndex ++;
                             $hasSearchTerm = true;
                         }
@@ -577,7 +779,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
     public function getEngineName() {
-		return 'Summon';
+		return 'summon';
 	}
 
 	function getSearchesFile() {
