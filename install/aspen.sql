@@ -108,7 +108,7 @@ CREATE TABLE `administration_field_lock` (
   `toolName` varchar(100) NOT NULL,
   `field` varchar(100) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS amazon_ses_settings;
 CREATE TABLE `amazon_ses_settings` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -284,7 +284,7 @@ CREATE TABLE `aspen_lida_self_check_barcode` (
   `selfCheckSettingsId` int NOT NULL DEFAULT '-1',
   `barcodeStyle` varchar(75) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS aspen_lida_self_check_settings;
 CREATE TABLE `aspen_lida_self_check_settings` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -292,7 +292,7 @@ CREATE TABLE `aspen_lida_self_check_settings` (
   `isEnabled` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS aspen_release;
 CREATE TABLE `aspen_release` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -894,7 +894,7 @@ CREATE TABLE `companion_system` (
   `serverName` varchar(72) NOT NULL,
   `serverUrl` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS component_development_epic_link;
 CREATE TABLE `component_development_epic_link` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -1424,7 +1424,7 @@ CREATE TABLE `events_facet` (
   `canLock` tinyint DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS events_facet_groups;
 CREATE TABLE `events_facet_groups` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
@@ -1432,7 +1432,7 @@ CREATE TABLE `events_facet_groups` (
   `eventFacetCountsToShow` tinyint DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS events_indexing_log;
 CREATE TABLE `events_indexing_log` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'The id of log entry',
@@ -1499,7 +1499,7 @@ CREATE TABLE `failed_logins_by_ip_address` (
   `timestamp` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `ipAddress` (`ipAddress`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS file_uploads;
 CREATE TABLE `file_uploads` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -2678,7 +2678,7 @@ CREATE TABLE `library_email_template` (
   `emailTemplateId` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`emailTemplateId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS library_events_setting;
 CREATE TABLE `library_events_setting` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -2695,7 +2695,7 @@ CREATE TABLE `library_ill_item_type` (
   `libraryId` int NOT NULL,
   `code` varchar(75) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS library_link_language;
 CREATE TABLE `library_link_language` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -2838,7 +2838,7 @@ CREATE TABLE `library_web_builder_quick_poll` (
   `label` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `libraryId` (`libraryId`,`pollId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS library_web_builder_resource;
 CREATE TABLE `library_web_builder_resource` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -3500,7 +3500,7 @@ CREATE TABLE `open_archives_facet_groups` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS open_archives_facets;
 CREATE TABLE `open_archives_facets` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -3518,7 +3518,7 @@ CREATE TABLE `open_archives_facets` (
   `canLock` tinyint DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS open_archives_record;
 CREATE TABLE `open_archives_record` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -3776,7 +3776,7 @@ CREATE TABLE `palace_project_scopes` (
   `name` varchar(50) NOT NULL,
   `settingId` int DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS palace_project_settings;
 CREATE TABLE `palace_project_settings` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -3787,7 +3787,7 @@ CREATE TABLE `palace_project_settings` (
   `lastUpdateOfChangedRecords` int DEFAULT '0',
   `lastUpdateOfAllRecords` int DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS palace_project_title;
 CREATE TABLE `palace_project_title` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -4355,7 +4355,7 @@ CREATE TABLE `self_reg_form_values` (
   `note` varchar(75) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupValue` (`selfRegistrationFormId`,`symphonyName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS self_registration_form;
 CREATE TABLE `self_registration_form` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
@@ -4365,7 +4365,7 @@ CREATE TABLE `self_registration_form` (
   `noDuplicateCheck` tinyint DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS sendgrid_settings;
 CREATE TABLE `sendgrid_settings` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -4408,7 +4408,7 @@ CREATE TABLE `shared_session` (
   `userId` varchar(11) DEFAULT NULL,
   `createdOn` int DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS sideload_files;
 CREATE TABLE `sideload_files` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -4603,7 +4603,7 @@ CREATE TABLE `square_settings` (
   `locationId` varchar(80) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS sso_mapping;
 CREATE TABLE `sso_mapping` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -4722,7 +4722,7 @@ CREATE TABLE `stripe_settings` (
   `stripeSecretKey` varchar(500) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS syndetics_data;
 CREATE TABLE `syndetics_data` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -5159,7 +5159,7 @@ CREATE TABLE `ticket_trend_bugs_by_severity` (
   `count` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniqueness` (`year`,`month`,`day`,`severity`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS ticket_trend_by_component;
 CREATE TABLE `ticket_trend_by_component` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -5171,7 +5171,7 @@ CREATE TABLE `ticket_trend_by_component` (
   `count` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniqueness` (`year`,`month`,`day`,`component`,`queue`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS ticket_trend_by_partner;
 CREATE TABLE `ticket_trend_by_partner` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -5183,7 +5183,7 @@ CREATE TABLE `ticket_trend_by_partner` (
   `count` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniqueness` (`year`,`month`,`day`,`requestingPartner`,`queue`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS ticket_trend_by_queue;
 CREATE TABLE `ticket_trend_by_queue` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -5194,7 +5194,7 @@ CREATE TABLE `ticket_trend_by_queue` (
   `count` int DEFAULT '0',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniqueness` (`year`,`month`,`day`,`queue`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS time_to_reshelve;
 CREATE TABLE `time_to_reshelve` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -5272,7 +5272,7 @@ CREATE TABLE `twilio_settings` (
   `authToken` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS two_factor_auth_codes;
 CREATE TABLE `two_factor_auth_codes` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6013,7 +6013,7 @@ CREATE TABLE `web_builder_custom_form_field_submission` (
   `formFieldContent` text,
   PRIMARY KEY (`id`),
   UNIQUE KEY `formSubmissionId` (`formSubmissionId`,`submissionFieldId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS web_builder_custom_from_submission;
 CREATE TABLE `web_builder_custom_from_submission` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6115,7 +6115,7 @@ CREATE TABLE `web_builder_quick_poll` (
   `status` tinyint(1) DEFAULT '1',
   `showResultsToPatrons` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS web_builder_quick_poll_option;
 CREATE TABLE `web_builder_quick_poll_option` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6123,7 +6123,7 @@ CREATE TABLE `web_builder_quick_poll_option` (
   `pollId` int NOT NULL,
   `label` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS web_builder_quick_poll_submission;
 CREATE TABLE `web_builder_quick_poll_submission` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6134,7 +6134,7 @@ CREATE TABLE `web_builder_quick_poll_submission` (
   `email` varchar(255) DEFAULT NULL,
   `dateSubmitted` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS web_builder_quick_poll_submission_selection;
 CREATE TABLE `web_builder_quick_poll_submission_selection` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6142,7 +6142,7 @@ CREATE TABLE `web_builder_quick_poll_submission_selection` (
   `pollOptionId` int NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `pollSubmissionId` (`pollSubmissionId`,`pollOptionId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS web_builder_resource;
 CREATE TABLE `web_builder_resource` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6195,7 +6195,7 @@ CREATE TABLE `website_facet_groups` (
   `name` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS website_facets;
 CREATE TABLE `website_facets` (
   `id` int NOT NULL AUTO_INCREMENT,
@@ -6213,7 +6213,7 @@ CREATE TABLE `website_facets` (
   `canLock` tinyint DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `groupFacet` (`facetGroupId`,`facetName`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_520_ci;
 DROP TABLE IF EXISTS website_index_log;
 CREATE TABLE `website_index_log` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'The id of log',
