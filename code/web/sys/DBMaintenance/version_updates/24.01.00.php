@@ -46,8 +46,8 @@ function getUpdates24_01_00(): array {
 			],
 		], //card_renewal_options
 		'quipu_e_renew' => [
-			'title' => 'Quipu eRenew',
-			'description' => 'Add options to allow eRenew to be enabled or disabled',
+			'title' => 'Quipu eRENEW',
+			'description' => 'Add options to allow eRENEW to be enabled or disabled',
 			'sql' => [
 				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasECard TINYINT(1) DEFAULT 1',
 				'ALTER TABLE quipu_ecard_setting ADD COLUMN hasERenew TINYINT(1) DEFAULT 0',

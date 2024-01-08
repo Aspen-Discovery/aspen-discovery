@@ -21,7 +21,7 @@ class QuipuECardSetting extends DataObject {
 				'property' => 'server',
 				'type' => 'text',
 				'label' => 'Server',
-				'description' => 'The Name of the Server where eCard/eRenew is installed',
+				'description' => 'The Name of the Server where eCARD/eRENEW is installed',
 			],
 			'clientId' => [
 				'property' => 'clientId',
@@ -33,16 +33,16 @@ class QuipuECardSetting extends DataObject {
 			'hasECard' => [
 				'property' => 'hasECard',
 				'type' => 'checkbox',
-				'label' => 'Has eCard',
-				'description' => 'Turn on if eCard has been purchased from Quipu by the library',
+				'label' => 'Has eCARD',
+				'description' => 'Turn on if eCARD has been purchased from Quipu by the library',
 				'hideInLists' => true,
 				'default' => true
 			],
 			'hasERenew' => [
 				'property' => 'hasERenew',
 				'type' => 'checkbox',
-				'label' => 'Has eRenew',
-				'description' => 'Turn on if eCard has been purchased from Quipu by the library',
+				'label' => 'Has eRENEW',
+				'description' => 'Turn on if eRENEW has been purchased from Quipu by the library',
 				'hideInLists' => true,
 				'default' => false
 			],
