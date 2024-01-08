@@ -18,11 +18,13 @@ function getSummonUpdates() {
 				"CREATE TABLE summon_settings (
 					id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 					name VARCHAR(50) NOT NULL,
+					-- summonApiProfile VARCHAR(100) DEFAULT '',
 					summonBaseApi VARCHAR(50) DEFAULT '',
 					summonApiId VARCHAR(50) DEFAULT '',
 					summonApiPassword VARCHAR(50) DEFAULT ''
 				) ENGINE INNODB",
 				'ALTER TABLE library ADD COLUMN summonSettingsId INT(11) DEFAULT -1',
+				"ALTER TABLE summon_settings ADD COLUMN summonApiProfile VARCHAR(50) DEFAULT ''",
 			],
 		],
 		'aspen_usage_summon' => [
@@ -74,6 +76,17 @@ function getSummonUpdates() {
 				'ALTER TABLE user_summon_usage ADD COLUMN instance VARCHAR(100)',
 				'ALTER TABLE user_summon_usage DROP INDEX year',
 				'ALTER TABLE user_summon_usage ADD UNIQUE INDEX (instance, userId, year, month)',
+			],
+		],
+		'summon_integration' => [
+			'title' => 'Library Sumon Integration',
+			'description' => 'Setup information for connection to Summon APIs',
+			'sql' => [
+				'ALTER TABLE library ADD COLUMN summonApiProfile VARCHAR(50)',
+				'ALTER TABLE library ADD COLUMN summonApiId VARCHAR(50)',
+				'ALTER TABLE library ADD COLUMN summonApiPassword VARCHAR(50)',
+				"ALTER TABLE library ADD COLUMN summonSearchProfile VARCHAR(50) DEFAULT ''",
+				"ALTER TABLE summon_settings ADD COLUMN summonSearchProfile VARCHAR(50) DEFAULT ''",
 			],
 		],
 		// 'createSummonPermissions' => [
