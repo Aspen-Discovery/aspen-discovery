@@ -464,38 +464,45 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
             global $library;
             $settings = $this->getSettings();
             if ($settings != null) {
-				$queryTerms = '';
-				$queryString = "&query-1=AND,";
-                $this->startQueryTimer();
-                // $hasSearchTerm = false;
-				//If earch terms are an array 
-                if (is_array($this->searchTerms)) {
-                    $termIndex = 1;
-                    foreach ($this->searchTerms as $term) {
-                        if (!empty($term)) {
+				// $queryTerms = '';
+				// $queryString = "&query-1=AND,";
+                // $this->startQueryTimer();
+                // // $hasSearchTerm = false;
+				// //If earch terms are an array 
+                // if (is_array($this->searchTerms)) {
+                //     $termIndex = 1;
+                //     foreach ($this->searchTerms as $term) {
+                //         if (!empty($term)) {
                           
-                            $term = str_replace(',', '', $term);
-                            $searchIndex = $term['index'];
-                            $queryString = "&query-{$termIndex}=AND,";
-							$queryTerms .= urlencode($searchIndex . ":" . $term['lookfor']);
-                            $termIndex ++;
-                            $hasSearchTerm = true;
-                        }
-                    }
-					$query = $queryString . $queryTerms;
-                } else {
-					//If search terms are not an array
-                    if (isset($_REQUEST['searchIndex'])) {
-                        $this->searchIndex = $_REQUEST['searchIndex'];
-                    }
-                    $searchTerms = str_replace(',', '', $this->searchTerms);
-                    if (!empty($searchTerms)) {
-                        $searchTerms = $this->searchIndex . ':' . $searchTerms;
-                        $query = $baseUrl . $queryString . urlencode($searchTerms); 
-                    }
-                }
+                //             $term = str_replace(',', '', $term);
+                //             $searchIndex = $term['index'];
+                //             $queryString = "&q=";
+				// 			$queryTerms .= urlencode($term['lookfor']);
+                //             $termIndex ++;
+                //             $hasSearchTerm = true;
+                //         }
+                //     }
+				// 	$query = $queryString . $queryTerms;
+                // } else {
+				// 	//If search terms are not an array
+                //     if (isset($_REQUEST['searchIndex'])) {
+                //         $this->searchIndex = $_REQUEST['searchIndex'];
+                //     }
+                //     $searchTerms = str_replace(',', '', $this->searchTerms);
+                //     if (!empty($searchTerms)) {
+                //         $searchTerms = $this->searchIndex . ':' . $searchTerms;
+                //         $query = $baseUrl . $queryString . urlencode($searchTerms); 
+                //     }
+                // }
          
-                $query .= '&searchmode=all';
+                // $query .= '&searchmode=all';
+				$query = array();
+				foreach ($searchTerms as $term) {
+					$term = urlencode($term);
+					$query[] = $term;
+				}
+				asort($query);
+				$queryString = implode('&', $query);
 
 
                 // Build Authorization Headers
@@ -504,14 +511,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                     'x-summon-date' => gmdate('D, d M Y H:i:s T'),
                     'Host' => 'api.summon.serialssolutions.com'
                 );
-				$headers = $this->authenticate($headers,$settings, "&q=".urlencode($searchTerms));
-
+				// $headers = $this->authenticate($headers,$settings, "&q=".urlencode($searchTerms));
+				$data = implode("\n", $headers). "\n/$this->version/search\n" . urldecode($queryString) . "\n";
+				$hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
+				$headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
                 if ($this->sessionId) {
                     $headers['x-summon-session-id'] = $this->sessionId;
                 } 
                 // Send request
 				
-                $recordData = $this->httpRequest($baseUrl, $query, $headers);
+                $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
 				
 				
                 if (!$this->raw) {
