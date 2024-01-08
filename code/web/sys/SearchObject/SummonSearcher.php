@@ -21,6 +21,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private $params = array();
     private $method = 'GET';
     private $raw = false;
+    private $curl_connection;
 
     protected $queryStartTime = null;
 	protected $queryEndTime = null;
@@ -93,6 +94,36 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			curl_setopt($this->curl_connection, CURLOPT_RETURNTRANSFER, TRUE);
 		}
 		return $this->curl_connection;
+	}
+
+    	/**
+	 * Use the record driver to build an array of HTML displays from the search
+	 * results.
+	 *
+	 * @access  public
+	 * @return  array   Array of HTML chunks for individual records.
+	 */
+	public function getCombinedResultHTML() {
+		global $interface;
+		$html = [];
+		
+		if (isset($this->lastSearchResults->Data->Records)) {
+			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+				$current = &$this->lastSearchResults->Data->Records[$x];
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+				$record = new SummonRecordDriver($current);
+				if ($record->isValid()) {
+					$interface->assign('recordDriver', $record);
+					$html[] = $interface->fetch($record->getCombinedResult());
+				} else {
+					$html[] = "Unable to find record";
+				}
+			}
+		}
+		return $html;
 	}
 
 
@@ -430,35 +461,57 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return $this->sendRequest($options, 'search', 'GET', $raw);
      }
 
+
      public function getSearchIndexes() {
-		global $memCache;
+		return [
+			"Everything" => translate([
+				'text' => "Everything",
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+			]),
+            'Books' => translate([
+                'text' => "Books",
+				'isPublicFacing' => true,
+				'inAttribute' => true,
+            ]),
+            'Articles' => translate([
+                'text' => "Articles",
+                'isPublicFacing' => true,
+                'inAttribute' => true,
+            ])
+		];
+     }
 
-		if ($this->getSettings() == null) {
-			return [];
-		} else {
-			$searchIndexes = $memCache->get('summon_search_indexes_' . $this->getSettings()->summonApiProfile);
-			if ($searchIndexes === false) {
-				$searchOptions = $this->getSearchOptions();
-				$searchIndexes = [];
-				if ($searchOptions != null) {
-					foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
-						$searchIndexes[$searchField->FieldCode] = translate([
-							'text' => $searchField->Label,
-							'isPublicFacing' => true,
-							'inAttribute' => true,
-						]);
-					}
-				}
-				global $configArray;
-				$memCache->set('summon_search_indexes_' . $this->getSettings()->summonApiProfile, $searchIndexes, $configArray['Caching']['summon_options']);
-			}
+    //  public function getSearchIndexes() {
+	// 	global $memCache;
+    //     $settings = $this->getSettings();
 
-			return $searchIndexes;
-		}
-	}
+	// 	if ($settings == null) {
+	// 		return [];
+	// 	} else {
+	// 		$searchIndexes = $memCache->get('summon_search_indexes_' . $this->getSettings()->summonApiProfile);
+	// 		if ($searchIndexes === false) {
+	// 			$searchOptions = $this->getSearchOptions();
+	// 			$searchIndexes = [];
+	// 			if ($searchOptions != null) {
+	// 				foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
+	// 					$searchIndexes[$searchField->FieldCode] = translate([
+	// 						'text' => $searchField->Label,
+	// 						'isPublicFacing' => true,
+	// 						'inAttribute' => true,
+	// 					]);
+	// 				}
+	// 			}
+	// 			global $configArray;
+	// 			$memCache->set('summon_search_indexes_' . $this->getSettings()->summonApiProfile, $searchIndexes, $configArray['Caching']['summon_options']);
+	// 		}
+
+	// 		return $searchIndexes;
+	// 	}
+	// }
 
     public function getDefaultIndex() {
-		return '';
+		return 'SummonKeyword';
 	}
 
     public function setSearchTerm($searchTerm) {
