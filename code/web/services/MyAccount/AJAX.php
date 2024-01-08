@@ -2483,7 +2483,7 @@ class MyAccount_AJAX extends JSON_Action {
 						require_once ROOT_DIR . '/sys/Enrichment/QuipuECardSetting.php';
 						$quipuECardSettings = new QuipuECardSetting();
 						if ($quipuECardSettings->find(true) && $quipuECardSettings->hasERenew) {
-							$interface->assign('cardRenewalLink', "/MyAccount/eRenew");
+							$interface->assign('cardRenewalLink', "/MyAccount/eRENEW");
 						}
 					}
 				}
