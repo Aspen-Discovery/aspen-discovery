@@ -16,6 +16,7 @@ class DonationsSetting extends DataObject {
 	public $allowDonationsToBranch;
 	public $allowDonationEarmark;
 	public $allowDonationDedication;
+	public $requiresAddressInfo;
 	public $donationsContent;
 	public $donationEmailTemplate;
 
@@ -71,6 +72,13 @@ class DonationsSetting extends DataObject {
 				'description' => 'Whether or not users can ask that their donation be dedicated to someone.',
 				'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();',
 			],
+			'requiresAddressInfo' => [
+				'property' => 'requiresAddressInfo',
+				'type' => 'checkbox',
+				'label' => 'Requests users to add their address information for donation.',
+				'description' => 'Whether or not users have to add address information to make a donation.',
+				'onchange' => 'return AspenDiscovery.Admin.updateDonationsSettingFields();',
+			],
 			'donationsContent' => [
 				'property' => 'donationsContent',
 				'type' => 'html',
@@ -85,7 +93,6 @@ class DonationsSetting extends DataObject {
 				'description' => 'Content that is displayed in the user\'s email receipt.',
 				'hideInLists' => true,
 			],
-
 			'donationValues' => [
 				'property' => 'donationValues',
 				'type' => 'oneToMany',

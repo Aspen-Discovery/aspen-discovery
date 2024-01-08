@@ -24,6 +24,14 @@ class Donations_NewDonation extends Action {
 				$donation->firstName = $user->firstname;
 				$donation->lastName = $user->lastname;
 				$donation->email = $user->email;
+				//Let's populate fields if donation form requires address information
+				if ($donationSettings->requiresAddressInfo){
+					$donation->address = $user->_address1;
+					$donation->address2 = $user->_address2;
+					$donation->city = $user->_city;
+					$donation->state = $user->_state;
+					$donation->zip = $user->_zip;
+				}
 			}
 
 			$interface->assign('newDonation', $donation);
@@ -50,7 +58,7 @@ class Donations_NewDonation extends Action {
 				$interface->assign('useLineItems', $donationPaymentProcessor['useLineItems']);
 			}
 			// ACI Speedpay
-			if ($donationPaymentProcessor['paymentType'] == 8){
+			if ($donationPaymentProcessor['paymentType'] == 8) {
 				$sdkAuthKey = $donationPaymentProcessor['sdkAuthKey'];
 				$sdkClientId = $donationPaymentProcessor['sdkClientId'];
 				$sdkClientSecret = $donationPaymentProcessor['sdkClientSecret'];
@@ -107,26 +115,26 @@ class Donations_NewDonation extends Action {
 				$interface->assign('sriHash', $sriHash);
 			}
 			// Certified Payments by Deluxe
-			if ($donationPaymentProcessor['paymentType'] == 10){
+			if ($donationPaymentProcessor['paymentType'] == 10) {
 				$interface->assign('deluxeAPIConnectionUrl', $donationPaymentProcessor['deluxeAPIConnectionUrl']);
 				$interface->assign('deluxeRemittanceId', $donationPaymentProcessor['deluxeRemittanceId']);
 				$interface->assign('deluxeApplicationId', $donationPaymentProcessor['deluxeApplicationId']);
 			}
 			// Certified Payments by Deluxe
-			if ($donationPaymentProcessor['paymentType'] == 10){
+			if ($donationPaymentProcessor['paymentType'] == 10) {
 				$interface->assign('deluxeAPIConnectionUrl', $donationPaymentProcessor['deluxeAPIConnectionUrl']);
 				$interface->assign('deluxeRemittanceId', $donationPaymentProcessor['deluxeRemittanceId']);
 				$interface->assign('deluxeApplicationId', $donationPaymentProcessor['deluxeApplicationId']);
 			}
 			// Square
-			if ($donationPaymentProcessor['paymentType'] == 12){
+			if ($donationPaymentProcessor['paymentType'] == 12) {
 				$interface->assign('squareCdnUrl', $donationPaymentProcessor['squareCdnUrl']);
 				$interface->assign('squareApplicationId', $donationPaymentProcessor['squareApplicationId']);
 				$interface->assign('squareAccessToken', $donationPaymentProcessor['squareAccessToken']);
 				$interface->assign('squareLocationId', $donationPaymentProcessor['squareLocationId']);
 			}
 			// Stripe
-			if ($donationPaymentProcessor['paymentType'] == 13){
+			if ($donationPaymentProcessor['paymentType'] == 13) {
 				$interface->assign('stripePublicKey', $donationPaymentProcessor['stripePublicKey']);
 				$interface->assign('stripeSecretKey', $donationPaymentProcessor['stripeSecretKey']);
 			}

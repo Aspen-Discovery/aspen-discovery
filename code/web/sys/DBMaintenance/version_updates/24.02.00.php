@@ -65,7 +65,29 @@ function getUpdates24_02_00(): array {
 			],
 		], //self_reg_sections_assignment
 
-		//lucas - Theke
+        //lucas - Theke
+         'requires_address_info' => [
+             'title' => 'Requires address information',
+             'description' => 'Add a checkbox to prompt users for their address when making a donation.',
+             'continueOnError' => false,
+             'sql' => [
+                 'ALTER TABLE donations_settings ADD COLUMN requiresAddressInfo TINYINT(1) default 0'
+             ]
+        ], //requires_address_info
+
+        'add_address_information_for_donations' => [
+            'title' => 'Adds address information for donations',
+            'description' => 'Adds new columns with address information of the user ',
+            'continueOnError' => false,
+            'sql' => [
+                'ALTER TABLE donations ADD COLUMN address VARCHAR(50)',
+				'ALTER TABLE donations ADD COLUMN address2 VARCHAR(50)',
+                'ALTER TABLE donations ADD COLUMN city VARCHAR(50)',
+                'ALTER TABLE donations ADD COLUMN state VARCHAR(50)',
+                'ALTER TABLE donations ADD COLUMN zip INT(11)',
+
+            ]
+        ]
 
 		//alexander - PTFS Europe
 

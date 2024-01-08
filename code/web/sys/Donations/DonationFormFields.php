@@ -260,6 +260,56 @@ class DonationFormFields extends DataObject {
 		$defaultField->insert();
 		$defaultFieldsToDisplay[] = $defaultField;
 
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'Address';
+		$defaultField->textId = 'address';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'Address 2';
+		$defaultField->textId = 'address2';
+		$defaultField->type = 'text';
+		$defaultField->required = 0;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'City';
+		$defaultField->textId = 'city';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'State';
+		$defaultField->textId = 'state';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
+		$defaultField = new DonationFormFields();
+		$defaultField->donationSettingId = $donationSettingId;
+		$defaultField->category = 'Enter your information';
+		$defaultField->label = 'Zip';
+		$defaultField->textId = 'zip';
+		$defaultField->type = 'text';
+		$defaultField->required = 1;
+		$defaultField->insert();
+		$defaultFieldsToDisplay[] = $defaultField;
+
 		return $defaultFieldsToDisplay;
 
 	}
