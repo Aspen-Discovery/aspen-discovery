@@ -2,7 +2,7 @@
 
 require_once ROOT_DIR . "/Action.php";
 
-class eRenew extends Action {
+class eRENEW extends Action {
 	public function launch() {
 		global $interface;
 
