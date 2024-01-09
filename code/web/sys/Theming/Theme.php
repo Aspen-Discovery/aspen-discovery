@@ -2354,6 +2354,23 @@ class Theme extends DataObject {
 
 		$this->applyDefaults();
 
+		$prevColors = [];
+		$theme = new Theme();
+		$theme->id = $this->id;
+		if($theme->find(true)) {
+			$prevColors = $theme;
+		}
+
+		foreach($this as $index => $item) {
+			if(str_contains($index, 'Color')) {
+				if(is_null($item)) {
+					if($prevColors->$index) {
+						// Locked fields contain null values, so we'll grab the previous value in order to check contrast
+						$this->$index = $prevColors->$index;
+					}
+				}
+			}
+		}
 		require_once ROOT_DIR . '/sys/Utils/ColorUtils.php';
 		$bodyContrast = ColorUtils::calculateColorContrast($this->bodyBackgroundColor, $this->bodyTextColor);
 		if ($bodyContrast < $minContrastRatio) {
