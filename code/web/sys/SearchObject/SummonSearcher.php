@@ -497,13 +497,21 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
          
                 // $query .= '&searchmode=all';
 				$query = array();
-				foreach ($searchTerms as $term) {
-					$term = urlencode($term);
-					$query[] = $term;
+				foreach ($this->searchTerms as $function => $value) {
+					if (is_array($value)) {
+						foreach ($value as $term) {
+							$term = urlencode($term);
+							$query[] =$term;
+						}
+					} elseif (!is_null($value)) {
+						$value = urlencode($value);
+						$query[] =$value;
+					}
 				}
-				asort($query);
-				$queryString = implode('&', $query);
-
+				// foreach ($this->searchTerms['lookfor'] as $term) {
+				// 	$term = urlencode($term);
+				// }
+				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
 
                 // Build Authorization Headers
                 $headers = array(
@@ -596,7 +604,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         if ($result === false) {
             throw new Exception("Error in HTTP Request.");
         }
-        curl_close($curlConnection);
+        // curl_close($curlConnection);
 
         return $result;
     }
