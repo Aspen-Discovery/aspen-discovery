@@ -19,12 +19,12 @@ class SummonRecordDriver extends RecordInterface {
 		if (is_string($recordData)) {
 			/** @var SearchObject_SummonSearcher $summonSearcher */
 			$summonSearcher = SearchObjectFactory::initSearchObject("Summon");
-			[
-				$id,
-				$raw,
-				$idType,
-			] = explode(':', $recordData, 2);
-			$this->recordData = $summonSearcher->retrieveRecord($id, $raw, $idType);
+			// [
+			// 	$id,
+			// 	$raw,
+			// 	$idType,
+			// ] = explode(':', $recordData, 2);
+			$this->recordData = $summonSearcher->sendRequest();
 		} else {
 			$this->recordData = $recordData;
 		}
@@ -34,36 +34,43 @@ class SummonRecordDriver extends RecordInterface {
 		return true;
 	}
 
-	public function getBookcoverUrl($size = 'small', $absolutePath = false) {
-		if (!empty($this->recordData->ImageInfo)) {
-			if (is_array($this->recordData->ImageInfo)) {
-				$imageUrl = '';
-
-				/** @var stdClass $coverArtElement */
-				foreach ($this->recordData->ImageInfo as $coverArtElement) {
-					if ($size == 'small' && $coverArtElement->Size == 'thumb') {
-						return $coverArtElement->Target;
-					} elseif ($size == 'medium' && $coverArtElement->Size == 'medium') {
-						return $coverArtElement->Target;
-					} else {
-						$imageUrl = $coverArtElement->Target;
-					}
-				}
-				return $imageUrl;
-			} else {
-				return $this->recordData->ImageInfo->Target;
+	public function getBookcoverUrl($size = 'large', $absolutePath =false) {
+		foreach($this->recordData->documents as $document) {
+			if (!empty($document->thumbnail_l)) {
+				return $document->tumbnail_l[0];
 			}
-		} else {
-			global $configArray;
-
-			if ($absolutePath) {
-				$bookCoverUrl = $configArray['Site']['url'];
-			} else {
-				$bookCoverUrl = '';
-			}
-			$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=summon";
-			return $bookCoverUrl;
 		}
+
+
+		// if (!empty($this->recordData->database)) {
+		// 	if (is_array($this->recordData->ImageInfo)) {
+		// 		$imageUrl = '';
+
+		// 		/** @var stdClass $coverArtElement */
+		// 		foreach ($this->recordData->ImageInfo as $coverArtElement) {
+		// 			if ($size == 'small' && $coverArtElement->Size == 'thumb') {
+		// 				return $coverArtElement->Target;
+		// 			} elseif ($size == 'medium' && $coverArtElement->Size == 'medium') {
+		// 				return $coverArtElement->Target;
+		// 			} else {
+		// 				$imageUrl = $coverArtElement->Target;
+		// 			}
+		// 		}
+		// 		return $imageUrl;
+		// 	} else {
+		// 		return $this->recordData->ImageInfo->Target;
+		// 	}
+		// } else {
+		// 	global $configArray;
+
+		// 	if ($absolutePath) {
+		// 		$bookCoverUrl = $configArray['Site']['url'];
+		// 	} else {
+		// 		$bookCoverUrl = '';
+		// 	}
+		// 	$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=summon";
+		// 	return $bookCoverUrl;
+		// }
 	}
 
 	/**
@@ -81,10 +88,11 @@ class SummonRecordDriver extends RecordInterface {
 		return $this->getRecordUrl();
 	}
 
-	// public function getRecordUrl() {
-	
-	// 	return '/EBSCO/Home?id=' . urlencode($this->getUniqueID());
-	// }
+	public function getRecordUrl() {
+		foreach($this->recordData->documents as $document) {
+			return $document->link;
+		}
+	}
 
 	// /** @noinspection PhpUnused */
 	// public function getEbscoUrl() {
@@ -161,13 +169,13 @@ class SummonRecordDriver extends RecordInterface {
 		global $interface;
 		$appliedTheme = $interface->getAppliedTheme();
 
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('medium'));
 
-		if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
-		} else {
-			$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
-		}
+		// if ($appliedTheme != null && $appliedTheme->browseCategoryImageSize == 1) {
+		// 	$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('large'));
+		// } else {
+		// 	$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		// }
 
 		return 'RecordDrivers/Summon/browse_result.tpl';
 	}
@@ -263,19 +271,24 @@ class SummonRecordDriver extends RecordInterface {
 	 * @return  string
 	 */
 	public function getTitle() {
-		if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)) {
-			if (isset($this->recordData->RecordInfo->BibRecord->BibEntity->Titles)) {
-				return $this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
-			}
-		}
-		if (isset($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships)) {
-			foreach ($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships as $relationship) {
-				if (isset($relationship->BibEntity->Titles)) {
-					return $relationship->BibEntity->Titles[0]->TitleFull;
-				}
-			}
-		}
-		return 'Unknown';
+		return ($this->recordData->documents[0] ->Title[0]);
+
+
+			
+	
+		// if (isset($this->recordData->RecordInfo->BibRecord->BibEntity)) {
+		// 	if (isset($this->recordData->RecordInfo->BibRecord->BibEntity->Titles)) {
+		// 		return $this->recordData->RecordInfo->BibRecord->BibEntity->Titles[0]->TitleFull;
+		// 	}
+		// }
+		// if (isset($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships)) {
+		// 	foreach ($this->recordData->RecordInfo->BibRecord->BibRelationships->IsPartOfRelationships as $relationship) {
+		// 		if (isset($relationship->BibEntity->Titles)) {
+		// 			return $relationship->BibEntity->Titles[0]->TitleFull;
+		// 		}
+		// 	}
+		// }
+	
 	}
 
 	/**
@@ -298,12 +311,20 @@ class SummonRecordDriver extends RecordInterface {
 	 * @return  string              Unique identifier.
 	 */
 	public function getUniqueID() {
-		if (isset($this->recordData)) {
-			return (string)$this->recordData->Header->DbId . ':' . (string)$this->recordData->Header->An;
-		}else{
+		if (!empty($this->recordData->documents)){
+			foreach($this->recordData->documents as $document) {
+				if (!empty($document->DBID)) {
+					return $document->DBID;
+				} else {
+					return null;
+				}
+			}
+		} else{
 			return null;
 		}
 	}
+
+
 
 	public function getId() {
 		return $this->getUniqueID();
@@ -319,12 +340,9 @@ class SummonRecordDriver extends RecordInterface {
 	 * @return  bool
 	 */
 	public function hasFullText() {
-		if ($this->recordData->FullText->Text->Availability == 1) {
-			return true;
-		} elseif (!empty($this->recordData->FullText->Links)) {
-			return true;
+		foreach($this->recordData->documents as $document) {
+				return $document->hasFullText;
 		}
-		return false;
 	}
 
 	public function getFullText() {
@@ -345,17 +363,13 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getDescription() {
-		if (!empty($this->recordData->Items)) {
-			/** @var stdClass $item */
-			foreach ($this->recordData->Items as $item) {
-				if ($item->Name == 'Abstract') {
-					return strip_tags($item->Data);
-				}
+		foreach($this->recordData->documents as $document) {
+			if (!empty($document->Abstract)) {
+				return $document->Abstract;
 			}
-		}
-		return '';
+		} return '';
 	}
-
+		
 	public function getMoreDetailsOptions() {
 		// TODO: Implement getMoreDetailsOptions() method.
 	}
@@ -369,7 +383,9 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getSourceDatabase() {
-		return $this->recordData->Header->DbLabel;
+		foreach($this->recordData->documents as $document) {
+			return $document->DatabaseTitle;
+		}
 	}
 
 	public function getPrimaryAuthor() {
@@ -377,29 +393,26 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getAuthor() {
-		if (!empty($this->recordData->Items)) {
-			foreach ($this->recordData->Items as $item) {
-				if ($item->Name == 'Author') {
-					return strip_tags(html_entity_decode($item->Data));
-				}
+		if (!empty($this->recordData->documents)){
+			foreach ($this->recordData->documents as $document) {
+					return strip_tags($this->recordData->documents[0]->Author[0]);
 			}
 		}
-		return "";
 	}
 
 	public function getExploreMoreInfo() {
 		return [];
 	}
 
-	public function getAllSubjectHeadings() {
-		$subjectHeadings = [];
-		if (count(@$this->recordData->RecordInfo->BibRecord->BibEntity->Subjects) != 0) {
-			foreach ($this->recordData->RecordInfo->BibRecord->BibEntity->Subjects->Subject as $subject) {
-				$subjectHeadings[] = (string)$subject->SubjectFull;
-			}
-		}
-		return $subjectHeadings;
-	}
+	// public function getAllSubjectHeadings() {
+	// 	$subjectHeadings = [];
+	// 	if (count(@$this->recordData->RecordInfo->BibRecord->BibEntity->Subjects) != 0) {
+	// 		foreach ($this->recordData->RecordInfo->BibRecord->BibEntity->Subjects->Subject as $subject) {
+	// 			$subjectHeadings[] = (string)$subject->SubjectFull;
+	// 		}
+	// 	}
+	// 	return $subjectHeadings;
+	// }
 
 	public function getPermanentId() {
 		return $this->getUniqueID();

@@ -14,7 +14,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private $summonBaseApi ='http://api.summon.serialssolutions.com';
 	private $summonApiId;
 	private $summonApiPassword;
-    private static $sessionId;
+    private $sessionId;
     private $version = '2.0.0';
     private $service = 'search';
     private $authedUser = false;
@@ -166,19 +166,20 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return $headers;
     }
 
-    public function endSession() {
-		if ($this->curl_connection) {
-			curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_SummonSearcher::$sessionId);
-			curl_exec($this->curl_connection);
-		}
+     public function endSession() {
+	// 	if ($this->curl_connection) {
+	// 		curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . $this->sessionId);
+	// 		curl_exec($this->curl_connection);
+	// 	}
 	}
 
     public function __destruct() {
-		$this->endSession();
-		if ($this->curl_connection) {
-			curl_close($this->curl_connection);
-		}
+	// 	$this->endSession();
+	// 	if ($this->curl_connection) {
+	// 		curl_close($this->curl_connection);
+	// 	}
 	}
+
 
 	public function getQuerySpeed() {
 		return $this->queryTime;
@@ -444,7 +445,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	// protected function startQueryTimer() {
 	// 	// Get time before the query
 	// 	$time = explode(" ", microtime());
-	// 	$this->queryStartTime = $time[1] . $time[0];
+	// 	$this->queryStartTime = $time[1] . $time[0;
 	// }
 
 	// /**
@@ -523,22 +524,21 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$data = implode("\n", $headers). "\n/$this->version/search\n" . urldecode($queryString) . "\n";
 				$hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
 				$headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
-                if ($this->sessionId) {
+                if (!is_null($this->sessionId)) {
                     $headers['x-summon-session-id'] = $this->sessionId;
                 } 
                 // Send request
 				
                 $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
 				
-				
                 if (!$this->raw) {
                     // Process response
                     $recordData = $this->process($recordData); 
                 }
+				$this->sessionId = $recordData['sessionId'];
                 return $recordData;
             } else {
 				return new AspenError('Please specify a search term');
-
 			}
     }
 
@@ -609,56 +609,56 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return $result;
     }
 
-      /**
-     * @param SummonQuery $query Query object
-     */
-     public function query($query, $returnErr = false, $raw = false) {
-         // Query String Parameters
-         $options = $query->getOptionsArray();
-         $options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
+    //   /**
+    //  * @param SummonQuery $query Query object
+    //  */
+    //  public function query($query, $returnErr = false, $raw = false) {
+    //      // Query String Parameters
+    //      $options = $query->getOptionsArray();
+    //      $options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
  
-         // Special case -- if user filtered down to newspapers AND excluded them,
-         // we can't possibly have any results:
-         if (isset($options['s.fvf']) && is_array($options['s.fvf'])
-             && in_array('ContentType,Newspaper Article,true', $options['s.fvf'])
-             && in_array('ContentType,Newspaper Article', $options['s.fvf'])
-         ) {
-             return array(
-                 'recordCount' => 0,
-                 'documents' => array()
-             );
-         }
+    //      // Special case -- if user filtered down to newspapers AND excluded them,
+    //      // we can't possibly have any results:
+    //      if (isset($options['s.fvf']) && is_array($options['s.fvf'])
+    //          && in_array('ContentType,Newspaper Article,true', $options['s.fvf'])
+    //          && in_array('ContentType,Newspaper Article', $options['s.fvf'])
+    //      ) {
+    //          return array(
+    //              'recordCount' => 0,
+    //              'documents' => array()
+    //          );
+    //      }
  
  
-         try {
-             $result = $this->sendRequest($options, 'search', 'GET', $raw);
-         } catch (Exception $e) {
-             if ($returnErr) {
-                 return array(
-                     'recordCount' => 0,
-                     'documents' => array(),
-                     'errors' => $e->getMessage()
-                 );
-             } else {
-                 throw new AspenError($e);
-             }
-         }
+    //      try {
+    //          $result = $this->sendRequest();
+    //      } catch (Exception $e) {
+    //          if ($returnErr) {
+    //              return array(
+    //                  'recordCount' => 0,
+    //                  'documents' => array(),
+    //                  'errors' => $e->getMessage()
+    //              );
+    //          } else {
+    //              throw new AspenError($e);
+    //          }
+    //      }
  
-         return $result;
-     }
+    //      return $result;
+    //  }
      
      public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
      {
         
      }
 
-     public function retreiveRecord($id, $raw = false, $idType = self::IDENTIFIER_ID) {
-        $options = $idType === self::IDENTIFIER_BOOKMARK
-            ? array('s.bookMark' => $id)
-            : array('s.q' => sprintf('ID:"%s"', $id));
-        $options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
-        return $this->sendRequest($options, 'search', 'GET', $raw);
-     }
+    //  public function retreiveRecord($id, $raw = false, $idType = self::IDENTIFIER_ID) {
+    //     $options = $idType === self::IDENTIFIER_BOOKMARK
+    //         ? array('s.bookMark' => $id)
+    //         : array('s.q' => sprintf('ID:"%s"', $id));
+    //     $options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
+    //     return $this->sendRequest($options, 'search', 'GET', $raw);
+    //  }
 
 
      public function getSearchIndexes() {
