@@ -160,7 +160,7 @@ class StripeSetting extends DataObject {
 	/*
 	 * @return array|bool
 	 */
-	public function submitTransaction($patron, $payment, $paymentMethodId): mixed {
+	public function submitTransaction($patron, $payment, $paymentMethodId, $transactionType): mixed {
 		$result = ['success' => false];
 
 		$paymentAmount = $payment->totalPaid;
@@ -189,35 +189,46 @@ class StripeSetting extends DataObject {
 				$payment->orderId = $paymentResponse['id'];
 				$payment->totalPaid = number_format($totalPaid / 100, 2, '.', '');
 
-				$user = new User();
-				$user->id = $payment->userId;
-				if ($user->find(true)) {
-					$finePaymentCompleted = $user->completeFinePayment($payment);
-					if ($finePaymentCompleted['success']) {
-						$payment->message .= "Payment completed, TransactionId = $payment->transactionId, Net Amount = $payment->totalPaid. ";
-						$payment->update();
-						return [
-							'success' => true,
-							'message' => translate([
-								'text' => 'Your payment has been completed. ',
-								'isPublicFacing' => true,
-							]),
-						];
+				if ($transactionType == 'donation'){
+					$payment->message .= "Donation sent, TransactionId = $payment->transactionId, Net Amount = $payment->totalPaid. ";
+					$payment->update();
+					return [
+						'success' => true,
+						'message' => translate([
+							'text' => 'Your donation has been sent. Thank you! ',
+							'isPublicFacing' => true,
+						]),
+					];
+				} else {
+					$user = new User();
+					$user->id = $payment->userId;
+					if ($user->find(true)) {
+						$finePaymentCompleted = $user->completeFinePayment($payment);
+						if ($finePaymentCompleted['success']) {
+							$payment->message .= "Payment completed, TransactionId = $payment->transactionId, Net Amount = $payment->totalPaid. ";
+							$payment->update();
+							return [
+								'success' => true,
+								'message' => translate([
+									'text' => 'Your payment has been completed. ',
+									'isPublicFacing' => true,
+								]),
+							];
+						} else {
+							$payment->error = true;
+							$payment->message .= $finePaymentCompleted['message'];
+							$payment->update();
+							return [
+								'success' => false,
+								'message' => $finePaymentCompleted['message'],
+							];
+						}
 					} else {
 						$payment->error = true;
-						$payment->message .= $finePaymentCompleted['message'];
+						$payment->message .= 'Could not find user to mark the fine paid in the ILS.';
 						$payment->update();
-						return [
-							'success' => false,
-							'message' => $finePaymentCompleted['message'],
-						];
 					}
-				} else {
-					$payment->error = true;
-					$payment->message .= 'Could not find user to mark the fine paid in the ILS.';
-					$payment->update();
 				}
-
 			}
 		} else {
 			if(isset($paymentResponse['error']['message']['default'])) {
@@ -231,7 +242,6 @@ class StripeSetting extends DataObject {
 			$payment->update();
 			$result['message'] = $error;
 		}
-
 		return $result;
 	}
 }
