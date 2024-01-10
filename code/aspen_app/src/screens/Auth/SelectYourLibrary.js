@@ -1,4 +1,4 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import _ from 'lodash';
 import { Box, Button, Center, FlatList, HStack, Icon, Image, Input, Modal, Pressable, Text, VStack } from 'native-base';
 import React from 'react';
@@ -46,17 +46,36 @@ export const SelectYourLibrary = (payload) => {
           return <PermissionsPrompt promptTitle="permissions_location_title" promptBody="permissions_location_body" setShouldRequestPermissions={setShouldRequestPermissions} />;
      }
 
+     const clearSearch = () => {
+          setQuery('');
+     };
+
      return (
           <Center>
                <Button onPress={() => setShowModal(true)} colorScheme="primary" m={5} size="md" startIcon={<Icon as={MaterialIcons} name="place" size={5} />}>
                     {selectedLibrary?.name ? selectedLibrary.name : getTermFromDictionary('en', 'select_your_library')}
                </Button>
                <Modal isOpen={showModal} size="lg" avoidKeyboard onClose={() => setShowModal(false)} pb={Platform.OS === 'android' && isKeyboardOpen ? '50%' : '0'}>
-                    <Modal.Content bg="white" _dark={{ bg: 'coolGray.800' }} maxH="350">
+                    <Modal.Content bg="warmGray.50" _dark={{ bg: 'coolGray.800' }} maxH="350">
                          <Modal.CloseButton />
                          <Modal.Header>{getTermFromDictionary('en', 'find_your_library')}</Modal.Header>
-                         <Box bg="white" _dark={{ bg: 'coolGray.800' }} p={2} pb={query ? 0 : 5}>
-                              <Input variant="filled" size="lg" autoCorrect={false} status="info" placeholder={getTermFromDictionary('en', 'search')} clearButtonMode="always" value={query} onChangeText={(text) => setQuery(text)} />
+                         <Box bg="warmGray.50" _dark={{ bg: 'coolGray.800' }} p={2} pb={query ? 0 : 5}>
+                              <Input
+                                   variant="filled"
+                                   size="lg"
+                                   autoCorrect={false}
+                                   status="info"
+                                   placeholder={getTermFromDictionary('en', 'search')}
+                                   value={query}
+                                   onChangeText={(text) => setQuery(text)}
+                                   InputRightElement={
+                                        query ? (
+                                             <Pressable onPress={() => clearSearch()}>
+                                                  <Icon as={MaterialCommunityIcons} name="close-circle" size={5} mr="2" />
+                                             </Pressable>
+                                        ) : null
+                                   }
+                              />
                          </Box>
                          <FlatList keyboardShouldPersistTaps="handled" keyExtractor={(item, index) => index.toString()} renderItem={({ item }) => <Item data={item} isCommunity={isCommunity} setShowModal={setShowModal} updateSelectedLibrary={updateSelectedLibrary} />} data={FilteredLibraries(libraries)} />
                     </Modal.Content>
