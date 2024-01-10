@@ -10,7 +10,7 @@ class SharedSession extends DataObject {
 	protected $createdOn;
 
 	public function isSessionStillValid() {
-		return $this->createdOn > strtotime('+1 hour', $this->createdOn);
+		return $this->createdOn < strtotime('+1 hour', $this->createdOn);
 	}
 
 	public function getSessionId() : mixed {
@@ -50,9 +50,6 @@ class SharedSession extends DataObject {
 		$page = '/MyAccount/' . $returnTo;
 		global $configArray;
 		$redirectTo = $configArray['Site']['url'] . $page . '?minimalInterface=true'; // set minimalInterface to hide some unnecessary elements that clutter the mobile UI
-
-		if(UserAccount::loginWithAspen($user)) {
-			header('Location: ' . $redirectTo);
-		}
+		header('Location: ' . $redirectTo);
 	}
 }
