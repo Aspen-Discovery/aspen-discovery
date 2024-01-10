@@ -26,15 +26,12 @@
 				const cardButton = document.getElementById('process-stripe-payment');
 
 				cardButton.addEventListener('click', async function (event) {
-					console.log(`Debug: Submitting Payment`);
 					event.preventDefault();
 					cardButton.disabled = true;
 					cardButton.innerHTML = "Submitting Payment...";
 
-					console.log(`Debug: Creating Stripe Order`);
 					var paymentId = AspenDiscovery.Account.createStripeOrder('#fines{/literal}{$userId}{literal}', 'fine');
 
-					console.log('Debug: Tokenizing Payment Method');
 					stripe.createPaymentMethod({
 						type: 'card',
 						card: card,
@@ -46,8 +43,6 @@
 									cardButton.disabled = false;
 									cardButton.innerHTML = "{/literal}{if !empty($payFinesLinkText)}{$payFinesLinkText}{else}{translate text = 'Submit Payment' isPublicFacing=true}{/if}{literal}";
 								} else {
-									console.log("PaymentMethod ID: " + result.paymentMethod.id);
-									console.log(`Debug: Completing Stripe Order`);
 									AspenDiscovery.Account.completeStripeOrder({/literal}{$userId}{literal}, 'fine', paymentId, result.paymentMethod.id);
 								}
 							});

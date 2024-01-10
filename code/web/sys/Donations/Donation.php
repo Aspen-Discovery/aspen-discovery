@@ -424,6 +424,29 @@ class Donation extends DataObject {
 		global $library;
 		$clientId = null;
 		$showPayLater = null;
+		$stripeSecretKey = null;
+		$stripePublicKey = null;
+		$squareCdnUrl = null;
+		$squareApplicationId = null;
+		$squareAccessToken = null;
+		$squareLocationId = null;
+		$deluxeAPIConnectionUrl = null;
+		$deluxeRemittanceId = null;
+		$deluxeApplicationId = null;
+		$apiAuthKey = null;
+		$billerId = null;
+		$sdkAuthKey = null;
+		$sdkClientId = null;
+		$sdkClientSecret = null;
+		$billerAccountId = null;
+		$settleCode = null;
+		$merchantCode = null;
+		$paymentSite = null;
+		$useLineItems = null;
+		$baseUrl = null;
+		$sdkUrl = null;
+		$aspenUrl = null;
+
 		if (UserAccount::isLoggedIn()) {
 			$user = UserAccount::getActiveUserObj();
 			$homeLibrary = Library::getLibraryForLocation($user->homeLocationId);
@@ -435,6 +458,7 @@ class Donation extends DataObject {
 				$paymentType = $homeLibrary->finePaymentType;
 			}
 
+			//PayPal
 			if ($paymentType == 2) {
 				require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 				$payPalSetting = new PayPalSetting();
@@ -442,6 +466,101 @@ class Donation extends DataObject {
 				if ($payPalSetting->find(true)) {
 					$clientId = $payPalSetting->clientId;
 					$showPayLater = $payPalSetting->showPayLater;
+				}
+			}
+			// FIS WorldPay data
+			if ($paymentType == 7) {
+				global $configArray;
+				$aspenUrl = $configArray['Site']['url'];
+
+				global $library;
+				require_once ROOT_DIR . '/sys/ECommerce/WorldPaySetting.php';
+				$worldPaySettings = new WorldPaySetting();
+				$worldPaySettings->id = $library->worldPaySettingId;
+
+				$merchantCode = 0;
+				$settleCode = 0;
+				$paymentSite = "";
+				$useLineItems = 0;
+
+				if ($worldPaySettings->find(true)) {
+					$merchantCode = $worldPaySettings->merchantCode;
+					$settleCode = $worldPaySettings->settleCode;
+					$paymentSite = $worldPaySettings->paymentSite;
+					$useLineItems = $worldPaySettings->useLineItems;
+				}
+
+			}
+			// ACI Speedpay data
+			if ($paymentType == 8) {
+				global $library;
+				require_once ROOT_DIR . '/sys/ECommerce/ACISpeedpaySetting.php';
+				$aciSpeedpaySettings = new ACISpeedpaySetting();
+				$aciSpeedpaySettings->id = $library->aciSpeedpaySettingId;
+
+				if ($aciSpeedpaySettings->find(true)) {
+					$baseUrl = 'https://api.acispeedpay.com';
+					$sdkUrl = 'cds.officialpayments.com';
+					$billerAccountId = $user->ils_barcode;
+
+					if ($aciSpeedpaySettings->sandboxMode == 1) {
+						$baseUrl = 'https://sandbox-api.acispeedpay.com';
+						$sdkUrl = 'sandbox-cds.officialpayments.com';
+					}
+
+					$apiAuthKey = $aciSpeedpaySettings->apiAuthKey;
+					$billerId = $aciSpeedpaySettings->billerId;
+					$sdkAuthKey = $aciSpeedpaySettings->sdkApiAuthKey;
+					$sdkClientId = $aciSpeedpaySettings->sdkClientId;
+					$sdkClientSecret = $aciSpeedpaySettings->sdkClientSecret;
+				}
+			}
+			// Certified Payments by Deluxe
+			if($paymentType == 10) {
+				global $library;
+				require_once ROOT_DIR . '/sys/ECommerce/CertifiedPaymentsByDeluxeSetting.php';
+				$deluxeSettings = new CertifiedPaymentsByDeluxeSetting();
+				$deluxeSettings->id = $library->deluxeCertifiedPaymentsSettingId;
+				if($deluxeSettings->find(true)) {
+					// connection URL to payment portal
+					$url = 'https://www.velocitypayment.com/vrelay/verify.do';
+					if($deluxeSettings->sandboxMode == 1 || $deluxeSettings->sandboxMode == "1") {
+						$url = 'https://demo.velocitypayment.com/vrelay/verify.do';
+					}
+					$deluxeAPIConnectionUrl = $url;
+
+					// generate remittance id
+					$uid = random_bytes(12);
+					$deluxeRemittanceId = bin2hex($uid);
+
+					// application id from deluxe
+					$deluxeApplicationId = $deluxeSettings->applicationId;
+				}
+			}
+			// Square
+			if($paymentType == 12) {
+				require_once ROOT_DIR . '/sys/ECommerce/SquareSetting.php';
+				$squareSetting = new SquareSetting();
+				$squareSetting->id = $library->squareSettingId;
+				if($squareSetting->find(true)) {
+					$cdnUrl = 'https://web.squarecdn.com/v1/square.js';
+					if($squareSetting->sandboxMode == 1 || $squareSetting->sandboxMode == '1') {
+						$cdnUrl = 'https://sandbox.web.squarecdn.com/v1/square.js';
+					}
+					$squareCdnUrl = $cdnUrl;
+					$squareApplicationId = $squareSetting->applicationId;
+					$squareAccessToken = $squareSetting->accessToken;
+					$squareLocationId = $squareSetting->locationId;
+				}
+			}
+			// Stripe
+			if($paymentType == 13) {
+				require_once ROOT_DIR . '/sys/ECommerce/StripeSetting.php';
+				$stripeSetting = new StripeSetting();
+				$stripeSetting->id = $library->stripeSettingId;
+				if($stripeSetting->find(true)) {
+					$stripePublicKey = $stripeSetting->stripePublicKey;
+					$stripeSecretKey = $stripeSetting->stripeSecretKey;
 				}
 			}
 		} else {
@@ -465,8 +584,29 @@ class Donation extends DataObject {
 			'paymentType' => $paymentType,
 			'currencyCode' => $currencyCode,
 			'userId' => $userId,
+			'aspenUrl' => $aspenUrl,
 			'clientId' => $clientId,
 			'showPayLater' => $showPayLater,
+			'stripePublicKey' => $stripePublicKey,
+			'stripeSecretKey' => $stripeSecretKey,
+			'squareCdnUrl' => $squareCdnUrl,
+			'squareApplicationId' => $squareApplicationId,
+			'squareAccessToken' => $squareAccessToken,
+			'squareLocationId' => $squareLocationId,
+			'deluxeAPIConnectionUrl' => $deluxeAPIConnectionUrl,
+			'deluxeRemittanceId' => $deluxeRemittanceId,
+			'deluxeApplicationId' => $deluxeApplicationId,
+			'billerId' => $billerId,
+			'aciHost' => $baseUrl,
+			'sdkUrl' => $sdkUrl,
+			'sdkAuthKey' => $sdkAuthKey,
+			'sdkClientId' => $sdkClientId,
+			'sdkClientSecret' => $sdkClientSecret,
+			'billerAccountId' => $billerAccountId,
+			'settleCode' => $settleCode,
+			'merchantCode' => $merchantCode,
+			'paymentSite' => $paymentSite,
+			'useLineItems' => $useLineItems,
 		];
 	}
 
