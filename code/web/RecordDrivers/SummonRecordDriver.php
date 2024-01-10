@@ -2,6 +2,7 @@
 
 require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
+
 class SummonRecordDriver extends RecordInterface {
 	private $recordData;
 
@@ -16,23 +17,14 @@ class SummonRecordDriver extends RecordInterface {
 	 * @access  public
 	 */
 	public function __construct($recordData) {
-		if(is_string($recordData)) {
-				//create an instance of SummonSearcher
-				/** @var SearchObject_SummonSearcher $summonSearcher */
-				$summonSearcher =  SearchObjectFactory::initSearchObject("Summon");
-				$this->recordData = $summonSearcher->sendRequest();
+		if (is_string($recordData)){
+			//TODO: this should never hit and will be an error handling case (should always be an array)
 		} else {
 			$this->recordData = $recordData;
-		}	
-	}
-
-	public function singleRecord() {
-		if(!empty($this->recordData)) {
-			foreach($this->recordData->documents as $document) {
-				
-			}
 		}
 	}
+
+	
 
 	public function isValid() {
 		return true;

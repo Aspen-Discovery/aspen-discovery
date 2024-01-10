@@ -263,8 +263,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$html = [];
 		//global $logger;
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
-		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
+		if (isset($this->lastSearchResults)) {
+			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
 				$current = &$this->lastSearchResults->Data->Records[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
@@ -450,37 +450,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
             global $library;
             $settings = $this->getSettings();
             if ($settings != null) {
-				// $queryTerms = '';
-				// $queryString = "&query-1=AND,";
-                // $this->startQueryTimer();
-                // // $hasSearchTerm = false;
-				// //If earch terms are an array 
-                // if (is_array($this->searchTerms)) {
-                //     $termIndex = 1;
-                //     foreach ($this->searchTerms as $term) {
-                //         if (!empty($term)) {
-                          
-                //             $term = str_replace(',', '', $term);
-                //             $searchIndex = $term['index'];
-                //             $queryString = "&q=";
-				// 			$queryTerms .= urlencode($term['lookfor']);
-                //             $termIndex ++;
-                //             $hasSearchTerm = true;
-                //         }
-                //     }
-				// 	$query = $queryString . $queryTerms;
-                // } else {
-				// 	//If search terms are not an array
-                //     if (isset($_REQUEST['searchIndex'])) {
-                //         $this->searchIndex = $_REQUEST['searchIndex'];
-                //     }
-                //     $searchTerms = str_replace(',', '', $this->searchTerms);
-                //     if (!empty($searchTerms)) {
-                //         $searchTerms = $this->searchIndex . ':' . $searchTerms;
-                //         $query = $baseUrl . $queryString . urlencode($searchTerms); 
-                //     }
-                // }
-         
+		
                 // $query .= '&searchmode=all';
 				$query = array();
 				foreach ($this->searchTerms as $function => $value) {
@@ -509,23 +479,35 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$data = implode("\n", $headers). "\n/$this->version/search\n" . urldecode($queryString) . "\n";
 				$hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
 				$headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
-                if (!is_null($this->sessionId)) {
+                if (!is_null($this->sessionId)){
                     $headers['x-summon-session-id'] = $this->sessionId;
                 } 
                 // Send request
 				
                 $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
-				
-                if (!$this->raw) {
-                    // Process response
-                    $recordData = $this->process($recordData); 
-                }
-				$this->sessionId = $recordData['sessionId'];
+				if (!empty($recordData)){
+					$recordData = $this->process($recordData); 
+					if (is_array($recordData)){
+
+						$this->sessionId = $recordData['sessionId'];
+						$this->resultsTotal = $recordData['recordCount'];
+						$this->lastSearchResults = $recordData['documents'];
+
+					}
+				}
                 return $recordData;
             } else {
-				return new Exception('Please specify a search term');
+				return new Exception('Please add your Summon settings');
 			}
-    }
+    	}
+
+	// public function singleRecord() {
+	// 	if(!empty($this->recordData)) {
+	// 		foreach($this->recordData->documents as $document) {
+				
+	// 		}
+	// 	}
+	// }
 
     public function process($input) {
         if (SearchObject_SummonSearcher::$searchOptions == null) {
