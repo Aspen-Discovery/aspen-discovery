@@ -221,20 +221,42 @@ class Union_AJAX extends JSON_Action {
 	 * @param $fullResultsLink
 	 * @return string
 	 */
-	private function getResultsFromSummon($searchTerm, $numberOfResults, $fullResultsLink) {
+	//return results from a summon search which are set to $source = 'summon' for the display of combined results
+	 private function getResultsFromSummon($searchTerm, $numberOfResults, $fullResultsLink) {
 		global $interface;
+		//Assign template variable - value true
 		$interface->assign('viewingCombinedResults', true);
-		require_once ROOT_DIR . '/sys/SearchObject/SummonSearcher.php';
-		$summon= new SummonSearcher();
-		$summonResults = $summon->getSummonResults($searchTerm, $numberOfResults);
-		if (!isset($summonResults['resultTotal']) || ($summonResults['resultTotal'] == 0)) {
-			$results = '<div class="clearfix"></div><div>No results match your search.</div>';
+		//Prompt user to enter search terms if there are none provided
+		if ($searchTerm == '') {
+			$results = '<div class="clearfix"></div><div>Enter search terms to see results.</div>';
 		} else {
-			$formattedNumResults = number_format($summonResults['resultTotal']);
-			$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button' target='_blank'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
-			$results .= $summon->formatCombinedResults($summonResults['records'], false);
-		}
+			//Initialize and execute a SummonSearch using provicded search terms
+			/** @var SearchObject_SummonSearcher $summonSearcher */
+			$summonSearcher = SearchObjectFactory::initSearchObject("Summon");
+			$summonSearcher->init();
+			$summonSearcher->setSearchTerms([
+				'index' =>$summonSearcher->getDefaultIndex(),
+				'lookfor' => $searchTerm,
+			]);
+			//Retrieve results
+			//Process the search - param 1 $returnIndexErrors = true, param 2 $recommendations = false;
+			$summonSearcher->sendRequest();
+			$summary = $summonSearcher->getResultSummary();
+			$records = $summonSearcher->getCombinedResultHTML();
+			//Handle no results
+			if ($summary['resultTotal' == 0]) {
+				$results = '<div class="clearfix"></div><div>No Results match your search.</div>';
+			} else {
+				$formattedNumResults = number_format($summary['resultTotal']);
+				$results = "<a href='{$fullResultsLink}' class='btn btn-default combined-results-button'>See all {$formattedNumResults} results <i class='fas fa-chevron-right fa-lg'></i></a><div class='clearfix'></div>";
 
+				$records = array_slice($records, 0, $numberOfResults);
+				global $interface;
+				$interface->assign('recordSet', $records);
+				$interface->assign('showExploreMoreBar', false);
+				$results .= $interface->fetch('Search/list-list.tpl');
+			}
+		}
 		return $results;
 	}
 

@@ -16,17 +16,21 @@ class SummonRecordDriver extends RecordInterface {
 	 * @access  public
 	 */
 	public function __construct($recordData) {
-		if (is_string($recordData)) {
-			/** @var SearchObject_SummonSearcher $summonSearcher */
-			$summonSearcher = SearchObjectFactory::initSearchObject("Summon");
-			// [
-			// 	$id,
-			// 	$raw,
-			// 	$idType,
-			// ] = explode(':', $recordData, 2);
-			$this->recordData = $summonSearcher->sendRequest();
+		if(is_string($recordData)) {
+				//create an instance of SummonSearcher
+				/** @var SearchObject_SummonSearcher $summonSearcher */
+				$summonSearcher =  SearchObjectFactory::initSearchObject("Summon");
+				$this->recordData = $summonSearcher->sendRequest();
 		} else {
 			$this->recordData = $recordData;
+		}	
+	}
+
+	public function singleRecord() {
+		if(!empty($this->recordData)) {
+			foreach($this->recordData->documents as $document) {
+				
+			}
 		}
 	}
 
@@ -34,43 +38,13 @@ class SummonRecordDriver extends RecordInterface {
 		return true;
 	}
 
-	public function getBookcoverUrl($size = 'large', $absolutePath =false) {
+
+	public function getBookcoverUrl($size = 'small', $absolutePath =false) {
 		foreach($this->recordData->documents as $document) {
 			if (!empty($document->thumbnail_l)) {
 				return $document->tumbnail_l[0];
 			}
 		}
-
-
-		// if (!empty($this->recordData->database)) {
-		// 	if (is_array($this->recordData->ImageInfo)) {
-		// 		$imageUrl = '';
-
-		// 		/** @var stdClass $coverArtElement */
-		// 		foreach ($this->recordData->ImageInfo as $coverArtElement) {
-		// 			if ($size == 'small' && $coverArtElement->Size == 'thumb') {
-		// 				return $coverArtElement->Target;
-		// 			} elseif ($size == 'medium' && $coverArtElement->Size == 'medium') {
-		// 				return $coverArtElement->Target;
-		// 			} else {
-		// 				$imageUrl = $coverArtElement->Target;
-		// 			}
-		// 		}
-		// 		return $imageUrl;
-		// 	} else {
-		// 		return $this->recordData->ImageInfo->Target;
-		// 	}
-		// } else {
-		// 	global $configArray;
-
-		// 	if ($absolutePath) {
-		// 		$bookCoverUrl = $configArray['Site']['url'];
-		// 	} else {
-		// 		$bookCoverUrl = '';
-		// 	}
-		// 	$bookCoverUrl .= "/bookcover.php?id={$this->getUniqueID()}&size={$size}&type=summon";
-		// 	return $bookCoverUrl;
-		// }
 	}
 
 	/**
@@ -94,10 +68,7 @@ class SummonRecordDriver extends RecordInterface {
 		}
 	}
 
-	// /** @noinspection PhpUnused */
-	// public function getEbscoUrl() {
-	// 	return $this->recordData->PLink;
-	// }
+
 
 	public function getModule(): string {
 		return 'Summon';

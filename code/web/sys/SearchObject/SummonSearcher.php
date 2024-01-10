@@ -22,6 +22,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private static $searchOptions;
     private $params = array();
     private $method = 'GET';
+	private $filters = array();
     private $raw = false;
     private $curl_connection;
     /**
@@ -70,22 +71,23 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         $this->searchType = 'summon';
         $this->resultsModule = 'Summon';
         $this->resultsAction = 'Results';
-        $legalOptions = array('authedUser', 'summonBaseApi', 'sessionId', 'version', 'responseType');
-        foreach($legalOptions as $option) {
-            if(isset($options[$option])){
-            $this->$option = $options[$option];
-            }
-        }
+	}
+        // $legalOptions = array('authedUser', 'summonBaseApi', 'sessionId', 'version', 'responseType');
+        // foreach($legalOptions as $option) {
+        //     if(isset($options[$option])){
+        //     $this->$option = $options[$option];
+        //     }
+        // }
 
 
-        //Set Summon Settings
-		global $library;
-        $this->summonSettings = new SummonSettings();
-        $this->summonSettings->id = $library->summonSettingsId;
-        if (!$this->summonSettings->find(true)) {
-            $this->summonSettings = null;
-        } 
-    }
+    //     //Set Summon Settings - fetch summon settings from the library
+	// 	global $library;
+    //     $this->summonSettings = new SummonSettings();
+    //     $this->summonSettings->id = $library->summonSettingsId;
+    //     if (!$this->summonSettings->find(true)) {
+    //         $this->summonSettings = null;
+    //     } 
+    // }
 
     /**
 	 * Initialise the object from the global
@@ -102,11 +104,13 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		// if restoreSavedSearch returns false, we should proceed as normal.
 		$restored = $this->restoreSavedSearch();
 		if ($restored === true) {
+			//there is a saved search that can be reused
 			return true;
 		} elseif ($restored instanceof AspenError) {
+			//there is an error with hte restored search
 			return false;
 		}
-
+		//Carry out a new search
 		//********************
 		// Initialize standard search parameters
 		$this->initView();
@@ -125,11 +129,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		if (isset($_REQUEST['q'])) {
 			$this->query = $_REQUEST['q'];
 		}
-
 		return true;
 	}
 
-    private function getSettings() {
+	  	/**
+	 * @return SearchObject_SummonSearcher
+	 */
+	public static function getInstance() {
+		if (SearchObject_SummonSearcher::$instance == null) {
+			SearchObject_SummonSearcher::$instance = new SearchObject_SummonSearcher();
+		}
+		return SearchObject_SummonSearcher::$instance;
+	}
+
+
+	//Retreive settings for institution's summon connector
+	private function getSettings() {
 		global $library;
 		if ($this->summonSettings == null) {
 			$this->summonSettings = new SummonSettings();
@@ -166,49 +181,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return $headers;
     }
 
-     public function endSession() {
-	// 	if ($this->curl_connection) {
-	// 		curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . $this->sessionId);
-	// 		curl_exec($this->curl_connection);
-	// 	}
-	}
-
-    public function __destruct() {
-	// 	$this->endSession();
-	// 	if ($this->curl_connection) {
-	// 		curl_close($this->curl_connection);
-	// 	}
-	}
-
-
-	public function getQuerySpeed() {
-		return $this->queryTime;
-	}
-
-    
-	/**
-	 * Start the timer to figure out how long a query takes.  Complements
-	 * stopQueryTimer().
-	 *
-	 * @access protected
-	 */
-	protected function startQueryTimer() {
-		// Get time before the query
-		$time = explode(" ", microtime());
-		$this->queryStartTime = $time[1] . $time[0];
-	}
-
-	/**
-	 * End the timer to figure out how long a query takes.  Complements
-	 * startQueryTimer().
-	 *
-	 * @access protected
-	 */
-	protected function stopQueryTimer() {
-		$time = explode(" ", microtime());
-		$this->queryEndTime = $time[1] . $time[0];
-		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
-	}
 
     /**
 	 * Return an array of data summarising the results of a search.
@@ -268,11 +240,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	public function getResultRecordHTML() {
 		global $interface;
 		$html = [];
-		if (isset($this->lastSearchResults->Data->Records)) {
-			for ($x = 0; $x < count($this->lastSearchResults->Data->Records); $x++) {
-				$current = &$this->lastSearchResults->Data->Records[$x];
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+		if (isset($this->lastSearchResults->recordData->documents)) {
+			for($i=0; $i < count($this->lastSearchResults->recordData->documents); $i++) {
+				$current = $this->lastSearchResults->recordData->documents[$i];
+				$interface->assign('recordIndex', $i +1);
+				$interface->assign('resultIndex', $i + 1 + (($this->page - 1) * $this->limit));
 
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 				$record = new SummonRecordDriver($current);
@@ -284,9 +256,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				}
 			}
 		}
-		//Save to history
 		$this->addToHistory();
-
 		return $html;
 	}
 
@@ -322,6 +292,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	}
 
 
+	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [
             'IsScholarly,or,1,2',
@@ -406,59 +377,70 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return base64_encode($hmac);
     }
 
-    	/**
-	 * @return SearchObject_SummonSearcher
-	 */
-	public static function getInstance() {
-		if (SearchObject_SummonSearcher::$instance == null) {
-			SearchObject_SummonSearcher::$instance = new SearchObject_SummonSearcher();
+
+	  /**
+     * Set array of options relevant to summon as Summon Search Options
+     *
+     * @return array
+     */
+    public function getSearchOptionsArray()
+    {
+        $options = array(
+            's.q' => $this->query,
+            's.ps' => $this->limit,
+            's.pn' => $this->page,
+            's.ho' => $this->holdings ? 'true' : 'false',
+            's.dym' => $this->didYouMean ? 'true' : 'false',
+            's.l' => $this->language,
+        );
+        if (!empty($this->idsToFetch)) {
+            $options['s.fids'] = implode(',', (array)$this->idsToFetch);
+        }
+        if (!empty($this->facets)) {
+            $options['s.ff'] = $this->facets;
+        }
+        if (!empty($this->filters)) {
+            $options['s.fvf'] = $this->filters;
+        }
+        if ($this->maxTopics !== false) {
+            $options['s.rec.topic.max'] = $this->maxTopics;
+        }
+        if (!empty($this->groupFilters)) {
+            $options['s.fvgf'] = $this->groupFilters;
+        }
+        if (!empty($this->rangeFilters)) {
+            $options['s.rf'] = $this->rangeFilters;
+        }
+        if (!empty($this->sort)) {
+            $options['s.sort'] = $this->sort;
+        }
+        if ($this->expand) {
+            $options['s.exp'] = 'true';
+        }
+        if ($this->openAccessFilter) {
+            $options['s.oaf'] = 'true';
+        }
+        if ($this->highlight) {
+            $options['s.hl'] = 'true';
+            $options['s.hs'] = $this->highlightStart;
+            $options['s.he'] = $this->highlightEnd;
+        } else {
+            $options['s.hl'] = 'false';
+            $options['s.hs'] = $options['s.he'] = '';
+        }
+        return $options;
+    }
+
+
+	//Set the search options to the Summon searcher
+	public function getSearchOptions() {
+		if (SearchObject_SummonSearcher::$searchOptions == null) {
+			SearchObject_SummonSearcher::$searchOptions = $this->getSearchOptionsArray();
+			return SearchObject_SummonSearcher::$searchOptions;
 		}
-		return SearchObject_SummonSearcher::$instance;
 	}
 
     
-
-    // public function endSession() {
-	// 	if ($this->curl_connection) {
-	// 		curl_setopt($this->curl_connection, CURLOPT_URL, $this->summonBaseApi . '/endsession?sessiontoken=' . SearchObject_SummonSearcher::$sessionId);
-	// 		curl_exec($this->curl_connection);
-	// 	}
-	// }
-
-	// public function __destruct() {
-	// 	$this->endSession();
-	// 	if ($this->curl_connection) {
-	// 		curl_close($this->curl_connection);
-	// 	}
-	// }
-
-	// public function getQuerySpeed() {
-	// 	return $this->queryTime;
-	// }
-
-    // /**
-	//  * Start the timer to figure out how long a query takes.  Complements
-	//  * stopQueryTimer().
-	//  *
-	//  * @access protected
-	//  */
-	// protected function startQueryTimer() {
-	// 	// Get time before the query
-	// 	$time = explode(" ", microtime());
-	// 	$this->queryStartTime = $time[1] . $time[0;
-	// }
-
-	// /**
-	//  * End the timer to figure out how long a query takes.  Complements
-	//  * startQueryTimer().
-	//  *
-	//  * @access protected
-	//  */
-	// protected function stopQueryTimer() {
-	// 	$time = explode(" ", microtime());
-	// 	$this->queryEndTime = $time[1] . $time[0];
-	// 	$this->queryTime = $this->queryEndTime - $this->queryStartTime;
-	// }
 
     	public function sendRequest() {
             $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
@@ -609,56 +591,80 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         return $result;
     }
 
-    //   /**
-    //  * @param SummonQuery $query Query object
-    //  */
-    //  public function query($query, $returnErr = false, $raw = false) {
-    //      // Query String Parameters
-    //      $options = $query->getOptionsArray();
-    //      $options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
- 
-    //      // Special case -- if user filtered down to newspapers AND excluded them,
-    //      // we can't possibly have any results:
-    //      if (isset($options['s.fvf']) && is_array($options['s.fvf'])
-    //          && in_array('ContentType,Newspaper Article,true', $options['s.fvf'])
-    //          && in_array('ContentType,Newspaper Article', $options['s.fvf'])
-    //      ) {
-    //          return array(
-    //              'recordCount' => 0,
-    //              'documents' => array()
-    //          );
-    //      }
- 
- 
-    //      try {
-    //          $result = $this->sendRequest();
-    //      } catch (Exception $e) {
-    //          if ($returnErr) {
-    //              return array(
-    //                  'recordCount' => 0,
-    //                  'documents' => array(),
-    //                  'errors' => $e->getMessage()
-    //              );
-    //          } else {
-    //              throw new AspenError($e);
-    //          }
-    //      }
- 
-    //      return $result;
-    //  }
-     
-     public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false)
-     {
-        
-     }
+	public function __destruct() {
+		if ($this->curl_connection) {
+			curl_close($this->curl_connection);
+		}
+	}
 
-    //  public function retreiveRecord($id, $raw = false, $idType = self::IDENTIFIER_ID) {
-    //     $options = $idType === self::IDENTIFIER_BOOKMARK
-    //         ? array('s.bookMark' => $id)
-    //         : array('s.q' => sprintf('ID:"%s"', $id));
-    //     $options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
-    //     return $this->sendRequest($options, 'search', 'GET', $raw);
-    //  }
+	public function getQuerySpeed() {
+		return $this->queryTime;
+	}
+
+
+		/**
+	 * Start the timer to figure out how long a query takes.  Complements
+	 * stopQueryTimer().
+	 *
+	 * @access protected
+	 */
+	protected function startQueryTimer() {
+		// Get time before the query
+		$time = explode(" ", microtime());
+		$this->queryStartTime = $time[1] + $time[0];
+	}
+
+	/**
+	 * End the timer to figure out how long a query takes.  Complements
+	 * startQueryTimer().
+	 *
+	 * @access protected
+	 */
+	protected function stopQueryTimer() {
+		$time = explode(" ", microtime());
+		$this->queryEndTime = $time[1] + $time[0];
+		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
+	}
+
+	
+
+   
+     
+     public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
+	// 	$this->startQueryTimer();
+	// 	if (isset($_REQUEST['page']) && is_numeric($_REQUEST['page']) && $_REQUEST['page'] != 1) {
+	// 		$this->page = $_REQUEST['page'];
+	// 		$searchUrl .= '&pagenumber=' . $this->page;
+	// 	} else {
+	// 		$this->page = 1;
+	// 		$searchUrl .= '&relatedcontent=rs';
+	// 	}
+
+	// 	$searchUrl .= '&sort=' . $this->sort;
+
+	// 	$searchUrl .= "&highlight=n&view=detailed&autosuggest=n&autocorrect=n";
+
+	// 	$facetIndex = 1;
+	// 	foreach ($this->filters as $field => $filter ) {
+	// 		$appliedFilters = '';
+	// 		if (is_array($filter))
+	// 	}
+
+
+       
+    }
+
+     public function retreiveRecord() {
+       //call send request to access records array
+	   $recordsArray = $this->sendRequest();
+
+	   //check the documents key exists in the recorddata
+	   if(!empty($recordArray['recordData']['documents'])) {
+		//Return each individual document
+		return $recordsArray['recordData']['documents'];
+	   } 
+	   return;
+	 }
 
 
      public function getSearchIndexes() {
@@ -681,36 +687,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		];
      }
 
-    //  public function getSearchIndexes() {
-	// 	global $memCache;
-    //     $settings = $this->getSettings();
+   
 
-	// 	if ($settings == null) {
-	// 		return [];
-	// 	} else {
-	// 		$searchIndexes = $memCache->get('summon_search_indexes_' . $this->getSettings()->summonApiProfile);
-	// 		if ($searchIndexes === false) {
-	// 			$searchOptions = $this->getSearchOptions();
-	// 			$searchIndexes = [];
-	// 			if ($searchOptions != null) {
-	// 				foreach ($searchOptions->AvailableSearchCriteria->AvailableSearchFields as $searchField) {
-	// 					$searchIndexes[$searchField->FieldCode] = translate([
-	// 						'text' => $searchField->Label,
-	// 						'isPublicFacing' => true,
-	// 						'inAttribute' => true,
-	// 					]);
-	// 				}
-	// 			}
-	// 			global $configArray;
-	// 			$memCache->set('summon_search_indexes_' . $this->getSettings()->summonApiProfile, $searchIndexes, $configArray['Caching']['summon_options']);
-	// 		}
-
-	// 		return $searchIndexes;
-	// 	}
-	// }
-
+	 //Used in Union/Ajax - getSummonResults
     public function getDefaultIndex() {
-		return 'SummonKeyword';
+		return $this->searchIndex;
 	}
 
     public function setSearchTerm($searchTerm) {
