@@ -15,7 +15,6 @@ import com.turning_leaf_technologies.grouping.MarcRecordGrouper;
 import com.turning_leaf_technologies.grouping.RemoveRecordFromWorkResult;
 import com.turning_leaf_technologies.indexing.*;
 import com.turning_leaf_technologies.logging.LoggingUtil;
-import com.turning_leaf_technologies.marc.MarcUtil;
 import com.turning_leaf_technologies.net.NetworkUtils;
 import com.turning_leaf_technologies.net.WebServiceResponse;
 import com.turning_leaf_technologies.reindexer.GroupedWorkIndexer;
@@ -39,7 +38,6 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.crypto.Data;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -167,7 +165,7 @@ public class CarlXExportMain {
 					//TODO: Are we keeping the CARL.X database connection open too long?
 					if (carlXInstanceInformation.carlXConn != null) {
 						try {
-							exportHolds(carlXInstanceInformation.carlXConn, dbConn);
+							exportHolds(carlXInstanceInformation.carlXConn, carlXInstanceInformation.carlXViewVersion, dbConn);
 						} catch (Exception e) {
 							logger.error("Error exporting holds", e);
 							System.out.println("Error: " + e.toString());
@@ -709,6 +707,14 @@ public class CarlXExportMain {
 			carlXInstanceInformation = new CarlXInstanceInformation();
 			carlXInstanceInformation.indexingProfileName = accountProfileRS.getString("recordSource");
 			carlXInstanceInformation.baseAPIUrl = accountProfileRS.getString("patronApiUrl");
+			switch (accountProfileRS.getString("carlXViewVersion")) {
+				case "v2":
+					carlXInstanceInformation.carlXViewVersion = "v2";
+					break;
+				default:
+					carlXInstanceInformation.carlXViewVersion = "v";
+					break;
+			} ;
 
 			Connection carlxConn;
 			try{
@@ -1473,7 +1479,7 @@ public class CarlXExportMain {
 		return doc;
 	}
 
-	private static void exportHolds(Connection carlxConn, Connection dbConn) {
+	private static void exportHolds(Connection carlxConn, String carlXViewVersion, Connection dbConn) {
 
 		Savepoint startOfHolds = null;
 		try {
@@ -1485,10 +1491,10 @@ public class CarlXExportMain {
 
 			//Export bib level holds
 			PreparedStatement bibHoldsStmt = carlxConn.prepareStatement("select bid,sum(count) numHolds from (\n" +
-					"  select bid,count(1) count from transbid_v group by bid\n" +
+					"  select bid,count(1) count from transbid_" + carlXViewVersion + " group by bid\n" +
 					"  UNION ALL\n" +
-					"  select bid,count(1) count from transitem_v, item_v where\n" +
-					"    transcode like 'R%' and transitem_v.item=item_v.item\n" +
+					"  select bid,count(1) count from transitem_" +carlXViewVersion + ", item_" + carlXViewVersion + " where\n" +
+					"    transcode like 'R%' and transitem_" + carlXViewVersion + ".item=item_" + carlXViewVersion + ".item\n" +
 					"  group by bid)\n" +
 					"group by bid\n" +
 					"order by bid", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
