@@ -74,6 +74,8 @@ export const GetLoginForm = (props) => {
                     setPinValidationRules(result.library.pinValidationRules);
                     const validatedUser = await loginToLiDA(valueUser, valueSecret, patronsLibrary['baseUrl']);
                     if (validatedUser) {
+                         PATRON.language = validatedUser.lang ?? 'en';
+                         updateLanguage(validatedUser.lang ?? 'en');
                          if (validatedUser.success) {
                               await setAsyncStorage();
                               signIn();
