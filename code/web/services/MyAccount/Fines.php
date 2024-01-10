@@ -40,6 +40,7 @@ class MyAccount_Fines extends MyAccount {
 				$useOutstanding = $user->getCatalogDriver()->showOutstandingFines();
 				$interface->assign('showOutstanding', $useOutstanding);
 
+				//PayPal
 				if ($userLibrary->finePaymentType == 2) {
 					require_once ROOT_DIR . '/sys/ECommerce/PayPalSetting.php';
 					$settings = new PayPalSetting();

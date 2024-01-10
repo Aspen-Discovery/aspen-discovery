@@ -5013,9 +5013,19 @@ class MyAccount_AJAX extends JSON_Action {
 				$donation->paymentId = $payment->id;
 				if (!$donation->find(true)) {
 					header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=stripe&payment=' . $payment->id . '&donation=' . $donation->id);
+				} else {
+					$stripeSettings = new StripeSetting();
+					$stripeSettings->id = $paymentLibrary->stripeSettingId;
+					if ($stripeSettings->find(true)) {
+						//header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCompleted?type=stripe&payment=' . $payment->id);
+						return $stripeSettings->submitTransaction(null, $payment, $paymentMethodId, $transactionType);
+					} else {
+						return [
+							'success' => false,
+							'message' => 'Could not complete donation. Stripe is not setup for this library.'
+						];
+					}
 				}
-			} else {
-				header('Location: ' . $configArray['Site']['url'] . '/Donations/DonationCancelled?type=stripe&payment=' . $payment->id);
 			}
 		} else {
 			//Get the order information
@@ -5039,7 +5049,7 @@ class MyAccount_AJAX extends JSON_Action {
 				$stripeSettings = new StripeSetting();
 				$stripeSettings->id = $paymentLibrary->stripeSettingId;
 				if ($stripeSettings->find(true)) {
-					return $stripeSettings->submitTransaction($patron, $payment, $paymentMethodId);
+					return $stripeSettings->submitTransaction($patron, $payment, $paymentMethodId, $transactionType);
 				} else {
 					return [
 						'success' => false,
