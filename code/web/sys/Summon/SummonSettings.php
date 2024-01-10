@@ -57,7 +57,7 @@ class SummonSettings extends DataObject {
 			],
 			'summonApiPassword' => [
 				'property' => 'summonApiPassword',
-				'type' => 'text',
+				'type' => 'password',
 				'label' => 'Summon API Password',
 				'description' => 'The password to use when connecting to the Summon API',
 				'hideInLists' => true,

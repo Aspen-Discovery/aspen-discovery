@@ -23,6 +23,7 @@ class AspenUsage extends DataObject {
 	protected $eventsSearches;
 	protected $ebscoEdsSearches;
 	protected $ebscohostSearches;
+	protected $summonSearches;
 	protected $blockedRequests;
 	protected $blockedApiRequests;
 	protected $timedOutSearches;
@@ -99,6 +100,7 @@ class AspenUsage extends DataObject {
 		$usage->selectAdd('SUM(eventsSearches) as totalEventsSearches');
 		$usage->selectAdd('SUM(ebscoEdsSearches) as totalEbscoEdsSearches');
 		$usage->selectAdd('SUM(ebscohostSearches) as totalEbscohostSearches');
+		$usage->selectAdd('SUM(summonSearches) as totalSummonSearches');
 		$usage->selectAdd('SUM(blockedRequests) as totalBlockedRequests');
 		$usage->selectAdd('SUM(blockedApiRequests) as totalBlockedApiRequests');
 		$usage->selectAdd('SUM(timedOutSearches) as totalTimedOutSearches');

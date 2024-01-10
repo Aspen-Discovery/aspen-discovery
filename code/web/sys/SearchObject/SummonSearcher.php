@@ -80,15 +80,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         // }
 
 
-    //     //Set Summon Settings - fetch summon settings from the library
-	// 	global $library;
-    //     $this->summonSettings = new SummonSettings();
-    //     $this->summonSettings->id = $library->summonSettingsId;
-    //     if (!$this->summonSettings->find(true)) {
-    //         $this->summonSettings = null;
-    //     } 
-    // }
-
     /**
 	 * Initialise the object from the global
 	 *  search parameters in $_REQUEST.
@@ -106,7 +97,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		if ($restored === true) {
 			//there is a saved search that can be reused
 			return true;
-		} elseif ($restored instanceof AspenError) {
+		} elseif ($restored instanceof Exception) {
 			//there is an error with hte restored search
 			return false;
 		}
@@ -428,8 +419,20 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
             $options['s.hl'] = 'false';
             $options['s.hs'] = $options['s.he'] = '';
         }
-        return $options;
+		// return optionsToString($options);
+		return $options;
     }
+
+	public function optionsToString($options) {
+		$buildQuery = '';
+		foreach ($options as $key => $value) {
+			switch ($key) {
+				case 's.ps':
+					$buildQuery .= '&s.ps' . $value;
+					break;
+			}
+		}
+	}
 
 
 	//Set the search options to the Summon searcher
@@ -494,7 +497,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				// foreach ($this->searchTerms['lookfor'] as $term) {
 				// 	$term = urlencode($term);
 				// }
-				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
+				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' ;
 
                 // Build Authorization Headers
                 $headers = array(
@@ -520,7 +523,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$this->sessionId = $recordData['sessionId'];
                 return $recordData;
             } else {
-				return new AspenError('Please specify a search term');
+				return new Exception('Please specify a search term');
 			}
     }
 

@@ -209,6 +209,15 @@ class SearchSources {
 			];
 		}
 
+		// if ($searchSummon) {
+		// 	$searchOptions['summon'] = [
+		// 		'name' => 'Articles & Databases',
+		// 		'description' => 'Summon - Articles and Database',
+		// 		'catalogType' => 'summon',
+		// 		'hasAdvancedSearch' => false,
+		// 	];
+		// }
+
 		if (array_key_exists('Events', $enabledModules)) {
 			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
 			$libraryEventsSetting = new LibraryEventsSetting();
