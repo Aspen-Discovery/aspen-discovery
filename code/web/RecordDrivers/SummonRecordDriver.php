@@ -4,7 +4,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
 
 class SummonRecordDriver extends RecordInterface {
-	private $recordData;
+	private $lastSearchResults;
 
 	/**
 	 * Constructor.  We build the object using all the data retrieved
@@ -16,11 +16,11 @@ class SummonRecordDriver extends RecordInterface {
 	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
 	 * @access  public
 	 */
-	public function __construct($recordData) {
-		if (is_string($recordData)){
+	public function __construct($lastSearchResults) {
+		if (is_string($lastSearchResults)){
 			//TODO: this should never hit and will be an error handling case (should always be an array)
 		} else {
-			$this->recordData = $recordData;
+			$this->lastSearchResults = $lastSearchResults;
 		}
 	}
 
@@ -32,7 +32,7 @@ class SummonRecordDriver extends RecordInterface {
 
 
 	public function getBookcoverUrl($size = 'small', $absolutePath =false) {
-		foreach($this->recordData->documents as $document) {
+		foreach($this->lastSearchResults as $document) {
 			if (!empty($document->thumbnail_l)) {
 				return $document->tumbnail_l[0];
 			}
@@ -54,14 +54,23 @@ class SummonRecordDriver extends RecordInterface {
 		return $this->getRecordUrl();
 	}
 
-	public function getRecordUrl() {
-		foreach($this->recordData->documents as $document) {
-			return $document->link;
+	public function getUniqueID() {
+		if (!empty($this->lastSearchResults)) {
+			foreach ($this->lastSearchResults as $document) {
+				if (!empty($document['ID'])) {
+					var_dump($document['ID']);
+					return $document['ID'];
+				}
+			}
+	
+			// If the loop completes and no ID is found
+			return null;
+		} else {
+			// If the documents array is empty
+			return null;
 		}
 	}
-
-
-
+	
 	public function getModule(): string {
 		return 'Summon';
 	}
@@ -273,19 +282,6 @@ class SummonRecordDriver extends RecordInterface {
 	 * @access  public
 	 * @return  string              Unique identifier.
 	 */
-	public function getUniqueID() {
-		if (!empty($this->recordData->documents)){
-			foreach($this->recordData->documents as $document) {
-				if (!empty($document->DBID)) {
-					return $document->DBID;
-				} else {
-					return null;
-				}
-			}
-		} else{
-			return null;
-		}
-	}
 
 
 

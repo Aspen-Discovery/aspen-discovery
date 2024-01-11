@@ -44,7 +44,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $defaultSort = 'relevance';
 
     // STATS
-	protected $resultsTotal = 0;
+	protected $resultsTotal;
 
 	protected $searchTerms;
 
@@ -57,6 +57,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     	/** @var string */
 	protected $searchSource = 'local';
     protected $searchType = 'basic';
+
+	protected $pageSize = 20;
+
+	protected $facetFields;
 
   
 
@@ -185,6 +189,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$summary['page'] = $this->page;
 		$summary['perPage'] = $this->limit;
 		$summary['resultTotal'] = (int)$this->resultsTotal;
+		$summary['facetFields'] = $this->
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
 		// Last record needs more care
@@ -198,7 +203,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			// Otherwise use the last record on this page
 			$summary['endRecord'] = $this->page * $this->limit;
 		}
-
 		return $summary;
 	}
 
@@ -265,7 +269,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults)) {
 			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
-				$current = &$this->lastSearchResults->Data->Records[$x];
+				$current = &$this->lastSearchResults[$x];
 				$interface->assign('recordIndex', $x + 1);
 				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 
@@ -279,55 +283,57 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				}
 			}
 		}
+
 		return $html;
 	}
 
 
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
-		$availableFacets = [
-            'IsScholarly,or,1,2',
-            'Library,or,1,30',
-            'ContentType,or,1,30',
-             'SubjectTerms,or,1,30',
-             'Language,or,1,30'
-        ];
-		if (isset($this->lastSearchResults) && isset($this->lastSearchResults->AvailableFacets)) {
-			foreach ($this->lastSearchResults->AvailableFacets as $facet) {
-				$facetId = (string)$facet->Id;
-				$availableFacets[$facetId] = [
+		// $availableFacets = [
+        //     'IsScholarly,or,1,2',
+        //     'Library,or,1,30',
+        //     'ContentType,or,1,30',
+        //      'SubjectTerms,or,1,30',
+        //      'Language,or,1,30'
+        // ];
+		if (isset($this->lastSearchResults) && isset($this->facetFields)) {
+			foreach ($this->facetFields as $facet) {
+				$facet = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
 					'label' => (string)$facet->Label,
 					'valuesToShow' => 5,
 				];
-				if ($facetId == 'SourceType') {
-					$availableFacets[$facetId]['collapseByDefault'] = false;
-				}
-				$list = [];
-				foreach ($facet->AvailableFacetValues as $value) {
-					$facetValue = (string)$value->Value;
+				// if ($facetId == 'SourceType') {
+				// 	$facetId['collapseByDefault'] = false;
+				// }
+				// $list = [];
+				// foreach ($facet as $value) {
+				// 	$facetValue = (string)$value->Value;
 					//Check to see if the facet has been applied
-					$isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+					// $isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
 
-					$facetSettings = [
-						'value' => $facetValue,
-						'display' => $facetValue,
-						'count' => (string)$value->Count,
-						'isApplied' => $isApplied,
-						'countIsApproximate' => false,
-					];
-					if ($isApplied) {
-						$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
-					} else {
-						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
-					}
-					$list[] = $facetSettings;
-				}
-				$availableFacets[$facetId]['list'] = $list;
+				// 	$facetSettings = [
+				// 		'value' => $facetValue,
+				// 		'display' => $facetValue,
+				// 		'count' => (string)$value->Count,
+				// 		'isApplied' => $isApplied,
+				// 		'countIsApproximate' => false,
+				// 	];
+				// 	if ($isApplied) {
+				// 		$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
+				// 	} else {
+				// 		$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
+				// 	}
+				// 	$list[] = $facetSettings;
+				// }
+				// $availableFacets[$facetId]['list'] = $list;
 			}
 		}
-		return $availableFacets;
+		//return $availableFacets;
+		// var_dump($facet);
+		return $facet;
 	}
     
 
@@ -449,6 +455,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
             $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
             global $library;
             $settings = $this->getSettings();
+			$this->startQueryTimer();
             if ($settings != null) {
 		
                 // $query .= '&searchmode=all';
@@ -487,27 +494,50 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                 $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
 				if (!empty($recordData)){
 					$recordData = $this->process($recordData); 
+					$this->stopQueryTimer();
+
 					if (is_array($recordData)){
 
 						$this->sessionId = $recordData['sessionId'];
-						$this->resultsTotal = $recordData['recordCount'];
 						$this->lastSearchResults = $recordData['documents'];
+						$this->page = $recordData['query']['pageNumber'];
+						$this->didYouMean = $recordData['didYouMeanSuggestions'];
+						$this->resultsTotal = $recordData['recordCount'];
+						$this->facetFields = $recordData['rangeFacetFields'];
+				
+						
+
+
 
 					}
 				}
                 return $recordData;
             } else {
-				return new Exception('Please add your Summon settings');
+				return $this->lastSearchResults = false;
+				// return new Exception('Please add your Summon settings');
 			}
     	}
 
-	// public function singleRecord() {
-	// 	if(!empty($this->recordData)) {
-	// 		foreach($this->recordData->documents as $document) {
-				
-	// 		}
-	// 	}
-	// }
+		//Get last search
+		public function getLastSearchResults() {
+			return $this->lastSearchResults;
+		}
+
+	
+
+	//Process individual record and return it
+	public function processRecord(array $record) {
+		return $record;
+	}
+
+		public function getSessionId() {
+			return $this->sessionId;
+		}
+
+		public function getresultsTotal(){
+			return $this->resultsTotal;
+		}
+
 
     public function process($input) {
         if (SearchObject_SummonSearcher::$searchOptions == null) {
