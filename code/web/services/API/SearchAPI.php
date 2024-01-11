@@ -2666,19 +2666,28 @@ class SearchAPI extends Action {
 			return $results;
 		}
 
+
+		$searchEngine = $_REQUEST['source'] ?? 'local';
+		if($searchEngine == 'local' || $searchEngine == 'catalog') {
+			$searchEngine = 'GroupedWork';
+		}
+		$searchEngine = ucfirst($searchEngine);
+
 		// Include Search Engine Class
-		require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		if($searchEngine == 'Events') {
+			require_once ROOT_DIR . '/sys/SolrConnector/EventsSolrConnector.php';
+		} else {
+			require_once ROOT_DIR . '/sys/SolrConnector/GroupedWorksSolrConnector.php';
+		}
 		$timer->logTime('Include search engine');
 
 		// Initialise from the current search globals
-		$searchObject = SearchObjectFactory::initSearchObject();
+		$searchObject = SearchObjectFactory::initSearchObject($searchEngine);
 		$searchObject->init();
 
 		if (isset($_REQUEST['pageSize']) && is_numeric($_REQUEST['pageSize'])) {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
-
-		$searchSource = !empty($_REQUEST['source']) ? $_REQUEST['source'] : 'local';
 
 		if (isset($_REQUEST['filter'])) {
 			if (is_array($_REQUEST['filter'])) {
@@ -2706,7 +2715,7 @@ class SearchAPI extends Action {
 			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
 
-		$searchObject->setSearchSource($searchSource);
+		$searchObject->setSearchSource($_REQUEST['source'] ?? 'local');
 
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
 		$timer->logTime('Setup Search');
@@ -2741,12 +2750,16 @@ class SearchAPI extends Action {
 			// 'Finish' the search... complete timers and log search history.
 		$searchObject->close();
 
+		$results['searchIndex'] = $searchObject->getSearchIndex();
+		$results['searchSource'] = $searchObject->getSearchSource();
+		$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
+
 		if ($searchObject->getResultTotal() < 1) {
 			// No record found
 			$timer->logTime('no hits processing');
 
 			// try changing availability_toggle if not already global
-			if($_REQUEST['availability_toggle'] != 'global') {
+			if(isset($_REQUEST['availability_toggle']) && $_REQUEST['availability_toggle'] != 'global') {
 				$_REQUEST['availability_toggle'] = 'global';
 				$this->searchLite();
 			}
@@ -2756,9 +2769,6 @@ class SearchAPI extends Action {
 			$results['id'] = $searchObject->getSearchId();
 			$results['lookfor'] = $searchObject->displayQuery();
 			$results['sort'] = $searchObject->getSort();
-			$results['searchIndex'] = $searchObject->getSearchIndex();
-			$results['searchSource'] = $searchObject->getSearchSource();
-			$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
 			$options = [
@@ -2942,7 +2952,7 @@ class SearchAPI extends Action {
 			}
 		}
 		if (empty($results['items'])) {
-			if ($_REQUEST['page'] != 1) {
+			if (isset($_REQUEST['page']) && $_REQUEST['page'] != 1) {
 				$results['message'] = "end of results";
 			}
 		}
