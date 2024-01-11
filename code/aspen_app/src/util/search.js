@@ -4,11 +4,11 @@ import _ from 'lodash';
 
 // custom components and helper files
 import { popToast } from '../components/loadError';
+import { getTermFromDictionary } from '../translations/TranslationService';
 import { createAuthTokens, ENDPOINT, getHeaders, getResponseCode, postData } from './apiAuth';
 import { GLOBALS } from './globals';
 import { LIBRARY } from './loadLibrary';
 import { PATRON } from './loadPatron';
-import { getTermFromDictionary } from '../translations/TranslationService';
 
 export const SEARCH = {
      term: null,
@@ -419,6 +419,53 @@ export function buildParamsForUrl() {
      SEARCH.appendedParams = params;
      console.log(params);
      return params;
+}
+
+export async function getSearchIndexes(url, language = 'en', source = 'catalog') {
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+          params: {
+               searchSource: source,
+               language: language,
+          },
+     });
+     const response = await discovery.get(endpoint.url + 'getSearchIndexes');
+     if (response.ok) {
+          if (response?.data?.result) {
+               return response.data.result;
+          }
+     }
+
+     return {
+          success: false,
+          searchIndexes: [],
+     };
+}
+
+export async function getSearchSources(url, language = 'en') {
+     const discovery = create({
+          baseURL: url,
+          timeout: GLOBALS.timeoutFast,
+          headers: getHeaders(endpoint.isPost),
+          auth: createAuthTokens(),
+          params: {
+               language: language,
+          },
+     });
+     const response = await discovery.get(endpoint.url + 'getSearchSources');
+     if (response.ok) {
+          if (response?.data?.result) {
+               return response.data.result;
+          }
+     }
+
+     return {
+          success: false,
+          searchSources: [],
+     };
 }
 
 /**
