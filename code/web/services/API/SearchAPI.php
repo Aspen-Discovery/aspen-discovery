@@ -3478,7 +3478,6 @@ class SearchAPI extends Action {
 			$combinedResultsName,
 		] = $searchSources::getCombinedSearchSetupParameters($location, $library);
 
-		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 		$validSearchSources = $searchSources->getSearchSources();
 
 		return [
