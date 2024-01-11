@@ -41,7 +41,9 @@ class SearchAPI extends Action {
 					'searchFacetCluster',
 					'getFormatCategories',
 					'getBrowseCategoryListForUser',
-					'searchAvailableFacets'
+					'searchAvailableFacets',
+					'getSearchSources',
+					'getSearchIndexes'
 				])) {
 					header("Cache-Control: max-age=10800");
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -3461,6 +3463,61 @@ class SearchAPI extends Action {
 			];
 		}
 		return $results;
+	}
+
+	/** @noinspection PhpUnused */
+	function getSearchSources() {
+		global $library;
+		global $location;
+
+		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
+		$searchSources = new SearchSources();
+		[
+			$enableCombinedResults,
+			$showCombinedResultsFirst,
+			$combinedResultsName,
+		] = $searchSources::getCombinedSearchSetupParameters($location, $library);
+
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$validSearchSources = $searchSources->getSearchSources();
+
+		return [
+			'success' => true,
+			'searchSources' => $validSearchSources
+		];
+	}
+
+	/** @noinspection PhpUnused */
+	function getSearchIndexes() {
+		global $library;
+		global $location;
+
+		require_once(ROOT_DIR . '/Drivers/marmot_inc/SearchSources.php');
+		$searchSources = new SearchSources();
+		[
+			$enableCombinedResults,
+			$showCombinedResultsFirst,
+			$combinedResultsName,
+		] = $searchSources::getCombinedSearchSetupParameters($location, $library);
+
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$validSearchSources = $searchSources->getSearchSources();
+		$activeSearchSource = 'catalog';
+		if (isset($_REQUEST['searchSource'])) {
+			$activeSearchSource = $_REQUEST['searchSource'];
+		}
+		$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
+		if (!array_key_exists($activeSearchSource, $validSearchSources)) {
+			$activeSearchSource = array_key_first($validSearchSources);
+		}
+		$activeSearchObject = SearchSources::getSearcherForSource($activeSearchSource);
+		$searchIndexes = SearchSources::getSearchIndexesForSource($activeSearchObject, $activeSearchSource);
+
+		return [
+			'success' => true,
+			'searchSource' => $activeSearchSource,
+			'searchIndexes' => $searchIndexes
+		];
 	}
 
 	/** @noinspection PhpUnused */
