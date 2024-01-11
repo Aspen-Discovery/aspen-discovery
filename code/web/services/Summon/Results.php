@@ -42,8 +42,8 @@ class Summon_Results extends ResultsAction {
 				}
 			}
 
-			$interface->assign('searchError', $result);
-			$this->display('searchError.tpl', 'Error in Search');
+			$interface->assign('error', $result);
+			$this->display('error.tpl', 'Error in Search');
 			return;
 		}
 
@@ -56,7 +56,7 @@ class Summon_Results extends ResultsAction {
 		$interface->assign('lookfor', $displayQuery);
 
 		// Big one - our results //
-		$recordSet = $searchObject->sendRequest();
+		$recordSet = $searchObject->getResultRecordHTML();
 		$interface->assign('recordSet', $recordSet);
 		$timer->logTime('load result records');
 

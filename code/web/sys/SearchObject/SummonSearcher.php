@@ -244,7 +244,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$record = new SummonRecordDriver($value);
 				if ($record->isValid()) {
 					$interface->assign('recordDriver', $record);
-					$html[] = $interface->fetch($record->getCombinedResult());
+					$html[] = $interface->fetch($record->getSearchResult());
 				} else {
 					$html[] = "Unable to find record";
 				}

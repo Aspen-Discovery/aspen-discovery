@@ -31,11 +31,9 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 
-	public function getBookcoverUrl($size = 'small', $absolutePath =false) {
-		foreach($this->lastSearchResults as $document) {
-			if (!empty($document->thumbnail_l)) {
-				return $document->tumbnail_l[0];
-			}
+	public function getBookcoverUrl($size = 'large', $absolutePath =false) {
+		if (!empty($this->record['thumbnail_l'])) {
+			return $this->record['thumbnail_l'][0];
 		}
 	}
 
@@ -55,16 +53,15 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getUniqueID() {
-		if (isset($this->record)) {
-			// return $this->record['DBID'];
-			return 'Id set';
+		if (isset($this->record['DBID'])) {
+			return $this->record['DBID'][0];
 		} else {
 			return null;
 		}
 	}
 	
 	public function getModule(): string {
-		return 'Summon';
+		return 'summon';
 	}
 
 	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {
@@ -91,7 +88,7 @@ class SummonRecordDriver extends RecordInterface {
 		//Check to see if there are lists the record is on
 		if ($showListsAppearingOn) {
 			require_once ROOT_DIR . '/sys/UserLists/UserList.php';
-			$appearsOnLists = UserList::getUserListsForRecord('Summon', $this->getId());
+			$appearsOnLists = UserList::getUserListsForRecord('summon', $this->getId());
 			$interface->assign('appearsOnLists', $appearsOnLists);
 		}
 
@@ -122,8 +119,7 @@ class SummonRecordDriver extends RecordInterface {
 	public function getBrowseResult() {
 		global $interface;
 
-		$id = $this->getUniqueID();
-		$interface->assign('summId', $id);
+		$interface->assign('summId', $this->getUniqueID());
 
 
 		$interface->assign('summUrl', $this->getLinkUrl());
@@ -158,21 +154,21 @@ class SummonRecordDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summShortId', $id);
-		// $interface->assign('module', $this->getModule());
+		$interface->assign('module', $this->getModule());
 
-		// $formats = $this->getFormats();
-		// $interface->assign('summFormats', $formats);
+		$formats = $this->getFormats();
+		$interface->assign('summFormats', $formats);
 
-		// $interface->assign('summUrl', $this->getLinkUrl());
-		// $interface->assign('summTitle', $this->getTitle());
-		// $interface->assign('summAuthor', $this->getAuthor());
-		// $interface->assign('summSourceDatabase', $this->getSourceDatabase());
-		// $interface->assign('summHasFullText', $this->hasFullText());
+		$interface->assign('summUrl', $this->getLinkUrl());
+		$interface->assign('summTitle', $this->getTitle());
+		$interface->assign('summAuthor', $this->getAuthor());
+		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
+		$interface->assign('summHasFullText', $this->hasFullText());
 
-		// $interface->assign('summDescription', $this->getDescription());
+		$interface->assign('summDescription', $this->getDescription());
 
-		// $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		// $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/Summon/combinedResult.tpl';
 	}
@@ -235,18 +231,12 @@ class SummonRecordDriver extends RecordInterface {
 	 * @return  string
 	 */
 	public function getTitle() {
-		if (isset($this->lastSearchResults)) {
-			foreach($this->lastSearchResults as $record) {
-				if (isset($record['Title'])) {
-					$title =  $record['Title'];
-				} else {
-					$title = 'Unknown Title';
-				}
-			}
-			return $title;
+		if (isset($this->record['Title'])) {
+			$title=$this->record['Title'][0];
 		} else {
-			return null;
+			$title='Unknown Title';
 		}
+		return $title;
 
 			
 	
@@ -301,16 +291,17 @@ class SummonRecordDriver extends RecordInterface {
 	 * @return  bool
 	 */
 	public function hasFullText() {
-		foreach($this->recordData->documents as $document) {
-				return $document->hasFullText;
+		if(isset($this->record['hasFullText'])){
+			return $this->record['hasFullText'];
 		}
+		return false;
 	}
 
 	public function getFullText() {
-		$fullText = (string)$this->recordData->FullText->Text->Value;
+	/* 	$fullText = (string)$this->recordData->FullText->Text->Value;
 		$fullText = html_entity_decode($fullText);
-		$fullText = preg_replace('/<anid>.*?<\/anid>/', '', $fullText);
-		return $fullText;
+		$fullText = preg_replace('/<anid>.*?<\/anid>/', '', $fullText); */
+		return null;
 	}
 
 	/**
@@ -324,11 +315,12 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getDescription() {
-		foreach($this->recordData->documents as $document) {
-			if (!empty($document->Abstract)) {
-				return $document->Abstract;
-			}
-		} return '';
+		if(isset($this->record['Abstract'][0])) {
+			$description = $this->record['Abstract'][0];
+		} else {
+			$description = '';
+		}
+		return $description;
 	}
 		
 	public function getMoreDetailsOptions() {
@@ -336,7 +328,12 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getFormats() {
-		return (string)$this->recordData->Header->PubType;
+		if(isset($this->record['ContentType'][0])){
+			$sourceType = (string)$this->record['ContentType'][0];
+		} else {
+			$sourceType = 'Unknown Source';
+		}
+		return $sourceType;
 	}
 
 	public function getCleanISSN() {
@@ -344,9 +341,12 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getSourceDatabase() {
-		foreach($this->recordData->documents as $document) {
-			return $document->DatabaseTitle;
+		if(isset($this->record['DatabaseTitle'][0])) {
+			$databaseTitle = $this->record['DatabaseTitle'][0];
+		} else {
+			$databaseTitle = '';
 		}
+		return $databaseTitle;
 	}
 
 	public function getPrimaryAuthor() {
@@ -354,12 +354,14 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getAuthor() {
-		if (!empty($this->recordData->documents)){
-			foreach ($this->recordData->documents as $document) {
-					return strip_tags($this->recordData->documents[0]->Author[0]);
-			}
+		if(isset($this->record['Author'][0])) {
+			$author=$this->record['Author'][0];
+		} else {
+			$author='Unknown Title';
 		}
+		return $author;
 	}
+
 
 	public function getExploreMoreInfo() {
 		return [];
