@@ -2689,30 +2689,32 @@ class SearchAPI extends Action {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
 
-		if (isset($_REQUEST['filter'])) {
-			if (is_array($_REQUEST['filter'])) {
-				$givenFilters = $_REQUEST['filter'];
-				foreach ($givenFilters as $filter) {
-					$filterSplit = explode(':', $filter);
-					if($filterSplit[0] == 'availability_toggle') {
-						$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
-						$searchObject->addFilter('availability_toggle:'.$filterSplit[1]);
+		if($searchEngine == 'GroupedWork') {
+			if (isset($_REQUEST['filter'])) {
+				if (is_array($_REQUEST['filter'])) {
+					$givenFilters = $_REQUEST['filter'];
+					foreach ($givenFilters as $filter) {
+						$filterSplit = explode(':', $filter);
+						if($filterSplit[0] == 'availability_toggle') {
+							$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+							$searchObject->addFilter('availability_toggle:'.$filterSplit[1]);
+						}
 					}
 				}
-			}
-		} elseif (isset($_REQUEST['availability_toggle'])) {
-			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
-			$searchObject->addFilter('availability_toggle:' . $_REQUEST['availability_toggle']);
-		} else {
-			$searchLibrary = Library::getSearchLibrary(null);
-			$searchLocation = Location::getSearchLocation(null);
-			if ($searchLocation) {
-				$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+			} elseif (isset($_REQUEST['availability_toggle'])) {
+				$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+				$searchObject->addFilter('availability_toggle:' . $_REQUEST['availability_toggle']);
 			} else {
-				$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				$searchLibrary = Library::getSearchLibrary(null);
+				$searchLocation = Location::getSearchLocation(null);
+				if ($searchLocation) {
+					$availabilityToggleValue = $searchLocation->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				} else {
+					$availabilityToggleValue = $searchLibrary->getGroupedWorkDisplaySettings()->defaultAvailabilityToggle;
+				}
+				$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
+				$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 			}
-			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
-			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
 
 		$searchObject->setSearchSource($_REQUEST['source'] ?? 'local');
@@ -2785,29 +2787,54 @@ class SearchAPI extends Action {
 			$records = $searchObject->getResultRecordSet();
 			$items = [];
 			foreach ($records as $recordKey => $record) {
-				$items[$recordKey]['key'] = $record['id'];
-				$items[$recordKey]['title'] = $record['title_display'];
-				$items[$recordKey]['author'] = $record['author_display'];
-				$items[$recordKey]['image'] = $configArray['Site']['url'] . "/bookcover.php?id=" . $record['id'] . "&size=medium&type=grouped_work";
-				$items[$recordKey]['language'] = $record['language'][0];
-				$items[$recordKey]['summary'] = $record['display_description'];
-				$items[$recordKey]['itemList'] = [];
-				require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
-				$groupedWorkDriver = new GroupedWorkDriver($record['id']);
-				if ($groupedWorkDriver->isValid()) {
-					$i = 0;
-					$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
-					foreach ($relatedManifestations as $relatedManifestation) {
-						foreach ($relatedManifestation->getVariations() as $obj) {
-							if (!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
-								$format = $obj->manifestation->format;
-								$items[$recordKey]['itemList'][$format]['key'] = $i;
-								$items[$recordKey]['itemList'][$format]['name'] = translate([
-									'text' => $format,
-									'isPublicFacing' => true
-								]);
-								$i++;
-							};
+				if($searchEngine == 'Events') {
+					if(str_starts_with($record['id'], 'lc')) {
+						$eventSource = 'library_calendar_event';
+					} else if (str_starts_with($record['id'], 'communico')) {
+						$eventSource = 'communico_event';
+					} else if (str_starts_with($record['id'], 'springshare')) {
+						$eventSource = 'springshare_libcal_event';
+					} else {
+						$eventSource = '';
+					}
+
+					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['title'] = $record['title'];
+					$items[$recordKey]['author'] = null;
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=event';
+					$items[$recordKey]['language'] = null;
+					$items[$recordKey]['summary'] = strip_tags($record['description']);
+					$items[$recordKey]['registration_required'] = $record['registration_required'];
+					$items[$recordKey]['event_day'] = $record['event_day'];
+					$items[$recordKey]['start_date'] = $record['start_date'];
+					$items[$recordKey]['end_date'] = $record['end_date'];
+					$items[$recordKey]['url'] = $record['url'];
+					$items[$recordKey]['itemList'] = [];
+				} else {
+					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['title'] = $record['title_display'];
+					$items[$recordKey]['author'] = $record['author_display'];
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=grouped_work';
+					$items[$recordKey]['language'] = $record['language'][0];
+					$items[$recordKey]['summary'] = $record['display_description'];
+					$items[$recordKey]['itemList'] = [];
+					require_once ROOT_DIR . '/RecordDrivers/GroupedWorkDriver.php';
+					$groupedWorkDriver = new GroupedWorkDriver($record['id']);
+					if ($groupedWorkDriver->isValid()) {
+						$i = 0;
+						$relatedManifestations = $groupedWorkDriver->getRelatedManifestations();
+						foreach ($relatedManifestations as $relatedManifestation) {
+							foreach ($relatedManifestation->getVariations() as $obj) {
+								if (!array_key_exists($obj->manifestation->format, $items[$recordKey]['itemList'])) {
+									$format = $obj->manifestation->format;
+									$items[$recordKey]['itemList'][$format]['key'] = $i;
+									$items[$recordKey]['itemList'][$format]['name'] = translate([
+										'text' => $format,
+										'isPublicFacing' => true
+									]);
+									$i++;
+								};
+							}
 						}
 					}
 				}
@@ -2820,30 +2847,32 @@ class SearchAPI extends Action {
 			$options = [];
 			$index = 0;
 
-			$availabilityToggle = $topFacetSet['availability_toggle'];
-			if($availabilityToggle) {
-				$key = translate([
-					'text' => $availabilityToggle['label'],
-					'isPublicFacing' => true
-				]);
-				$options[$key]['key'] = -1;
-				$options[$key]['label'] = $key;
-				$options[$key]['field'] = $availabilityToggle['field_name'];
-				$options[$key]['hasApplied'] = true;
-				$options[$key]['multiSelect'] = false;
-
-				$i = 0;
-				foreach ($availabilityToggle['list'] as $item) {
-					$options[$key]['facets'][$i]['value'] = $item['value'];
-					$options[$key]['facets'][$i]['display'] = translate([
-						'text' => $item['display'],
+			if($topFacetSet) {
+				$availabilityToggle = $topFacetSet['availability_toggle'];
+				if ($availabilityToggle) {
+					$key = translate([
+						'text' => $availabilityToggle['label'],
 						'isPublicFacing' => true
 					]);
-					$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
-					$options[$key]['facets'][$i]['count'] = $item['count'];
-					$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
-					$options[$key]['facets'][$i]['multiSelect'] = false;
-					$i++;
+					$options[$key]['key'] = -1;
+					$options[$key]['label'] = $key;
+					$options[$key]['field'] = $availabilityToggle['field_name'];
+					$options[$key]['hasApplied'] = true;
+					$options[$key]['multiSelect'] = false;
+
+					$i = 0;
+					foreach ($availabilityToggle['list'] as $item) {
+						$options[$key]['facets'][$i]['value'] = $item['value'];
+						$options[$key]['facets'][$i]['display'] = translate([
+							'text' => $item['display'],
+							'isPublicFacing' => true
+						]);
+						$options[$key]['facets'][$i]['field'] = $availabilityToggle['field_name'];
+						$options[$key]['facets'][$i]['count'] = $item['count'];
+						$options[$key]['facets'][$i]['isApplied'] = $item['isApplied'];
+						$options[$key]['facets'][$i]['multiSelect'] = false;
+						$i++;
+					}
 				}
 			}
 
@@ -2880,7 +2909,10 @@ class SearchAPI extends Action {
 				$options[$key]['label'] = $key;
 				$options[$key]['field'] = $facet['field_name'];
 				$options[$key]['hasApplied'] = $facet['hasApplied'];
-				$options[$key]['multiSelect'] = (bool)$facet['multiSelect'];
+				$options[$key]['multiSelect'] = false;
+				if(isset($facet['multiSelect'])) {
+					$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+				}
 				if (isset($facet['sortedList'])) {
 					foreach ($facet['sortedList'] as $item) {
 						$options[$key]['facets'][$i]['value'] = $item['value'];
@@ -2905,7 +2937,10 @@ class SearchAPI extends Action {
 						if (isset($item['multiSelect'])) {
 							$options[$key]['facets'][$i]['multiSelect'] = (bool)$item['multiSelect'];
 						} else {
-							$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							$options[$key]['facets'][$i]['multiSelect'] = false;
+							if(isset($facet['multiSelect'])) {
+								$options[$key]['facets'][$i]['multiSelect'] = (bool)$facet['multiSelect'];
+							}
 						}
 						$i++;
 					}
