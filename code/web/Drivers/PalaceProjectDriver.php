@@ -35,7 +35,7 @@ class PalaceProjectDriver extends AbstractEContentDriver {
 
 		$this->loadCirculationInformation($patron);
 
-		return $this->checkouts;
+		return $this->checkouts[$patron->id];
 	}
 
 	public function loadCirculationInformation(User $patron) {

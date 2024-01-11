@@ -6,4 +6,5 @@ class CarlXInstanceInformation {
 	Connection carlXConn;
 	String indexingProfileName;
 	String baseAPIUrl;
+	String carlXViewVersion;
 }

@@ -9,7 +9,8 @@ class SelfRegistrationFormValues extends DataObject {
 	public $symphonyName;
 	public $displayName;
 	public $fieldType;
-	public $patronUpdate;
+	public $section;
+	//public $patronUpdate;
 	public $required;
 	public $note;
 
@@ -114,6 +115,19 @@ class SelfRegistrationFormValues extends DataObject {
 				'values' => [
 					'text' => 'Text',
 					'date' => 'Date',
+				],
+				'description' => 'The field type for the field',
+				'default' => '0',
+			],
+			'section' => [
+				'property' => 'section',
+				'type' => 'enum',
+				'label' => 'Section',
+				'values' => [
+					'librarySection' => 'Library',
+					'identitySection' => 'Identity',
+					'mainAddressSection' => 'Address',
+					'contactInformationSection' => 'Contact Information',
 				],
 				'description' => 'The field type for the field',
 				'default' => '0',
