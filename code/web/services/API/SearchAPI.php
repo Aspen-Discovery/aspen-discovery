@@ -2717,6 +2717,47 @@ class SearchAPI extends Action {
 			}
 		}
 
+		$lmBypass = false;
+		$commmunicoBypass = false;
+		$springshareBypass = false;
+		$libraryEventSettings = [];
+		if($searchEngine == 'Events') {
+			$searchLibrary = Library::getSearchLibrary(null);
+			require_once ROOT_DIR . '/sys/Events/LibraryEventsSetting.php';
+			$libraryEventsSetting = new LibraryEventsSetting();
+			$libraryEventsSetting->libraryId = $searchLibrary->libraryId;
+			$libraryEventSettings = $libraryEventsSetting->fetchAll();
+
+			foreach($libraryEventSettings as $setting) {
+				$source = $setting->settingSource;
+				$id = $setting->settingId;
+				if($source == 'library_market') {
+					require_once ROOT_DIR . '/sys/Events/LMLibraryCalendarSetting.php';
+					$eventSetting = new LMLibraryCalendarSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$lmBypass = $eventSetting->bypassAspenEventPages;
+					}
+				} else if ($source == 'communico') {
+					require_once ROOT_DIR . '/sys/Events/CommunicoSetting.php';
+					$eventSetting = new CommunicoSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$commmunicoBypass = $eventSetting->bypassAspenEventPages;
+					}
+				} else if ($source == 'springshare') {
+					require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+					$eventSetting = new SpringshareLibCalSetting();
+					$eventSetting->id = $id;
+					if($eventSetting->find(true)) {
+						$springshareBypass = $eventSetting->bypassAspenEventPages;
+					}
+				} else {
+					// invalid event source
+				}
+			}
+		}
+
 		$searchObject->setSearchSource($_REQUEST['source'] ?? 'local');
 
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
@@ -2789,26 +2830,36 @@ class SearchAPI extends Action {
 			foreach ($records as $recordKey => $record) {
 				if($searchEngine == 'Events') {
 					if(str_starts_with($record['id'], 'lc')) {
-						$eventSource = 'library_calendar_event';
+						$eventSource = 'library_calendar';
+						$bypass = $lmBypass;
 					} else if (str_starts_with($record['id'], 'communico')) {
-						$eventSource = 'communico_event';
+						$eventSource = 'communico';
+						$bypass = $commmunicoBypass;
 					} else if (str_starts_with($record['id'], 'springshare')) {
-						$eventSource = 'springshare_libcal_event';
+						$eventSource = 'springshare_libcal';
+						$bypass = $springshareBypass;
 					} else {
-						$eventSource = '';
+						$eventSource = 'unknown';
+						$bypass = false;
 					}
 
+					$registrationRequired = false;
+					if($record['registration_required'] == 'Yes' || $record['registration_required'] == 'yes') {
+						$registrationRequired = true;
+					}
 					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['source'] = $eventSource;
 					$items[$recordKey]['title'] = $record['title'];
 					$items[$recordKey]['author'] = null;
-					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource;
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
 					$items[$recordKey]['language'] = null;
 					$items[$recordKey]['summary'] = strip_tags($record['description']);
-					$items[$recordKey]['registration_required'] = $record['registration_required'];
+					$items[$recordKey]['registration_required'] = $registrationRequired;
 					$items[$recordKey]['event_day'] = $record['event_day'];
 					$items[$recordKey]['start_date'] = $record['start_date'];
 					$items[$recordKey]['end_date'] = $record['end_date'];
 					$items[$recordKey]['url'] = $record['url'];
+					$items[$recordKey]['bypass'] = $bypass;
 					$items[$recordKey]['itemList'] = [];
 				} else {
 					$items[$recordKey]['key'] = $record['id'];

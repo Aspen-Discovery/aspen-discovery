@@ -388,4 +388,15 @@ class SpringshareLibCalEventRecordDriver extends IndexRecordDriver {
 			return false;
 		}
 	}
+
+	public function getBypassSetting() {
+		require_once ROOT_DIR . '/sys/Events/SpringshareLibCalSetting.php';
+		$eventSettings = new SpringshareLibCalSetting();
+		$eventSettings->id = $this->getSource();
+		if ($eventSettings->find(true)){
+			return $eventSettings->bypassAspenEventPages;
+		}
+
+		return false;
+	}
 }
