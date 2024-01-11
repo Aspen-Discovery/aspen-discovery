@@ -2830,16 +2830,16 @@ class SearchAPI extends Action {
 			foreach ($records as $recordKey => $record) {
 				if($searchEngine == 'Events') {
 					if(str_starts_with($record['id'], 'lc')) {
-						$eventSource = 'library_calendar_event';
+						$eventSource = 'library_calendar';
 						$bypass = $lmBypass;
 					} else if (str_starts_with($record['id'], 'communico')) {
-						$eventSource = 'communico_event';
+						$eventSource = 'communico';
 						$bypass = $commmunicoBypass;
 					} else if (str_starts_with($record['id'], 'springshare')) {
-						$eventSource = 'springshare_libcal_event';
+						$eventSource = 'springshare_libcal';
 						$bypass = $springshareBypass;
 					} else {
-						$eventSource = 'event';
+						$eventSource = 'unknown';
 						$bypass = false;
 					}
 
@@ -2848,9 +2848,10 @@ class SearchAPI extends Action {
 						$registrationRequired = true;
 					}
 					$items[$recordKey]['key'] = $record['id'];
+					$items[$recordKey]['source'] = $eventSource;
 					$items[$recordKey]['title'] = $record['title'];
 					$items[$recordKey]['author'] = null;
-					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource;
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource . '_event';
 					$items[$recordKey]['language'] = null;
 					$items[$recordKey]['summary'] = strip_tags($record['description']);
 					$items[$recordKey]['registration_required'] = $registrationRequired;
