@@ -5,6 +5,7 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
 class SummonRecordDriver extends RecordInterface {
 	private $lastSearchResults;
+	private $record;
 
 	/**
 	 * Constructor.  We build the object using all the data retrieved
@@ -16,12 +17,11 @@ class SummonRecordDriver extends RecordInterface {
 	 * @param array|File_MARC_Record||string   $recordData     Data to construct the driver from
 	 * @access  public
 	 */
-	public function __construct($lastSearchResults) {
-		if (is_string($lastSearchResults)){
-			//TODO: this should never hit and will be an error handling case (should always be an array)
-		} else {
-			$this->lastSearchResults = $lastSearchResults;
-		}
+	public function __construct($record) {
+		$this->record= $record;
+		// foreach ($this->lastSearchResults as $record) {
+
+		// }
 	}
 
 	
@@ -55,18 +55,10 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 	public function getUniqueID() {
-		if (!empty($this->lastSearchResults)) {
-			foreach ($this->lastSearchResults as $document) {
-				if (!empty($document['ID'])) {
-					var_dump($document['ID']);
-					return $document['ID'];
-				}
-			}
-	
-			// If the loop completes and no ID is found
-			return null;
+		if (isset($this->record)) {
+			// return $this->record['DBID'];
+			return 'Id set';
 		} else {
-			// If the documents array is empty
 			return null;
 		}
 	}
@@ -166,21 +158,21 @@ class SummonRecordDriver extends RecordInterface {
 		$id = $this->getUniqueID();
 		$interface->assign('summId', $id);
 		$interface->assign('summShortId', $id);
-		$interface->assign('module', $this->getModule());
+		// $interface->assign('module', $this->getModule());
 
-		$formats = $this->getFormats();
-		$interface->assign('summFormats', $formats);
+		// $formats = $this->getFormats();
+		// $interface->assign('summFormats', $formats);
 
-		$interface->assign('summUrl', $this->getLinkUrl());
-		$interface->assign('summTitle', $this->getTitle());
-		$interface->assign('summAuthor', $this->getAuthor());
-		$interface->assign('summSourceDatabase', $this->getSourceDatabase());
-		$interface->assign('summHasFullText', $this->hasFullText());
+		// $interface->assign('summUrl', $this->getLinkUrl());
+		// $interface->assign('summTitle', $this->getTitle());
+		// $interface->assign('summAuthor', $this->getAuthor());
+		// $interface->assign('summSourceDatabase', $this->getSourceDatabase());
+		// $interface->assign('summHasFullText', $this->hasFullText());
 
-		$interface->assign('summDescription', $this->getDescription());
+		// $interface->assign('summDescription', $this->getDescription());
 
-		$interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
-		$interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
+		// $interface->assign('bookCoverUrl', $this->getBookcoverUrl('small'));
+		// $interface->assign('bookCoverUrlMedium', $this->getBookcoverUrl('medium'));
 
 		return 'RecordDrivers/Summon/combinedResult.tpl';
 	}
@@ -243,8 +235,18 @@ class SummonRecordDriver extends RecordInterface {
 	 * @return  string
 	 */
 	public function getTitle() {
-		return ($this->recordData->documents[0] ->Title[0]);
-
+		if (isset($this->lastSearchResults)) {
+			foreach($this->lastSearchResults as $record) {
+				if (isset($record['Title'])) {
+					$title =  $record['Title'];
+				} else {
+					$title = 'Unknown Title';
+				}
+			}
+			return $title;
+		} else {
+			return null;
+		}
 
 			
 	

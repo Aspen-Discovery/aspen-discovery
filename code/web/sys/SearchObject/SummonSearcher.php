@@ -189,7 +189,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$summary['page'] = $this->page;
 		$summary['perPage'] = $this->limit;
 		$summary['resultTotal'] = (int)$this->resultsTotal;
-		$summary['facetFields'] = $this->
+		// $summary['facetFields'] = $this->facetFields;
 		// 1st record is easy, work out the start of this page
 		$summary['startRecord'] = (($this->page - 1) * $this->limit) + 1;
 		// Last record needs more care
@@ -235,23 +235,24 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	public function getResultRecordHTML() {
 		global $interface;
 		$html = [];
-		if (isset($this->lastSearchResults->recordData->documents)) {
-			for($i=0; $i < count($this->lastSearchResults->recordData->documents); $i++) {
-				$current = $this->lastSearchResults->recordData->documents[$i];
-				$interface->assign('recordIndex', $i +1);
-				$interface->assign('resultIndex', $i + 1 + (($this->page - 1) * $this->limit));
+		if (isset($this->lastSearchResults)) {
+			foreach($this->lastSearchResults as $key=>$value){
+				$interface->assign('recordIndex', $key + 1);
+				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
 
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
-				$record = new SummonRecordDriver($current);
+				$record = new SummonRecordDriver($value);
 				if ($record->isValid()) {
 					$interface->assign('recordDriver', $record);
-					$html[] = $interface->fetch($record->getSearchResult());
+					$html[] = $interface->fetch($record->getCombinedResult());
 				} else {
 					$html[] = "Unable to find record";
 				}
 			}
+		} else {
+			$html[] = "Unable to find record";
+
 		}
-		$this->addToHistory();
 		return $html;
 	}
 
@@ -263,18 +264,38 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
 	public function getCombinedResultHTML() {
+	// /* 	global $interface;
+	// 	$html = [];
+	// 	//global $logger;
+	// 	//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
+	// 	if (isset($this->lastSearchResults)) {
+	// 		for ($x = 0; $x < count($this->lastSearchResults); $x++) {
+	// 			$current = &$this->lastSearchResults[$x];
+	// 			$interface->assign('recordIndex', $x + 1);
+	// 			$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+
+	// 			require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+	// 			$record = new SummonRecordDriver($current);
+	// 			if ($record->isValid()) {
+	// 				$interface->assign('recordDriver', $record);
+	// 				$html[] = $interface->fetch($record->getCombinedResult());
+	// 			} else {
+	// 				$html[] = "Unable to find record";
+	// 			}
+	// 		}
+	// 	}
+
+		//return $html; 
+
 		global $interface;
 		$html = [];
-		//global $logger;
-		//$logger->log(print_r($this->lastSearchResults, true), Logger::LOG_WARNING);
 		if (isset($this->lastSearchResults)) {
-			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
-				$current = &$this->lastSearchResults[$x];
-				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+			foreach($this->lastSearchResults as $key=>$value){
+				$interface->assign('recordIndex', $key + 1);
+				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
 
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
-				$record = new SummonRecordDriver($current);
+				$record = new SummonRecordDriver($value);
 				if ($record->isValid()) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getCombinedResult());
@@ -282,58 +303,78 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$html[] = "Unable to find record";
 				}
 			}
-		}
+		} else {
+			$html[] = "Unable to find record";
 
+		}
 		return $html;
-	}
+			// foreach($this->lastSearchResults as $eachRecord) {
+			// 	require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+			// 	$record =new SummonRecordDriver($eachRecord);
+			// 	if ($record->isValid()) {
+			// 		$interface->assign('recordDriver', $record);
+			// 		$html[] = $interface->fetch($record->getCombinedResult());
+			// 	} else {
+			// 		$html[] = "Unable to find record";
+			// 	}
+			// }
+
+		} 
+	// }else {
+	// 	$html[] = "Unable to find record";
+	// }
+	// 	var_dump($html);
+	// 	return $html;
+		
+	// }
+
+	
 
 
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
-		// $availableFacets = [
-        //     'IsScholarly,or,1,2',
-        //     'Library,or,1,30',
-        //     'ContentType,or,1,30',
-        //      'SubjectTerms,or,1,30',
-        //      'Language,or,1,30'
-        // ];
-		if (isset($this->lastSearchResults) && isset($this->facetFields)) {
-			foreach ($this->facetFields as $facet) {
-				$facet = [
+		$availableFacets = [];
+		$defaultFacets = [
+            'IsScholarly,or,1,2',
+            'Library,or,1,30',
+            'ContentType,or,1,30',
+             'SubjectTerms,or,1,30',
+             'Language,or,1,30'
+        ];
+		if (isset($this->lastSearchResults) && isset($this->facetFields)){
+			foreach($this->facetFields as $facetField) {
+				$availableFacets[$facetField] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					'label' => (string)$facet->Label,
+					// 'label' => (string)$this->facetFields
 					'valuesToShow' => 5,
 				];
-				// if ($facetId == 'SourceType') {
-				// 	$facetId['collapseByDefault'] = false;
-				// }
-				// $list = [];
-				// foreach ($facet as $value) {
-				// 	$facetValue = (string)$value->Value;
-					//Check to see if the facet has been applied
-					// $isApplied = array_key_exists($facetId, $this->filterList) && in_array($facetValue, $this->filterList[$facetId]);
+				if ($facetField == 'SourceType') {
+					$availableFacets[$facetField]['collapseByDefault'] = false;
+				}
+				$list = [];
+				foreach ($facetField[0] as $value) {
+					$facetValue = $value;
+					$isApplied = array_key_exists($facetValue, $this->filterList);
 
-				// 	$facetSettings = [
-				// 		'value' => $facetValue,
-				// 		'display' => $facetValue,
-				// 		'count' => (string)$value->Count,
-				// 		'isApplied' => $isApplied,
-				// 		'countIsApproximate' => false,
-				// 	];
-				// 	if ($isApplied) {
-				// 		$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetId . ':' . $facetValue);
-				// 	} else {
-				// 		$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($facetValue);
-				// 	}
-				// 	$list[] = $facetSettings;
-				// }
-				// $availableFacets[$facetId]['list'] = $list;
+					$facetSettings = [
+						'value' => $facetValue,
+						'display' => $facetValue,
+						'count' => (string)$value->Count,
+						'isApplied' => $isApplied,
+						'countIsApproximate' => false,
+					];
+					if ($isApplied) {
+						$facetSettings = $this->renderLinkWithoutFilter($facetField . ':' . $facetValue);
+					} else {
+						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetField . ':' . urlencode($facetValue);
+					}
+					$list[] = $facetSettings;
+				}
+				$availableFacets[$facetField]['list'] = $list;
 			}
 		}
-		//return $availableFacets;
-		// var_dump($facet);
-		return $facet;
+		return $availableFacets;
 	}
     
 
@@ -503,12 +544,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$this->page = $recordData['query']['pageNumber'];
 						$this->didYouMean = $recordData['didYouMeanSuggestions'];
 						$this->resultsTotal = $recordData['recordCount'];
-						$this->facetFields = $recordData['rangeFacetFields'];
-				
-						
-
-
-
+						$this->facetFields = $recordData['facetFields'];
 					}
 				}
                 return $recordData;
@@ -518,6 +554,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			}
     	}
 
+
+
 		//Get last search
 		public function getLastSearchResults() {
 			return $this->lastSearchResults;
@@ -525,10 +563,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	
 
-	//Process individual record and return it
-	public function processRecord(array $record) {
-		return $record;
-	}
+
 
 		public function getSessionId() {
 			return $this->sessionId;
