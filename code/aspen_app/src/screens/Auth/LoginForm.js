@@ -1,28 +1,27 @@
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { useQuery } from '@tanstack/react-query';
+import { create } from 'apisauce';
+import Constants from 'expo-constants';
+import * as SecureStore from 'expo-secure-store';
 import { Button, Center, FormControl, Icon, Input, Pressable } from 'native-base';
 import React, { useRef } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as SecureStore from 'expo-secure-store';
-import Constants from 'expo-constants';
-import { create } from 'apisauce';
-import { useQueryClient, useQuery, useQueries } from '@tanstack/react-query';
 
 // custom components and helper files
 import { AuthContext } from '../../components/navigation';
-import { getBrowseCategories, getLanguages, getLibraryBranch, getLibrarySystem, getUserProfile } from '../../util/login';
-import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
-import { ResetExpiredPin } from './ResetExpiredPin';
-import { GLOBALS } from '../../util/globals';
-import { createAuthTokens, getHeaders } from '../../util/apiAuth';
-import { formatDiscoveryVersion, LIBRARY, reloadBrowseCategories } from '../../util/loadLibrary';
 import { DisplayMessage } from '../../components/Notifications';
-import { loginToLiDA, reloadProfile, validateUser } from '../../util/api/user';
+import { BrowseCategoryContext, LanguageContext, LibraryBranchContext, LibrarySystemContext, UserContext } from '../../context/initialContext';
+import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary } from '../../translations/TranslationService';
 import { getLibraryInfo, getLibraryLanguages } from '../../util/api/library';
-import { PATRON } from '../../util/loadPatron';
 import { getLocationInfo } from '../../util/api/location';
-import { navigate, navigateStack } from '../../helpers/RootNavigator';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { loginToLiDA, reloadProfile, validateUser } from '../../util/api/user';
+import { createAuthTokens, getHeaders } from '../../util/apiAuth';
+import { GLOBALS } from '../../util/globals';
+import { formatDiscoveryVersion, reloadBrowseCategories } from '../../util/loadLibrary';
+import { PATRON } from '../../util/loadPatron';
+import { ResetExpiredPin } from './ResetExpiredPin';
 
 export const GetLoginForm = (props) => {
      const navigation = useNavigation();
@@ -75,6 +74,8 @@ export const GetLoginForm = (props) => {
                     setPinValidationRules(result.library.pinValidationRules);
                     const validatedUser = await loginToLiDA(valueUser, valueSecret, patronsLibrary['baseUrl']);
                     if (validatedUser) {
+                         PATRON.language = validatedUser.lang ?? 'en';
+                         updateLanguage(validatedUser.lang ?? 'en');
                          if (validatedUser.success) {
                               await setAsyncStorage();
                               signIn();
@@ -203,7 +204,7 @@ export const GetLoginForm = (props) => {
                          InputRightElement={
                               allowBarcodeScanner ? (
                                    <Pressable onPress={() => openScanner()}>
-                                        <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" color="muted.800" />
+                                        <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" />
                                    </Pressable>
                               ) : null
                          }

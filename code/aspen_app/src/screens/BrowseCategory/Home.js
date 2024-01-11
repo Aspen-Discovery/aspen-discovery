@@ -1,4 +1,4 @@
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CachedImage from 'expo-cached-image';
@@ -433,6 +433,10 @@ export const DiscoverHomeScreen = () => {
           return <ForceLogout />;
      }
 
+     const clearSearch = () => {
+          setSearchTerm('');
+     };
+
      return (
           <ScrollView>
                <Box safeArea={5}>
@@ -445,7 +449,6 @@ export const DiscoverHomeScreen = () => {
                               onChangeText={(term) => setSearchTerm(term)}
                               status="info"
                               placeholder={getTermFromDictionary(language, 'search')}
-                              clearButtonMode="while-editing"
                               onSubmitEditing={search}
                               value={searchTerm}
                               size="xl"
@@ -465,17 +468,16 @@ export const DiscoverHomeScreen = () => {
                                    />
                               }
                               InputRightElement={
-                                   <Pressable onPress={() => openScanner()}>
-                                        <Icon
-                                             as={<Ionicons name="barcode-outline" />}
-                                             size={6}
-                                             mr="2"
-                                             color="muted.800"
-                                             _dark={{
-                                                  color: 'muted.50',
-                                             }}
-                                        />
-                                   </Pressable>
+                                   <>
+                                        {searchTerm ? (
+                                             <Pressable onPress={() => clearSearch()}>
+                                                  <Icon as={MaterialCommunityIcons} name="close-circle" size={6} mr="2" />
+                                             </Pressable>
+                                        ) : null}
+                                        <Pressable onPress={() => openScanner()}>
+                                             <Icon as={<Ionicons name="barcode-outline" />} size={6} mr="2" />
+                                        </Pressable>
+                                   </>
                               }
                          />
                     </FormControl>
