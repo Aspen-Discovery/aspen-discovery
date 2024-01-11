@@ -2703,10 +2703,7 @@ class SearchAPI extends Action {
 			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
 			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
-
-		$searchIndex = !empty($_REQUEST['searchIndex']) ?? 'Keyword';
-		/* Apply search index */
-
+		
 		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
 		$searchObject->setSearchSource($searchSource);
 
