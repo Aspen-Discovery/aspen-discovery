@@ -324,6 +324,9 @@ class LibraryLink extends DataObject {
 		if (!$this->published && !UserAccount::userHasPermission('View Unpublished Content')) {
 			return false;
 		}
+		if($this->showLinkOn == 1) {
+			return false;
+		}
 		//Check to see if the library link is valid based on the language
 		global $activeLanguage;
 		if ($activeLanguage != null) {
