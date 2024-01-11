@@ -2450,6 +2450,8 @@ class SearchAPI extends Action {
 		$results = [
 			'success' => false,
 			'type' => $searchType,
+			'searchIndex' => 'Keyword',
+			'searchSource' => 'local',
 			'count' => 0,
 			'totalResults' => 0,
 			'lookfor' => $_REQUEST['lookfor'] ?? null,
@@ -2472,6 +2474,7 @@ class SearchAPI extends Action {
 					'success' => false,
 					'message' => 'The id of the list to load must be provided as the id parameter.',
 					'count' => 0,
+					'searchIndex' => 'lists',
 					'totalResults' => 0,
 					'items' => [],
 					'lookfor' => null,
@@ -2546,6 +2549,9 @@ class SearchAPI extends Action {
 					'fileName' => $link,
 					'append' => false,
 				];
+				$results['searchIndex'] = $searchObject->getSearchIndex();
+				$results['searchSource'] = $searchObject->getSearchSource();
+				$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
 				require_once ROOT_DIR . '/sys/Pager.php';
 				$pager = new Pager($options);
 				$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2637,6 +2643,9 @@ class SearchAPI extends Action {
 				'fileName' => $link,
 				'append' => false,
 			];
+			$results['searchIndex'] = $searchObject->getSearchIndex();
+			$results['searchSource'] = $searchObject->getSearchSource();
+			$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
 			require_once ROOT_DIR . '/sys/Pager.php';
 			$pager = new Pager($options);
 			$results['totalResults'] = (int)$pager->getTotalItems();
@@ -2695,6 +2704,12 @@ class SearchAPI extends Action {
 			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
 
+		$searchIndex = !empty($_REQUEST['searchIndex']) ?? 'Keyword';
+		/* Apply search index */
+
+		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+		$searchObject->setSearchSource($searchSource);
+
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
 		$timer->logTime('Setup Search');
 
@@ -2743,6 +2758,9 @@ class SearchAPI extends Action {
 			$results['id'] = $searchObject->getSearchId();
 			$results['lookfor'] = $searchObject->displayQuery();
 			$results['sort'] = $searchObject->getSort();
+			$results['searchIndex'] = $searchObject->getSearchIndex();
+			$results['searchSource'] = $searchObject->getSearchSource();
+			$results['defaultSearchIndex'] = $searchObject->getDefaultIndex();
 			// Process Paging
 			$link = $searchObject->renderLinkPageTemplate();
 			$options = [
