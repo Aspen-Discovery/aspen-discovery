@@ -2678,6 +2678,8 @@ class SearchAPI extends Action {
 			$searchObject->setLimit($_REQUEST['pageSize']);
 		}
 
+		$searchSource = !empty($_REQUEST['source']) ? $_REQUEST['source'] : 'local';
+
 		if (isset($_REQUEST['filter'])) {
 			if (is_array($_REQUEST['filter'])) {
 				$givenFilters = $_REQUEST['filter'];
@@ -2703,8 +2705,7 @@ class SearchAPI extends Action {
 			$searchObject->removeFilterByPrefix('availability_toggle'); // clear anything previously set
 			$searchObject->addFilter('availability_toggle:'.$availabilityToggleValue);
 		}
-		
-		$searchSource = !empty($_REQUEST['searchSource']) ? $_REQUEST['searchSource'] : 'local';
+
 		$searchObject->setSearchSource($searchSource);
 
 		$searchObject->setFieldsToReturn('id,title_display,author_display,language,display_description,format');
