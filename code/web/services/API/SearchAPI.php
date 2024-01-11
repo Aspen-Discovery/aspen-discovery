@@ -2801,7 +2801,7 @@ class SearchAPI extends Action {
 					$items[$recordKey]['key'] = $record['id'];
 					$items[$recordKey]['title'] = $record['title'];
 					$items[$recordKey]['author'] = null;
-					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=event';
+					$items[$recordKey]['image'] = $configArray['Site']['url'] . '/bookcover.php?id=' . $record['id'] . '&size=medium&type=' . $eventSource;
 					$items[$recordKey]['language'] = null;
 					$items[$recordKey]['summary'] = strip_tags($record['description']);
 					$items[$recordKey]['registration_required'] = $record['registration_required'];
