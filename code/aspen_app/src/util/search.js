@@ -21,6 +21,8 @@ export const SEARCH = {
      defaultFacets: [],
      pendingFilters: [],
      appendedParams: '',
+     searchSource: 'local',
+     searchIndex: 'Keyword',
 };
 
 const endpoint = ENDPOINT.search;
@@ -421,7 +423,7 @@ export function buildParamsForUrl() {
      return params;
 }
 
-export async function getSearchIndexes(url, language = 'en', source = 'catalog') {
+export async function getSearchIndexes(url, language = 'en', source = 'local') {
      const discovery = create({
           baseURL: url,
           timeout: GLOBALS.timeoutFast,
