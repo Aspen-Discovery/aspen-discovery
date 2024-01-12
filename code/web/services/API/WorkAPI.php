@@ -99,7 +99,7 @@ class WorkAPI extends Action {
 			}
 			$language = $groupedWorkDriver->getLanguage();
 			$itemData['language'] = $language[0] ?? $language;
-			$itemData['cover'] = $groupedWorkDriver->getBookcoverUrl('large', true);
+			$itemData['cover'] = urlencode($groupedWorkDriver->getBookcoverUrl('large', true));
 
 			$itemData['series'] = $groupedWorkDriver->getIndexedSeries();
 

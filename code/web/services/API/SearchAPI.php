@@ -3594,7 +3594,7 @@ class SearchAPI extends Action {
 
 		return [
 			'success' => true,
-			'searchSources' => $validSearchSources
+			'sources' => $validSearchSources
 		];
 	}
 
@@ -3626,8 +3626,9 @@ class SearchAPI extends Action {
 
 		return [
 			'success' => true,
-			'searchSource' => $activeSearchSource,
-			'searchIndexes' => $searchIndexes
+			'indexes' => [
+				$activeSearchSource => $searchIndexes
+			]
 		];
 	}
 

@@ -19,7 +19,7 @@ import { getTermFromDictionary, getTranslationsWithValues } from '../../translat
 import { createAuthTokens, getHeaders } from '../../util/apiAuth';
 import { GLOBALS } from '../../util/globals';
 import { formatDiscoveryVersion } from '../../util/loadLibrary';
-import { getAppliedFilters, getAvailableFacetsKeys, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
+import { getAppliedFilters, getAvailableFacetsKeys, getSearchIndexes, getSearchSources, getSortList, SEARCH, setDefaultFacets } from '../../util/search';
 import AddToList from './AddToList';
 
 export const SearchResults = () => {
@@ -535,10 +535,14 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
      SEARCH.sortMethod = data?.result?.sort ?? '';
      SEARCH.term = data?.result?.lookfor ?? '';
      SEARCH.availableFacets = data?.result?.options ?? [];
+     SEARCH.searchSource = data?.result?.searchSource ?? 'local';
+     SEARCH.searchIndex = data?.result?.searchIndex ?? 'Keyword';
 
      await getSortList(url, language);
      await getAvailableFacetsKeys(url, language);
      await getAppliedFilters(url, language);
+     await getSearchSources(url, language);
+     await getSearchIndexes(url, language, SEARCH.searchSource);
 
      setDefaultFacets(data?.result?.options ?? []);
 
