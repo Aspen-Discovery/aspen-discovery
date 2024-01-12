@@ -25,6 +25,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	private $filters = array();
     private $raw = false;
     private $curl_connection;
+
     /**
 	 * @var string mixed
 	 */
@@ -60,7 +61,34 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	protected $pageSize = 20;
 
-	protected $facetFields;
+	protected $facets;
+
+	protected $holdings;
+	protected $didYouMean;
+	protected $language = 'en';
+	protected $idsToFetch = array();
+	protected $maxTopics = 1;
+	protected $groupFilters = array();
+	protected $rangeFilters = array();
+	protected $expand = false;
+	protected $openAccessFilter = false;
+	protected $highlight = false;
+
+
+
+	protected $facetValueFilters = [
+		'ContentType',
+		'IsScholarly',
+		'Discipline',
+	];
+
+	
+
+	protected $clearAllFacetFields;
+	protected $removeFacetField;
+	protected $addFacetField;
+
+
 
   
 
@@ -334,19 +362,13 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [];
-		$defaultFacets = [
-            'IsScholarly,or,1,2',
-            'Library,or,1,30',
-            'ContentType,or,1,30',
-             'SubjectTerms,or,1,30',
-             'Language,or,1,30'
-        ];
-		if (isset($this->lastSearchResults) && isset($this->facetFields)){
+		
+		if (isset($this->recordData)){
 			foreach($this->facetFields as $facetField) {
 				$availableFacets[$facetField] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					// 'label' => (string)$this->facetFields
+					// 'label' => (string)$this->
 					'valuesToShow' => 5,
 				];
 				if ($facetField == 'SourceType') {
@@ -416,79 +438,129 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     }
 
 
-	  /**
-     * Set array of options relevant to summon as Summon Search Options
-     *
-     * @return array
-     */
-    public function getSearchOptionsArray()
+
+    public function getSearchOptions(): string
     {
-        $options = array(
-            's.q' => $this->query,
-            's.ps' => $this->limit,
-            's.pn' => $this->page,
-            's.ho' => $this->holdings ? 'true' : 'false',
-            's.dym' => $this->didYouMean ? 'true' : 'false',
-            's.l' => $this->language,
-        );
-        if (!empty($this->idsToFetch)) {
-            $options['s.fids'] = implode(',', (array)$this->idsToFetch);
-        }
-        if (!empty($this->facets)) {
-            $options['s.ff'] = $this->facets;
-        }
-        if (!empty($this->filters)) {
-            $options['s.fvf'] = $this->filters;
-        }
-        if ($this->maxTopics !== false) {
-            $options['s.rec.topic.max'] = $this->maxTopics;
-        }
-        if (!empty($this->groupFilters)) {
-            $options['s.fvgf'] = $this->groupFilters;
-        }
-        if (!empty($this->rangeFilters)) {
-            $options['s.rf'] = $this->rangeFilters;
-        }
-        if (!empty($this->sort)) {
-            $options['s.sort'] = $this->sort;
-        }
-        if ($this->expand) {
-            $options['s.exp'] = 'true';
-        }
-        if ($this->openAccessFilter) {
-            $options['s.oaf'] = 'true';
-        }
-        if ($this->highlight) {
-            $options['s.hl'] = 'true';
-            $options['s.hs'] = $this->highlightStart;
-            $options['s.he'] = $this->highlightEnd;
-        } else {
-            $options['s.hl'] = 'false';
-            $options['s.hs'] = $options['s.he'] = '';
-        }
-		// return optionsToString($options);
-		return $options;
+		$options =array();
+		// if (!empty($this->listFacetValues)) {
+		// 	$options['listFacetValues'] = $this->listFacetValues;
+		// }
+		// if (!empty($this->addRangeFacetField)) {
+		// 	$options['addRangeFacetField'] = $this->addRangeFacetFiled;
+		// }
+		if (!empty($this->clearAllFacetFields)) {
+			$options['clearAllFacetFields'] = $this->clearAllFacetFields;
+		}
+		if (!empty($this->removeFacetField)) {
+			$options['removeFacetField'] = $this->removeFacetField;
+		}
+		if (!empty($this->addFacetField)) {
+			$options['addFacetField'] = $this->addFacetField;
+		}
+		// if (!empty($this->addFacetValueGroupFilter)) {
+		// 	$options['addFacetValueGroupFilter'] = $this->addFacetValueGroupFilter;
+		// }
+		// if (!empty($this->clearAllFacetValueFilters)) {
+		// 	$options['clearAllFacetValueFilter'] = $this->clearAllFacetValueFilters;
+		// }
+		// if (!empty($this->removeFacetValueFilter)) {
+		// 	$options['removeFacetValueFilter'] = $this->removeFacetValueFilter;
+		//}
+		if (!empty($this->facetValueFilters)) {
+				$options['facetValueFilters'] = $this->facetValueFilters;
+			}
+		
+	
+		if (!empty($this->clearSearch)) {
+			$options['clearSearchCommand'] = $this->clearSearch;
+		} 
+		if (!empty($this->didYouMean)) {
+			$options['setDidYouMeanCommand']  = $this->didYouMean;
+		}
+		if (!empty($this->holdings)) {
+			$options['setHoldingsOnly'] = $this->holdings;
+		}
+		if (!empty($this->setSort)) {
+			$options['setSort'] = $this->setSort;
+		}
+		if (!empty($this->sourceType)) {
+			$options['sourceType'] = $this->sourceType;
+		}
+		
+	
+		// if (!empty($this->addTextFilter)) {
+		// 	$options['addTextFilter'] = $this->addTextFilter;
+		// }
+		// if (!empty($this->clearAllTextFilters)) {
+		// 	$options['clearAllTextFilters'] = $this->clearAllTextFilters;
+		// }
+		// if (!empty($this->removeTextFilter)) {
+		// 	$options['removeTextFiler'] = $this->removeTextFilter;
+		// }
+
+		return $this->optionsToString($options);
     }
+
+        // $options = array(
+        //     's.q' => $this->query,
+        //     's.ps' => $this->limit,
+        //     's.pn' => $this->page,
+        //     's.ho' => $this->holdings ? 'true' : 'false',
+        //     's.dym' => $this->didYouMean ? 'true' : 'false',
+        //     's.l' => $this->language,
+        // );
+		// $options .= 'cmd='
+        // if (!empty($this->idsToFetch)) {
+        //     $options['s.fids'] = implode(',', (array)$this->idsToFetch);
+        // }
+        // if (!empty($this->facets)) {
+        //     $options['s.ff'] = $this->facets;
+        // }
+        // if (!empty($this->filters)) {
+        //     $options['s.fvf'] = $this->filters;
+        // }
+        // if ($this->maxTopics !== false) {
+        //     $options['s.rec.topic.max'] = $this->maxTopics;
+        // }
+        // // if (!empty($this->groupFilters)) {
+        // //     $options['s.fvgf'] = $this->groupFilters;
+        // // }
+        // // if (!empty($this->rangeFilters)) {
+        // //     $options['s.rf'] = $this->rangeFilters;
+        // // }
+        // if (!empty($this->sort)) {
+        //     $options['s.sort'] = $this->sort;
+        // }
+        // if ($this->expand) {
+        //     $options['s.exp'] = 'true';
+        // }
+        // if ($this->openAccessFilter) {
+        //     $options['s.oaf'] = 'true';
+        // }
+       
+
+
+
+
+
 
 	public function optionsToString($options) {
 		$buildQuery = '';
 		foreach ($options as $key => $value) {
-			switch ($key) {
-				case 's.ps':
-					$buildQuery .= '&s.ps' . $value;
-					break;
+			if (!is_null($value)){
+				$buildQuery .= '&'.$key.'='.$value;
 			}
-		}
+		}	return $buildQuery;
 	}
 
 
-	//Set the search options to the Summon searcher
-	public function getSearchOptions() {
-		if (SearchObject_SummonSearcher::$searchOptions == null) {
-			SearchObject_SummonSearcher::$searchOptions = $this->getSearchOptionsArray();
-			return SearchObject_SummonSearcher::$searchOptions;
-		}
-	}
+	// //Set the search options to the Summon searcher
+	// public function getSearchOptions() {
+	// 	if (SearchObject_SummonSearcher::$searchOptions == null) {
+	// 		SearchObject_SummonSearcher::$searchOptions = $this->getSearchOptionsArray();
+	// 		return SearchObject_SummonSearcher::$searchOptions;
+	// 	}
+	// }
 
     
 
@@ -516,7 +588,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				// 	$term = urlencode($term);
 				// }
 				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' ;
-
                 // Build Authorization Headers
                 $headers = array(
                     'Accept' => 'application/'.$this->responseType,
@@ -530,6 +601,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                 if (!is_null($this->sessionId)){
                     $headers['x-summon-session-id'] = $this->sessionId;
                 } 
+				// 	//TODO: Add options 
+				$queryString .= $this->getSearchOptions();
                 // Send request
 				
                 $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
@@ -544,7 +617,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$this->page = $recordData['query']['pageNumber'];
 						$this->didYouMean = $recordData['didYouMeanSuggestions'];
 						$this->resultsTotal = $recordData['recordCount'];
-						$this->facetFields = $recordData['facetFields'];
+						$this->facets = $recordData['facetFields'];
 					}
 				}
                 return $recordData;
@@ -614,6 +687,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
             return SearchObject_SummonSearcher::$searchOptions;
         }
     }
+//TODO: add escape chars
+
     
           
 

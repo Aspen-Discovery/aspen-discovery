@@ -40,8 +40,8 @@ class SummonRecordDriver extends RecordInterface {
 		if ($size == 'large') {
 			if (!empty($this->record['thumbnail_l'])) {
 				return $this->record['thumbnail_l'][0];
-			} return $this->getBookcoverUrl('medium');
-		}
+			} 
+		} return null;
 	}
 
 	/**
@@ -57,6 +57,14 @@ class SummonRecordDriver extends RecordInterface {
 	 */
 	public function getAbsoluteUrl() {
 		return $this->getRecordUrl();
+	}
+
+ 	public function getRecordUrl() {
+		if (isset($this->record['link'])) {
+			return $this->record['link'];
+		} else {
+			return null;
+		}
 	}
 
 	public function getUniqueID() {
