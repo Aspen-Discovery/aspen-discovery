@@ -32,8 +32,15 @@ class SummonRecordDriver extends RecordInterface {
 
 
 	public function getBookcoverUrl($size = 'large', $absolutePath =false) {
-		if (!empty($this->record['thumbnail_l'])) {
-			return $this->record['thumbnail_l'][0];
+		if ($size == 'medium' || $size == 'small') {
+			if (!empty($this->record['thumbnail_m'])) {
+				return $this->record['thumbnail_m'][0];
+			} return $this->getBookcoverUrl('large');
+		}
+		if ($size == 'large') {
+			if (!empty($this->record['thumbnail_l'])) {
+				return $this->record['thumbnail_l'][0];
+			} return $this->getBookcoverUrl('medium');
 		}
 	}
 
@@ -61,7 +68,7 @@ class SummonRecordDriver extends RecordInterface {
 	}
 	
 	public function getModule(): string {
-		return 'summon';
+		return 'Summon';
 	}
 
 	public function getSearchResult($view = 'list', $showListsAppearingOn = true) {

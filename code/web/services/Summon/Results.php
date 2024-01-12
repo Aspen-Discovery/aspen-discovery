@@ -42,8 +42,8 @@ class Summon_Results extends ResultsAction {
 				}
 			}
 
-			$interface->assign('error', $result);
-			$this->display('error.tpl', 'Error in Search');
+			$interface->assign('searchError', $result);
+			$this->display('searchError.tpl', 'Error in Search');
 			return;
 		}
 
