@@ -1,20 +1,22 @@
   backup:
     image: registry.gitlab.com/thekesolutions/tools/aspen-backup:23.6.15.0
-     networks:
-       - net-aspen
-     depends_on:
-       - backend
-     volumes:
-         - $COMPOSE_ClientSrvPath/start.sh:/start.sh
-         - $COMPOSE_ClientSrvPath/sites-enabled:/etc/apache2/sites-enabled
-         - $COMPOSE_ClientSrvPath/sites-available:/etc/apache2/sites-available
-         - $COMPOSE_ClientSrvPath/cron.d_bk/backup:/etc/crontabs/root
-         - $COMPOSE_ClientSrvPath/log:/var/log/aspen-discovery/$SITE_sitename
-         - $COMPOSE_ClientSrvPath/test.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
-         - $COMPOSE_ClientSrvPath/data:/data/aspen-discovery
-         - $COMPOSE_ClientSrvPath/home:/home
-         - $COMPOSE_ClientSrvPath/files:/usr/local/aspen-discovery/code/web/files
-     environment:
+    env_file:
+        - .env_backup
+    networks:
+        - net-aspen
+    depends_on:
+        - backend
+    volumes:
+        - $COMPOSE_ClientSrvPath/start.sh:/start.sh
+        - $COMPOSE_ClientSrvPath/sites-enabled:/etc/apache2/sites-enabled
+        - $COMPOSE_ClientSrvPath/sites-available:/etc/apache2/sites-available
+        - $COMPOSE_ClientSrvPath/cron.d_bk/backup:/etc/crontabs/root
+        - $COMPOSE_ClientSrvPath/log:/var/log/aspen-discovery/$SITE_sitename
+        - $COMPOSE_ClientSrvPath/test.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
+        - $COMPOSE_ClientSrvPath/data:/data/aspen-discovery
+        - $COMPOSE_ClientSrvPath/home:/home
+        - $COMPOSE_ClientSrvPath/files:/usr/local/aspen-discovery/code/web/files
+    environment:
        - BACKUP_Folder=$BACKUP_Folder
        - BACKUP_AccountId=$BACKUP_AccountId
        - BACKUP_ApplicationKey=$BACKUP_ApplicationKey
@@ -24,4 +26,4 @@
        - BACKUP_DB=$BACKUP_DB
        - BACKUP_Sitename=$BACKUP_Sitename
        - BACKUP_HostDB=$BACKUP_HostDB
-     entrypoint: ["crond", "-d", "8", "-f"]
+    entrypoint: ["crond", "-d", "8", "-f"]
