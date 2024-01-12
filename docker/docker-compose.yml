@@ -14,7 +14,7 @@ services:
       - $COMPOSE_ClientSrvPath:/mnt
     env_file:
       - .env_backend   
-    #entrypoint: ["/usr/bin/tail","-f","/dev/null"]
+
   db:
     image: mariadb:10.3
     environment:
@@ -54,43 +54,3 @@ services:
     networks:
       - net-aspen
     entrypoint: ["/root/.ssh/tunnel.sh"]
-    #entrypoint: ["/usr/bin/tail","-f","/dev/null"]
-
-      #  traefik:
-      #    image: traefik:v2.10
-      #    ports:
-      #      - target: 80
-      #        published: 80
-      #        mode: host
-      #      - target: 443
-      #        published: 443
-      #        mode: host
-   
-      #  backup:
-      #    image: registry.gitlab.com/thekesolutions/tools/aspen-backup:23.6.15.0
-      #     networks:
-      #       - net-aspen
-      #     depends_on:
-      #       - backend
-      #     volumes: 
-      #         - $COMPOSE_ClientSrvPath/start.sh:/start.sh
-      #         - $COMPOSE_ClientSrvPath/sites-enabled:/etc/apache2/sites-enabled
-      #         - $COMPOSE_ClientSrvPath/sites-available:/etc/apache2/sites-available
-      #         - $COMPOSE_ClientSrvPath/cron.d_bk/backup:/etc/crontabs/root
-      #         - $COMPOSE_ClientSrvPath/log:/var/log/aspen-discovery/$SITE_sitename
-      #         - $COMPOSE_ClientSrvPath/test.aspen.theke.io:/usr/local/aspen-discovery/sites/$SITE_sitename
-      #         - $COMPOSE_ClientSrvPath/data:/data/aspen-discovery
-      #         - $COMPOSE_ClientSrvPath/home:/home
-      #         - $COMPOSE_ClientSrvPath/files:/usr/local/aspen-discovery/code/web/files
-      #     environment:
-      #       - BACKUP_Folder=$BACKUP_Folder
-      #       - BACKUP_AccountId=$BACKUP_AccountId
-      #       - BACKUP_ApplicationKey=$BACKUP_ApplicationKey
-      #       - BACKUP_Bucket=$BACKUP_Bucket
-      #       - BACKUP_UserDB=$BACKUP_UserDB
-      #       - BACKUP_PassDB=$BACKUP_PassDB
-      #       - BACKUP_DB=$BACKUP_DB
-      #       - BACKUP_Sitename=$BACKUP_Sitename
-      #       - BACKUP_HostDB=$BACKUP_HostDB 
-      #     entrypoint: ["crond", "-d", "8", "-f"]
-   
