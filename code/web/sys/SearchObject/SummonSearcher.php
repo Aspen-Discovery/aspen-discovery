@@ -26,6 +26,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private $raw = false;
     private $curl_connection;
 
+	private $listFacetValues;
+
     /**
 	 * @var string mixed
 	 */
@@ -94,7 +96,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $addFacetField;
 	protected $facetFields;
 	protected $queryFacets;
-	protected $facetVals;
+	protected $facetValue;
 
 
 
@@ -407,7 +409,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					// 'label' => (string)$this->$facetValueFilter,
+					'label' => (string)$this->$facetValueFilter,
 					'valuesToShow' => 5,
 				];
 				if ($this->facetValueFilters == 'SourceType') {
@@ -428,17 +430,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						// if ($isApplied) {
 							// $facetSettings = $this->renderLinkWithoutFilter($facet . ':' . $facetValue);
 					// 	} else {
-					// 		$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facet . ':' . urlencode($facetValue);
+							$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($value);
 					// 	}
-					// 	$list[] = $facetSettings;
+					 	$list[] = $facetSettings;
 					// }
 					$availableFacets[$facetValueFilter]['list'] = $list;
 				}
 			}
 		}
-		var_dump($this->facetValueFilters);
+		var_dump($availableFacets);
 		return 	$availableFacets;
 	}	
+
+	
+
+	
+	
 	
     
 	
@@ -723,8 +730,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$this->resultsTotal = $recordData['recordCount'];
 						$this->sort = $recordData['query']['sort'];
 						$this->facetFields= $recordData['facetFields'];
-						$this->queryFacets = $recordData['query'][10];
-						$this->facetVals = $recordData['facetValueFilters'];
+						$this->queryFacets = $recordData['query']['rangeFacetFields'];
+						// $this->facetVals = $recordData['facetValueFilters'];
 						// $this->pageSize = $recordData['query']['pageSize'];
 					}
 				}
