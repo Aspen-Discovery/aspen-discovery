@@ -12,7 +12,7 @@ import { loadError } from '../../components/loadError';
 import { loadingSpinner } from '../../components/loadingSpinner';
 import { DisplaySystemMessage } from '../../components/Notifications';
 
-import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
+import { LanguageContext, LibraryBranchContext, LibrarySystemContext, SearchContext, SystemMessagesContext, UserContext } from '../../context/initialContext';
 import { getCleanTitle } from '../../helpers/item';
 import { navigate } from '../../helpers/RootNavigator';
 import { getTermFromDictionary, getTranslationsWithValues } from '../../translations/TranslationService';
@@ -30,6 +30,7 @@ export const SearchResults = () => {
      const { library } = React.useContext(LibrarySystemContext);
      const { language } = React.useContext(LanguageContext);
      const { scope } = React.useContext(LibraryBranchContext);
+     const { currentIndex, currentSource, updateCurrentIndex, updateCurrentSource, updateIndexes, updateSources } = React.useContext(SearchContext);
      const url = library.baseUrl;
 
      const queryClient = useQueryClient();
@@ -62,11 +63,13 @@ export const SearchResults = () => {
      }
 
      const { status, data, error, isFetching, isPreviousData } = useQuery({
-          queryKey: ['searchResults', url, page, term, scope, params, type, id, language],
-          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language),
+          queryKey: ['searchResults', url, page, term, scope, params, type, id, language, currentIndex, currentSource],
+          queryFn: () => fetchSearchResults(term, page, scope, url, type, id, language, currentIndex, currentSource),
           keepPreviousData: true,
           staleTime: 1000,
           onSuccess: (data) => {
+               updateCurrentIndex(data.index);
+               updateCurrentSource(data.source);
                if ((data.totalResults === 1 || data.totalResults === '1') && isScannerSearch) {
                     const result = data.results[0];
                     if (result.key) {
@@ -81,8 +84,26 @@ export const SearchResults = () => {
           },
      });
 
+     const { data: availableSources } = useQuery({
+          queryKey: ['availableSources', url, scope, language, currentIndex, currentSource],
+          queryFn: () => getSearchSources(url, language),
+          onSuccess: (data) => {
+               updateSources(data);
+          },
+          enabled: !!data,
+     });
+
+     const { data: availableIndexes } = useQuery({
+          queryKey: ['availableIndexes', url, scope, language, currentIndex, currentSource],
+          queryFn: () => getSearchIndexes(url, language, currentSource),
+          onSuccess: (data) => {
+               updateIndexes(data);
+          },
+          enabled: !!data,
+     });
+
      const { data: paginationLabel, isFetching: translationIsFetching } = useQuery({
-          queryKey: ['totalPages', url, page, term, scope, params, language],
+          queryKey: ['totalPages', url, page, term, scope, params, language, currentIndex, currentSource],
           queryFn: () => getTranslationsWithValues('page_of_page', [page, data?.totalPages], language, library.baseUrl),
           enabled: !!data,
      });
@@ -506,7 +527,7 @@ const CreateFilterButton = () => {
      return <CreateFilterButtonDefaults />;
 };
 
-async function fetchSearchResults(term, page, scope, url, type, id, language) {
+async function fetchSearchResults(term, page, scope, url, type, id, language, index, source) {
      const { data } = await axios.get('/SearchAPI?method=searchLite' + SEARCH.appendedParams, {
           baseURL: url + '/API',
           timeout: GLOBALS.timeoutAverage,
@@ -521,6 +542,8 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
                id: id,
                language: language,
                includeSortList: true,
+               source: source,
+               searchIndex: index,
           },
      });
 
@@ -535,14 +558,10 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
      SEARCH.sortMethod = data?.result?.sort ?? '';
      SEARCH.term = data?.result?.lookfor ?? '';
      SEARCH.availableFacets = data?.result?.options ?? [];
-     SEARCH.searchSource = data?.result?.searchSource ?? 'local';
-     SEARCH.searchIndex = data?.result?.searchIndex ?? 'Keyword';
 
      await getSortList(url, language);
      await getAvailableFacetsKeys(url, language);
      await getAppliedFilters(url, language);
-     await getSearchSources(url, language);
-     await getSearchIndexes(url, language, SEARCH.searchSource);
 
      setDefaultFacets(data?.result?.options ?? []);
 
@@ -552,6 +571,8 @@ async function fetchSearchResults(term, page, scope, url, type, id, language) {
           curPage: data.result?.page_current ?? 0,
           totalPages: data.result?.page_total ?? 0,
           hasMore: morePages,
+          source: data?.result?.searchSource ?? 'local',
+          index: data?.result?.searchIndex ?? 'Keyword',
           term: term,
           message: data.data?.message ?? null,
           error: data.data?.error?.message ?? false,
