@@ -31,7 +31,7 @@ class SummonRecordDriver extends RecordInterface {
 	}
 
 
-	public function getBookcoverUrl($size = 'large', $absolutePath =false) {
+	public function getBookcoverUrl($size='large', $absolutePath =false) {
 		if ($size == 'medium' || $size == 'small') {
 			if (!empty($this->record['thumbnail_m'])) {
 				return $this->record['thumbnail_m'][0];

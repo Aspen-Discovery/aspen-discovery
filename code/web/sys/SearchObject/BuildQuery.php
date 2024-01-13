@@ -2,7 +2,7 @@
 
 class SummonQuery {
     private $query;
-    private $holdings = false;
+    private $holdings = true;
     private $facets = null;
     private $filters = array();
     private $groupFilters = array();
@@ -12,9 +12,10 @@ class SummonQuery {
     private $sort = null;
 
     // Page number
-	protected $page = 1;
+	protected $pageSize = 25;
 	// Result limit
-	protected $limit = 20;
+	// protected $limit = 20;
+    protected $pageNumber = 1;
 
     protected $didYouMean = false;
     protected $highlight = false;
@@ -26,6 +27,13 @@ class SummonQuery {
     protected $maxTopics = 1;
 
 
+
+    /**
+     * Constructor for Query Class
+     * 
+     * @param string $query
+     * @param array $options - associative array of other options
+     */
     public function __construct($query = null, $options = array()) {
         $this->query = $query;
 
@@ -56,17 +64,15 @@ class SummonQuery {
     {
         $options = array(
             's.q' => $this->query,
-            's.ps' => $this->limit,
-            's.pn' => $this->page,
+            's.ps' => $this->pageSize,
+            's.pn' => $this->pageNumber,
             's.ho' => $this->holdings ? 'true' : 'false',
             's.dym' => $this->didYouMean ? 'true' : 'false',
             's.l' => $this->language,
+            's.ff' => $this->facets,
         );
         if (!empty($this->idsToFetch)) {
             $options['s.fids'] = implode(',', (array)$this->idsToFetch);
-        }
-        if (!empty($this->facets)) {
-            $options['s.ff'] = $this->facets;
         }
         if (!empty($this->filters)) {
             $options['s.fvf'] = $this->filters;
@@ -113,7 +119,15 @@ class SummonQuery {
     }
 
     //Setting and getting properties
-    public function __getProperties($method, $params)
+   /**
+     * Magic method for getting/setting properties.
+     *
+     * @param string $method Method being called
+     * @param string $params Array of parameters
+     *
+     * @return mixed
+     */
+    public function __call($method, $params)
     {
         if (strlen($method) > 4) {
             $action = substr($method, 0, 3);
@@ -126,12 +140,12 @@ class SummonQuery {
                     $this->$property = $params[0];
                     return;
                 }
-                throw new AspenError(
+                throw new ErrorException(
                     $method . ' missing required parameter', 0, E_ERROR
                 ); 
             }
         }
-        throw new AspenError(
+        throw new ErrorException(
             'Call to Undefined Method/Class Function', 0, E_ERROR
         ); 
     }

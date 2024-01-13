@@ -36,13 +36,14 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $queryTime = null;
 
     // Page number
-	protected $page = 1;
+	// protected $page = 1;
 	// Result limit
-	protected $limit = 20;
+	// protected $limit = 20;
 
 	// Sorting
 	protected $sort = null;
 	protected $defaultSort = 'relevance';
+	protected $debug = false;
 
     // STATS
 	protected $resultsTotal;
@@ -59,34 +60,41 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $searchSource = 'local';
     protected $searchType = 'basic';
 
-	protected $pageSize = 20;
+	// protected $pageSize = 20;
 
-	protected $facets;
+	// protected $facets;
 
-	protected $holdings;
-	protected $didYouMean;
-	protected $language = 'en';
-	protected $idsToFetch = array();
-	protected $maxTopics = 1;
-	protected $groupFilters = array();
-	protected $rangeFilters = array();
-	protected $expand = false;
-	protected $openAccessFilter = false;
-	protected $highlight = false;
+	// protected $holdings;
+	// protected $didYouMean;
+	// protected $language = 'en';
+	// protected $idsToFetch = array();
+	// protected $maxTopics = 1;
+	// protected $groupFilters = array();
+	// protected $rangeFilters = array();
+	// // protected $expand = false;
+	// protected $openAccessFilter = false;
+	// protected $highlight = false;
+	protected $pageNumber;
 
 
 
 	protected $facetValueFilters = [
-		'ContentType',
-		'IsScholarly',
+		'ContentType,or,1,30',
+		'IsScholarly,or,1,2',
 		'Discipline',
+		'Library,or,1,30',
+		'SubjectTerms,or,130',
+		'Language,or,1,30'
 	];
 
-	
+	protected $facets;
 
 	protected $clearAllFacetFields;
 	protected $removeFacetField;
 	protected $addFacetField;
+	protected $facetFields;
+	protected $queryFacets;
+	protected $facetVals;
 
 
 
@@ -264,12 +272,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		global $interface;
 		$html = [];
 		if (isset($this->lastSearchResults)) {
-			foreach($this->lastSearchResults as $key=>$value){
-				$interface->assign('recordIndex', $key + 1);
-				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
-
+			// foreach($this->lastSearchResults as $key=>$value){
+			for ($x = 0; $x < count($this->lastSearchResults); $x++) {
+				$current = &$this->lastSearchResults[$x];
+				// $interface->assign('recordIndex', $key + 1);
+				// $interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
+				$interface->assign('recordIndex', $x + 1);
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
-				$record = new SummonRecordDriver($value);
+				// $record = new SummonRecordDriver($value);
+				$record = new SummonRecordDriver($current);
 				if ($record->isValid()) {
 					$interface->assign('recordDriver', $record);
 					$html[] = $interface->fetch($record->getSearchResult());
@@ -277,10 +289,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$html[] = "Unable to find record";
 				}
 			}
-		} else {
-			$html[] = "Unable to find record";
+		// } else {
+		// 	$html[] = "Unable to find record";
 
-		}
+		// }
+		} $this->addToHistory();
 		return $html;
 	}
 
@@ -355,6 +368,30 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	// 	return $html;
 		
 	// }
+	//Sorting results
+	public function getSortList() {
+		//Get available sort options
+		//Initialize empty list 
+		$list = [];
+		//Ensure that there are sort options available
+		if ($this->sort != null) {
+			//For each sort option, add relevant info and add to array
+			// foreach ($this->sort as $sort => $label) {
+			// 	$list[$sort] = [
+			// 		'sortUrl' => $this->renderLinkWithSort($sort),
+			// 		'desc' => $label,
+			// 		'selected' => ($sort == $this->sort),
+			// 	];
+
+			// }
+		}
+
+		return $this->sort;
+	}
+
+
+
+
 
 	
 
@@ -363,42 +400,48 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     public function getFacetSet() {
 		$availableFacets = [];
 		
-		if (isset($this->recordData)){
-			foreach($this->facetFields as $facetField) {
-				$availableFacets[$facetField] = [
+		//Check for search
+		if (isset($this->facetValueFilters)){
+			foreach($this->facetValueFilters as $facetValueFilter) {
+				$facetId = $facetValueFilter;
+				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					// 'label' => (string)$this->
+					// 'label' => (string)$this->$facetValueFilter,
 					'valuesToShow' => 5,
 				];
-				if ($facetField == 'SourceType') {
-					$availableFacets[$facetField]['collapseByDefault'] = false;
+				if ($this->facetValueFilters == 'SourceType') {
+					$availableFacets[$facetValueFilter]['collapseByDefault'] = false;
 				}
 				$list = [];
-				foreach ($facetField[0] as $value) {
-					$facetValue = $value;
-					$isApplied = array_key_exists($facetValue, $this->filterList);
+				foreach ($this->facetValueFilters as $value) {
+				// 	$facetValue = $value;
+						// $isApplied = array_key_exists($this->facetValueFilters, $this->filterList);
 
-					$facetSettings = [
-						'value' => $facetValue,
-						'display' => $facetValue,
-						'count' => (string)$value->Count,
-						'isApplied' => $isApplied,
-						'countIsApproximate' => false,
-					];
-					if ($isApplied) {
-						$facetSettings = $this->renderLinkWithoutFilter($facetField . ':' . $facetValue);
-					} else {
-						$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetField . ':' . urlencode($facetValue);
-					}
-					$list[] = $facetSettings;
+						$facetSettings = [
+							'value' => $facetId,
+							'display' => $facetId,
+							// 'count' => $facetId->Count,
+							// 'isApplied' => $isApplied,
+							'countIsApproximate' => false,
+						];
+						// if ($isApplied) {
+							// $facetSettings = $this->renderLinkWithoutFilter($facet . ':' . $facetValue);
+					// 	} else {
+					// 		$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facet . ':' . urlencode($facetValue);
+					// 	}
+					// 	$list[] = $facetSettings;
+					// }
+					$availableFacets[$facetValueFilter]['list'] = $list;
 				}
-				$availableFacets[$facetField]['list'] = $list;
 			}
 		}
-		return $availableFacets;
-	}
+		var_dump($this->facetValueFilters);
+		return 	$availableFacets;
+	}	
+	
     
+	
 
 
 
@@ -439,24 +482,31 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 
 
-    public function getSearchOptions(): string
-    {
-		$options =array();
+    // public function getSearchOptions(): string
+    // {
+	// 	$options =array(
+	// 		's.q' => $this->query,
+    //         's.ps' => $this->pageSize,
+    //         's.pn' => $this->pageNumber,
+    //         's.ho' => $this->holdings ? 'true' : 'false',
+    //         's.dym' => $this->didYouMean ? 'true' : 'false',
+    //         's.l' => $this->language,
+	// 	);
 		// if (!empty($this->listFacetValues)) {
 		// 	$options['listFacetValues'] = $this->listFacetValues;
 		// }
 		// if (!empty($this->addRangeFacetField)) {
 		// 	$options['addRangeFacetField'] = $this->addRangeFacetFiled;
 		// }
-		if (!empty($this->clearAllFacetFields)) {
-			$options['clearAllFacetFields'] = $this->clearAllFacetFields;
-		}
-		if (!empty($this->removeFacetField)) {
-			$options['removeFacetField'] = $this->removeFacetField;
-		}
-		if (!empty($this->addFacetField)) {
-			$options['addFacetField'] = $this->addFacetField;
-		}
+		// if (!empty($this->clearAllFacetFields)) {
+		// 	$options['clearAllFacetFields'] = $this->clearAllFacetFields;
+		// }
+		// if (!empty($this->removeFacetField)) {
+		// 	$options['removeFacetField'] = $this->removeFacetField;
+		// }
+		// if (!empty($this->addFacetField)) {
+		// 	$options['addFacetField'] = $this->addFacetField;
+		// }
 		// if (!empty($this->addFacetValueGroupFilter)) {
 		// 	$options['addFacetValueGroupFilter'] = $this->addFacetValueGroupFilter;
 		// }
@@ -466,26 +516,26 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		// if (!empty($this->removeFacetValueFilter)) {
 		// 	$options['removeFacetValueFilter'] = $this->removeFacetValueFilter;
 		//}
-		if (!empty($this->facetValueFilters)) {
-				$options['facetValueFilters'] = $this->facetValueFilters;
-			}
+		// if (!empty($this->facetValueFilters)) {
+		// 		$options['facetValueFilters'] = $this->facetValueFilters;
+		// 	}
 		
 	
-		if (!empty($this->clearSearch)) {
-			$options['clearSearchCommand'] = $this->clearSearch;
-		} 
-		if (!empty($this->didYouMean)) {
-			$options['setDidYouMeanCommand']  = $this->didYouMean;
-		}
-		if (!empty($this->holdings)) {
-			$options['setHoldingsOnly'] = $this->holdings;
-		}
-		if (!empty($this->setSort)) {
-			$options['setSort'] = $this->setSort;
-		}
-		if (!empty($this->sourceType)) {
-			$options['sourceType'] = $this->sourceType;
-		}
+		// if (!empty($this->clearSearch)) {
+		// 	$options['clearSearchCommand'] = $this->clearSearch;
+		// } 
+		// if (!empty($this->didYouMean)) {
+		// 	$options['setDidYouMeanCommand']  = $this->didYouMean;
+		// }
+		// if (!empty($this->holdings)) {
+		// 	$options['setHoldingsOnly'] = $this->holdings;
+		// }
+		// if (!empty($this->setSort)) {
+		// 	$options['setSort'] = $this->setSort;
+		// }
+		// if (!empty($this->sourceType)) {
+		// 	$options['sourceType'] = $this->sourceType;
+		// }
 		
 	
 		// if (!empty($this->addTextFilter)) {
@@ -498,60 +548,74 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		// 	$options['removeTextFiler'] = $this->removeTextFilter;
 		// }
 
-		return $this->optionsToString($options);
-    }
+	
 
-        // $options = array(
-        //     's.q' => $this->query,
-        //     's.ps' => $this->limit,
-        //     's.pn' => $this->page,
-        //     's.ho' => $this->holdings ? 'true' : 'false',
-        //     's.dym' => $this->didYouMean ? 'true' : 'false',
-        //     's.l' => $this->language,
-        // );
-		// $options .= 'cmd='
-        // if (!empty($this->idsToFetch)) {
-        //     $options['s.fids'] = implode(',', (array)$this->idsToFetch);
-        // }
-        // if (!empty($this->facets)) {
-        //     $options['s.ff'] = $this->facets;
-        // }
-        // if (!empty($this->filters)) {
-        //     $options['s.fvf'] = $this->filters;
-        // }
-        // if ($this->maxTopics !== false) {
-        //     $options['s.rec.topic.max'] = $this->maxTopics;
-        // }
-        // // if (!empty($this->groupFilters)) {
-        // //     $options['s.fvgf'] = $this->groupFilters;
-        // // }
-        // // if (!empty($this->rangeFilters)) {
-        // //     $options['s.rf'] = $this->rangeFilters;
-        // // }
-        // if (!empty($this->sort)) {
-        //     $options['s.sort'] = $this->sort;
-        // }
-        // if ($this->expand) {
-        //     $options['s.exp'] = 'true';
-        // }
-        // if ($this->openAccessFilter) {
-        //     $options['s.oaf'] = 'true';
-        // }
-       
-
-
-
+    //     $options = array(
+    //         's.q' => $this->query,
+    //         's.ps' => $this->limit,
+    //         's.pn' => $this->page,
+    //         's.ho' => $this->holdings ? 'true' : 'false',
+    //         's.dym' => $this->didYouMean ? 'true' : 'false',
+    //         's.l' => $this->language,
+    //     );
+    //     if (!empty($this->idsToFetch)) {
+    //         $options['s.fids'] = implode(',', (array)$this->idsToFetch);
+    //     }
+    //     if (!empty($this->facets)) {
+    //         $options['s.ff'] = $this->facets;
+    //     }
+    //     if (!empty($this->filters)) {
+    //         $options['s.fvf'] = $this->filters;
+    //     }
+    //     if ($this->maxTopics !== false) {
+    //         $options['s.rec.topic.max'] = $this->maxTopics;
+    //     }
+    //     // if (!empty($this->groupFilters)) {
+    //     //     $options['s.fvgf'] = $this->groupFilters;
+    //     // }
+    //     // if (!empty($this->rangeFilters)) {
+    //     //     $options['s.rf'] = $this->rangeFilters;
+    //     // }
+    //     if (!empty($this->sort)) {
+    //         $options['s.sort'] = $this->sort;
+    //     }
+    //     if ($this->expand) {
+    //         $options['s.exp'] = 'true';
+    //     }
+    //     if ($this->openAccessFilter) {
+    //         $options['s.oaf'] = 'true';
+    //     }
+	// 	return $this->optionsToString($options);
+    // }
+    
+	
 
 
 
-	public function optionsToString($options) {
-		$buildQuery = '';
-		foreach ($options as $key => $value) {
-			if (!is_null($value)){
-				$buildQuery .= '&'.$key.'='.$value;
-			}
-		}	return $buildQuery;
-	}
+//   /**
+//      * Escape a string for inclusion as part of a Summon parameter.
+//      *
+//      * @param string $input The string to escape.
+//      *
+//      * @return string       The escaped string.
+//      */
+//     public static function escapeParam($input)
+//     {
+//         // List of characters to escape taken from:
+//         //      http://api.summon.serialssolutions.com/help/api/search/parameters
+//         return addcslashes($input, ",:\\()\${}");
+//     }
+
+
+
+	// public function optionsToString($options) {
+	// 	$buildQuery = '';
+	// 	foreach ($options as $key => $value) {
+	// 		if (!is_null($value)){
+	// 			$buildQuery .= '&'.$key.'='.$value;
+	// 		}
+	// 	}	return $buildQuery;
+	// }
 
 
 	// //Set the search options to the Summon searcher
@@ -562,7 +626,47 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	// 	}
 	// }
 
-    
+	/**
+	 * @param SummonQuery $query 
+	 * @param bool $returnErr
+	 * 
+	 * @param bool $raw raw or processed response
+	 * 
+	 * @return array of query results
+	 */
+	public function query($query, $returnErr = false, $raw = false) {
+
+		$options = $query->getOptionsArray();
+		$options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
+
+		try {
+			$result = $this->sendRequest($options, 'search', 'GET', $raw);
+		} catch (Exception $e) {
+			if($returnErr) {
+				return array(
+					'recordCount' => 0,
+					'documents' =>array(),
+					'errors' => $e->getMessage()
+				);
+			} else {
+				AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
+
+			}
+		}
+		return $result;
+	}
+
+
+
+		/**
+		 * @param array $params params for request
+		 * @param string $service for API to call
+		 * @param string $method HTTP method
+		 * @param bool $raw raw or processed response
+		 * 
+		 * @throws Exception
+		 * @return object API response
+		 */
 
     	public function sendRequest() {
             $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
@@ -602,7 +706,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
                     $headers['x-summon-session-id'] = $this->sessionId;
                 } 
 				// 	//TODO: Add options 
-				$queryString .= $this->getSearchOptions();
+				// $queryString .= $this->getSearchOptions();
                 // Send request
 				
                 $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
@@ -615,9 +719,13 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$this->sessionId = $recordData['sessionId'];
 						$this->lastSearchResults = $recordData['documents'];
 						$this->page = $recordData['query']['pageNumber'];
-						$this->didYouMean = $recordData['didYouMeanSuggestions'];
+						// $this->didYouMean = $recordData['didYouMeanSuggestions'];
 						$this->resultsTotal = $recordData['recordCount'];
-						$this->facets = $recordData['facetFields'];
+						$this->sort = $recordData['query']['sort'];
+						$this->facetFields= $recordData['facetFields'];
+						$this->queryFacets = $recordData['query'][10];
+						$this->facetVals = $recordData['facetValueFilters'];
+						// $this->pageSize = $recordData['query']['pageSize'];
 					}
 				}
                 return $recordData;
