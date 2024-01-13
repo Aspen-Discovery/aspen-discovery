@@ -26,7 +26,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     private $raw = false;
     private $curl_connection;
 
-	private $listFacetValues;
 
     /**
 	 * @var string mixed
@@ -81,13 +80,38 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 
 	protected $facetValueFilters = [
-		'ContentType,or,1,30',
-		'IsScholarly,or,1,2',
+		// 'ContentType,or,1,30',
+		// 'IsScholarly,or,1,2',
+		// 'Discipline',
+		// 'Library,or,1,30',
+		// 'SubjectTerms,or,130',
+		// 'Language,or,1,30'
+		// <facet name=”Audience” cardinality=”ZeroToMany” type=”string”/>
+		'Audience',
+		'Author',
+		'ContentType',
+		'CorporateAuthor',
+		'DatabaseName',
 		'Discipline',
-		'Library,or,1,30',
-		'SubjectTerms,or,130',
-		'Language,or,1,30'
+		'Genre',
+		'GeographicalLocations',
+		'Institution',
+		'IsPeerReviewed',
+		'IsScholarly',
+		'Language',
+		'Library',
+		'PackageID',
+		'PublicationTitle',
+		'SourceID',
+		'SourceName',
+		'SourcePackageID',
+		'SourceType',
+		'SubjectTerms',
+		'TemporalSubjectTerms',
 	];
+	private $listFacetValues;
+
+	
 
 	protected $facets;
 
@@ -409,8 +433,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
-					'label' => (string)$this->$facetValueFilter,
-					'valuesToShow' => 5,
+					'label' => (string)$facetValueFilter,
+					'valuesToShow' => 2,
 				];
 				if ($this->facetValueFilters == 'SourceType') {
 					$availableFacets[$facetValueFilter]['collapseByDefault'] = false;
