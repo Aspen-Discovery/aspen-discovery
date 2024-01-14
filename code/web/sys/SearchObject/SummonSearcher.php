@@ -550,9 +550,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				}
 				foreach ($availableFacetValues as $value) {
 					$facetValue = $value;
+					$isApplied = array_key_exists($facetValueFilter, $this->filterList) && in_array($facetValue, $this->filterList[$facetValueFilter]);
 				
-				// 	$facetValue = $value;
-						// $isApplied = array_key_exists($this->facetValueFilters, $this->filterList);
 
 						$facetSettings = [
 							'value' => $facetValue,
@@ -562,17 +561,17 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 							// 'isApplied' => $isApplied,
 							'countIsApproximate' => false,
 						];
-						// if ($isApplied) {
-							// $facetSettings = $this->renderLinkWithoutFilter($facet . ':' . $facetValue);
-					// 	} else {
-							$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetId . ':' . urlencode($value);
-					// 	}
+						 if ($isApplied) {
+							$facetSettings['removalUrl'] = $this->renderLinkWithoutFilter($facetValueFilter . ':' . $facetValue);
+					 	} else {
+							$facetSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $facetValueFilter . ':' . urlencode($facetValue);
+					 	}
 					 	$list[] = $facetSettings;
-					// }
+					 }
 					$availableFacets[$facetValueFilter]['list'] = $list;
 				}
 			}
-		}
+		// var_dump($this->filterList);
 		return 	$availableFacets;
 	}	
 
@@ -869,8 +868,24 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				//Selected facet values in interface are not being passed into the query string, need to map them to the facet values and do filters. 
 				//CORRECTION:: this info is getting into the url but is not yet filtering. 
 				$queryOptions = http_build_query($options, ' ',  '&',  PHP_QUERY_RFC3986);
+				$facetIndex = 1;
+				foreach ($this->filterList as $field => $filter) {
+					$appliedFilters = '';
+					if (is_array($filter)) {
+						$appliedFilters .= "$facetIndex,";
+						foreach ($filter as $key => $value) {
+							if ($key > 0) {
+								$appliedFilters .= ',';
+							}
+							$appliedFilters .= "$field:" . urlencode($value);
+						}
+					} else {
+						$appliedFilters .= "$facetIndex,$field:" .urlencode($filter);
+					}
+					$facetIndex++;
+				}
 
-				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
+				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $appliedFilters;
 				// $queryString .= $queryOptions;
                 // Build Authorization Headers
                 $headers = array(
@@ -909,7 +924,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					}
 				}
 		
-				var_dump($queryOptions);
+				var_dump($queryString);
                 return $recordData;
             } else {
 				return $this->lastSearchResults = false;
