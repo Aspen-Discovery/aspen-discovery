@@ -1,6 +1,5 @@
 <?php
 require_once ROOT_DIR . '/ResultsAction.php';
-
 class Summon_Results extends ResultsAction {
 	function launch() {
 		global $interface;

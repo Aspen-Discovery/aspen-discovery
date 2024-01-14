@@ -425,6 +425,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [];
+		$availableFacetValues = [];
+		
 		
 		//Check for search
 		if (isset($this->facetValueFilters)){
@@ -433,20 +435,129 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
+					//Filter heading label
 					'label' => (string)$facetValueFilter,
-					'valuesToShow' => 2,
+					'valuesToShow' => 5,
 				];
 				if ($this->facetValueFilters == 'SourceType') {
 					$availableFacets[$facetValueFilter]['collapseByDefault'] = false;
 				}
 				$list = [];
-				foreach ($this->facetValueFilters as $value) {
+				switch($facetValueFilter) {
+					case 'ContentType':
+						$availableFacetValues = array(
+							'Archival Material',
+							'Audio Recording',
+							'Book / eBook', 
+							'Book Chapter',
+							'Book Review',
+							'Database',
+							'Dissertation / Thesis',
+							'eJournal',
+							'Electronic Resource',
+							'Government Document',
+							'Image',
+							'Journal',
+							'Journal Article',
+							'Library Holding',
+							'Magazine',
+							'Magazine Article',
+							'Music Score',
+							'Music Recording',
+							'Newsletter',
+							'Newspaper',
+							'Newspaper Article',
+							'Photograph',
+							'Reference',
+							'Report',
+							'Video Recording',
+							'Web Resource',
+						);
+						break;
+					case 'IsScholarly':
+						$availableFacetValues = array(
+							'true',
+							'false',
+						);
+						break;
+					case 'Discipline':
+						$availableFacetValues = array(
+							'Agriculture',
+							'Anatomy & Physiology',
+							'Anthropology',
+							'Applied Sciences',
+							'Architecture',
+							'Astronomy & Astrophysics',
+							'Biology',
+							'Botany',
+							'Business',
+							'Chemistry',
+							'Computer Science',
+							'Dance',
+							'Dentistry',
+							'Diet & Clinical Nutrition',
+							'Drama',
+							'Ecology',
+							'Economics',
+							'Education',
+							'Engineering',
+							'Environmental Sciences',
+							'Film',
+							'Forestry',
+							'Geography',
+							'Geology',
+							'Government',
+							'History & Archaeology',
+							'Human Anatomy & Physiology',
+							'International Relations',
+							'Journalism & Communications',
+							'Languages & Literatures',
+							'Law',
+							'Library & Information Science',
+							'Mathematics',
+							'Medicine',
+							'Meteorology & Climatology',
+							'Military & Naval Science',
+							'Music',
+							'Nursing',
+							'Occupational Therapy & Rehabilitation',
+							'Oceanography',
+							'Parapsychology & Occult Sciences',
+							'Pharmacy, Therapeutics, & Pharmacology',
+							'Philosophy',
+							'Physical Therapy',
+							'Physics',
+							'Political Science',
+							'Psychology',
+							'Public Health',
+							'Recreation & Sports',
+							'Religion',
+							'Sciences',
+							'Social Sciences',
+							'Social Welfare & Social Work',
+							'Sociology & Social History',
+							'Statistics',
+							'Veterinary Medicine',
+							'Visual Arts',
+							'Women\'s Studies',
+							'Zoology',
+						);
+						break;
+					default: 
+						$availableFacetValues = array(
+							''
+						);
+				}
+				foreach ($availableFacetValues as $value) {
+					$facetValue = $value;
+				
 				// 	$facetValue = $value;
 						// $isApplied = array_key_exists($this->facetValueFilters, $this->filterList);
 
 						$facetSettings = [
-							'value' => $facetId,
-							'display' => $facetId,
+							'value' => $facetValue,
+							//Displays the different values available for each facet
+							'display' => $facetValue,
 							// 'count' => $facetId->Count,
 							// 'isApplied' => $isApplied,
 							'countIsApproximate' => false,
@@ -462,9 +573,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				}
 			}
 		}
-		var_dump($availableFacets);
 		return 	$availableFacets;
 	}	
+
+	
+	
 
 	
 
@@ -618,6 +731,58 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
     //     }
 	// 	return $this->optionsToString($options);
     // }
+	//   /**
+    //  * Turn the options within this object into an array of Summon parameters.
+    //  *
+    //  * @return array
+    //  */
+    // public function getOptionsArray()
+    // {
+    //     $options = array(
+    //         's.q' => $this->query,
+    //         's.ps' => $this->pageSize,
+    //         's.pn' => $this->pageNumber,
+    //         's.ho' => $this->holdings ? 'true' : 'false',
+    //         's.dym' => $this->didYouMean ? 'true' : 'false',
+    //         's.l' => $this->language,
+    //     );
+    //     if (!empty($this->idsToFetch)) {
+    //         $options['s.fids'] = implode(',', (array)$this->idsToFetch);
+    //     }
+    //     if (!empty($this->facets)) {
+    //         $options['s.ff'] = $this->facets;
+    //     }
+    //     if (!empty($this->filters)) {
+    //         $options['s.fvf'] = $this->filters;
+    //     }
+    //     if ($this->maxTopics !== false) {
+    //         $options['s.rec.topic.max'] = $this->maxTopics;
+    //     }
+    //     if (!empty($this->groupFilters)) {
+    //         $options['s.fvgf'] = $this->groupFilters;
+    //     }
+    //     if (!empty($this->rangeFilters)) {
+    //         $options['s.rf'] = $this->rangeFilters;
+    //     }
+    //     if (!empty($this->sort)) {
+    //         $options['s.sort'] = $this->sort;
+    //     }
+    //     if ($this->expand) {
+    //         $options['s.exp'] = 'true';
+    //     }
+    //     if ($this->openAccessFilter) {
+    //         $options['s.oaf'] = 'true';
+    //     }
+    //     if ($this->highlight) {
+    //         $options['s.hl'] = 'true';
+    //         $options['s.hs'] = $this->highlightStart;
+    //         $options['s.he'] = $this->highlightEnd;
+    //     } else {
+    //         $options['s.hl'] = 'false';
+    //         $options['s.hs'] = $options['s.he'] = '';
+    //     }
+    //     return $options;
+    // }
     
 	
 
@@ -657,35 +822,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	// 	}
 	// }
 
-	/**
-	 * @param SummonQuery $query 
-	 * @param bool $returnErr
-	 * 
-	 * @param bool $raw raw or processed response
-	 * 
-	 * @return array of query results
-	 */
-	public function query($query, $returnErr = false, $raw = false) {
 
-		$options = $query->getOptionsArray();
-		$options['s.role'] = $this->authedUser ? 'authenticated' : 'none';
 
-		try {
-			$result = $this->sendRequest($options, 'search', 'GET', $raw);
-		} catch (Exception $e) {
-			if($returnErr) {
-				return array(
-					'recordCount' => 0,
-					'documents' =>array(),
-					'errors' => $e->getMessage()
-				);
-			} else {
-				AspenError::raiseError(new AspenError($e->getMessage(), $e->getTrace()));
 
-			}
-		}
-		return $result;
-	}
+		
 
 
 
@@ -701,7 +841,10 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
     	public function sendRequest() {
             $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
-            global $library;
+
+			$summonQueryInstance = new SummonQuery();
+			$options = $summonQueryInstance->getOptionsArray();
+
             $settings = $this->getSettings();
 			$this->startQueryTimer();
             if ($settings != null) {
@@ -722,7 +865,13 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				// foreach ($this->searchTerms['lookfor'] as $term) {
 				// 	$term = urlencode($term);
 				// }
-				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' ;
+				//TO DO::
+				//Selected facet values in interface are not being passed into the query string, need to map them to the facet values and do filters. 
+				//CORRECTION:: this info is getting into the url but is not yet filtering. 
+				$queryOptions = http_build_query($options, ' ',  '&',  PHP_QUERY_RFC3986);
+
+				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')';
+				// $queryString .= $queryOptions;
                 // Build Authorization Headers
                 $headers = array(
                     'Accept' => 'application/'.$this->responseType,
@@ -740,7 +889,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				// $queryString .= $this->getSearchOptions();
                 // Send request
 				
-                $recordData = $this->httpRequest($baseUrl, $queryString, $headers);
+                $recordData = $this->httpRequest($baseUrl, $queryString, $options, $headers);
 				if (!empty($recordData)){
 					$recordData = $this->process($recordData); 
 					$this->stopQueryTimer();
@@ -759,6 +908,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						// $this->pageSize = $recordData['query']['pageSize'];
 					}
 				}
+		
+				var_dump($queryOptions);
                 return $recordData;
             } else {
 				return $this->lastSearchResults = false;
@@ -833,7 +984,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
     
 
-    protected function httpRequest($baseUrl, $queryString, $headers ) {
+    protected function httpRequest($baseUrl, $queryString, $options, $headers ) {
 		foreach ($headers as $key =>$value) {
 			$modified_headers[] = $key.": ".$value;
 		}

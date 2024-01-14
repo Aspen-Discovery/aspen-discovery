@@ -63,7 +63,7 @@ class SummonQuery {
     public function getOptionsArray()
     {
         $options = array(
-            's.q' => $this->query,
+            // 's.q' => $this->query,
             's.ps' => $this->pageSize,
             's.pn' => $this->pageNumber,
             's.ho' => $this->holdings ? 'true' : 'false',
@@ -129,6 +129,7 @@ class SummonQuery {
      */
     public function __call($method, $params)
     {
+
         if (strlen($method) > 4) {
             $action = substr($method, 0, 3);
             $property = strtolower(substr($method, 3, 1)) . substr($method, 4);
