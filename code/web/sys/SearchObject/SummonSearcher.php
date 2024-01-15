@@ -96,11 +96,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	];
 
 	protected $limitOptions = [
-		'FullTextOnline',
+		'Full Text Online',
 		'Scholarly',
-		'PeerReviewed',
-		'OpenAccess',
-		'AvailableInLibraryCollection',
+		'Peer Reviewed',
+		'Open Access',
+		'Available in Library Collection',
 	];
 	private $listFacetValues;
 
@@ -114,6 +114,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $facetFields;
 	protected $queryFacets;
 	protected $facetValue;
+	protected $sortOptions = [];
 
 
 
@@ -390,22 +391,56 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	//Sorting results
 	public function getSortList() {
 		//Get available sort options
+		$sortOptions = $this->getSortOptions();
 		//Initialize empty list 
 		$list = [];
 		//Ensure that there are sort options available
-		if ($this->sort != null) {
+		if ($sortOptions != null) {
 			//For each sort option, add relevant info and add to array
-			// foreach ($this->sort as $sort => $label) {
-			// 	$list[$sort] = [
-			// 		'sortUrl' => $this->renderLinkWithSort($sort),
-			// 		'desc' => $label,
-			// 		'selected' => ($sort == $this->sort),
-			// 	];
+			foreach ($sortOptions as $sort => $label) {
+				$list[$sort] = [
+					'sortUrl' => $this->renderLinkWithSort($sort),
+					'desc' => $label,
+					'selected' => ($sort == $this->sort),
+				];
 
-			// }
+			 }
 		}
 
-		return $this->sort;
+		return $list;
+	}
+
+	public function getSortOptions() {
+		$this->sortOptions =[
+			'relevance' =>[
+				'id' => 'relevance',
+				'label' => 'Relevance',
+			],
+			'date(newest)' =>[
+				'id' => 'date(newest)',
+				'label' => 'Date(newest)',
+			],
+			'date(oldest)' =>[
+				'id' => 'date(oldest)',
+				'label' => 'Date(oldest)',
+			],
+			'author' =>[
+				'id' => 'author',
+				'label' => 'Author'
+			],
+			'title' =>[
+				'id' => 'title',
+				'label' => 'Title',
+			],		
+		];
+		if ($this->sortOptions != null) {
+			foreach ($this->sortOptions as $sortOption) {
+				$sort = $sortOption['id'];
+				$desc = $sortOption['label'];
+				$this->sortOptions[$sort] =$desc;
+			}
+		}
+		return $this->sortOptions;
 	}
 
 
@@ -424,12 +459,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		//Check for search
 		if (isset($this->facetValueFilters)){
 			foreach($this->facetValueFilters as $facetValueFilter) {
-				$facetId = $facetValueFilter;
+				$facetLabel = $facetValueFilter;
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
 					//Filter heading label
-					'label' => (string)$facetValueFilter,
+					'label' => (string)$facetLabel,
 					'valuesToShow' => 5,
 				];
 				if ($this->facetValueFilters == 'SourceType') {
@@ -471,6 +506,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 							'Transcript',
 							'Web Resource',
 						);
+						$facetLabel = 'Content Type';
 						break;
 					case 'IsScholarly':
 						$availableFacetValues = array(
@@ -545,6 +581,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$availableFacetValues = array(
 							''
 						);
+						$facetLabel = $facetValueFilter;
+						break;
 				}
 				foreach ($availableFacetValues as $value) {
 					$facetValue = $value;
@@ -573,23 +611,52 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return 	$availableFacets;
 	}	
 
-	
-	
+	// public function getLimitList() {
+		
 
-	
-
-	
-	
-	
-    
-	
-
-
-
-   
-
-    
-	
+	// 	if (isset($this->limitOptions)) {
+	// 		foreach ($this->limitOptions as $limitOption) {
+	// 			$limitList = [];
+	// 			switch($limitOption) {
+	// 				case 'Full Text Online':
+	// 					$id = 'FullTextOnline';
+	// 					$label = 'Full Text Online';
+	// 					break;
+	// 				case 'Peer Reviewed':
+	// 					$id = 'PeerReviewed';
+	// 					$label = 'Peer Reviewed';
+	// 					break;
+	// 				case 'Open Access':
+	// 					$id = 'OpenAccess';
+	// 					$label = 'Open Acess';
+	// 					break;
+	// 				case 'inHoldings':
+	// 					$id = 'Available in Library Collection';
+	// 					$label = 'Available in Library Collection';
+	// 					break;
+	// 				default:
+	// 				    $id = $limitOption;
+	// 					$label = $limitOption;					
+	// 			}
+	// 			foreach ($this->limitOptions as $limitOption) {
+	// 				$isApplied = in_array($limitOption, $this->filterList);
+	// 				$limitSettings = [
+	// 					'value' => $limitOption,
+	// 					'display' =>$limitOption,
+	// 					'isApplied' => $isApplied,
+	// 				];
+	// 				if ($isApplied) {
+	// 					$limitSettings['removalUrl'] = $this->renderLinkWithoutFilter($limitOption['id'] );
+	// 				} else {
+	// 					$limitSettings['url'] = $this->renderSearchUrl() . '&filter[]=' . $this->limitOptions ;
+	// 				}
+	// 				$limitList[] = $limitSettings;
+	// 			}
+				
+	// 		}
+	// 	}
+	// 	return $limitList;
+	// }
 
        /**
      * Generate an HMAC hash
