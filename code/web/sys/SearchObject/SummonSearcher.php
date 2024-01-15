@@ -78,7 +78,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $pageNumber;
 
 
-
 	protected $facetValueFilters = [
 		// 'ContentType,or,1,30',
 		// 'IsScholarly,or,1,2',
@@ -87,27 +86,21 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		// 'SubjectTerms,or,130',
 		// 'Language,or,1,30'
 		// <facet name=”Audience” cardinality=”ZeroToMany” type=”string”/>
-		'Audience',
 		'Author',
 		'ContentType',
 		'CorporateAuthor',
 		'DatabaseName',
 		'Discipline',
-		'Genre',
-		'GeographicalLocations',
-		'Institution',
-		'IsPeerReviewed',
-		'IsScholarly',
-		'Language',
-		'Library',
-		'PackageID',
-		'PublicationTitle',
-		'SourceID',
-		'SourceName',
-		'SourcePackageID',
-		'SourceType',
 		'SubjectTerms',
-		'TemporalSubjectTerms',
+		'PublicationYear',
+	];
+
+	protected $limitOptions = [
+		'FullTextOnline',
+		'Scholarly',
+		'PeerReviewed',
+		'OpenAccess',
+		'AvailableInLibraryCollection',
 	];
 	private $listFacetValues;
 
@@ -447,30 +440,35 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					case 'ContentType':
 						$availableFacetValues = array(
 							'Archival Material',
+							'Article',
 							'Audio Recording',
 							'Book / eBook', 
 							'Book Chapter',
 							'Book Review',
-							'Database',
+							'Computer File',
+							'Conference Proceeding',
+							'Data Set',
 							'Dissertation / Thesis',
-							'eJournal',
-							'Electronic Resource',
 							'Government Document',
-							'Image',
-							'Journal',
+							'Journal / eJournal',
 							'Journal Article',
 							'Library Holding',
-							'Magazine',
 							'Magazine Article',
-							'Music Score',
-							'Music Recording',
+							'Manuscript',
+							'Map',
+							'Market Research',
+							'Microfilm',
 							'Newsletter',
 							'Newspaper',
 							'Newspaper Article',
-							'Photograph',
+							'Paper',
+							'Presentation',
+							'Publication',
 							'Reference',
 							'Report',
-							'Video Recording',
+							'Technical Report',
+							'Trade Publication Article',
+							'Transcript',
 							'Web Resource',
 						);
 						break;
@@ -532,8 +530,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 							'Public Health',
 							'Recreation & Sports',
 							'Religion',
-							'Sciences',
-							'Social Sciences',
+							'Sciences (general)',
+							'Social Sciences (general)',
 							'Social Welfare & Social Work',
 							'Sociology & Social History',
 							'Statistics',
@@ -850,6 +848,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		
                 // $query .= '&searchmode=all';
 				$query = array();
+				$queryOptions = array();
 				foreach ($this->searchTerms as $function => $value) {
 					if (is_array($value)) {
 						foreach ($value as $term) {
@@ -861,13 +860,70 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$query[] =$value;
 					}
 				}
+				foreach ($options as $key =>$value) {
+					if(is_array($value)) {
+						foreach ($value as $searchValue) {
+							$searchValue = urlencode($searchValue);
+							$queryOptions[]  =$searchValue;
+						}
+					} elseif (!is_null($value)) {
+						$value = urlencode($value);
+						$queryOptions[] = $value;
+					}
+				}
+				// if (is_array($this->searchTerms)) {
+				// 	$termIndex = 1;
+				// 	foreach ($this->searchTerms['lookfor'] as $term) { 
+				// 		if (!empty($term)) {
+				// 			if ($termIndex > 1) {
+				// 				$query .= '&';
+				// 			}
+				// 			$term = str_replace(',', '', $term);
+				// 			$searchIndex = $term['index'];
+				// 			$termIndex++;
+				// 		}
+				// 	}
+				// } else {
+				// 	if (isset($_REQUEST['searchIndex'])) {
+				// 		$this->searchIndex = $_REQUEST['searchIndex'];
+				// 	}
+				// 	$searchTerms = str_replace(',', '', $this->searchTerms);
+				// 	if (!empty($searchTerms)) {
+				// 		$searchTerms = $this->searchIndex . ':' . $searchTerms;
+				// 		$query[] .= $searchTerms;
+				// 	}
+				// }
+				// foreach ($options as $key => $value) {
+				// 	if (is_array($value)) {
+				// 		foreach ($value as $additionalValue) {
+				// 			$additionalValue = urlencode($additionalValue);
+				// 			$query[] .= "$key = $additionalValue";
+				// 		}
+				// 	} else (!is_null($value)) {
+				// 		$value= urlencode($value);
+				// 		$query[] .= "$key = $value";
+
+				// 	}
+				// }
+				// $query[] = (implode('&', $query));
 				// foreach ($this->searchTerms['lookfor'] as $term) {
 				// 	$term = urlencode($term);
 				// }
 				//TO DO::
 				//Selected facet values in interface are not being passed into the query string, need to map them to the facet values and do filters. 
 				//CORRECTION:: this info is getting into the url but is not yet filtering. 
-				$queryOptions = http_build_query($options, ' ',  '&',  PHP_QUERY_RFC3986);
+				// if (isset($_REQUEST['pageNumber']) && is_numeric($_REQUEST['pageNumber']) && $_REQUEST['pageNumber'] != 1) {
+				// 	$this->pageNumber = $_REQUEST['pageNumber'];
+				// 	$options['s.pn'] .= $this->pageNumber;
+					
+				// } else {
+				// 	$this->pageNumber = 1;
+
+				// }
+				// $addParams[] = $options['s.pn'];
+
+				// $queryOptions .= http_build_query($options,  '&',  PHP_QUERY_RFC3986);
+				// $queryOptions = implode('&=', $options);
 				$facetIndex = 1;
 				foreach ($this->filterList as $field => $filter) {
 					$appliedFilters = '';
@@ -875,17 +931,31 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$appliedFilters .= "$facetIndex,";
 						foreach ($filter as $key => $value) {
 							if ($key > 0) {
-								$appliedFilters .= ',';
+								$appliedFilters[] = ',';
 							}
-							$appliedFilters .= "$field:" . urlencode($value);
+							$value = urlencode($value);
+							// $appliedFilters .= "$key=$value";
+							 $appliedFilters .= "$field:" . urlencode($value);
 						}
 					} else {
-						$appliedFilters .= "$facetIndex,$field:" .urlencode($filter);
+						$filter = urlencode($filter);
+						// $appliedFilters .= "$facetIndex,$field=$field";
+						 $appliedFilters .= "$facetIndex,$field:" .urlencode($filter);
 					}
 					$facetIndex++;
 				}
+		
 
-				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $appliedFilters;
+				$limitList = $this->getLimitList();
+				$filterOptions = [];
+				foreach ($limitList as $limiter => $limiterOptions) {
+					if ($limiterOptions['isApplied']) {
+						$filterOptions .= '&limiter=' . $limiter . ':y';
+					}
+				}
+			
+				// $addParams = implode('&' , $addParams);
+				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $queryOptions;
 				// $queryString .= $queryOptions;
                 // Build Authorization Headers
                 $headers = array(
@@ -924,7 +994,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					}
 				}
 		
-				var_dump($queryString);
+				var_dump($queryOptions);
                 return $recordData;
             } else {
 				return $this->lastSearchResults = false;
@@ -932,14 +1002,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			}
     	}
 
-
-
-		//Get last search
-		public function getLastSearchResults() {
-			return $this->lastSearchResults;
-		}
-
-	
 
 
 

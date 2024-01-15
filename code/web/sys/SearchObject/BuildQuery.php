@@ -2,7 +2,7 @@
 
 class SummonQuery {
     private $query;
-    private $holdings = true;
+    private $holdings = false;
     private $facets = null;
     private $filters = array();
     private $groupFilters = array();
