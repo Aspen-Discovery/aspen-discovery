@@ -14,7 +14,7 @@ class SummonQuery {
     // Page number
 	protected $pageSize = 25;
 	// Result limit
-	// protected $limit = 20;
+	//protected $limit = 20;
     protected $pageNumber = 1;
 
     protected $didYouMean = false;

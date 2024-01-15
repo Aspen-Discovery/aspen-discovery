@@ -61,7 +61,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $searchSource = 'local';
     protected $searchType = 'basic';
 
-	// protected $pageSize = 20;
+	protected $pageSize = 20;
 
 	// protected $facets;
 
@@ -298,7 +298,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				// $interface->assign('recordIndex', $key + 1);
 				// $interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
 				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->limit));
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->pageSize));
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 				// $record = new SummonRecordDriver($value);
 				$record = new SummonRecordDriver($current);
@@ -353,7 +353,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		if (isset($this->lastSearchResults)) {
 			foreach($this->lastSearchResults as $key=>$value){
 				$interface->assign('recordIndex', $key + 1);
-				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
+				$interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->pageSize));
 
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 				$record = new SummonRecordDriver($value);
@@ -1020,9 +1020,8 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$filterOptions .= '&limiter=' . $limiter . ':y';
 					}
 				}
-			
 				// $addParams = implode('&' , $addParams);
-				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $queryOptions;
+				$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $queryOptions ;
 				// $queryString .= $queryOptions;
                 // Build Authorization Headers
                 $headers = array(
@@ -1061,7 +1060,6 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					}
 				}
 		
-				var_dump($queryOptions);
                 return $recordData;
             } else {
 				return $this->lastSearchResults = false;

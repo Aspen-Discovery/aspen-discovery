@@ -59,8 +59,8 @@ class Summon_Results extends ResultsAction {
 		$interface->assign('recordSet', $recordSet);
 		$timer->logTime('load result records');
 
-		// $interface->assign('sortList', $searchObject->getSortList());
-		// $interface->assign('searchIndex', $searchObject->getSearchIndex());
+		$interface->assign('sortList', $searchObject->getSortList());
+		$interface->assign('searchIndex', $searchObject->getSearchIndex());
 
 		$summary = $searchObject->getResultSummary();
 		$interface->assign('recordCount', $summary['resultTotal']);
