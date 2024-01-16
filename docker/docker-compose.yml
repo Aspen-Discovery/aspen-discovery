@@ -5,6 +5,8 @@ services:
 
   backend:
     image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
+    env_file:
+      - .env
     ports:
       - "80:80"
     networks:
@@ -12,8 +14,6 @@ services:
     tty: true
     volumes:
       - $COMPOSE_ClientSrvPath:/mnt
-    env_file:
-      - .env_backend   
 
   db:
     image: mariadb:10.3
@@ -29,7 +29,7 @@ services:
   solr:
     image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
     env_file:
-      - .env_backend   
+      - .env   
     deploy:
       endpoint_mode: dnsrr
     volumes:
@@ -42,7 +42,7 @@ services:
   tunnel:
     image: $COMPOSE_ImagePath:$COMPOSE_ImageVersion
     env_file:
-      - .env_tunnel 
+      - .env
     environment:
       - COMPOSE_Cron=off
       - COMPOSE_Apache=off
