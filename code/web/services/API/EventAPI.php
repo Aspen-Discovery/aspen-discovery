@@ -90,6 +90,7 @@ class EventAPI extends Action {
 			$itemData['description'] = strip_tags($libraryCalendarDriver->getDescription());
 			$itemData['registrationRequired'] = $libraryCalendarDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
+			$itemData['inUserEvents'] = false;
 			$itemData['registrationBody'] = strip_tags($libraryCalendarDriver->getRegistrationModalBody());
 			$itemData['bypass'] = (bool)$libraryCalendarDriver->getBypassSetting();
 			$itemData['cover'] = $libraryCalendarDriver->getEventCoverUrl();
@@ -104,6 +105,7 @@ class EventAPI extends Action {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
+				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
 			}
 
 			return $itemData;
@@ -127,6 +129,7 @@ class EventAPI extends Action {
 			$itemData['description'] = strip_tags($communicoDriver->getDescription());
 			$itemData['registrationRequired'] = $communicoDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
+			$itemData['inUserEvents'] = false;
 			$itemData['registrationBody'] = strip_tags($communicoDriver->getRegistrationModalBody());
 			$itemData['bypass'] = (bool)$communicoDriver->getBypassSetting();
 			$itemData['cover'] = $communicoDriver->getEventCoverUrl();
@@ -140,6 +143,7 @@ class EventAPI extends Action {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
+				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
 			}
 
 			return $itemData;
@@ -163,6 +167,7 @@ class EventAPI extends Action {
 			$itemData['description'] = strip_tags($springshareDriver->getDescription());
 			$itemData['registrationRequired'] = $springshareDriver->isRegistrationRequired();
 			$itemData['userIsRegistered'] = false;
+			$itemData['inUserEvents'] = false;
 			$itemData['registrationBody'] = strip_tags($springshareDriver->getRegistrationModalBody());
 			$itemData['bypass'] = (bool)$springshareDriver->getBypassSetting();
 			$itemData['cover'] = $springshareDriver->getEventCoverUrl();
@@ -177,6 +182,7 @@ class EventAPI extends Action {
 			$user = $this->getUserForApiCall();
 			if ($user && !($user instanceof AspenError)) {
 				$itemData['userIsRegistered'] = $user->isRegistered($_REQUEST['id']);
+				$itemData['inUserEvents'] = $user->inUserEvents($_REQUEST['id']);
 			}
 
 			return $itemData;
