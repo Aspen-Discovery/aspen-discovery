@@ -97,6 +97,7 @@ class EventAPI extends Action {
 			$itemData['audiences'] = $libraryCalendarDriver->getAudiences();
 			$itemData['categories'] = null;
 			$itemData['programTypes'] = null;
+			$itemData['room'] = null;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($libraryCalendarDriver->getBranch());
 
@@ -133,6 +134,7 @@ class EventAPI extends Action {
 			$itemData['audiences'] = $communicoDriver->getAudiences();
 			$itemData['categories'] = null;
 			$itemData['programTypes'] = $communicoDriver->getProgramTypes();
+			$itemData['room'] = $communicoDriver->getRoom();
 			$itemData['location'] = $this->getDiscoveryBranchDetails($communicoDriver->getBranch());
 
 			$user = $this->getUserForApiCall();
@@ -168,6 +170,7 @@ class EventAPI extends Action {
 			$itemData['audiences'] = $springshareDriver->getAudiences();
 			$itemData['categories'] = $springshareDriver->getCategories();
 			$itemData['programTypes'] = null;
+			$itemData['room'] = null;
 
 			$itemData['location'] = $this->getDiscoveryBranchDetails($springshareDriver->getBranch());
 
