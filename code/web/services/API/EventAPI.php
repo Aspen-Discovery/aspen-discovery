@@ -56,7 +56,7 @@ class EventAPI extends Action {
 	}
 
 	/**
-	 * Returns specific data about a given event
+	 * Returns specific data about a given event. If user credentials are provided, specific data on if they've saved or registered for the event will be provided (validated with getUserForApiCall).
 	 *
 	 * Parameters:
 	 * <ul>
