@@ -202,7 +202,7 @@ class EventAPI extends Action {
 
 			require_once ROOT_DIR . '/sys/Events/EventsBranchMapping.php';
 			$locationMap = new EventsBranchMapping();
-			$locationMap->aspenLocation = $locationName;
+			$locationMap->eventsLocation = $locationName;
 			if($locationMap->find(true)) {
 				$eventLocation = new Location();
 				$eventLocation->locationId = $locationMap->locationId;
