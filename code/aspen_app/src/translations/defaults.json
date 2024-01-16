@@ -454,5 +454,20 @@
   "current_library": "Current Library",
   "connected_to": "Connected To",
   "num_linked_accounts": "Number of Linked Accounts",
-  "contact_information": "Contact Information"
+  "contact_information": "Contact Information",
+  "registration_required": "Registration Required",
+  "more_info": "More Info",
+  "registration_information": "Registration Information",
+  "go_to_registration": "Take Me To Event Registration",
+  "you_are_registered": "You Are Registered",
+  "add_to_events": "Add To Your Events",
+  "in_your_events": "In Your Events",
+  "audiences": "Audiences",
+  "categories": "Categories",
+  "program_types": "Program Types",
+  "about": "About",
+  "events": "Events",
+  "upcoming_events": "Upcoming Events",
+  "past_events": "Past Events",
+  "all_events": "All Events"
 }
