@@ -1,38 +1,47 @@
 <?php
 
-require_once ROOT_DIR . '/sys/SearchObject/BuildQuery.php';
 require_once ROOT_DIR . '/sys/Summon/SummonSettings.php';
 require_once ROOT_DIR . '/sys/Pager.php';
 require_once ROOT_DIR . '/sys/SearchObject/BaseSearcher.php';
 
 class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
+    const IDENTIFIER_ID = 1;
+    const IDENTIFIER_BOOKMARK = 2;
     static $instance;
-	/** @var SummonSettings */
     private $summonSettings;
     private $summonBaseApi ='http://api.summon.serialssolutions.com';
-
-	/**Build URL */
+	private $summonApiId;
+	private $summonApiPassword;
     private $sessionId;
     private $version = '2.0.0';
     private $service = 'search';
+    private $authedUser = false;
     private $responseType = "json";
-
     private static $searchOptions;
-   
+    private $params = array();
+    private $method = 'GET';
+	private $filters = array();
+    private $raw = false;
     private $curl_connection;
+
 
     /**
 	 * @var string mixed
 	 */
 	private $searchIndex = 'Everything';
 
-	/**Track query time info */
     protected $queryStartTime = null;
 	protected $queryEndTime = null;
 	protected $queryTime = null;
 
+    // Page number
+	// protected $page = 1;
+	// Result limit
+	// protected $limit = 20;
 
+	// Sorting
+	protected $sort = null;
 	protected $defaultSort = 'relevance';
 	protected $debug = false;
 
@@ -43,15 +52,17 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 
 	protected $lastSearchResults;
 
-    // Module and Action for building search results 
+    //From base searcher
+    // Module and Action for building search results URLs
 	protected $resultsModule = 'Search';
 	protected $resultsAction = 'Results';
-
     	/** @var string */
 	protected $searchSource = 'local';
     protected $searchType = 'basic';
+
 	protected $pageSize = 20;
 
+	// protected $facets;
 /** Values for the options array*/
 	protected $holdings = false;
 	protected $didYouMean = false;
@@ -60,22 +71,22 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	protected $maxTopics = 1;
 	protected $groupFilters = array();
 	protected $rangeFilters = array();
+	// protected $expand = false;
 	protected $openAccessFilter = false;
 	protected $highlight = false;
 	protected $pageNumber = 1;
+	protected $sendQuery = null;
 	protected $expand = false;
-
-	/**Facets, filters and limiters */
-	protected $facets = [];
-	protected $filters = [];
-	protected $facetFields;
-	protected $queryFacets;
-	protected $facetValue;
-	protected $sortOptions = [];
-	protected $queryOptions = [];
 
 
 	protected $facetValueFilters = [
+		// 'ContentType,or,1,30',
+		// 'IsScholarly,or,1,2',
+		// 'Discipline',
+		// 'Library,or,1,30',
+		// 'SubjectTerms,or,130',
+		// 'Language,or,1,30'
+		// <facet name=”Audience” cardinality=”ZeroToMany” type=”string”/>
 		'Author',
 		'ContentType',
 		'CorporateAuthor',
@@ -92,25 +103,34 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		'Open Access',
 		'Available in Library Collection',
 	];
+	private $listFacetValues;
+
+	
+
+	protected $facets;
+
+	protected $clearAllFacetFields;
+	protected $removeFacetField;
+	protected $addFacetField;
+	protected $facetFields;
+	protected $queryFacets;
+	protected $facetValue;
+	protected $sortOptions = [];
+	protected $queryOptions = [];
 
 
 
-
-
-
-  
     public function __construct() {
-
-        //Initialize properties with default values
         $this->searchSource = 'summon';
         $this->searchType = 'summon';
         $this->resultsModule = 'Summon';
         $this->resultsAction = 'Results';
-	}
-     
-    /**
+    }
+
+      /**
 	 * Initialise the object from the global
 	 *  search parameters in $_REQUEST.
+	 *
 	 * @access  public
 	 * @param string $searchSource
 	 * @return  boolean
@@ -150,20 +170,18 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return true;
 	}
 
-	  	/**
-	//  * @return SearchObject_SummonSearcher
+    	/**
+	 * @return SearchObject_SummonSearcher
 	 */
-	// public static function getInstance() {
-	// 	if (SearchObject_SummonSearcher::$instance == null) {
-	// 		SearchObject_SummonSearcher::$instance = new SearchObject_SummonSearcher();
-	// 	}
-	// 	return SearchObject_SummonSearcher::$instance;
-	// }
+	public static function getInstance() {
+		if (SearchObject_SummonSearcher::$instance == null) {
+			SearchObject_SummonSearcher::$instance = new SearchObject_SummonSearcher();
+		}
+		return SearchObject_SummonSearcher::$instance;
+	}
 
 
-	/**
-	 * Retreive settings for institution's summon connector
-	*/
+	//Retreive settings for institution's summon connector
 	private function getSettings() {
 		global $library;
 		if ($this->summonSettings == null) {
@@ -191,140 +209,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->curl_connection;
 	}
 
-	public function getHeaders() {
-		$headers = array(
-			'Accept' => 'application/'.$this->responseType,
-			'x-summon-date' => gmdate('D, d M Y H:i:s T'),
-			'Host' => 'api.summon.serialssolutions.com'
-		);
-		return $headers;
-	}
-
-	/**
-	 * Use Institution's Summon API credentials to authenticate and allow connection with the Summon API
-	*/
-    public function authenticate($settings, $queryString) {
-		$headers = $this->getHeaders();
-		$data = implode("\n", $headers). "\n/$this->version/search\n" . urldecode($queryString) . "\n";
-				$hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
-				$headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
-                if (!is_null($this->sessionId)){
-                    $headers['x-summon-session-id'] = $this->sessionId;
-                } 
-		return $headers;
-    }
-
-	/**Build a query using the search terms entered by the user */
-	public function getQuery() {
-		$query = [];
-		foreach ($this->searchTerms as $key => $value) {
-			if (is_array($value)) {
-				foreach ($value as $term) {
-					$term = urlencode($term);
-					$query[] = $term;
-				}
-			} elseif (!is_null($value)) {
-				$value = urlencode($value);
-				$query[] =$value;
-			}
-		} return $query;
-	}
-
-	public function getFilters() {
-		$facetIndex = 1;
-		foreach ($this->filterList as $field => $filter) {
-			$appliedFilters = '';
-			if (is_array($filter)) {
-				$appliedFilters .= "$facetIndex,";
-				foreach ($filter as $key => $value) {
-					if ($key > 0) {
-						$appliedFilters[] = ',';
-					}
-					$value = urlencode($value);
-					$appliedFilters .= "$field:" . urlencode($value);
-				}
-			} else {
-				$appliedFilters .= "$facetIndex,$field:" . urlencode($filter);
-
-				$filter = urlencode($filter);
-				// $appliedFilters .= "$facetIndex,$field=$field";
-				 $appliedFilters .= "$facetIndex,$field:" .urlencode($filter);
-			}
-			$facetIndex++;
-		}
-		return $appliedFilters;
-	}
-
-	//Build an array of options that will be passed into the final query string that will be sent to the Summon API
-	public function getOptions ($query) {
-		$options = array(
-			's.q' => $query,
-			//set to default at top of page
-			's.ps' => $this->pageSize,
-			//set to default at top of page
-			's.pn' => $this->pageNumber,
-			//set to default -  false at top of page
-			's.ho' => $this->holdings ? 'true' : 'false',
-			//set to default -  false at top of page
-			's.dym' => $this->didYouMean ? 'true' : 'false',
-			//set to default - en at top of page
-			's.l' => $this->language,
-
-			's.fids' => $this->idsToFetch,
-
-			's.ff' =>$this->getFacetSet(),
-
-			's.fvf' => $this->getFilters(),
-			//set to default 1 at top of page
-			's.rec.topic.max' => $this->maxTopics,
-
-			's.fvgf' => $this->groupFilters,
-
-			's.rf' => $this->rangeFilters,
-
-			's.sort' => $this->sort,
-
-			's.exp' => $this->expand ? 'true' : 'false',
-
-			's.oaf' => $this->openAccessFilter ? 'true' : 'false',
-			
-		);
-		$buildQuery = [];
-
-		foreach ($options as $key => $value) {
-			if (is_array($value)) {
-				foreach($value as $additionalValue) {
-					$buildQuery[] = "{$key}[]=$additionalValue";
-				}
-			} elseif (!is_null($value)) {
-				$value = urlencode($value);
-				$buildQuery[] = "$key=$value";
-			}
-		}
-		return $buildQuery;
-	}
- 
-	/**
-	 * Use the data that is returned when from the API and process it to assign it to variables
-	 */
-	public function processData($recordData) {
-			$recordData = $this->process($recordData); 
-			if (is_array($recordData)){
-
-				$this->sessionId = $recordData['sessionId'];
-				$this->lastSearchResults = $recordData['documents'];
-				$this->page = $recordData['query']['pageNumber'];
-				$this->resultsTotal = $recordData['recordCount'];
-				$this->sort = $recordData['query']['sort'];
-				$this->facetFields= $recordData['facetFields'];
-				$this->queryFacets = $recordData['query']['rangeFacetFields'];
-				
-			}
-		return $recordData;
-	}
-
-
-    /**
+     /**
 	 * Return an array of data summarising the results of a search.
 	 *
 	 * @access  public
@@ -372,7 +257,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $url;
 	}
 
-    /**
+    	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results.
 	 *
@@ -389,9 +274,9 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				// $interface->assign('recordIndex', $key + 1);
 				// $interface->assign('resultIndex', $key + 1 + (($this->page - 1) * $this->limit));
 				$interface->assign('recordIndex', $x + 1);
-				$interface->assign('resultIndex', $x + 1 + (($this->pageNumber - 1) * $this->pageSize));
-
+				$interface->assign('resultIndex', $x + 1 + (($this->page - 1) * $this->pageSize));
 				require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
+				// $record = new SummonRecordDriver($value);
 				$record = new SummonRecordDriver($current);
 				if ($record->isValid()) {
 					$interface->assign('recordDriver', $record);
@@ -400,11 +285,15 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$html[] = "Unable to find record";
 				}
 			}
+		// } else {
+		// 	$html[] = "Unable to find record";
+
+		// }
 		} $this->addToHistory();
 		return $html;
 	}
 
-    /**
+      	/**
 	 * Use the record driver to build an array of HTML displays from the search
 	 * results.
 	 *
@@ -412,7 +301,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 	 * @return  array   Array of HTML chunks for individual records.
 	 */
 	public function getCombinedResultHTML() {
-		global $interface;
+        global $interface;
 		$html = [];
 		if (isset($this->lastSearchResults)) {
 			foreach($this->lastSearchResults as $key=>$value){
@@ -430,30 +319,33 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 			}
 		} else {
 			$html[] = "Unable to find record";
+
 		}
 		return $html;
-	} 
+    }
 
-	//Assign properties to each of the sort options
-	public function getSortList() {
+    public function getSortList() {
+		//Get available sort options
 		$sortOptions = $this->getSortOptions();
+		//Initialize empty list 
 		$list = [];
+		//Ensure that there are sort options available
 		if ($sortOptions != null) {
+			//For each sort option, add relevant info and add to array
 			foreach ($sortOptions as $sort => $label) {
 				$list[$sort] = [
 					'sortUrl' => $this->renderLinkWithSort($sort),
 					'desc' => $label,
 					'selected' => ($sort == $this->sort),
 				];
+
 			 }
 		}
+
 		return $list;
 	}
 
-	/**
-	 * Options for the order of results returned to the UI
-	 */
-	public function getSortOptions() {
+    public function getSortOptions() {
 		$this->sortOptions =[
 			'relevance' =>[
 				'id' => 'relevance',
@@ -486,7 +378,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $this->sortOptions;
 	}
 
-	/**
+    	/**
 	 * Return a url for the current search with a new sort
 	 *
 	 * @access  public
@@ -506,11 +398,11 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return $url;
 	}
 
-
-	//Facets set for Summon - callled in Summon's Results
     public function getFacetSet() {
 		$availableFacets = [];
 		$availableFacetValues = [];
+		
+		
 		//Check for search
 		if (isset($this->facetValueFilters)){
 			foreach($this->facetValueFilters as $facetValueFilter) {
@@ -518,6 +410,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 				$availableFacets[$facetValueFilter] = [
 					'collapseByDefault' => true,
 					'multiSelect' => true,
+					//Filter heading label
 					'label' => (string)$facetLabel,
 					'valuesToShow' => 5,
 				];
@@ -561,6 +454,12 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 							'Web Resource',
 						);
 						$facetLabel = 'Content Type';
+						break;
+					case 'IsScholarly':
+						$availableFacetValues = array(
+							'true',
+							'false',
+						);
 						break;
 					case 'Discipline':
 						$availableFacetValues = array(
@@ -776,14 +675,17 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 						$facetLabel = $facetValueFilter;
 						break;
 				}
-				foreach ($availableFacetValues as $facetValue) {
-					$isApplied = array_key_exists($facetValue, $this->filterList);
+				foreach ($availableFacetValues as $value) {
+					$facetValue = $value;
+					$isApplied = array_key_exists($facetValueFilter, $this->filterList) && in_array($facetValue, $this->filterList[$facetValueFilter]);
 				
 
 						$facetSettings = [
 							'value' => $facetValue,
+							//Displays the different values available for each facet
 							'display' => $facetValue,
-							'isApplied' => $isApplied,
+							// 'count' => $facetId->Count,
+							// 'isApplied' => $isApplied,
 							'countIsApproximate' => false,
 						];
 						 if ($isApplied) {
@@ -796,96 +698,175 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 					$availableFacets[$facetValueFilter]['list'] = $list;
 				}
 			}
+		// var_dump($this->filterList);
 		return 	$availableFacets;
 	}	
 
-	/*
-	* Called by Results.php - Lists checkbox filter options
-	* 
-	*/
-	public function getLimitList() {
-		$limitList = [];
-		foreach ($this->limitOptions as $limit) {
-			$limitIsApplied = ($this->limiters[$limit]) == 'y' ? 1 : 0;
-		
-			$limitList[$limit] = [
-				'url' => $this->renderLinkWithLimiter($limit),
-				'removalUrl' => $this->renderLinkWithoutLimiter($limit),
-				'display' => $limit,
-				'value' => $limit,
-				'isApplied' => $limitIsApplied,
-			];
-		}
-		return $limitList;
-	}
-	
+      /**
+     * Generate an HMAC hash
+     *
+     * @param string $key  Hash key
+     * @param string $data Data to hash
+     *
+     * @return string      Generated hash
+     */
+    protected function hmacsha1($key, $data)
+    {
+        $blocksize=64;
+        $hashfunc='sha1';
+        if (strlen($key)>$blocksize) {
+            $key=pack('H*', $hashfunc($key));
+        }
+        $key=str_pad($key, $blocksize, chr(0x00));
+        $ipad=str_repeat(chr(0x36), $blocksize);
+        $opad=str_repeat(chr(0x5c), $blocksize);
+        $hmac = pack(
+            'H*', $hashfunc(
+                ($key^$opad).pack(
+                    'H*', $hashfunc(
+                        ($key^$ipad).$data
+                    )
+                )
+            )
+        );
+        return base64_encode($hmac);
+    }
 
 	/**
-	 * Generate an HMAC hash for authentication
-	 *
-	 * @param string $key  Hash key
-	 * @param string $data Data to hash
-	 *
-	 * @return string      Generated hash
- 	*/
-	protected function hmacsha1($key, $data) {
-		$blocksize=64;
-		$hashfunc='sha1';
-		if (strlen($key)>$blocksize) {
-			$key=pack('H*', $hashfunc($key));
-		}
-		$key=str_pad($key, $blocksize, chr(0x00));
-		$ipad=str_repeat(chr(0x36), $blocksize);
-		$opad=str_repeat(chr(0x5c), $blocksize);
-		$hmac = pack(
-			'H*', $hashfunc(
-				($key^$opad).pack(
-					'H*', $hashfunc(
-						($key^$ipad).$data
-					)
-				)
-			)
-		);
-		return base64_encode($hmac);
-	}
-
-	/**
-	 * Send a fully built query string to the API with user authentication
+	 * @param array $params params for request
+	 * @param string $service for API to call
+	 * @param string $method HTTP method
+	 * @param bool $raw raw or processed response
+	 * 
 	 * @throws Exception
 	 * @return object API response
 	 */
-	public function sendRequest() {
-		$query = $this->getQuery();
-		$baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
-		$settings = $this->getSettings();
-		$this->startQueryTimer();
-		if ($settings != null) {
-			if (isset($_REQUEST['pageNumber']) && is_numeric($_REQUEST['pageNumber']) && $_REQUEST['pageNumber'] != 1) {
-				$this->pageNumber = $_REQUEST['pageNumber'];
-			} else {
-				$this->pageNumber = 1;
+
+     public function sendRequest() {
+
+        $baseUrl = $this->summonBaseApi . '/' .$this->version . '/' .$this->service;
+
+        $settings = $this->getSettings();
+        $this->startQueryTimer();
+
+        if ($settings != null) {
+            $query = array();
+            $queryOptions = array();
+            foreach ($this->searchTerms as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $term) {
+                        $term = urlencode($term);
+                        $query[] = "$key=$term";
+                    }
+                } elseif (!is_null($value)) {
+                    $value = urlencode($value);
+                    $query[] = "$key=$value";
+                }
+            }
+			$queryOptions = $query;
+			$options = array(
+				's.q' => $query,
+				//set to default at top of page
+				's.ps' => $this->pageSize,
+				//set to default at top of page
+				's.pn' => $this->pageNumber,
+				//set to default -  false at top of page
+				's.ho' => $this->holdings ? 'true' : 'false',
+				//set to default -  false at top of page
+				's.dym' => $this->didYouMean ? 'true' : 'false',
+				//set to default - en at top of page
+				's.l' => $this->language,
+
+				's.fids' => $this->idsToFetch,
+
+				's.ff' =>$this->facets,
+
+				's.fvf' => $this->filters,
+				//set to default 1 at top of page
+				's.rec.topic.max' => $this->maxTopics,
+
+				's.fvgf' => $this->groupFilters,
+
+				's.rf' => $this->rangeFilters,
+
+				's.sort' => $this->sort,
+
+				's.exp' => $this->expand,
+
+				's.oaf' => $this->openAccessFilter,
+				
+			);
+			foreach ($options as $key => $value) {
+				$buildQuery = [];
+				if (is_array($value)) {
+					foreach($value as $additionalValue) {
+						$additionalValue = urlencode($additionalValue);
+						$buildQuery[] = $additionalValue;
+					}
+				} elseif (!is_null($value)) {
+					$value = urlencode($value);
+					$buildQuery[] = $value;
+				}
 			}
 
-			$options = $this->getOptions($query);
-			$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $this->queryOptions ;
-			$headers = $this->authenticate($settings, $queryString);
-			$recordData = $this->httpRequest($baseUrl, $queryString, $options, $headers);
-			if (!empty($recordData)){
-				$recordData = $this->processData($recordData); 
-				$this->stopQueryTimer();
-			}
-			return $recordData;
-		} else {
-			return new Exception('Please add your Summon settings');
-		}
-	}
+			$buildQuery = implode('&', $buildQuery);
+			$queryOptions .= $buildQuery;
 
-    public function process($input) {
+			
+
+            //$queryString = 's.q='.$query[0].':('.implode('&', array_slice($query,1)).')' . $this->queryOptions ;
+            $queryString = implode('& ', $queryOptions);
+            // Build Authorization Headers
+            $headers = array(
+                'Accept' => 'application/'.$this->responseType,
+                'x-summon-date' => gmdate('D, d M Y H:i:s T'),
+                'Host' => 'api.summon.serialssolutions.com'
+            );
+            // $headers = $this->authenticate($headers,$settings, "&q=".urlencode($searchTerms));
+            $data = implode("\n", $headers). "\n/$this->version/search\n" . urldecode($queryString) . "\n";
+            $hmacHash = $this->hmacsha1($settings->summonApiPassword, $data);
+            $headers['Authorization'] = "Summon $settings->summonApiId;$hmacHash";
+            if (!is_null($this->sessionId)){
+                $headers['x-summon-session-id'] = $this->sessionId;
+            } 
+
+            $recordData = $this->httpRequest($baseUrl, $queryString, $options, $headers);
+            if (!empty($recordData)){
+                $recordData = $this->process($recordData); 
+                $this->stopQueryTimer();
+
+                if (is_array($recordData)){
+
+                    $this->sessionId = $recordData['sessionId'];
+                    $this->lastSearchResults = $recordData['documents'];
+                    $this->page = $recordData['query']['pageNumber'];
+                    // $this->didYouMean = $recordData['didYouMeanSuggestions'];
+                    $this->resultsTotal = $recordData['recordCount'];
+                    $this->sort = $recordData['query']['sort'];
+                    $this->facetFields= $recordData['facetFields'];
+                    $this->queryFacets = $recordData['query']['rangeFacetFields'];
+                    // $this->facetVals = $recordData['facetValueFilters'];
+                    // $this->pageSize = $recordData['query']['pageSize'];
+                }
+            }
+            var_dump($queryString);
+            return $recordData;
+        } else {
+            return $this->lastSearchResults = false;
+        }
+
+     }
+
+     public function process($input) {
         if (SearchObject_SummonSearcher::$searchOptions == null) {
             if ($this->responseType != 'json') {
                 return $input;
             }
+
             SearchObject_SummonSearcher::$searchOptions = json_decode($input, true);
+
+           
+
             if (!SearchObject_SummonSearcher::$searchOptions) {
                 SearchObject_SummonSearcher::$searchOptions = array(
                     'recordCount' => 0,
@@ -915,126 +896,111 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
         } else {
             return SearchObject_SummonSearcher::$searchOptions;
         }
-    }
-//TODO: add escape chars
-
-    /**
-	 * Send HTTP request with headers modified to meet Summon API requirements
-	 */
-    protected function httpRequest($baseUrl, $queryString, $options, $headers) {
-		foreach ($headers as $key =>$value) {
-			$modified_headers[] = $key.": ".$value;
-		}
-        $curlConnection = $this->getCurlConnection();
-        $curlOptions = array(
-            CURLOPT_RETURNTRANSFER => 1,
-            CURLOPT_URL => "{$baseUrl}?{$queryString}",
-            CURLOPT_HTTPHEADER => $modified_headers
-        );
-        curl_setopt_array($curlConnection, $curlOptions);
-        $result = curl_exec($curlConnection);
-        if ($result === false) {
-            throw new Exception("Error in HTTP Request.");
-        }
-        // curl_close($curlConnection);
-        return $result;
-    }
-
-
-
-	/**
-	 * Start the timer to work out how long a query takes.  Complements
-	 * stopQueryTimer().
-	 *
-	 * @access protected
-	 */
-	protected function startQueryTimer() {
-		// Get time before the query
-		$time = explode(" ", microtime());
-		$this->queryStartTime = $time[1] + $time[0];
-	}
-
-	/**
-	 * End the timer to work out how long a query takes.  Complements
-	 * startQueryTimer().
-	 *
-	 * @access protected
-	 */
-	protected function stopQueryTimer() {
-		$time = explode(" ", microtime());
-		$this->queryEndTime = $time[1] + $time[0];
-		$this->queryTime = $this->queryEndTime - $this->queryStartTime;
-	}
-
-	/**
-	 * Work out how long the query took
-	 */
-	public function getQuerySpeed() {
-		return $this->queryTime;
-	}
-
-	/**TODO: Work out whether this function is still required */
-     public function retreiveRecord() {
-       //call send request to access records array
-	   $recordsArray = $this->sendRequest();
-
-	   //check the documents key exists in the recorddata
-	   if(!empty($recordArray['recordData']['documents'])) {
-		//Return each individual document
-		return $recordsArray['recordData']['documents'];
-	   } 
-	   return;
-	 }
-
-	 /**
-	  * Search options specific to Summon
-	  */
-     public function getSearchIndexes() {
-		return [
-			"Everything" => translate([
-				'text' => "Everything",
-				'isPublicFacing' => true,
-				'inAttribute' => true,
-			]),
-            'Books' => translate([
-                'text' => "Books",
-				'isPublicFacing' => true,
-				'inAttribute' => true,
-            ]),
-            'Articles' => translate([
-                'text' => "Articles",
-                'isPublicFacing' => true,
-                'inAttribute' => true,
-            ])
-		];
      }
 
-   
+        protected function httpRequest($baseUrl, $queryString, $options, $headers ) {
+            foreach ($headers as $key =>$value) {
+                $modified_headers[] = $key.": ".$value;
+            }
+        
+    
+            $curlConnection = $this->getCurlConnection();
+            $curlOptions = array(
+                CURLOPT_RETURNTRANSFER => 1,
+                CURLOPT_URL => "{$baseUrl}?{$queryString}",
+                CURLOPT_HTTPHEADER => $modified_headers
+            );
+            curl_setopt_array($curlConnection, $curlOptions);
+            $result = curl_exec($curlConnection);
+            if ($result === false) {
+                throw new Exception("Error in HTTP Request.");
+            }
+            // curl_close($curlConnection);
+    
+            return $result;
+        }
+    
+        public function __destruct() {
+            if ($this->curl_connection) {
+                curl_close($this->curl_connection);
+            }
+        }
+    
+        public function getQuerySpeed() {
+            return $this->queryTime;
+        }
+    
+    
+            /**
+         * Start the timer to figure out how long a query takes.  Complements
+         * stopQueryTimer().
+         *
+         * @access protected
+         */
+        protected function startQueryTimer() {
+            // Get time before the query
+            $time = explode(" ", microtime());
+            $this->queryStartTime = $time[1] + $time[0];
+        }
+    
+        /**
+         * End the timer to figure out how long a query takes.  Complements
+         * startQueryTimer().
+         *
+         * @access protected
+         */
+        protected function stopQueryTimer() {
+            $time = explode(" ", microtime());
+            $this->queryEndTime = $time[1] + $time[0];
+            $this->queryTime = $this->queryEndTime - $this->queryStartTime;
+        }
 
-	 //Used in Union/Ajax - getSummonResults
-    public function getDefaultIndex() {
-		return $this->searchIndex;
-	}
+        public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) {
+        }
 
-    // public function setSearchTerm($searchTerm) {
-	// 	if (strpos($searchTerm, ':') !== false) {
-	// 		[
-	// 			$searchIndex,
-	// 			$term,
-	// 		] = explode(':', $searchTerm, 2);
-	// 		$this->setSearchTerms([
-	// 			'lookfor' => $term,
-	// 			'index' => $searchIndex,
-	// 		]);
-	// 	} else {
-	// 		$this->setSearchTerms([
-	// 			'lookfor' => $searchTerm,
-	// 			'index' => $this->getDefaultIndex(),
-	// 		]);
-	// 	}
-	// }
+        public function getSearchIndexes() {
+            return [
+                "Everything" => translate([
+                    'text' => "Everything",
+                    'isPublicFacing' => true,
+                    'inAttribute' => true,
+                ]),
+                'Books' => translate([
+                    'text' => "Books",
+                    'isPublicFacing' => true,
+                    'inAttribute' => true,
+                ]),
+                'Articles' => translate([
+                    'text' => "Articles",
+                    'isPublicFacing' => true,
+                    'inAttribute' => true,
+                ])
+            ];
+         }
 
-    	/**
+         public function getDefaultIndex() {
+            return $this->searchIndex;
+        }
+
+        public function setSearchTerm($searchTerm) {
+            if (strpos($searchTerm, ':') !== false) {
+                [
+                    $searchIndex,
+                    $term,
+                ] = explode(':', $searchTerm, 2);
+                $this->setSearchTerms([
+                    'lookfor' => $term,
+                    'index' => $searchIndex,
+                ]);
+            } else {
+                $this->setSearchTerms([
+                    'lookfor' => $searchTerm,
+                    'index' => $this->getDefaultIndex(),
+                ]);
+            }
+        }
+
+          	/**
 	 * Retrieves a document specified by the ID.
 	 *
 	 * @param string[] $ids An array of documents to retrieve from Solr
@@ -1045,7 +1011,7 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		$records = [];
 		require_once ROOT_DIR . '/RecordDrivers/SummonRecordDriver.php';
 		foreach ($ids as $index => $id) {
-			$records[$index] = new SummonRecordDriver($ids);
+			$records[$index] = new SummonRecordDriver($id);
 		}
 		return $records;
 	}
@@ -1086,21 +1052,16 @@ class SearchObject_SummonSearcher extends SearchObject_BaseSearcher{
 		return false;
 	}
 
-	public function getSessionId() {
-		return $this->sessionId;
-	}
+    
+ }
 
-	public function getresultsTotal(){
-		return $this->resultsTotal;
-	}
 
-	public function processSearch($returnIndexErrors = false, $recommendations = false, $preventQueryModification = false) { 
-    }
 
-	public function __destruct() {
-		if ($this->curl_connection) {
-			curl_close($this->curl_connection);
-		}
-	}
+
+
+
+
+
+
 
 }

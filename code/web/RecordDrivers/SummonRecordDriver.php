@@ -4,7 +4,6 @@ require_once ROOT_DIR . '/RecordDrivers/RecordInterface.php';
 
 
 class SummonRecordDriver extends RecordInterface {
-	private $lastSearchResults;
 	private $record;
 
 	/**
