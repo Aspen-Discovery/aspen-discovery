@@ -169,7 +169,8 @@ public class GroupedWorkIndexer {
 		this.clearIndex = clearIndex;
 		this.regroupAllRecords = regroupAllRecords;
 
-		String solrPort = configIni.get("Reindex", "solrPort");
+		String solrHost = configIni.get("Index", "solrHost");
+		String solrPort = configIni.get("Index", "solrPort");
 
 		//Load the last Index time
 		try{
@@ -287,9 +288,9 @@ public class GroupedWorkIndexer {
 
 		ConcurrentUpdateSolrClient.Builder solrBuilder;
 		if (indexVersion == 1) {
-			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works");
+			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works");
 		}else{
-			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/grouped_works_v2");
+			solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://" + solrHost + ":" + solrPort + "/solr/grouped_works_v2");
 		}
 		solrBuilder.withThreadCount(1);
 		solrBuilder.withQueueSize(25);
