@@ -22,6 +22,8 @@ class EventAPI extends Action {
 			if ($this->grantTokenAccess()) {
 				if (in_array($method, [
 					'getEventDetails',
+					'saveEvent',
+					'removeSavedEvent'
 				])) {
 					header('Cache-Control: max-age=10800');
 					require_once ROOT_DIR . '/sys/SystemLogging/APIUsage.php';
@@ -237,6 +239,159 @@ class EventAPI extends Action {
 				'longitude' => 0,
 			]
 		];
+	}
+
+	function saveEvent() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			$id = $_REQUEST['id'];
+			$source = $_REQUEST['source'];
+			$vendor = $_REQUEST['vendor'];
+			if (empty($sourceId) || empty($source) || empty($vendor)) {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => 'You must provide an event id, source, and vendor to save this event.'
+				];
+			}
+			$userEventsEntry = new UserEventsEntry();
+			$userEventsEntry->userId = $user->id;
+			$userEventsEntry->sourceId = $sourceId;
+
+			$regRequired = false;
+			$regModal = null;
+			$externalUrl = null;
+			if(str_starts_with($sourceId, 'communico')) {
+				require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
+				$recordDriver = new CommunicoEventRecordDriver($userEventsEntry->sourceId);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+					$userEventsEntry->title = substr($title, 0, 50);
+					$eventDate = $recordDriver->getStartDate();
+					$userEventsEntry->eventDate = $eventDate->getTimestamp();
+					if ($recordDriver->isRegistrationRequired()){
+						$regRequired = true;
+						$regModal = $recordDriver->getRegistrationModalBody();
+					}
+					$userEventsEntry->regRequired = $regRequired;
+					$userEventsEntry->location = $recordDriver->getBranch();
+					$externalUrl = $recordDriver->getExternalUrl();
+				}
+			} elseif(str_starts_with($sourceId, 'libcal')) {
+				require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
+				$recordDriver = new SpringshareLibCalEventRecordDriver($userEventsEntry->sourceId);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+					$userEventsEntry->title = substr($title, 0, 50);
+					$eventDate = $recordDriver->getStartDate();
+					$userEventsEntry->eventDate = $eventDate->getTimestamp();
+					if ($recordDriver->isRegistrationRequired()){
+						$regRequired = true;
+						$regModal = $recordDriver->getRegistrationModalBody();
+					}
+					$userEventsEntry->regRequired = $regRequired;
+					$userEventsEntry->location = $recordDriver->getBranch();
+					$externalUrl = $recordDriver->getExternalUrl();
+				}
+			} elseif(str_starts_with($sourceId, 'lc')) {
+				require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
+				$recordDriver = new LibraryCalendarEventRecordDriver($userEventsEntry->sourceId);
+				if ($recordDriver->isValid()) {
+					$title = $recordDriver->getTitle();
+					$userEventsEntry->title = substr($title, 0, 50);
+					$eventDate = $recordDriver->getStartDate();
+					$userEventsEntry->eventDate = $eventDate->getTimestamp();
+					if ($recordDriver->isRegistrationRequired()){
+						$regRequired = true;
+						$regModal = $recordDriver->getRegistrationModalBody();
+					}
+					$userEventsEntry->regRequired = $regRequired;
+					$userEventsEntry->location = $recordDriver->getBranch();
+					$externalUrl = $recordDriver->getExternalUrl();
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => 'Invalid source id',
+				];
+			}
+
+			$userEventsEntry->dateAdded = time();
+
+			if($userEventsEntry->find(true)) {
+				$userEventsEntry->update();
+			} else {
+				$userEventsEntry->insert();
+			}
+
+			$message = translate(['text' => 'This event was saved to your events successfully.',
+				'isPublicFacing' => true,]);
+
+			if($regRequired) {
+				$message = translate([
+					'text' => 'This event was saved to your events successfully. Saving an event to your events is not the same as registering.',
+					'isPublicFacing' => true,
+				]);
+			}
+
+			return [
+				'success' => true,
+				'title' => translate([
+					'text' => 'Added Successfully',
+					'isPublicFacing' => true,
+				]),
+				'message' => $message,
+				'registrationRequired' => $regRequired,
+				'regBody' => $regModal,
+				'url' => $externalUrl,
+			];
+		} else {
+			return [
+				'success' => false,
+				'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+				'message' => 'Login unsuccessful',
+			];
+		}
+	}
+
+	function removeSavedEvent() {
+		$user = $this->getUserForApiCall();
+		if ($user && !($user instanceof AspenError)) {
+			if(isset($_REQUEST['id'])) {
+				require_once ROOT_DIR . '/sys/Events/UserEventsEntry.php';
+				$userEventsEntry = new UserEventsEntry();
+				$userEventsEntry->sourceId = $_REQUEST['id'];
+				if($userEventsEntry->find(true)) {
+					$userEventsEntry->delete();
+					return [
+						'success' => true,
+						'title' => translate(['text' => 'Success', 'isPublicFacing' => true]),
+						'message' => translate([
+							'text' => 'Event successfully removed from your events.',
+							'isPublicFacing' => true
+						])
+					];
+				} else {
+					return [
+						'success' => false,
+						'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+						'message' => 'Sorry, we could not find that event in the system.',
+					];
+				}
+			} else {
+				return [
+					'success' => false,
+					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
+					'message' => 'You must provide a saved event id to remove it.',
+				];
+			}
+		} else {
+			return [
+				'success' => false,
+				'message' => 'Login unsuccessful',
+			];
+		}
 	}
 
 	/**
