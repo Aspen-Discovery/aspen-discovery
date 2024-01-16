@@ -55,7 +55,18 @@ class EventAPI extends Action {
 		}
 	}
 
-	/** @noinspection PhpUnused */
+	/**
+	 * Returns specific data about a given event
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>id - The full id of the event to search for</li>
+	 * <li>source - The event vendor/source tied to the specific event (i.e. communico, springshare, or library_calendar)</li>
+	 * </ul>
+	 *
+	 */
+
+	/* @noinspection PhpUnused */
 	function getEventDetails(): array {
 		if (!isset($_REQUEST['id']) || !isset($_REQUEST['source'])) {
 			return [
@@ -241,13 +252,22 @@ class EventAPI extends Action {
 		];
 	}
 
+	/**
+	 * Save an event for the user.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>id - The full id of the event to save</li>
+	 * </ul>
+	 *
+	 */
+
+	/* @noinspection PhpUnused */
 	function saveEvent() {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
 			$id = $_REQUEST['id'];
-			$source = $_REQUEST['source'];
-			$vendor = $_REQUEST['vendor'];
-			if (empty($sourceId) || empty($source) || empty($vendor)) {
+			if (empty($id)) {
 				return [
 					'success' => false,
 					'title' => translate(['text' => 'Error', 'isPublicFacing' => true]),
@@ -256,14 +276,14 @@ class EventAPI extends Action {
 			}
 			$userEventsEntry = new UserEventsEntry();
 			$userEventsEntry->userId = $user->id;
-			$userEventsEntry->sourceId = $sourceId;
+			$userEventsEntry->sourceId = $id;
 
 			$regRequired = false;
 			$regModal = null;
 			$externalUrl = null;
-			if(str_starts_with($sourceId, 'communico')) {
+			if(str_starts_with($id, 'communico')) {
 				require_once ROOT_DIR . '/RecordDrivers/CommunicoEventRecordDriver.php';
-				$recordDriver = new CommunicoEventRecordDriver($userEventsEntry->sourceId);
+				$recordDriver = new CommunicoEventRecordDriver($id);
 				if ($recordDriver->isValid()) {
 					$title = $recordDriver->getTitle();
 					$userEventsEntry->title = substr($title, 0, 50);
@@ -277,9 +297,9 @@ class EventAPI extends Action {
 					$userEventsEntry->location = $recordDriver->getBranch();
 					$externalUrl = $recordDriver->getExternalUrl();
 				}
-			} elseif(str_starts_with($sourceId, 'libcal')) {
+			} elseif(str_starts_with($id, 'libcal')) {
 				require_once ROOT_DIR . '/RecordDrivers/SpringshareLibCalEventRecordDriver.php';
-				$recordDriver = new SpringshareLibCalEventRecordDriver($userEventsEntry->sourceId);
+				$recordDriver = new SpringshareLibCalEventRecordDriver($id);
 				if ($recordDriver->isValid()) {
 					$title = $recordDriver->getTitle();
 					$userEventsEntry->title = substr($title, 0, 50);
@@ -293,9 +313,9 @@ class EventAPI extends Action {
 					$userEventsEntry->location = $recordDriver->getBranch();
 					$externalUrl = $recordDriver->getExternalUrl();
 				}
-			} elseif(str_starts_with($sourceId, 'lc')) {
+			} elseif(str_starts_with($id, 'lc')) {
 				require_once ROOT_DIR . '/RecordDrivers/LibraryCalendarEventRecordDriver.php';
-				$recordDriver = new LibraryCalendarEventRecordDriver($userEventsEntry->sourceId);
+				$recordDriver = new LibraryCalendarEventRecordDriver($id);
 				if ($recordDriver->isValid()) {
 					$title = $recordDriver->getTitle();
 					$userEventsEntry->title = substr($title, 0, 50);
@@ -355,6 +375,17 @@ class EventAPI extends Action {
 		}
 	}
 
+	/**
+	 * Remove a previously saved event for the user.
+	 *
+	 * Parameters:
+	 * <ul>
+	 * <li>id - The full id of the event to search for</li>
+	 * </ul>
+	 *
+	 */
+
+	/* @noinspection PhpUnused */
 	function removeSavedEvent() {
 		$user = $this->getUserForApiCall();
 		if ($user && !($user instanceof AspenError)) {
