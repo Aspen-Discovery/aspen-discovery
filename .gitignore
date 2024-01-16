@@ -19,6 +19,8 @@ sites/default/solr5/tmp/*
 sites/default/solr5/server/logs/*
 sites/default/solr5/server/tmp/*
 sites/default/solr5/server/solr/configsets/*
+sites/default/solr-8.11.2/server/logs/*
+sites/default/solr-8.11.2/server/tmp/*
 code/aspen_app/.expo/**
 code/aspen_app/.expo-shared/**
 code/aspen_app/node_modules/**
