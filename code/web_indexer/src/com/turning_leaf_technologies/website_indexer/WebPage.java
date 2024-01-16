@@ -7,15 +7,12 @@ import java.util.HashSet;
 
 class WebPage {
 	private long id;
-	private String url;
+	private final String url;
 	private long checksum;
 	private boolean deleted;
-	private long firstDetected;
-
+	private final long firstDetected;
 	private String title;
-	private String pageContents;
-
-	private HashSet<String> links = new HashSet<>();
+	private final HashSet<String> links = new HashSet<>();
 
 	WebPage(ResultSet websitePagesRS) throws SQLException {
 		this.id = websitePagesRS.getLong("id");
@@ -58,23 +55,12 @@ class WebPage {
 		return title;
 	}
 
-	String getPageContents() {
-		return pageContents;
-	}
-
 	HashSet<String> getLinks() {
 		return links;
-	}
-
-	public void setDeleted(boolean deleted) {
-		this.deleted = deleted;
 	}
 
 	void setTitle(String title) {
 		this.title = title;
 	}
 
-	void setPageContents(String pageContents) {
-		this.pageContents = pageContents;
-	}
 }

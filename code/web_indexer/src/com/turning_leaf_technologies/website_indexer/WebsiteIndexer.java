@@ -4,8 +4,8 @@ import com.turning_leaf_technologies.strings.AspenStringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
-import org.apache.solr.client.solrj.impl.HttpSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.BaseHttpSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -46,9 +46,9 @@ class WebsiteIndexer {
 	private PreparedStatement deletePageStmt;
 	private final HashSet<String> scopesToInclude;
 
-	private final ConcurrentUpdateSolrClient solrUpdateServer;
+	private final ConcurrentUpdateHttp2SolrClient solrUpdateServer;
 
-	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, long crawlDelay, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateSolrClient solrUpdateServer, Logger logger) {
+	WebsiteIndexer(Long websiteId, String websiteName, String searchCategory, String initialUrl, String pageTitleExpression, String descriptionExpression, String pathsToExclude, long maxPagesToIndex, long crawlDelay, HashSet<String> scopesToInclude, boolean fullReload, WebsiteIndexLogEntry logEntry, Connection aspenConn, ConcurrentUpdateHttp2SolrClient solrUpdateServer, Logger logger) {
 		this.websiteId = websiteId;
 		this.websiteName = websiteName;
 		this.searchCategory = searchCategory;
@@ -57,7 +57,7 @@ class WebsiteIndexer {
 		if (this.siteUrl.indexOf("/", 8) != -1){
 			this.siteUrl = this.siteUrl.substring(0, this.siteUrl.indexOf("/", 8));
 		}
-		this.siteUrlShort = siteUrl.replaceAll("http[s]?://", "");
+		this.siteUrlShort = siteUrl.replaceAll("https?://", "");
 		this.scopesToInclude = scopesToInclude;
 		this.maxPagesToIndex = maxPagesToIndex;
 		this.crawlDelay = crawlDelay;
@@ -68,14 +68,14 @@ class WebsiteIndexer {
 		this.fullReload = fullReload;
 		this.solrUpdateServer = solrUpdateServer;
 
-		if (pageTitleExpression.length() > 0){
+		if (!pageTitleExpression.isEmpty()){
 			try{
 				this.pageTitleExpression = Pattern.compile(pageTitleExpression, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 			}catch (Exception e){
 				logEntry.incErrors("Page Title Expression was not a valid regular expression");
 			}
 		}
-		if (descriptionExpression.length() > 0){
+		if (!descriptionExpression.isEmpty()){
 			try{
 				this.descriptionExpression = Pattern.compile(descriptionExpression, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 			}catch (Exception e){
@@ -83,7 +83,7 @@ class WebsiteIndexer {
 			}
 		}
 
-		if (pathsToExclude != null && pathsToExclude.length() > 0){
+		if (pathsToExclude != null && !pathsToExclude.isEmpty()){
 			String[] paths = pathsToExclude.split("\r\n|\r|\n");
 			for (String path : paths){
 				if (path.contains(initialUrl) || initialUrl.matches(".*\\.xml.*")){
@@ -129,7 +129,7 @@ class WebsiteIndexer {
 			try {
 				solrUpdateServer.deleteByQuery("settingId:" + websiteId);
 				//3-19-2019 Don't commit so the index does not get cleared during run (but will clear at the end).
-			} catch (HttpSolrClient.RemoteSolrException rse) {
+			} catch (BaseHttpSolrClient.RemoteSolrException rse) {
 				logEntry.addNote("Solr is not running properly, try restarting " + rse);
 				System.exit(-1);
 			} catch (Exception e) {
@@ -275,7 +275,6 @@ class WebsiteIndexer {
 						document.select("script,.hidden,style").remove();
 						removeComments(document);
 						String response = document.html();
-						page.setPageContents(response);
 
 						//Extract the title
 						try {
@@ -289,7 +288,7 @@ class WebsiteIndexer {
 							}
 							if (!titleFound) {
 								String title = document.title();
-								if (title.length() > 0) {
+								if (!title.isEmpty()) {
 									page.setTitle(title);
 								} else {
 									page.setTitle("Title not provided");
@@ -318,7 +317,7 @@ class WebsiteIndexer {
 							if (linkUrl.endsWith("/")) {
 								linkUrl = linkUrl.substring(0, linkUrl.length() - 1);
 							}
-							if (linkUrl.length() == 0 || linkUrl.startsWith(".")) {
+							if (linkUrl.isEmpty() || linkUrl.startsWith(".")) {
 								continue;
 							}
 							if (linkUrl.startsWith("http://")) {
@@ -378,7 +377,7 @@ class WebsiteIndexer {
 							//If we don't have a description, see if there is a main section
 							if (!descriptionFound){
 								Elements mainNodes = document.getElementsByTag("main");
-								if (mainNodes.size() > 0){
+								if (!mainNodes.isEmpty()){
 									Element mainNode = mainNodes.get(0);
 									description = mainNode.text();
 									descriptionFound = true;

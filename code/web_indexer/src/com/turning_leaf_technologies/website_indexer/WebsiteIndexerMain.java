@@ -6,8 +6,8 @@ import com.turning_leaf_technologies.logging.LoggingUtil;
 import com.turning_leaf_technologies.strings.AspenStringUtils;
 import com.turning_leaf_technologies.util.SystemUtils;
 import org.apache.logging.log4j.Logger;
-import org.apache.solr.client.solrj.impl.BinaryRequestWriter;
-import org.apache.solr.client.solrj.impl.ConcurrentUpdateSolrClient;
+import org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.ini4j.Ini;
 
@@ -24,7 +24,7 @@ public class WebsiteIndexerMain {
 		String serverName;
 		if (args.length == 0) {
 			serverName = AspenStringUtils.getInputFromCommandLine("Please enter the server name");
-			if (serverName.length() == 0) {
+			if (serverName.isEmpty()) {
 				System.out.println("You must provide the server name as the first argument.");
 				System.exit(1);
 			}
@@ -35,13 +35,13 @@ public class WebsiteIndexerMain {
 		String processName = "web_indexer";
 		logger = LoggingUtil.setupLogging(serverName, processName);
 
-		//Get the checksum of the JAR when it was started so we can stop if it has changed.
+		//Get the checksum of the JAR when it was started, so we can stop if it has changed.
 		long myChecksumAtStart = JarUtil.getChecksumForJar(logger, processName, "./" + processName + ".jar");
 		long timeAtStart = new Date().getTime();
 
 		while (true) {
 			Date startTime = new Date();
-			logger.info("Starting " + processName + ": " + startTime.toString());
+			logger.info("Starting " + processName + ": " + startTime);
 
 			// Read the base INI file to get information about the server (current directory/cron/config.ini)
 			Ini configIni = ConfigUtil.loadConfigFile("config.ini", serverName, logger);
@@ -51,7 +51,7 @@ public class WebsiteIndexerMain {
 
 			try {
 				String solrPort = configIni.get("Reindex", "solrPort");
-				ConcurrentUpdateSolrClient solrUpdateServer = setupSolrClient(solrPort);
+				ConcurrentUpdateHttp2SolrClient solrUpdateServer = setupSolrClient(solrPort);
 
 				PreparedStatement getSitesToIndexStmt = aspenConn.prepareStatement("SELECT * from website_indexing_settings where deleted = 0");
 				PreparedStatement getLibrariesForSettingsStmt = aspenConn.prepareStatement("SELECT library.subdomain From library_website_indexing inner join library on library.libraryId = library_website_indexing.libraryId where settingId = ?");
@@ -113,7 +113,7 @@ public class WebsiteIndexerMain {
 						while (locationsForSettingsRS.next()){
 							String subLocation = locationsForSettingsRS.getString("subLocation");
 							String scopeName;
-							if (!locationsForSettingsRS.wasNull() && subLocation.length() > 0){
+							if (!locationsForSettingsRS.wasNull() && !subLocation.isEmpty()){
 								scopeName = subLocation.replaceAll("[^a-zA-Z0-9_]", "").toLowerCase();
 							}else {
 								String code = locationsForSettingsRS.getString("code");
@@ -215,7 +215,7 @@ public class WebsiteIndexerMain {
 					logEntry.setFinished();
 				}
 
-				//Clean up anything that does not have a setting Id
+				//Clean up anything that does not have a setting ID
 				try {
 					//noinspection unused
 					UpdateResponse deleteResponse = solrUpdateServer.deleteByQuery("-settingId:[* TO *]");
@@ -255,14 +255,12 @@ public class WebsiteIndexerMain {
 		}
 	}
 
-	private static ConcurrentUpdateSolrClient setupSolrClient(String solrPort) {
-		ConcurrentUpdateSolrClient.Builder solrBuilder = new ConcurrentUpdateSolrClient.Builder("http://localhost:" + solrPort + "/solr/website_pages");
-		solrBuilder.withThreadCount(1);
-		solrBuilder.withQueueSize(25);
-		ConcurrentUpdateSolrClient updateServer = solrBuilder.build();
-		updateServer.setRequestWriter(new BinaryRequestWriter());
-
-		return updateServer;
+	private static ConcurrentUpdateHttp2SolrClient setupSolrClient(String solrPort) {
+		Http2SolrClient http2Client = new Http2SolrClient.Builder().build();
+		return new ConcurrentUpdateHttp2SolrClient.Builder("http://localhost:" + solrPort + "/solr/website_pages", http2Client)
+				.withThreadCount(2)
+				.withQueueSize(100)
+				.build();
 	}
 
 	private static Connection connectToDatabase(Ini configIni) {
